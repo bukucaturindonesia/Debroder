@@ -10,34 +10,14 @@ import { SiteHeader } from "@/components/SiteHeader";
 import { WhatsAppFloat } from "@/components/WhatsAppFloat";
 import { fallbackImages, getProductImage, getStoreImage } from "@/lib/fallback-data";
 import { getPublicContent } from "@/lib/public-data";
-import type { Product, Service, Store } from "@/lib/types";
+import type { HomepageSection, HomepageSectionItem, Product, Service, Store } from "@/lib/types";
 import { formatRupiah, whatsappLinkWithMessage } from "@/lib/url";
-
-const editorial = {
-  jersey: "/images/debroder/editorial/custom-jersey.webp",
-  dtf: "/images/debroder/editorial/sablon-dtf.webp",
-  oversize: "/images/debroder/editorial/kaos-oversize.webp",
-  production: "/images/debroder/editorial/maklon-dtf.webp",
-  hoodie: "/images/debroder/editorial/hoodie-premium.webp",
-  kaos: "/images/debroder/products/kaos-oversize.webp"
-} as const;
 
 const benefits = [
   { icon: "clock", title: "Produksi Cepat", detail: "Alur kerja terukur" },
   { icon: "spark", title: "Kualitas Premium", detail: "Material terbaik" },
   { icon: "one", title: "Tanpa Minimum", detail: "Mulai dari satu pcs" },
   { icon: "truck", title: "Kirim ke Seluruh Indonesia", detail: "Aman ke seluruh kota" }
-];
-
-const featured = [
-  { label: "Custom Jersey", title: "Jersey Custom Tim & Komunitas", button: "Lihat Jersey", href: "/jersey", image: editorial.jersey, lookup: ["custom jersey", "jersey"] },
-  { label: "Sablon DTF", title: "Hasil Tajam untuk Apparel Premium", button: "Lihat DTF", href: "/sablon-dtf", image: editorial.dtf, lookup: ["sablon dtf"] }
-];
-
-const trending = [
-  { label: "Kaos Polos", title: "Basic Premium untuk Brand Kamu", button: "Shop", href: "/kaos-polos", image: editorial.oversize, lookup: ["kaos polos", "cotton combed", "kaos nsa"] },
-  { label: "Maklon DTF", title: "Produksi Cepat, Hasil Konsisten", button: "Order", href: "/maklon-dtf", image: editorial.production, lookup: ["maklon dtf"] },
-  { label: "Sublim & Jersey", title: "Warna Kuat untuk Tim Hebat", button: "Lihat", href: "/jersey", image: editorial.jersey, lookup: ["custom jersey", "cetak sublim"] }
 ];
 
 type Visual = {
@@ -52,7 +32,6 @@ type EditorialItem = Visual & {
   title: string;
   button: string;
   href: string;
-  lookup: string[];
 };
 type ProductItem = Visual & {
   name: string;
@@ -60,18 +39,7 @@ type ProductItem = Visual & {
   price: string;
   href: string;
   fit: string;
-  lookup: string[];
 };
-
-function timestamp(value?: string) {
-  const parsed = value ? Date.parse(value) : 0;
-  return Number.isNaN(parsed) ? 0 : parsed;
-}
-
-function matchesLookup(value: string, lookup: string[]) {
-  const normalized = value.toLowerCase();
-  return lookup.some((term) => normalized.includes(term));
-}
 
 function productItem(product: Product): ProductItem {
   return {
@@ -84,24 +52,64 @@ function productItem(product: Product): ProductItem {
     fallbackImage: fallbackImages.product,
     objectFit: product.object_fit,
     objectPosition: product.object_position,
-    fit: product.object_fit || "cover",
-    lookup: []
+    fit: product.object_fit || "cover"
   };
 }
 
-function serviceVisual(services: Service[], lookup: string[], fallback: string, fallbackAlt: string): Visual {
-  const service = services
-    .filter((item) => matchesLookup(`${item.nama} ${item.slug}`, lookup))
-    .filter((item) => Boolean(item.image_url))
-    .sort((a, b) => timestamp(b.updated_at) - timestamp(a.updated_at))[0];
+function serviceHref(service: Service) {
+  if (service.category_key === "sablon-dtf" || service.slug.startsWith("sablon-dtf-")) {
+    return `/sablon-dtf/${service.slug}`;
+  }
+  return `/${service.slug.replace(/^\/+/, "")}`;
+}
 
-  return {
-    image: service?.image_url || fallback,
-    imageAlt: service?.image_alt || service?.nama || fallbackAlt,
-    fallbackImage: fallback,
-    objectFit: service?.object_fit,
-    objectPosition: service?.object_position
-  };
+function editorialPlacement(item: HomepageSectionItem): EditorialItem | null {
+  if (item.product) {
+    return {
+      label: item.product.kategori,
+      title: item.product.nama,
+      button: "Lihat Produk",
+      href: `/produk/${item.product.slug || item.product.nama.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "")}`,
+      image: getProductImage(item.product),
+      imageAlt: item.product.image_alt || item.product.nama,
+      fallbackImage: fallbackImages.product,
+      objectFit: item.product.object_fit,
+      objectPosition: item.product.object_position
+    };
+  }
+  if (item.service) {
+    return {
+      label: "Layanan",
+      title: item.service.nama,
+      button: "Lihat Layanan",
+      href: serviceHref(item.service),
+      image: item.service.image_url,
+      imageAlt: item.service.image_alt || item.service.nama,
+      fallbackImage: fallbackImages.product,
+      objectFit: item.service.object_fit,
+      objectPosition: item.service.object_position
+    };
+  }
+  return null;
+}
+
+function cardPlacement(item: HomepageSectionItem): ProductItem | null {
+  if (item.product) return productItem(item.product);
+  if (item.service) {
+    return {
+      name: item.service.nama,
+      category: "Layanan",
+      price: item.service.harga_mulai ? `Mulai ${formatRupiah(item.service.harga_mulai)}` : "Hubungi kami",
+      href: serviceHref(item.service),
+      image: item.service.image_url,
+      imageAlt: item.service.image_alt || item.service.nama,
+      fallbackImage: fallbackImages.product,
+      objectFit: item.service.object_fit,
+      objectPosition: item.service.object_position,
+      fit: item.service.object_fit || "cover"
+    };
+  }
+  return null;
 }
 
 function SectionHeading({ title, action, description }: { title: string; action?: ReactNode; description?: string }) {
@@ -162,6 +170,40 @@ function ProductCard({ item }: { item: ProductItem }) {
   );
 }
 
+function ManagedHomepageSection({ section }: { section: HomepageSection }) {
+  const carouselId = `${section.slug}-carousel`;
+  const isFeatured = section.slug === "featured";
+  const isEditorial = isFeatured || section.slug === "trending";
+
+  if (isEditorial) {
+    const items = section.items.map(editorialPlacement).filter((item): item is EditorialItem => Boolean(item));
+    if (!items.length) return null;
+    return (
+      <section data-reveal id={section.slug} className={`snap-section section-space ${section.slug === "trending" ? "bg-[#f7f7f2]" : "bg-white"}`}>
+        <div className="section-shell">
+          <SectionHeading title={section.title} action={isFeatured ? undefined : <ScrollButtons containerId={carouselId} />} />
+          <div id={carouselId} className={`no-scrollbar mt-6 flex snap-x snap-mandatory overflow-x-auto lg:grid lg:overflow-visible ${isFeatured ? "gap-3 lg:grid-cols-2" : "gap-4 lg:grid-cols-3 lg:gap-5"}`}>
+            {items.map((item, index) => <EditorialCard key={section.items[index]?.id || `${item.href}-${index}`} item={item} featuredCard={isFeatured} />)}
+          </div>
+        </div>
+      </section>
+    );
+  }
+
+  const items = section.items.map(cardPlacement).filter((item): item is ProductItem => Boolean(item));
+  if (!items.length) return null;
+  return (
+    <section data-reveal id={section.slug} className="snap-section section-space bg-white">
+      <div className="section-shell">
+        <SectionHeading title={section.title} action={<div className="flex items-center gap-4"><Link href="/koleksi" className="hidden text-sm font-semibold hover:underline sm:block">Shop</Link><ScrollButtons containerId={carouselId} /></div>} />
+        <div id={carouselId} className="mt-6 grid grid-cols-2 gap-x-3 gap-y-8 sm:gap-x-5 md:grid-cols-3 lg:grid-cols-4 2xl:grid-cols-5">
+          {items.map((item, index) => <ProductCard key={section.items[index]?.id || `${item.href}-${index}`} item={item} />)}
+        </div>
+      </div>
+    </section>
+  );
+}
+
 function StoreCard({ store, index }: { store: Store; index: number }) {
   const name = store.nama_store.replace(/^STORE\s+/i, "");
   const whatsappHref = whatsappLinkWithMessage(store.whatsapp_link || store.whatsapp, `Halo DEBRODER, saya ingin bertanya tentang Store ${name}.`);
@@ -187,15 +229,6 @@ function StoreCard({ store, index }: { store: Store; index: number }) {
 
 export default async function Home() {
   const content = await getPublicContent();
-  const homeFeatured = featured.map((item) => ({
-    ...item,
-    ...serviceVisual(content.services, item.lookup, item.image, item.title)
-  }));
-  const homeTrending = trending.map((item) => ({
-    ...item,
-    ...serviceVisual(content.services, item.lookup, item.image, item.title)
-  }));
-  const homeFreshDrops = content.products.slice(0, 5).map(productItem);
   const homeCategories = content.categories.slice(0, 5).map((category) => ({
     name: category.nama_kategori,
     href: `/${category.link_slug.replace(/^\/+/, "") || "koleksi"}`,
@@ -239,32 +272,7 @@ export default async function Home() {
         </div>
       </section>
 
-      <section data-reveal id="featured" className="snap-section section-space bg-white">
-        <div className="section-shell">
-          <SectionHeading title="Featured" />
-          <div className="no-scrollbar mt-6 flex snap-x snap-mandatory gap-3 overflow-x-auto lg:grid lg:grid-cols-2 lg:overflow-visible">
-            {homeFeatured.map((item) => <EditorialCard key={item.title} item={item} featuredCard />)}
-          </div>
-        </div>
-      </section>
-
-      <section data-reveal id="trending" className="snap-section section-space bg-[#f7f7f2]">
-        <div className="section-shell">
-          <SectionHeading title="Trending" action={<ScrollButtons containerId="trending-carousel" />} />
-          <div id="trending-carousel" className="no-scrollbar mt-6 flex snap-x snap-mandatory gap-4 overflow-x-auto lg:grid lg:grid-cols-3 lg:gap-5 lg:overflow-visible">
-            {homeTrending.map((item) => <EditorialCard key={item.title} item={item} />)}
-          </div>
-        </div>
-      </section>
-
-      <section data-reveal id="fresh-drops" className="snap-section section-space bg-white">
-        <div className="section-shell">
-          <SectionHeading title="Fresh Drops" action={<div className="flex items-center gap-4"><Link href="/koleksi" className="hidden text-sm font-semibold hover:underline sm:block">Shop</Link><ScrollButtons containerId="fresh-carousel" /></div>} />
-          <div id="fresh-carousel" className="mt-6 grid grid-cols-2 gap-x-3 gap-y-8 sm:gap-x-5 md:grid-cols-3 lg:grid-cols-4 2xl:grid-cols-5">
-            {homeFreshDrops.length ? homeFreshDrops.map((item) => <ProductCard key={item.name} item={item} />) : <p className="col-span-full bg-brand-offWhite p-8 text-center text-sm text-black/55">Belum ada produk terbaru.</p>}
-          </div>
-        </div>
-      </section>
+      {content.homepageSections.map((section) => <ManagedHomepageSection key={section.id} section={section} />)}
 
       <section data-reveal id="shop-category" className="snap-section section-space bg-white pt-4 sm:pt-6">
         <div className="section-shell">
