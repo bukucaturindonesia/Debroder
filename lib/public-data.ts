@@ -9,6 +9,8 @@ import { createSupabaseServerClient } from "@/lib/supabase";
 import type {
   ContactSettings,
   HeroBanner,
+  HomepageSection,
+  HomepageSectionItem,
   InstagramBanner,
   OrderStep,
   PageHeroContent,
@@ -398,6 +400,54 @@ function publicPageHeroes(pageHeroes: PageHeroContent[]) {
   });
 }
 
+async function readHomepageSections(): Promise<HomepageSection[]> {
+  const supabase = createSupabaseServerClient();
+  if (!supabase) return [];
+
+  const { data, error } = await supabase
+    .from("homepage_sections")
+    .select(`
+      id,
+      title,
+      slug,
+      is_active,
+      sort_order,
+      created_at,
+      updated_at,
+      items:homepage_section_items(
+        id,
+        section_id,
+        product_id,
+        service_id,
+        is_active,
+        sort_order,
+        created_at,
+        updated_at,
+        product:products(*),
+        service:services(*)
+      )
+    `)
+    .eq("is_active", true)
+    .order("sort_order", { ascending: true });
+
+  if (error || !data) return [];
+
+  return data
+    .map((section) => {
+      const items = ((section.items || []) as unknown as HomepageSectionItem[])
+        .filter((item) => item.is_active && (item.product || item.service))
+        .map((item) => ({
+          ...item,
+          product: item.product ? cleanProduct(item.product) : null,
+          service: item.service ? cleanService(item.service) : null
+        }))
+        .sort((a, b) => a.sort_order - b.sort_order);
+
+      return { ...section, items } as HomepageSection;
+    })
+    .filter((section) => section.items.length > 0);
+}
+
 export async function getPublicContent(): Promise<PublicContent> {
   noStore();
 
@@ -409,6 +459,7 @@ export async function getPublicContent(): Promise<PublicContent> {
     services,
     products,
     productFilters,
+    homepageSections,
     stores,
     orderSteps,
     trustAbout,
@@ -434,6 +485,7 @@ export async function getPublicContent(): Promise<PublicContent> {
     readActive<Service>("services", fallbackContent.services, "urutan", false),
     readActive<Product>("products", fallbackContent.products, "urutan", false),
     readActive<ProductFilter>("product_filters", fallbackProductFilters),
+    readHomepageSections(),
     readActive<Store>("stores", fallbackContent.stores),
     readActive<OrderStep>("order_steps", fallbackContent.orderSteps),
     readSingle<TrustAboutContent>(
@@ -460,6 +512,7 @@ export async function getPublicContent(): Promise<PublicContent> {
     services: services.map(cleanService),
     products: publicProducts(products),
     productFilters,
+    homepageSections,
     stores: stores.map(cleanStore),
     orderSteps: publicOrderSteps(orderSteps),
     trustAbout: cleanTrustAbout(trustAbout),
