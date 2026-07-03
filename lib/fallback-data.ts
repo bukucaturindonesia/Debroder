@@ -762,6 +762,7 @@ export const fallbackContent: PublicContent = {
   services: fallbackServices,
   products: fallbackProducts,
   productFilters: fallbackProductFilters,
+  homepageSections: [],
   stores: fallbackStores,
   orderSteps: fallbackOrderSteps,
   trustAbout: fallbackTrustAbout,
