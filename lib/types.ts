@@ -281,6 +281,30 @@ export type ProductFilter = {
   updated_at?: string;
 };
 
+export type HomepageSectionItem = {
+  id: string;
+  section_id: string;
+  product_id?: string | null;
+  service_id?: string | null;
+  is_active: boolean;
+  sort_order: number;
+  product?: Product | null;
+  service?: Service | null;
+  created_at?: string;
+  updated_at?: string;
+};
+
+export type HomepageSection = {
+  id: string;
+  title: string;
+  slug: string;
+  is_active: boolean;
+  sort_order: number;
+  items: HomepageSectionItem[];
+  created_at?: string;
+  updated_at?: string;
+};
+
 export type PublicContent = {
   hero: HeroBanner;
   heroes: HeroBanner[];
@@ -291,6 +315,7 @@ export type PublicContent = {
   services: Service[];
   products: Product[];
   productFilters: ProductFilter[];
+  homepageSections: HomepageSection[];
   stores: Store[];
   orderSteps: OrderStep[];
   trustAbout: TrustAboutContent;
