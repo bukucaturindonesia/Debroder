@@ -6,6 +6,7 @@ import { Logo } from "@/components/Logo";
 import { MediaLibraryPanel } from "@/components/admin/MediaLibrary";
 import { ProductAdminPanel } from "@/components/admin/ProductAdmin";
 import { FocalPointEditor } from "@/components/admin/FocalPointEditor";
+import { HomepageSectionsAdmin } from "@/components/admin/HomepageSectionsAdmin";
 import {
   createSupabaseClient,
   isSupabaseConfigured,
@@ -115,6 +116,15 @@ const tableConfigs: TableConfig[] = [
     href: "/admin/dashboard",
     table: "",
     description: "Ringkasan konten toko online DE BRODER.",
+    fields: []
+  },
+  {
+    key: "homepage-sections",
+    label: "Homepage Sections",
+    navLabel: "Homepage Sections",
+    href: "/admin/homepage-sections",
+    table: "",
+    description: "Atur judul, status, urutan section, dan penempatan Produk & Layanan di landing page.",
     fields: []
   },
   {
@@ -1904,6 +1914,8 @@ export function AdminDashboard() {
                 </div>
               </div>
             </div>
+          ) : activeKey === "homepage-sections" ? (
+            <HomepageSectionsAdmin />
           ) : activeKey === "products" ? (
             <ProductAdminPanel />
           ) : activeKey === "media" ? (
