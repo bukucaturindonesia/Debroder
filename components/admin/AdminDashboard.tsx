@@ -8,6 +8,7 @@ import { ProductAdminPanel } from "@/components/admin/ProductAdmin";
 import { FocalPointEditor } from "@/components/admin/FocalPointEditor";
 import { HomepageSectionsAdmin } from "@/components/admin/HomepageSectionsAdmin";
 import { LandingSectionsAdmin } from "@/components/admin/LandingSectionsAdmin";
+import { LandingSectionEditor } from "@/components/admin/LandingSectionEditor";
 import { CampaignBannerAdmin } from "@/components/admin/CampaignBannerAdmin";
 import { OrderManagementAdmin } from "@/components/admin/OrderManagementAdmin";
 import { WebsiteSettingsAdmin } from "@/components/admin/WebsiteSettingsAdmin";
@@ -132,6 +133,33 @@ const tableConfigs: TableConfig[] = [
     fields: []
   },
   {
+    key: "featured-products",
+    label: "Featured Products",
+    navLabel: "Featured Products",
+    href: "/admin/featured-products",
+    table: "",
+    description: "Atur konten dan produk yang tampil pada Featured Products.",
+    fields: []
+  },
+  {
+    key: "trending-section",
+    label: "Trending",
+    navLabel: "Trending",
+    href: "/admin/trending",
+    table: "",
+    description: "Atur konten dan produk yang tampil pada Trending.",
+    fields: []
+  },
+  {
+    key: "fresh-drop-section",
+    label: "Fresh Drop",
+    navLabel: "Fresh Drop",
+    href: "/admin/fresh-drop",
+    table: "",
+    description: "Atur konten dan produk yang tampil pada Fresh Drop.",
+    fields: []
+  },
+  {
     key: "hero",
     label: "Hero Homepage",
     navLabel: "Hero Homepage",
@@ -204,6 +232,7 @@ const tableConfigs: TableConfig[] = [
         type: "video",
         placeholder: "https://..."
       },
+      { name: "text_position", label: "Posisi teks", type: "select", options: ["left", "center", "right"] },
       {
         name: "object_position",
         label: "Desktop Object Position",
@@ -419,6 +448,7 @@ const tableConfigs: TableConfig[] = [
     table: "instagram_banners",
     description: "Atur banner besar yang mengarah ke Instagram.",
     fields: [
+      { name: "media_type", label: "Tipe media", type: "select", options: ["image", "video"] },
       {
         name: "title",
         label: "Judul internal",
@@ -426,6 +456,8 @@ const tableConfigs: TableConfig[] = [
         placeholder: "Instagram DE BRODER",
         required: true
       },
+      { name: "eyebrow", label: "Eyebrow", type: "text", placeholder: "Instagram" },
+      { name: "subtitle", label: "Subtitle", type: "textarea", placeholder: "Ikuti karya dan update terbaru DEBRODER." },
       {
         name: "image_url",
         label: "Upload Banner Desktop",
@@ -440,6 +472,8 @@ const tableConfigs: TableConfig[] = [
         placeholder: "/images/debroder/banners/instagram-banner-mobile.jpg",
         helper: "Rekomendasi 1080x1350."
       },
+      { name: "video_url", label: "Video desktop", type: "video", placeholder: "Pilih video dari Media Library" },
+      { name: "mobile_video_url", label: "Video mobile", type: "video", placeholder: "Opsional" },
       {
         name: "image_alt",
         label: "Teks alternatif gambar",
@@ -452,6 +486,8 @@ const tableConfigs: TableConfig[] = [
         type: "text",
         placeholder: "https://instagram.com/de_broder"
       },
+      { name: "cta_label", label: "CTA label", type: "text", placeholder: "Lihat Instagram" },
+      { name: "text_position", label: "Posisi teks", type: "select", options: ["left", "center", "right"] },
       {
         name: "object_position",
         label: "Desktop Object Position",
@@ -467,6 +503,7 @@ const tableConfigs: TableConfig[] = [
       { name: "object_fit", label: "Skala gambar", type: "select", options: ["cover", "contain"] },
       { name: "focal_x", label: "Fokus horizontal (X)", type: "range", min: 0, max: 100, step: 1 },
       { name: "focal_y", label: "Fokus vertikal (Y)", type: "range", min: 0, max: 100, step: 1 },
+      { name: "urutan", label: "Urutan tampil", type: "number" },
       { name: "status_aktif", label: "Aktif", type: "boolean" }
     ]
   },
@@ -670,6 +707,13 @@ const tableConfigs: TableConfig[] = [
         placeholder: "De Broder adalah perusahaan percetakan...",
         helper: "Gunakan teks singkat agar landing page tetap ringan."
       },
+      { name: "image_url", label: "Gambar desktop", type: "image", placeholder: "Pilih dari Media Library" },
+      { name: "mobile_image_url", label: "Gambar mobile", type: "image", placeholder: "Opsional" },
+      { name: "video_url", label: "Video", type: "video", placeholder: "Opsional" },
+      { name: "cta_label", label: "CTA label", type: "text", placeholder: "Tentang kami" },
+      { name: "cta_url", label: "CTA URL", type: "text", placeholder: "/tentang" },
+      { name: "text_position", label: "Posisi teks", type: "select", options: ["left", "center", "right"] },
+      { name: "urutan", label: "Urutan tampil", type: "number" },
       { name: "status_aktif", label: "Aktif", type: "boolean" }
     ]
   },
@@ -789,6 +833,18 @@ const primaryNavigationKeys = [
 const primaryNavigation = primaryNavigationKeys
   .map((key) => tableConfigs.find((config) => config.key === key))
   .filter((config): config is TableConfig => Boolean(config));
+
+const adminLandingSectionKeys: Record<string, string> = {
+  hero: "hero",
+  "campaign-banners": "campaign-banners",
+  "featured-products": "featured-products",
+  "trending-section": "trending",
+  "fresh-drop-section": "fresh-drop",
+  categories: "services-products",
+  banner: "instagram-banner",
+  store: "stores",
+  "trust-about": "about"
+};
 
 function emptyForm(fields: FieldConfig[]) {
   return fields.reduce<AdminRow>((acc, field) => {
@@ -1791,6 +1847,10 @@ export function AdminDashboard() {
             </p>
           ) : null}
 
+          {adminLandingSectionKeys[activeKey] ? (
+            <LandingSectionEditor sectionKey={adminLandingSectionKeys[activeKey]} />
+          ) : null}
+
           {activeKey === "overview" ? (
             <div className="mt-6 grid gap-6">
               <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
@@ -1964,6 +2024,12 @@ export function AdminDashboard() {
               <LandingSectionsAdmin />
               <HomepageSectionsAdmin showPlainCategorySetting={false} />
             </>
+          ) : activeKey === "featured-products" ? (
+            <HomepageSectionsAdmin showPlainCategorySetting={false} onlySlug="featured" />
+          ) : activeKey === "trending-section" ? (
+            <HomepageSectionsAdmin showPlainCategorySetting={false} onlySlug="trending" />
+          ) : activeKey === "fresh-drop-section" ? (
+            <HomepageSectionsAdmin showPlainCategorySetting={false} onlySlug="fresh-drops" />
           ) : activeKey === "products" ? (
             <ProductAdminPanel />
           ) : activeKey === "media" ? (

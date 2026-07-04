@@ -5,6 +5,7 @@ const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY?.trim();
 const placeholderPattern = /^ISI_/;
 
 export const WEBSITE_IMAGES_BUCKET = "website-images";
+export const ORDER_UPLOADS_BUCKET = "order-uploads";
 const SUPABASE_FETCH_TIMEOUT_MS = 8000;
 
 async function noStoreFetch(

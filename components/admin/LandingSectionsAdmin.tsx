@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect, useState } from "react";
 import { LANDING_SECTION_DEFAULTS } from "@/lib/homepage-settings";
 import { createSupabaseClient } from "@/lib/supabase";
@@ -11,6 +12,19 @@ function sectionLabel(section: LandingSection) {
   }
   return section.title;
 }
+
+const cmsEditorLinks = [
+  ["Hero", "/admin/hero"],
+  ["Campaign Banner", "/admin/campaign-banners"],
+  ["Featured Products", "/admin/featured-products"],
+  ["Trending", "/admin/trending"],
+  ["Fresh Drop", "/admin/fresh-drop"],
+  ["Categories", "/admin/categories"],
+  ["Services", "/admin/services"],
+  ["Instagram Banner", "/admin/banner"],
+  ["Store", "/admin/store"],
+  ["Tentang DEBRODER", "/admin/trust-about"]
+] as const;
 
 export function LandingSectionsAdmin() {
   const [sections, setSections] = useState<LandingSection[]>([]);
@@ -109,6 +123,9 @@ export function LandingSectionsAdmin() {
         <p className="text-xs font-semibold uppercase tracking-[0.18em] text-brand-charcoal/50">CMS / Landing Page</p>
         <h2 className="mt-2 text-xl font-semibold">Section landing page</h2>
         <p className="mt-2 text-sm leading-6 text-brand-charcoal/60">Status OFF menghapus section dari hasil render publik. Urutan mengikuti nilai yang tersimpan di Supabase.</p>
+        <nav aria-label="Editor section landing page" className="mt-5 grid gap-2 sm:grid-cols-2 lg:grid-cols-5">
+          {cmsEditorLinks.map(([label, href]) => <Link key={href} href={href} className="inline-flex min-h-11 items-center justify-between border border-brand-softGray px-4 text-sm font-semibold transition hover:border-brand-charcoal">{label}<span aria-hidden="true">›</span></Link>)}
+        </nav>
       </div>
 
       {status ? <p role="status" className="border border-brand-softGray bg-white p-4 text-sm font-semibold">{status}</p> : null}

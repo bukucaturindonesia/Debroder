@@ -117,6 +117,7 @@ export function HeroSlider({ heroes }: { heroes: HeroBanner[] }) {
         const mobileVideo = slide.mobile_video_url || desktopVideo;
         const desktopPosition = slide.object_position || "center center";
         const mobilePosition = slide.mobile_object_position || desktopPosition;
+        const textAlignment = slide.text_position === "center" ? "mx-auto text-center" : slide.text_position === "right" ? "ml-auto text-right" : "";
 
         return (
           <article
@@ -150,7 +151,7 @@ export function HeroSlider({ heroes }: { heroes: HeroBanner[] }) {
             <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(1,9,6,.9)_0%,rgba(1,9,6,.66)_37%,rgba(1,9,6,.12)_72%,rgba(1,9,6,.28)_100%)] sm:bg-[linear-gradient(90deg,rgba(1,9,6,.92)_0%,rgba(1,9,6,.63)_38%,rgba(1,9,6,.08)_70%,rgba(1,9,6,.24)_100%)]" />
             <div className="absolute inset-x-0 bottom-[88px] z-10 sm:bottom-14">
               <div className="section-shell">
-                <div className="max-w-[620px] text-white">
+                <div className={`max-w-[620px] text-white ${textAlignment}`}>
                   <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-white/72 sm:text-xs">
                     {slide.badge || "APPAREL PREMIUM"}
                   </p>

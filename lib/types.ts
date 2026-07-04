@@ -174,6 +174,7 @@ export type HeroBanner = {
   mobile_focal_y?: number | null;
   mobile_focal_zoom?: number | null;
   mobile_target_ratio?: string;
+  text_position?: "left" | "center" | "right";
   urutan?: number;
   status_aktif: boolean;
   created_at?: string;
@@ -233,6 +234,14 @@ export type InstagramBanner = {
   mobile_focal_y?: number | null;
   mobile_focal_zoom?: number | null;
   mobile_target_ratio?: string;
+  media_type?: "image" | "video";
+  video_url?: string | null;
+  mobile_video_url?: string | null;
+  eyebrow?: string;
+  subtitle?: string;
+  cta_label?: string;
+  text_position?: "left" | "center" | "right";
+  urutan?: number;
   status_aktif: boolean;
   created_at?: string;
   updated_at?: string;
@@ -277,6 +286,13 @@ export type TrustAboutContent = {
   id?: string;
   trust_items: string[];
   about_body: string;
+  image_url?: string | null;
+  mobile_image_url?: string | null;
+  video_url?: string | null;
+  cta_label?: string;
+  cta_url?: string;
+  text_position?: "left" | "center" | "right";
+  urutan?: number;
   status_aktif: boolean;
   created_at?: string;
   updated_at?: string;
@@ -332,6 +348,12 @@ export type LandingSection = {
   is_visible: boolean;
   sort_order: number;
   metadata: Record<string, unknown>;
+  desktop_image_url?: string | null;
+  mobile_image_url?: string | null;
+  video_url?: string | null;
+  cta_label?: string;
+  cta_url?: string;
+  text_position?: "left" | "center" | "right";
   created_at?: string;
   updated_at?: string;
 };
@@ -348,6 +370,7 @@ export type CmsBanner = {
   subtitle: string;
   cta_label: string;
   cta_url: string;
+  text_position?: "left" | "center" | "right";
   is_active: boolean;
   sort_order: number;
   created_at?: string;

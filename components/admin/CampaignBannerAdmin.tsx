@@ -23,6 +23,7 @@ const emptyBanner: CmsBanner = {
   subtitle: "",
   cta_label: "",
   cta_url: "",
+  text_position: "left",
   is_active: true,
   sort_order: 0
 };
@@ -105,6 +106,7 @@ export function CampaignBannerAdmin() {
       subtitle: form.subtitle.trim(),
       cta_label: form.cta_label.trim(),
       cta_url: form.cta_url.trim(),
+      text_position: form.text_position || "left",
       is_active: form.is_active,
       sort_order: Number(form.sort_order)
     };
@@ -151,6 +153,7 @@ export function CampaignBannerAdmin() {
           <Field label="Title"><input required value={form.title} onChange={(event) => update("title", event.target.value)} /></Field>
           <Field label="Subtitle"><textarea rows={3} value={form.subtitle} onChange={(event) => update("subtitle", event.target.value)} /></Field>
           <div className="grid gap-4 sm:grid-cols-2"><Field label="CTA label"><input value={form.cta_label} onChange={(event) => update("cta_label", event.target.value)} /></Field><Field label="CTA URL"><input value={form.cta_url} onChange={(event) => update("cta_url", event.target.value)} /></Field></div>
+          <Field label="Posisi teks"><select value={form.text_position || "left"} onChange={(event) => update("text_position", event.target.value as CmsBanner["text_position"])}><option value="left">Kiri</option><option value="center">Tengah</option><option value="right">Kanan</option></select></Field>
           <label className="flex min-h-11 items-center gap-2 text-sm font-semibold"><input type="checkbox" checked={form.is_active} onChange={(event) => update("is_active", event.target.checked)} className="h-4 w-4 accent-brand-green" />Aktif di landing page</label>
           <button disabled={saving} className="min-h-11 rounded-full bg-brand-green px-6 text-sm font-semibold text-white disabled:opacity-50">{saving ? "Menyimpan..." : "Simpan campaign"}</button>
         </div>

@@ -36,7 +36,7 @@ function normalizeSection(section: EditableSection) {
   } as EditableSection;
 }
 
-export function HomepageSectionsAdmin({ showPlainCategorySetting = true }: { showPlainCategorySetting?: boolean }) {
+export function HomepageSectionsAdmin({ showPlainCategorySetting = true, onlySlug }: { showPlainCategorySetting?: boolean; onlySlug?: string }) {
   const [sections, setSections] = useState<EditableSection[]>([]);
   const [plainCategorySection, setPlainCategorySection] = useState<EditableSection | null>(null);
   const [products, setProducts] = useState<Product[]>([]);
@@ -107,7 +107,10 @@ export function HomepageSectionsAdmin({ showPlainCategorySetting = true }: { sho
 
     setLoading(false);
     setPlainCategorySection(plainSetting);
-    setSections(normalized.filter((section) => section.slug !== PLAIN_CATEGORY_SECTION_SETTING.slug));
+    setSections(normalized.filter((section) =>
+      section.slug !== PLAIN_CATEGORY_SECTION_SETTING.slug
+      && (!onlySlug || section.slug === onlySlug)
+    ));
     setProducts((productResult.data || []) as Product[]);
     setServices((serviceResult.data || []) as Service[]);
     setStatus(nextStatus);
@@ -317,7 +320,7 @@ export function HomepageSectionsAdmin({ showPlainCategorySetting = true }: { sho
         </div>
       </section> : null}
 
-      <form onSubmit={createSection} className="border border-brand-softGray bg-white p-5 sm:p-6">
+      {!onlySlug ? <form onSubmit={createSection} className="border border-brand-softGray bg-white p-5 sm:p-6">
         <h2 className="text-xl font-semibold">Tambah homepage section</h2>
         <div className="mt-4 grid gap-3 md:grid-cols-[1fr_1fr_140px_auto]">
           <input value={newTitle} onChange={(event) => { setNewTitle(event.target.value); if (!newSlug) setNewSlug(slugify(event.target.value)); }} placeholder="Judul section" className="min-h-11 rounded-lg border border-brand-softGray px-4 text-sm" />
@@ -325,7 +328,7 @@ export function HomepageSectionsAdmin({ showPlainCategorySetting = true }: { sho
           <input type="number" min="0" value={newSortOrder} onChange={(event) => setNewSortOrder(Number(event.target.value))} aria-label="Urutan section baru" className="min-h-11 rounded-lg border border-brand-softGray px-4 text-sm" />
           <button disabled={saving} className="min-h-11 rounded-full bg-brand-charcoal px-5 text-sm font-semibold text-white disabled:opacity-50">Tambah</button>
         </div>
-      </form>
+      </form> : null}
 
       {loading ? <div className="grid gap-4">{[1, 2, 3].map((item) => <div key={item} className="h-44 animate-pulse bg-white" />)}</div> : sections.length ? sections.map((section, sectionIndex) => (
         <article key={section.id} className="border border-brand-softGray bg-white p-5 sm:p-6">
@@ -339,7 +342,7 @@ export function HomepageSectionsAdmin({ showPlainCategorySetting = true }: { sho
             <button type="button" onClick={() => moveSection(section.id, -1)} disabled={sectionIndex === 0} className="rounded-full border border-brand-softGray px-4 py-2 text-xs font-semibold disabled:opacity-40">Naik</button>
             <button type="button" onClick={() => moveSection(section.id, 1)} disabled={sectionIndex === sections.length - 1} className="rounded-full border border-brand-softGray px-4 py-2 text-xs font-semibold disabled:opacity-40">Turun</button>
             <button type="button" onClick={() => saveSection(section)} disabled={saving} className="rounded-full bg-brand-green px-4 py-2 text-xs font-semibold text-white disabled:opacity-50">Simpan section</button>
-            <button type="button" onClick={() => deleteSection(section)} className="rounded-full px-4 py-2 text-xs font-semibold text-red-700">Hapus section</button>
+            {!onlySlug ? <button type="button" onClick={() => deleteSection(section)} className="rounded-full px-4 py-2 text-xs font-semibold text-red-700">Hapus section</button> : null}
           </div>
 
           <div className="mt-6 border-t border-brand-softGray pt-5">

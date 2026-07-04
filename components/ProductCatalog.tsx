@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useMemo, useState } from "react";
 import { SafeImage } from "@/components/SafeImage";
 import { fallbackImages, getProductImage } from "@/lib/fallback-data";
+import { productOrderHref } from "@/lib/order";
 import type { Product } from "@/lib/types";
 import { formatRupiah } from "@/lib/url";
 
@@ -79,17 +80,19 @@ export function ProductCatalog({ products, title = "Katalog produk", showHeading
         {visible.map((product) => {
           const focal = product.focal_points?.catalog;
           const labels = [product.label_new && "New", product.label_promo && "Promo", product.label_best_seller && "Best Seller"].filter(Boolean);
-          return <Link key={product.id || product.slug || product.nama} href={`/produk/${product.slug || slugify(product.nama)}`} className="group block min-w-0">
-            <article>
+          const detailHref = `/produk/${product.slug || slugify(product.nama)}`;
+          return <article key={product.id || product.slug || product.nama} className="group min-w-0">
+              <Link href={detailHref} className="block">
               <div className="relative aspect-[4/5] w-full overflow-hidden bg-white">
                 <SafeImage src={getProductImage(product)} fallbackSrc={fallbackImages.product} alt={product.image_alt || product.nama} fill className="object-cover transition duration-500 group-hover:scale-[1.02]" objectFit="cover" focalX={focal?.focal_x ?? product.focal_x} focalY={focal?.focal_y ?? product.focal_y} zoom={focal?.zoom ?? product.focal_zoom} sizes="(min-width: 1536px) 20vw, (min-width: 1024px) 25vw, (min-width: 768px) 33vw, 50vw" />
                 {labels.length ? <div className="absolute left-2 top-2 flex flex-wrap gap-1">{labels.map((item) => <span key={String(item)} className="rounded-full bg-white/95 px-2 py-1 text-[10px] font-semibold shadow-sm">{item}</span>)}</div> : null}
               </div>
-              <h3 className="mt-3 line-clamp-2 text-sm font-semibold sm:text-base">{product.nama}</h3>
+              </Link>
+              <Link href={detailHref} className="mt-3 block"><h3 className="line-clamp-2 text-sm font-semibold sm:text-base">{product.nama}</h3></Link>
               <p className="mt-1 text-sm font-semibold">{formatRupiah(product.price ?? product.harga ?? product.base_price) || "Hubungi kami"}</p>
               {product.compare_price ? <p className="mt-0.5 text-xs text-brand-charcoal/45 line-through">{formatRupiah(product.compare_price)}</p> : null}
-            </article>
-          </Link>;
+              <div className="mt-3 grid grid-cols-2 gap-2"><Link href={detailHref} className="inline-flex min-h-10 items-center justify-center border border-brand-softGray px-3 text-xs font-semibold">Detail</Link><Link href={productOrderHref(product)} className="inline-flex min-h-10 items-center justify-center bg-brand-green px-3 text-xs font-semibold text-white">Pesan</Link></div>
+            </article>;
         })}
       </div> : <div className="mt-6 bg-white p-8 text-center"><p className="font-semibold">Produk tidak ditemukan</p><p className="mt-2 text-sm text-brand-charcoal/60">Coba kata kunci atau kombinasi filter lain.</p></div>}
     </div>
