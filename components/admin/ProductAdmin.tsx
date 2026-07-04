@@ -4,7 +4,7 @@
 import { ChangeEvent, FormEvent, useEffect, useMemo, useState } from "react";
 import { FocalPointEditor } from "@/components/admin/FocalPointEditor";
 import { createSupabaseClient, WEBSITE_IMAGES_BUCKET } from "@/lib/supabase";
-import type { FocalPoint, Product, ServiceCategory } from "@/lib/types";
+import type { FocalPoint, Product, ProductCategory } from "@/lib/types";
 import { formatRupiah } from "@/lib/url";
 
 type MediaChoice = { id: string; name: string; public_url: string; alt_text?: string; folder?: string };
@@ -38,6 +38,10 @@ const emptyProduct: Product = {
   label_promo: false,
   label_best_seller: false,
   featured: false,
+  trending: false,
+  fresh_drop: false,
+  stock: 0,
+  product_category_id: null,
   seo_title: "",
   seo_description: "",
   og_image_url: "",
@@ -103,7 +107,7 @@ async function contentHash(file: File) {
 
 export function ProductAdminPanel() {
   const [products, setProducts] = useState<Product[]>([]);
-  const [categories, setCategories] = useState<ServiceCategory[]>([]);
+  const [categories, setCategories] = useState<ProductCategory[]>([]);
   const [media, setMedia] = useState<MediaChoice[]>([]);
   const [form, setForm] = useState<Product>({ ...emptyProduct });
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -116,6 +120,8 @@ export function ProductAdminPanel() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
+  const [newCategory, setNewCategory] = useState("");
+  const [savingCategory, setSavingCategory] = useState(false);
 
   async function loadData() {
     const supabase = createSupabaseClient();
@@ -124,7 +130,7 @@ export function ProductAdminPanel() {
     const slowTimer = window.setTimeout(() => setStatus("Supabase sedang merespons. Data tetap dimuat..."), 900);
     const [productResult, categoryResult, mediaResult] = await Promise.all([
       supabase.from("products").select("*").order("urutan", { ascending: true }),
-      supabase.from("service_categories").select("*").order("urutan", { ascending: true }),
+      supabase.from("product_categories").select("*").order("sort_order", { ascending: true }),
       supabase.from("media_assets").select("id,name,public_url,alt_text,folder").eq("status_aktif", true).eq("media_type", "image").order("created_at", { ascending: false })
     ]);
     window.clearTimeout(slowTimer);
@@ -134,7 +140,7 @@ export function ProductAdminPanel() {
       return;
     }
     setProducts((productResult.data || []) as Product[]);
-    setCategories((categoryResult.data || []) as ServiceCategory[]);
+    setCategories((categoryResult.data || []) as ProductCategory[]);
     setMedia((mediaResult.data || []) as MediaChoice[]);
     setStatus("");
   }
@@ -142,7 +148,7 @@ export function ProductAdminPanel() {
   useEffect(() => { loadData(); }, []);
 
   const categoryNames = useMemo(() => Array.from(new Set([
-    ...categories.map((category) => category.nama_kategori),
+    ...categories.map((category) => category.name),
     ...products.map((product) => product.kategori)
   ].filter(Boolean))).sort(), [categories, products]);
 
@@ -253,6 +259,7 @@ export function ProductAdminPanel() {
     if (!supabase) return;
     setSaving(true);
     const catalogFocal = focalFor(form, "catalog");
+    const selectedCategory = categories.find((category) => category.name === form.kategori);
     const payload = {
       ...form,
       id: undefined,
@@ -266,6 +273,8 @@ export function ProductAdminPanel() {
       badge: form.label_promo ? "Promo" : form.label_new ? "New" : form.label_best_seller ? "Best Seller" : "",
       price: numberOrNull(form.price),
       compare_price: numberOrNull(form.compare_price),
+      stock: Math.max(0, Number(form.stock || 0)),
+      product_category_id: selectedCategory?.id || form.product_category_id || null,
       focal_x: catalogFocal.focal_x,
       focal_y: catalogFocal.focal_y,
       focal_zoom: catalogFocal.zoom,
@@ -280,9 +289,37 @@ export function ProductAdminPanel() {
       setStatus(`Produk gagal disimpan: ${result.error.message}`);
       return;
     }
+    if (result.data.id) {
+      await syncHomepageFlags(result.data.id, form);
+    }
     setStatus("Produk tersimpan ke Supabase dan langsung tersedia untuk website publik.");
     reset();
     await loadData();
+  }
+
+  async function syncHomepageFlags(productId: string, product: Product) {
+    const supabase = createSupabaseClient();
+    if (!supabase) return;
+    const desired = new Map([
+      ["featured", Boolean(product.featured)],
+      ["trending", Boolean(product.trending)],
+      ["fresh-drops", Boolean(product.fresh_drop)]
+    ]);
+    const { data: sections } = await supabase.from("homepage_sections").select("id,slug").in("slug", Array.from(desired.keys()));
+    if (!sections?.length) return;
+    const sectionIds = sections.map((section) => section.id);
+    const { data: placements } = await supabase.from("homepage_section_items").select("id,section_id").eq("product_id", productId).in("section_id", sectionIds);
+
+    await Promise.all(sections.map((section) => {
+      const existing = placements?.find((placement) => placement.section_id === section.id);
+      if (desired.get(section.slug) && !existing) {
+        return supabase.from("homepage_section_items").insert({ section_id: section.id, product_id: productId, service_id: null, is_active: true, sort_order: product.urutan });
+      }
+      if (!desired.get(section.slug) && existing) {
+        return supabase.from("homepage_section_items").delete().eq("id", existing.id);
+      }
+      return Promise.resolve({ error: null });
+    }));
   }
 
   async function duplicateProduct(product: Product) {
@@ -309,12 +346,60 @@ export function ProductAdminPanel() {
     if (!error) await loadData();
   }
 
+  async function createCategory(event: FormEvent) {
+    event.preventDefault();
+    const name = newCategory.trim();
+    if (!name) return;
+    const supabase = createSupabaseClient();
+    if (!supabase) return;
+    setSavingCategory(true);
+    const { error } = await supabase.from("product_categories").insert({
+      name,
+      slug: slugify(name),
+      description: "",
+      is_active: true,
+      sort_order: categories.length ? Math.max(...categories.map((category) => category.sort_order)) + 10 : 10
+    });
+    setSavingCategory(false);
+    setStatus(error ? `Kategori gagal dibuat: ${error.message}` : "Kategori produk dibuat.");
+    if (!error) {
+      setNewCategory("");
+      await loadData();
+    }
+  }
+
+  async function toggleCategory(category: ProductCategory) {
+    if (!category.id) return;
+    const supabase = createSupabaseClient();
+    if (!supabase) return;
+    const { error } = await supabase.from("product_categories").update({ is_active: !category.is_active }).eq("id", category.id);
+    setStatus(error ? `Kategori gagal diperbarui: ${error.message}` : "Status kategori diperbarui.");
+    if (!error) await loadData();
+  }
+
+  async function deleteCategory(category: ProductCategory) {
+    if (!category.id || !window.confirm(`Hapus kategori "${category.name}"? Produk tidak akan dihapus.`)) return;
+    const supabase = createSupabaseClient();
+    if (!supabase) return;
+    const { error } = await supabase.from("product_categories").delete().eq("id", category.id);
+    setStatus(error ? `Kategori gagal dihapus: ${error.message}` : "Kategori dihapus. Produk tetap aman.");
+    if (!error) await loadData();
+  }
+
   const focalValue = focalFor(form, focalContext);
   const labels = [form.label_new && "New", form.label_promo && "Promo", form.label_best_seller && "Best Seller"].filter(Boolean);
 
   return (
     <div className="mt-6 grid gap-6">
       {status ? <p role="status" className="border border-brand-softGray bg-white p-4 text-sm font-semibold">{status}</p> : null}
+
+      <section className="bg-white p-5 sm:p-6">
+        <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+          <div><p className="text-xs font-semibold uppercase tracking-[.16em] text-brand-charcoal/45">PIM</p><h2 className="mt-2 text-xl font-semibold">Kategori produk</h2></div>
+          <form onSubmit={createCategory} className="flex w-full gap-2 lg:max-w-md"><input value={newCategory} onChange={(event) => setNewCategory(event.target.value)} placeholder="Kategori baru" className="min-h-11 min-w-0 flex-1 rounded-lg border border-brand-softGray px-4 text-sm" /><button disabled={savingCategory} className="rounded-full bg-brand-charcoal px-5 text-sm font-semibold text-white disabled:opacity-50">Tambah</button></form>
+        </div>
+        <div className="mt-4 flex flex-wrap gap-2">{categories.map((category) => <div key={category.id || category.slug} className="inline-flex items-center rounded-full border border-brand-softGray bg-white"><button type="button" onClick={() => toggleCategory(category)} className={`px-4 py-2 text-xs font-semibold ${category.is_active ? "text-brand-green" : "text-brand-charcoal/45"}`}>{category.name}</button><button type="button" aria-label={`Hapus kategori ${category.name}`} onClick={() => deleteCategory(category)} className="border-l border-brand-softGray px-3 py-2 text-xs font-semibold text-red-700">Hapus</button></div>)}</div>
+      </section>
 
       <div className="grid gap-6 xl:grid-cols-[minmax(0,1.4fr)_minmax(280px,.6fr)]">
         <form onSubmit={saveProduct} className="grid gap-5 bg-white p-5 sm:p-7">
@@ -330,6 +415,7 @@ export function ProductAdminPanel() {
             <Field label="Subkategori"><input value={form.subcategory || ""} onChange={(e) => update("subcategory", e.target.value)} /></Field>
             <Field label="Harga"><input type="number" min="0" value={form.price ?? ""} onChange={(e) => update("price", e.target.value)} /></Field>
             <Field label="Harga asli / pembanding"><input type="number" min="0" value={form.compare_price ?? ""} onChange={(e) => update("compare_price", e.target.value)} /></Field>
+            <Field label="Stok"><input type="number" min="0" value={form.stock || 0} onChange={(e) => update("stock", Number(e.target.value))} /></Field>
             <Field label="Urutan tampil"><input type="number" min="0" value={form.urutan} onChange={(e) => update("urutan", Number(e.target.value))} /></Field>
             <Field label="Jumlah terjual"><input type="number" min="0" value={form.sales_count || 0} onChange={(e) => update("sales_count", Number(e.target.value))} /></Field>
           </div>
@@ -338,7 +424,10 @@ export function ProductAdminPanel() {
           <Field label="Deskripsi lengkap"><textarea rows={5} value={form.description || form.deskripsi || ""} onChange={(e) => update("description", e.target.value)} /></Field>
           <Field label="Spesifikasi (satu per baris)"><textarea rows={4} value={listValue(form.specifications)} onChange={(e) => update("specifications", parseList(e.target.value))} placeholder="Bahan: Cotton Combed 24s\nUkuran: S–XXL" /></Field>
 
-          <div className="grid gap-3 rounded-xl bg-brand-offWhite p-4 sm:grid-cols-4">
+          <div className="grid gap-3 rounded-xl bg-brand-offWhite p-4 sm:grid-cols-4 lg:grid-cols-7">
+            <Check label="Featured" checked={!!form.featured} onChange={(value) => update("featured", value)} />
+            <Check label="Trending" checked={!!form.trending} onChange={(value) => update("trending", value)} />
+            <Check label="Fresh Drop" checked={!!form.fresh_drop} onChange={(value) => update("fresh_drop", value)} />
             <Check label="New" checked={!!form.label_new} onChange={(value) => update("label_new", value)} />
             <Check label="Promo" checked={!!form.label_promo} onChange={(value) => update("label_promo", value)} />
             <Check label="Best Seller" checked={!!form.label_best_seller} onChange={(value) => update("label_best_seller", value)} />

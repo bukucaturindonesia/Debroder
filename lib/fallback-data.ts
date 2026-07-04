@@ -15,6 +15,7 @@ import type {
   TrustAboutContent
 } from "@/lib/types";
 import { contactLinks, storeContacts } from "@/lib/contact";
+import { LANDING_SECTION_DEFAULTS } from "@/lib/homepage-settings";
 import { whatsappLinkWithMessage } from "@/lib/url";
 
 export const fallbackImages = {
@@ -766,6 +767,8 @@ export const fallbackContent: PublicContent = {
   landingSettings: {
     showPlainCategorySection: true
   },
+  landingSections: LANDING_SECTION_DEFAULTS.map((section) => ({ ...section, metadata: {} })),
+  campaignBanners: [],
   stores: fallbackStores,
   orderSteps: fallbackOrderSteps,
   trustAbout: fallbackTrustAbout,

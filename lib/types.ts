@@ -41,8 +41,23 @@ export type Product = {
   price_label?: string | null;
   slug?: string;
   featured?: boolean;
+  trending?: boolean;
+  fresh_drop?: boolean;
+  stock?: number;
+  product_category_id?: string | null;
   urutan: number;
   status_aktif: boolean;
+  created_at?: string;
+  updated_at?: string;
+};
+
+export type ProductCategory = {
+  id?: string;
+  name: string;
+  slug: string;
+  description: string;
+  is_active: boolean;
+  sort_order: number;
   created_at?: string;
   updated_at?: string;
 };
@@ -309,6 +324,36 @@ export type LandingPageSettings = {
   showPlainCategorySection: boolean;
 };
 
+export type LandingSection = {
+  id?: string;
+  section_key: string;
+  title: string;
+  subtitle: string;
+  is_visible: boolean;
+  sort_order: number;
+  metadata: Record<string, unknown>;
+  created_at?: string;
+  updated_at?: string;
+};
+
+export type CmsBanner = {
+  id?: string;
+  name: string;
+  media_type: "image" | "video";
+  desktop_media_url: string;
+  mobile_media_url?: string | null;
+  poster_url?: string | null;
+  eyebrow: string;
+  title: string;
+  subtitle: string;
+  cta_label: string;
+  cta_url: string;
+  is_active: boolean;
+  sort_order: number;
+  created_at?: string;
+  updated_at?: string;
+};
+
 export type PublicContent = {
   hero: HeroBanner;
   heroes: HeroBanner[];
@@ -321,6 +366,8 @@ export type PublicContent = {
   productFilters: ProductFilter[];
   homepageSections: HomepageSection[];
   landingSettings: LandingPageSettings;
+  landingSections: LandingSection[];
+  campaignBanners: CmsBanner[];
   stores: Store[];
   orderSteps: OrderStep[];
   trustAbout: TrustAboutContent;

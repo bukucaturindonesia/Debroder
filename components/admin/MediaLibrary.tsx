@@ -30,7 +30,7 @@ type UsageRow = Record<string, unknown>;
 
 const folders = ["Hero", "Banner", "Jersey", "Kaos Polos", "DTF", "Maklon", "Sublim", "Logo", "Store", "Gallery", "Artikel", "Testimoni", "Product", "Category", "Video"];
 const imageTypes = ["image/jpeg", "image/png", "image/webp"];
-const videoTypes = ["video/mp4", "video/webm", "video/quicktime"];
+const videoTypes = ["video/mp4", "video/webm"];
 const MB = 1024 * 1024;
 
 function readableSize(bytes: number) {
@@ -49,7 +49,7 @@ function safeFileName(name: string) {
 function validateFile(file: File) {
   const isImage = imageTypes.includes(file.type);
   const isVideo = videoTypes.includes(file.type);
-  if (!isImage && !isVideo) return "Format tidak didukung. Gunakan JPG, PNG, WebP, MP4, WebM, atau MOV.";
+  if (!isImage && !isVideo) return "Format tidak didukung. Gunakan JPG, PNG, WebP, MP4, atau WebM.";
   if (isImage && file.size > 10 * MB) return `${file.name} melebihi batas foto 10 MB.`;
   if (isVideo && file.size > 100 * MB) return `${file.name} melebihi batas video 100 MB.`;
   return "";
@@ -348,7 +348,7 @@ export function MediaLibraryPanel() {
         <p className="mt-2 text-sm leading-6 text-brand-charcoal/60">Upload sekali, lalu pilih aset yang sama dari editor produk, kategori, hero, atau banner.</p>
         <div className="mx-auto mt-5 flex max-w-lg flex-col gap-3 sm:flex-row sm:items-center sm:justify-center">
           <select value={folder} onChange={(event) => setFolder(event.target.value)} className="min-h-11 rounded-lg border border-brand-softGray bg-white px-4 text-sm font-semibold">{availableFolders.map((item) => <option key={item}>{item}</option>)}</select>
-          <label className="inline-flex min-h-11 cursor-pointer items-center justify-center rounded-full bg-brand-green px-6 text-sm font-semibold text-white">{uploading ? "Mengupload..." : "Pilih File"}<input ref={inputRef} type="file" multiple accept="image/jpeg,image/png,image/webp,video/mp4,video/webm,video/quicktime,.mov" className="sr-only" disabled={uploading} onChange={(event) => event.target.files && uploadFiles(event.target.files)} /></label>
+          <label className="inline-flex min-h-11 cursor-pointer items-center justify-center rounded-full bg-brand-green px-6 text-sm font-semibold text-white">{uploading ? "Mengupload..." : "Pilih File"}<input ref={inputRef} type="file" multiple accept="image/jpeg,image/png,image/webp,video/mp4,video/webm" className="sr-only" disabled={uploading} onChange={(event) => event.target.files && uploadFiles(event.target.files)} /></label>
         </div>
         {uploading || progress > 0 ? <div className="mx-auto mt-5 h-2 max-w-md overflow-hidden rounded-full bg-brand-softGray"><div className="h-full bg-brand-green transition-all" style={{ width: `${progress}%` }} /></div> : null}
       </div>

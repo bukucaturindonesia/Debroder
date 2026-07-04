@@ -8,12 +8,14 @@ import {
 import { PLAIN_CATEGORY_SECTION_SETTING } from "@/lib/homepage-settings";
 import { createSupabaseServerClient } from "@/lib/supabase";
 import type {
+  CmsBanner,
   ContactSettings,
   HeroBanner,
   HomepageSection,
   HomepageSectionItem,
   InstagramBanner,
   LandingPageSettings,
+  LandingSection,
   OrderStep,
   PageHeroContent,
   Product,
@@ -454,6 +456,16 @@ async function readLandingPageSettings(): Promise<LandingPageSettings> {
   const supabase = createSupabaseServerClient();
   if (!supabase) return fallbackContent.landingSettings;
 
+  const { data: landingSection } = await supabase
+    .from("landing_sections")
+    .select("is_visible")
+    .eq("section_key", "plain-category")
+    .maybeSingle();
+
+  if (landingSection) {
+    return { showPlainCategorySection: landingSection.is_visible !== false };
+  }
+
   const { data, error } = await supabase
     .from("homepage_sections")
     .select("slug,is_active")
@@ -465,6 +477,45 @@ async function readLandingPageSettings(): Promise<LandingPageSettings> {
   return {
     showPlainCategorySection: data.is_active !== false
   };
+}
+
+async function readLandingSections(): Promise<LandingSection[]> {
+  const supabase = createSupabaseServerClient();
+  if (!supabase) return fallbackContent.landingSections;
+
+  const { data, error } = await supabase
+    .from("landing_sections")
+    .select("*")
+    .order("sort_order", { ascending: true });
+
+  if (error || !data?.length) return fallbackContent.landingSections;
+
+  const stored = new Map(
+    (data as LandingSection[]).map((section) => [section.section_key, section])
+  );
+  const defaults = fallbackContent.landingSections.map((section) => ({
+    ...section,
+    ...(stored.get(section.section_key) || {})
+  }));
+  const defaultKeys = new Set(defaults.map((section) => section.section_key));
+  const custom = (data as LandingSection[]).filter(
+    (section) => !defaultKeys.has(section.section_key)
+  );
+
+  return [...defaults, ...custom].sort((a, b) => a.sort_order - b.sort_order);
+}
+
+async function readCampaignBanners(): Promise<CmsBanner[]> {
+  const supabase = createSupabaseServerClient();
+  if (!supabase) return [];
+
+  const { data, error } = await supabase
+    .from("cms_banners")
+    .select("*")
+    .eq("is_active", true)
+    .order("sort_order", { ascending: true });
+
+  return error || !data ? [] : (data as CmsBanner[]);
 }
 
 export async function getPublicContent(): Promise<PublicContent> {
@@ -480,6 +531,8 @@ export async function getPublicContent(): Promise<PublicContent> {
     productFilters,
     homepageSections,
     landingSettings,
+    landingSections,
+    campaignBanners,
     stores,
     orderSteps,
     trustAbout,
@@ -507,6 +560,8 @@ export async function getPublicContent(): Promise<PublicContent> {
     readActive<ProductFilter>("product_filters", fallbackProductFilters),
     readHomepageSections(),
     readLandingPageSettings(),
+    readLandingSections(),
+    readCampaignBanners(),
     readActive<Store>("stores", fallbackContent.stores),
     readActive<OrderStep>("order_steps", fallbackContent.orderSteps),
     readSingle<TrustAboutContent>(
@@ -535,6 +590,8 @@ export async function getPublicContent(): Promise<PublicContent> {
     productFilters,
     homepageSections,
     landingSettings,
+    landingSections,
+    campaignBanners,
     stores: stores.map(cleanStore),
     orderSteps: publicOrderSteps(orderSteps),
     trustAbout: cleanTrustAbout(trustAbout),

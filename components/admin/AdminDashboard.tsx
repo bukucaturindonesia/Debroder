@@ -7,6 +7,10 @@ import { MediaLibraryPanel } from "@/components/admin/MediaLibrary";
 import { ProductAdminPanel } from "@/components/admin/ProductAdmin";
 import { FocalPointEditor } from "@/components/admin/FocalPointEditor";
 import { HomepageSectionsAdmin } from "@/components/admin/HomepageSectionsAdmin";
+import { LandingSectionsAdmin } from "@/components/admin/LandingSectionsAdmin";
+import { CampaignBannerAdmin } from "@/components/admin/CampaignBannerAdmin";
+import { OrderManagementAdmin } from "@/components/admin/OrderManagementAdmin";
+import { WebsiteSettingsAdmin } from "@/components/admin/WebsiteSettingsAdmin";
 import {
   createSupabaseClient,
   isSupabaseConfigured,
@@ -120,8 +124,8 @@ const tableConfigs: TableConfig[] = [
   },
   {
     key: "homepage-sections",
-    label: "Landing Page Settings",
-    navLabel: "Landing Page Settings",
+    label: "CMS / Landing Page",
+    navLabel: "CMS / Landing Page",
     href: "/admin/homepage-sections",
     table: "",
     description: "Atur status section landing page, urutan section, dan penempatan Produk & Layanan.",
@@ -221,8 +225,8 @@ const tableConfigs: TableConfig[] = [
   },
   {
     key: "products",
-    label: "Produk & Layanan",
-    navLabel: "Produk & Layanan",
+    label: "PIM / Produk",
+    navLabel: "PIM / Produk",
     href: "/admin/products",
     table: "products",
     description: "Kelola katalog produk, detail singkat, harga, dan gambar.",
@@ -679,6 +683,33 @@ const tableConfigs: TableConfig[] = [
     fields: []
   },
   {
+    key: "campaign-banners",
+    label: "Campaign Banner",
+    navLabel: "Campaign Banner",
+    href: "/admin/campaign-banners",
+    table: "",
+    description: "Kelola campaign foto atau video untuk landing page.",
+    fields: []
+  },
+  {
+    key: "orders",
+    label: "Order Management",
+    navLabel: "Order Management",
+    href: "/admin/orders",
+    table: "",
+    description: "Kelola pesanan, item, status produksi, dan catatan admin.",
+    fields: []
+  },
+  {
+    key: "website-settings",
+    label: "Website Settings",
+    navLabel: "Website Settings",
+    href: "/admin/website-settings",
+    table: "",
+    description: "Kelola konfigurasi umum website berbasis key dan JSON.",
+    fields: []
+  },
+  {
     key: "contact-footer",
     label: "Kontak & Footer",
     navLabel: "Kontak & Footer",
@@ -744,6 +775,20 @@ const routeToKey = tableConfigs.reduce<Record<string, string>>((acc, config) => 
   acc[config.href] = config.key;
   return acc;
 }, {});
+
+const primaryNavigationKeys = [
+  "overview",
+  "homepage-sections",
+  "products",
+  "media",
+  "campaign-banners",
+  "orders",
+  "website-settings"
+];
+
+const primaryNavigation = primaryNavigationKeys
+  .map((key) => tableConfigs.find((config) => config.key === key))
+  .filter((config): config is TableConfig => Boolean(config));
 
 function emptyForm(fields: FieldConfig[]) {
   return fields.reduce<AdminRow>((acc, field) => {
@@ -1254,11 +1299,11 @@ export function AdminDashboard() {
 
     const isVideo = field.type === "video";
     const allowed = isVideo
-      ? ["video/mp4", "video/webm", "video/quicktime"]
+      ? ["video/mp4", "video/webm"]
       : ["image/jpeg", "image/png", "image/webp"];
     const limit = isVideo ? 100 * 1024 * 1024 : 10 * 1024 * 1024;
     if (!allowed.includes(file.type)) {
-      setStatus(isVideo ? "Format video harus MP4, WebM, atau MOV." : "Format foto harus JPG, PNG, atau WebP.");
+      setStatus(isVideo ? "Format video harus MP4 atau WebM." : "Format foto harus JPG, PNG, atau WebP.");
       return;
     }
     if (file.size > limit) {
@@ -1676,7 +1721,7 @@ export function AdminDashboard() {
         <aside className="hidden min-h-screen border-r border-brand-softGray bg-white p-5 lg:block">
           <Logo variant="primary-dark" size="md" />
           <nav className="mt-8 grid gap-2">
-            {tableConfigs.map((config) => (
+            {primaryNavigation.map((config) => (
               <button
                 key={config.key}
                 type="button"
@@ -1732,7 +1777,7 @@ export function AdminDashboard() {
               }}
               className="mt-5 w-full rounded-lg border border-brand-softGray px-4 py-3 text-sm font-semibold lg:hidden"
             >
-              {tableConfigs.map((config) => (
+              {primaryNavigation.map((config) => (
                 <option key={config.key} value={config.key}>
                   {config.navLabel}
                 </option>
@@ -1824,7 +1869,7 @@ export function AdminDashboard() {
               <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-5">
                 {tableConfigs
                   .filter((config) =>
-                    ["hero", "products", "services", "media", "store", "page-hero"].includes(
+                    ["homepage-sections", "products", "media", "campaign-banners", "orders", "website-settings"].includes(
                       config.key
                     )
                   )
@@ -1915,11 +1960,20 @@ export function AdminDashboard() {
               </div>
             </div>
           ) : activeKey === "homepage-sections" ? (
-            <HomepageSectionsAdmin />
+            <>
+              <LandingSectionsAdmin />
+              <HomepageSectionsAdmin showPlainCategorySetting={false} />
+            </>
           ) : activeKey === "products" ? (
             <ProductAdminPanel />
           ) : activeKey === "media" ? (
             <MediaLibraryPanel />
+          ) : activeKey === "campaign-banners" ? (
+            <CampaignBannerAdmin />
+          ) : activeKey === "orders" ? (
+            <OrderManagementAdmin />
+          ) : activeKey === "website-settings" ? (
+            <WebsiteSettingsAdmin />
           ) : (
             <div className="mt-6 grid gap-6 xl:grid-cols-[0.9fr_1.1fr]">
               <form

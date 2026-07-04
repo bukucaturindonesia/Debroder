@@ -2,11 +2,20 @@
 "use client";
 
 import { FormEvent, useEffect, useMemo, useState } from "react";
+import { PLAIN_CATEGORY_SECTION_SETTING } from "@/lib/homepage-settings";
 import { createSupabaseClient } from "@/lib/supabase";
 import type { HomepageSection, HomepageSectionItem, Product, Service } from "@/lib/types";
 
 type EditableSection = HomepageSection & { items: EditableItem[] };
 type EditableItem = HomepageSectionItem & { product?: Product | null; service?: Service | null };
+const homepageSectionSelect = `
+  *,
+  items:homepage_section_items(
+    *,
+    product:products(*),
+    service:services(*)
+  )
+`;
 
 function slugify(value: string) {
   return value.toLowerCase().normalize("NFKD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
@@ -20,8 +29,16 @@ function itemImage(item: EditableItem) {
   return item.product?.image_url || item.product?.gambar_url || item.service?.image_url || "/images/debroder/fallback/fallback-product.jpg";
 }
 
-export function HomepageSectionsAdmin() {
+function normalizeSection(section: EditableSection) {
+  return {
+    ...section,
+    items: ((section.items || []) as unknown as EditableItem[]).sort((a, b) => a.sort_order - b.sort_order)
+  } as EditableSection;
+}
+
+export function HomepageSectionsAdmin({ showPlainCategorySetting = true }: { showPlainCategorySetting?: boolean }) {
   const [sections, setSections] = useState<EditableSection[]>([]);
+  const [plainCategorySection, setPlainCategorySection] = useState<EditableSection | null>(null);
   const [products, setProducts] = useState<Product[]>([]);
   const [services, setServices] = useState<Service[]>([]);
   const [newTitle, setNewTitle] = useState("");
@@ -37,37 +54,68 @@ export function HomepageSectionsAdmin() {
     if (!supabase) return;
     setLoading(true);
     const [sectionResult, productResult, serviceResult] = await Promise.all([
-      supabase.from("homepage_sections").select(`
-        *,
-        items:homepage_section_items(
-          *,
-          product:products(*),
-          service:services(*)
-        )
-      `).order("sort_order", { ascending: true }),
+      supabase.from("homepage_sections").select(homepageSectionSelect).order("sort_order", { ascending: true }),
       supabase.from("products").select("*").order("urutan", { ascending: true }),
       supabase.from("services").select("*").order("urutan", { ascending: true })
     ]);
-    setLoading(false);
 
     if (sectionResult.error) {
+      setLoading(false);
       setStatus(`Homepage Sections belum siap: ${sectionResult.error.message}`);
       return;
     }
 
-    const normalized = (sectionResult.data || []).map((section) => ({
-      ...section,
-      items: ((section.items || []) as unknown as EditableItem[]).sort((a, b) => a.sort_order - b.sort_order)
-    })) as EditableSection[];
-    setSections(normalized);
+    let normalized = ((sectionResult.data || []) as EditableSection[]).map(normalizeSection);
+    let plainSetting = normalized.find((section) => section.slug === PLAIN_CATEGORY_SECTION_SETTING.slug) || null;
+    let nextStatus = "";
+
+    if (!plainSetting && showPlainCategorySetting) {
+      const { data: insertedSetting, error: insertError } = await supabase
+        .from("homepage_sections")
+        .upsert(
+          {
+            title: PLAIN_CATEGORY_SECTION_SETTING.title,
+            slug: PLAIN_CATEGORY_SECTION_SETTING.slug,
+            sort_order: PLAIN_CATEGORY_SECTION_SETTING.sortOrder,
+            is_active: true
+          },
+          { onConflict: "slug", ignoreDuplicates: true }
+        )
+        .select(homepageSectionSelect)
+        .maybeSingle();
+
+      if (insertError) {
+        nextStatus = `Pengaturan section kategori belum siap: ${insertError.message}`;
+      } else if (insertedSetting) {
+        plainSetting = normalizeSection(insertedSetting as EditableSection);
+        normalized = [...normalized, plainSetting].sort((a, b) => a.sort_order - b.sort_order);
+      } else {
+        const { data: existingSetting, error: existingError } = await supabase
+          .from("homepage_sections")
+          .select(homepageSectionSelect)
+          .eq("slug", PLAIN_CATEGORY_SECTION_SETTING.slug)
+          .maybeSingle();
+
+        if (existingError) {
+          nextStatus = `Pengaturan section kategori belum siap: ${existingError.message}`;
+        } else if (existingSetting) {
+          plainSetting = normalizeSection(existingSetting as EditableSection);
+          normalized = [...normalized, plainSetting].sort((a, b) => a.sort_order - b.sort_order);
+        }
+      }
+    }
+
+    setLoading(false);
+    setPlainCategorySection(plainSetting);
+    setSections(normalized.filter((section) => section.slug !== PLAIN_CATEGORY_SECTION_SETTING.slug));
     setProducts((productResult.data || []) as Product[]);
     setServices((serviceResult.data || []) as Service[]);
-    setStatus("");
+    setStatus(nextStatus);
   }
 
   useEffect(() => {
     loadData();
-  }, []);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps -- initial admin bootstrap
 
   const sourceOptions = useMemo(() => [
     ...products.map((product) => ({ value: `product:${product.id}`, label: `Produk · ${product.nama}` })),
@@ -82,6 +130,34 @@ export function HomepageSectionsAdmin() {
     setSections((current) => current.map((section) => section.id === sectionId
       ? { ...section, items: section.items.map((item) => item.id === itemId ? { ...item, ...patch } : item) }
       : section));
+  }
+
+  async function updatePlainCategorySectionVisibility(isActive: boolean) {
+    const supabase = createSupabaseClient();
+    if (!supabase) return;
+    setSaving(true);
+    const { data, error } = await supabase
+      .from("homepage_sections")
+      .upsert(
+        {
+          title: PLAIN_CATEGORY_SECTION_SETTING.title,
+          slug: PLAIN_CATEGORY_SECTION_SETTING.slug,
+          sort_order: plainCategorySection?.sort_order ?? PLAIN_CATEGORY_SECTION_SETTING.sortOrder,
+          is_active: isActive
+        },
+        { onConflict: "slug" }
+      )
+      .select(homepageSectionSelect)
+      .maybeSingle();
+    setSaving(false);
+
+    if (error || !data) {
+      setStatus(`Pengaturan section kategori gagal disimpan: ${error?.message || "data tidak ditemukan"}`);
+      return;
+    }
+
+    setPlainCategorySection(normalizeSection(data as EditableSection));
+    setStatus(isActive ? "Section Pakaian Polos Berdasarkan Kategori aktif." : "Section Pakaian Polos Berdasarkan Kategori disembunyikan.");
   }
 
   async function createSection(event: FormEvent) {
@@ -212,9 +288,34 @@ export function HomepageSectionsAdmin() {
     if (!error) await loadData();
   }
 
+  const plainCategorySectionEnabled = plainCategorySection?.is_active ?? true;
+
   return (
     <div className="mt-6 grid gap-6">
       {status ? <p role="status" className="border border-brand-softGray bg-white p-4 text-sm font-semibold">{status}</p> : null}
+
+      {showPlainCategorySetting ? <section className="border border-brand-softGray bg-white p-5 sm:p-6">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <div className="max-w-2xl">
+            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-brand-charcoal/50">Landing Page Settings</p>
+            <h2 className="mt-2 text-xl font-semibold">Tampilkan Section Pakaian Polos Berdasarkan Kategori</h2>
+            <p className="mt-2 text-sm leading-6 text-brand-charcoal/60">Saat OFF, section tidak dirender di landing page. Saat ON, section tampil seperti sebelumnya.</p>
+          </div>
+          <label className="inline-flex min-h-11 items-center gap-3 rounded-full border border-brand-softGray px-4 py-2 text-sm font-semibold">
+            <input
+              type="checkbox"
+              checked={plainCategorySectionEnabled}
+              disabled={loading || saving}
+              onChange={(event) => updatePlainCategorySectionVisibility(event.target.checked)}
+              className="sr-only"
+            />
+            <span className={`flex h-7 w-12 items-center rounded-full p-1 transition ${plainCategorySectionEnabled ? "justify-end bg-brand-green" : "justify-start bg-brand-charcoal/25"}`} aria-hidden="true">
+              <span className="h-5 w-5 rounded-full bg-white shadow" />
+            </span>
+            <span>{plainCategorySectionEnabled ? "ON" : "OFF"}</span>
+          </label>
+        </div>
+      </section> : null}
 
       <form onSubmit={createSection} className="border border-brand-softGray bg-white p-5 sm:p-6">
         <h2 className="text-xl font-semibold">Tambah homepage section</h2>
