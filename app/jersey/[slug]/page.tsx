@@ -54,12 +54,12 @@ export default async function JerseyDetailPage({ params }: { params: Promise<{ s
         secondaryCtaHref="/jersey"
         breadcrumbs={[{ label: "Beranda", href: "/" }, { label: "Jersey", href: "/jersey" }, { label: category.nama_kategori }]}
       />
-      <section data-reveal className="bg-brand-offWhite py-14 sm:py-20">
+      <section data-reveal className="bg-brand-offWhite py-12 sm:py-16">
         <div className="section-shell">
           <div className={`grid gap-4 ${gallery.length > 1 ? "sm:grid-cols-2 lg:grid-cols-3" : "max-w-3xl"}`}>
             {gallery.map((image, index) => <SafeImage key={`${image}-${index}`} src={image} fallbackSrc={fallbackImages.product} alt={`${category.image_alt || category.nama_kategori} ${index + 1}`} className="aspect-[4/5] w-full bg-white" objectFit={category.object_fit || "cover"} objectPosition={category.object_position || "center center"} focalX={category.focal_x} focalY={category.focal_y} zoom={category.focal_zoom} sizes="(min-width: 1024px) 33vw, 100vw" />)}
           </div>
-          <div className="mt-8 grid gap-8 bg-white p-6 sm:p-8 lg:grid-cols-2">
+          <div className="mt-6 grid gap-6 bg-white p-6 sm:p-8 lg:grid-cols-2">
             <div><h2 className="text-2xl font-semibold">Pilihan custom</h2><p className="mt-3 text-sm leading-7 text-brand-charcoal/65">Warna, bahan, kerah, lengan, nama, dan nomor dapat disesuaikan dengan kebutuhan tim.</p></div>
             <div className="grid gap-6"><OptionList title="Warna" items={category.color_options} /><OptionList title="Kerah" items={category.collar_options} /><OptionList title="Lengan" items={category.sleeve_options} /><OptionList title="Bahan" items={category.material_options} /><OptionList title="Size chart" items={category.size_chart} /></div>
           </div>

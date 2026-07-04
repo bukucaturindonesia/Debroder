@@ -66,7 +66,7 @@ export function ProductCatalog({ products, title = "Katalog produk", showHeading
 
   return (
     <div>
-      {showHeading ? <h2 className="text-3xl font-semibold tracking-tight sm:text-4xl">{title}</h2> : null}
+      {showHeading ? <h2 className="text-3xl font-bold leading-[1.05] tracking-[-0.02em] sm:text-4xl">{title}</h2> : null}
       <div className={`${showHeading ? "mt-6" : ""} grid gap-3 border-y border-brand-softGray py-5 sm:grid-cols-2 lg:grid-cols-5`}>
         <input aria-label="Cari produk" value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Cari produk, bahan, warna..." className="min-h-11 rounded-full border border-brand-softGray bg-white px-4 text-sm outline-none focus:border-brand-charcoal lg:col-span-2" />
         <select aria-label="Filter kategori" value={category} onChange={(event) => setCategory(event.target.value)} className="min-h-11 rounded-full border border-brand-softGray bg-white px-4 text-sm font-semibold"><option value="all">Semua kategori</option>{categories.map((item) => <option key={item}>{item}</option>)}</select>
@@ -76,7 +76,7 @@ export function ProductCatalog({ products, title = "Katalog produk", showHeading
 
       <div className="mt-5 flex items-center justify-between gap-4"><p className="text-sm font-medium text-brand-charcoal/60">{visible.length} produk ditemukan</p><button type="button" onClick={() => { setQuery(""); setCategory("all"); setPrice("all"); setLabel("all"); setSort("order"); }} className="text-sm font-semibold underline-offset-4 hover:underline">Reset filter</button></div>
 
-      {visible.length ? <div className="mt-6 grid grid-cols-2 gap-x-3 gap-y-8 sm:gap-x-5 md:grid-cols-3 lg:grid-cols-4 2xl:grid-cols-5">
+      {visible.length ? <div className="mt-6 grid grid-cols-1 gap-x-2 gap-y-6 md:grid-cols-2 lg:grid-cols-4">
         {visible.map((product) => {
           const focal = product.focal_points?.catalog;
           const labels = [product.label_new && "New", product.label_promo && "Promo", product.label_best_seller && "Best Seller"].filter(Boolean);

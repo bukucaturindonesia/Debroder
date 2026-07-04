@@ -133,7 +133,7 @@ function SectionHeading({ title, action, description, textPosition = "left" }: {
   return (
     <div className="flex items-end justify-between gap-4">
       <div className={textPosition === "center" ? "flex-1 text-center" : textPosition === "right" ? "ml-auto text-right" : ""}>
-        <h2 className="text-[1.75rem] font-semibold leading-tight tracking-[-0.035em] text-[#111] sm:text-[2rem]">{title}</h2>
+        <h2 className="text-[1.75rem] font-bold leading-[1.05] tracking-[-0.02em] text-[#111] sm:text-[2rem]">{title}</h2>
         {description ? <p className="mt-2 max-w-2xl text-sm leading-6 text-black/55 sm:text-base">{description}</p> : null}
       </div>
       {action ? <div className="shrink-0">{action}</div> : null}
@@ -160,7 +160,7 @@ function BenefitIcon({ name }: { name: string }) {
 
 function EditorialCard({ item, featuredCard = false }: { item: EditorialItem; featuredCard?: boolean }) {
   return (
-    <article className={`group relative block shrink-0 snap-start overflow-hidden bg-[#0a1711] ${featuredCard ? "h-[470px] min-w-[86vw] sm:h-[520px] sm:min-w-[72vw] lg:h-[520px] lg:min-w-0" : "h-[390px] min-w-[82vw] sm:min-w-[52vw] lg:h-[420px] lg:min-w-0"}`}>
+    <article className={`group relative block overflow-hidden bg-[#0a1711] ${featuredCard ? "h-[440px] sm:h-[500px] lg:h-[560px]" : "h-[400px] sm:h-[440px]"}`}>
       <Link href={item.href} aria-label={`Lihat ${item.title}`} className="absolute inset-0 z-10" />
       <SafeImage src={item.image} fallbackSrc={item.fallbackImage} alt={item.imageAlt} fill sizes={featuredCard ? "(min-width: 1024px) 50vw, 86vw" : "(min-width: 1024px) 33vw, 82vw"} className="object-cover transition duration-700 group-hover:scale-[1.03]" objectFit={item.objectFit || "cover"} objectPosition={item.objectPosition} />
       <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/8 to-transparent" />
@@ -204,7 +204,7 @@ function ManagedHomepageSection({ section, setting }: { section: HomepageSection
       <section data-reveal id={section.slug} className={`snap-section section-space ${section.slug === "trending" ? "bg-[#f7f7f2]" : "bg-white"}`}>
         <div className="section-shell">
           <SectionHeading title={section.title} description={setting?.subtitle} textPosition={setting?.text_position} action={<div className="flex items-center gap-4">{configuredCta}{!isFeatured ? <ScrollButtons containerId={carouselId} /> : null}</div>} />
-          <div id={carouselId} className={`no-scrollbar mt-6 flex snap-x snap-mandatory overflow-x-auto lg:grid lg:overflow-visible ${isFeatured ? "gap-3 lg:grid-cols-2" : "gap-4 lg:grid-cols-3 lg:gap-5"}`}>
+          <div id={carouselId} className={`mt-6 grid grid-cols-1 ${isFeatured ? "gap-2 lg:grid-cols-2" : "gap-2 md:grid-cols-2 lg:grid-cols-3"}`}>
             {items.map((item, index) => <EditorialCard key={section.items[index]?.id || `${item.href}-${index}`} item={item} featuredCard={isFeatured} />)}
           </div>
         </div>
@@ -218,7 +218,7 @@ function ManagedHomepageSection({ section, setting }: { section: HomepageSection
     <section data-reveal id={section.slug} className="snap-section section-space bg-white">
       <div className="section-shell">
         <SectionHeading title={section.title} description={setting?.subtitle} textPosition={setting?.text_position} action={<div className="flex items-center gap-4">{configuredCta || <Link href="/koleksi" className="hidden text-sm font-semibold hover:underline sm:block">Shop</Link>}<ScrollButtons containerId={carouselId} /></div>} />
-        <div id={carouselId} className="mt-6 grid grid-cols-2 gap-x-3 gap-y-8 sm:gap-x-5 md:grid-cols-3 lg:grid-cols-4 2xl:grid-cols-5">
+        <div id={carouselId} className="mt-6 grid grid-cols-1 gap-x-2 gap-y-6 md:grid-cols-2 lg:grid-cols-4">
           {items.map((item, index) => <ProductCard key={section.items[index]?.id || `${item.href}-${index}`} item={item} />)}
         </div>
       </div>
@@ -277,7 +277,7 @@ export default async function Home() {
   };
 
   return (
-    <main className="min-h-screen bg-white text-[#111]">
+    <main className="public-site min-h-screen bg-white text-[#111]">
       <SiteHeader />
       <PageMotion />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(schema).replace(/</g, "\\u003c") }} />
@@ -288,7 +288,7 @@ export default async function Home() {
       </LandingSectionSlot>
 
       <LandingSectionSlot setting={landingSection("benefits")}>
-      <section data-reveal aria-label="Keunggulan DEBRODER" className="snap-section border-b border-black/[0.08] bg-white py-5 sm:py-8">
+      <section data-reveal aria-label="Keunggulan DEBRODER" className="snap-section border-b border-black/[0.08] bg-white py-5 sm:py-6">
         <div className="section-shell grid grid-cols-2 gap-x-4 gap-y-5 lg:grid-cols-4 lg:gap-8">
           {benefits.map((benefit) => (
             <div key={benefit.title} className="flex items-center gap-3 lg:justify-center">
@@ -321,7 +321,7 @@ export default async function Home() {
       <section data-reveal id="shop-category" className="snap-section section-space bg-white pt-4 sm:pt-6">
         <div className="section-shell">
           <SectionHeading title={landingSection("services-products")?.title || "Shop by Category"} description={landingSection("services-products")?.subtitle} textPosition={landingSection("services-products")?.text_position} action={<div className="flex items-center gap-4">{landingSection("services-products")?.cta_label && landingSection("services-products")?.cta_url ? <Link href={landingSection("services-products")!.cta_url!} className="hidden text-sm font-semibold hover:underline sm:block">{landingSection("services-products")!.cta_label}</Link> : null}<ScrollButtons containerId="category-carousel" /></div>} />
-          <div id="category-carousel" className="mt-6 grid grid-cols-2 gap-x-3 gap-y-8 sm:gap-x-5 md:grid-cols-3 lg:grid-cols-4 2xl:grid-cols-5">
+          <div id="category-carousel" className="mt-6 grid grid-cols-1 gap-x-2 gap-y-6 md:grid-cols-2 lg:grid-cols-4">
             {homeCategories.length ? homeCategories.map((item) => (
               <Link key={item.name} href={item.href} className="group relative aspect-[4/5] min-w-0 overflow-hidden bg-[#102219]">
                 <SafeImage src={item.image} fallbackSrc={item.fallbackImage} alt={item.imageAlt} fill sizes="(min-width: 1536px) 20vw, (min-width: 1024px) 25vw, 50vw" className="object-cover transition duration-700 group-hover:scale-[1.03]" objectFit={item.objectFit || "cover"} objectPosition={item.objectPosition} />
@@ -339,7 +339,7 @@ export default async function Home() {
         <section data-reveal id="koleksi" className="snap-section section-space bg-[#f7f7f2]">
           <div className="section-shell">
             <SectionHeading title={landingSection("plain-category")?.title || "Pakaian Polos berdasarkan Kategori"} description={landingSection("plain-category")?.subtitle || "Pilih dasar apparel yang sesuai, lalu custom bersama tim DEBRODER."} textPosition={landingSection("plain-category")?.text_position} action={<ScrollButtons containerId="collection-carousel" />} />
-            <div id="collection-carousel" className="mt-6 grid grid-cols-2 gap-x-3 gap-y-8 sm:gap-x-5 md:grid-cols-3 lg:grid-cols-4 2xl:grid-cols-5">
+            <div id="collection-carousel" className="mt-6 grid grid-cols-1 gap-x-2 gap-y-6 md:grid-cols-2 lg:grid-cols-4">
               {homeCollection.length ? homeCollection.map((item) => (
                 <article key={item.name} className="group min-w-0">
                   <Link href={item.href} className="block">

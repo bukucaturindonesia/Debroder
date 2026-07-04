@@ -6,16 +6,16 @@ import { formatRupiah, whatsappLinkWithMessage } from "@/lib/url";
 
 export function ServiceCatalog({ services, whatsapp }: { services: Service[]; whatsapp: string }) {
   return (
-    <section data-reveal className="bg-brand-offWhite py-14 sm:py-20">
+    <section data-reveal className="bg-brand-offWhite py-12 sm:py-16">
       <div className="section-shell">
         <div className="max-w-2xl">
           <p className="text-xs font-semibold uppercase tracking-[0.2em] text-brand-charcoal/55">Pilihan Layanan</p>
-          <h2 className="mt-3 text-3xl font-semibold tracking-tight sm:text-4xl">Katalog Sablon DTF</h2>
+          <h2 className="mt-3 text-3xl font-bold leading-[1.05] tracking-[-0.02em] sm:text-4xl">Katalog Sablon DTF</h2>
           <p className="mt-3 text-sm leading-6 text-brand-charcoal/65">Pilih ukuran atau jenis layanan, lalu buka detail untuk melihat informasi produksi.</p>
         </div>
-        {services.length ? <div className="mt-8 grid grid-cols-2 gap-x-3 gap-y-8 sm:gap-x-5 md:grid-cols-3 lg:grid-cols-4 2xl:grid-cols-5">
+        {services.length ? <div className="mt-6 grid grid-cols-1 gap-x-2 gap-y-6 md:grid-cols-2 lg:grid-cols-4">
           {services.map((service) => (
-            <article key={service.id || service.slug} className="flex flex-col bg-white p-3">
+            <article key={service.id || service.slug} className="flex flex-col bg-white">
               <SafeImage
                 src={service.image_url}
                 fallbackSrc={fallbackImages.product}
@@ -28,7 +28,7 @@ export function ServiceCatalog({ services, whatsapp }: { services: Service[]; wh
                 zoom={service.focal_zoom}
                 sizes="(min-width: 1536px) 20vw, (min-width: 1024px) 25vw, (min-width: 768px) 33vw, 50vw"
               />
-              <div className="flex flex-1 flex-col px-2 pb-2 pt-4">
+              <div className="flex flex-1 flex-col p-4">
                 <h3 className="line-clamp-2 text-sm font-semibold sm:text-base">{service.nama}</h3>
                 {service.harga_mulai ? <p className="mt-1 text-sm font-semibold">Mulai {formatRupiah(service.harga_mulai)}</p> : null}
                 <p className="mt-2 line-clamp-2 flex-1 text-xs leading-5 text-brand-charcoal/60 sm:text-sm">{service.deskripsi}</p>

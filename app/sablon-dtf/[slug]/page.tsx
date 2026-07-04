@@ -28,8 +28,8 @@ export default async function SablonDtfDetailPage({ params }: { params: Promise<
         secondaryCtaHref="/sablon-dtf"
         breadcrumbs={[{ label: "Beranda", href: "/" }, { label: "Sablon DTF", href: "/sablon-dtf" }, { label: service.nama }]}
       />
-      <section data-reveal className="bg-brand-offWhite py-14 sm:py-20">
-        <div className="section-shell grid gap-8 lg:grid-cols-[1.2fr_0.8fr]">
+      <section data-reveal className="bg-brand-offWhite py-12 sm:py-16">
+        <div className="section-shell grid gap-6 lg:grid-cols-[1.2fr_0.8fr]">
           <div className="bg-white p-6 sm:p-8">
             <h2 className="text-2xl font-semibold">Detail layanan</h2>
             <p className="mt-4 whitespace-pre-line text-sm leading-7 text-brand-charcoal/70">{service.detail_body || service.deskripsi}</p>

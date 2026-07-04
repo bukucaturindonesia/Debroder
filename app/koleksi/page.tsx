@@ -47,14 +47,14 @@ export default async function KoleksiPage() {
           { label: "Koleksi" }
         ]}
       />
-      <section className="bg-brand-offWhite py-14 sm:py-20">
-        <div className="section-shell grid grid-cols-2 gap-x-3 gap-y-8 sm:gap-x-5 md:grid-cols-3 lg:grid-cols-4 2xl:grid-cols-5">
+      <section className="bg-brand-offWhite py-12 sm:py-16">
+        <div className="section-shell grid grid-cols-1 gap-x-2 gap-y-6 md:grid-cols-2 lg:grid-cols-4">
           {categories.length ? categories.map((category) => (
             <ServiceCard key={category.nama_kategori} service={category} />
           )) : <p className="col-span-full bg-white p-8 text-center text-sm font-medium text-brand-charcoal/60">Belum ada kategori.</p>}
         </div>
       </section>
-      <section className="bg-white py-14 sm:py-20">
+      <section className="bg-white py-12 sm:py-16">
         <div className="section-shell">
           <ProductCatalog products={content.products} title="Produk & Layanan Populer" showHeading />
         </div>

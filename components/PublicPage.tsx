@@ -149,11 +149,11 @@ export function PageHero({
           />
           <div className="absolute inset-0 hidden bg-gradient-to-t from-black/55 via-black/10 to-transparent sm:block" />
         </div>
-        <div className="relative px-4 py-6 text-brand-charcoal sm:absolute sm:bottom-8 sm:left-8 sm:right-8 sm:max-w-3xl sm:p-0 sm:text-white">
+        <div className="relative px-4 py-6 text-brand-charcoal sm:absolute sm:bottom-8 sm:left-8 sm:right-8 sm:max-w-4xl sm:p-0 sm:text-white lg:bottom-10 lg:left-12 lg:right-12">
           {breadcrumbs?.length ? (
             <nav
               aria-label="Breadcrumb"
-              className="mb-4 flex flex-wrap gap-2 text-xs font-medium text-brand-charcoal/50 sm:text-white/70"
+              className="mb-3 flex flex-wrap gap-2 text-xs font-medium text-brand-charcoal/50 sm:text-white/70"
             >
               {breadcrumbs.map((item, index) => (
                 <span key={`${item.label}-${index}`} className="flex gap-2">
@@ -169,13 +169,13 @@ export function PageHero({
               ))}
             </nav>
           ) : null}
-          <p className="w-fit bg-brand-charcoal px-3 py-1 text-xs font-semibold uppercase tracking-[0.2em] text-white sm:bg-white sm:text-brand-charcoal">
+          <p className="w-fit bg-brand-charcoal px-3 py-1 text-[15px] font-medium uppercase leading-5 text-white sm:bg-white sm:text-brand-charcoal">
             {label}
           </p>
-          <h1 className="mt-3 max-w-3xl text-3xl font-semibold leading-tight tracking-tight sm:text-5xl">
+          <h1 className="mt-2 max-w-4xl text-[clamp(42px,12vw,52px)] font-black uppercase leading-[0.94] tracking-[-0.03em] sm:text-[64px] lg:text-[clamp(64px,5.5vw,88px)]">
             {title}
           </h1>
-          <p className="mt-3 max-w-2xl text-sm leading-6 text-brand-charcoal/70 sm:text-base sm:text-white/80">
+          <p className="mt-3 max-w-2xl text-[17px] leading-[1.45] text-brand-charcoal/70 sm:text-xl sm:text-white/85">
             {description}
           </p>
           {primaryHref ? (
@@ -240,7 +240,7 @@ export function ServiceCard({ service }: { service: ServiceCategory }) {
 
 export function ProductGrid({ products }: { products: Product[] }) {
   return (
-    <div className="grid gap-7 md:grid-cols-2 lg:grid-cols-3">
+    <div className="grid grid-cols-1 gap-x-2 gap-y-6 md:grid-cols-2 lg:grid-cols-4">
       {products.map((product) => {
         const price = getProductPrice(product);
         const whatsappHref = whatsappLinkWithMessage(
@@ -288,7 +288,7 @@ export function ProductGrid({ products }: { products: Product[] }) {
 
 export function StoreGrid({ stores }: { stores: Store[] }) {
   return (
-    <div className="grid gap-5 sm:grid-cols-2 xl:grid-cols-4">
+    <div className="grid grid-cols-1 gap-2 md:grid-cols-2 xl:grid-cols-4">
       {stores.map((store) => {
         const whatsappHref = whatsappLinkWithMessage(
           store.whatsapp_link || store.whatsapp || "",
@@ -298,7 +298,7 @@ export function StoreGrid({ stores }: { stores: Store[] }) {
         return (
           <article
             key={store.nama_store}
-            className="flex flex-col bg-white p-3"
+            className="flex flex-col bg-white p-4"
           >
             <PublicImage
               src={getStoreImage(store)}
@@ -379,17 +379,17 @@ export function RecommendationGrid({
   currentSlug?: string;
 }) {
   return (
-    <section data-reveal className="bg-white py-14 sm:py-20">
+    <section data-reveal className="bg-white py-12 sm:py-16">
       <div className="section-shell">
         <div className="max-w-3xl">
-          <p className="text-sm font-semibold uppercase tracking-[0.24em] text-brand-charcoal/50">
+          <p className="text-sm font-medium uppercase text-brand-charcoal/50">
             Rekomendasi
           </p>
-          <h2 className="mt-4 text-3xl font-semibold tracking-tight sm:text-4xl">
+          <h2 className="mt-3 text-3xl font-bold leading-[1.05] tracking-[-0.02em] sm:text-4xl">
             Layanan DE BRODER lainnya
           </h2>
         </div>
-        <div className="mt-8 grid gap-6 md:grid-cols-3">
+        <div className="mt-6 grid grid-cols-1 gap-2 md:grid-cols-3">
           {services
             .filter((service) => service.link_slug !== currentSlug)
             .slice(0, 3)
@@ -446,10 +446,10 @@ export function CategoryDetailPage({
           { label: title }
         ]}
       />
-      <section data-reveal className="bg-brand-offWhite py-14 sm:py-20">
-        <div className="section-shell grid gap-8 lg:grid-cols-[0.9fr_1.1fr] lg:items-start">
+      <section data-reveal className="bg-brand-offWhite py-12 sm:py-16">
+        <div className="section-shell grid gap-6 lg:grid-cols-[0.9fr_1.1fr] lg:items-start">
           <div>
-            <h2 className="text-3xl font-semibold">Detail layanan</h2>
+            <h2 className="text-3xl font-bold leading-[1.05] tracking-[-0.02em]">Detail layanan</h2>
             <div className="mt-6 grid gap-3">
               {details.map((detail) => (
                 <p
@@ -487,7 +487,7 @@ export function PublicShell({
   children: ReactNode;
 }) {
   return (
-    <main className="min-h-screen bg-brand-offWhite text-brand-charcoal">
+    <main className="public-site min-h-screen bg-brand-offWhite text-brand-charcoal">
       <SiteHeader />
       <PageMotion />
       {children}

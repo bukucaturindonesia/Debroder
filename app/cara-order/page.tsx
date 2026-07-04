@@ -67,17 +67,17 @@ export default async function CaraOrderPage() {
           { label: "Cara Order" }
         ]}
       />
-      <section className="bg-brand-offWhite py-14 sm:py-20">
+      <section className="bg-brand-offWhite py-12 sm:py-16">
         <div className="section-shell">
           <OrderTimeline steps={orderSteps} />
         </div>
       </section>
-      <section className="bg-white py-14 sm:py-20">
+      <section className="bg-white py-12 sm:py-16">
         <div className="section-shell">
-          <h2 className="text-3xl font-semibold tracking-tight sm:text-4xl">
+          <h2 className="text-3xl font-bold leading-[1.05] tracking-[-0.02em] sm:text-4xl">
             FAQ
           </h2>
-          <div className="mt-8 grid gap-4 md:grid-cols-2">
+          <div className="mt-6 grid gap-4 md:grid-cols-2">
             {faqs.map((faq) => (
               <article
                 key={faq.question}

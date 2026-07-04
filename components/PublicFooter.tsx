@@ -15,8 +15,8 @@ const serviceLinks = [
 function FooterColumn({ title, children }: { title: string; children: ReactNode }) {
   return (
     <div>
-      <h3 className="text-[11px] font-semibold uppercase tracking-[0.2em] text-white/42">{title}</h3>
-      <div className="mt-4 grid gap-2.5 text-sm text-white/68">{children}</div>
+      <h3 className="text-base font-semibold text-white/82">{title}</h3>
+      <div className="mt-3 grid gap-2 text-base font-normal text-white/62">{children}</div>
     </div>
   );
 }
@@ -31,8 +31,8 @@ export function PublicFooter({ content }: { content: PublicContent }) {
   );
 
   return (
-    <footer className="snap-section bg-[#050706] py-12 text-white sm:py-14">
-      <div className="section-shell grid gap-10 sm:grid-cols-2 lg:grid-cols-[1.35fr_1fr_1fr_1fr] lg:gap-12">
+    <footer className="snap-section bg-[#050706] py-10 text-white sm:py-12">
+      <div className="section-shell grid gap-8 sm:grid-cols-2 lg:grid-cols-[1.35fr_1fr_1fr_1fr] lg:gap-10">
         <div>
           <Logo variant="primary-white" size="lg" />
           <p className="mt-4 max-w-sm text-sm leading-6 text-white/55">Apparel, sablon DTF, dan jersey custom dengan standar produksi yang konsisten sejak 2016.</p>
@@ -56,7 +56,7 @@ export function PublicFooter({ content }: { content: PublicContent }) {
         </FooterColumn>
       </div>
 
-      <div className="section-shell mt-10 flex flex-col gap-3 border-t border-white/10 pt-5 text-xs text-white/42 sm:flex-row sm:items-center sm:justify-between">
+      <div className="section-shell mt-8 flex flex-col gap-3 border-t border-white/10 pt-5 text-sm text-white/42 sm:flex-row sm:items-center sm:justify-between">
         <p>{content.contact.copyright_text || "© 2026 DEBRODER. All rights reserved."}</p>
         <div className="flex gap-5">
           <Link href="/cara-order" className="transition hover:text-white">Cara Order</Link>

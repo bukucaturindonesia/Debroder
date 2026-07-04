@@ -101,12 +101,16 @@ export function HeroSlider({ heroes }: { heroes: HeroBanner[] }) {
   return (
     <section
       id="beranda"
-      className="hero-section relative h-[clamp(500px,80vh,580px)] w-full overflow-hidden bg-[#04160f] sm:h-[700px] lg:h-[calc(100svh-174px)] lg:min-h-[500px] lg:max-h-[650px]"
+      className="hero-section relative h-[clamp(500px,78vh,560px)] w-full overflow-hidden bg-[#04160f] sm:h-[640px] lg:h-[calc(100svh-144px)] lg:min-h-[520px] lg:max-h-[680px]"
       aria-roledescription="carousel"
       aria-label="Koleksi utama DEBRODER"
       onTouchStart={(event) => setTouchStart(event.touches[0].clientX)}
       onTouchEnd={(event) => handleTouchEnd(event.changedTouches[0].clientX)}
     >
+      <div
+        className="flex h-full w-full transition-transform duration-700 ease-in-out"
+        style={{ transform: `translate3d(-${activeIndex * 100}%, 0, 0)` }}
+      >
       {slides.map((slide, index) => {
         const active = index === activeIndex;
         const headline = slide.headline || slide.title || "APPAREL PREMIUM";
@@ -122,10 +126,10 @@ export function HeroSlider({ heroes }: { heroes: HeroBanner[] }) {
         return (
           <article
             key={`${headline}-${index}`}
-            className={`absolute inset-0 transition-opacity duration-700 ${active ? "z-10 opacity-100" : "z-0 opacity-0"}`}
+            className="relative h-full w-full shrink-0"
             aria-hidden={!active}
           >
-            <div className={`absolute inset-0 transition-transform duration-[5600ms] ease-out ${active && !paused && !reducedMotion ? "scale-[1.025]" : "scale-100"}`}>
+            <div className={`absolute inset-0 transition-transform duration-[5600ms] ease-out ${active && !paused && !reducedMotion ? "scale-[1.02]" : "scale-100"}`}>
               {desktopVideo ? (
                 <video autoPlay muted loop playsInline preload={index === 0 ? "metadata" : "none"} className="h-full w-full object-cover" style={{ objectPosition: desktopPosition }}>
                   {mobileVideo ? <source src={mobileVideo} media="(max-width: 767px)" /> : null}
@@ -149,25 +153,25 @@ export function HeroSlider({ heroes }: { heroes: HeroBanner[] }) {
             </div>
 
             <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(1,9,6,.9)_0%,rgba(1,9,6,.66)_37%,rgba(1,9,6,.12)_72%,rgba(1,9,6,.28)_100%)] sm:bg-[linear-gradient(90deg,rgba(1,9,6,.92)_0%,rgba(1,9,6,.63)_38%,rgba(1,9,6,.08)_70%,rgba(1,9,6,.24)_100%)]" />
-            <div className="absolute inset-x-0 bottom-[88px] z-10 sm:bottom-14">
+            <div className="absolute inset-x-0 bottom-20 z-10 sm:bottom-12 lg:bottom-16">
               <div className="section-shell">
                 <div className={`max-w-[620px] text-white ${textAlignment}`}>
-                  <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-white/72 sm:text-xs">
+                  <p className="text-[15px] font-medium uppercase tracking-[0.08em] text-white/75 sm:text-[17px]">
                     {slide.badge || "APPAREL PREMIUM"}
                   </p>
                   {index === 0 ? (
-                    <h1 className="mt-3 whitespace-pre-line text-[clamp(2.7rem,12vw,4rem)] font-bold uppercase leading-[0.9] tracking-[-0.055em] sm:mt-4 sm:text-7xl lg:text-[5.75rem]">
+                    <h1 className="mt-2 whitespace-pre-line text-[clamp(2.625rem,12vw,3.25rem)] font-black uppercase leading-[0.92] tracking-[-0.03em] sm:text-[4rem] lg:text-[clamp(4rem,6vw,5.5rem)]">
                       {headline}
                     </h1>
                   ) : (
-                    <h2 className="mt-3 whitespace-pre-line text-[clamp(2.7rem,12vw,4rem)] font-bold uppercase leading-[0.9] tracking-[-0.055em] sm:mt-4 sm:text-7xl lg:text-[5.75rem]">
+                    <h2 className="mt-2 whitespace-pre-line text-[clamp(2.625rem,12vw,3.25rem)] font-black uppercase leading-[0.92] tracking-[-0.03em] sm:text-[4rem] lg:text-[clamp(4rem,6vw,5.5rem)]">
                       {headline}
                     </h2>
                   )}
-                  <p className="mt-4 max-w-lg whitespace-pre-line text-sm leading-6 text-white/78 sm:mt-5 sm:text-base sm:leading-7">
+                  <p className="mt-3 max-w-lg whitespace-pre-line text-[17px] leading-[1.45] text-white/80 sm:text-xl">
                     {subtitle}
                   </p>
-                  <a href={ctaHref} className="mt-5 inline-flex min-h-11 items-center gap-2 rounded-full bg-white px-5 py-3 text-sm font-semibold text-[#111] transition duration-200 hover:bg-[#e9eee9] sm:mt-6">
+                  <a href={ctaHref} className="mt-5 inline-flex min-h-11 items-center gap-2 rounded-full bg-white px-5 py-3 text-sm font-semibold text-[#111] transition duration-200 hover:bg-[#e9eee9]">
                     {ctaText}
                     <ArrowIcon direction="right" />
                   </a>
@@ -177,6 +181,7 @@ export function HeroSlider({ heroes }: { heroes: HeroBanner[] }) {
           </article>
         );
       })}
+      </div>
 
       {total > 1 ? (
         <div className="absolute bottom-5 right-5 z-30 flex items-center gap-2 text-white sm:bottom-10 sm:right-10 lg:right-12">

@@ -57,8 +57,8 @@ export default async function ProductDetailPage({ params }: PageProps) {
           </div>
         </div>
       </main>
-      {related.length ? <section className="bg-white py-14 sm:py-20"><div className="section-shell"><ProductCatalog products={related} title="Produk terkait" showHeading /></div></section> : null}
-      {similar.length ? <section className="bg-brand-offWhite py-14 sm:py-20"><div className="section-shell"><ProductCatalog products={similar} title="Produk serupa" showHeading /></div></section> : null}
+      {related.length ? <section className="bg-white py-12 sm:py-16"><div className="section-shell"><ProductCatalog products={related} title="Produk terkait" showHeading /></div></section> : null}
+      {similar.length ? <section className="bg-brand-offWhite py-12 sm:py-16"><div className="section-shell"><ProductCatalog products={similar} title="Produk serupa" showHeading /></div></section> : null}
     </PublicShell>
   );
 }

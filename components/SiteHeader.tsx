@@ -177,7 +177,7 @@ export function SiteHeader() {
           {navItems.map((item) => {
             const active = pathname === item.href;
             return (
-              <Link key={item.href} href={item.href} className={`nav-link relative flex h-full items-center whitespace-nowrap text-[13px] font-semibold transition duration-200 hover:text-[#0f5a36] ${active ? "text-[#0f5a36]" : "text-[#111]"}`}>
+              <Link key={item.href} href={item.href} className={`nav-link relative flex h-full items-center whitespace-nowrap text-[15px] font-medium transition duration-200 hover:text-[#0f5a36] ${active ? "text-[#0f5a36]" : "text-[#111]"}`}>
                 {item.label}
                 <span className={`absolute inset-x-0 bottom-0 h-0.5 origin-center bg-[#0f5a36] transition-transform duration-200 ${active ? "scale-x-100" : "scale-x-0"}`} />
               </Link>
@@ -206,14 +206,14 @@ export function SiteHeader() {
         </div>
       </nav>
 
-      <div className={`absolute inset-x-0 top-full border-t border-black/10 bg-white transition duration-300 lg:hidden ${isOpen ? "visible translate-y-0 opacity-100" : "invisible -translate-y-2 opacity-0"}`}>
-        <div className="section-shell grid max-h-[calc(100vh-64px)] overflow-y-auto py-4">
+      <div className={`absolute inset-x-0 top-full h-[calc(100dvh-4rem)] border-t border-black/10 bg-white transition-transform duration-500 ease-in-out md:h-[calc(100dvh-78px)] lg:hidden ${isOpen ? "visible translate-x-0" : "invisible translate-x-full"}`}>
+        <div className="section-shell flex h-full flex-col overflow-y-auto py-6">
           {navItems.map((item) => (
-            <Link key={item.href} href={item.href} className={`flex min-h-12 items-center border-b border-black/[0.06] text-base font-semibold ${pathname === item.href ? "text-[#0f5a36]" : "text-[#111]"}`}>
-              {item.label}
+            <Link key={item.href} href={item.href} className={`flex min-h-16 items-center justify-between border-b border-black/[0.08] text-[28px] font-semibold leading-tight transition hover:pl-1 ${pathname === item.href ? "text-[#0f5a36]" : "text-[#111]"}`}>
+              <span>{item.label}</span><span className="text-2xl font-normal" aria-hidden="true">›</span>
             </Link>
           ))}
-          <a href={whatsappUrl} className="mt-4 inline-flex min-h-12 items-center justify-center rounded-full bg-[#063d24] px-5 text-sm font-semibold text-white" target="_blank" rel="noopener noreferrer">
+          <a href={whatsappUrl} className="mt-6 inline-flex min-h-12 items-center justify-center rounded-full bg-[#063d24] px-5 text-base font-semibold text-white" target="_blank" rel="noopener noreferrer">
             Konsultasi via WhatsApp
           </a>
         </div>
