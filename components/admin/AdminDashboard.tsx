@@ -120,11 +120,11 @@ const tableConfigs: TableConfig[] = [
   },
   {
     key: "homepage-sections",
-    label: "Homepage Sections",
-    navLabel: "Homepage Sections",
+    label: "Landing Page Settings",
+    navLabel: "Landing Page Settings",
     href: "/admin/homepage-sections",
     table: "",
-    description: "Atur judul, status, urutan section, dan penempatan Produk & Layanan di landing page.",
+    description: "Atur status section landing page, urutan section, dan penempatan Produk & Layanan.",
     fields: []
   },
   {
