@@ -1,5 +1,6 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
+import { CampaignBanners } from "@/components/CampaignBanners";
 import { HeroSlider } from "@/components/HeroSlider";
 import { PageMotion } from "@/components/PageMotion";
 import { PublicFooter } from "@/components/PublicFooter";
@@ -10,7 +11,7 @@ import { SiteHeader } from "@/components/SiteHeader";
 import { WhatsAppFloat } from "@/components/WhatsAppFloat";
 import { fallbackImages, getProductImage, getStoreImage } from "@/lib/fallback-data";
 import { getPublicContent } from "@/lib/public-data";
-import type { HomepageSection, HomepageSectionItem, Product, Service, Store } from "@/lib/types";
+import type { HomepageSection, HomepageSectionItem, LandingSection, Product, Service, Store } from "@/lib/types";
 import { formatRupiah, whatsappLinkWithMessage } from "@/lib/url";
 
 const benefits = [
@@ -19,6 +20,17 @@ const benefits = [
   { icon: "one", title: "Tanpa Minimum", detail: "Mulai dari satu pcs" },
   { icon: "truck", title: "Kirim ke Seluruh Indonesia", detail: "Aman ke seluruh kota" }
 ];
+
+function LandingSectionSlot({ setting, children }: { setting?: LandingSection; children: ReactNode }) {
+  if (setting?.is_visible === false) return null;
+  return <div style={{ order: setting?.sort_order ?? 0 }}>{children}</div>;
+}
+
+function managedSectionKey(slug: string) {
+  if (slug === "featured") return "featured-products";
+  if (slug === "fresh-drops") return "fresh-drop";
+  return slug;
+}
 
 type Visual = {
   image: string;
@@ -242,6 +254,10 @@ export default async function Home() {
   const homeCollection = (apparelProducts.length ? apparelProducts : content.products).slice(0, 5).map(productItem);
   const stores = content.stores.filter((item) => item.status_aktif !== false).sort((a, b) => a.urutan - b.urutan).slice(0, 4);
   const whatsappHref = whatsappLinkWithMessage(content.contact.whatsapp_link || content.contact.whatsapp_utama, "Halo DEBRODER, saya ingin konsultasi kebutuhan apparel.");
+  const landingSectionMap = new Map(
+    content.landingSections.map((section) => [section.section_key, section])
+  );
+  const landingSection = (sectionKey: string) => landingSectionMap.get(sectionKey);
   const schema = {
     "@context": "https://schema.org",
     "@graph": [
@@ -256,8 +272,12 @@ export default async function Home() {
       <PageMotion />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(schema).replace(/</g, "\\u003c") }} />
 
-      <HeroSlider heroes={content.heroes} />
+      <div className="flex flex-col">
+      <LandingSectionSlot setting={landingSection("hero")}>
+        <HeroSlider heroes={content.heroes} />
+      </LandingSectionSlot>
 
+      <LandingSectionSlot setting={landingSection("benefits")}>
       <section data-reveal aria-label="Keunggulan DEBRODER" className="snap-section border-b border-black/[0.08] bg-white py-5 sm:py-8">
         <div className="section-shell grid grid-cols-2 gap-x-4 gap-y-5 lg:grid-cols-4 lg:gap-8">
           {benefits.map((benefit) => (
@@ -271,9 +291,23 @@ export default async function Home() {
           ))}
         </div>
       </section>
+      </LandingSectionSlot>
 
-      {content.homepageSections.map((section) => <ManagedHomepageSection key={section.id} section={section} />)}
+      {content.homepageSections.map((section) => {
+        const setting = landingSection(managedSectionKey(section.slug));
+        const managedSection = setting?.title ? { ...section, title: setting.title } : section;
+        return (
+          <LandingSectionSlot key={section.id} setting={setting}>
+            <ManagedHomepageSection section={managedSection} />
+          </LandingSectionSlot>
+        );
+      })}
 
+      <LandingSectionSlot setting={landingSection("campaign-banners")}>
+        <CampaignBanners banners={content.campaignBanners} />
+      </LandingSectionSlot>
+
+      <LandingSectionSlot setting={landingSection("services-products")}>
       <section data-reveal id="shop-category" className="snap-section section-space bg-white pt-4 sm:pt-6">
         <div className="section-shell">
           <SectionHeading title="Shop by Category" action={<ScrollButtons containerId="category-carousel" />} />
@@ -288,24 +322,30 @@ export default async function Home() {
           </div>
         </div>
       </section>
+      </LandingSectionSlot>
 
-      <section data-reveal id="koleksi" className="snap-section section-space bg-[#f7f7f2]">
-        <div className="section-shell">
-          <SectionHeading title="Pakaian Polos berdasarkan Kategori" description="Pilih dasar apparel yang sesuai, lalu custom bersama tim DEBRODER." action={<ScrollButtons containerId="collection-carousel" />} />
-          <div id="collection-carousel" className="mt-6 grid grid-cols-2 gap-x-3 gap-y-8 sm:gap-x-5 md:grid-cols-3 lg:grid-cols-4 2xl:grid-cols-5">
-            {homeCollection.length ? homeCollection.map((item) => (
-              <Link key={item.name} href={item.href} className="group block min-w-0">
-                <div className="relative aspect-[4/5] overflow-hidden bg-white">
-                  <SafeImage src={item.image} fallbackSrc={item.fallbackImage} alt={item.imageAlt} fill sizes="(min-width: 1536px) 20vw, (min-width: 1024px) 25vw, 50vw" className={`${(item.objectFit || item.fit) === "contain" ? "object-contain p-4" : "object-cover"} transition duration-700 group-hover:scale-[1.03]`} objectFit={item.objectFit || (item.fit === "contain" ? "contain" : "cover")} objectPosition={item.objectPosition} />
-                </div>
-                <h3 className="mt-3 line-clamp-2 text-sm font-semibold sm:text-base">{item.name}</h3>
-                <p className="mt-1 text-sm text-black/50">{item.price}</p>
-              </Link>
-            )) : <p className="col-span-full bg-white p-8 text-center text-sm text-black/55">Belum ada produk apparel.</p>}
+      <LandingSectionSlot setting={landingSection("plain-category")}>
+      {content.landingSettings.showPlainCategorySection ? (
+        <section data-reveal id="koleksi" className="snap-section section-space bg-[#f7f7f2]">
+          <div className="section-shell">
+            <SectionHeading title={landingSection("plain-category")?.title || "Pakaian Polos berdasarkan Kategori"} description={landingSection("plain-category")?.subtitle || "Pilih dasar apparel yang sesuai, lalu custom bersama tim DEBRODER."} action={<ScrollButtons containerId="collection-carousel" />} />
+            <div id="collection-carousel" className="mt-6 grid grid-cols-2 gap-x-3 gap-y-8 sm:gap-x-5 md:grid-cols-3 lg:grid-cols-4 2xl:grid-cols-5">
+              {homeCollection.length ? homeCollection.map((item) => (
+                <Link key={item.name} href={item.href} className="group block min-w-0">
+                  <div className="relative aspect-[4/5] overflow-hidden bg-white">
+                    <SafeImage src={item.image} fallbackSrc={item.fallbackImage} alt={item.imageAlt} fill sizes="(min-width: 1536px) 20vw, (min-width: 1024px) 25vw, 50vw" className={`${(item.objectFit || item.fit) === "contain" ? "object-contain p-4" : "object-cover"} transition duration-700 group-hover:scale-[1.03]`} objectFit={item.objectFit || (item.fit === "contain" ? "contain" : "cover")} objectPosition={item.objectPosition} />
+                  </div>
+                  <h3 className="mt-3 line-clamp-2 text-sm font-semibold sm:text-base">{item.name}</h3>
+                  <p className="mt-1 text-sm text-black/50">{item.price}</p>
+                </Link>
+              )) : <p className="col-span-full bg-white p-8 text-center text-sm text-black/55">Belum ada produk apparel.</p>}
+            </div>
           </div>
-        </div>
-      </section>
+        </section>
+      ) : null}
+      </LandingSectionSlot>
 
+      <LandingSectionSlot setting={landingSection("instagram-banner")}>
       {content.instagramBanner?.status_aktif !== false ? (
         <section data-reveal id="instagram" className="snap-section bg-white py-4 sm:py-6">
           <div className="section-shell">
@@ -338,16 +378,20 @@ export default async function Home() {
           </div>
         </section>
       ) : null}
+      </LandingSectionSlot>
 
+      <LandingSectionSlot setting={landingSection("stores")}>
       <section data-reveal id="store" className="snap-section section-space bg-white">
         <div className="section-shell">
-          <SectionHeading title="Store DEBRODER" description="Konsultasikan bahan, teknik cetak, dan estimasi produksi langsung bersama tim kami." action={<Link href="/store" className="hidden text-sm font-semibold hover:underline sm:block">Semua store</Link>} />
+          <SectionHeading title={landingSection("stores")?.title || "Store DEBRODER"} description={landingSection("stores")?.subtitle || "Konsultasikan bahan, teknik cetak, dan estimasi produksi langsung bersama tim kami."} action={<Link href="/store" className="hidden text-sm font-semibold hover:underline sm:block">Semua store</Link>} />
           <div className="no-scrollbar mt-6 flex snap-x snap-mandatory gap-4 overflow-x-auto lg:grid lg:grid-cols-4 lg:overflow-visible">
             {stores.map((store, index) => <StoreCard key={store.nama_store} store={store} index={index} />)}
           </div>
         </div>
       </section>
+      </LandingSectionSlot>
 
+      <LandingSectionSlot setting={landingSection("about")}>
       <section data-reveal id="tentang" className="snap-section section-space bg-[#f5f5ef]">
         <div className="section-shell grid gap-10 lg:grid-cols-[1.15fr_.85fr] lg:items-start lg:gap-20">
           <div>
@@ -365,6 +409,8 @@ export default async function Home() {
           </div>
         </div>
       </section>
+      </LandingSectionSlot>
+      </div>
 
       <PublicFooter content={content} />
       <WhatsAppFloat href={whatsappHref} />
