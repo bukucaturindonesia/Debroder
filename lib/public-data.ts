@@ -5,6 +5,7 @@ import {
   fallbackProductFilters,
   pageHeroMobileImageFallbacks
 } from "@/lib/fallback-data";
+import { PLAIN_CATEGORY_SECTION_SETTING } from "@/lib/homepage-settings";
 import { createSupabaseServerClient } from "@/lib/supabase";
 import type {
   ContactSettings,
@@ -12,6 +13,7 @@ import type {
   HomepageSection,
   HomepageSectionItem,
   InstagramBanner,
+  LandingPageSettings,
   OrderStep,
   PageHeroContent,
   Product,
@@ -448,6 +450,23 @@ async function readHomepageSections(): Promise<HomepageSection[]> {
     .filter((section) => section.items.length > 0);
 }
 
+async function readLandingPageSettings(): Promise<LandingPageSettings> {
+  const supabase = createSupabaseServerClient();
+  if (!supabase) return fallbackContent.landingSettings;
+
+  const { data, error } = await supabase
+    .from("homepage_sections")
+    .select("slug,is_active")
+    .eq("slug", PLAIN_CATEGORY_SECTION_SETTING.slug)
+    .maybeSingle();
+
+  if (error || !data) return fallbackContent.landingSettings;
+
+  return {
+    showPlainCategorySection: data.is_active !== false
+  };
+}
+
 export async function getPublicContent(): Promise<PublicContent> {
   noStore();
 
@@ -460,6 +479,7 @@ export async function getPublicContent(): Promise<PublicContent> {
     products,
     productFilters,
     homepageSections,
+    landingSettings,
     stores,
     orderSteps,
     trustAbout,
@@ -486,6 +506,7 @@ export async function getPublicContent(): Promise<PublicContent> {
     readActive<Product>("products", fallbackContent.products, "urutan", false),
     readActive<ProductFilter>("product_filters", fallbackProductFilters),
     readHomepageSections(),
+    readLandingPageSettings(),
     readActive<Store>("stores", fallbackContent.stores),
     readActive<OrderStep>("order_steps", fallbackContent.orderSteps),
     readSingle<TrustAboutContent>(
@@ -513,6 +534,7 @@ export async function getPublicContent(): Promise<PublicContent> {
     products: publicProducts(products),
     productFilters,
     homepageSections,
+    landingSettings,
     stores: stores.map(cleanStore),
     orderSteps: publicOrderSteps(orderSteps),
     trustAbout: cleanTrustAbout(trustAbout),

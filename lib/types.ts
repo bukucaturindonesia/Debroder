@@ -305,6 +305,10 @@ export type HomepageSection = {
   updated_at?: string;
 };
 
+export type LandingPageSettings = {
+  showPlainCategorySection: boolean;
+};
+
 export type PublicContent = {
   hero: HeroBanner;
   heroes: HeroBanner[];
@@ -316,6 +320,7 @@ export type PublicContent = {
   products: Product[];
   productFilters: ProductFilter[];
   homepageSections: HomepageSection[];
+  landingSettings: LandingPageSettings;
   stores: Store[];
   orderSteps: OrderStep[];
   trustAbout: TrustAboutContent;

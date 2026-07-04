@@ -763,6 +763,9 @@ export const fallbackContent: PublicContent = {
   products: fallbackProducts,
   productFilters: fallbackProductFilters,
   homepageSections: [],
+  landingSettings: {
+    showPlainCategorySection: true
+  },
   stores: fallbackStores,
   orderSteps: fallbackOrderSteps,
   trustAbout: fallbackTrustAbout,
