@@ -14,9 +14,10 @@ export const metadata: Metadata = {
 export default async function KaosPolosPage() {
   const content = await getPublicContent();
   const pageHero = content.pageHeroes.find((hero) => hero.page_key === "kaos-polos");
-  const products = content.products.filter((product) =>
-    `${product.kategori} ${product.nama} ${product.link_url || ""}`.toLowerCase().includes("kaos")
-  );
+  const products = content.products.filter((product) => {
+    const value = `${product.kategori} ${product.nama} ${product.subcategory || ""} ${product.link_url || ""}`.toLowerCase();
+    return value.includes("kaos") && !/jaket|jacket|hoodie|headwear|topi|cap|hat/.test(value);
+  });
 
   return (
     <PublicShell content={content}>

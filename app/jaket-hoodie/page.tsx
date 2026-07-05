@@ -59,7 +59,7 @@ export default async function JaketHoodiePage() {
       />
       <section className="bg-white py-12 sm:py-16">
         <div className="section-shell">
-          <ProductCatalog products={products} title="Koleksi Jaket & Hoodie" showHeading />
+          <ProductCatalog products={products} title="Koleksi Jaket & Hoodie" showHeading showCategoryFilter={false} />
         </div>
       </section>
     </PublicShell>

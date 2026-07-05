@@ -13,7 +13,7 @@ export function KaosCatalog({ products, filters: _filters }: { products: Product
           <h2 className="mt-3 text-3xl font-semibold tracking-tight sm:text-4xl">Pilih kaos sesuai kebutuhan</h2>
           <p className="mt-3 text-sm leading-6 text-brand-charcoal/65">Cari berdasarkan nama, kategori, bahan, atau warna. Filter berjalan tanpa memuat ulang halaman.</p>
         </div>
-        <div className="mt-6"><ProductCatalog products={products} /></div>
+        <div className="mt-6"><ProductCatalog products={products} showCategoryFilter={false} /></div>
       </div>
     </section>
   );

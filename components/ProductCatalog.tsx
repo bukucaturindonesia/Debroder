@@ -96,7 +96,9 @@ export function ProductCatalog({
   initialColor = "all",
   initialGroup = "all",
   initialLabel = "all",
-  initialSort = "order"
+  initialSort = "order",
+  showCategoryFilter = true,
+  showGroupFilter = false
 }: {
   products: Product[];
   title?: string;
@@ -105,6 +107,8 @@ export function ProductCatalog({
   initialGroup?: ProductGroup;
   initialLabel?: LabelValue;
   initialSort?: SortValue;
+  showCategoryFilter?: boolean;
+  showGroupFilter?: boolean;
 }) {
   const [query, setQuery] = useState("");
   const [color, setColor] = useState(initialColor);
@@ -146,10 +150,10 @@ export function ProductCatalog({
   return (
     <div>
       {showHeading ? <h2 className="text-3xl font-bold leading-[1.05] tracking-[-0.02em] sm:text-4xl">{title}</h2> : null}
-      <div className={`${showHeading ? "mt-6" : ""} grid gap-3 border-y border-brand-softGray py-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-7`}>
+      <div className={`${showHeading ? "mt-6" : ""} grid gap-3 border-y border-brand-softGray py-5 sm:grid-cols-2 ${showGroupFilter ? "lg:grid-cols-3 xl:grid-cols-7" : showCategoryFilter ? "lg:grid-cols-5" : "lg:grid-cols-4"}`}>
         <input aria-label="Cari produk" value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Cari produk, bahan, warna..." className="min-h-11 rounded-full border border-brand-softGray bg-white px-4 text-sm outline-none focus:border-brand-charcoal lg:col-span-2" />
-        <select aria-label="Filter produk" value={group} onChange={(event) => setGroup(event.target.value as ProductGroup)} className="min-h-11 rounded-full border border-brand-softGray bg-white px-4 text-sm font-semibold"><option value="all">Semua produk</option><option value="jaket-hoodie">Jaket & Hoodie</option><option value="headwear">Headwear</option></select>
-        <select aria-label="Filter kategori" value={category} onChange={(event) => setCategory(event.target.value)} className="min-h-11 rounded-full border border-brand-softGray bg-white px-4 text-sm font-semibold"><option value="all">Semua kategori</option>{categories.map((item) => <option key={item}>{item}</option>)}</select>
+        {showGroupFilter ? <select aria-label="Filter produk" value={group} onChange={(event) => setGroup(event.target.value as ProductGroup)} className="min-h-11 rounded-full border border-brand-softGray bg-white px-4 text-sm font-semibold"><option value="all">Semua produk</option><option value="jaket-hoodie">Jaket & Hoodie</option><option value="headwear">Headwear</option></select> : null}
+        {showCategoryFilter ? <select aria-label="Filter kategori" value={category} onChange={(event) => setCategory(event.target.value)} className="min-h-11 rounded-full border border-brand-softGray bg-white px-4 text-sm font-semibold"><option value="all">Semua kategori</option>{categories.map((item) => <option key={item}>{item}</option>)}</select> : null}
         <select aria-label="Filter warna" value={color} onChange={(event) => setColor(event.target.value)} className="min-h-11 rounded-full border border-brand-softGray bg-white px-4 text-sm font-semibold"><option value="all">Semua warna</option>{colors.map(([slug, name]) => <option key={slug} value={slug}>{name}</option>)}</select>
         <select aria-label="Filter harga dan status" value={`${price}|${label}`} onChange={(event) => { const [nextPrice, nextLabel] = event.target.value.split("|"); setPrice(nextPrice); setLabel(labelValue(nextLabel)); }} className="min-h-11 rounded-full border border-brand-softGray bg-white px-4 text-sm font-semibold"><option value="all|all">Semua harga/status</option><option value="under-50|all">Di bawah Rp50 ribu</option><option value="50-100|all">Rp50–100 ribu</option><option value="over-100|all">Di atas Rp100 ribu</option><option value="all|new">New</option><option value="all|promo">Promo</option><option value="all|best">Best Seller</option></select>
         <select aria-label="Urutkan produk" value={sort} onChange={(event) => setSort(event.target.value as SortValue)} className="min-h-11 rounded-full border border-brand-softGray bg-white px-4 text-sm font-semibold"><option value="order">Urutan pilihan</option><option value="newest">Terbaru</option><option value="best-selling">Best selling</option><option value="price-low">Harga terendah</option><option value="price-high">Harga tertinggi</option></select>

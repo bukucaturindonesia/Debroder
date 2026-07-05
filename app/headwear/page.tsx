@@ -59,7 +59,7 @@ export default async function HeadwearPage() {
       />
       <section className="bg-white py-12 sm:py-16">
         <div className="section-shell">
-          <ProductCatalog products={products} title="Koleksi Headwear" showHeading />
+          <ProductCatalog products={products} title="Koleksi Headwear" showHeading showCategoryFilter={false} />
         </div>
       </section>
     </PublicShell>

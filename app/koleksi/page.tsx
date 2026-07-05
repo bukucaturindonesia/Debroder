@@ -89,7 +89,7 @@ export default async function KoleksiPage({ searchParams }: KoleksiPageProps) {
       </section>
       <section className="bg-white py-12 sm:py-16">
         <div className="section-shell">
-          <ProductCatalog products={content.products} title="Produk & Layanan Populer" showHeading initialColor={initialColor} initialGroup={initialGroup} initialLabel={initialLabel} initialSort={initialSort} />
+          <ProductCatalog products={content.products} title="Produk & Layanan Populer" showHeading initialColor={initialColor} initialGroup={initialGroup} initialLabel={initialLabel} initialSort={initialSort} showGroupFilter />
         </div>
       </section>
     </PublicShell>
