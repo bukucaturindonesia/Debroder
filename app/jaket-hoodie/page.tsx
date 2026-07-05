@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { PageHero, PublicShell } from "@/components/PublicPage";
 import { ProductCatalog } from "@/components/ProductCatalog";
+import { jacketTypeOptions, productTypeValue } from "@/lib/product-taxonomy";
 import { getPublicContent } from "@/lib/public-data";
 import type { Product } from "@/lib/types";
 
@@ -15,6 +16,29 @@ export const metadata: Metadata = {
       "Jaket dan hoodie untuk brand, komunitas, merchandise, dan kebutuhan apparel custom."
   }
 };
+
+type JaketHoodiePageProps = {
+  searchParams?: Promise<{
+    color?: string | string[];
+    label?: string | string[];
+    sort?: string | string[];
+    type?: string | string[];
+  }>;
+};
+
+function firstParam(value?: string | string[]) {
+  return Array.isArray(value) ? value[0] : value;
+}
+
+function productLabel(value?: string | string[]) {
+  const label = firstParam(value);
+  return label === "new" || label === "promo" || label === "best" ? label : "all";
+}
+
+function productSort(value?: string | string[]) {
+  const sort = firstParam(value);
+  return sort === "newest" || sort === "best-selling" || sort === "price-low" || sort === "price-high" ? sort : "order";
+}
 
 function matchesJaketHoodie(product: Product) {
   const value = [
@@ -31,10 +55,15 @@ function matchesJaketHoodie(product: Product) {
   return /jaket|jacket|hoodie|hoodies/.test(value);
 }
 
-export default async function JaketHoodiePage() {
+export default async function JaketHoodiePage({ searchParams }: JaketHoodiePageProps) {
   const content = await getPublicContent();
+  const params = searchParams ? await searchParams : {};
   const pageHero = content.pageHeroes.find((hero) => hero.page_key === "jaket-hoodie");
   const products = content.products.filter(matchesJaketHoodie);
+  const initialColor = firstParam(params.color) || "all";
+  const initialLabel = productLabel(params.label);
+  const initialSort = productSort(params.sort);
+  const initialProductType = productTypeValue(firstParam(params.type), jacketTypeOptions);
 
   return (
     <PublicShell content={content}>
@@ -59,7 +88,7 @@ export default async function JaketHoodiePage() {
       />
       <section className="bg-white py-12 sm:py-16">
         <div className="section-shell">
-          <ProductCatalog products={products} title="Koleksi Jaket & Hoodie" showHeading showCategoryFilter={false} />
+          <ProductCatalog products={products} title="Koleksi Jaket & Hoodie" showHeading showCategoryFilter={false} initialColor={initialColor} initialLabel={initialLabel} initialSort={initialSort} initialProductType={initialProductType} productTypeOptions={jacketTypeOptions} typeFilterLabel="Semua tipe jaket" />
         </div>
       </section>
     </PublicShell>

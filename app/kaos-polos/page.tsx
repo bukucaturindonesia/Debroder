@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { KaosCatalog } from "@/components/KaosCatalog";
 import { PageHero, PublicShell } from "@/components/PublicPage";
 import { getPageHeroImage } from "@/lib/fallback-data";
+import { kaosTypeOptions, productTypeValue } from "@/lib/product-taxonomy";
 import { getPublicContent } from "@/lib/public-data";
 import { whatsappHref } from "@/lib/url";
 
@@ -11,13 +12,41 @@ export const metadata: Metadata = {
   alternates: { canonical: "/kaos-polos" }
 };
 
-export default async function KaosPolosPage() {
+type KaosPolosPageProps = {
+  searchParams?: Promise<{
+    color?: string | string[];
+    label?: string | string[];
+    sort?: string | string[];
+    type?: string | string[];
+  }>;
+};
+
+function firstParam(value?: string | string[]) {
+  return Array.isArray(value) ? value[0] : value;
+}
+
+function productLabel(value?: string | string[]) {
+  const label = firstParam(value);
+  return label === "new" || label === "promo" || label === "best" ? label : "all";
+}
+
+function productSort(value?: string | string[]) {
+  const sort = firstParam(value);
+  return sort === "newest" || sort === "best-selling" || sort === "price-low" || sort === "price-high" ? sort : "order";
+}
+
+export default async function KaosPolosPage({ searchParams }: KaosPolosPageProps) {
   const content = await getPublicContent();
+  const params = searchParams ? await searchParams : {};
   const pageHero = content.pageHeroes.find((hero) => hero.page_key === "kaos-polos");
   const products = content.products.filter((product) => {
     const value = `${product.kategori} ${product.nama} ${product.subcategory || ""} ${product.link_url || ""}`.toLowerCase();
     return value.includes("kaos") && !/jaket|jacket|hoodie|headwear|topi|cap|hat/.test(value);
   });
+  const initialColor = firstParam(params.color) || "all";
+  const initialLabel = productLabel(params.label);
+  const initialSort = productSort(params.sort);
+  const initialProductType = productTypeValue(firstParam(params.type), kaosTypeOptions);
 
   return (
     <PublicShell content={content}>
@@ -38,7 +67,7 @@ export default async function KaosPolosPage() {
         secondaryCtaHref="/store"
         breadcrumbs={[{ label: "Beranda", href: "/" }, { label: "Kaos Polos" }]}
       />
-      <KaosCatalog products={products} filters={content.productFilters} />
+      <KaosCatalog products={products} filters={content.productFilters} initialColor={initialColor} initialLabel={initialLabel} initialSort={initialSort} initialProductType={initialProductType} />
     </PublicShell>
   );
 }

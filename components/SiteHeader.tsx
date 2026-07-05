@@ -5,6 +5,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { KeyboardEvent, useEffect, useMemo, useRef, useState } from "react";
 import { Logo } from "@/components/Logo";
 import { contactLinks } from "@/lib/contact";
+import { jacketTypeOptions, kaosTypeOptions } from "@/lib/product-taxonomy";
 import { whatsappLinkWithMessage } from "@/lib/url";
 
 const navItems = [
@@ -18,7 +19,18 @@ const navItems = [
   { label: "Cara Order", href: "/cara-order" }
 ];
 
-const collectionMenu = [
+type MegaMenuLink = {
+  label: string;
+  href: string;
+  highlight?: boolean;
+};
+
+type MegaMenuColumn = {
+  title: string;
+  links: MegaMenuLink[];
+};
+
+const collectionMenu: MegaMenuColumn[] = [
   {
     title: "Koleksi",
     links: [
@@ -51,6 +63,56 @@ const collectionMenu = [
     ]
   }
 ];
+
+const colorLinks = [
+  { label: "White", value: "white" },
+  { label: "Black", value: "black" },
+  { label: "Navy", value: "navy" },
+  { label: "Forest Green", value: "forest-green" },
+  { label: "Gold", value: "gold" }
+];
+
+const navMegaMenus: Record<string, MegaMenuColumn[]> = {
+  Koleksi: collectionMenu,
+  "Kaos Polos": [
+    {
+      title: "Kaos Polos",
+      links: [
+        { label: "Belanja Semua", href: "/kaos-polos", highlight: true },
+        { label: "New", href: "/kaos-polos?label=new" },
+        { label: "Best Seller", href: "/kaos-polos?label=best" },
+        { label: "Promo", href: "/kaos-polos?label=promo" }
+      ]
+    },
+    {
+      title: "Tipe Kaos",
+      links: kaosTypeOptions.map((item) => ({ label: item.label, href: `/kaos-polos?type=${item.value}` }))
+    },
+    {
+      title: "Belanja Berdasarkan Warna",
+      links: colorLinks.map((item) => ({ label: item.label, href: `/kaos-polos?color=${item.value}` }))
+    }
+  ],
+  "Jaket & Hoodie": [
+    {
+      title: "Jaket & Hoodie",
+      links: [
+        { label: "Belanja Semua", href: "/jaket-hoodie", highlight: true },
+        { label: "New", href: "/jaket-hoodie?label=new" },
+        { label: "Best Seller", href: "/jaket-hoodie?label=best" },
+        { label: "Promo", href: "/jaket-hoodie?label=promo" }
+      ]
+    },
+    {
+      title: "Tipe Jaket",
+      links: jacketTypeOptions.map((item) => ({ label: item.label, href: `/jaket-hoodie?type=${item.value}` }))
+    },
+    {
+      title: "Belanja Berdasarkan Warna",
+      links: colorLinks.map((item) => ({ label: item.label, href: `/jaket-hoodie?color=${item.value}` }))
+    }
+  ]
+};
 
 const searchItems = [
   { title: "Kaos Polos", href: "/kaos-polos", description: "Kaos polos dan cotton combed premium.", keywords: ["kaos", "baju", "cotton combed"] },
@@ -99,6 +161,27 @@ function CloseIcon() {
     <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true">
       <path d="m6 6 12 12M18 6 6 18" strokeLinecap="round" />
     </svg>
+  );
+}
+
+function MegaDropdown({ columns }: { columns: MegaMenuColumn[] }) {
+  return (
+    <div className="invisible fixed left-1/2 top-[78px] z-[120] w-[min(980px,calc(100vw-32px))] -translate-x-1/2 translate-y-3 pt-4 opacity-0 transition duration-200 group-hover/nav:visible group-hover/nav:translate-y-0 group-hover/nav:opacity-100 group-focus-within/nav:visible group-focus-within/nav:translate-y-0 group-focus-within/nav:opacity-100">
+      <div className="grid grid-cols-3 gap-10 rounded-[28px] border border-black/10 bg-white p-9 text-left shadow-[0_18px_50px_rgba(0,0,0,0.14)]">
+        {columns.map((column) => (
+          <div key={column.title}>
+            <p className="text-[15px] font-semibold text-[#111]">{column.title}</p>
+            <div className="mt-5 grid gap-4">
+              {column.links.map((link) => (
+                <Link key={`${column.title}-${link.label}`} href={link.href} className={`text-[15px] leading-5 transition hover:text-[#0f5a36] ${link.highlight ? "font-semibold text-[#0f5a36]" : "font-medium text-black/58"}`}>
+                  {link.label}
+                </Link>
+              ))}
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
   );
 }
 
@@ -222,7 +305,8 @@ export function SiteHeader() {
         <div className="hidden h-full items-center justify-center gap-4 lg:flex xl:gap-6">
           {navItems.map((item) => {
             const active = pathname === item.href;
-            if (item.label === "Koleksi") {
+            const megaMenu = navMegaMenus[item.label as keyof typeof navMegaMenus];
+            if (megaMenu) {
               return (
                 <div key={item.href} className="group/nav relative flex h-full items-center">
                   <Link href={item.href} className={`nav-link relative flex h-full items-center gap-1.5 whitespace-nowrap text-[15px] font-medium transition duration-200 hover:text-[#0f5a36] ${active ? "text-[#0f5a36]" : "text-[#111]"}`}>
@@ -230,22 +314,7 @@ export function SiteHeader() {
                     <ChevronDownIcon />
                     <span className={`absolute inset-x-0 bottom-0 h-0.5 origin-center bg-[#0f5a36] transition-transform duration-200 ${active ? "scale-x-100" : "scale-x-0"}`} />
                   </Link>
-                  <div className="invisible fixed left-1/2 top-[78px] z-[120] w-[min(920px,calc(100vw-32px))] -translate-x-1/2 translate-y-3 pt-4 opacity-0 transition duration-200 group-hover/nav:visible group-hover/nav:translate-y-0 group-hover/nav:opacity-100 group-focus-within/nav:visible group-focus-within/nav:translate-y-0 group-focus-within/nav:opacity-100">
-                    <div className="grid grid-cols-3 gap-10 rounded-[28px] border border-black/10 bg-white p-9 text-left shadow-[0_18px_50px_rgba(0,0,0,0.14)]">
-                      {collectionMenu.map((column) => (
-                        <div key={column.title}>
-                          <p className="text-[15px] font-semibold text-[#111]">{column.title}</p>
-                          <div className="mt-5 grid gap-4">
-                            {column.links.map((link) => (
-                              <Link key={`${column.title}-${link.label}`} href={link.href} className={`text-[15px] leading-5 transition hover:text-[#0f5a36] ${link.highlight ? "font-semibold text-[#0f5a36]" : "font-medium text-black/58"}`}>
-                                {link.label}
-                              </Link>
-                            ))}
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
+                  <MegaDropdown columns={megaMenu} />
                 </div>
               );
             }
