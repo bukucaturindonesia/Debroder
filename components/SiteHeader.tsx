@@ -8,16 +8,21 @@ import { contactLinks } from "@/lib/contact";
 import { jacketTypeOptions, kaosTypeOptions } from "@/lib/product-taxonomy";
 import { whatsappLinkWithMessage } from "@/lib/url";
 
+const topbarItems = [
+  { label: "Store", href: "/store" },
+  { label: "Cara Order", href: "/cara-order" }
+];
+
 const navItems = [
   { label: "Koleksi", href: "/koleksi" },
   { label: "Kaos Polos", href: "/kaos-polos" },
   { label: "Jaket & Hoodie", href: "/jaket-hoodie" },
   { label: "Headwear", href: "/headwear" },
   { label: "Sablon DTF", href: "/sablon-dtf" },
-  { label: "Jersey", href: "/jersey" },
-  { label: "Store", href: "/store" },
-  { label: "Cara Order", href: "/cara-order" }
+  { label: "Jersey", href: "/jersey" }
 ];
+
+const mobileNavItems = [...navItems, ...topbarItems];
 
 type MegaMenuLink = {
   label: string;
@@ -164,9 +169,9 @@ function CloseIcon() {
   );
 }
 
-function MegaDropdown({ columns }: { columns: MegaMenuColumn[] }) {
+function MegaDropdown({ columns, scrolled }: { columns: MegaMenuColumn[]; scrolled: boolean }) {
   return (
-    <div className="invisible fixed left-1/2 top-[78px] z-[120] w-[min(980px,calc(100vw-32px))] -translate-x-1/2 translate-y-3 pt-4 opacity-0 transition duration-200 group-hover/nav:visible group-hover/nav:translate-y-0 group-hover/nav:opacity-100 group-focus-within/nav:visible group-focus-within/nav:translate-y-0 group-focus-within/nav:opacity-100">
+    <div className={`invisible fixed left-1/2 z-[120] w-[min(980px,calc(100vw-32px))] -translate-x-1/2 translate-y-3 pt-4 opacity-0 transition duration-200 group-hover/nav:visible group-hover/nav:translate-y-0 group-hover/nav:opacity-100 group-focus-within/nav:visible group-focus-within/nav:translate-y-0 group-focus-within/nav:opacity-100 ${scrolled ? "top-[78px]" : "top-[114px]"}`}>
       <div className="grid grid-cols-3 gap-10 rounded-[28px] border border-black/10 bg-white p-9 text-left shadow-[0_18px_50px_rgba(0,0,0,0.14)]">
         {columns.map((column) => (
           <div key={column.title}>
@@ -297,6 +302,18 @@ export function SiteHeader() {
 
   return (
     <header className={`sticky top-0 z-[100] border-b bg-white/95 text-[#111] backdrop-blur-md transition duration-200 ${scrolled ? "border-black/10" : "border-black/[0.06]"}`}>
+      <div className={`hidden overflow-hidden border-b border-black/[0.06] bg-[#f5f5ef] transition-[max-height,opacity,border-color] duration-300 ease-out lg:block ${scrolled ? "invisible max-h-0 border-transparent opacity-0 pointer-events-none" : "visible max-h-9 opacity-100"}`} aria-hidden={scrolled}>
+        <div className="section-shell flex h-9 items-center justify-between gap-4 text-xs font-semibold text-black/58">
+          <p className="truncate">DEBRODER apparel, sablon, dan produksi custom.</p>
+          <div className="flex items-center gap-5">
+            {topbarItems.map((item) => (
+              <Link key={item.href} href={item.href} className={`transition hover:text-[#0f5a36] ${pathname === item.href ? "text-[#0f5a36]" : ""}`}>
+                {item.label}
+              </Link>
+            ))}
+          </div>
+        </div>
+      </div>
       <nav className="section-shell flex h-16 items-center justify-between gap-4 md:h-[78px]" aria-label="Navigasi utama">
         <Link href="/" className="shrink-0" aria-label="DEBRODER beranda">
           <Logo variant="primary-dark" size="sm" className="transition duration-200 hover:opacity-70" />
@@ -314,7 +331,7 @@ export function SiteHeader() {
                     <ChevronDownIcon />
                     <span className={`absolute inset-x-0 bottom-0 h-0.5 origin-center bg-[#0f5a36] transition-transform duration-200 ${active ? "scale-x-100" : "scale-x-0"}`} />
                   </Link>
-                  <MegaDropdown columns={megaMenu} />
+                  <MegaDropdown columns={megaMenu} scrolled={scrolled} />
                 </div>
               );
             }
@@ -350,7 +367,7 @@ export function SiteHeader() {
 
       <div className={`absolute inset-x-0 top-full h-[calc(100dvh-4rem)] border-t border-black/10 bg-white transition-transform duration-500 ease-in-out md:h-[calc(100dvh-78px)] lg:hidden ${isOpen ? "visible translate-x-0" : "invisible translate-x-full"}`}>
         <div className="section-shell flex h-full flex-col overflow-y-auto py-6">
-          {navItems.map((item) => (
+          {mobileNavItems.map((item) => (
             <Link key={item.href} href={item.href} className={`flex min-h-16 items-center justify-between border-b border-black/[0.08] text-[28px] font-semibold leading-tight transition hover:pl-1 ${pathname === item.href ? "text-[#0f5a36]" : "text-[#111]"}`}>
               <span>{item.label}</span><span className="text-2xl font-normal" aria-hidden="true">›</span>
             </Link>
