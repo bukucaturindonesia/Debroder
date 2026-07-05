@@ -1,6 +1,19 @@
 import type { CmsBanner } from "@/lib/types";
 import { ResponsivePicture } from "@/components/ResponsivePicture";
 
+function safeBannerCta(href: string, text: string) {
+  const normalizedHref = href.toLowerCase();
+  const normalizedText = text.toLowerCase();
+  const directOrder = normalizedHref.includes("wa.me") || normalizedHref.includes("whatsapp") || normalizedHref === "/order" || normalizedHref.includes("pesan");
+  const orderText = /pesan|order|beli/.test(normalizedText);
+
+  if (directOrder || orderText) {
+    return { href: "/koleksi", text: "Lihat Koleksi" };
+  }
+
+  return { href, text };
+}
+
 function CampaignMedia({ banner }: { banner: CmsBanner }) {
   if (banner.media_type === "video") {
     const mobileUrl = banner.mobile_media_url || banner.desktop_media_url;
@@ -50,6 +63,7 @@ export function CampaignBanners({ banners }: { banners: CmsBanner[] }) {
       <div className="section-shell grid gap-4">
         {banners.map((banner) => {
           const alignment = banner.text_position === "center" ? "mx-auto text-center" : banner.text_position === "right" ? "ml-auto text-right" : "";
+          const cta = banner.cta_label && banner.cta_url ? safeBannerCta(banner.cta_url, banner.cta_label) : null;
           return (
           <article key={banner.id || banner.name} className="relative aspect-[4/5] overflow-hidden bg-[#101713] sm:aspect-[16/7]">
             <CampaignMedia banner={banner} />
@@ -58,9 +72,9 @@ export function CampaignBanners({ banners }: { banners: CmsBanner[] }) {
               {banner.eyebrow ? <p className="text-xs font-semibold uppercase tracking-[0.2em] text-white/75">{banner.eyebrow}</p> : null}
               <h2 className="mt-2 text-3xl font-bold leading-[1.05] tracking-[-0.02em] sm:text-5xl">{banner.title}</h2>
               {banner.subtitle ? <p className="mt-3 max-w-2xl text-sm leading-6 text-white/80 sm:text-base">{banner.subtitle}</p> : null}
-              {banner.cta_label && banner.cta_url ? (
-                <a href={banner.cta_url} className="mt-6 inline-flex min-h-11 items-center justify-center bg-white px-6 py-3 text-sm font-semibold text-black transition hover:bg-white/90">
-                  {banner.cta_label}
+              {cta ? (
+                <a href={cta.href} className="mt-6 inline-flex min-h-11 items-center justify-center bg-white px-6 py-3 text-sm font-semibold text-black transition hover:bg-white/90">
+                  {cta.text}
                 </a>
               ) : null}
             </div>

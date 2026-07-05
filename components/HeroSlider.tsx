@@ -7,6 +7,19 @@ import type { HeroBanner } from "@/lib/types";
 
 const SLIDE_DURATION = 5600;
 
+function safeHeroCta(href: string, text: string) {
+  const normalizedHref = href.toLowerCase();
+  const normalizedText = text.toLowerCase();
+  const directOrder = normalizedHref.includes("wa.me") || normalizedHref.includes("whatsapp") || normalizedHref === "/order" || normalizedHref.includes("pesan");
+  const orderText = /pesan|order|beli/.test(normalizedText);
+
+  if (directOrder || orderText) {
+    return { href: "/koleksi", text: "Lihat Koleksi" };
+  }
+
+  return { href, text };
+}
+
 function ArrowIcon({ direction }: { direction: "left" | "right" }) {
   return (
     <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true">
@@ -117,6 +130,7 @@ export function HeroSlider({ heroes }: { heroes: HeroBanner[] }) {
         const subtitle = slide.subheadline || slide.subtitle || "Kualitas terbaik untuk brand terbaik.";
         const ctaHref = slide.cta_link || slide.cta_primary_link || "/koleksi";
         const ctaText = slide.cta_text || slide.cta_primary_text || "Beli Sekarang";
+        const cta = safeHeroCta(ctaHref, ctaText);
         const desktopVideo = slide.desktop_video_url || slide.hero_video_url || slide.video_url;
         const mobileVideo = slide.mobile_video_url || desktopVideo;
         const desktopPosition = slide.object_position || "center center";
@@ -171,8 +185,8 @@ export function HeroSlider({ heroes }: { heroes: HeroBanner[] }) {
                   <p className="mt-3 max-w-lg whitespace-pre-line text-[17px] leading-[1.45] text-white/80 sm:text-xl">
                     {subtitle}
                   </p>
-                  <a href={ctaHref} className="mt-5 inline-flex min-h-11 items-center gap-2 rounded-full bg-white px-5 py-3 text-sm font-semibold text-[#111] transition duration-200 hover:bg-[#e9eee9]">
-                    {ctaText}
+                  <a href={cta.href} className="mt-5 inline-flex min-h-11 items-center gap-2 rounded-full bg-white px-5 py-3 text-sm font-semibold text-[#111] transition duration-200 hover:bg-[#e9eee9]">
+                    {cta.text}
                     <ArrowIcon direction="right" />
                   </a>
                 </div>

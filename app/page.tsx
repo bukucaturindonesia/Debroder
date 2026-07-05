@@ -1,6 +1,7 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
 import { CampaignBanners } from "@/components/CampaignBanners";
+import { AddToCartButton, type CartProductInput } from "@/components/CartProvider";
 import { HeroSlider } from "@/components/HeroSlider";
 import { PageMotion } from "@/components/PageMotion";
 import { PublicFooter } from "@/components/PublicFooter";
@@ -11,7 +12,6 @@ import { SiteHeader } from "@/components/SiteHeader";
 import { WhatsAppFloat } from "@/components/WhatsAppFloat";
 import { fallbackImages, getProductImage, getStoreImage } from "@/lib/fallback-data";
 import { getPublicContent } from "@/lib/public-data";
-import { productOrderHref } from "@/lib/order";
 import type { HomepageSection, HomepageSectionItem, LandingSection, Product, Service, Store } from "@/lib/types";
 import { formatRupiah, whatsappLinkWithMessage } from "@/lib/url";
 
@@ -45,27 +45,31 @@ type EditorialItem = Visual & {
   title: string;
   button: string;
   href: string;
-  orderHref?: string;
+  cartProduct?: CartProductInput;
 };
 type ProductItem = Visual & {
+  id?: string;
   name: string;
   category: string;
   price: string;
   href: string;
   fit: string;
-  orderHref?: string;
+  cartProduct?: CartProductInput;
 };
 
 const mobileCarouselClass = "no-scrollbar mt-6 flex snap-x snap-mandatory gap-2 overflow-x-auto md:grid md:overflow-visible";
 const mobileCarouselItemClass = "min-w-[76vw] shrink-0 snap-start md:min-w-0 md:shrink";
 
 function productItem(product: Product): ProductItem {
+  const href = `/produk/${product.slug || product.nama.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "")}`;
+  const price = formatRupiah(product.price ?? product.harga ?? product.base_price) || "Hubungi kami";
   return {
+    id: product.id || product.slug || product.nama,
     name: product.nama,
     category: product.kategori,
-    price: formatRupiah(product.price ?? product.harga ?? product.base_price) || "Hubungi kami",
-    href: `/produk/${product.slug || product.nama.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "")}`,
-    orderHref: productOrderHref(product),
+    price,
+    href,
+    cartProduct: { id: product.id || product.slug || product.nama, name: product.nama, category: product.kategori, priceLabel: price, href },
     image: getProductImage(product),
     imageAlt: product.image_alt || product.nama,
     fallbackImage: fallbackImages.product,
@@ -84,12 +88,14 @@ function serviceHref(service: Service) {
 
 function editorialPlacement(item: HomepageSectionItem): EditorialItem | null {
   if (item.product) {
+    const href = `/produk/${item.product.slug || item.product.nama.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "")}`;
+    const price = formatRupiah(item.product.price ?? item.product.harga ?? item.product.base_price) || "Hubungi kami";
     return {
       label: item.product.kategori,
       title: item.product.nama,
       button: "Lihat Produk",
-      href: `/produk/${item.product.slug || item.product.nama.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "")}`,
-      orderHref: productOrderHref(item.product),
+      href,
+      cartProduct: { id: item.product.id || item.product.slug || item.product.nama, name: item.product.nama, category: item.product.kategori, priceLabel: price, href },
       image: getProductImage(item.product),
       imageAlt: item.product.image_alt || item.product.nama,
       fallbackImage: fallbackImages.product,
@@ -170,7 +176,7 @@ function EditorialCard({ item, featuredCard = false, className = "" }: { item: E
       <div className="pointer-events-none absolute inset-x-0 bottom-0 z-20 p-5 text-white sm:p-7">
         <p className="text-xs font-semibold text-white/72">{item.label}</p>
         <h3 className={`mt-2 max-w-md font-semibold leading-tight tracking-[-0.025em] ${featuredCard ? "text-2xl sm:text-[1.75rem]" : "text-xl sm:text-2xl"}`}>{item.title}</h3>
-        <div className="pointer-events-auto relative z-30 mt-5 flex flex-wrap gap-2"><Link href={item.href} className="inline-flex min-h-10 items-center rounded-full bg-white px-4 text-sm font-semibold text-[#111] transition group-hover:bg-[#e9eee9]">{item.button}</Link>{item.orderHref ? <Link href={item.orderHref} className="inline-flex min-h-10 items-center rounded-full bg-[#0f5a36] px-4 text-sm font-semibold text-white">Pesan</Link> : null}</div>
+        <div className="pointer-events-auto relative z-30 mt-5 flex flex-wrap gap-2"><Link href={item.href} className="inline-flex min-h-10 items-center rounded-full bg-white px-4 text-sm font-semibold text-[#111] transition group-hover:bg-[#e9eee9]">{item.button}</Link>{item.cartProduct ? <AddToCartButton product={item.cartProduct} className="inline-flex min-h-10 items-center rounded-full bg-[#0f5a36] px-4 text-sm font-semibold text-white">Tambah ke Keranjang</AddToCartButton> : null}</div>
       </div>
     </article>
   );
@@ -188,7 +194,7 @@ function ProductCard({ item, className = "" }: { item: ProductItem; className?: 
         <Link href={item.href}><h3 className="line-clamp-2 text-sm font-semibold text-[#111] sm:text-base">{item.name}</h3></Link>
         <p className="mt-1 text-sm font-semibold text-[#111]">{item.price}</p>
         <p className="mt-1 text-xs text-black/50 sm:text-sm">{item.category}</p>
-        {item.orderHref ? <Link href={item.orderHref} className="mt-3 inline-flex min-h-10 w-full items-center justify-center bg-[#0f5a36] px-4 text-xs font-semibold text-white">Pesan</Link> : null}
+        {item.cartProduct ? <AddToCartButton product={item.cartProduct} className="mt-3 inline-flex min-h-10 w-full items-center justify-center bg-[#0f5a36] px-4 text-xs font-semibold text-white">Tambah ke Keranjang</AddToCartButton> : null}
       </div>
     </article>
   );
@@ -352,7 +358,7 @@ export default async function Home() {
                   </Link>
                   <Link href={item.href} className="mt-3 block"><h3 className="line-clamp-2 text-sm font-semibold sm:text-base">{item.name}</h3></Link>
                   <p className="mt-1 text-sm text-black/50">{item.price}</p>
-                  {item.orderHref ? <Link href={item.orderHref} className="mt-3 inline-flex min-h-10 w-full items-center justify-center bg-[#0f5a36] px-4 text-xs font-semibold text-white">Pesan</Link> : null}
+                  {item.cartProduct ? <AddToCartButton product={item.cartProduct} className="mt-3 inline-flex min-h-10 w-full items-center justify-center bg-[#0f5a36] px-4 text-xs font-semibold text-white">Tambah ke Keranjang</AddToCartButton> : null}
                 </article>
               )) : <p className="col-span-full bg-white p-8 text-center text-sm text-black/55">Belum ada produk apparel.</p>}
             </div>
