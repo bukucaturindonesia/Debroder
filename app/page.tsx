@@ -56,6 +56,9 @@ type ProductItem = Visual & {
   orderHref?: string;
 };
 
+const mobileCarouselClass = "no-scrollbar mt-6 flex snap-x snap-mandatory gap-2 overflow-x-auto md:grid md:overflow-visible";
+const mobileCarouselItemClass = "min-w-[76vw] shrink-0 snap-start md:min-w-0 md:shrink";
+
 function productItem(product: Product): ProductItem {
   return {
     name: product.nama,
@@ -158,9 +161,9 @@ function BenefitIcon({ name }: { name: string }) {
   );
 }
 
-function EditorialCard({ item, featuredCard = false }: { item: EditorialItem; featuredCard?: boolean }) {
+function EditorialCard({ item, featuredCard = false, className = "" }: { item: EditorialItem; featuredCard?: boolean; className?: string }) {
   return (
-    <article className={`group relative block overflow-hidden bg-[#0a1711] ${featuredCard ? "h-[440px] sm:h-[500px] lg:h-[560px]" : "h-[400px] sm:h-[440px]"}`}>
+    <article className={`group relative block overflow-hidden bg-[#0a1711] ${featuredCard ? "h-[440px] sm:h-[500px] lg:h-[560px]" : "h-[400px] sm:h-[440px]"} ${className}`}>
       <Link href={item.href} aria-label={`Lihat ${item.title}`} className="absolute inset-0 z-10" />
       <SafeImage src={item.image} fallbackSrc={item.fallbackImage} alt={item.imageAlt} fill sizes={featuredCard ? "(min-width: 1024px) 50vw, 86vw" : "(min-width: 1024px) 33vw, 82vw"} className="object-cover transition duration-700 group-hover:scale-[1.03]" objectFit={item.objectFit || "cover"} objectPosition={item.objectPosition} />
       <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/8 to-transparent" />
@@ -173,9 +176,9 @@ function EditorialCard({ item, featuredCard = false }: { item: EditorialItem; fe
   );
 }
 
-function ProductCard({ item }: { item: ProductItem }) {
+function ProductCard({ item, className = "" }: { item: ProductItem; className?: string }) {
   return (
-    <article className="group min-w-0">
+    <article className={`group min-w-0 ${className}`}>
       <Link href={item.href} className="block">
       <div className="relative aspect-[4/5] overflow-hidden bg-[#f2f2ed]">
         <SafeImage src={item.image} fallbackSrc={item.fallbackImage} alt={item.imageAlt} fill sizes="(min-width: 1536px) 20vw, (min-width: 1024px) 25vw, 50vw" className={`${(item.objectFit || item.fit) === "contain" ? "object-contain p-3" : "object-cover"} transition duration-700 group-hover:scale-[1.03]`} objectFit={item.objectFit || (item.fit === "contain" ? "contain" : "cover")} objectPosition={item.objectPosition} />
@@ -204,8 +207,8 @@ function ManagedHomepageSection({ section, setting }: { section: HomepageSection
       <section data-reveal id={section.slug} className={`snap-section section-space ${section.slug === "trending" ? "bg-[#f7f7f2]" : "bg-white"}`}>
         <div className="section-shell">
           <SectionHeading title={section.title} description={setting?.subtitle} textPosition={setting?.text_position} action={<div className="flex items-center gap-4">{configuredCta}{!isFeatured ? <ScrollButtons containerId={carouselId} /> : null}</div>} />
-          <div id={carouselId} className={`mt-6 grid grid-cols-1 ${isFeatured ? "gap-2 lg:grid-cols-2" : "gap-2 md:grid-cols-2 lg:grid-cols-3"}`}>
-            {items.map((item, index) => <EditorialCard key={section.items[index]?.id || `${item.href}-${index}`} item={item} featuredCard={isFeatured} />)}
+          <div id={carouselId} className={isFeatured ? "mt-6 grid grid-cols-1 gap-2 lg:grid-cols-2" : `${mobileCarouselClass} md:grid-cols-2 lg:grid-cols-3`}>
+            {items.map((item, index) => <EditorialCard key={section.items[index]?.id || `${item.href}-${index}`} item={item} featuredCard={isFeatured} className={isFeatured ? "" : mobileCarouselItemClass} />)}
           </div>
         </div>
       </section>
@@ -218,8 +221,8 @@ function ManagedHomepageSection({ section, setting }: { section: HomepageSection
     <section data-reveal id={section.slug} className="snap-section section-space bg-white">
       <div className="section-shell">
         <SectionHeading title={section.title} description={setting?.subtitle} textPosition={setting?.text_position} action={<div className="flex items-center gap-4">{configuredCta || <Link href="/koleksi" className="hidden text-sm font-semibold hover:underline sm:block">Shop</Link>}<ScrollButtons containerId={carouselId} /></div>} />
-        <div id={carouselId} className="mt-6 grid grid-cols-1 gap-x-2 gap-y-6 md:grid-cols-2 lg:grid-cols-4">
-          {items.map((item, index) => <ProductCard key={section.items[index]?.id || `${item.href}-${index}`} item={item} />)}
+        <div id={carouselId} className={`${mobileCarouselClass} gap-y-6 md:grid-cols-2 lg:grid-cols-4`}>
+          {items.map((item, index) => <ProductCard key={section.items[index]?.id || `${item.href}-${index}`} item={item} className={mobileCarouselItemClass} />)}
         </div>
       </div>
     </section>
@@ -321,9 +324,9 @@ export default async function Home() {
       <section data-reveal id="shop-category" className="snap-section section-space bg-white pt-4 sm:pt-6">
         <div className="section-shell">
           <SectionHeading title={landingSection("services-products")?.title || "Shop by Category"} description={landingSection("services-products")?.subtitle} textPosition={landingSection("services-products")?.text_position} action={<div className="flex items-center gap-4">{landingSection("services-products")?.cta_label && landingSection("services-products")?.cta_url ? <Link href={landingSection("services-products")!.cta_url!} className="hidden text-sm font-semibold hover:underline sm:block">{landingSection("services-products")!.cta_label}</Link> : null}<ScrollButtons containerId="category-carousel" /></div>} />
-          <div id="category-carousel" className="mt-6 grid grid-cols-1 gap-x-2 gap-y-6 md:grid-cols-2 lg:grid-cols-4">
+          <div id="category-carousel" className={`${mobileCarouselClass} gap-y-6 md:grid-cols-2 lg:grid-cols-4`}>
             {homeCategories.length ? homeCategories.map((item) => (
-              <Link key={item.name} href={item.href} className="group relative aspect-[4/5] min-w-0 overflow-hidden bg-[#102219]">
+              <Link key={item.name} href={item.href} className={`group relative aspect-[4/5] min-w-0 overflow-hidden bg-[#102219] ${mobileCarouselItemClass}`}>
                 <SafeImage src={item.image} fallbackSrc={item.fallbackImage} alt={item.imageAlt} fill sizes="(min-width: 1536px) 20vw, (min-width: 1024px) 25vw, 50vw" className="object-cover transition duration-700 group-hover:scale-[1.03]" objectFit={item.objectFit || "cover"} objectPosition={item.objectPosition} />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent" />
                 <h3 className="absolute bottom-4 left-4 line-clamp-2 text-base font-semibold text-white sm:bottom-6 sm:left-6 sm:text-xl">{item.name}</h3>
@@ -339,9 +342,9 @@ export default async function Home() {
         <section data-reveal id="koleksi" className="snap-section section-space bg-[#f7f7f2]">
           <div className="section-shell">
             <SectionHeading title={landingSection("plain-category")?.title || "Pakaian Polos berdasarkan Kategori"} description={landingSection("plain-category")?.subtitle || "Pilih dasar apparel yang sesuai, lalu custom bersama tim DEBRODER."} textPosition={landingSection("plain-category")?.text_position} action={<ScrollButtons containerId="collection-carousel" />} />
-            <div id="collection-carousel" className="mt-6 grid grid-cols-1 gap-x-2 gap-y-6 md:grid-cols-2 lg:grid-cols-4">
+            <div id="collection-carousel" className={`${mobileCarouselClass} gap-y-6 md:grid-cols-2 lg:grid-cols-4`}>
               {homeCollection.length ? homeCollection.map((item) => (
-                <article key={item.name} className="group min-w-0">
+                <article key={item.name} className={`group min-w-0 ${mobileCarouselItemClass}`}>
                   <Link href={item.href} className="block">
                   <div className="relative aspect-[4/5] overflow-hidden bg-white">
                     <SafeImage src={item.image} fallbackSrc={item.fallbackImage} alt={item.imageAlt} fill sizes="(min-width: 1536px) 20vw, (min-width: 1024px) 25vw, 50vw" className={`${(item.objectFit || item.fit) === "contain" ? "object-contain p-4" : "object-cover"} transition duration-700 group-hover:scale-[1.03]`} objectFit={item.objectFit || (item.fit === "contain" ? "contain" : "cover")} objectPosition={item.objectPosition} />

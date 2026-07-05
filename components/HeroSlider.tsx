@@ -101,7 +101,7 @@ export function HeroSlider({ heroes }: { heroes: HeroBanner[] }) {
   return (
     <section
       id="beranda"
-      className="hero-section relative h-[clamp(500px,78vh,560px)] w-full overflow-hidden bg-[#04160f] sm:h-[640px] lg:h-[calc(100svh-144px)] lg:min-h-[520px] lg:max-h-[680px]"
+      className="hero-section relative h-[clamp(460px,72vh,540px)] w-full overflow-hidden bg-[#04160f] sm:h-[560px] lg:h-[calc(100svh-170px)] lg:min-h-[460px] lg:max-h-[600px]"
       aria-roledescription="carousel"
       aria-label="Koleksi utama DEBRODER"
       onTouchStart={(event) => setTouchStart(event.touches[0].clientX)}

@@ -221,3 +221,114 @@ insert into public.contact_settings
 values
   ('debroderapparel@gmail.com', '0853-5533-3364', 'https://wa.me/6285355333364', '0853-5533-3364', '0853-5533-3364', 'https://www.facebook.com/debroderapparel/', 'https://instagram.com/de_broder', '© 2026 DE BRODER. All rights reserved.', true)
 on conflict do nothing;
+
+insert into public.homepage_sections (title, slug, is_active, sort_order)
+values
+  ('Featured', 'featured', true, 10),
+  ('Trending', 'trending', true, 20),
+  ('Fresh Drops', 'fresh-drops', true, 30)
+on conflict (slug) do nothing;
+
+insert into public.homepage_sections (title, slug, is_active, sort_order)
+values
+  ('Pakaian Polos Berdasarkan Kategori', 'pakaian-polos-berdasarkan-kategori', true, 40)
+on conflict (slug) do update set
+  title = excluded.title;
+
+insert into public.homepage_section_items (section_id, service_id, is_active, sort_order)
+select section.id, service.id, true, placement.sort_order
+from (
+  values
+    ('featured', 'jersey', 10),
+    ('featured', 'sablon-dtf', 20),
+    ('trending', 'kaos-polos', 10),
+    ('trending', 'maklon-dtf', 20),
+    ('trending', 'cetak-sublim', 30)
+) as placement(section_slug, service_slug, sort_order)
+join public.homepage_sections section on section.slug = placement.section_slug
+join lateral (
+  select candidate.id
+  from public.services candidate
+  where candidate.slug = placement.service_slug
+  order by candidate.urutan, candidate.created_at
+  limit 1
+) service on true
+where not exists (
+  select 1
+  from public.homepage_section_items existing
+  where existing.section_id = section.id
+    and existing.service_id = service.id
+);
+
+insert into public.homepage_section_items (section_id, product_id, is_active, sort_order)
+select
+  section.id,
+  product.id,
+  true,
+  row_number() over (order by product.urutan, product.created_at)::integer * 10
+from public.homepage_sections section
+cross join lateral (
+  select item.*
+  from public.products item
+  where item.status_aktif = true
+  order by item.urutan, item.created_at
+  limit 5
+) product
+where section.slug = 'fresh-drops'
+  and not exists (
+    select 1
+    from public.homepage_section_items existing
+    where existing.section_id = section.id
+      and existing.product_id = product.id
+  );
+
+insert into public.landing_sections
+  (section_key, title, subtitle, is_visible, sort_order, metadata)
+values
+  ('hero', 'Hero / Hero Slider', '', true, 10, '{}'::jsonb),
+  ('benefits', '4 Keunggulan', '', true, 20, '{}'::jsonb),
+  ('featured-products', 'Featured', '', true, 30, '{}'::jsonb),
+  ('trending', 'Trending', '', true, 40, '{}'::jsonb),
+  ('fresh-drop', 'Fresh Drops', '', true, 50, '{}'::jsonb),
+  ('campaign-banners', 'Campaign Banner', '', true, 55, '{}'::jsonb),
+  ('services-products', 'Shop by Category', '', true, 60, '{}'::jsonb),
+  ('plain-category', 'Pakaian Polos berdasarkan Kategori', 'Pilih dasar apparel yang sesuai, lalu custom bersama tim DEBRODER.', true, 70, '{}'::jsonb),
+  ('instagram-banner', 'Banner Instagram', '', true, 80, '{}'::jsonb),
+  ('stores', 'Store DEBRODER', 'Konsultasikan bahan, teknik cetak, dan estimasi produksi langsung bersama tim kami.', true, 90, '{}'::jsonb),
+  ('about', 'Tentang DEBRODER', '', true, 100, '{}'::jsonb)
+on conflict (section_key) do nothing;
+
+insert into public.product_categories (name, slug, description, is_active, sort_order)
+select
+  category.nama_kategori,
+  coalesce(nullif(category.slug, ''), regexp_replace(lower(category.nama_kategori), '[^a-z0-9]+', '-', 'g')),
+  category.deskripsi,
+  category.status_aktif,
+  category.urutan
+from public.service_categories category
+on conflict (slug) do nothing;
+
+insert into public.website_settings (setting_key, label, value, description, group_name)
+values
+  ('site_identity', 'Identitas Website', '{"brand_name":"DEBRODER"}'::jsonb, 'Identitas dasar website.', 'general'),
+  ('default_contact', 'Kontak Default', '{"whatsapp":"https://wa.me/6285355333364"}'::jsonb, 'Kontak fallback untuk CTA publik.', 'contact'),
+  ('manual_payment', 'Pembayaran Manual', '{"enabled":true,"instructions":"Transfer sesuai arahan tim DEBRODER lalu upload bukti pembayaran."}'::jsonb, 'Instruksi pembayaran manual untuk order website.', 'payment')
+on conflict (setting_key) do nothing;
+
+update public.products product
+set
+  featured = exists (
+    select 1 from public.homepage_section_items item
+    join public.homepage_sections section on section.id = item.section_id
+    where item.product_id = product.id and section.slug = 'featured' and item.is_active = true
+  ),
+  trending = exists (
+    select 1 from public.homepage_section_items item
+    join public.homepage_sections section on section.id = item.section_id
+    where item.product_id = product.id and section.slug = 'trending' and item.is_active = true
+  ),
+  fresh_drop = exists (
+    select 1 from public.homepage_section_items item
+    join public.homepage_sections section on section.id = item.section_id
+    where item.product_id = product.id and section.slug = 'fresh-drops' and item.is_active = true
+  );
