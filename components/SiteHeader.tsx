@@ -230,7 +230,7 @@ export function SiteHeader() {
                     <ChevronDownIcon />
                     <span className={`absolute inset-x-0 bottom-0 h-0.5 origin-center bg-[#0f5a36] transition-transform duration-200 ${active ? "scale-x-100" : "scale-x-0"}`} />
                   </Link>
-                  <div className="invisible absolute left-1/2 top-full z-[120] w-[720px] -translate-x-1/2 translate-y-3 pt-4 opacity-0 transition duration-200 group-hover/nav:visible group-hover/nav:translate-y-0 group-hover/nav:opacity-100 group-focus-within/nav:visible group-focus-within/nav:translate-y-0 group-focus-within/nav:opacity-100">
+                  <div className="invisible fixed left-1/2 top-[78px] z-[120] w-[min(920px,calc(100vw-32px))] -translate-x-1/2 translate-y-3 pt-4 opacity-0 transition duration-200 group-hover/nav:visible group-hover/nav:translate-y-0 group-hover/nav:opacity-100 group-focus-within/nav:visible group-focus-within/nav:translate-y-0 group-focus-within/nav:opacity-100">
                     <div className="grid grid-cols-3 gap-10 rounded-[28px] border border-black/10 bg-white p-9 text-left shadow-[0_18px_50px_rgba(0,0,0,0.14)]">
                       {collectionMenu.map((column) => (
                         <div key={column.title}>
