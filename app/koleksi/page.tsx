@@ -19,12 +19,45 @@ export const metadata: Metadata = {
   }
 };
 
-export default async function KoleksiPage() {
+type KoleksiPageProps = {
+  searchParams?: Promise<{
+    color?: string | string[];
+    group?: string | string[];
+    label?: string | string[];
+    sort?: string | string[];
+  }>;
+};
+
+function firstParam(value?: string | string[]) {
+  return Array.isArray(value) ? value[0] : value;
+}
+
+function productGroup(value?: string | string[]) {
+  const group = firstParam(value);
+  return group === "jaket-hoodie" || group === "headwear" ? group : "all";
+}
+
+function productLabel(value?: string | string[]) {
+  const label = firstParam(value);
+  return label === "new" || label === "promo" || label === "best" ? label : "all";
+}
+
+function productSort(value?: string | string[]) {
+  const sort = firstParam(value);
+  return sort === "newest" || sort === "best-selling" || sort === "price-low" || sort === "price-high" ? sort : "order";
+}
+
+export default async function KoleksiPage({ searchParams }: KoleksiPageProps) {
   const content = await getPublicContent();
+  const params = searchParams ? await searchParams : {};
   const pageHero = content.pageHeroes.find((hero) => hero.page_key === "koleksi");
   const categories = content.categories.filter(
     (category) => category.status_aktif !== false
   );
+  const initialGroup = productGroup(params.group);
+  const initialLabel = productLabel(params.label);
+  const initialSort = productSort(params.sort);
+  const initialColor = firstParam(params.color) || "all";
 
   return (
     <PublicShell content={content}>
@@ -56,7 +89,7 @@ export default async function KoleksiPage() {
       </section>
       <section className="bg-white py-12 sm:py-16">
         <div className="section-shell">
-          <ProductCatalog products={content.products} title="Produk & Layanan Populer" showHeading />
+          <ProductCatalog products={content.products} title="Produk & Layanan Populer" showHeading initialColor={initialColor} initialGroup={initialGroup} initialLabel={initialLabel} initialSort={initialSort} />
         </div>
       </section>
     </PublicShell>

@@ -23,10 +23,10 @@ const collectionMenu = [
     title: "Koleksi",
     links: [
       { label: "Belanja Semua", href: "/koleksi", highlight: true },
-      { label: "Best Seller", href: "/koleksi" },
-      { label: "New", href: "/koleksi" },
-      { label: "Popular", href: "/koleksi" },
-      { label: "Turun Harga", href: "/koleksi" }
+      { label: "Best Seller", href: "/koleksi?label=best" },
+      { label: "New", href: "/koleksi?label=new" },
+      { label: "Popular", href: "/koleksi?sort=best-selling" },
+      { label: "Turun Harga", href: "/koleksi?label=promo" }
     ]
   },
   {
@@ -43,11 +43,11 @@ const collectionMenu = [
   {
     title: "Belanja Berdasarkan Warna",
     links: [
-      { label: "White", href: "/koleksi" },
-      { label: "Black", href: "/koleksi" },
-      { label: "Navy", href: "/koleksi" },
-      { label: "Forest Green", href: "/koleksi" },
-      { label: "Gold", href: "/koleksi" }
+      { label: "White", href: "/koleksi?color=white" },
+      { label: "Black", href: "/koleksi?color=black" },
+      { label: "Navy", href: "/koleksi?color=navy" },
+      { label: "Forest Green", href: "/koleksi?color=forest-green" },
+      { label: "Gold", href: "/koleksi?color=gold" }
     ]
   }
 ];
