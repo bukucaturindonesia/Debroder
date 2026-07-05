@@ -10,14 +10,52 @@ import { whatsappLinkWithMessage } from "@/lib/url";
 const navItems = [
   { label: "Koleksi", href: "/koleksi" },
   { label: "Kaos Polos", href: "/kaos-polos" },
+  { label: "Jaket & Hoodie", href: "/jaket-hoodie" },
+  { label: "Headwear", href: "/headwear" },
   { label: "Sablon DTF", href: "/sablon-dtf" },
   { label: "Jersey", href: "/jersey" },
   { label: "Store", href: "/store" },
   { label: "Cara Order", href: "/cara-order" }
 ];
 
+const collectionMenu = [
+  {
+    title: "Koleksi",
+    links: [
+      { label: "Belanja Semua", href: "/koleksi", highlight: true },
+      { label: "Best Seller", href: "/koleksi" },
+      { label: "New", href: "/koleksi" },
+      { label: "Popular", href: "/koleksi" },
+      { label: "Turun Harga", href: "/koleksi" }
+    ]
+  },
+  {
+    title: "Belanja Berdasarkan Produk",
+    links: [
+      { label: "Kaos Polos", href: "/kaos-polos" },
+      { label: "Jaket & Hoodie", href: "/jaket-hoodie" },
+      { label: "Headwear", href: "/headwear" },
+      { label: "Sablon DTF", href: "/sablon-dtf" },
+      { label: "Jersey Custom", href: "/jersey" },
+      { label: "Maklon DTF", href: "/maklon-dtf" }
+    ]
+  },
+  {
+    title: "Belanja Berdasarkan Warna",
+    links: [
+      { label: "White", href: "/koleksi" },
+      { label: "Black", href: "/koleksi" },
+      { label: "Navy", href: "/koleksi" },
+      { label: "Forest Green", href: "/koleksi" },
+      { label: "Gold", href: "/koleksi" }
+    ]
+  }
+];
+
 const searchItems = [
   { title: "Kaos Polos", href: "/kaos-polos", description: "Kaos polos dan cotton combed premium.", keywords: ["kaos", "baju", "cotton combed"] },
+  { title: "Jaket & Hoodie", href: "/jaket-hoodie", description: "Jaket dan hoodie untuk merchandise, komunitas, dan brand.", keywords: ["jaket", "jacket", "hoodie"] },
+  { title: "Headwear", href: "/headwear", description: "Topi dan headwear untuk kebutuhan apparel custom.", keywords: ["headwear", "topi", "cap", "hat"] },
   { title: "Sablon DTF", href: "/sablon-dtf", description: "Sablon custom untuk brand, event, dan komunitas.", keywords: ["sablon", "dtf", "custom"] },
   { title: "Jersey", href: "/jersey", description: "Custom jersey untuk tim, komunitas, dan instansi.", keywords: ["jersey", "tim", "olahraga"] },
   { title: "Maklon DTF", href: "/maklon-dtf", description: "Partner produksi DTF untuk brand apparel.", keywords: ["maklon", "dtf", "produksi"] },
@@ -44,6 +82,14 @@ function ChatIcon() {
   return (
     <svg viewBox="0 0 24 24" aria-hidden="true" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="1.8">
       <path d="M5.5 18.5 6.8 15A7.5 7.5 0 1 1 9 17.2l-3.5 1.3Z" strokeLinejoin="round" />
+    </svg>
+  );
+}
+
+function ChevronDownIcon() {
+  return (
+    <svg viewBox="0 0 24 24" className="h-3.5 w-3.5" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
+      <path d="m6 9 6 6 6-6" strokeLinecap="round" strokeLinejoin="round" />
     </svg>
   );
 }
@@ -173,9 +219,36 @@ export function SiteHeader() {
           <Logo variant="primary-dark" size="sm" className="transition duration-200 hover:opacity-70" />
         </Link>
 
-        <div className="hidden h-full items-center justify-center gap-6 lg:flex xl:gap-8">
+        <div className="hidden h-full items-center justify-center gap-4 lg:flex xl:gap-6">
           {navItems.map((item) => {
             const active = pathname === item.href;
+            if (item.label === "Koleksi") {
+              return (
+                <div key={item.href} className="group/nav relative flex h-full items-center">
+                  <Link href={item.href} className={`nav-link relative flex h-full items-center gap-1.5 whitespace-nowrap text-[15px] font-medium transition duration-200 hover:text-[#0f5a36] ${active ? "text-[#0f5a36]" : "text-[#111]"}`}>
+                    {item.label}
+                    <ChevronDownIcon />
+                    <span className={`absolute inset-x-0 bottom-0 h-0.5 origin-center bg-[#0f5a36] transition-transform duration-200 ${active ? "scale-x-100" : "scale-x-0"}`} />
+                  </Link>
+                  <div className="invisible absolute left-1/2 top-full z-[120] w-[720px] -translate-x-1/2 translate-y-3 pt-4 opacity-0 transition duration-200 group-hover/nav:visible group-hover/nav:translate-y-0 group-hover/nav:opacity-100 group-focus-within/nav:visible group-focus-within/nav:translate-y-0 group-focus-within/nav:opacity-100">
+                    <div className="grid grid-cols-3 gap-10 rounded-[28px] border border-black/10 bg-white p-9 text-left shadow-[0_18px_50px_rgba(0,0,0,0.14)]">
+                      {collectionMenu.map((column) => (
+                        <div key={column.title}>
+                          <p className="text-[15px] font-semibold text-[#111]">{column.title}</p>
+                          <div className="mt-5 grid gap-4">
+                            {column.links.map((link) => (
+                              <Link key={`${column.title}-${link.label}`} href={link.href} className={`text-[15px] leading-5 transition hover:text-[#0f5a36] ${link.highlight ? "font-semibold text-[#0f5a36]" : "font-medium text-black/58"}`}>
+                                {link.label}
+                              </Link>
+                            ))}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              );
+            }
             return (
               <Link key={item.href} href={item.href} className={`nav-link relative flex h-full items-center whitespace-nowrap text-[15px] font-medium transition duration-200 hover:text-[#0f5a36] ${active ? "text-[#0f5a36]" : "text-[#111]"}`}>
                 {item.label}

@@ -1,7 +1,7 @@
 import type { MetadataRoute } from "next";
 import { getPublicContent } from "@/lib/public-data";
 
-const routes = ["", "/koleksi", "/kaos-polos", "/sablon-dtf", "/maklon-dtf", "/jersey", "/cetak-sublim", "/store", "/cara-order"];
+const routes = ["", "/koleksi", "/kaos-polos", "/jaket-hoodie", "/headwear", "/sablon-dtf", "/maklon-dtf", "/jersey", "/cetak-sublim", "/store", "/cara-order"];
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const now = new Date();
