@@ -2,9 +2,9 @@
 
 import Link from "next/link";
 import { useMemo, useState } from "react";
+import { AddToCartButton } from "@/components/CartProvider";
 import { SafeImage } from "@/components/SafeImage";
 import { fallbackImages, getProductImage } from "@/lib/fallback-data";
-import { productOrderHref } from "@/lib/order";
 import { matchesProductType, type ProductTypeOption } from "@/lib/product-taxonomy";
 import type { Product } from "@/lib/types";
 import { formatRupiah } from "@/lib/url";
@@ -204,7 +204,7 @@ export function ProductCatalog({
                 {chips.map((chip) => <span key={chip} className="bg-brand-offWhite px-2 py-1 text-[10px] font-semibold text-brand-charcoal/65">{chip}</span>)}
                 {stockText ? <span className="bg-brand-offWhite px-2 py-1 text-[10px] font-semibold text-brand-charcoal/65">{stockText}</span> : null}
               </div> : null}
-              <div className="mt-3 grid grid-cols-2 gap-2"><Link href={detailHref} className="inline-flex min-h-9 items-center justify-center border border-brand-softGray px-2 text-[11px] font-semibold sm:min-h-10 sm:text-xs">Detail</Link><Link href={productOrderHref(product)} className="inline-flex min-h-9 items-center justify-center bg-brand-green px-2 text-[11px] font-semibold text-white sm:min-h-10 sm:text-xs">Pesan</Link></div>
+              <div className="mt-3 grid grid-cols-2 gap-2"><Link href={detailHref} className="inline-flex min-h-9 items-center justify-center border border-brand-softGray px-2 text-[11px] font-semibold sm:min-h-10 sm:text-xs">Detail</Link><AddToCartButton product={{ id: product.id || product.slug || product.nama, name: product.nama, category: product.kategori, priceLabel: productPrice(product), href: detailHref }} className="inline-flex min-h-9 items-center justify-center bg-brand-green px-2 text-[11px] font-semibold text-white sm:min-h-10 sm:text-xs">Tambah</AddToCartButton></div>
             </article>;
         })}
       </div> : <div className="mt-6 bg-white p-8 text-center"><p className="font-semibold">Produk tidak ditemukan</p><p className="mt-2 text-sm text-brand-charcoal/60">Coba kata kunci atau kombinasi filter lain.</p></div>}

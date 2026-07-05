@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { KeyboardEvent, useEffect, useMemo, useRef, useState } from "react";
+import { CartNavButton } from "@/components/CartProvider";
 import { Logo } from "@/components/Logo";
 import { contactLinks } from "@/lib/contact";
 import { jacketTypeOptions, kaosTypeOptions } from "@/lib/product-taxonomy";
@@ -355,6 +356,7 @@ export function SiteHeader() {
           <a href={whatsappUrl} className="grid h-10 w-10 place-items-center rounded-full transition hover:bg-[#f5f5ef]" aria-label="Hubungi WhatsApp DEBRODER" target="_blank" rel="noopener noreferrer">
             <ChatIcon />
           </a>
+          <CartNavButton />
           <button type="button" className="relative grid h-10 w-10 place-items-center rounded-full transition hover:bg-[#f5f5ef] lg:hidden" aria-label={isOpen ? "Tutup menu" : "Buka menu"} aria-expanded={isOpen} onClick={() => setIsOpen((current) => !current)}>
             <span className="relative h-4 w-5" aria-hidden="true">
               <span className={`absolute left-0 h-px w-5 bg-current transition ${isOpen ? "top-2 rotate-45" : "top-0.5"}`} />
