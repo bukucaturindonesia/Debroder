@@ -13,7 +13,7 @@ export function JerseyCatalog({ categories }: { categories: ServiceCategory[] })
       <div className="section-shell">
         <div className="max-w-2xl">
           <p className="text-xs font-semibold uppercase tracking-[0.2em] text-brand-charcoal/55">Kategori Jersey</p>
-          <h2 className="mt-3 text-3xl font-bold leading-[1.05] tracking-[-0.02em] sm:text-4xl">Pilih model jersey</h2>
+          <h2 className="mt-3 text-3xl font-bold leading-[1.05] tracking-normal sm:text-4xl">Pilih model jersey</h2>
           <p className="mt-3 text-sm leading-6 text-brand-charcoal/65">Setiap kategori, gambar, pilihan bahan, warna, kerah, dan lengan dapat dikelola dari admin.</p>
         </div>
         {categories.length ? <div className="mt-6 grid grid-cols-1 gap-x-2 gap-y-6 md:grid-cols-2 lg:grid-cols-4">

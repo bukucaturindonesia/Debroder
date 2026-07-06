@@ -117,7 +117,7 @@ function SectionHeading({ title, action, description }: { title: string; action?
   return (
     <div className="flex items-end justify-between gap-4">
       <div>
-        <h2 className="text-[1.75rem] font-semibold leading-tight tracking-[-0.035em] text-[#111] sm:text-[2rem]">{title}</h2>
+        <h2 className="text-[1.75rem] font-semibold leading-tight tracking-normal text-[#111] sm:text-[2rem]">{title}</h2>
         {description ? <p className="mt-2 max-w-2xl text-sm leading-6 text-black/55 sm:text-base">{description}</p> : null}
       </div>
       {action ? <div className="shrink-0">{action}</div> : null}
@@ -149,7 +149,7 @@ function EditorialCard({ item, featuredCard = false }: { item: EditorialItem; fe
       <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/8 to-transparent" />
       <div className="absolute inset-x-0 bottom-0 p-5 text-white sm:p-7">
         <p className="text-xs font-semibold text-white/72">{item.label}</p>
-        <h3 className={`mt-2 max-w-md font-semibold leading-tight tracking-[-0.025em] ${featuredCard ? "text-2xl sm:text-[1.75rem]" : "text-xl sm:text-2xl"}`}>{item.title}</h3>
+        <h3 className={`mt-2 max-w-md font-semibold leading-tight tracking-normal ${featuredCard ? "text-2xl sm:text-[1.75rem]" : "text-xl sm:text-2xl"}`}>{item.title}</h3>
         <span className="mt-5 inline-flex min-h-10 items-center rounded-full bg-white px-4 text-sm font-semibold text-[#111] transition group-hover:bg-[#e9eee9]">{item.button}</span>
       </div>
     </Link>
@@ -217,7 +217,7 @@ function StoreCard({ store, index }: { store: Store; index: number }) {
           <path d="M12 21s6-5.2 6-11a6 6 0 1 0-12 0c0 5.8 6 11 6 11Z" /><circle cx="12" cy="10" r="2" />
         </svg>
       </div>
-      <h3 className="mt-8 text-2xl font-semibold tracking-[-0.03em] text-[#111]">{name}</h3>
+      <h3 className="mt-8 text-2xl font-semibold tracking-normal text-[#111]">{name}</h3>
       <p className="mt-3 min-h-[48px] text-sm leading-6 text-black/55">{store.alamat}</p>
       {store.jam_operasional ? <p className="mt-3 text-xs font-medium text-black/45">{store.jam_operasional}</p> : null}
       <div className="mt-6 grid grid-cols-2 gap-2">
@@ -333,7 +333,7 @@ export default async function Home() {
               <div className="absolute inset-0 bg-gradient-to-r from-black/65 via-black/20 to-transparent" />
               <div className="absolute inset-x-0 bottom-0 p-6 text-white sm:p-10">
                 <p className="text-xs font-semibold uppercase tracking-[0.2em] text-white/70">Instagram</p>
-                <h2 className="mt-2 max-w-xl text-2xl font-semibold tracking-[-0.03em] sm:text-4xl">
+                <h2 className="mt-2 max-w-xl text-2xl font-semibold tracking-normal sm:text-4xl">
                   {content.instagramBanner?.title || "Ikuti DE BRODER di Instagram"}
                 </h2>
               </div>
@@ -355,13 +355,13 @@ export default async function Home() {
         <div className="section-shell grid gap-10 lg:grid-cols-[1.15fr_.85fr] lg:items-start lg:gap-20">
           <div>
             <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#0f5a36]">Tentang DEBRODER</p>
-            <h2 className="mt-4 max-w-xl text-3xl font-semibold leading-tight tracking-[-0.04em] sm:text-5xl">Dibangun untuk ide yang ingin diwujudkan.</h2>
+            <h2 className="mt-4 max-w-xl text-3xl font-semibold leading-tight tracking-normal sm:text-5xl">Dibangun untuk ide yang ingin diwujudkan.</h2>
             <p className="mt-6 max-w-2xl whitespace-pre-line text-base leading-8 text-black/62">{content.trustAbout.about_body}</p>
           </div>
           <div className="grid grid-cols-2 border-l border-t border-black/10">
             {[["2016", "Berdiri"], ["4", "Store Aktif"], ["DTF", "& Apparel"], ["ID", "Kirim Indonesia"]].map(([value, label]) => (
               <div key={`${value}-${label}`} className="border-b border-r border-black/10 p-5 sm:p-7">
-                <p className="text-2xl font-semibold tracking-[-0.03em] text-[#063d24] sm:text-3xl">{value}</p>
+                <p className="text-2xl font-semibold tracking-normal text-[#063d24] sm:text-3xl">{value}</p>
                 <p className="mt-2 text-xs font-medium text-black/50 sm:text-sm">{label}</p>
               </div>
             ))}

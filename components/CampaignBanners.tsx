@@ -70,7 +70,7 @@ export function CampaignBanners({ banners }: { banners: CmsBanner[] }) {
             <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/20 to-transparent sm:bg-gradient-to-r" />
             <div className={`absolute inset-x-0 bottom-0 max-w-3xl p-6 text-white sm:p-10 lg:p-14 ${alignment}`}>
               {banner.eyebrow ? <p className="text-xs font-semibold uppercase tracking-[0.2em] text-white/75">{banner.eyebrow}</p> : null}
-              <h2 className="mt-2 text-3xl font-bold leading-[1.05] tracking-[-0.02em] sm:text-5xl">{banner.title}</h2>
+              <h2 className="mt-2 text-3xl font-bold leading-[1.05] tracking-normal sm:text-5xl">{banner.title}</h2>
               {banner.subtitle ? <p className="mt-3 max-w-2xl text-sm leading-6 text-white/80 sm:text-base">{banner.subtitle}</p> : null}
               {cta ? (
                 <a href={cta.href} className="mt-6 inline-flex min-h-11 items-center justify-center bg-white px-6 py-3 text-sm font-semibold text-black transition hover:bg-white/90">

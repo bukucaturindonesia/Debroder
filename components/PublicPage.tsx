@@ -172,7 +172,7 @@ export function PageHero({
           <p className="w-fit bg-brand-charcoal px-3 py-1 text-[15px] font-medium uppercase leading-5 text-white sm:bg-white sm:text-brand-charcoal">
             {label}
           </p>
-          <h1 className="mt-2 max-w-4xl text-[clamp(42px,12vw,52px)] font-black uppercase leading-[0.94] tracking-[-0.03em] sm:text-[64px] lg:text-[clamp(64px,5.5vw,88px)]">
+          <h1 className="mt-2 max-w-4xl text-[clamp(42px,12vw,52px)] font-black uppercase leading-[0.94] tracking-normal sm:text-[64px] lg:text-[clamp(64px,5.5vw,88px)]">
             {title}
           </h1>
           <p className="mt-3 max-w-2xl text-[17px] leading-[1.45] text-brand-charcoal/70 sm:text-xl sm:text-white/85">
@@ -385,7 +385,7 @@ export function RecommendationGrid({
           <p className="text-sm font-medium uppercase text-brand-charcoal/50">
             Rekomendasi
           </p>
-          <h2 className="mt-3 text-3xl font-bold leading-[1.05] tracking-[-0.02em] sm:text-4xl">
+          <h2 className="mt-3 text-3xl font-bold leading-[1.05] tracking-normal sm:text-4xl">
             Layanan DE BRODER lainnya
           </h2>
         </div>
@@ -449,7 +449,7 @@ export function CategoryDetailPage({
       <section data-reveal className="bg-brand-offWhite py-12 sm:py-16">
         <div className="section-shell grid gap-6 lg:grid-cols-[0.9fr_1.1fr] lg:items-start">
           <div>
-            <h2 className="text-3xl font-bold leading-[1.05] tracking-[-0.02em]">Detail layanan</h2>
+            <h2 className="text-3xl font-bold leading-[1.05] tracking-normal">Detail layanan</h2>
             <div className="mt-6 grid gap-3">
               {details.map((detail) => (
                 <p

@@ -114,7 +114,7 @@ export function HeroSlider({ heroes }: { heroes: HeroBanner[] }) {
   return (
     <section
       id="beranda"
-      className="hero-section relative h-[clamp(460px,72vh,540px)] w-full overflow-hidden bg-[#04160f] sm:h-[560px] lg:h-[calc(100svh-170px)] lg:min-h-[460px] lg:max-h-[600px]"
+      className="hero-section relative h-[clamp(440px,70vh,540px)] w-full overflow-hidden bg-[#04160f] sm:h-[540px] lg:h-[calc(100svh-170px)] lg:min-h-[460px] lg:max-h-[600px]"
       aria-roledescription="carousel"
       aria-label="Koleksi utama DEBRODER"
       onTouchStart={(event) => setTouchStart(event.touches[0].clientX)}
@@ -167,25 +167,25 @@ export function HeroSlider({ heroes }: { heroes: HeroBanner[] }) {
             </div>
 
             <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(1,9,6,.9)_0%,rgba(1,9,6,.66)_37%,rgba(1,9,6,.12)_72%,rgba(1,9,6,.28)_100%)] sm:bg-[linear-gradient(90deg,rgba(1,9,6,.92)_0%,rgba(1,9,6,.63)_38%,rgba(1,9,6,.08)_70%,rgba(1,9,6,.24)_100%)]" />
-            <div className="absolute inset-x-0 bottom-20 z-10 sm:bottom-12 lg:bottom-16">
+            <div className="absolute inset-x-0 bottom-16 z-10 sm:bottom-14 lg:bottom-16">
               <div className="section-shell">
                 <div className={`max-w-[620px] text-white ${textAlignment}`}>
-                  <p className="text-[15px] font-medium uppercase tracking-[0.08em] text-white/75 sm:text-[17px]">
+                  <p className="text-[15px] font-medium uppercase tracking-normal text-white/75 sm:text-[17px]">
                     {slide.badge || "APPAREL PREMIUM"}
                   </p>
                   {index === 0 ? (
-                    <h1 className="mt-2 whitespace-pre-line text-[clamp(2.625rem,12vw,3.25rem)] font-black uppercase leading-[0.92] tracking-[-0.03em] sm:text-[4rem] lg:text-[clamp(4rem,6vw,5.5rem)]">
+                    <h1 className="mt-2 whitespace-pre-line text-[clamp(2.625rem,12vw,3.25rem)] font-black uppercase leading-[0.92] tracking-normal sm:text-[4rem] lg:text-[clamp(4rem,6vw,5.5rem)]">
                       {headline}
                     </h1>
                   ) : (
-                    <h2 className="mt-2 whitespace-pre-line text-[clamp(2.625rem,12vw,3.25rem)] font-black uppercase leading-[0.92] tracking-[-0.03em] sm:text-[4rem] lg:text-[clamp(4rem,6vw,5.5rem)]">
+                    <h2 className="mt-2 whitespace-pre-line text-[clamp(2.625rem,12vw,3.25rem)] font-black uppercase leading-[0.92] tracking-normal sm:text-[4rem] lg:text-[clamp(4rem,6vw,5.5rem)]">
                       {headline}
                     </h2>
                   )}
-                  <p className="mt-3 max-w-lg whitespace-pre-line text-[17px] leading-[1.45] text-white/80 sm:text-xl">
+                  <p className="mt-2.5 max-w-lg whitespace-pre-line text-[17px] leading-[1.25] text-white/80 sm:text-xl">
                     {subtitle}
                   </p>
-                  <a href={cta.href} className="mt-5 inline-flex min-h-11 items-center gap-2 rounded-full bg-white px-5 py-3 text-sm font-semibold text-[#111] transition duration-200 hover:bg-[#e9eee9]">
+                  <a href={cta.href} className="mt-4 inline-flex min-h-11 items-center gap-2 rounded-full bg-white px-5 py-3 text-sm font-semibold text-[#111] transition duration-200 hover:bg-[#e9eee9]">
                     {cta.text}
                     <ArrowIcon direction="right" />
                   </a>

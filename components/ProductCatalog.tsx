@@ -167,7 +167,7 @@ export function ProductCatalog({
 
   return (
     <div>
-      {showHeading ? <h2 className="text-3xl font-bold leading-[1.05] tracking-[-0.02em] sm:text-4xl">{title}</h2> : null}
+      {showHeading ? <h2 className="text-3xl font-bold leading-[1.05] tracking-normal sm:text-4xl">{title}</h2> : null}
       <div className={`${showHeading ? "mt-6" : ""} grid gap-3 border-y border-brand-softGray py-5 sm:grid-cols-2 ${filterGridClass}`}>
         <input aria-label="Cari produk" value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Cari produk, bahan, warna..." className="min-h-11 rounded-full border border-brand-softGray bg-white px-4 text-sm outline-none focus:border-brand-charcoal lg:col-span-2" />
         {showGroupFilter ? <select aria-label="Filter produk" value={group} onChange={(event) => setGroup(event.target.value as ProductGroup)} className="min-h-11 rounded-full border border-brand-softGray bg-white px-4 text-sm font-semibold"><option value="all">Semua produk</option><option value="jaket-hoodie">Jaket & Hoodie</option><option value="headwear">Headwear</option></select> : null}
