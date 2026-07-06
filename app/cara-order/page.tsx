@@ -74,7 +74,7 @@ export default async function CaraOrderPage() {
       </section>
       <section className="bg-white py-12 sm:py-16">
         <div className="section-shell">
-          <h2 className="text-3xl font-bold leading-[1.05] tracking-normal sm:text-4xl">
+          <h2 className="text-[28px] font-semibold leading-[1.15] tracking-normal sm:text-[36px]">
             FAQ
           </h2>
           <div className="mt-6 grid gap-4 md:grid-cols-2">

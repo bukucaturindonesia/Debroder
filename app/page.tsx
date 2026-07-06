@@ -143,7 +143,7 @@ function SectionHeading({ title, action, description, textPosition = "left" }: {
   return (
     <div className="flex items-end justify-between gap-4">
       <div className={textPosition === "center" ? "flex-1 text-center" : textPosition === "right" ? "ml-auto text-right" : ""}>
-        <h2 className="text-[2.125rem] font-bold leading-[1.05] tracking-normal text-[#111] sm:text-5xl">{title}</h2>
+        <h2 className="text-[28px] font-semibold leading-[1.15] tracking-normal text-[#111] sm:text-[36px]">{title}</h2>
         {description ? <p className="mt-2 max-w-2xl text-sm leading-6 text-black/55 sm:text-base">{description}</p> : null}
       </div>
       {action ? <div className="shrink-0">{action}</div> : null}
@@ -192,9 +192,9 @@ function ProductCard({ item, className = "" }: { item: ProductItem; className?: 
       </div>
       </Link>
       <div className="pt-3">
-        <Link href={item.href}><h3 className="line-clamp-2 text-sm font-semibold text-[#111] sm:text-base">{item.name}</h3></Link>
-        <p className="mt-1 text-sm font-semibold text-[#111]">{item.price}</p>
-        <p className="mt-1 text-xs text-black/50 sm:text-sm">{item.category}</p>
+        <Link href={item.href}><h3 className="line-clamp-2 text-[15px] font-semibold leading-snug text-[#111] sm:text-base">{item.name}</h3></Link>
+        <p className="mt-1 text-sm text-black/50 sm:text-[15px]">{item.category}</p>
+        <p className="mt-2 text-[15px] font-semibold text-[#111] sm:text-base">{item.price}</p>
         {item.cartProduct ? <AddToCartButton product={item.cartProduct} className="mt-3 inline-flex min-h-10 w-full items-center justify-center bg-[#0f5a36] px-4 text-xs font-semibold text-white">Tambah ke Keranjang</AddToCartButton> : null}
       </div>
     </article>
@@ -250,7 +250,7 @@ function StoreCard({ store, index }: { store: Store; index: number }) {
           <path d="M12 21s6-5.2 6-11a6 6 0 1 0-12 0c0 5.8 6 11 6 11Z" /><circle cx="12" cy="10" r="2" />
         </svg>
       </div>
-      <h3 className="mt-8 text-2xl font-semibold tracking-normal text-[#111]">{name}</h3>
+      <h3 className="mt-8 text-xl font-semibold tracking-normal text-[#111] sm:text-2xl">{name}</h3>
       <p className="mt-3 min-h-[48px] text-sm leading-6 text-black/55">{store.alamat}</p>
       {store.jam_operasional ? <p className="mt-3 text-xs font-medium text-black/45">{store.jam_operasional}</p> : null}
       <div className="mt-6 grid grid-cols-2 gap-2">
@@ -359,8 +359,9 @@ export default async function Home() {
                     <SafeImage src={item.image} fallbackSrc={item.fallbackImage} alt={item.imageAlt} fill sizes="(min-width: 1536px) 20vw, (min-width: 1024px) 25vw, 50vw" className={`${(item.objectFit || item.fit) === "contain" ? "object-contain p-4" : "object-cover"} transition duration-700 group-hover:scale-[1.03]`} objectFit={item.objectFit || (item.fit === "contain" ? "contain" : "cover")} objectPosition={item.objectPosition} />
                   </div>
                   </Link>
-                  <Link href={item.href} className="mt-3 block"><h3 className="line-clamp-2 text-sm font-semibold sm:text-base">{item.name}</h3></Link>
-                  <p className="mt-1 text-sm text-black/50">{item.price}</p>
+                  <Link href={item.href} className="mt-3 block"><h3 className="line-clamp-2 text-[15px] font-semibold leading-snug sm:text-base">{item.name}</h3></Link>
+                  <p className="mt-1 text-sm text-black/50 sm:text-[15px]">{item.category}</p>
+                  <p className="mt-2 text-[15px] font-semibold sm:text-base">{item.price}</p>
                   {item.cartProduct ? <AddToCartButton product={item.cartProduct} className="mt-3 inline-flex min-h-10 w-full items-center justify-center bg-[#0f5a36] px-4 text-xs font-semibold text-white">Tambah ke Keranjang</AddToCartButton> : null}
                 </article>
               )) : <p className="col-span-full bg-white p-8 text-center text-sm text-black/55">Belum ada produk apparel.</p>}
@@ -402,7 +403,7 @@ export default async function Home() {
               <div className="absolute inset-0 bg-gradient-to-r from-black/65 via-black/20 to-transparent" />
               <div className={`absolute inset-x-0 bottom-0 p-6 text-white sm:p-10 ${content.instagramBanner?.text_position === "center" ? "text-center" : content.instagramBanner?.text_position === "right" ? "text-right" : ""}`}>
                 <p className="text-xs font-semibold uppercase tracking-[0.2em] text-white/70">{content.instagramBanner?.eyebrow || "Instagram"}</p>
-                <h2 className="mt-2 max-w-xl text-2xl font-semibold tracking-normal sm:text-4xl">
+                <h2 className="mt-2 max-w-xl text-[26px] font-semibold leading-[1.12] tracking-normal sm:text-[36px]">
                   {content.instagramBanner?.title || "Ikuti DE BRODER di Instagram"}
                 </h2>
                 {content.instagramBanner?.subtitle ? <p className="mt-3 text-sm text-white/75">{content.instagramBanner.subtitle}</p> : null}
@@ -430,7 +431,7 @@ export default async function Home() {
         <div className="section-shell grid gap-10 lg:grid-cols-[1.15fr_.85fr] lg:items-start lg:gap-20">
           <div className={content.trustAbout.text_position === "center" ? "text-center" : content.trustAbout.text_position === "right" ? "text-right" : ""}>
             <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#0f5a36]">Tentang DEBRODER</p>
-            <h2 className="mt-4 max-w-xl text-3xl font-semibold leading-tight tracking-normal sm:text-5xl">Dibangun untuk ide yang ingin diwujudkan.</h2>
+            <h2 className="mt-4 max-w-xl text-[28px] font-semibold leading-[1.12] tracking-normal sm:text-[40px]">Dibangun untuk ide yang ingin diwujudkan.</h2>
             <p className="mt-6 max-w-2xl whitespace-pre-line text-base leading-8 text-black/62">{content.trustAbout.about_body}</p>
             {content.trustAbout.cta_label && content.trustAbout.cta_url ? <Link href={content.trustAbout.cta_url} className="mt-6 inline-flex min-h-11 items-center bg-[#063d24] px-6 text-sm font-semibold text-white">{content.trustAbout.cta_label}</Link> : null}
           </div>
