@@ -58,7 +58,7 @@ type ProductItem = Visual & {
   cartProduct?: CartProductInput;
 };
 
-const mobileCarouselClass = "no-scrollbar mt-6 flex snap-x snap-mandatory gap-2 overflow-x-auto md:grid md:overflow-visible";
+const mobileCarouselClass = "no-scrollbar mt-4 flex snap-x snap-mandatory gap-2 overflow-x-auto md:grid md:overflow-visible";
 const mobileCarouselItemClass = "min-w-[76vw] shrink-0 snap-start md:min-w-0 md:shrink";
 
 function productItem(product: Product): ProductItem {
@@ -143,7 +143,7 @@ function SectionHeading({ title, action, description, textPosition = "left" }: {
   return (
     <div className="flex items-end justify-between gap-4">
       <div className={textPosition === "center" ? "flex-1 text-center" : textPosition === "right" ? "ml-auto text-right" : ""}>
-        <h2 className="text-[1.75rem] font-bold leading-[1.05] tracking-[-0.02em] text-[#111] sm:text-[2rem]">{title}</h2>
+        <h2 className="text-[2.125rem] font-bold leading-[1.05] tracking-normal text-[#111] sm:text-5xl">{title}</h2>
         {description ? <p className="mt-2 max-w-2xl text-sm leading-6 text-black/55 sm:text-base">{description}</p> : null}
       </div>
       {action ? <div className="shrink-0">{action}</div> : null}
@@ -170,14 +170,14 @@ function BenefitIcon({ name }: { name: string }) {
 
 function EditorialCard({ item, featuredCard = false, className = "" }: { item: EditorialItem; featuredCard?: boolean; className?: string }) {
   return (
-    <article className={`group relative block overflow-hidden bg-[#0a1711] ${featuredCard ? "h-[440px] sm:h-[500px] lg:h-[560px]" : "h-[400px] sm:h-[440px]"} ${className}`}>
+    <article className={`group relative block overflow-hidden bg-[#0a1711] ${featuredCard ? "aspect-[4/5]" : "h-[400px] sm:h-[440px]"} ${className}`}>
       <Link href={item.href} aria-label={`Lihat ${item.title}`} className="absolute inset-0 z-10" />
       <SafeImage src={item.image} fallbackSrc={item.fallbackImage} alt={item.imageAlt} fill sizes={featuredCard ? "(min-width: 1024px) 50vw, 86vw" : "(min-width: 1024px) 33vw, 82vw"} className="object-cover transition duration-700 group-hover:scale-[1.03]" objectFit={item.objectFit || "cover"} objectPosition={item.objectPosition} />
       <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/8 to-transparent" />
       <div className="pointer-events-none absolute inset-x-0 bottom-0 z-20 p-5 text-white sm:p-7">
         <p className="text-xs font-semibold text-white/72">{item.label}</p>
-        <h3 className={`mt-2 max-w-md font-semibold leading-tight tracking-[-0.025em] ${featuredCard ? "text-2xl sm:text-[1.75rem]" : "text-xl sm:text-2xl"}`}>{item.title}</h3>
-        <div className="pointer-events-auto relative z-30 mt-5 flex flex-wrap gap-2"><Link href={item.href} className="inline-flex min-h-10 items-center rounded-full bg-white px-4 text-sm font-semibold text-[#111] transition group-hover:bg-[#e9eee9]">{item.button}</Link>{item.cartProduct ? <AddToCartButton product={item.cartProduct} className="inline-flex min-h-10 items-center rounded-full bg-[#0f5a36] px-4 text-sm font-semibold text-white">Tambah ke Keranjang</AddToCartButton> : null}</div>
+        <h3 className={`mt-1.5 max-w-md font-semibold leading-tight tracking-normal ${featuredCard ? "text-2xl sm:text-[1.75rem]" : "text-xl sm:text-2xl"}`}>{item.title}</h3>
+        <div className="pointer-events-auto relative z-30 mt-4 flex flex-wrap gap-2"><Link href={item.href} className="inline-flex min-h-10 items-center rounded-full bg-white px-4 text-sm font-semibold text-[#111] transition group-hover:bg-[#e9eee9]">{item.button}</Link>{item.cartProduct ? <AddToCartButton product={item.cartProduct} className="inline-flex min-h-10 items-center rounded-full bg-[#0f5a36] px-4 text-sm font-semibold text-white">Tambah ke Keranjang</AddToCartButton> : null}</div>
       </div>
     </article>
   );
@@ -191,7 +191,7 @@ function ProductCard({ item, className = "" }: { item: ProductItem; className?: 
         <SafeImage src={item.image} fallbackSrc={item.fallbackImage} alt={item.imageAlt} fill sizes="(min-width: 1536px) 20vw, (min-width: 1024px) 25vw, 50vw" className={`${(item.objectFit || item.fit) === "contain" ? "object-contain p-3" : "object-cover"} transition duration-700 group-hover:scale-[1.03]`} objectFit={item.objectFit || (item.fit === "contain" ? "contain" : "cover")} objectPosition={item.objectPosition} />
       </div>
       </Link>
-      <div className="pt-4">
+      <div className="pt-3">
         <Link href={item.href}><h3 className="line-clamp-2 text-sm font-semibold text-[#111] sm:text-base">{item.name}</h3></Link>
         <p className="mt-1 text-sm font-semibold text-[#111]">{item.price}</p>
         <p className="mt-1 text-xs text-black/50 sm:text-sm">{item.category}</p>
@@ -211,10 +211,12 @@ function ManagedHomepageSection({ section, setting }: { section: HomepageSection
     const items = section.items.map(editorialPlacement).filter((item): item is EditorialItem => Boolean(item));
     if (!items.length) return null;
     return (
-      <section data-reveal id={section.slug} className={`snap-section section-space ${section.slug === "trending" ? "bg-[#f7f7f2]" : "bg-white"}`}>
-        <div className="section-shell">
-          <SectionHeading title={section.title} description={setting?.subtitle} textPosition={setting?.text_position} action={<div className="flex items-center gap-4">{configuredCta}{!isFeatured ? <ScrollButtons containerId={carouselId} /> : null}</div>} />
-          <div id={carouselId} className={isFeatured ? "mt-6 grid grid-cols-1 gap-2 lg:grid-cols-2" : `${mobileCarouselClass} md:grid-cols-2 lg:grid-cols-3`}>
+      <section data-reveal id={section.slug} className={`snap-section ${isFeatured ? "bg-white py-6 sm:py-8" : `section-space ${section.slug === "trending" ? "bg-[#f7f7f2]" : "bg-white"}`}`}>
+        <div className={isFeatured ? "" : "section-shell"}>
+          <div className={isFeatured ? "section-shell" : ""}>
+            <SectionHeading title={section.title} description={setting?.subtitle} textPosition={setting?.text_position} action={<div className="flex items-center gap-4">{configuredCta}{!isFeatured ? <ScrollButtons containerId={carouselId} /> : null}</div>} />
+          </div>
+          <div id={carouselId} className={isFeatured ? "mt-4 grid grid-cols-1 gap-1 sm:gap-2 lg:grid-cols-2" : `${mobileCarouselClass} md:grid-cols-2 lg:grid-cols-3`}>
             {items.map((item, index) => <EditorialCard key={section.items[index]?.id || `${item.href}-${index}`} item={item} featuredCard={isFeatured} className={isFeatured ? "" : mobileCarouselItemClass} />)}
           </div>
         </div>
@@ -248,7 +250,7 @@ function StoreCard({ store, index }: { store: Store; index: number }) {
           <path d="M12 21s6-5.2 6-11a6 6 0 1 0-12 0c0 5.8 6 11 6 11Z" /><circle cx="12" cy="10" r="2" />
         </svg>
       </div>
-      <h3 className="mt-8 text-2xl font-semibold tracking-[-0.03em] text-[#111]">{name}</h3>
+      <h3 className="mt-8 text-2xl font-semibold tracking-normal text-[#111]">{name}</h3>
       <p className="mt-3 min-h-[48px] text-sm leading-6 text-black/55">{store.alamat}</p>
       {store.jam_operasional ? <p className="mt-3 text-xs font-medium text-black/45">{store.jam_operasional}</p> : null}
       <div className="mt-6 grid grid-cols-2 gap-2">
@@ -400,7 +402,7 @@ export default async function Home() {
               <div className="absolute inset-0 bg-gradient-to-r from-black/65 via-black/20 to-transparent" />
               <div className={`absolute inset-x-0 bottom-0 p-6 text-white sm:p-10 ${content.instagramBanner?.text_position === "center" ? "text-center" : content.instagramBanner?.text_position === "right" ? "text-right" : ""}`}>
                 <p className="text-xs font-semibold uppercase tracking-[0.2em] text-white/70">{content.instagramBanner?.eyebrow || "Instagram"}</p>
-                <h2 className="mt-2 max-w-xl text-2xl font-semibold tracking-[-0.03em] sm:text-4xl">
+                <h2 className="mt-2 max-w-xl text-2xl font-semibold tracking-normal sm:text-4xl">
                   {content.instagramBanner?.title || "Ikuti DE BRODER di Instagram"}
                 </h2>
                 {content.instagramBanner?.subtitle ? <p className="mt-3 text-sm text-white/75">{content.instagramBanner.subtitle}</p> : null}
@@ -428,7 +430,7 @@ export default async function Home() {
         <div className="section-shell grid gap-10 lg:grid-cols-[1.15fr_.85fr] lg:items-start lg:gap-20">
           <div className={content.trustAbout.text_position === "center" ? "text-center" : content.trustAbout.text_position === "right" ? "text-right" : ""}>
             <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#0f5a36]">Tentang DEBRODER</p>
-            <h2 className="mt-4 max-w-xl text-3xl font-semibold leading-tight tracking-[-0.04em] sm:text-5xl">Dibangun untuk ide yang ingin diwujudkan.</h2>
+            <h2 className="mt-4 max-w-xl text-3xl font-semibold leading-tight tracking-normal sm:text-5xl">Dibangun untuk ide yang ingin diwujudkan.</h2>
             <p className="mt-6 max-w-2xl whitespace-pre-line text-base leading-8 text-black/62">{content.trustAbout.about_body}</p>
             {content.trustAbout.cta_label && content.trustAbout.cta_url ? <Link href={content.trustAbout.cta_url} className="mt-6 inline-flex min-h-11 items-center bg-[#063d24] px-6 text-sm font-semibold text-white">{content.trustAbout.cta_label}</Link> : null}
           </div>
@@ -439,7 +441,7 @@ export default async function Home() {
           ) : <div className="grid grid-cols-2 border-l border-t border-black/10">
             {[["2016", "Berdiri"], ["4", "Store Aktif"], ["DTF", "& Apparel"], ["ID", "Kirim Indonesia"]].map(([value, label]) => (
               <div key={`${value}-${label}`} className="border-b border-r border-black/10 p-5 sm:p-7">
-                <p className="text-2xl font-semibold tracking-[-0.03em] text-[#063d24] sm:text-3xl">{value}</p>
+                <p className="text-2xl font-semibold tracking-normal text-[#063d24] sm:text-3xl">{value}</p>
                 <p className="mt-2 text-xs font-medium text-black/50 sm:text-sm">{label}</p>
               </div>
             ))}
