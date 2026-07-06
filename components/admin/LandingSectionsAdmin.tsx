@@ -20,6 +20,8 @@ const cmsEditorLinks = [
   ["Featured Products", "/admin/featured-products"],
   ["Trending", "/admin/trending"],
   ["Fresh Drop", "/admin/fresh-drop"],
+  ["Shop by Category", "/admin/shop-category"],
+  ["Pakaian Polos", "/admin/plain-category"],
   ["Categories", "/admin/categories"],
   ["Services", "/admin/services"],
   ["Instagram Banner", "/admin/banner"],

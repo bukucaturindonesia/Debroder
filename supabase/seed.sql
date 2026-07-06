@@ -228,7 +228,8 @@ insert into public.homepage_sections (title, slug, is_active, sort_order)
 values
   ('Featured', 'featured', true, 10),
   ('Trending', 'trending', true, 20),
-  ('Fresh Drops', 'fresh-drops', true, 30)
+  ('Fresh Drops', 'fresh-drops', true, 30),
+  ('Shop by Category', 'services-products', true, 60)
 on conflict (slug) do nothing;
 
 insert into public.homepage_sections (title, slug, is_active, sort_order)

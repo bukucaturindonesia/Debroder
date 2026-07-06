@@ -8,6 +8,52 @@ import type { HomepageSection, HomepageSectionItem, Product, Service } from "@/l
 
 type EditableSection = HomepageSection & { items: EditableItem[] };
 type EditableItem = HomepageSectionItem & { product?: Product | null; service?: Service | null };
+type MediaChoice = { id: string; name: string; public_url: string; media_type: "image" | "video" };
+type CustomDraft = {
+  custom_label: string;
+  custom_title: string;
+  custom_subtitle: string;
+  custom_button_label: string;
+  custom_link_url: string;
+  custom_image_url: string;
+  custom_mobile_image_url: string;
+  custom_image_alt: string;
+  custom_object_fit: "cover" | "contain";
+  custom_object_position: string;
+};
+
+const customCardSectionSlugs = new Set(["featured", "trending", "services-products"]);
+const productOnlySectionSlugs = new Set(["fresh-drops", PLAIN_CATEGORY_SECTION_SETTING.slug]);
+const objectPositionOptions = [
+  "center center",
+  "center top",
+  "center bottom",
+  "left center",
+  "right center",
+  "left top",
+  "left bottom",
+  "right top",
+  "right bottom"
+];
+const emptyCustomDraft: CustomDraft = {
+  custom_label: "",
+  custom_title: "",
+  custom_subtitle: "",
+  custom_button_label: "Lihat",
+  custom_link_url: "",
+  custom_image_url: "",
+  custom_mobile_image_url: "",
+  custom_image_alt: "",
+  custom_object_fit: "cover",
+  custom_object_position: "center center"
+};
+const requiredHomepageSections: Record<string, { title: string; sort_order: number }> = {
+  featured: { title: "Featured", sort_order: 10 },
+  trending: { title: "Trending", sort_order: 20 },
+  "fresh-drops": { title: "Fresh Drops", sort_order: 30 },
+  [PLAIN_CATEGORY_SECTION_SETTING.slug]: { title: PLAIN_CATEGORY_SECTION_SETTING.title, sort_order: PLAIN_CATEGORY_SECTION_SETTING.sortOrder },
+  "services-products": { title: "Shop by Category", sort_order: 60 }
+};
 const homepageSectionSelect = `
   *,
   items:homepage_section_items(
@@ -22,11 +68,23 @@ function slugify(value: string) {
 }
 
 function itemName(item: EditableItem) {
-  return item.product?.nama || item.service?.nama || "Item tidak tersedia";
+  return item.custom_title || item.product?.nama || item.service?.nama || "Item tidak tersedia";
 }
 
 function itemImage(item: EditableItem) {
-  return item.product?.image_url || item.product?.gambar_url || item.service?.image_url || "/images/debroder/fallback/fallback-product.jpg";
+  return item.custom_image_url || item.product?.image_url || item.product?.gambar_url || item.service?.image_url || "/images/debroder/fallback/fallback-product.jpg";
+}
+
+function isCustomSection(section: EditableSection) {
+  return customCardSectionSlugs.has(section.slug);
+}
+
+function isProductOnlySection(section: EditableSection) {
+  return productOnlySectionSlugs.has(section.slug);
+}
+
+function isCustomItem(item: EditableItem) {
+  return Boolean(item.custom_title || item.custom_image_url || item.custom_link_url);
 }
 
 function normalizeSection(section: EditableSection) {
@@ -41,10 +99,12 @@ export function HomepageSectionsAdmin({ showPlainCategorySetting = true, onlySlu
   const [plainCategorySection, setPlainCategorySection] = useState<EditableSection | null>(null);
   const [products, setProducts] = useState<Product[]>([]);
   const [services, setServices] = useState<Service[]>([]);
+  const [media, setMedia] = useState<MediaChoice[]>([]);
   const [newTitle, setNewTitle] = useState("");
   const [newSlug, setNewSlug] = useState("");
   const [newSortOrder, setNewSortOrder] = useState(0);
   const [selection, setSelection] = useState<Record<string, string>>({});
+  const [customDrafts, setCustomDrafts] = useState<Record<string, CustomDraft>>({});
   const [status, setStatus] = useState("");
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -53,10 +113,11 @@ export function HomepageSectionsAdmin({ showPlainCategorySetting = true, onlySlu
     const supabase = createSupabaseClient();
     if (!supabase) return;
     setLoading(true);
-    const [sectionResult, productResult, serviceResult] = await Promise.all([
+    const [sectionResult, productResult, serviceResult, mediaResult] = await Promise.all([
       supabase.from("homepage_sections").select(homepageSectionSelect).order("sort_order", { ascending: true }),
       supabase.from("products").select("*").order("urutan", { ascending: true }),
-      supabase.from("services").select("*").order("urutan", { ascending: true })
+      supabase.from("services").select("*").order("urutan", { ascending: true }),
+      supabase.from("media_assets").select("id,name,public_url,media_type").eq("status_aktif", true).eq("media_type", "image").order("created_at", { ascending: false })
     ]);
 
     if (sectionResult.error) {
@@ -68,6 +129,24 @@ export function HomepageSectionsAdmin({ showPlainCategorySetting = true, onlySlu
     let normalized = ((sectionResult.data || []) as EditableSection[]).map(normalizeSection);
     let plainSetting = normalized.find((section) => section.slug === PLAIN_CATEGORY_SECTION_SETTING.slug) || null;
     let nextStatus = "";
+
+    if (onlySlug && requiredHomepageSections[onlySlug] && !normalized.some((section) => section.slug === onlySlug)) {
+      const required = requiredHomepageSections[onlySlug];
+      const { data: insertedSection, error: insertError } = await supabase
+        .from("homepage_sections")
+        .upsert(
+          { title: required.title, slug: onlySlug, sort_order: required.sort_order, is_active: true },
+          { onConflict: "slug" }
+        )
+        .select(homepageSectionSelect)
+        .maybeSingle();
+
+      if (insertError) {
+        nextStatus = `Section ${required.title} belum siap: ${insertError.message}`;
+      } else if (insertedSection) {
+        normalized = [...normalized, normalizeSection(insertedSection as EditableSection)].sort((a, b) => a.sort_order - b.sort_order);
+      }
+    }
 
     if (!plainSetting && showPlainCategorySetting) {
       const { data: insertedSetting, error: insertError } = await supabase
@@ -108,11 +187,12 @@ export function HomepageSectionsAdmin({ showPlainCategorySetting = true, onlySlu
     setLoading(false);
     setPlainCategorySection(plainSetting);
     setSections(normalized.filter((section) =>
-      section.slug !== PLAIN_CATEGORY_SECTION_SETTING.slug
+      (!onlySlug && section.slug === PLAIN_CATEGORY_SECTION_SETTING.slug ? false : true)
       && (!onlySlug || section.slug === onlySlug)
     ));
     setProducts((productResult.data || []) as Product[]);
     setServices((serviceResult.data || []) as Service[]);
+    setMedia((mediaResult.data || []) as MediaChoice[]);
     setStatus(nextStatus);
   }
 
@@ -124,6 +204,11 @@ export function HomepageSectionsAdmin({ showPlainCategorySetting = true, onlySlu
     ...products.map((product) => ({ value: `product:${product.id}`, label: `Produk · ${product.nama}` })),
     ...services.map((service) => ({ value: `service:${service.id}`, label: `Layanan · ${service.nama}` }))
   ], [products, services]);
+  const productOptions = useMemo(() => products.map((product) => ({ value: `product:${product.id}`, label: `Produk · ${product.nama}` })), [products]);
+
+  function sourceOptionsForSection(section: EditableSection) {
+    return isProductOnlySection(section) ? productOptions : sourceOptions;
+  }
 
   function updateSection(id: string, patch: Partial<EditableSection>) {
     setSections((current) => current.map((section) => section.id === id ? { ...section, ...patch } : section));
@@ -133,6 +218,13 @@ export function HomepageSectionsAdmin({ showPlainCategorySetting = true, onlySlu
     setSections((current) => current.map((section) => section.id === sectionId
       ? { ...section, items: section.items.map((item) => item.id === itemId ? { ...item, ...patch } : item) }
       : section));
+  }
+
+  function updateCustomDraft(sectionId: string, patch: Partial<CustomDraft>) {
+    setCustomDrafts((current) => ({
+      ...current,
+      [sectionId]: { ...emptyCustomDraft, ...(current[sectionId] || {}), ...patch }
+    }));
   }
 
   async function updatePlainCategorySectionVisibility(isActive: boolean) {
@@ -232,12 +324,20 @@ export function HomepageSectionsAdmin({ showPlainCategorySetting = true, onlySlu
   }
 
   async function addItem(section: EditableSection) {
+    if (isCustomSection(section)) {
+      setStatus("Section ini memakai custom card. Gunakan form Tambah custom card.");
+      return;
+    }
     const selected = selection[section.id];
     if (!selected) {
-      setStatus("Pilih produk atau layanan terlebih dahulu.");
+      setStatus(isProductOnlySection(section) ? "Pilih produk terlebih dahulu." : "Pilih produk atau layanan terlebih dahulu.");
       return;
     }
     const [type, id] = selected.split(":");
+    if (isProductOnlySection(section) && type !== "product") {
+      setStatus("Section ini hanya boleh memilih dari produk yang ada.");
+      return;
+    }
     const supabase = createSupabaseClient();
     if (!supabase) return;
     const { error } = await supabase.from("homepage_section_items").insert({
@@ -253,6 +353,40 @@ export function HomepageSectionsAdmin({ showPlainCategorySetting = true, onlySlu
     }
     setSelection((current) => ({ ...current, [section.id]: "" }));
     setStatus("Item ditambahkan ke homepage tanpa mengubah data aslinya.");
+    await loadData();
+  }
+
+  async function addCustomItem(section: EditableSection) {
+    const draft = { ...emptyCustomDraft, ...(customDrafts[section.id] || {}) };
+    if (!draft.custom_title.trim() || !draft.custom_link_url.trim() || !draft.custom_image_url.trim()) {
+      setStatus("Custom card wajib memiliki judul, link tujuan, dan gambar.");
+      return;
+    }
+    const supabase = createSupabaseClient();
+    if (!supabase) return;
+    const { error } = await supabase.from("homepage_section_items").insert({
+      section_id: section.id,
+      product_id: null,
+      service_id: null,
+      custom_label: draft.custom_label.trim(),
+      custom_title: draft.custom_title.trim(),
+      custom_subtitle: draft.custom_subtitle.trim(),
+      custom_button_label: draft.custom_button_label.trim() || "Lihat",
+      custom_link_url: draft.custom_link_url.trim(),
+      custom_image_url: draft.custom_image_url.trim(),
+      custom_mobile_image_url: draft.custom_mobile_image_url.trim() || null,
+      custom_image_alt: draft.custom_image_alt.trim() || draft.custom_title.trim(),
+      custom_object_fit: draft.custom_object_fit,
+      custom_object_position: draft.custom_object_position,
+      is_active: true,
+      sort_order: section.items.length ? Math.max(...section.items.map((item) => item.sort_order)) + 10 : 10
+    });
+    if (error) {
+      setStatus(`Custom card gagal ditambahkan: ${error.message}`);
+      return;
+    }
+    setCustomDrafts((current) => ({ ...current, [section.id]: emptyCustomDraft }));
+    setStatus("Custom card ditambahkan.");
     await loadData();
   }
 
@@ -274,7 +408,17 @@ export function HomepageSectionsAdmin({ showPlainCategorySetting = true, onlySlu
     setSaving(true);
     const results = await Promise.all(section.items.map((item) => supabase.from("homepage_section_items").update({
       is_active: item.is_active,
-      sort_order: Number(item.sort_order)
+      sort_order: Number(item.sort_order),
+      custom_label: item.custom_label || "",
+      custom_title: item.custom_title || "",
+      custom_subtitle: item.custom_subtitle || "",
+      custom_button_label: item.custom_button_label || "",
+      custom_link_url: item.custom_link_url || "",
+      custom_image_url: item.custom_image_url || "",
+      custom_mobile_image_url: item.custom_mobile_image_url || null,
+      custom_image_alt: item.custom_image_alt || null,
+      custom_object_fit: item.custom_object_fit || "cover",
+      custom_object_position: item.custom_object_position || "center center"
     }).eq("id", item.id)));
     setSaving(false);
     const error = results.find((result) => result.error)?.error;
@@ -347,19 +491,74 @@ export function HomepageSectionsAdmin({ showPlainCategorySetting = true, onlySlu
 
           <div className="mt-6 border-t border-brand-softGray pt-5">
             <h3 className="font-semibold">Item di dalam section</h3>
-            <div className="mt-3 flex flex-col gap-2 sm:flex-row">
-              <select value={selection[section.id] || ""} onChange={(event) => setSelection((current) => ({ ...current, [section.id]: event.target.value }))} className="min-h-11 flex-1 rounded-lg border border-brand-softGray bg-white px-4 text-sm"><option value="">Pilih dari Produk & Layanan...</option>{sourceOptions.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}</select>
-              <button type="button" onClick={() => addItem(section)} className="min-h-11 rounded-full border border-brand-charcoal px-5 text-sm font-semibold">Tambahkan item</button>
-            </div>
+            {isCustomSection(section) ? (
+              <div className="mt-3 border border-brand-softGray bg-white p-4">
+                <p className="text-sm font-semibold">Tambah custom card</p>
+                <p className="mt-1 text-xs leading-5 text-brand-charcoal/55">Featured, Trending, dan Shop by Category memakai gambar upload, teks CMS, dan link tujuan custom.</p>
+                <div className="mt-4 grid gap-3 md:grid-cols-2">
+                  <input value={(customDrafts[section.id] || emptyCustomDraft).custom_label} onChange={(event) => updateCustomDraft(section.id, { custom_label: event.target.value })} placeholder="Label kecil, contoh: Koleksi" className="min-h-11 rounded-lg border border-brand-softGray px-4 text-sm" />
+                  <input value={(customDrafts[section.id] || emptyCustomDraft).custom_title} onChange={(event) => updateCustomDraft(section.id, { custom_title: event.target.value })} placeholder="Judul card" className="min-h-11 rounded-lg border border-brand-softGray px-4 text-sm" />
+                  <input value={(customDrafts[section.id] || emptyCustomDraft).custom_button_label} onChange={(event) => updateCustomDraft(section.id, { custom_button_label: event.target.value })} placeholder="Label tombol, contoh: Shop" className="min-h-11 rounded-lg border border-brand-softGray px-4 text-sm" />
+                  <input value={(customDrafts[section.id] || emptyCustomDraft).custom_link_url} onChange={(event) => updateCustomDraft(section.id, { custom_link_url: event.target.value })} placeholder="/kaos-polos atau https://..." className="min-h-11 rounded-lg border border-brand-softGray px-4 text-sm" />
+                  <select value={(customDrafts[section.id] || emptyCustomDraft).custom_image_url} onChange={(event) => updateCustomDraft(section.id, { custom_image_url: event.target.value })} className="min-h-11 rounded-lg border border-brand-softGray bg-white px-4 text-sm">
+                    <option value="">Pilih gambar dari Media Library...</option>
+                    {media.map((asset) => <option key={asset.id} value={asset.public_url}>{asset.name}</option>)}
+                  </select>
+                  <input value={(customDrafts[section.id] || emptyCustomDraft).custom_image_url} onChange={(event) => updateCustomDraft(section.id, { custom_image_url: event.target.value })} placeholder="Atau paste URL gambar" className="min-h-11 rounded-lg border border-brand-softGray px-4 text-sm" />
+                  <input value={(customDrafts[section.id] || emptyCustomDraft).custom_image_alt} onChange={(event) => updateCustomDraft(section.id, { custom_image_alt: event.target.value })} placeholder="Alt text gambar" className="min-h-11 rounded-lg border border-brand-softGray px-4 text-sm" />
+                  <select value={(customDrafts[section.id] || emptyCustomDraft).custom_object_fit} onChange={(event) => updateCustomDraft(section.id, { custom_object_fit: event.target.value as "cover" | "contain" })} className="min-h-11 rounded-lg border border-brand-softGray bg-white px-4 text-sm">
+                    <option value="cover">cover</option>
+                    <option value="contain">contain</option>
+                  </select>
+                  <select value={(customDrafts[section.id] || emptyCustomDraft).custom_object_position} onChange={(event) => updateCustomDraft(section.id, { custom_object_position: event.target.value })} className="min-h-11 rounded-lg border border-brand-softGray bg-white px-4 text-sm">
+                    {objectPositionOptions.map((option) => <option key={option} value={option}>{option}</option>)}
+                  </select>
+                  <textarea value={(customDrafts[section.id] || emptyCustomDraft).custom_subtitle} onChange={(event) => updateCustomDraft(section.id, { custom_subtitle: event.target.value })} placeholder="Subtitle opsional" className="min-h-24 rounded-lg border border-brand-softGray px-4 py-3 text-sm md:col-span-2" />
+                </div>
+                <button type="button" onClick={() => addCustomItem(section)} className="mt-4 min-h-11 rounded-full border border-brand-charcoal px-5 text-sm font-semibold">Tambahkan custom card</button>
+              </div>
+            ) : (
+              <div className="mt-3">
+                <p className="mb-2 text-xs leading-5 text-brand-charcoal/55">{isProductOnlySection(section) ? "Section ini hanya memilih dari produk yang sudah ada." : "Pilih item dari produk atau layanan."}</p>
+                <div className="flex flex-col gap-2 sm:flex-row">
+                  <select value={selection[section.id] || ""} onChange={(event) => setSelection((current) => ({ ...current, [section.id]: event.target.value }))} className="min-h-11 flex-1 rounded-lg border border-brand-softGray bg-white px-4 text-sm"><option value="">{isProductOnlySection(section) ? "Pilih dari Produk..." : "Pilih dari Produk & Layanan..."}</option>{sourceOptionsForSection(section).map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}</select>
+                  <button type="button" onClick={() => addItem(section)} className="min-h-11 rounded-full border border-brand-charcoal px-5 text-sm font-semibold">Tambahkan item</button>
+                </div>
+              </div>
+            )}
 
             {section.items.length ? <div className="mt-4 grid gap-3">{section.items.map((item, itemIndex) => (
-              <div key={item.id} className="grid gap-3 border border-brand-softGray bg-brand-offWhite p-3 sm:grid-cols-[64px_1fr_110px_auto] sm:items-center">
-                <img src={itemImage(item)} alt={itemName(item)} className="aspect-[4/5] w-16 object-cover" />
-                <div><p className="font-semibold">{itemName(item)}</p><p className="mt-1 text-xs text-brand-charcoal/50">{item.product ? "Produk" : "Layanan"}</p></div>
-                <label className="flex items-center gap-2 text-xs font-semibold"><input type="checkbox" checked={item.is_active} onChange={(event) => updateItem(section.id, item.id, { is_active: event.target.checked })} className="h-4 w-4 accent-brand-green" />Aktif</label>
-                <div className="flex flex-wrap gap-1 sm:justify-end"><button type="button" onClick={() => moveItem(section.id, item.id, -1)} disabled={itemIndex === 0} className="rounded-full border border-brand-softGray bg-white px-3 py-2 text-xs font-semibold disabled:opacity-40">↑</button><button type="button" onClick={() => moveItem(section.id, item.id, 1)} disabled={itemIndex === section.items.length - 1} className="rounded-full border border-brand-softGray bg-white px-3 py-2 text-xs font-semibold disabled:opacity-40">↓</button><button type="button" onClick={() => removeItem(item)} className="rounded-full px-3 py-2 text-xs font-semibold text-red-700">Lepas</button></div>
+              <div key={item.id} className="grid gap-3 border border-brand-softGray bg-brand-offWhite p-3">
+                <div className="grid gap-3 sm:grid-cols-[64px_1fr_110px_auto] sm:items-center">
+                  <img src={itemImage(item)} alt={itemName(item)} className="aspect-[4/5] w-16 object-cover" />
+                  <div><p className="font-semibold">{itemName(item)}</p><p className="mt-1 text-xs text-brand-charcoal/50">{isCustomItem(item) ? "Custom Card" : item.product ? "Produk" : "Layanan"}</p></div>
+                  <label className="flex items-center gap-2 text-xs font-semibold"><input type="checkbox" checked={item.is_active} onChange={(event) => updateItem(section.id, item.id, { is_active: event.target.checked })} className="h-4 w-4 accent-brand-green" />Aktif</label>
+                  <div className="flex flex-wrap gap-1 sm:justify-end"><button type="button" onClick={() => moveItem(section.id, item.id, -1)} disabled={itemIndex === 0} className="rounded-full border border-brand-softGray bg-white px-3 py-2 text-xs font-semibold disabled:opacity-40">↑</button><button type="button" onClick={() => moveItem(section.id, item.id, 1)} disabled={itemIndex === section.items.length - 1} className="rounded-full border border-brand-softGray bg-white px-3 py-2 text-xs font-semibold disabled:opacity-40">↓</button><button type="button" onClick={() => removeItem(item)} className="rounded-full px-3 py-2 text-xs font-semibold text-red-700">Lepas</button></div>
+                </div>
+                {(isCustomSection(section) || isCustomItem(item)) ? (
+                  <div className="grid gap-2 border-t border-brand-softGray pt-3 md:grid-cols-2">
+                    <input value={item.custom_label || ""} onChange={(event) => updateItem(section.id, item.id, { custom_label: event.target.value })} placeholder="Label kecil" className="min-h-10 rounded-lg border border-brand-softGray bg-white px-3 text-sm" />
+                    <input value={item.custom_title || ""} onChange={(event) => updateItem(section.id, item.id, { custom_title: event.target.value })} placeholder="Judul card" className="min-h-10 rounded-lg border border-brand-softGray bg-white px-3 text-sm" />
+                    <input value={item.custom_button_label || ""} onChange={(event) => updateItem(section.id, item.id, { custom_button_label: event.target.value })} placeholder="Label tombol" className="min-h-10 rounded-lg border border-brand-softGray bg-white px-3 text-sm" />
+                    <input value={item.custom_link_url || ""} onChange={(event) => updateItem(section.id, item.id, { custom_link_url: event.target.value })} placeholder="Link tujuan" className="min-h-10 rounded-lg border border-brand-softGray bg-white px-3 text-sm" />
+                    <select value={item.custom_image_url || ""} onChange={(event) => updateItem(section.id, item.id, { custom_image_url: event.target.value })} className="min-h-10 rounded-lg border border-brand-softGray bg-white px-3 text-sm">
+                      <option value={item.custom_image_url || ""}>{item.custom_image_url ? "Gambar saat ini" : "Pilih gambar..."}</option>
+                      {media.map((asset) => <option key={asset.id} value={asset.public_url}>{asset.name}</option>)}
+                    </select>
+                    <input value={item.custom_image_url || ""} onChange={(event) => updateItem(section.id, item.id, { custom_image_url: event.target.value })} placeholder="URL gambar" className="min-h-10 rounded-lg border border-brand-softGray bg-white px-3 text-sm" />
+                    <input value={item.custom_image_alt || ""} onChange={(event) => updateItem(section.id, item.id, { custom_image_alt: event.target.value })} placeholder="Alt text" className="min-h-10 rounded-lg border border-brand-softGray bg-white px-3 text-sm" />
+                    <select value={item.custom_object_fit || "cover"} onChange={(event) => updateItem(section.id, item.id, { custom_object_fit: event.target.value as "cover" | "contain" })} className="min-h-10 rounded-lg border border-brand-softGray bg-white px-3 text-sm">
+                      <option value="cover">cover</option>
+                      <option value="contain">contain</option>
+                    </select>
+                    <select value={item.custom_object_position || "center center"} onChange={(event) => updateItem(section.id, item.id, { custom_object_position: event.target.value })} className="min-h-10 rounded-lg border border-brand-softGray bg-white px-3 text-sm">
+                      {objectPositionOptions.map((option) => <option key={option} value={option}>{option}</option>)}
+                    </select>
+                    <textarea value={item.custom_subtitle || ""} onChange={(event) => updateItem(section.id, item.id, { custom_subtitle: event.target.value })} placeholder="Subtitle opsional" className="min-h-20 rounded-lg border border-brand-softGray bg-white px-3 py-2 text-sm md:col-span-2" />
+                  </div>
+                ) : null}
               </div>
-            ))}<button type="button" onClick={() => saveItems(section)} disabled={saving} className="justify-self-start rounded-full bg-brand-charcoal px-5 py-2.5 text-xs font-semibold text-white disabled:opacity-50">Simpan status & urutan item</button></div> : <p className="mt-4 bg-brand-offWhite p-4 text-sm text-brand-charcoal/60">Belum ada item. Section ini tidak akan tampil di homepage.</p>}
+            ))}<button type="button" onClick={() => saveItems(section)} disabled={saving} className="justify-self-start rounded-full bg-brand-charcoal px-5 py-2.5 text-xs font-semibold text-white disabled:opacity-50">Simpan item</button></div> : <p className="mt-4 bg-brand-offWhite p-4 text-sm text-brand-charcoal/60">Belum ada item. Section ini tidak akan tampil di homepage.</p>}
           </div>
         </article>
       )) : <div className="bg-white p-8 text-center"><p className="font-semibold">Belum ada homepage section</p><p className="mt-2 text-sm text-brand-charcoal/60">Buat section pertama, lalu pilih item dari Produk & Layanan.</p></div>}

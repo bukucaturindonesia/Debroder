@@ -160,6 +160,24 @@ const tableConfigs: TableConfig[] = [
     fields: []
   },
   {
+    key: "shop-category-section",
+    label: "Shop by Category",
+    navLabel: "Shop by Category",
+    href: "/admin/shop-category",
+    table: "",
+    description: "Atur custom card Shop by Category: gambar upload, teks, dan link tujuan.",
+    fields: []
+  },
+  {
+    key: "plain-category-section",
+    label: "Pakaian Polos Berdasarkan Kategori",
+    navLabel: "Pakaian Polos",
+    href: "/admin/plain-category",
+    table: "",
+    description: "Pilih produk yang tampil pada section Pakaian Polos Berdasarkan Kategori.",
+    fields: []
+  },
+  {
     key: "hero",
     label: "Hero Homepage",
     navLabel: "Hero Homepage",
@@ -843,6 +861,8 @@ const adminLandingSectionKeys: Record<string, string> = {
   "featured-products": "featured-products",
   "trending-section": "trending",
   "fresh-drop-section": "fresh-drop",
+  "shop-category-section": "services-products",
+  "plain-category-section": "plain-category",
   categories: "services-products",
   banner: "instagram-banner",
   store: "stores",
@@ -2033,6 +2053,10 @@ export function AdminDashboard() {
             <HomepageSectionsAdmin showPlainCategorySetting={false} onlySlug="trending" />
           ) : activeKey === "fresh-drop-section" ? (
             <HomepageSectionsAdmin showPlainCategorySetting={false} onlySlug="fresh-drops" />
+          ) : activeKey === "shop-category-section" ? (
+            <HomepageSectionsAdmin showPlainCategorySetting={false} onlySlug="services-products" />
+          ) : activeKey === "plain-category-section" ? (
+            <HomepageSectionsAdmin showPlainCategorySetting={false} onlySlug="pakaian-polos-berdasarkan-kategori" />
           ) : activeKey === "products" ? (
             <ProductAdminPanel />
           ) : activeKey === "media" ? (

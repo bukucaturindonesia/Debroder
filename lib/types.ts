@@ -317,6 +317,16 @@ export type HomepageSectionItem = {
   section_id: string;
   product_id?: string | null;
   service_id?: string | null;
+  custom_label?: string;
+  custom_title?: string;
+  custom_subtitle?: string;
+  custom_button_label?: string;
+  custom_link_url?: string;
+  custom_image_url?: string;
+  custom_mobile_image_url?: string | null;
+  custom_image_alt?: string | null;
+  custom_object_fit?: "cover" | "contain";
+  custom_object_position?: string;
   is_active: boolean;
   sort_order: number;
   product?: Product | null;

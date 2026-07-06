@@ -301,8 +301,6 @@ export function ProductAdminPanel() {
     const supabase = createSupabaseClient();
     if (!supabase) return;
     const desired = new Map([
-      ["featured", Boolean(product.featured)],
-      ["trending", Boolean(product.trending)],
       ["fresh-drops", Boolean(product.fresh_drop)]
     ]);
     const { data: sections } = await supabase.from("homepage_sections").select("id,slug").in("slug", Array.from(desired.keys()));

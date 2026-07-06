@@ -310,6 +310,16 @@ create table if not exists public.homepage_section_items (
   section_id uuid not null references public.homepage_sections(id) on delete cascade,
   product_id uuid references public.products(id) on delete cascade,
   service_id uuid references public.services(id) on delete cascade,
+  custom_label text not null default '',
+  custom_title text not null default '',
+  custom_subtitle text not null default '',
+  custom_button_label text not null default '',
+  custom_link_url text not null default '',
+  custom_image_url text not null default '',
+  custom_mobile_image_url text,
+  custom_image_alt text,
+  custom_object_fit text not null default 'cover' check (custom_object_fit in ('cover', 'contain')),
+  custom_object_position text not null default 'center center',
   is_active boolean not null default true,
   sort_order integer not null default 0,
   created_at timestamptz not null default now(),
@@ -317,6 +327,13 @@ create table if not exists public.homepage_section_items (
   constraint homepage_section_items_one_source check (
     (product_id is not null and service_id is null)
     or (product_id is null and service_id is not null)
+    or (
+      product_id is null
+      and service_id is null
+      and nullif(custom_title, '') is not null
+      and nullif(custom_link_url, '') is not null
+      and nullif(custom_image_url, '') is not null
+    )
   )
 );
 
@@ -452,6 +469,41 @@ alter table if exists public.landing_sections
 
 alter table if exists public.cms_banners
   add column if not exists text_position text not null default 'left';
+
+alter table if exists public.homepage_section_items
+  add column if not exists custom_label text not null default '',
+  add column if not exists custom_title text not null default '',
+  add column if not exists custom_subtitle text not null default '',
+  add column if not exists custom_button_label text not null default '',
+  add column if not exists custom_link_url text not null default '',
+  add column if not exists custom_image_url text not null default '',
+  add column if not exists custom_mobile_image_url text,
+  add column if not exists custom_image_alt text,
+  add column if not exists custom_object_fit text not null default 'cover',
+  add column if not exists custom_object_position text not null default 'center center';
+
+alter table if exists public.homepage_section_items
+  drop constraint if exists homepage_section_items_one_source;
+
+alter table if exists public.homepage_section_items
+  add constraint homepage_section_items_one_source check (
+    (product_id is not null and service_id is null)
+    or (product_id is null and service_id is not null)
+    or (
+      product_id is null
+      and service_id is null
+      and nullif(custom_title, '') is not null
+      and nullif(custom_link_url, '') is not null
+      and nullif(custom_image_url, '') is not null
+    )
+  );
+
+alter table if exists public.homepage_section_items
+  drop constraint if exists homepage_section_items_custom_object_fit_check;
+
+alter table if exists public.homepage_section_items
+  add constraint homepage_section_items_custom_object_fit_check
+  check (custom_object_fit in ('cover', 'contain'));
 
 alter table if exists public.orders
   add column if not exists customer_notes text not null default '',

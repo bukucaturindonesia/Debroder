@@ -425,6 +425,16 @@ async function readHomepageSections(): Promise<HomepageSection[]> {
         section_id,
         product_id,
         service_id,
+        custom_label,
+        custom_title,
+        custom_subtitle,
+        custom_button_label,
+        custom_link_url,
+        custom_image_url,
+        custom_mobile_image_url,
+        custom_image_alt,
+        custom_object_fit,
+        custom_object_position,
         is_active,
         sort_order,
         created_at,
@@ -441,7 +451,11 @@ async function readHomepageSections(): Promise<HomepageSection[]> {
   return data
     .map((section) => {
       const items = ((section.items || []) as unknown as HomepageSectionItem[])
-        .filter((item) => item.is_active && (item.product || item.service))
+        .filter((item) => item.is_active && (
+          item.product
+          || item.service
+          || (item.custom_title && item.custom_image_url && item.custom_link_url)
+        ))
         .map((item) => ({
           ...item,
           product: item.product ? cleanProduct(item.product) : null,
