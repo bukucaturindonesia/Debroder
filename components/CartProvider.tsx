@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { createContext, type ReactNode, useContext, useEffect, useMemo, useState } from "react";
 import { contactLinks } from "@/lib/contact";
+import { absoluteUrl } from "@/lib/site";
 import { whatsappLinkWithMessage } from "@/lib/url";
 
 export type CartProductInput = {
@@ -60,7 +61,7 @@ function buildMessage(items: CartItem[]) {
     if (item.size.trim()) lines.push(`Ukuran: ${item.size.trim()}`);
     if (item.printLocation.trim()) lines.push(`Area sablon/bordir: ${item.printLocation.trim()}`);
     if (item.notes.trim()) lines.push(`Catatan: ${item.notes.trim()}`);
-    if (item.href) lines.push(`Link produk: ${item.href.startsWith("http") ? item.href : `https://debroder.com${item.href}`}`);
+    if (item.href) lines.push(`Link produk: ${absoluteUrl(item.href)}`);
   });
 
   lines.push("");

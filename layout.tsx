@@ -1,16 +1,16 @@
 import type { Metadata } from "next";
 import type { ReactNode } from "react";
+import { siteConfig } from "@/lib/site";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  metadataBase: new URL("https://debroder.com"),
-  title: "DE BRODER \u2014 Kaos Polos New State Apparel & Sablon DTF",
+  metadataBase: new URL(siteConfig.siteUrl),
+  title: siteConfig.defaultMetaTitle,
   manifest: "/manifest.webmanifest",
   alternates: {
     canonical: "/"
   },
-  description:
-    "DE BRODER menyediakan kaos polos New State Apparel, sablon DTF, custom jersey, maklon DTF, cetak sublim, Distributor Kaos NSA, dan Kaos Cotton Combed melalui store di Makassar dan Parepare.",
+  description: siteConfig.defaultMetaDescription,
   keywords: [
     "DE BRODER",
     "De Broder",
@@ -28,9 +28,8 @@ export const metadata: Metadata = {
     "jersey"
   ],
   openGraph: {
-    title: "DE BRODER \u2014 Kaos Polos New State Apparel & Sablon DTF",
-    description:
-      "DE BRODER menyediakan kaos polos New State Apparel, sablon DTF, custom jersey, maklon DTF, cetak sublim, Distributor Kaos NSA, dan Kaos Cotton Combed melalui store di Makassar dan Parepare.",
+    title: siteConfig.defaultMetaTitle,
+    description: siteConfig.defaultMetaDescription,
     siteName: "DE BRODER",
     images: [
       {
@@ -45,9 +44,8 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "DE BRODER \u2014 Kaos Polos New State Apparel & Sablon DTF",
-    description:
-      "DE BRODER menyediakan kaos polos New State Apparel, sablon DTF, custom jersey, maklon DTF, cetak sublim, Distributor Kaos NSA, dan Kaos Cotton Combed melalui store di Makassar dan Parepare.",
+    title: siteConfig.defaultMetaTitle,
+    description: siteConfig.defaultMetaDescription,
     images: ["/brand/debroder/open-graph-logo.png"]
   },
   icons: {
