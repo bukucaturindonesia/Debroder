@@ -11,6 +11,7 @@ import { ScrollButtons } from "@/components/ScrollButtons";
 import { SiteHeader } from "@/components/SiteHeader";
 import { WhatsAppFloat } from "@/components/WhatsAppFloat";
 import { fallbackImages, getProductImage, getStoreImage } from "@/lib/fallback-data";
+import { PLAIN_CATEGORY_SECTION_SETTING } from "@/lib/homepage-settings";
 import { getPublicContent } from "@/lib/public-data";
 import { absoluteUrl, siteConfig } from "@/lib/site";
 import type { HomepageSection, HomepageSectionItem, LandingSection, Product, Service, Store } from "@/lib/types";
@@ -62,6 +63,16 @@ const horizontalCarouselClass = "no-scrollbar mt-4 flex snap-x snap-mandatory ga
 const horizontalCarouselItemClass = "min-w-[76vw] shrink-0 snap-start sm:min-w-[42vw] lg:min-w-[calc((100%_-_24px)_/_4)]";
 const horizontalEditorialItemClass = "min-w-[82vw] shrink-0 snap-start sm:min-w-[42vw] lg:min-w-[calc((100%_-_16px)_/_3)]";
 
+function isCustomHomepageItem(item: HomepageSectionItem) {
+  return Boolean(item.custom_title && item.custom_image_url && item.custom_link_url);
+}
+
+function preferredHomepageItems(section: HomepageSection) {
+  if (!["featured", "trending", "services-products"].includes(section.slug)) return section.items;
+  const customItems = section.items.filter(isCustomHomepageItem);
+  return customItems.length ? customItems : section.items;
+}
+
 function productItem(product: Product): ProductItem {
   const href = `/produk/${product.slug || product.nama.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "")}`;
   const price = formatRupiah(product.price ?? product.harga ?? product.base_price) || "Hubungi kami";
@@ -89,6 +100,19 @@ function serviceHref(service: Service) {
 }
 
 function editorialPlacement(item: HomepageSectionItem): EditorialItem | null {
+  if (isCustomHomepageItem(item)) {
+    return {
+      label: item.custom_label || "",
+      title: item.custom_title || "",
+      button: item.custom_button_label || "Lihat",
+      href: item.custom_link_url || "#",
+      image: item.custom_image_url || fallbackImages.product,
+      imageAlt: item.custom_image_alt || item.custom_title || "DEBRODER",
+      fallbackImage: fallbackImages.product,
+      objectFit: item.custom_object_fit || "cover",
+      objectPosition: item.custom_object_position || "center center"
+    };
+  }
   if (item.product) {
     const href = `/produk/${item.product.slug || item.product.nama.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "")}`;
     const price = formatRupiah(item.product.price ?? item.product.harga ?? item.product.base_price) || "Hubungi kami";
@@ -123,20 +147,6 @@ function editorialPlacement(item: HomepageSectionItem): EditorialItem | null {
 
 function cardPlacement(item: HomepageSectionItem): ProductItem | null {
   if (item.product) return productItem(item.product);
-  if (item.service) {
-    return {
-      name: item.service.nama,
-      category: "Layanan",
-      price: item.service.harga_mulai ? `Mulai ${formatRupiah(item.service.harga_mulai)}` : "Hubungi kami",
-      href: serviceHref(item.service),
-      image: item.service.image_url,
-      imageAlt: item.service.image_alt || item.service.nama,
-      fallbackImage: fallbackImages.product,
-      objectFit: item.service.object_fit,
-      objectPosition: item.service.object_position,
-      fit: item.service.object_fit || "cover"
-    };
-  }
   return null;
 }
 
@@ -176,7 +186,7 @@ function EditorialCard({ item, featuredCard = false, className = "" }: { item: E
       <SafeImage src={item.image} fallbackSrc={item.fallbackImage} alt={item.imageAlt} fill sizes={featuredCard ? "(min-width: 1024px) 50vw, 86vw" : "(min-width: 1024px) 33vw, 82vw"} className="object-cover transition duration-700 group-hover:scale-[1.03]" objectFit={item.objectFit || "cover"} objectPosition={item.objectPosition} />
       <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/8 to-transparent" />
       <div className="pointer-events-none absolute inset-x-0 bottom-0 z-20 p-5 text-white sm:p-7">
-        <p className="text-xs font-semibold text-white/72">{item.label}</p>
+        {item.label ? <p className="text-xs font-semibold text-white/72">{item.label}</p> : null}
         <h3 className={`mt-1.5 max-w-md font-semibold leading-tight tracking-normal ${featuredCard ? "text-2xl sm:text-[1.75rem]" : "text-xl sm:text-2xl"}`}>{item.title}</h3>
         <div className="pointer-events-auto relative z-30 mt-4 flex flex-wrap gap-2"><Link href={item.href} className="inline-flex min-h-10 items-center rounded-full bg-white px-4 text-sm font-semibold text-[#111] transition group-hover:bg-[#e9eee9]">{item.button}</Link>{item.cartProduct ? <AddToCartButton product={item.cartProduct} className="inline-flex min-h-10 items-center rounded-full bg-[#0f5a36] px-4 text-sm font-semibold text-white">Tambah ke Keranjang</AddToCartButton> : null}</div>
       </div>
@@ -209,7 +219,8 @@ function ManagedHomepageSection({ section, setting }: { section: HomepageSection
   const configuredCta = setting?.cta_label && setting.cta_url ? <Link href={setting.cta_url} className="hidden text-sm font-semibold hover:underline sm:block">{setting.cta_label}</Link> : null;
 
   if (isEditorial) {
-    const items = section.items.map(editorialPlacement).filter((item): item is EditorialItem => Boolean(item));
+    const sectionItems = preferredHomepageItems(section);
+    const items = sectionItems.map(editorialPlacement).filter((item): item is EditorialItem => Boolean(item));
     if (!items.length) return null;
     return (
       <section data-reveal id={section.slug} className={`snap-section ${isFeatured ? "bg-white py-6 sm:py-8" : `section-space ${section.slug === "trending" ? "bg-[#f7f7f2]" : "bg-white"}`}`}>
@@ -218,7 +229,7 @@ function ManagedHomepageSection({ section, setting }: { section: HomepageSection
             <SectionHeading title={section.title} description={setting?.subtitle} textPosition={setting?.text_position} action={<div className="flex items-center gap-4">{configuredCta}{!isFeatured ? <ScrollButtons containerId={carouselId} /> : null}</div>} />
           </div>
           <div id={carouselId} className={isFeatured ? "mt-4 grid grid-cols-1 gap-1 sm:gap-2 lg:grid-cols-2" : horizontalCarouselClass}>
-            {items.map((item, index) => <EditorialCard key={section.items[index]?.id || `${item.href}-${index}`} item={item} featuredCard={isFeatured} className={isFeatured ? "" : horizontalEditorialItemClass} />)}
+            {items.map((item, index) => <EditorialCard key={sectionItems[index]?.id || `${item.href}-${index}`} item={item} featuredCard={isFeatured} className={isFeatured ? "" : horizontalEditorialItemClass} />)}
           </div>
         </div>
       </section>
@@ -281,6 +292,16 @@ export default async function Home() {
     content.landingSections.map((section) => [section.section_key, section])
   );
   const landingSection = (sectionKey: string) => landingSectionMap.get(sectionKey);
+  const shopCategorySection = content.homepageSections.find((section) => section.slug === "services-products");
+  const plainCategorySection = content.homepageSections.find((section) => section.slug === PLAIN_CATEGORY_SECTION_SETTING.slug);
+  const homepageSections = content.homepageSections.filter((section) => section.slug !== "services-products" && section.slug !== PLAIN_CATEGORY_SECTION_SETTING.slug);
+  const shopCategoryItems = shopCategorySection
+    ? preferredHomepageItems(shopCategorySection).map(editorialPlacement).filter((item): item is EditorialItem => Boolean(item))
+    : [];
+  const plainCategoryItems = plainCategorySection
+    ? plainCategorySection.items.map(cardPlacement).filter((item): item is ProductItem => Boolean(item))
+    : [];
+  const plainCollectionItems = plainCategoryItems.length ? plainCategoryItems : homeCollection;
   const schema = {
     "@context": "https://schema.org",
     "@graph": [
@@ -316,7 +337,7 @@ export default async function Home() {
       </section>
       </LandingSectionSlot>
 
-      {content.homepageSections.map((section) => {
+      {homepageSections.map((section) => {
         const setting = landingSection(managedSectionKey(section.slug));
         const managedSection = setting?.title ? { ...section, title: setting.title } : section;
         return (
@@ -335,7 +356,17 @@ export default async function Home() {
         <div className="section-shell">
           <SectionHeading title={landingSection("services-products")?.title || "Shop by Category"} description={landingSection("services-products")?.subtitle} textPosition={landingSection("services-products")?.text_position} action={<div className="flex items-center gap-4">{landingSection("services-products")?.cta_label && landingSection("services-products")?.cta_url ? <Link href={landingSection("services-products")!.cta_url!} className="hidden text-sm font-semibold hover:underline sm:block">{landingSection("services-products")!.cta_label}</Link> : null}<ScrollButtons containerId="category-carousel" /></div>} />
           <div id="category-carousel" className={`${horizontalCarouselClass} gap-y-6`}>
-            {homeCategories.length ? homeCategories.map((item) => (
+            {shopCategoryItems.length ? shopCategoryItems.map((item) => (
+              <Link key={`${item.href}-${item.title}`} href={item.href} className={`group relative aspect-[4/5] overflow-hidden bg-[#102219] ${horizontalCarouselItemClass}`}>
+                <SafeImage src={item.image} fallbackSrc={item.fallbackImage} alt={item.imageAlt} fill sizes="(min-width: 1536px) 20vw, (min-width: 1024px) 25vw, 50vw" className="object-cover transition duration-700 group-hover:scale-[1.03]" objectFit={item.objectFit || "cover"} objectPosition={item.objectPosition} />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/5 to-transparent" />
+                <div className="absolute inset-x-0 bottom-0 p-5 text-white sm:p-6">
+                  {item.label ? <p className="text-xs font-semibold text-white/70">{item.label}</p> : null}
+                  <h3 className="mt-1 line-clamp-2 text-base font-semibold text-white sm:text-xl">{item.title}</h3>
+                  {item.button ? <span className="mt-4 inline-flex min-h-10 items-center rounded-full bg-white px-4 text-sm font-semibold text-[#111]">{item.button}</span> : null}
+                </div>
+              </Link>
+            )) : homeCategories.length ? homeCategories.map((item) => (
               <Link key={item.name} href={item.href} className={`group relative aspect-[4/5] overflow-hidden bg-[#102219] ${horizontalCarouselItemClass}`}>
                 <SafeImage src={item.image} fallbackSrc={item.fallbackImage} alt={item.imageAlt} fill sizes="(min-width: 1536px) 20vw, (min-width: 1024px) 25vw, 50vw" className="object-cover transition duration-700 group-hover:scale-[1.03]" objectFit={item.objectFit || "cover"} objectPosition={item.objectPosition} />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent" />
@@ -353,7 +384,7 @@ export default async function Home() {
           <div className="section-shell">
             <SectionHeading title={landingSection("plain-category")?.title || "Pakaian Polos berdasarkan Kategori"} description={landingSection("plain-category")?.subtitle || "Pilih dasar apparel yang sesuai, lalu custom bersama tim DEBRODER."} textPosition={landingSection("plain-category")?.text_position} action={<ScrollButtons containerId="collection-carousel" />} />
             <div id="collection-carousel" className={`${horizontalCarouselClass} gap-y-6`}>
-              {homeCollection.length ? homeCollection.map((item) => (
+              {plainCollectionItems.length ? plainCollectionItems.map((item) => (
                 <article key={item.name} className={`group ${horizontalCarouselItemClass}`}>
                   <Link href={item.href} className="block">
                   <div className="relative aspect-[4/5] overflow-hidden bg-white">
