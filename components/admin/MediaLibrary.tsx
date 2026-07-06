@@ -28,7 +28,18 @@ type MediaAsset = {
 
 type UsageRow = Record<string, unknown>;
 
-const folders = ["Hero", "Banner", "Jersey", "Kaos Polos", "DTF", "Maklon", "Sublim", "Logo", "Store", "Gallery", "Artikel", "Testimoni", "Product", "Category", "Video"];
+const folders = [
+  "hero",
+  "hero-mobile",
+  "products",
+  "featured",
+  "trending",
+  "fresh-drop",
+  "store",
+  "banner",
+  "about",
+  "benefits"
+];
 const imageTypes = ["image/jpeg", "image/png", "image/webp"];
 const videoTypes = ["video/mp4", "video/webm"];
 const MB = 1024 * 1024;
@@ -121,7 +132,7 @@ function rowUsesUrl(row: UsageRow, url: string) {
 
 export function MediaLibraryPanel() {
   const [assets, setAssets] = useState<MediaAsset[]>([]);
-  const [folder, setFolder] = useState("Gallery");
+  const [folder, setFolder] = useState("products");
   const [folderFilter, setFolderFilter] = useState("Semua");
   const [tagFilter, setTagFilter] = useState("");
   const [typeFilter, setTypeFilter] = useState("Semua");
@@ -177,7 +188,14 @@ export function MediaLibraryPanel() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => { loadAssets(); }, []);
 
-  const availableFolders = useMemo(() => Array.from(new Set([...folders, ...assets.map((asset) => asset.folder)])).filter(Boolean).sort(), [assets]);
+  const availableFolders = useMemo(() => {
+    const legacyFolders = assets
+      .map((asset) => asset.folder)
+      .filter((item) => item && !folders.includes(item))
+      .sort();
+
+    return [...folders, ...Array.from(new Set(legacyFolders))];
+  }, [assets]);
   const availableTags = useMemo(() => Array.from(new Set(assets.flatMap((asset) => asset.tags || []))).sort(), [assets]);
   const visibleAssets = useMemo(() => assets.filter((asset) => {
     const needle = query.trim().toLowerCase();
@@ -246,7 +264,7 @@ export function MediaLibraryPanel() {
 
       const file = await optimizeImage(originalFile);
       const mediaType = imageTypes.includes(file.type) ? "image" : "video";
-      const storageFolder = mediaType === "video" ? "Video" : folder;
+      const storageFolder = folder;
       const path = `${slugFolder(storageFolder)}/${Date.now()}-${index}-${safeFileName(file.name)}`;
       const { error: uploadError } = await supabase.storage.from(WEBSITE_IMAGES_BUCKET).upload(path, file, { cacheControl: "3600", contentType: file.type, upsert: false });
       if (uploadError) { setStatus(`Upload ${file.name} gagal: ${uploadError.message}`); setUploading(false); return; }
@@ -308,7 +326,7 @@ export function MediaLibraryPanel() {
     const supabase = createSupabaseClient();
     if (!supabase) return;
     const draft = editing[asset.id] || {};
-    const { error } = await supabase.from("media_assets").update({ alt_text: draft.alt_text || "", tags: draft.tags || [], folder: draft.folder || "Gallery", updated_at: new Date().toISOString() }).eq("id", asset.id);
+    const { error } = await supabase.from("media_assets").update({ alt_text: draft.alt_text || "", tags: draft.tags || [], folder: draft.folder || "products", updated_at: new Date().toISOString() }).eq("id", asset.id);
     setStatus(error ? `Metadata gagal disimpan: ${error.message}` : "Metadata media tersimpan.");
     if (!error) await loadAssets();
   }
