@@ -12,6 +12,7 @@ import { SiteHeader } from "@/components/SiteHeader";
 import { WhatsAppFloat } from "@/components/WhatsAppFloat";
 import { fallbackImages, getProductImage, getStoreImage } from "@/lib/fallback-data";
 import { getPublicContent } from "@/lib/public-data";
+import { absoluteUrl, siteConfig } from "@/lib/site";
 import type { HomepageSection, HomepageSectionItem, LandingSection, Product, Service, Store } from "@/lib/types";
 import { formatRupiah, whatsappLinkWithMessage } from "@/lib/url";
 
@@ -280,8 +281,8 @@ export default async function Home() {
   const schema = {
     "@context": "https://schema.org",
     "@graph": [
-      { "@type": "Organization", "@id": "https://debroder.com/#organization", name: "DEBRODER", url: "https://debroder.com", logo: "https://debroder.com/brand/debroder/logo-primary-black.png", email: content.contact.email, sameAs: [content.contact.instagram, content.contact.facebook].filter(Boolean) },
-      ...stores.map((store) => ({ "@type": "LocalBusiness", name: `DEBRODER ${store.nama_store}`, image: getStoreImage(store), address: store.alamat, telephone: store.whatsapp, url: "https://debroder.com/store" }))
+      { "@type": "Organization", "@id": `${siteConfig.siteUrl}/#organization`, name: "DEBRODER", url: siteConfig.siteUrl, logo: absoluteUrl("/brand/debroder/logo-primary-black.png"), email: content.contact.email, sameAs: [content.contact.instagram, content.contact.facebook].filter(Boolean) },
+      ...stores.map((store) => ({ "@type": "LocalBusiness", name: `DEBRODER ${store.nama_store}`, image: getStoreImage(store), address: store.alamat, telephone: store.whatsapp, url: absoluteUrl("/store") }))
     ]
   };
 
