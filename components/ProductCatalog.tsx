@@ -167,7 +167,7 @@ export function ProductCatalog({
 
   return (
     <div>
-      {showHeading ? <h2 className="text-3xl font-bold leading-[1.05] tracking-normal sm:text-4xl">{title}</h2> : null}
+      {showHeading ? <h2 className="text-[28px] font-semibold leading-[1.15] tracking-normal sm:text-[36px]">{title}</h2> : null}
       <div className={`${showHeading ? "mt-6" : ""} grid gap-3 border-y border-brand-softGray py-5 sm:grid-cols-2 ${filterGridClass}`}>
         <input aria-label="Cari produk" value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Cari produk, bahan, warna..." className="min-h-11 rounded-full border border-brand-softGray bg-white px-4 text-sm outline-none focus:border-brand-charcoal lg:col-span-2" />
         {showGroupFilter ? <select aria-label="Filter produk" value={group} onChange={(event) => setGroup(event.target.value as ProductGroup)} className="min-h-11 rounded-full border border-brand-softGray bg-white px-4 text-sm font-semibold"><option value="all">Semua produk</option><option value="jaket-hoodie">Jaket & Hoodie</option><option value="headwear">Headwear</option></select> : null}
@@ -194,10 +194,10 @@ export function ProductCatalog({
                 {labels.length ? <div className="absolute left-2 top-2 flex flex-wrap gap-1">{labels.map((item) => <span key={String(item)} className="rounded-full bg-white/95 px-2 py-1 text-[10px] font-semibold shadow-sm">{item}</span>)}</div> : null}
               </div>
               </Link>
-              <p className="mt-3 text-[11px] font-medium uppercase tracking-[0.12em] text-brand-charcoal/45">{product.kategori}</p>
-              <Link href={detailHref} className="mt-1 block"><h3 className="line-clamp-2 text-sm font-semibold leading-snug sm:text-base">{product.nama}</h3></Link>
+              <Link href={detailHref} className="mt-3 block"><h3 className="line-clamp-2 text-[15px] font-semibold leading-snug sm:text-base">{product.nama}</h3></Link>
+              <p className="mt-1 text-sm text-brand-charcoal/55 sm:text-[15px]">{product.kategori}</p>
               {productDetail(product) ? <p className="mt-1 line-clamp-2 text-xs leading-5 text-brand-charcoal/55 sm:text-sm">{productDetail(product)}</p> : null}
-              <p className="mt-2 text-sm font-semibold">{productPrice(product)}</p>
+              <p className="mt-2 text-[15px] font-semibold sm:text-base">{productPrice(product)}</p>
               {product.compare_price ? <p className="mt-0.5 text-xs text-brand-charcoal/45 line-through">{formatRupiah(product.compare_price)}</p> : null}
               {chips.length || stockText || product.brand ? <div className="mt-2 flex flex-wrap gap-1.5">
                 {product.brand ? <span className="bg-brand-offWhite px-2 py-1 text-[10px] font-semibold text-brand-charcoal/65">{product.brand}</span> : null}

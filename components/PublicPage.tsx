@@ -385,7 +385,7 @@ export function RecommendationGrid({
           <p className="text-sm font-medium uppercase text-brand-charcoal/50">
             Rekomendasi
           </p>
-          <h2 className="mt-3 text-3xl font-bold leading-[1.05] tracking-normal sm:text-4xl">
+          <h2 className="mt-3 text-[28px] font-semibold leading-[1.15] tracking-normal sm:text-[36px]">
             Layanan DE BRODER lainnya
           </h2>
         </div>
@@ -449,7 +449,7 @@ export function CategoryDetailPage({
       <section data-reveal className="bg-brand-offWhite py-12 sm:py-16">
         <div className="section-shell grid gap-6 lg:grid-cols-[0.9fr_1.1fr] lg:items-start">
           <div>
-            <h2 className="text-3xl font-bold leading-[1.05] tracking-normal">Detail layanan</h2>
+            <h2 className="text-[28px] font-semibold leading-[1.15] tracking-normal sm:text-[36px]">Detail layanan</h2>
             <div className="mt-6 grid gap-3">
               {details.map((detail) => (
                 <p

@@ -300,8 +300,9 @@ export default async function Home() {
                   <div className="relative aspect-[4/5] overflow-hidden bg-white">
                     <SafeImage src={item.image} fallbackSrc={item.fallbackImage} alt={item.imageAlt} fill sizes="(min-width: 1536px) 20vw, (min-width: 1024px) 25vw, 50vw" className={`${(item.objectFit || item.fit) === "contain" ? "object-contain p-4" : "object-cover"} transition duration-700 group-hover:scale-[1.03]`} objectFit={item.objectFit || (item.fit === "contain" ? "contain" : "cover")} objectPosition={item.objectPosition} />
                   </div>
-                  <h3 className="mt-3 line-clamp-2 text-sm font-semibold sm:text-base">{item.name}</h3>
-                  <p className="mt-1 text-sm text-black/50">{item.price}</p>
+                  <h3 className="mt-3 line-clamp-2 text-[15px] font-semibold leading-snug sm:text-base">{item.name}</h3>
+                  <p className="mt-1 text-sm text-black/50 sm:text-[15px]">{item.category}</p>
+                  <p className="mt-2 text-[15px] font-semibold sm:text-base">{item.price}</p>
                 </Link>
               )) : <p className="col-span-full bg-white p-8 text-center text-sm text-black/55">Belum ada produk apparel.</p>}
             </div>
@@ -333,7 +334,7 @@ export default async function Home() {
               <div className="absolute inset-0 bg-gradient-to-r from-black/65 via-black/20 to-transparent" />
               <div className="absolute inset-x-0 bottom-0 p-6 text-white sm:p-10">
                 <p className="text-xs font-semibold uppercase tracking-[0.2em] text-white/70">Instagram</p>
-                <h2 className="mt-2 max-w-xl text-2xl font-semibold tracking-normal sm:text-4xl">
+                <h2 className="mt-2 max-w-xl text-[26px] font-semibold leading-[1.12] tracking-normal sm:text-[36px]">
                   {content.instagramBanner?.title || "Ikuti DE BRODER di Instagram"}
                 </h2>
               </div>
@@ -355,7 +356,7 @@ export default async function Home() {
         <div className="section-shell grid gap-10 lg:grid-cols-[1.15fr_.85fr] lg:items-start lg:gap-20">
           <div>
             <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#0f5a36]">Tentang DEBRODER</p>
-            <h2 className="mt-4 max-w-xl text-3xl font-semibold leading-tight tracking-normal sm:text-5xl">Dibangun untuk ide yang ingin diwujudkan.</h2>
+            <h2 className="mt-4 max-w-xl text-[28px] font-semibold leading-[1.12] tracking-normal sm:text-[40px]">Dibangun untuk ide yang ingin diwujudkan.</h2>
             <p className="mt-6 max-w-2xl whitespace-pre-line text-base leading-8 text-black/62">{content.trustAbout.about_body}</p>
           </div>
           <div className="grid grid-cols-2 border-l border-t border-black/10">
