@@ -75,6 +75,8 @@ export const productImageFallbacks: Record<string, string> = {
 export const pageHeroImageFallbacks: Record<string, string> = {
   koleksi: "/images/debroder/page-heroes/hero-1.jpg",
   "kaos-polos": "/images/debroder/page-heroes/hero-kaos-polos.jpg",
+  "jaket-hoodie": "/images/debroder/page-heroes/hero-jaket-hoodie.jpg",
+  headwear: "/images/debroder/page-heroes/hero-headwear.jpg",
   "sablon-dtf": "/images/debroder/page-heroes/hero-sablon-dtf.jpg",
   "maklon-dtf": "/images/debroder/page-heroes/hero-maklon-dtf.jpg",
   jersey: "/images/debroder/page-heroes/hero-jersey.jpg",
@@ -86,6 +88,8 @@ export const pageHeroImageFallbacks: Record<string, string> = {
 export const pageHeroMobileImageFallbacks: Record<string, string> = {
   koleksi: "/images/debroder/page-heroes/hero-1-mobile.jpg",
   "kaos-polos": "/images/debroder/page-heroes/hero-kaos-polos-mobile.jpg",
+  "jaket-hoodie": "/images/debroder/page-heroes/hero-jaket-hoodie-mobile.jpg",
+  headwear: "/images/debroder/page-heroes/hero-headwear-mobile.jpg",
   "sablon-dtf": "/images/debroder/page-heroes/hero-sablon-dtf-mobile.jpg",
   "maklon-dtf": "/images/debroder/page-heroes/hero-maklon-dtf-mobile.jpg",
   jersey: "/images/debroder/page-heroes/hero-jersey-mobile.jpg",
@@ -609,6 +613,30 @@ export const fallbackPageHeroes: PageHeroContent[] = [
       "Pilihan kaos polos untuk brand, komunitas, event, dan kebutuhan harian.",
     image_url: pageHeroImageFallbacks["kaos-polos"],
     mobile_image_url: pageHeroMobileImageFallbacks["kaos-polos"],
+    object_position: "center center",
+    mobile_object_position: "center center",
+    status_aktif: true
+  },
+  {
+    page_key: "jaket-hoodie",
+    label: "JAKET & HOODIE",
+    title: "Jaket & Hoodie Custom",
+    subtitle:
+      "Pilihan jaket dan hoodie untuk brand, komunitas, event, dan kebutuhan harian.",
+    image_url: pageHeroImageFallbacks["jaket-hoodie"],
+    mobile_image_url: pageHeroMobileImageFallbacks["jaket-hoodie"],
+    object_position: "center center",
+    mobile_object_position: "center center",
+    status_aktif: true
+  },
+  {
+    page_key: "headwear",
+    label: "HEADWEAR",
+    title: "Headwear Custom",
+    subtitle:
+      "Topi dan headwear untuk brand, komunitas, event, dan kebutuhan merchandise.",
+    image_url: pageHeroImageFallbacks.headwear,
+    mobile_image_url: pageHeroMobileImageFallbacks.headwear,
     object_position: "center center",
     mobile_object_position: "center center",
     status_aktif: true

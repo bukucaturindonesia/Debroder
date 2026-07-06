@@ -106,6 +106,8 @@ const blockedPublicPattern = /\b(express|ekspedisi|pengiriman|distribusi)\b/i;
 const finalPageHeroKeys = [
   "koleksi",
   "kaos-polos",
+  "jaket-hoodie",
+  "headwear",
   "sablon-dtf",
   "maklon-dtf",
   "jersey",

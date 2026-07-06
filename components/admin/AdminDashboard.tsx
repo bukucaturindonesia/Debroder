@@ -509,11 +509,11 @@ const tableConfigs: TableConfig[] = [
   },
   {
     key: "page-hero",
-    label: "Page Hero",
+    label: "Page Hero / Hero Halaman",
     navLabel: "Page Hero",
     href: "/admin/page-hero",
     table: "page_heroes",
-    description: "Hero pendek untuk halaman Koleksi, Kaos Polos, Sablon DTF, Jersey, Store, dan Cara Order.",
+    description: "Hero pendek untuk halaman Koleksi, Kaos Polos, Jaket & Hoodie, Headwear, Sablon DTF, Jersey, Store, dan Cara Order.",
     orderField: "page_key",
     fields: [
       {
@@ -523,6 +523,8 @@ const tableConfigs: TableConfig[] = [
         options: [
           "koleksi",
           "kaos-polos",
+          "jaket-hoodie",
+          "headwear",
           "sablon-dtf",
           "maklon-dtf",
           "jersey",
@@ -823,6 +825,7 @@ const routeToKey = tableConfigs.reduce<Record<string, string>>((acc, config) => 
 const primaryNavigationKeys = [
   "overview",
   "homepage-sections",
+  "page-hero",
   "products",
   "media",
   "campaign-banners",
@@ -1929,7 +1932,7 @@ export function AdminDashboard() {
               <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-5">
                 {tableConfigs
                   .filter((config) =>
-                    ["homepage-sections", "products", "media", "campaign-banners", "orders", "website-settings"].includes(
+                    ["homepage-sections", "page-hero", "products", "media", "campaign-banners", "orders", "website-settings"].includes(
                       config.key
                     )
                   )

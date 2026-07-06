@@ -15,6 +15,7 @@ function sectionLabel(section: LandingSection) {
 
 const cmsEditorLinks = [
   ["Hero", "/admin/hero"],
+  ["Page Hero", "/admin/page-hero"],
   ["Campaign Banner", "/admin/campaign-banners"],
   ["Featured Products", "/admin/featured-products"],
   ["Trending", "/admin/trending"],
