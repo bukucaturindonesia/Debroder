@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { CategoryDetailPage } from "@/components/PublicPage";
+import { productsForRoute } from "@/lib/product-route-matching";
 import { getPublicContent } from "@/lib/public-data";
 import { whatsappHref } from "@/lib/url";
 
@@ -17,6 +18,7 @@ export const metadata: Metadata = {
 
 export default async function CetakSublimPage() {
   const content = await getPublicContent();
+  const products = productsForRoute(content.products, "cetak-sublim");
 
   return (
     <CategoryDetailPage
@@ -33,6 +35,8 @@ export default async function CetakSublimPage() {
       ctaText="Konsultasi Cetak Sublim"
       ctaHref={whatsappHref(content.contact.whatsapp_apparel)}
       currentSlug="cetak-sublim"
+      products={products}
+      productTitle="Produk Cetak Sublim"
     />
   );
 }

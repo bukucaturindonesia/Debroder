@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
 import { PageHero, PublicShell } from "@/components/PublicPage";
 import { ProductCatalog } from "@/components/ProductCatalog";
+import { productsForRoute } from "@/lib/product-route-matching";
 import { getPublicContent } from "@/lib/public-data";
-import type { Product } from "@/lib/types";
 
 export const metadata: Metadata = {
   title: "Headwear | DE BRODER",
@@ -16,25 +16,10 @@ export const metadata: Metadata = {
   }
 };
 
-function matchesHeadwear(product: Product) {
-  const value = [
-    product.nama,
-    product.kategori,
-    product.subcategory,
-    product.brand,
-    ...(product.collection_tags || [])
-  ]
-    .filter(Boolean)
-    .join(" ")
-    .toLowerCase();
-
-  return /headwear|topi|cap|hat/.test(value);
-}
-
 export default async function HeadwearPage() {
   const content = await getPublicContent();
   const pageHero = content.pageHeroes.find((hero) => hero.page_key === "headwear");
-  const products = content.products.filter(matchesHeadwear);
+  const products = productsForRoute(content.products, "headwear");
 
   return (
     <PublicShell content={content}>

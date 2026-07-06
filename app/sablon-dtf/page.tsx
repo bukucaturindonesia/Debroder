@@ -1,7 +1,9 @@
 import type { Metadata } from "next";
 import { PageHero, PublicShell } from "@/components/PublicPage";
+import { ProductCatalog } from "@/components/ProductCatalog";
 import { ServiceCatalog } from "@/components/ServiceCatalog";
 import { fallbackServices, getPageHeroImage } from "@/lib/fallback-data";
+import { productsForRoute } from "@/lib/product-route-matching";
 import { getPublicContent } from "@/lib/public-data";
 import { whatsappHref } from "@/lib/url";
 
@@ -21,6 +23,7 @@ export default async function SablonDtfPage() {
   const services = databaseServices.length > 1
     ? databaseServices
     : fallbackServices.filter((service) => service.category_key === "sablon-dtf");
+  const products = productsForRoute(content.products, "sablon-dtf");
 
   return (
     <PublicShell content={content}>
@@ -42,6 +45,13 @@ export default async function SablonDtfPage() {
         breadcrumbs={[{ label: "Beranda", href: "/" }, { label: "Sablon DTF" }]}
       />
       <ServiceCatalog services={services} whatsapp={content.contact.whatsapp_link || content.contact.whatsapp_apparel} />
+      {products.length ? (
+        <section className="bg-white py-12 sm:py-16">
+          <div className="section-shell">
+            <ProductCatalog products={products} title="Produk Sablon DTF" showHeading showCategoryFilter={false} />
+          </div>
+        </section>
+      ) : null}
     </PublicShell>
   );
 }

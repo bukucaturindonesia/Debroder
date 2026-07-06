@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { KaosCatalog } from "@/components/KaosCatalog";
 import { PageHero, PublicShell } from "@/components/PublicPage";
 import { getPageHeroImage } from "@/lib/fallback-data";
+import { productsForRoute } from "@/lib/product-route-matching";
 import { kaosTypeOptions, productTypeValue } from "@/lib/product-taxonomy";
 import { getPublicContent } from "@/lib/public-data";
 import { whatsappHref } from "@/lib/url";
@@ -39,10 +40,7 @@ export default async function KaosPolosPage({ searchParams }: KaosPolosPageProps
   const content = await getPublicContent();
   const params = searchParams ? await searchParams : {};
   const pageHero = content.pageHeroes.find((hero) => hero.page_key === "kaos-polos");
-  const products = content.products.filter((product) => {
-    const value = `${product.kategori} ${product.nama} ${product.subcategory || ""} ${product.link_url || ""}`.toLowerCase();
-    return value.includes("kaos") && !/jaket|jacket|hoodie|headwear|topi|cap|hat/.test(value);
-  });
+  const products = productsForRoute(content.products, "kaos-polos");
   const initialColor = firstParam(params.color) || "all";
   const initialLabel = productLabel(params.label);
   const initialSort = productSort(params.sort);

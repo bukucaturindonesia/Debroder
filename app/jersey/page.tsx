@@ -1,7 +1,9 @@
 import type { Metadata } from "next";
 import { JerseyCatalog } from "@/components/JerseyCatalog";
 import { PageHero, PublicShell } from "@/components/PublicPage";
+import { ProductCatalog } from "@/components/ProductCatalog";
 import { fallbackCategories, getPageHeroImage } from "@/lib/fallback-data";
+import { productsForRoute } from "@/lib/product-route-matching";
 import { getPublicContent } from "@/lib/public-data";
 import { whatsappHref } from "@/lib/url";
 
@@ -18,6 +20,7 @@ export default async function JerseyPage() {
   const categories = specificCategories.length
     ? specificCategories
     : fallbackCategories.filter((category) => category.category_key === "jersey");
+  const products = productsForRoute(content.products, "jersey");
 
   return (
     <PublicShell content={content}>
@@ -39,6 +42,13 @@ export default async function JerseyPage() {
         breadcrumbs={[{ label: "Beranda", href: "/" }, { label: "Jersey" }]}
       />
       <JerseyCatalog categories={categories} />
+      {products.length ? (
+        <section className="bg-white py-12 sm:py-16">
+          <div className="section-shell">
+            <ProductCatalog products={products} title="Produk Jersey" showHeading showCategoryFilter={false} />
+          </div>
+        </section>
+      ) : null}
     </PublicShell>
   );
 }

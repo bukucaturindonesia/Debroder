@@ -1,9 +1,9 @@
 import type { Metadata } from "next";
 import { PageHero, PublicShell } from "@/components/PublicPage";
 import { ProductCatalog } from "@/components/ProductCatalog";
+import { productsForRoute } from "@/lib/product-route-matching";
 import { jacketTypeOptions, productTypeValue } from "@/lib/product-taxonomy";
 import { getPublicContent } from "@/lib/public-data";
-import type { Product } from "@/lib/types";
 
 export const metadata: Metadata = {
   title: "Jaket & Hoodie | DE BRODER",
@@ -40,26 +40,11 @@ function productSort(value?: string | string[]) {
   return sort === "newest" || sort === "best-selling" || sort === "price-low" || sort === "price-high" ? sort : "order";
 }
 
-function matchesJaketHoodie(product: Product) {
-  const value = [
-    product.nama,
-    product.kategori,
-    product.subcategory,
-    product.brand,
-    ...(product.collection_tags || [])
-  ]
-    .filter(Boolean)
-    .join(" ")
-    .toLowerCase();
-
-  return /jaket|jacket|hoodie|hoodies/.test(value);
-}
-
 export default async function JaketHoodiePage({ searchParams }: JaketHoodiePageProps) {
   const content = await getPublicContent();
   const params = searchParams ? await searchParams : {};
   const pageHero = content.pageHeroes.find((hero) => hero.page_key === "jaket-hoodie");
-  const products = content.products.filter(matchesJaketHoodie);
+  const products = productsForRoute(content.products, "jaket-hoodie");
   const initialColor = firstParam(params.color) || "all";
   const initialLabel = productLabel(params.label);
   const initialSort = productSort(params.sort);

@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { CategoryDetailPage } from "@/components/PublicPage";
+import { productsForRoute } from "@/lib/product-route-matching";
 import { getPublicContent } from "@/lib/public-data";
 import { whatsappHref } from "@/lib/url";
 
@@ -17,6 +18,7 @@ export const metadata: Metadata = {
 
 export default async function MaklonDtfPage() {
   const content = await getPublicContent();
+  const products = productsForRoute(content.products, "maklon-dtf");
 
   return (
     <CategoryDetailPage
@@ -33,6 +35,8 @@ export default async function MaklonDtfPage() {
       ctaText="Konsultasi Maklon DTF"
       ctaHref={whatsappHref(content.contact.whatsapp_apparel)}
       currentSlug="maklon-dtf"
+      products={products}
+      productTitle="Produk Maklon DTF"
     />
   );
 }
