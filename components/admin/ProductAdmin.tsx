@@ -24,6 +24,7 @@ const emptyProduct: Product = {
   gallery_urls: [],
   specifications: [],
   collection_tags: [],
+  intent_tags: [],
   color_tags: [],
   size_tags: [],
   material_tags: [],
@@ -155,7 +156,7 @@ export function ProductAdminPanel() {
   const visibleProducts = useMemo(() => {
     const search = query.trim().toLowerCase();
     return products
-      .filter((product) => !search || `${product.nama} ${product.kategori} ${product.subcategory || ""}`.toLowerCase().includes(search))
+      .filter((product) => !search || `${product.nama} ${product.kategori} ${product.subcategory || ""} ${(product.intent_tags || []).join(" ")}`.toLowerCase().includes(search))
       .filter((product) => categoryFilter === "all" || product.kategori === categoryFilter)
       .filter((product) => statusFilter === "all" || String(product.status_aktif) === statusFilter)
       .sort((a, b) => {
@@ -437,6 +438,7 @@ export function ProductAdminPanel() {
             <Field label="Warna (satu per baris)"><textarea rows={3} value={listValue(form.color_tags)} onChange={(e) => update("color_tags", parseList(e.target.value))} /></Field>
             <Field label="Ukuran (satu per baris)"><textarea rows={3} value={listValue(form.size_tags)} onChange={(e) => update("size_tags", parseList(e.target.value))} /></Field>
             <Field label="Tag koleksi (satu per baris)"><textarea rows={3} value={listValue(form.collection_tags)} onChange={(e) => update("collection_tags", parseList(e.target.value))} /></Field>
+            <Field label="Tag rekomendasi / intent (satu per baris)"><textarea rows={3} value={listValue(form.intent_tags)} onChange={(e) => update("intent_tags", parseList(e.target.value))} placeholder="jersey&#10;sublim&#10;komunitas&#10;brand-apparel" /></Field>
           </div>
 
           <div className="rounded-xl border border-brand-softGray p-4">

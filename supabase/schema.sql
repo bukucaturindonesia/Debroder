@@ -43,6 +43,7 @@ create table if not exists public.products (
   image_url text,
   image_alt text,
   collection_tags text[] not null default '{}',
+  intent_tags text[] not null default '{}',
   color_tags text[] not null default '{}',
   size_tags text[] not null default '{}',
   material_tags text[] not null default '{}',
@@ -455,6 +456,7 @@ create table if not exists public.website_settings (
 
 alter table if exists public.products
   add column if not exists product_category_id uuid references public.product_categories(id) on delete set null,
+  add column if not exists intent_tags text[] not null default '{}',
   add column if not exists stock integer not null default 0,
   add column if not exists trending boolean not null default false,
   add column if not exists fresh_drop boolean not null default false;

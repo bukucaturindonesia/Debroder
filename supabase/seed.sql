@@ -161,6 +161,7 @@ on conflict (filter_type, slug) do update set
 update public.products
 set
   collection_tags = array['best-seller'],
+  intent_tags = array['kaos-polos', 'sablon-dtf', 'komunitas', 'brand-apparel'],
   color_tags = array['putih', 'hitam', 'navy'],
   size_tags = array['s', 'm', 'l', 'xl'],
   material_tags = array['cotton-combed-24s'],
@@ -170,11 +171,28 @@ where nama ilike '%New State%' or nama ilike '%NSA%';
 update public.products
 set
   collection_tags = array['new-arrival'],
+  intent_tags = array['kaos-polos', 'sablon-dtf', 'brand-apparel'],
   color_tags = array['putih', 'hitam', 'navy'],
   size_tags = array['s', 'm', 'l', 'xl'],
   material_tags = array['cotton-combed-30s'],
   brand = coalesce(nullif(brand, ''), 'DE BRODER')
 where nama ilike '%Cotton Combed%';
+
+update public.products
+set intent_tags = array['sablon-dtf', 'kaos-polos', 'maklon-dtf']
+where kategori ilike '%sablon%' or nama ilike '%dtf%';
+
+update public.products
+set intent_tags = array['jersey', 'sublim', 'tim', 'komunitas']
+where kategori ilike '%jersey%' or nama ilike '%jersey%';
+
+update public.products
+set intent_tags = array['cetak-sublim', 'jersey', 'tim', 'partai-besar']
+where kategori ilike '%sublim%' or nama ilike '%sublim%';
+
+update public.products
+set intent_tags = array['maklon-dtf', 'reseller', 'brand-apparel', 'partai-besar']
+where kategori ilike '%maklon%' or nama ilike '%maklon%';
 
 update public.services
 set

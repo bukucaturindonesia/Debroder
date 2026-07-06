@@ -47,7 +47,8 @@ function searchText(product: Product) {
     ...(product.material_tags || []),
     ...(product.color_tags || []),
     ...(product.size_tags || []),
-    ...(product.collection_tags || [])
+    ...(product.collection_tags || []),
+    ...(product.intent_tags || [])
   ].filter(Boolean).join(" ").toLowerCase();
 }
 

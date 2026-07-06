@@ -27,6 +27,7 @@ export type Product = {
   image_url?: string;
   image_alt?: string;
   collection_tags?: string[];
+  intent_tags?: string[];
   color_tags?: string[];
   size_tags?: string[];
   material_tags?: string[];
