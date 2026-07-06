@@ -1,6 +1,7 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
 import { PageMotion } from "@/components/PageMotion";
+import { ProductCatalog } from "@/components/ProductCatalog";
 import { PublicFooter } from "@/components/PublicFooter";
 import { ResponsivePicture } from "@/components/ResponsivePicture";
 import { SafeImage } from "@/components/SafeImage";
@@ -411,7 +412,9 @@ export function CategoryDetailPage({
   visualLabel,
   ctaText,
   ctaHref,
-  currentSlug
+  currentSlug,
+  products = [],
+  productTitle
 }: {
   content: PublicContent;
   label: string;
@@ -422,6 +425,8 @@ export function CategoryDetailPage({
   ctaText: string;
   ctaHref: string;
   currentSlug: string;
+  products?: Product[];
+  productTitle?: string;
 }) {
   const pageHero = findPageHero(content.pageHeroes, currentSlug);
 
@@ -471,6 +476,18 @@ export function CategoryDetailPage({
           />
         </div>
       </section>
+      {products.length ? (
+        <section className="bg-white py-12 sm:py-16">
+          <div className="section-shell">
+            <ProductCatalog
+              products={products}
+              title={productTitle || `Produk ${title}`}
+              showHeading
+              showCategoryFilter={false}
+            />
+          </div>
+        </section>
+      ) : null}
       <RecommendationGrid
         services={content.categories}
         currentSlug={currentSlug}
