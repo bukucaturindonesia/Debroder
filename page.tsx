@@ -42,6 +42,10 @@ type ProductItem = Visual & {
   fit: string;
 };
 
+const horizontalCarouselClass = "no-scrollbar mt-4 flex snap-x snap-mandatory gap-2 overflow-x-auto";
+const horizontalCarouselItemClass = "min-w-[76vw] shrink-0 snap-start sm:min-w-[42vw] lg:min-w-[calc((100%_-_24px)_/_4)]";
+const horizontalEditorialItemClass = "min-w-[82vw] shrink-0 snap-start sm:min-w-[42vw] lg:min-w-[calc((100%_-_16px)_/_3)]";
+
 function productItem(product: Product): ProductItem {
   return {
     name: product.nama,
@@ -142,9 +146,9 @@ function BenefitIcon({ name }: { name: string }) {
   );
 }
 
-function EditorialCard({ item, featuredCard = false }: { item: EditorialItem; featuredCard?: boolean }) {
+function EditorialCard({ item, featuredCard = false, className = "" }: { item: EditorialItem; featuredCard?: boolean; className?: string }) {
   return (
-    <Link href={item.href} className={`group relative block shrink-0 snap-start overflow-hidden bg-[#0a1711] ${featuredCard ? "h-[470px] min-w-[86vw] sm:h-[520px] sm:min-w-[72vw] lg:h-[520px] lg:min-w-0" : "h-[390px] min-w-[82vw] sm:min-w-[52vw] lg:h-[420px] lg:min-w-0"}`}>
+    <Link href={item.href} className={`group relative block overflow-hidden bg-[#0a1711] ${featuredCard ? "h-[470px] min-w-[86vw] sm:h-[520px] sm:min-w-[72vw] lg:h-[520px] lg:min-w-0" : `h-[390px] lg:h-[420px] ${className}`}`}>
       <SafeImage src={item.image} fallbackSrc={item.fallbackImage} alt={item.imageAlt} fill sizes={featuredCard ? "(min-width: 1024px) 50vw, 86vw" : "(min-width: 1024px) 33vw, 82vw"} className="object-cover transition duration-700 group-hover:scale-[1.03]" objectFit={item.objectFit || "cover"} objectPosition={item.objectPosition} />
       <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/8 to-transparent" />
       <div className="absolute inset-x-0 bottom-0 p-5 text-white sm:p-7">
@@ -156,16 +160,16 @@ function EditorialCard({ item, featuredCard = false }: { item: EditorialItem; fe
   );
 }
 
-function ProductCard({ item }: { item: ProductItem }) {
+function ProductCard({ item, className = "" }: { item: ProductItem; className?: string }) {
   return (
-    <Link href={item.href} className="group block min-w-0">
+    <Link href={item.href} className={`group block ${className}`}>
       <div className="relative aspect-[4/5] overflow-hidden bg-[#f2f2ed]">
         <SafeImage src={item.image} fallbackSrc={item.fallbackImage} alt={item.imageAlt} fill sizes="(min-width: 1536px) 20vw, (min-width: 1024px) 25vw, 50vw" className={`${(item.objectFit || item.fit) === "contain" ? "object-contain p-3" : "object-cover"} transition duration-700 group-hover:scale-[1.03]`} objectFit={item.objectFit || (item.fit === "contain" ? "contain" : "cover")} objectPosition={item.objectPosition} />
       </div>
       <div className="pt-4">
         <h3 className="line-clamp-2 text-sm font-semibold text-[#111] sm:text-base">{item.name}</h3>
-        <p className="mt-1 text-sm font-semibold text-[#111]">{item.price}</p>
-        <p className="mt-1 text-xs text-black/50 sm:text-sm">{item.category}</p>
+        <p className="mt-1 text-sm text-black/50 sm:text-[15px]">{item.category}</p>
+        <p className="mt-2 text-[15px] font-semibold text-[#111] sm:text-base">{item.price}</p>
       </div>
     </Link>
   );
@@ -183,8 +187,8 @@ function ManagedHomepageSection({ section }: { section: HomepageSection }) {
       <section data-reveal id={section.slug} className={`snap-section section-space ${section.slug === "trending" ? "bg-[#f7f7f2]" : "bg-white"}`}>
         <div className="section-shell">
           <SectionHeading title={section.title} action={isFeatured ? undefined : <ScrollButtons containerId={carouselId} />} />
-          <div id={carouselId} className={`no-scrollbar mt-6 flex snap-x snap-mandatory overflow-x-auto lg:grid lg:overflow-visible ${isFeatured ? "gap-3 lg:grid-cols-2" : "gap-4 lg:grid-cols-3 lg:gap-5"}`}>
-            {items.map((item, index) => <EditorialCard key={section.items[index]?.id || `${item.href}-${index}`} item={item} featuredCard={isFeatured} />)}
+          <div id={carouselId} className={isFeatured ? "mt-6 grid grid-cols-1 gap-3 lg:grid-cols-2" : horizontalCarouselClass}>
+            {items.map((item, index) => <EditorialCard key={section.items[index]?.id || `${item.href}-${index}`} item={item} featuredCard={isFeatured} className={isFeatured ? "" : horizontalEditorialItemClass} />)}
           </div>
         </div>
       </section>
@@ -197,8 +201,8 @@ function ManagedHomepageSection({ section }: { section: HomepageSection }) {
     <section data-reveal id={section.slug} className="snap-section section-space bg-white">
       <div className="section-shell">
         <SectionHeading title={section.title} action={<div className="flex items-center gap-4"><Link href="/koleksi" className="hidden text-sm font-semibold hover:underline sm:block">Shop</Link><ScrollButtons containerId={carouselId} /></div>} />
-        <div id={carouselId} className="mt-6 grid grid-cols-2 gap-x-3 gap-y-8 sm:gap-x-5 md:grid-cols-3 lg:grid-cols-4 2xl:grid-cols-5">
-          {items.map((item, index) => <ProductCard key={section.items[index]?.id || `${item.href}-${index}`} item={item} />)}
+        <div id={carouselId} className={`${horizontalCarouselClass} gap-y-6`}>
+          {items.map((item, index) => <ProductCard key={section.items[index]?.id || `${item.href}-${index}`} item={item} className={horizontalCarouselItemClass} />)}
         </div>
       </div>
     </section>
@@ -278,9 +282,9 @@ export default async function Home() {
       <section data-reveal id="shop-category" className="snap-section section-space bg-white pt-4 sm:pt-6">
         <div className="section-shell">
           <SectionHeading title="Shop by Category" action={<ScrollButtons containerId="category-carousel" />} />
-          <div id="category-carousel" className="mt-6 grid grid-cols-2 gap-x-3 gap-y-8 sm:gap-x-5 md:grid-cols-3 lg:grid-cols-4 2xl:grid-cols-5">
+          <div id="category-carousel" className={`${horizontalCarouselClass} gap-y-6`}>
             {homeCategories.length ? homeCategories.map((item) => (
-              <Link key={item.name} href={item.href} className="group relative aspect-[4/5] min-w-0 overflow-hidden bg-[#102219]">
+              <Link key={item.name} href={item.href} className={`group relative aspect-[4/5] overflow-hidden bg-[#102219] ${horizontalCarouselItemClass}`}>
                 <SafeImage src={item.image} fallbackSrc={item.fallbackImage} alt={item.imageAlt} fill sizes="(min-width: 1536px) 20vw, (min-width: 1024px) 25vw, 50vw" className="object-cover transition duration-700 group-hover:scale-[1.03]" objectFit={item.objectFit || "cover"} objectPosition={item.objectPosition} />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent" />
                 <h3 className="absolute bottom-4 left-4 line-clamp-2 text-base font-semibold text-white sm:bottom-6 sm:left-6 sm:text-xl">{item.name}</h3>
@@ -294,9 +298,9 @@ export default async function Home() {
         <section data-reveal id="koleksi" className="snap-section section-space bg-[#f7f7f2]">
           <div className="section-shell">
             <SectionHeading title="Pakaian Polos berdasarkan Kategori" description="Pilih dasar apparel yang sesuai, lalu custom bersama tim DEBRODER." action={<ScrollButtons containerId="collection-carousel" />} />
-            <div id="collection-carousel" className="mt-6 grid grid-cols-2 gap-x-3 gap-y-8 sm:gap-x-5 md:grid-cols-3 lg:grid-cols-4 2xl:grid-cols-5">
+            <div id="collection-carousel" className={`${horizontalCarouselClass} gap-y-6`}>
               {homeCollection.length ? homeCollection.map((item) => (
-                <Link key={item.name} href={item.href} className="group block min-w-0">
+                <Link key={item.name} href={item.href} className={`group block ${horizontalCarouselItemClass}`}>
                   <div className="relative aspect-[4/5] overflow-hidden bg-white">
                     <SafeImage src={item.image} fallbackSrc={item.fallbackImage} alt={item.imageAlt} fill sizes="(min-width: 1536px) 20vw, (min-width: 1024px) 25vw, 50vw" className={`${(item.objectFit || item.fit) === "contain" ? "object-contain p-4" : "object-cover"} transition duration-700 group-hover:scale-[1.03]`} objectFit={item.objectFit || (item.fit === "contain" ? "contain" : "cover")} objectPosition={item.objectPosition} />
                   </div>
