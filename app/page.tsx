@@ -58,8 +58,9 @@ type ProductItem = Visual & {
   cartProduct?: CartProductInput;
 };
 
-const mobileCarouselClass = "no-scrollbar mt-4 flex snap-x snap-mandatory gap-2 overflow-x-auto md:grid md:overflow-visible";
-const mobileCarouselItemClass = "min-w-[76vw] shrink-0 snap-start md:min-w-0 md:shrink";
+const horizontalCarouselClass = "no-scrollbar mt-4 flex snap-x snap-mandatory gap-2 overflow-x-auto";
+const horizontalCarouselItemClass = "min-w-[76vw] shrink-0 snap-start sm:min-w-[42vw] lg:min-w-[calc((100%_-_24px)_/_4)]";
+const horizontalEditorialItemClass = "min-w-[82vw] shrink-0 snap-start sm:min-w-[42vw] lg:min-w-[calc((100%_-_16px)_/_3)]";
 
 function productItem(product: Product): ProductItem {
   const href = `/produk/${product.slug || product.nama.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "")}`;
@@ -216,8 +217,8 @@ function ManagedHomepageSection({ section, setting }: { section: HomepageSection
           <div className={isFeatured ? "section-shell" : ""}>
             <SectionHeading title={section.title} description={setting?.subtitle} textPosition={setting?.text_position} action={<div className="flex items-center gap-4">{configuredCta}{!isFeatured ? <ScrollButtons containerId={carouselId} /> : null}</div>} />
           </div>
-          <div id={carouselId} className={isFeatured ? "mt-4 grid grid-cols-1 gap-1 sm:gap-2 lg:grid-cols-2" : `${mobileCarouselClass} md:grid-cols-2 lg:grid-cols-3`}>
-            {items.map((item, index) => <EditorialCard key={section.items[index]?.id || `${item.href}-${index}`} item={item} featuredCard={isFeatured} className={isFeatured ? "" : mobileCarouselItemClass} />)}
+          <div id={carouselId} className={isFeatured ? "mt-4 grid grid-cols-1 gap-1 sm:gap-2 lg:grid-cols-2" : horizontalCarouselClass}>
+            {items.map((item, index) => <EditorialCard key={section.items[index]?.id || `${item.href}-${index}`} item={item} featuredCard={isFeatured} className={isFeatured ? "" : horizontalEditorialItemClass} />)}
           </div>
         </div>
       </section>
@@ -230,8 +231,8 @@ function ManagedHomepageSection({ section, setting }: { section: HomepageSection
     <section data-reveal id={section.slug} className="snap-section section-space bg-white">
       <div className="section-shell">
         <SectionHeading title={section.title} description={setting?.subtitle} textPosition={setting?.text_position} action={<div className="flex items-center gap-4">{configuredCta || <Link href="/koleksi" className="hidden text-sm font-semibold hover:underline sm:block">Shop</Link>}<ScrollButtons containerId={carouselId} /></div>} />
-        <div id={carouselId} className={`${mobileCarouselClass} gap-y-6 md:grid-cols-2 lg:grid-cols-4`}>
-          {items.map((item, index) => <ProductCard key={section.items[index]?.id || `${item.href}-${index}`} item={item} className={mobileCarouselItemClass} />)}
+        <div id={carouselId} className={`${horizontalCarouselClass} gap-y-6`}>
+          {items.map((item, index) => <ProductCard key={section.items[index]?.id || `${item.href}-${index}`} item={item} className={horizontalCarouselItemClass} />)}
         </div>
       </div>
     </section>
@@ -333,9 +334,9 @@ export default async function Home() {
       <section data-reveal id="shop-category" className="snap-section section-space bg-white pt-4 sm:pt-6">
         <div className="section-shell">
           <SectionHeading title={landingSection("services-products")?.title || "Shop by Category"} description={landingSection("services-products")?.subtitle} textPosition={landingSection("services-products")?.text_position} action={<div className="flex items-center gap-4">{landingSection("services-products")?.cta_label && landingSection("services-products")?.cta_url ? <Link href={landingSection("services-products")!.cta_url!} className="hidden text-sm font-semibold hover:underline sm:block">{landingSection("services-products")!.cta_label}</Link> : null}<ScrollButtons containerId="category-carousel" /></div>} />
-          <div id="category-carousel" className={`${mobileCarouselClass} gap-y-6 md:grid-cols-2 lg:grid-cols-4`}>
+          <div id="category-carousel" className={`${horizontalCarouselClass} gap-y-6`}>
             {homeCategories.length ? homeCategories.map((item) => (
-              <Link key={item.name} href={item.href} className={`group relative aspect-[4/5] min-w-0 overflow-hidden bg-[#102219] ${mobileCarouselItemClass}`}>
+              <Link key={item.name} href={item.href} className={`group relative aspect-[4/5] overflow-hidden bg-[#102219] ${horizontalCarouselItemClass}`}>
                 <SafeImage src={item.image} fallbackSrc={item.fallbackImage} alt={item.imageAlt} fill sizes="(min-width: 1536px) 20vw, (min-width: 1024px) 25vw, 50vw" className="object-cover transition duration-700 group-hover:scale-[1.03]" objectFit={item.objectFit || "cover"} objectPosition={item.objectPosition} />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent" />
                 <h3 className="absolute bottom-4 left-4 line-clamp-2 text-base font-semibold text-white sm:bottom-6 sm:left-6 sm:text-xl">{item.name}</h3>
@@ -351,9 +352,9 @@ export default async function Home() {
         <section data-reveal id="koleksi" className="snap-section section-space bg-[#f7f7f2]">
           <div className="section-shell">
             <SectionHeading title={landingSection("plain-category")?.title || "Pakaian Polos berdasarkan Kategori"} description={landingSection("plain-category")?.subtitle || "Pilih dasar apparel yang sesuai, lalu custom bersama tim DEBRODER."} textPosition={landingSection("plain-category")?.text_position} action={<ScrollButtons containerId="collection-carousel" />} />
-            <div id="collection-carousel" className={`${mobileCarouselClass} gap-y-6 md:grid-cols-2 lg:grid-cols-4`}>
+            <div id="collection-carousel" className={`${horizontalCarouselClass} gap-y-6`}>
               {homeCollection.length ? homeCollection.map((item) => (
-                <article key={item.name} className={`group min-w-0 ${mobileCarouselItemClass}`}>
+                <article key={item.name} className={`group ${horizontalCarouselItemClass}`}>
                   <Link href={item.href} className="block">
                   <div className="relative aspect-[4/5] overflow-hidden bg-white">
                     <SafeImage src={item.image} fallbackSrc={item.fallbackImage} alt={item.imageAlt} fill sizes="(min-width: 1536px) 20vw, (min-width: 1024px) 25vw, 50vw" className={`${(item.objectFit || item.fit) === "contain" ? "object-contain p-4" : "object-cover"} transition duration-700 group-hover:scale-[1.03]`} objectFit={item.objectFit || (item.fit === "contain" ? "contain" : "cover")} objectPosition={item.objectPosition} />
