@@ -3,7 +3,13 @@
 
 import { ChangeEvent, FormEvent, useEffect, useMemo, useState } from "react";
 import { FocalPointEditor } from "@/components/admin/FocalPointEditor";
-import { categoryPath, categoryPreset, productCategoryPresets } from "@/lib/product-category-config";
+import {
+  categoryPath,
+  categoryPreset,
+  isMainProductCategory,
+  productCategoryPresets,
+  subcategoryMatch
+} from "@/lib/product-category-config";
 import { createSupabaseClient, WEBSITE_IMAGES_BUCKET } from "@/lib/supabase";
 import type { FocalPoint, Product, ProductCategory } from "@/lib/types";
 import { formatRupiah } from "@/lib/url";
@@ -90,8 +96,8 @@ function isCoreCategory(category: ProductCategory) {
 }
 
 function categoryChoices(categories: ProductCategory[]): ProductCategory[] {
-  if (categories.length) return categories;
-  return productCategoryPresets.map((preset, index) => ({
+  const bySlug = new Map(categories.map((category) => [category.slug, category]));
+  return productCategoryPresets.map((preset, index) => bySlug.get(preset.slug) || ({
     id: undefined,
     name: preset.name,
     slug: preset.slug,
@@ -173,17 +179,21 @@ export function ProductAdminPanel() {
   useEffect(() => { loadData(); }, []);
 
   const availableCategories = useMemo(() => categoryChoices(categories).filter((category) => category.is_active !== false), [categories]);
-  const categoryNames = useMemo(() => Array.from(new Set([
-    ...availableCategories.map((category) => category.name),
-    ...products.map((product) => product.kategori)
-  ].filter(Boolean))).sort(), [availableCategories, products]);
+  const categoryNames = useMemo(() => availableCategories.map((category) => category.name).sort(), [availableCategories]);
   const activePreset = categoryPreset(availableCategories.find((category) => category.id === form.product_category_id)?.slug || form.kategori || "");
 
   const visibleProducts = useMemo(() => {
     const search = query.trim().toLowerCase();
     return products
       .filter((product) => !search || `${product.nama} ${product.kategori} ${product.subcategory || ""} ${(product.intent_tags || []).join(" ")}`.toLowerCase().includes(search))
-      .filter((product) => categoryFilter === "all" || product.kategori === categoryFilter)
+      .filter((product) => {
+        if (categoryFilter === "all") return true;
+        const category = availableCategories.find((item) => item.name === categoryFilter);
+        return Boolean(
+          (category?.id && product.product_category_id === category.id) ||
+          product.kategori === categoryFilter
+        );
+      })
       .filter((product) => statusFilter === "all" || String(product.status_aktif) === statusFilter)
       .sort((a, b) => {
         if (sort === "nama") return a.nama.localeCompare(b.nama, "id");
@@ -191,7 +201,7 @@ export function ProductAdminPanel() {
         if (sort === "newest") return new Date(b.created_at || 0).getTime() - new Date(a.created_at || 0).getTime();
         return a.urutan - b.urutan;
       });
-  }, [categoryFilter, products, query, sort, statusFilter]);
+  }, [availableCategories, categoryFilter, products, query, sort, statusFilter]);
 
   function update<K extends keyof Product>(key: K, value: Product[K]) {
     setForm((current) => ({ ...current, [key]: value }));
@@ -454,19 +464,29 @@ export function ProductAdminPanel() {
     event.preventDefault();
     const name = newCategory.trim();
     if (!name) return;
+    const matchedSubcategory = subcategoryMatch(name);
+    if (matchedSubcategory) {
+      setStatus("Item ini adalah subkategori. Pilih kategori utama lalu isi Subkategori.");
+      return;
+    }
+    const preset = productCategoryPresets.find((item) => item.slug === slugify(name) || item.name.toLowerCase() === name.toLowerCase());
+    if (!preset || !isMainProductCategory(name)) {
+      setStatus("product_categories hanya untuk kategori utama: Kaos Polos, Jaket & Hoodie, Headwear, Sablon DTF, Jersey, Cetak Sublim, atau Maklon DTF.");
+      return;
+    }
     const supabase = createSupabaseClient();
     if (!supabase) return;
     setSavingCategory(true);
     const { error } = await supabase.from("product_categories").insert({
-      name,
-      slug: slugify(name),
+      name: preset.name,
+      slug: preset.slug,
       description: "",
       is_active: true,
-      sort_order: categories.length ? Math.max(...categories.map((category) => category.sort_order)) + 10 : 10,
+      sort_order: (productCategoryPresets.findIndex((item) => item.slug === preset.slug) + 1) * 10,
       show_in_collection: true,
       collection_limit: 8,
       collection_sort: "sort_order",
-      collection_section_order: categories.length ? Math.max(...categories.map((category) => category.collection_section_order ?? category.sort_order)) + 10 : 10
+      collection_section_order: (productCategoryPresets.findIndex((item) => item.slug === preset.slug) + 1) * 10
     });
     setSavingCategory(false);
     setStatus(error ? `Kategori gagal dibuat: ${error.message}` : "Kategori produk dibuat.");
@@ -478,6 +498,10 @@ export function ProductAdminPanel() {
 
   async function toggleCategory(category: ProductCategory) {
     if (!category.id) return;
+    if (isCoreCategory(category) && category.is_active) {
+      setStatus("Kategori utama tidak boleh dinonaktifkan agar route publik dan PIM tetap stabil.");
+      return;
+    }
     const supabase = createSupabaseClient();
     if (!supabase) return;
     const { error } = await supabase.from("product_categories").update({ is_active: !category.is_active }).eq("id", category.id);
@@ -499,11 +523,11 @@ export function ProductAdminPanel() {
       setStatus("Kategori utama tidak boleh dihapus agar route publik dan PIM tetap stabil.");
       return;
     }
-    if (!category.id || !window.confirm(`Hapus kategori "${category.name}"? Produk tidak akan dihapus.`)) return;
+    if (!category.id || !window.confirm(`Nonaktifkan kategori lama "${category.name}"? Produk tidak akan dihapus.`)) return;
     const supabase = createSupabaseClient();
     if (!supabase) return;
-    const { error } = await supabase.from("product_categories").delete().eq("id", category.id);
-    setStatus(error ? `Kategori gagal dihapus: ${error.message}` : "Kategori dihapus. Produk tetap aman.");
+    const { error } = await supabase.from("product_categories").update({ is_active: false, show_in_collection: false }).eq("id", category.id);
+    setStatus(error ? `Kategori gagal dinonaktifkan: ${error.message}` : "Kategori lama dinonaktifkan. Produk tetap aman.");
     if (!error) await loadData();
   }
 
@@ -521,7 +545,7 @@ export function ProductAdminPanel() {
           <div><p className="text-xs font-semibold uppercase tracking-[.16em] text-brand-charcoal/45">PIM</p><h2 className="mt-2 text-xl font-semibold">Kategori produk</h2></div>
           <form onSubmit={createCategory} className="flex w-full gap-2 lg:max-w-md"><input value={newCategory} onChange={(event) => setNewCategory(event.target.value)} placeholder="Kategori baru" className="min-h-11 min-w-0 flex-1 rounded-lg border border-brand-softGray px-4 text-sm" /><button disabled={savingCategory} className="rounded-full bg-brand-charcoal px-5 text-sm font-semibold text-white disabled:opacity-50">Tambah</button></form>
         </div>
-        <div className="mt-4 flex flex-wrap gap-2">{categories.map((category) => <div key={category.id || category.slug} className="inline-flex items-center rounded-full border border-brand-softGray bg-white"><button type="button" onClick={() => toggleCategory(category)} className={`px-4 py-2 text-xs font-semibold ${category.is_active ? "text-brand-green" : "text-brand-charcoal/45"}`}>{category.name}</button>{isCoreCategory(category) ? <span className="border-l border-brand-softGray px-3 py-2 text-xs font-semibold text-brand-charcoal/45">Utama</span> : <button type="button" aria-label={`Hapus kategori ${category.name}`} onClick={() => deleteCategory(category)} className="border-l border-brand-softGray px-3 py-2 text-xs font-semibold text-red-700">Hapus</button>}</div>)}</div>
+        <div className="mt-4 flex flex-wrap gap-2">{categories.map((category) => <div key={category.id || category.slug} className="inline-flex items-center rounded-full border border-brand-softGray bg-white"><button type="button" onClick={() => toggleCategory(category)} className={`px-4 py-2 text-xs font-semibold ${category.is_active ? "text-brand-green" : "text-brand-charcoal/45"}`}>{category.name}</button>{isCoreCategory(category) ? <span className="border-l border-brand-softGray px-3 py-2 text-xs font-semibold text-brand-charcoal/45">Utama</span> : <button type="button" aria-label={`Nonaktifkan kategori ${category.name}`} onClick={() => deleteCategory(category)} className="border-l border-brand-softGray px-3 py-2 text-xs font-semibold text-red-700">Nonaktifkan</button>}</div>)}</div>
         {categories.length ? (
           <div className="mt-5 overflow-x-auto">
             <table className="w-full min-w-[760px] text-left text-sm">

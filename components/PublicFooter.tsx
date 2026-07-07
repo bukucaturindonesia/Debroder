@@ -1,5 +1,6 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
+import { BrandIcon } from "@/components/BrandIcon";
 import { Logo } from "@/components/Logo";
 import type { PublicContent } from "@/lib/types";
 import { emailHref, facebookHref, instagramHref, whatsappLinkWithMessage } from "@/lib/url";
@@ -29,6 +30,12 @@ export function PublicFooter({ content }: { content: PublicContent }) {
     content.contact.whatsapp_link || content.contact.whatsapp_utama,
     "Halo DEBRODER, saya ingin bertanya tentang layanan DEBRODER."
   );
+  const contactItems = [
+    { label: "Email", href: emailLink, icon: "email" as const, external: false },
+    { label: "WhatsApp", href: whatsappLink, icon: "whatsapp" as const, external: true },
+    { label: "Instagram", href: instagramLink, icon: "instagram" as const, external: true },
+    { label: "Facebook", href: facebookLink, icon: "facebook" as const, external: true }
+  ];
 
   return (
     <footer className="snap-section bg-[#050706] py-10 text-white sm:py-12">
@@ -49,10 +56,18 @@ export function PublicFooter({ content }: { content: PublicContent }) {
         </FooterColumn>
 
         <FooterColumn title="Kontak & Sosial">
-          <a href={emailLink} className="transition hover:text-white">Email</a>
-          <a href={whatsappLink} target="_blank" rel="noopener noreferrer" className="transition hover:text-white">WhatsApp</a>
-          <a href={instagramLink} target="_blank" rel="noopener noreferrer" className="transition hover:text-white">Instagram</a>
-          <a href={facebookLink} target="_blank" rel="noopener noreferrer" className="transition hover:text-white">Facebook</a>
+          {contactItems.map((item) => (
+            <a
+              key={item.label}
+              href={item.href}
+              target={item.external ? "_blank" : undefined}
+              rel={item.external ? "noopener noreferrer" : undefined}
+              className="inline-flex items-center gap-2 transition hover:text-white"
+            >
+              <BrandIcon name={item.icon} tone="light" className="h-4 w-4 shrink-0" />
+              <span>{item.label}</span>
+            </a>
+          ))}
         </FooterColumn>
       </div>
 

@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { createContext, type ReactNode, useContext, useEffect, useMemo, useState } from "react";
+import { BrandIcon } from "@/components/BrandIcon";
 import { contactLinks } from "@/lib/contact";
 import { absoluteUrl } from "@/lib/site";
 import { whatsappLinkWithMessage } from "@/lib/url";
@@ -70,12 +71,7 @@ function buildMessage(items: CartItem[]) {
 }
 
 function CartIcon() {
-  return (
-    <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true">
-      <path d="M6.5 7.5h13l-1.2 7.1a2 2 0 0 1-2 1.7H9.1a2 2 0 0 1-2-1.7L5.8 5.2H3.7" strokeLinecap="round" strokeLinejoin="round" />
-      <path d="M9.5 20.2h.1M16.2 20.2h.1" strokeLinecap="round" />
-    </svg>
-  );
+  return <BrandIcon name="cart" />;
 }
 
 export function CartProvider({ children }: { children: ReactNode }) {

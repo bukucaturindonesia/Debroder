@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { KeyboardEvent, useEffect, useMemo, useRef, useState } from "react";
+import { BrandIcon } from "@/components/BrandIcon";
 import { CartNavButton } from "@/components/CartProvider";
 import { Logo } from "@/components/Logo";
 import { contactLinks } from "@/lib/contact";
@@ -138,36 +139,19 @@ const whatsappUrl = whatsappLinkWithMessage(
 );
 
 function SearchIcon() {
-  return (
-    <svg viewBox="0 0 24 24" aria-hidden="true" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="1.8">
-      <circle cx="11" cy="11" r="6.5" />
-      <path d="m16 16 4 4" strokeLinecap="round" />
-    </svg>
-  );
+  return <BrandIcon name="search" />;
 }
 
 function ChatIcon() {
-  return (
-    <svg viewBox="0 0 24 24" aria-hidden="true" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="1.8">
-      <path d="M5.5 18.5 6.8 15A7.5 7.5 0 1 1 9 17.2l-3.5 1.3Z" strokeLinejoin="round" />
-    </svg>
-  );
+  return <BrandIcon name="whatsapp" />;
 }
 
 function ChevronDownIcon() {
-  return (
-    <svg viewBox="0 0 24 24" className="h-3.5 w-3.5" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
-      <path d="m6 9 6 6 6-6" strokeLinecap="round" strokeLinejoin="round" />
-    </svg>
-  );
+  return <BrandIcon name="chevronDown" className="h-3.5 w-3.5" />;
 }
 
 function CloseIcon() {
-  return (
-    <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true">
-      <path d="m6 6 12 12M18 6 6 18" strokeLinecap="round" />
-    </svg>
-  );
+  return <BrandIcon name="close" />;
 }
 
 function MegaDropdown({ columns, scrolled }: { columns: MegaMenuColumn[]; scrolled: boolean }) {
@@ -358,11 +342,7 @@ export function SiteHeader() {
           </a>
           <CartNavButton />
           <button type="button" className="relative grid h-10 w-10 place-items-center rounded-full transition hover:bg-[#f5f5ef] lg:hidden" aria-label={isOpen ? "Tutup menu" : "Buka menu"} aria-expanded={isOpen} onClick={() => setIsOpen((current) => !current)}>
-            <span className="relative h-4 w-5" aria-hidden="true">
-              <span className={`absolute left-0 h-px w-5 bg-current transition ${isOpen ? "top-2 rotate-45" : "top-0.5"}`} />
-              <span className={`absolute left-0 top-2 h-px w-5 bg-current transition ${isOpen ? "opacity-0" : "opacity-100"}`} />
-              <span className={`absolute left-0 h-px w-5 bg-current transition ${isOpen ? "top-2 -rotate-45" : "top-[15px]"}`} />
-            </span>
+            <BrandIcon name={isOpen ? "close" : "menu"} />
           </button>
         </div>
       </nav>

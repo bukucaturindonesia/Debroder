@@ -221,6 +221,142 @@ from ranked_category_candidates candidate
 where product.id = candidate.product_id
   and candidate.candidate_rank = 1;
 
+with product_text as (
+  select
+    product.*,
+    regexp_replace(lower(concat_ws(' ',
+      product.nama,
+      product.kategori,
+      product.subcategory,
+      product.slug,
+      product.link_url,
+      array_to_string(coalesce(product.intent_tags, '{}'), ' '),
+      array_to_string(coalesce(product.collection_tags, '{}'), ' ')
+    )), '[^a-z0-9]+', '-', 'g') as search_text,
+    lower(coalesce(product.kategori, '')) as category_text
+  from public.products product
+),
+subcategory_targets as (
+  select
+    product.id as product_id,
+    case
+      when product.search_text like '%kaos-cotton-combed%' or product.category_text in ('kaos cotton combed', 'cotton combed') then 'cotton-combed'
+      when product.search_text like '%new-state-apparel%' or product.search_text like '%nsa%' then 'new-state-apparel'
+      when product.search_text like '%polo-shirt%' or product.category_text = 'polo' then 'polo-shirt'
+      when product.search_text like '%kaos-polos-anak%' or product.search_text like '%kaos-anak%' or product.search_text like '%kids-t-shirt%' then 'kaos-polos-anak'
+      when product.search_text like '%bomber-jacket%' then 'bomber-jacket'
+      when product.search_text like '%windbreaker%' then 'windbreaker'
+      when product.search_text like '%zip-hoodie%' then 'zip-hoodie'
+      when product.search_text like '%pullover-hoodie%' then 'pullover-hoodie'
+      when product.search_text like '%crewneck%' or product.search_text like '%crewnek%' then 'crewneck'
+      when product.search_text like '%hoodie%' or product.search_text like '%hooded%' then 'hoodie'
+      when product.search_text like '%jacket%' or product.search_text like '%jaket%' then 'jaket'
+      when product.search_text like '%trucker-cap%' then 'trucker-cap'
+      when product.search_text like '%baseball-cap%' then 'baseball-cap'
+      when product.search_text like '%snapback%' then 'snapback'
+      when product.search_text like '%bucket-hat%' then 'bucket-hat'
+      when product.search_text like '%dad-hat%' then 'dad-hat'
+      when product.search_text like '%visor%' then 'visor'
+      when product.search_text like '%beanie%' or product.search_text like '%kupluk%' then 'beanie'
+      when product.search_text like '%topi%' then 'topi'
+      when product.category_text = 'cap' then 'baseball-cap'
+      when product.search_text like '%jersey-futsal%' then 'jersey-futsal'
+      when product.search_text like '%jersey-sepak-bola%' then 'jersey-sepak-bola'
+      when product.search_text like '%jersey-esports%' then 'jersey-esports'
+      when product.search_text like '%jersey-basket%' then 'jersey-basket'
+      when product.search_text like '%jersey-sepeda%' then 'jersey-sepeda'
+      when product.search_text like '%jersey-badminton%' then 'jersey-badminton'
+      when product.search_text like '%jersey-voli%' then 'jersey-voli'
+      when product.search_text like '%jersey-running%' then 'jersey-running'
+      when product.search_text like '%jersey-fishing%' then 'jersey-fishing'
+      when product.search_text like '%jersey-touring%' then 'jersey-touring'
+      when product.search_text like '%jersey-komunitas%' then 'jersey-komunitas'
+      when product.search_text like '%jersey-event%' then 'jersey-event'
+      when product.search_text like '%dtf-a4%' or product.category_text in ('dtf a4', 'a4') then 'dtf-a4'
+      when product.search_text like '%dtf-a3%' or product.category_text in ('dtf a3', 'a3') then 'dtf-a3'
+      when product.search_text like '%dtf-meteran%' or product.search_text like '%meteran%' then 'dtf-meteran'
+      else null
+    end as match_key
+  from product_text product
+),
+subcategory_map as (
+  select * from (values
+    ('cotton-combed', 'kaos-polos', 'Cotton Combed'),
+    ('new-state-apparel', 'kaos-polos', 'New State Apparel'),
+    ('polo-shirt', 'kaos-polos', 'Polo Shirt'),
+    ('kaos-polos-anak', 'kaos-polos', 'Kaos Polos Anak'),
+    ('jaket', 'jaket-hoodie', 'Jaket'),
+    ('hoodie', 'jaket-hoodie', 'Hoodie'),
+    ('crewneck', 'jaket-hoodie', 'Crewneck'),
+    ('bomber-jacket', 'jaket-hoodie', 'Bomber Jacket'),
+    ('windbreaker', 'jaket-hoodie', 'Windbreaker'),
+    ('zip-hoodie', 'jaket-hoodie', 'Zip Hoodie'),
+    ('pullover-hoodie', 'jaket-hoodie', 'Pullover Hoodie'),
+    ('topi', 'headwear', 'Topi'),
+    ('baseball-cap', 'headwear', 'Baseball Cap'),
+    ('trucker-cap', 'headwear', 'Trucker Cap'),
+    ('snapback', 'headwear', 'Snapback'),
+    ('bucket-hat', 'headwear', 'Bucket Hat'),
+    ('dad-hat', 'headwear', 'Dad Hat'),
+    ('visor', 'headwear', 'Visor'),
+    ('beanie', 'headwear', 'Beanie'),
+    ('jersey-futsal', 'jersey', 'Futsal'),
+    ('jersey-sepak-bola', 'jersey', 'Sepak Bola'),
+    ('jersey-esports', 'jersey', 'Esports'),
+    ('jersey-basket', 'jersey', 'Basket'),
+    ('jersey-sepeda', 'jersey', 'Sepeda'),
+    ('jersey-badminton', 'jersey', 'Badminton'),
+    ('jersey-voli', 'jersey', 'Voli'),
+    ('jersey-running', 'jersey', 'Running'),
+    ('jersey-fishing', 'jersey', 'Fishing'),
+    ('jersey-touring', 'jersey', 'Touring'),
+    ('jersey-komunitas', 'jersey', 'Komunitas'),
+    ('jersey-event', 'jersey', 'Event'),
+    ('dtf-a4', 'sablon-dtf', 'A4'),
+    ('dtf-a3', 'sablon-dtf', 'A3'),
+    ('dtf-meteran', 'sablon-dtf', 'Meteran')
+  ) as map(match_key, category_slug, subcategory)
+),
+category_defaults as (
+  select * from (values
+    ('kaos-polos', array['kaos-polos', 'sablon-dtf', 'komunitas', 'brand-apparel']::text[], array['kaos-polos', 'basic']::text[]),
+    ('jaket-hoodie', array['jaket-hoodie', 'sablon-dtf', 'bordir', 'komunitas', 'organisasi', 'brand-apparel']::text[], array['jaket-hoodie', 'premium']::text[]),
+    ('headwear', array['headwear', 'bordir', 'merchandise', 'event', 'komunitas']::text[], array['headwear', 'merchandise']::text[]),
+    ('sablon-dtf', array['sablon-dtf', 'kaos-polos', 'desain-custom', 'tanpa-minimum']::text[], array['sablon-dtf', 'tanpa-minimum']::text[]),
+    ('jersey', array['jersey', 'cetak-sublim', 'sublim', 'tim', 'nama-nomor']::text[], array['jersey', 'custom']::text[])
+  ) as defaults(slug, intent_tags, collection_tags)
+)
+update public.products product
+set
+  product_category_id = category.id,
+  kategori = category.name,
+  subcategory = map.subcategory,
+  link_url = '/' || category.slug,
+  intent_tags = defaults.intent_tags,
+  collection_tags = defaults.collection_tags
+from subcategory_targets target
+join subcategory_map map on map.match_key = target.match_key
+join public.product_categories category on category.slug = map.category_slug
+join category_defaults defaults on defaults.slug = category.slug
+where product.id = target.product_id;
+
+with subcategory_category_slugs as (
+  select * from (values
+    ('kaos-cotton-combed'), ('cotton-combed'), ('new-state-apparel'), ('nsa'), ('polo-shirt'), ('polo'), ('kaos-polos-anak'), ('kaos-anak'), ('kids-t-shirt'),
+    ('jacket'), ('jaket'), ('hoodie'), ('hooded'), ('crewneck'), ('crewnek'), ('bomber-jacket'), ('windbreaker'), ('zip-hoodie'), ('pullover-hoodie'),
+    ('topi'), ('cap'), ('baseball-cap'), ('trucker-cap'), ('snapback'), ('bucket-hat'), ('dad-hat'), ('visor'), ('beanie'), ('kupluk'),
+    ('jersey-futsal'), ('jersey-sepak-bola'), ('jersey-esports'), ('jersey-basket'), ('jersey-sepeda'), ('jersey-badminton'), ('jersey-voli'), ('jersey-running'), ('jersey-fishing'), ('jersey-touring'), ('jersey-komunitas'), ('jersey-event'),
+    ('dtf-a4'), ('a4'), ('dtf-a3'), ('a3'), ('dtf-meteran'), ('meteran')
+  ) as old(slug)
+)
+update public.product_categories category
+set
+  is_active = false,
+  show_in_collection = false
+from subcategory_category_slugs old
+where category.slug = old.slug
+  and category.slug not in ('kaos-polos', 'jaket-hoodie', 'headwear', 'sablon-dtf', 'jersey', 'cetak-sublim', 'maklon-dtf');
+
 alter table if exists public.products drop constraint if exists products_product_category_required;
 alter table if exists public.products
   add constraint products_product_category_required check (product_category_id is not null) not valid;
