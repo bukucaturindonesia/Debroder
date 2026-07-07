@@ -3,7 +3,7 @@ import { JerseyCatalog } from "@/components/JerseyCatalog";
 import { PageHero, PublicShell } from "@/components/PublicPage";
 import { ProductCatalog } from "@/components/ProductCatalog";
 import { fallbackCategories, getPageHeroImage } from "@/lib/fallback-data";
-import { productsForRoute } from "@/lib/product-route-matching";
+import { productsForCategoryRoute } from "@/lib/product-route-matching";
 import { getPublicContent } from "@/lib/public-data";
 import { whatsappHref } from "@/lib/url";
 
@@ -20,7 +20,7 @@ export default async function JerseyPage() {
   const categories = specificCategories.length
     ? specificCategories
     : fallbackCategories.filter((category) => category.category_key === "jersey");
-  const products = productsForRoute(content.products, "jersey");
+  const products = productsForCategoryRoute(content.products, content.productCategories, "jersey");
 
   return (
     <PublicShell content={content}>

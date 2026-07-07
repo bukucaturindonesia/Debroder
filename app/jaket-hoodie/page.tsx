@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { PageHero, PublicShell } from "@/components/PublicPage";
 import { ProductCatalog } from "@/components/ProductCatalog";
-import { productsForRoute } from "@/lib/product-route-matching";
+import { productsForCategoryRoute } from "@/lib/product-route-matching";
 import { jacketTypeOptions, productTypeValue } from "@/lib/product-taxonomy";
 import { getPublicContent } from "@/lib/public-data";
 
@@ -44,7 +44,7 @@ export default async function JaketHoodiePage({ searchParams }: JaketHoodiePageP
   const content = await getPublicContent();
   const params = searchParams ? await searchParams : {};
   const pageHero = content.pageHeroes.find((hero) => hero.page_key === "jaket-hoodie");
-  const products = productsForRoute(content.products, "jaket-hoodie");
+  const products = productsForCategoryRoute(content.products, content.productCategories, "jaket-hoodie");
   const initialColor = firstParam(params.color) || "all";
   const initialLabel = productLabel(params.label);
   const initialSort = productSort(params.sort);

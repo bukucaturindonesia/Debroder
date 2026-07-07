@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { PageHero, PublicShell } from "@/components/PublicPage";
 import { ProductCatalog } from "@/components/ProductCatalog";
-import { productsForRoute } from "@/lib/product-route-matching";
+import { productsForCategoryRoute } from "@/lib/product-route-matching";
 import { getPublicContent } from "@/lib/public-data";
 
 export const metadata: Metadata = {
@@ -19,7 +19,7 @@ export const metadata: Metadata = {
 export default async function HeadwearPage() {
   const content = await getPublicContent();
   const pageHero = content.pageHeroes.find((hero) => hero.page_key === "headwear");
-  const products = productsForRoute(content.products, "headwear");
+  const products = productsForCategoryRoute(content.products, content.productCategories, "headwear");
 
   return (
     <PublicShell content={content}>

@@ -3,7 +3,7 @@ import { PageHero, PublicShell } from "@/components/PublicPage";
 import { ProductCatalog } from "@/components/ProductCatalog";
 import { ServiceCatalog } from "@/components/ServiceCatalog";
 import { fallbackServices, getPageHeroImage } from "@/lib/fallback-data";
-import { productsForRoute } from "@/lib/product-route-matching";
+import { productsForCategoryRoute } from "@/lib/product-route-matching";
 import { getPublicContent } from "@/lib/public-data";
 import { whatsappHref } from "@/lib/url";
 
@@ -23,7 +23,7 @@ export default async function SablonDtfPage() {
   const services = databaseServices.length > 1
     ? databaseServices
     : fallbackServices.filter((service) => service.category_key === "sablon-dtf");
-  const products = productsForRoute(content.products, "sablon-dtf");
+  const products = productsForCategoryRoute(content.products, content.productCategories, "sablon-dtf");
 
   return (
     <PublicShell content={content}>
