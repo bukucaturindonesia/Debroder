@@ -89,9 +89,10 @@ function isCoreCategory(category: ProductCategory) {
   return coreCategorySlugs.has(category.slug);
 }
 
-function categoryChoices(categories: ProductCategory[]) {
+function categoryChoices(categories: ProductCategory[]): ProductCategory[] {
   if (categories.length) return categories;
   return productCategoryPresets.map((preset, index) => ({
+    id: undefined,
     name: preset.name,
     slug: preset.slug,
     description: "",
