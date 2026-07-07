@@ -171,7 +171,7 @@ export function ProductAdminPanel() {
     ...availableCategories.map((category) => category.name),
     ...products.map((product) => product.kategori)
   ].filter(Boolean))).sort(), [availableCategories, products]);
-  const activePreset = categoryPreset(availableCategories.find((category) => category.id === form.product_category_id)?.slug || form.kategori || "");
+  const activePreset = categoryPreset(   availableCategories.find(     (category) => "id" in category && category.id === form.product_category_id   )?.slug || form.kategori || "" );
 
   const visibleProducts = useMemo(() => {
     const search = query.trim().toLowerCase();
