@@ -59,6 +59,10 @@ export type ProductCategory = {
   description: string;
   is_active: boolean;
   sort_order: number;
+  show_in_collection?: boolean;
+  collection_limit?: number;
+  collection_sort?: "sort_order" | "newest" | "best_seller" | "promo";
+  collection_section_order?: number;
   created_at?: string;
   updated_at?: string;
 };
@@ -395,6 +399,7 @@ export type PublicContent = {
   instagramBanner: InstagramBanner | null;
   pageHeroes: PageHeroContent[];
   categories: ServiceCategory[];
+  productCategories: ProductCategory[];
   services: Service[];
   products: Product[];
   productFilters: ProductFilter[];

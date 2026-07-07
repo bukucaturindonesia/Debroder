@@ -363,6 +363,10 @@ create table if not exists public.product_categories (
   description text not null default '',
   is_active boolean not null default true,
   sort_order integer not null default 0,
+  show_in_collection boolean not null default true,
+  collection_limit integer not null default 8,
+  collection_sort text not null default 'sort_order' check (collection_sort in ('sort_order', 'newest', 'best_seller', 'promo')),
+  collection_section_order integer not null default 0,
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now()
 );
@@ -460,6 +464,15 @@ alter table if exists public.products
   add column if not exists stock integer not null default 0,
   add column if not exists trending boolean not null default false,
   add column if not exists fresh_drop boolean not null default false;
+
+alter table if exists public.product_categories
+  add column if not exists show_in_collection boolean not null default true,
+  add column if not exists collection_limit integer not null default 8,
+  add column if not exists collection_sort text not null default 'sort_order',
+  add column if not exists collection_section_order integer not null default 0;
+
+alter table if exists public.product_categories drop constraint if exists product_categories_collection_sort_check;
+alter table if exists public.product_categories add constraint product_categories_collection_sort_check check (collection_sort in ('sort_order', 'newest', 'best_seller', 'promo'));
 
 alter table if exists public.landing_sections
   add column if not exists desktop_image_url text,

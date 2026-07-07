@@ -6,6 +6,7 @@ import {
   pageHeroMobileImageFallbacks
 } from "@/lib/fallback-data";
 import { PLAIN_CATEGORY_SECTION_SETTING } from "@/lib/homepage-settings";
+import { productCategoryPresets } from "@/lib/product-category-config";
 import { createSupabaseServerClient } from "@/lib/supabase";
 import type {
   CmsBanner,
@@ -19,6 +20,7 @@ import type {
   OrderStep,
   PageHeroContent,
   Product,
+  ProductCategory,
   ProductFilter,
   PublicContent,
   Service,
@@ -206,6 +208,45 @@ function cleanProduct(product: Product) {
     description: displayBrand(product.description),
     badge: displayBrand(product.badge)
   };
+}
+
+function cleanProductCategory(category: ProductCategory): ProductCategory {
+  return {
+    ...category,
+    name: displayBrand(category.name),
+    description: displayBrand(category.description),
+    show_in_collection: category.show_in_collection ?? true,
+    collection_limit: Number(category.collection_limit || 8),
+    collection_sort: category.collection_sort || "sort_order",
+    collection_section_order: Number(category.collection_section_order ?? category.sort_order ?? 0)
+  };
+}
+
+async function readProductCategories(): Promise<ProductCategory[]> {
+  const fallback = productCategoryPresets.map((preset, index) => ({
+    name: preset.name,
+    slug: preset.slug,
+    description: "",
+    is_active: true,
+    sort_order: (index + 1) * 10,
+    show_in_collection: true,
+    collection_limit: 8,
+    collection_sort: "sort_order" as const,
+    collection_section_order: (index + 1) * 10
+  }));
+  const supabase = createSupabaseServerClient();
+
+  if (!supabase) return fallback;
+
+  const { data, error } = await supabase
+    .from("product_categories")
+    .select("*")
+    .eq("is_active", true)
+    .order("collection_section_order", { ascending: true })
+    .order("sort_order", { ascending: true });
+
+  if (error || !data?.length) return fallback;
+  return (data as ProductCategory[]).map(cleanProductCategory);
 }
 
 function cleanService(service: Service) {
@@ -542,6 +583,7 @@ export async function getPublicContent(): Promise<PublicContent> {
     instagramBanner,
     pageHeroes,
     categories,
+    productCategories,
     services,
     products,
     productFilters,
@@ -571,6 +613,7 @@ export async function getPublicContent(): Promise<PublicContent> {
       "urutan",
       false
     ),
+    readProductCategories(),
     readActive<Service>("services", fallbackContent.services, "urutan", false),
     readActive<Product>("products", fallbackContent.products, "urutan", false),
     readActive<ProductFilter>("product_filters", fallbackProductFilters),
@@ -601,6 +644,7 @@ export async function getPublicContent(): Promise<PublicContent> {
     instagramBanner: cleanInstagramBanner(instagramBanner),
     pageHeroes: publicPageHeroes(pageHeroes),
     categories: publicCategories(categories),
+    productCategories,
     services: services.map(cleanService),
     products: publicProducts(products),
     productFilters,

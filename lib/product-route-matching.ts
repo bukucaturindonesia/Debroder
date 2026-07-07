@@ -1,4 +1,4 @@
-import type { Product } from "@/lib/types";
+import type { Product, ProductCategory } from "@/lib/types";
 
 function normalize(value: string) {
   return value
@@ -70,4 +70,15 @@ export function productMatchesRoute(product: Product, routeKey: string) {
 
 export function productsForRoute(products: Product[], routeKey: string) {
   return products.filter((product) => productMatchesRoute(product, routeKey));
+}
+
+export function productMatchesCategory(product: Product, categories: ProductCategory[], routeKey: string) {
+  const category = categories.find((item) => item.slug === routeKey);
+  if (category?.id && product.product_category_id === category.id) return true;
+  if (category?.name && product.kategori === category.name) return true;
+  return productMatchesRoute(product, routeKey);
+}
+
+export function productsForCategoryRoute(products: Product[], categories: ProductCategory[], routeKey: string) {
+  return products.filter((product) => productMatchesCategory(product, categories, routeKey));
 }
