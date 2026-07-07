@@ -26,6 +26,19 @@ alter table if exists public.product_categories
 alter table if exists public.product_categories drop constraint if exists product_categories_collection_sort_check;
 alter table if exists public.product_categories add constraint product_categories_collection_sort_check check (collection_sort in ('sort_order', 'newest', 'best_seller', 'promo'));
 
+alter table public.product_categories enable row level security;
+
+drop policy if exists "Public can read active product categories" on public.product_categories;
+create policy "Public can read active product categories"
+on public.product_categories for select
+using (is_active = true);
+
+drop policy if exists "Superadmin can manage product categories" on public.product_categories;
+create policy "Superadmin can manage product categories"
+on public.product_categories for all
+using (public.is_superadmin())
+with check (public.is_superadmin());
+
 alter table if exists public.products
   add column if not exists product_category_id uuid references public.product_categories(id) on delete set null,
   add column if not exists intent_tags text[] not null default '{}',
@@ -44,6 +57,24 @@ where intent_tags is null or collection_tags is null;
 alter table if exists public.products
   alter column intent_tags set default '{}',
   alter column collection_tags set default '{}';
+
+with duplicate_product_slugs as (
+  select
+    id,
+    slug,
+    row_number() over (partition by slug order by created_at nulls last, id) as duplicate_rank
+  from public.products
+  where slug is not null and slug <> ''
+)
+update public.products product
+set slug = duplicate_product_slugs.slug || '-' || left(product.id::text, 8)
+from duplicate_product_slugs
+where product.id = duplicate_product_slugs.id
+  and duplicate_product_slugs.duplicate_rank > 1;
+
+create unique index if not exists products_slug_unique_idx
+on public.products (slug)
+where slug is not null and slug <> '';
 
 insert into public.product_categories
   (name, slug, description, is_active, sort_order, show_in_collection, collection_limit, collection_sort, collection_section_order)
@@ -65,108 +96,134 @@ on conflict (slug) do update set
   collection_sort = excluded.collection_sort,
   collection_section_order = excluded.collection_section_order;
 
-with category_map as (
-  select id, name, slug from public.product_categories
+with product_text as (
+  select
+    product.*,
+    lower(concat_ws(' ',
+      product.nama,
+      product.kategori,
+      product.subcategory,
+      product.slug,
+      product.link_url,
+      array_to_string(coalesce(product.intent_tags, '{}'), ' '),
+      array_to_string(coalesce(product.collection_tags, '{}'), ' ')
+    )) as search_text
+  from public.products product
+),
+category_defaults as (
+  select * from (values
+    ('kaos-polos', 10, array['kaos-polos', 'sablon-dtf', 'komunitas', 'brand-apparel']::text[], array['kaos-polos', 'basic']::text[]),
+    ('jaket-hoodie', 20, array['jaket-hoodie', 'sablon-dtf', 'bordir', 'komunitas', 'organisasi', 'brand-apparel']::text[], array['jaket-hoodie', 'premium']::text[]),
+    ('headwear', 30, array['headwear', 'bordir', 'merchandise', 'event', 'komunitas']::text[], array['headwear', 'merchandise']::text[]),
+    ('maklon-dtf', 35, array['maklon-dtf', 'reseller', 'brand-apparel', 'partai-besar']::text[], array['maklon-dtf', 'brand-apparel']::text[]),
+    ('sablon-dtf', 40, array['sablon-dtf', 'kaos-polos', 'desain-custom', 'tanpa-minimum']::text[], array['sablon-dtf', 'tanpa-minimum']::text[]),
+    ('jersey', 50, array['jersey', 'cetak-sublim', 'sublim', 'tim', 'nama-nomor']::text[], array['jersey', 'custom']::text[]),
+    ('cetak-sublim', 60, array['cetak-sublim', 'sublim', 'jersey', 'tim', 'partai-besar']::text[], array['cetak-sublim', 'jersey']::text[])
+  ) as defaults(slug, category_rank, intent_tags, collection_tags)
+),
+category_candidates as (
+  select
+    product.id as product_id,
+    category.id as category_id,
+    category.name,
+    category.slug,
+    defaults.category_rank,
+    defaults.intent_tags,
+    defaults.collection_tags,
+    case
+      when coalesce(product.link_url, '') = '/' || category.slug then 10
+      when category.slug = any(coalesce(product.intent_tags, '{}')) then 20
+      when lower(coalesce(product.kategori, '')) in (lower(category.name), category.slug) then 30
+      when category.slug = 'kaos-polos'
+        and (
+          product.search_text like '%kaos%'
+          or product.search_text like '%cotton%'
+          or product.search_text like '%combed%'
+          or product.search_text like '%polo%'
+          or product.search_text like '%new-state%'
+          or product.search_text like '%nsa%'
+        )
+        and product.search_text not like '%jaket%'
+        and product.search_text not like '%jacket%'
+        and product.search_text not like '%hoodie%'
+        and product.search_text not like '%hooded%'
+        and product.search_text not like '%crewneck%'
+        and product.search_text not like '%headwear%'
+        and product.search_text not like '%topi%'
+        and product.search_text not like '%cap%'
+        and product.search_text not like '%hat%'
+        and product.search_text not like '%jersey%'
+        and product.search_text not like '%sablon%'
+        and product.search_text not like '%dtf%'
+        and product.search_text not like '%maklon%'
+        and product.search_text not like '%sublim%' then 40
+      when category.slug = 'jaket-hoodie'
+        and (
+          product.search_text like '%jaket%'
+          or product.search_text like '%jacket%'
+          or product.search_text like '%hoodie%'
+          or product.search_text like '%hooded%'
+          or product.search_text like '%crewneck%'
+          or product.search_text like '%sweater%'
+          or product.search_text like '%windbreaker%'
+          or product.search_text like '%bomber%'
+        ) then 40
+      when category.slug = 'headwear'
+        and (
+          product.search_text like '%headwear%'
+          or product.search_text like '%topi%'
+          or product.search_text like '%cap%'
+          or product.search_text like '%hat%'
+        ) then 40
+      when category.slug = 'maklon-dtf'
+        and (
+          product.search_text like '%maklon%'
+          or product.search_text like '%reseller%'
+          or product.search_text like '%vendor%'
+        ) then 40
+      when category.slug = 'sablon-dtf'
+        and (
+          product.search_text like '%sablon%'
+          or product.search_text like '%dtf%'
+        )
+        and product.search_text not like '%maklon%' then 40
+      when category.slug = 'jersey'
+        and product.search_text like '%jersey%'
+        and product.search_text not like '%sublim%' then 40
+      when category.slug = 'cetak-sublim'
+        and (
+          product.search_text like '%cetak-sublim%'
+          or product.search_text like '%sublim%'
+          or product.search_text like '%sublimasi%'
+        ) then 40
+      else 999
+    end as priority
+  from product_text product
+  join public.product_categories category
+    on category.slug in ('kaos-polos', 'jaket-hoodie', 'headwear', 'sablon-dtf', 'jersey', 'cetak-sublim', 'maklon-dtf')
+  join category_defaults defaults on defaults.slug = category.slug
+),
+ranked_category_candidates as (
+  select
+    *,
+    row_number() over (partition by product_id order by priority asc, category_rank asc, slug asc) as candidate_rank
+  from category_candidates
+  where priority < 999
 )
 update public.products product
 set
-  product_category_id = category.id,
-  kategori = category.name,
-  link_url = '/' || category.slug,
-  intent_tags = case category.slug
-    when 'kaos-polos' then array['kaos-polos', 'sablon-dtf', 'komunitas', 'brand-apparel']
-    when 'jaket-hoodie' then array['jaket-hoodie', 'sablon-dtf', 'bordir', 'komunitas', 'organisasi', 'brand-apparel']
-    when 'headwear' then array['headwear', 'bordir', 'merchandise', 'event', 'komunitas']
-    when 'sablon-dtf' then array['sablon-dtf', 'kaos-polos', 'desain-custom', 'tanpa-minimum']
-    when 'jersey' then array['jersey', 'cetak-sublim', 'sublim', 'tim', 'nama-nomor']
-    when 'cetak-sublim' then array['cetak-sublim', 'sublim', 'jersey', 'tim', 'partai-besar']
-    when 'maklon-dtf' then array['maklon-dtf', 'reseller', 'brand-apparel', 'partai-besar']
-    else product.intent_tags
-  end,
-  collection_tags = case category.slug
-    when 'kaos-polos' then array['kaos-polos', 'basic']
-    when 'jaket-hoodie' then array['jaket-hoodie', 'premium']
-    when 'headwear' then array['headwear', 'merchandise']
-    when 'sablon-dtf' then array['sablon-dtf', 'tanpa-minimum']
-    when 'jersey' then array['jersey', 'custom']
-    when 'cetak-sublim' then array['cetak-sublim', 'jersey']
-    when 'maklon-dtf' then array['maklon-dtf', 'brand-apparel']
-    else product.collection_tags
-  end
-from category_map category
-where (
-  (category.slug = 'kaos-polos' and (
-    product.kategori ilike '%kaos%'
-    or product.nama ilike '%kaos%'
-    or product.nama ilike '%cotton%'
-    or product.nama ilike '%polo%'
-    or product.slug ilike '%kaos%'
-    or product.link_url = '/kaos-polos'
-    or 'kaos-polos' = any(product.intent_tags)
-  ) and not (
-    product.nama ilike '%jaket%' or product.nama ilike '%hoodie%' or product.nama ilike '%crewneck%' or product.nama ilike '%jersey%' or product.nama ilike '%dtf%' or product.nama ilike '%sublim%'
-  ))
-  or (category.slug = 'jaket-hoodie' and (
-    product.kategori ilike '%jaket%'
-    or product.kategori ilike '%hoodie%'
-    or product.nama ilike '%jaket%'
-    or product.nama ilike '%jacket%'
-    or product.nama ilike '%hoodie%'
-    or product.nama ilike '%hooded%'
-    or product.nama ilike '%crewneck%'
-    or product.slug ilike '%jaket%'
-    or product.slug ilike '%jacket%'
-    or product.slug ilike '%hoodie%'
-    or product.slug ilike '%crewneck%'
-    or product.link_url = '/jaket-hoodie'
-    or 'jaket-hoodie' = any(product.intent_tags)
-  ))
-  or (category.slug = 'headwear' and (
-    product.kategori ilike '%headwear%'
-    or product.kategori ilike '%topi%'
-    or product.nama ilike '%headwear%'
-    or product.nama ilike '%topi%'
-    or product.nama ilike '%cap%'
-    or product.slug ilike '%headwear%'
-    or product.slug ilike '%topi%'
-    or product.link_url = '/headwear'
-    or 'headwear' = any(product.intent_tags)
-  ))
-  or (category.slug = 'sablon-dtf' and (
-    product.kategori ilike '%sablon%'
-    or product.nama ilike '%sablon%'
-    or product.nama ilike '%dtf%'
-    or product.slug ilike '%sablon%'
-    or product.slug ilike '%dtf%'
-    or product.link_url = '/sablon-dtf'
-    or 'sablon-dtf' = any(product.intent_tags)
-  ) and not (
-    product.nama ilike '%maklon%' or product.kategori ilike '%maklon%'
-  ))
-  or (category.slug = 'jersey' and (
-    product.kategori ilike '%jersey%'
-    or product.nama ilike '%jersey%'
-    or product.slug ilike '%jersey%'
-    or product.link_url = '/jersey'
-    or 'jersey' = any(product.intent_tags)
-  ) and not (
-    product.kategori ilike '%sublim%' or product.nama ilike '%sublim%'
-  ))
-  or (category.slug = 'cetak-sublim' and (
-    product.kategori ilike '%sublim%'
-    or product.nama ilike '%sublim%'
-    or product.slug ilike '%sublim%'
-    or product.link_url = '/cetak-sublim'
-    or 'cetak-sublim' = any(product.intent_tags)
-  ))
-  or (category.slug = 'maklon-dtf' and (
-    product.kategori ilike '%maklon%'
-    or product.nama ilike '%maklon%'
-    or product.slug ilike '%maklon%'
-    or product.link_url = '/maklon-dtf'
-    or 'maklon-dtf' = any(product.intent_tags)
-  ))
-);
+  product_category_id = candidate.category_id,
+  kategori = candidate.name,
+  link_url = '/' || candidate.slug,
+  intent_tags = candidate.intent_tags,
+  collection_tags = candidate.collection_tags
+from ranked_category_candidates candidate
+where product.id = candidate.product_id
+  and candidate.candidate_rank = 1;
+
+alter table if exists public.products drop constraint if exists products_product_category_required;
+alter table if exists public.products
+  add constraint products_product_category_required check (product_category_id is not null) not valid;
 
 notify pgrst, 'reload schema';
 
@@ -178,3 +235,13 @@ from public.product_categories category
 left join public.products product on product.product_category_id = category.id and product.status_aktif = true
 group by category.name, category.slug, category.collection_section_order
 order by category.collection_section_order;
+
+select
+  product.id,
+  product.nama,
+  product.kategori,
+  product.slug
+from public.products product
+where product.product_category_id is null
+order by product.nama
+limit 50;

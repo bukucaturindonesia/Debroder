@@ -74,9 +74,13 @@ export function productsForRoute(products: Product[], routeKey: string) {
 
 export function productMatchesCategory(product: Product, categories: ProductCategory[], routeKey: string) {
   const category = categories.find((item) => item.slug === routeKey);
-  if (category?.id && product.product_category_id === category.id) return true;
-  if (category?.name && product.kategori === category.name) return true;
-  return productMatchesRoute(product, routeKey);
+  if (!category) return productMatchesRoute(product, routeKey);
+  if (category.id && product.product_category_id) {
+    return product.product_category_id === category.id;
+  }
+  if (!product.product_category_id && category.name && product.kategori === category.name) return true;
+  if (!product.product_category_id) return productMatchesRoute(product, routeKey);
+  return false;
 }
 
 export function productsForCategoryRoute(products: Product[], categories: ProductCategory[], routeKey: string) {

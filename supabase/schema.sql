@@ -762,6 +762,9 @@ alter table if exists public.orders drop constraint if exists orders_payment_sta
 alter table if exists public.orders add constraint orders_payment_status_check check (payment_status in ('belum_bayar', 'menunggu_verifikasi', 'terverifikasi', 'ditolak'));
 
 create index if not exists products_slug_idx on public.products (slug);
+create unique index if not exists products_slug_unique_idx
+on public.products (slug)
+where slug is not null and slug <> '';
 create index if not exists products_catalog_idx on public.products (status_aktif, urutan);
 create index if not exists media_assets_content_hash_idx on public.media_assets (content_hash);
 create index if not exists media_assets_folder_idx on public.media_assets (folder);

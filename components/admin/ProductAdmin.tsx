@@ -83,6 +83,11 @@ function numberOrNull(value: string | number | null | undefined) {
 }
 
 const placeholderProductImage = "/brand/debroder/logo-primary-black.png";
+const coreCategorySlugs = new Set(productCategoryPresets.map((preset) => preset.slug));
+
+function isCoreCategory(category: ProductCategory) {
+  return coreCategorySlugs.has(category.slug);
+}
 
 function categoryChoices(categories: ProductCategory[]) {
   if (categories.length) return categories;
@@ -171,7 +176,7 @@ export function ProductAdminPanel() {
     ...availableCategories.map((category) => category.name),
     ...products.map((product) => product.kategori)
   ].filter(Boolean))).sort(), [availableCategories, products]);
-  const activePreset = categoryPreset(   availableCategories.find(     (category) => "id" in category && category.id === form.product_category_id   )?.slug || form.kategori || "" );
+  const activePreset = categoryPreset(availableCategories.find((category) => category.id === form.product_category_id)?.slug || form.kategori || "");
 
   const visibleProducts = useMemo(() => {
     const search = query.trim().toLowerCase();
@@ -320,23 +325,45 @@ export function ProductAdminPanel() {
     }
     const supabase = createSupabaseClient();
     if (!supabase) return;
-    setSaving(true);
-    const catalogFocal = focalFor(form, "catalog");
     const selectedCategory = categories.find((category) => category.id === form.product_category_id)
       || categories.find((category) => category.name === form.kategori)
       || availableCategories.find((category) => category.name === form.kategori);
+    if (!selectedCategory?.id) {
+      setStatus("Pilih kategori produk yang valid dari product_categories sebelum menyimpan.");
+      return;
+    }
+    setSaving(true);
+    const catalogFocal = focalFor(form, "catalog");
     const selectedPreset = selectedCategory ? categoryPreset(selectedCategory.slug || selectedCategory.name) : activePreset;
     const imageUrl = form.image_url || placeholderProductImage;
     const productSlug = form.slug?.trim() || slugify(form.nama);
+    if (!productSlug) {
+      setSaving(false);
+      setStatus("Slug produk tidak boleh kosong. Isi nama produk atau slug yang valid.");
+      return;
+    }
+    let slugQuery = supabase.from("products").select("id").eq("slug", productSlug).limit(1);
+    if (editingId) slugQuery = slugQuery.neq("id", editingId);
+    const { data: duplicateSlug, error: duplicateSlugError } = await slugQuery;
+    if (duplicateSlugError) {
+      setSaving(false);
+      setStatus(`Validasi slug gagal: ${duplicateSlugError.message}`);
+      return;
+    }
+    if (duplicateSlug?.length) {
+      setSaving(false);
+      setStatus(`Slug "${productSlug}" sudah dipakai produk lain. Gunakan slug yang berbeda.`);
+      return;
+    }
     const payload = {
       ...form,
       id: undefined,
       created_at: undefined,
       updated_at: new Date().toISOString(),
       slug: productSlug,
-      kategori: selectedCategory?.name || form.kategori,
+      kategori: selectedCategory.name,
       subcategory: form.subcategory || selectedPreset?.subcategories[0] || "",
-      link_url: selectedCategory?.slug ? categoryPath(selectedCategory.slug) : form.link_url,
+      link_url: categoryPath(selectedCategory.slug),
       gambar_url: imageUrl,
       image_url: imageUrl,
       image_alt: form.image_alt?.trim() || form.nama,
@@ -352,7 +379,7 @@ export function ProductAdminPanel() {
       price: numberOrNull(form.price),
       compare_price: numberOrNull(form.compare_price),
       stock: Math.max(0, Number(form.stock || 0)),
-      product_category_id: selectedCategory?.id || form.product_category_id || null,
+      product_category_id: selectedCategory.id,
       focal_x: catalogFocal.focal_x,
       focal_y: catalogFocal.focal_y,
       focal_zoom: catalogFocal.zoom,
@@ -467,6 +494,10 @@ export function ProductAdminPanel() {
   }
 
   async function deleteCategory(category: ProductCategory) {
+    if (isCoreCategory(category)) {
+      setStatus("Kategori utama tidak boleh dihapus agar route publik dan PIM tetap stabil.");
+      return;
+    }
     if (!category.id || !window.confirm(`Hapus kategori "${category.name}"? Produk tidak akan dihapus.`)) return;
     const supabase = createSupabaseClient();
     if (!supabase) return;
@@ -489,7 +520,7 @@ export function ProductAdminPanel() {
           <div><p className="text-xs font-semibold uppercase tracking-[.16em] text-brand-charcoal/45">PIM</p><h2 className="mt-2 text-xl font-semibold">Kategori produk</h2></div>
           <form onSubmit={createCategory} className="flex w-full gap-2 lg:max-w-md"><input value={newCategory} onChange={(event) => setNewCategory(event.target.value)} placeholder="Kategori baru" className="min-h-11 min-w-0 flex-1 rounded-lg border border-brand-softGray px-4 text-sm" /><button disabled={savingCategory} className="rounded-full bg-brand-charcoal px-5 text-sm font-semibold text-white disabled:opacity-50">Tambah</button></form>
         </div>
-        <div className="mt-4 flex flex-wrap gap-2">{categories.map((category) => <div key={category.id || category.slug} className="inline-flex items-center rounded-full border border-brand-softGray bg-white"><button type="button" onClick={() => toggleCategory(category)} className={`px-4 py-2 text-xs font-semibold ${category.is_active ? "text-brand-green" : "text-brand-charcoal/45"}`}>{category.name}</button><button type="button" aria-label={`Hapus kategori ${category.name}`} onClick={() => deleteCategory(category)} className="border-l border-brand-softGray px-3 py-2 text-xs font-semibold text-red-700">Hapus</button></div>)}</div>
+        <div className="mt-4 flex flex-wrap gap-2">{categories.map((category) => <div key={category.id || category.slug} className="inline-flex items-center rounded-full border border-brand-softGray bg-white"><button type="button" onClick={() => toggleCategory(category)} className={`px-4 py-2 text-xs font-semibold ${category.is_active ? "text-brand-green" : "text-brand-charcoal/45"}`}>{category.name}</button>{isCoreCategory(category) ? <span className="border-l border-brand-softGray px-3 py-2 text-xs font-semibold text-brand-charcoal/45">Utama</span> : <button type="button" aria-label={`Hapus kategori ${category.name}`} onClick={() => deleteCategory(category)} className="border-l border-brand-softGray px-3 py-2 text-xs font-semibold text-red-700">Hapus</button>}</div>)}</div>
         {categories.length ? (
           <div className="mt-5 overflow-x-auto">
             <table className="w-full min-w-[760px] text-left text-sm">
