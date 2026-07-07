@@ -6,6 +6,7 @@ import type {
   OrderStep,
   PageHeroContent,
   Product,
+  ProductCategory,
   ProductFilter,
   PublicContent,
   Service,
@@ -16,6 +17,7 @@ import type {
 } from "@/lib/types";
 import { contactLinks, storeContacts } from "@/lib/contact";
 import { LANDING_SECTION_DEFAULTS } from "@/lib/homepage-settings";
+import { productCategoryPresets } from "@/lib/product-category-config";
 import { whatsappLinkWithMessage } from "@/lib/url";
 
 export const fallbackImages = {
@@ -49,6 +51,19 @@ export const fallbackProductFilters: ProductFilter[] = [
   ,{ filter_type: "price", name: "Di bawah Rp 50.000", slug: "di-bawah-50000", min_price: 0, max_price: 50000, urutan: 1, status_aktif: true }
   ,{ filter_type: "price", name: "Rp 50.000 ke atas", slug: "mulai-50000", min_price: 50000, max_price: null, urutan: 2, status_aktif: true }
 ];
+
+export const fallbackProductCategories: ProductCategory[] = productCategoryPresets.map((preset, index) => ({
+  id: undefined,
+  name: preset.name,
+  slug: preset.slug,
+  description: "",
+  is_active: true,
+  sort_order: (index + 1) * 10,
+  show_in_collection: true,
+  collection_limit: 8,
+  collection_sort: "sort_order",
+  collection_section_order: (index + 1) * 10
+}));
 
 export const storeImageFallbacks: Record<string, string> = {
   "STORE PETTARANI": "/images/debroder/stores/store-pettarani.jpg",
@@ -797,6 +812,7 @@ export const fallbackContent: PublicContent = {
   categories: fallbackCategories,
   services: fallbackServices,
   products: fallbackProducts,
+  productCategories: fallbackProductCategories,
   productFilters: fallbackProductFilters,
   homepageSections: [],
   landingSettings: {
