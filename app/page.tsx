@@ -184,11 +184,11 @@ function EditorialCard({ item, featuredCard = false, className = "" }: { item: E
     <article className={`group relative block overflow-hidden bg-[#0a1711] ${featuredCard ? "aspect-[4/5]" : "h-[400px] sm:h-[440px]"} ${className}`}>
       <Link href={item.href} aria-label={`Lihat ${item.title}`} className="absolute inset-0 z-10" />
       <SafeImage src={item.image} fallbackSrc={item.fallbackImage} alt={item.imageAlt} fill sizes={featuredCard ? "(min-width: 1024px) 50vw, 86vw" : "(min-width: 1024px) 33vw, 82vw"} className="object-cover transition duration-700 group-hover:scale-[1.03]" objectFit={item.objectFit || "cover"} objectPosition={item.objectPosition} />
-      <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/8 to-transparent" />
+      <div className="pointer-events-none absolute inset-x-0 bottom-0 z-10 h-[48%] bg-gradient-to-t from-black/58 via-black/18 to-transparent" />
       <div className="pointer-events-none absolute inset-x-0 bottom-0 z-20 p-5 text-white sm:p-7">
-        {item.label ? <p className="text-xs font-semibold text-white/72">{item.label}</p> : null}
-        <h3 className={`mt-1.5 max-w-md font-semibold leading-tight tracking-normal ${featuredCard ? "text-2xl sm:text-[1.75rem]" : "text-xl sm:text-2xl"}`}>{item.title}</h3>
-        <div className="pointer-events-auto relative z-30 mt-4 flex flex-wrap gap-2"><Link href={item.href} className="inline-flex min-h-10 items-center rounded-full bg-white px-4 text-sm font-semibold text-[#111] transition group-hover:bg-[#e9eee9]">{item.button}</Link>{item.cartProduct ? <AddToCartButton product={item.cartProduct} className="inline-flex min-h-10 items-center rounded-full bg-[#0f5a36] px-4 text-sm font-semibold text-white">Tambah ke Keranjang</AddToCartButton> : null}</div>
+        {item.label ? <p className="text-xs font-semibold text-white/82 drop-shadow-[0_1px_6px_rgba(0,0,0,0.45)]">{item.label}</p> : null}
+        <h3 className={`mt-1.5 max-w-md font-semibold leading-tight tracking-normal drop-shadow-[0_2px_12px_rgba(0,0,0,0.45)] ${featuredCard ? "text-2xl sm:text-[1.75rem]" : "text-xl sm:text-2xl"}`}>{item.title}</h3>
+        <div className="pointer-events-auto relative z-30 mt-4 flex flex-wrap gap-2"><Link href={item.href} className="inline-flex min-h-10 items-center rounded-full bg-white px-4 text-sm font-semibold text-[#111] shadow-[0_10px_26px_rgba(0,0,0,0.18)] transition hover:bg-[#e9eee9]">{item.button}</Link>{item.cartProduct ? <AddToCartButton product={item.cartProduct} className="inline-flex min-h-10 items-center rounded-full bg-[#0f5a36] px-4 text-sm font-semibold text-white shadow-[0_10px_26px_rgba(0,0,0,0.18)]">Tambah ke Keranjang</AddToCartButton> : null}</div>
       </div>
     </article>
   );
@@ -359,18 +359,16 @@ export default async function Home() {
             {shopCategoryItems.length ? shopCategoryItems.map((item) => (
               <Link key={`${item.href}-${item.title}`} href={item.href} className={`group relative aspect-[4/5] overflow-hidden bg-[#102219] ${horizontalCarouselItemClass}`}>
                 <SafeImage src={item.image} fallbackSrc={item.fallbackImage} alt={item.imageAlt} fill sizes="(min-width: 1536px) 20vw, (min-width: 1024px) 25vw, 50vw" className="object-cover transition duration-700 group-hover:scale-[1.03]" objectFit={item.objectFit || "cover"} objectPosition={item.objectPosition} />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/5 to-transparent" />
-                <div className="absolute inset-x-0 bottom-0 p-5 text-white sm:p-6">
-                  {item.label ? <p className="text-xs font-semibold text-white/70">{item.label}</p> : null}
-                  <h3 className="mt-1 line-clamp-2 text-base font-semibold text-white sm:text-xl">{item.title}</h3>
-                  {item.button ? <span className="mt-4 inline-flex min-h-10 items-center rounded-full bg-white px-4 text-sm font-semibold text-[#111]">{item.button}</span> : null}
+                <div className="absolute inset-x-4 bottom-4 rounded-[22px] bg-white/92 p-4 text-[#111] shadow-[0_16px_34px_rgba(0,0,0,0.10)] backdrop-blur-sm sm:p-5">
+                  {item.label ? <p className="text-xs font-semibold text-black/55">{item.label}</p> : null}
+                  <h3 className="mt-1 line-clamp-2 text-base font-semibold text-[#111] sm:text-xl">{item.title}</h3>
+                  {item.button ? <span className="mt-4 inline-flex min-h-10 items-center rounded-full bg-[#111] px-4 text-sm font-semibold text-white">{item.button}</span> : null}
                 </div>
               </Link>
             )) : homeCategories.length ? homeCategories.map((item) => (
               <Link key={item.name} href={item.href} className={`group relative aspect-[4/5] overflow-hidden bg-[#102219] ${horizontalCarouselItemClass}`}>
                 <SafeImage src={item.image} fallbackSrc={item.fallbackImage} alt={item.imageAlt} fill sizes="(min-width: 1536px) 20vw, (min-width: 1024px) 25vw, 50vw" className="object-cover transition duration-700 group-hover:scale-[1.03]" objectFit={item.objectFit || "cover"} objectPosition={item.objectPosition} />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent" />
-                <h3 className="absolute bottom-4 left-4 line-clamp-2 text-base font-semibold text-white sm:bottom-6 sm:left-6 sm:text-xl">{item.name}</h3>
+                <h3 className="absolute bottom-4 left-4 right-4 rounded-[20px] bg-white/92 p-4 line-clamp-2 text-base font-semibold text-[#111] shadow-[0_16px_34px_rgba(0,0,0,0.10)] backdrop-blur-sm sm:bottom-6 sm:left-6 sm:right-6 sm:text-xl">{item.name}</h3>
               </Link>
             )) : <p className="col-span-full bg-brand-offWhite p-8 text-center text-sm text-black/55">Belum ada kategori.</p>}
           </div>
@@ -432,14 +430,14 @@ export default async function Home() {
                   fallbackSrc={fallbackImages.banner}
                 />
               )}
-              <div className="absolute inset-0 bg-gradient-to-r from-black/65 via-black/20 to-transparent" />
-              <div className={`absolute inset-x-0 bottom-0 p-6 text-white sm:p-10 ${content.instagramBanner?.text_position === "center" ? "text-center" : content.instagramBanner?.text_position === "right" ? "text-right" : ""}`}>
-                <p className="text-xs font-semibold uppercase tracking-[0.2em] text-white/70">{content.instagramBanner?.eyebrow || "Instagram"}</p>
-                <h2 className="mt-2 max-w-xl text-[26px] font-semibold leading-[1.12] tracking-normal sm:text-[36px]">
+              <div className="pointer-events-none absolute inset-x-0 bottom-0 h-[52%] bg-gradient-to-t from-black/58 via-black/18 to-transparent" />
+              <div className={`absolute inset-x-5 bottom-5 text-white sm:inset-x-10 sm:bottom-10 sm:max-w-2xl ${content.instagramBanner?.text_position === "center" ? "text-center" : content.instagramBanner?.text_position === "right" ? "ml-auto text-right" : ""}`}>
+                <p className="text-xs font-semibold uppercase tracking-[0.2em] text-white/82 drop-shadow-[0_1px_6px_rgba(0,0,0,0.45)]">{content.instagramBanner?.eyebrow || "Instagram"}</p>
+                <h2 className="mt-2 max-w-xl text-[26px] font-semibold leading-[1.12] tracking-normal drop-shadow-[0_2px_12px_rgba(0,0,0,0.45)] sm:text-[36px]">
                   {content.instagramBanner?.title || "Ikuti DE BRODER di Instagram"}
                 </h2>
-                {content.instagramBanner?.subtitle ? <p className="mt-3 text-sm text-white/75">{content.instagramBanner.subtitle}</p> : null}
-                {content.instagramBanner?.cta_label ? <span className="mt-5 inline-flex min-h-10 items-center bg-white px-5 text-sm font-semibold text-black">{content.instagramBanner.cta_label}</span> : null}
+                {content.instagramBanner?.subtitle ? <p className="mt-3 text-sm text-white/82 drop-shadow-[0_1px_8px_rgba(0,0,0,0.40)]">{content.instagramBanner.subtitle}</p> : null}
+                {content.instagramBanner?.cta_label ? <span className="mt-5 inline-flex min-h-10 items-center rounded-full bg-white px-5 text-sm font-semibold text-[#111] shadow-[0_10px_26px_rgba(0,0,0,0.18)]">{content.instagramBanner.cta_label}</span> : null}
               </div>
             </a>
           </div>
