@@ -192,15 +192,15 @@ const tableConfigs: TableConfig[] = [
         name: "headline",
         label: "Judul highlight baris 1",
         type: "text",
-        placeholder: "KAOS POLOS NEW STATE APPAREL",
-        required: true
+        placeholder: "Contoh: Koleksi utama DEBRODER",
+        required: false
       },
       {
         name: "subheadline",
         label: "Subteks highlight baris 2",
         type: "textarea",
-        placeholder: "Sablon DTF, Jersey, dan Custom Apparel",
-        required: true
+        placeholder: "Contoh: Sablon DTF, Jersey, dan Custom Apparel",
+        required: false
       },
       {
         name: "cta_primary_text",

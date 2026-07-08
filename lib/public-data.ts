@@ -124,6 +124,12 @@ function displayBrand(value?: string | null) {
     .replace(/\bDebroder\b/g, "De Broder");
 }
 
+function cleanCmsText(value?: string | null) {
+  const text = (value || "").trim();
+  if (!text || text === "." || text === "-" || text === "—") return "";
+  return displayBrand(text);
+}
+
 function hasBlockedPublicText(values: Array<string | null | undefined>) {
   return values.some((value) => blockedPublicPattern.test(value || ""));
 }
@@ -139,6 +145,15 @@ function focalPosition(
 }
 
 function cleanHero(hero: HeroBanner) {
+  const badge = cleanCmsText(hero.badge);
+  const headline = cleanCmsText(hero.headline);
+  const title = cleanCmsText(hero.title);
+  const subheadline = cleanCmsText(hero.subheadline);
+  const subtitle = cleanCmsText(hero.subtitle);
+  const ctaPrimaryText = cleanCmsText(hero.cta_primary_text);
+  const ctaSecondaryText = cleanCmsText(hero.cta_secondary_text);
+  const ctaText = cleanCmsText(hero.cta_text);
+
   return {
     ...hero,
     mobile_image_url:
@@ -151,15 +166,15 @@ function cleanHero(hero: HeroBanner) {
     mobile_object_position:
       focalPosition(hero.mobile_focal_x, hero.mobile_focal_y, hero.mobile_object_position || hero.object_position || "center center"),
     image_alt:
-      hero.image_alt || hero.headline || hero.title || "Hero DE BRODER",
-    badge: displayBrand(hero.badge),
-    headline: displayBrand(hero.headline),
-    subheadline: displayBrand(hero.subheadline),
-    title: displayBrand(hero.title),
-    subtitle: displayBrand(hero.subtitle),
-    cta_primary_text: displayBrand(hero.cta_primary_text),
-    cta_secondary_text: displayBrand(hero.cta_secondary_text),
-    cta_text: displayBrand(hero.cta_text)
+      cleanCmsText(hero.image_alt) || headline || title || "Hero DE BRODER",
+    badge,
+    headline,
+    subheadline,
+    title,
+    subtitle,
+    cta_primary_text: ctaPrimaryText,
+    cta_secondary_text: ctaSecondaryText,
+    cta_text: ctaText
   };
 }
 
@@ -338,26 +353,23 @@ function publicHeroes(heroes: HeroBanner[]) {
       ])
   );
 
-  return (filtered.length ? filtered : fallbackContent.heroes).map(
-    (hero, index) => {
-      const fallbackHero =
-        fallbackContent.heroes[index] || fallbackContent.hero;
+  const source = filtered.length ? filtered : fallbackContent.heroes;
 
-      return cleanHero({
-        ...fallbackHero,
-        ...hero,
-        image_url: hero.image_url || fallbackHero.image_url,
-        mobile_image_url:
-          hero.mobile_image_url || fallbackHero.mobile_image_url,
-        object_position: hero.object_position || fallbackHero.object_position,
-        mobile_object_position:
-          hero.mobile_object_position ||
-          fallbackHero.mobile_object_position ||
-          hero.object_position ||
-          fallbackHero.object_position
-      });
-    }
-  );
+  return source.map((hero, index) => {
+    const fallbackHero = fallbackContent.heroes[index] || fallbackContent.hero;
+
+    return cleanHero({
+      ...hero,
+      image_url: hero.image_url || fallbackHero.image_url,
+      mobile_image_url: hero.mobile_image_url || fallbackHero.mobile_image_url,
+      object_position: hero.object_position || fallbackHero.object_position,
+      mobile_object_position:
+        hero.mobile_object_position ||
+        fallbackHero.mobile_object_position ||
+        hero.object_position ||
+        fallbackHero.object_position
+    });
+  });
 }
 
 function publicCategories(categories: ServiceCategory[]) {

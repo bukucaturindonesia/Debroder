@@ -143,13 +143,13 @@ create table if not exists public.stores (
 
 create table if not exists public.hero_banners (
   id uuid primary key default gen_random_uuid(),
-  badge text not null default 'KAOS POLOS NEW STATE APPAREL',
-  headline text not null,
-  subheadline text not null,
-  cta_primary_text text not null,
-  cta_primary_link text not null,
-  cta_secondary_text text not null,
-  cta_secondary_link text not null,
+  badge text not null default '',
+  headline text not null default '',
+  subheadline text not null default '',
+  cta_primary_text text not null default '',
+  cta_primary_link text not null default '/koleksi',
+  cta_secondary_text text not null default '',
+  cta_secondary_link text not null default '',
   image_url text not null default '/images/debroder-hero.png',
   image_alt text,
   mobile_image_url text,
@@ -570,7 +570,7 @@ alter table if exists public.product_filters
   add column if not exists max_price numeric;
 
 alter table if exists public.hero_banners
-  add column if not exists badge text not null default 'KAOS POLOS NEW STATE APPAREL',
+  add column if not exists badge text not null default '',
   add column if not exists title text,
   add column if not exists subtitle text,
   add column if not exists cta_text text,

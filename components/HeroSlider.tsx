@@ -7,6 +7,13 @@ import type { HeroBanner } from "@/lib/types";
 
 const SLIDE_DURATION = 5600;
 
+function cleanHeroText(value?: string | null) {
+  const text = (value || "").trim();
+  if (!text || text === "." || text === "-" || text === "—") return "";
+  return text;
+}
+
+
 function safeHeroCta(href: string, text: string) {
   const normalizedHref = href.toLowerCase();
   const normalizedText = text.toLowerCase();
@@ -126,11 +133,13 @@ export function HeroSlider({ heroes }: { heroes: HeroBanner[] }) {
       >
       {slides.map((slide, index) => {
         const active = index === activeIndex;
-        const headline = slide.headline || slide.title || "APPAREL PREMIUM";
-        const subtitle = slide.subheadline || slide.subtitle || "Kualitas terbaik untuk brand terbaik.";
+        const badge = cleanHeroText(slide.badge);
+        const headline = cleanHeroText(slide.headline) || cleanHeroText(slide.title);
+        const subtitle = cleanHeroText(slide.subheadline) || cleanHeroText(slide.subtitle);
+        const ctaText = cleanHeroText(slide.cta_text) || cleanHeroText(slide.cta_primary_text);
         const ctaHref = slide.cta_link || slide.cta_primary_link || "/koleksi";
-        const ctaText = slide.cta_text || slide.cta_primary_text || "Beli Sekarang";
-        const cta = safeHeroCta(ctaHref, ctaText);
+        const cta = ctaText ? safeHeroCta(ctaHref, ctaText) : null;
+        const hasCopy = Boolean(badge || headline || subtitle || cta);
         const desktopVideo = slide.desktop_video_url || slide.hero_video_url || slide.video_url;
         const mobileVideo = slide.mobile_video_url || desktopVideo;
         const desktopPosition = slide.object_position || "center center";
@@ -139,7 +148,7 @@ export function HeroSlider({ heroes }: { heroes: HeroBanner[] }) {
 
         return (
           <article
-            key={`${headline}-${index}`}
+            key={`${slide.id || index}-${headline || slide.image_url || "hero"}`}
             className="relative h-full w-full shrink-0"
             aria-hidden={!active}
           >
@@ -153,7 +162,7 @@ export function HeroSlider({ heroes }: { heroes: HeroBanner[] }) {
                 <ResponsivePicture
                   desktopSrc={slide.image_url || "/images/debroder/editorial/hero-apparel-wide.webp"}
                   mobileSrc={slide.mobile_image_url || "/images/debroder/editorial/hero-apparel-mobile.webp"}
-                  alt={slide.image_alt || headline.replace(/\n/g, " ")}
+                  alt={slide.image_alt || headline.replace(/\n/g, " ") || "Hero DEBRODER"}
                   priority={index === 0}
                   className="h-full w-full object-cover"
                   desktopObjectPosition={desktopPosition}
@@ -167,31 +176,41 @@ export function HeroSlider({ heroes }: { heroes: HeroBanner[] }) {
             </div>
 
             <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(1,9,6,.58)_0%,rgba(1,9,6,.34)_36%,rgba(1,9,6,.04)_68%,rgba(1,9,6,.10)_100%),linear-gradient(0deg,rgba(1,9,6,.34)_0%,rgba(1,9,6,0)_46%)] sm:bg-[linear-gradient(90deg,rgba(1,9,6,.62)_0%,rgba(1,9,6,.36)_38%,rgba(1,9,6,.03)_70%,rgba(1,9,6,.08)_100%),linear-gradient(0deg,rgba(1,9,6,.30)_0%,rgba(1,9,6,0)_44%)]" />
-            <div className="absolute inset-x-0 bottom-16 z-10 sm:bottom-14 lg:bottom-16">
-              <div className="section-shell">
-                <div className={`max-w-[620px] text-white ${textAlignment}`}>
-                  <p className="text-[15px] font-medium uppercase tracking-normal text-white/75 sm:text-[17px]">
-                    {slide.badge || "APPAREL PREMIUM"}
-                  </p>
-                  {index === 0 ? (
-                    <h1 className="mt-2 whitespace-pre-line text-[clamp(2.625rem,12vw,3.25rem)] font-black uppercase leading-[0.92] tracking-normal sm:text-[4rem] lg:text-[clamp(4rem,6vw,5.5rem)]">
-                      {headline}
-                    </h1>
-                  ) : (
-                    <h2 className="mt-2 whitespace-pre-line text-[clamp(2.625rem,12vw,3.25rem)] font-black uppercase leading-[0.92] tracking-normal sm:text-[4rem] lg:text-[clamp(4rem,6vw,5.5rem)]">
-                      {headline}
-                    </h2>
-                  )}
-                  <p className="mt-2.5 max-w-lg whitespace-pre-line text-[17px] leading-[1.25] text-white/80 sm:text-xl">
-                    {subtitle}
-                  </p>
-                  <a href={cta.href} className="mt-4 inline-flex min-h-11 items-center gap-2 rounded-full bg-white px-5 py-3 text-sm font-semibold text-[#111] transition duration-200 hover:bg-[#e9eee9]">
-                    {cta.text}
-                    <ArrowIcon direction="right" />
-                  </a>
+            {hasCopy ? (
+              <div className="absolute inset-x-0 bottom-16 z-10 sm:bottom-14 lg:bottom-16">
+                <div className="section-shell">
+                  <div className={`max-w-[620px] text-white ${textAlignment}`}>
+                    {badge ? (
+                      <p className="text-[15px] font-medium uppercase tracking-normal text-white/75 sm:text-[17px]">
+                        {badge}
+                      </p>
+                    ) : null}
+                    {headline ? (
+                      index === 0 ? (
+                        <h1 className="mt-2 whitespace-pre-line text-[clamp(2.625rem,12vw,3.25rem)] font-black uppercase leading-[0.92] tracking-normal sm:text-[4rem] lg:text-[clamp(4rem,6vw,5.5rem)]">
+                          {headline}
+                        </h1>
+                      ) : (
+                        <h2 className="mt-2 whitespace-pre-line text-[clamp(2.625rem,12vw,3.25rem)] font-black uppercase leading-[0.92] tracking-normal sm:text-[4rem] lg:text-[clamp(4rem,6vw,5.5rem)]">
+                          {headline}
+                        </h2>
+                      )
+                    ) : null}
+                    {subtitle ? (
+                      <p className="mt-2.5 max-w-lg whitespace-pre-line text-[17px] leading-[1.25] text-white/80 sm:text-xl">
+                        {subtitle}
+                      </p>
+                    ) : null}
+                    {cta ? (
+                      <a href={cta.href} className="mt-4 inline-flex min-h-11 items-center gap-2 rounded-full bg-white px-5 py-3 text-sm font-semibold text-[#111] transition duration-200 hover:bg-[#e9eee9]">
+                        {cta.text}
+                        <ArrowIcon direction="right" />
+                      </a>
+                    ) : null}
+                  </div>
                 </div>
               </div>
-            </div>
+            ) : null}
           </article>
         );
       })}
