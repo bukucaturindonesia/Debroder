@@ -476,7 +476,7 @@ export function ProductAdminPanel() {
     }
     const preset = productCategoryPresets.find((item) => item.slug === slugify(name) || item.name.toLowerCase() === name.toLowerCase());
     if (!preset || !isMainProductCategory(name)) {
-      setStatus("product_categories hanya untuk kategori utama produk: Kaos Polos, Jersey, Jaket & Hoodie, Polo Shirt, Headwear / Topi, Kemeja, atau Tas & Aksesori.");
+      setStatus("product_categories hanya untuk kategori utama produk: Kaos Polos, Jersey, Jaket & Hoodie, Polo Shirt, Headwear / Topi, Kemeja, atau Aksesori Lainnya.");
       return;
     }
     const supabase = createSupabaseClient();

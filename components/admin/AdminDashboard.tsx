@@ -112,7 +112,7 @@ const preferredProductCategories = [
   { label: "Polo Shirt", slug: "polo-shirt" },
   { label: "Headwear / Topi", slug: "headwear" },
   { label: "Kemeja", slug: "kemeja" },
-  { label: "Tas & Aksesori", slug: "tas-aksesori" }
+  { label: "Aksesori Lainnya", slug: "aksesori-lainnya" }
 ];
 
 const tableConfigs: TableConfig[] = [
@@ -423,9 +423,9 @@ const tableConfigs: TableConfig[] = [
         name: "link_slug",
         label: "Link halaman utama",
         type: "select",
-        options: ["kaos-polos", "jersey", "jaket-hoodie", "polo-shirt", "headwear", "kemeja", "tas-aksesori"]
+        options: ["kaos-polos", "jersey", "jaket-hoodie", "polo-shirt", "headwear", "kemeja", "aksesori-lainnya"]
       },
-      { name: "category_key", label: "Kategori utama", type: "select", options: ["kaos-polos", "jersey", "jaket-hoodie", "polo-shirt", "headwear", "kemeja", "tas-aksesori"] },
+      { name: "category_key", label: "Kategori utama", type: "select", options: ["kaos-polos", "jersey", "jaket-hoodie", "polo-shirt", "headwear", "kemeja", "aksesori-lainnya"] },
       { name: "slug", label: "Slug model", type: "text", placeholder: "jersey-futsal" },
       { name: "gallery_urls", label: "Galeri gambar (satu URL per baris)", type: "list" },
       { name: "color_options", label: "Pilihan warna (satu per baris)", type: "list" },
@@ -558,7 +558,7 @@ const tableConfigs: TableConfig[] = [
           "polo-shirt",
           "headwear",
           "kemeja",
-          "tas-aksesori",
+          "aksesori-lainnya",
           "sablon-dtf",
           "maklon-dtf",
           "cetak-sublim",

@@ -330,7 +330,7 @@ values
   ('Polo Shirt', 'polo-shirt', 'Polo shirt untuk kantor, komunitas, event, dan apparel custom.', true, 40, true, 8, 'sort_order', 40),
   ('Headwear / Topi', 'headwear', 'Topi trucker, baseball cap, snapback, bucket hat, dan headwear custom.', true, 50, true, 8, 'sort_order', 50),
   ('Kemeja', 'kemeja', 'Kemeja PDH, PDL, kantor, komunitas, dan seragam custom.', true, 60, true, 8, 'sort_order', 60),
-  ('Tas & Aksesori', 'tas-aksesori', 'Tote bag, goodie bag, patch, emblem, lanyard, dan aksesori promosi.', true, 70, true, 8, 'sort_order', 70)
+  ('Aksesori Lainnya', 'aksesori-lainnya', 'Patch, emblem, lanyard, goodie bag, merchandise, dan aksesori promosi.', true, 70, true, 8, 'sort_order', 70)
 on conflict (slug) do update set
   name = excluded.name,
   description = excluded.description,
@@ -356,13 +356,13 @@ set
   show_in_collection = false
 from subcategory_category_slugs old
 where category.slug = old.slug
-  and category.slug not in ('kaos-polos', 'jersey', 'jaket-hoodie', 'polo-shirt', 'headwear', 'kemeja', 'tas-aksesori');
+  and category.slug not in ('kaos-polos', 'jersey', 'jaket-hoodie', 'polo-shirt', 'headwear', 'kemeja', 'aksesori-lainnya');
 
 update public.product_categories
 set
   is_active = false,
   show_in_collection = false
-where slug not in ('kaos-polos', 'jersey', 'jaket-hoodie', 'polo-shirt', 'headwear', 'kemeja', 'tas-aksesori');
+where slug not in ('kaos-polos', 'jersey', 'jaket-hoodie', 'polo-shirt', 'headwear', 'kemeja', 'aksesori-lainnya');
 
 insert into public.website_settings (setting_key, label, value, description, group_name)
 values

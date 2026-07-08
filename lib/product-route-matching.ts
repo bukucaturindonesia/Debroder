@@ -49,8 +49,8 @@ export function productMatchesRoute(product: Product, routeKey: string) {
     case "kemeja":
       return hasAny(all, ["kemeja", "pdh", "pdl", "seragam-kantor"]);
 
-    case "tas-aksesori":
-      return hasAny(all, ["tas-aksesori", "tote-bag", "goodie-bag", "patch", "emblem", "lanyard"]);
+    case "aksesori-lainnya":
+      return hasAny(all, ["aksesori-lainnya", "patch", "emblem", "lanyard", "label", "hang-tag", "merchandise", "aksesori"]);
 
     case "jaket-hoodie":
       return hasAny(all, ["jaket-hoodie", "jaket", "jacket", "hoodie", "crewneck", "sweater"]);

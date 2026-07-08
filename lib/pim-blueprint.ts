@@ -59,9 +59,9 @@ export const pimMainCategories: PimMainCategory[] = [
     collectionLimit: 8
   },
   {
-    name: "Tas & Aksesori",
-    slug: "tas-aksesori",
-    description: "Tote bag, goodie bag, patch, emblem, lanyard, dan aksesori promosi.",
+    name: "Aksesori Lainnya",
+    slug: "aksesori-lainnya",
+    description: "Patch, emblem, lanyard, goodie bag, merchandise, dan aksesori promosi.",
     collectionLimit: 8
   }
 ];
@@ -98,10 +98,11 @@ export const pimModels: PimModel[] = [
   { name: "Kemeja PDL", slug: "kemeja-pdl", categoryKey: "kemeja", linkSlug: "kemeja", description: "Kemeja PDL untuk lapangan, komunitas, dan organisasi." },
   { name: "Kemeja Kantor", slug: "kemeja-kantor", categoryKey: "kemeja", linkSlug: "kemeja", description: "Kemeja kantor custom untuk perusahaan dan tim." },
 
-  { name: "Tote Bag", slug: "tote-bag", categoryKey: "tas-aksesori", linkSlug: "tas-aksesori", description: "Tote bag custom untuk event, merchandise, dan brand." },
-  { name: "Goodie Bag", slug: "goodie-bag", categoryKey: "tas-aksesori", linkSlug: "tas-aksesori", description: "Goodie bag custom untuk event dan promosi." },
-  { name: "Patch / Emblem", slug: "patch-emblem", categoryKey: "tas-aksesori", linkSlug: "tas-aksesori", description: "Patch dan emblem untuk seragam, jaket, dan komunitas." },
-  { name: "Lanyard", slug: "lanyard", categoryKey: "tas-aksesori", linkSlug: "tas-aksesori", description: "Lanyard custom untuk event, kantor, dan komunitas." }
+  { name: "Patch / Emblem", slug: "patch-emblem", categoryKey: "aksesori-lainnya", linkSlug: "aksesori-lainnya", description: "Patch dan emblem untuk seragam, jaket, dan komunitas." },
+  { name: "Lanyard", slug: "lanyard", categoryKey: "aksesori-lainnya", linkSlug: "aksesori-lainnya", description: "Lanyard custom untuk event, kantor, dan komunitas." },
+  { name: "Hang Tag / Label", slug: "hang-tag-label", categoryKey: "aksesori-lainnya", linkSlug: "aksesori-lainnya", description: "Hang tag, label, dan identitas pendukung untuk produk apparel." },
+  { name: "Aksesori Apparel", slug: "aksesori-apparel", categoryKey: "aksesori-lainnya", linkSlug: "aksesori-lainnya", description: "Aksesori pendukung apparel seperti patch, label, dan detail custom." },
+  { name: "Merchandise Custom", slug: "merchandise-custom", categoryKey: "aksesori-lainnya", linkSlug: "aksesori-lainnya", description: "Item merchandise pendukung untuk event, komunitas, dan brand." }
 ];
 
 export const pimServiceMethods: PimServiceMethod[] = [

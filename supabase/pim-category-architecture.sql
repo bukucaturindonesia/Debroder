@@ -44,7 +44,7 @@ values
   ('Polo Shirt', 'polo-shirt', 'Polo shirt untuk kantor, komunitas, event, dan apparel custom.', true, 40, true, 8, 'sort_order', 40),
   ('Headwear / Topi', 'headwear', 'Topi trucker, baseball cap, snapback, bucket hat, dan headwear custom.', true, 50, true, 8, 'sort_order', 50),
   ('Kemeja', 'kemeja', 'Kemeja PDH, PDL, kantor, komunitas, dan seragam custom.', true, 60, true, 8, 'sort_order', 60),
-  ('Tas & Aksesori', 'tas-aksesori', 'Tote bag, goodie bag, patch, emblem, lanyard, dan aksesori promosi.', true, 70, true, 8, 'sort_order', 70)
+  ('Aksesori Lainnya', 'aksesori-lainnya', 'Patch, emblem, lanyard, goodie bag, merchandise, dan aksesori promosi.', true, 70, true, 8, 'sort_order', 70)
 on conflict (slug) do update set
   name = excluded.name,
   description = excluded.description,
@@ -57,7 +57,7 @@ on conflict (slug) do update set
 
 update public.product_categories
 set is_active = false, show_in_collection = false
-where slug not in ('kaos-polos', 'jersey', 'jaket-hoodie', 'polo-shirt', 'headwear', 'kemeja', 'tas-aksesori');
+where slug not in ('kaos-polos', 'jersey', 'jaket-hoodie', 'polo-shirt', 'headwear', 'kemeja', 'aksesori-lainnya');
 
 with model_values(nama_kategori, slug, category_key, link_slug, deskripsi, urutan) as (
   values
@@ -86,10 +86,11 @@ with model_values(nama_kategori, slug, category_key, link_slug, deskripsi, uruta
     ('Kemeja PDH', 'kemeja-pdh', 'kemeja', 'kemeja', 'Kemeja PDH untuk seragam kantor, instansi, dan organisasi.', 230),
     ('Kemeja PDL', 'kemeja-pdl', 'kemeja', 'kemeja', 'Kemeja PDL untuk lapangan, komunitas, dan organisasi.', 240),
     ('Kemeja Kantor', 'kemeja-kantor', 'kemeja', 'kemeja', 'Kemeja kantor custom untuk perusahaan dan tim.', 250),
-    ('Tote Bag', 'tote-bag', 'tas-aksesori', 'tas-aksesori', 'Tote bag custom untuk event, merchandise, dan brand.', 260),
-    ('Goodie Bag', 'goodie-bag', 'tas-aksesori', 'tas-aksesori', 'Goodie bag custom untuk event dan promosi.', 270),
-    ('Patch / Emblem', 'patch-emblem', 'tas-aksesori', 'tas-aksesori', 'Patch dan emblem untuk seragam, jaket, dan komunitas.', 280),
-    ('Lanyard', 'lanyard', 'tas-aksesori', 'tas-aksesori', 'Lanyard custom untuk event, kantor, dan komunitas.', 290)
+    ('Patch / Emblem', 'patch-emblem', 'aksesori-lainnya', 'aksesori-lainnya', 'Patch dan emblem untuk seragam, jaket, dan komunitas.', 260),
+    ('Lanyard', 'lanyard', 'aksesori-lainnya', 'aksesori-lainnya', 'Lanyard custom untuk event, kantor, dan komunitas.', 270),
+    ('Hang Tag / Label', 'hang-tag-label', 'aksesori-lainnya', 'aksesori-lainnya', 'Hang tag, label, dan identitas pendukung untuk produk apparel.', 280),
+    ('Aksesori Apparel', 'aksesori-apparel', 'aksesori-lainnya', 'aksesori-lainnya', 'Aksesori pendukung apparel seperti patch, label, dan detail custom.', 290),
+    ('Merchandise Custom', 'merchandise-custom', 'aksesori-lainnya', 'aksesori-lainnya', 'Item merchandise pendukung untuk event, komunitas, dan brand.', 300)
 )
 update public.service_categories target
 set
@@ -132,10 +133,11 @@ with model_values(nama_kategori, slug, category_key, link_slug, deskripsi, uruta
     ('Kemeja PDH', 'kemeja-pdh', 'kemeja', 'kemeja', 'Kemeja PDH untuk seragam kantor, instansi, dan organisasi.', 230),
     ('Kemeja PDL', 'kemeja-pdl', 'kemeja', 'kemeja', 'Kemeja PDL untuk lapangan, komunitas, dan organisasi.', 240),
     ('Kemeja Kantor', 'kemeja-kantor', 'kemeja', 'kemeja', 'Kemeja kantor custom untuk perusahaan dan tim.', 250),
-    ('Tote Bag', 'tote-bag', 'tas-aksesori', 'tas-aksesori', 'Tote bag custom untuk event, merchandise, dan brand.', 260),
-    ('Goodie Bag', 'goodie-bag', 'tas-aksesori', 'tas-aksesori', 'Goodie bag custom untuk event dan promosi.', 270),
-    ('Patch / Emblem', 'patch-emblem', 'tas-aksesori', 'tas-aksesori', 'Patch dan emblem untuk seragam, jaket, dan komunitas.', 280),
-    ('Lanyard', 'lanyard', 'tas-aksesori', 'tas-aksesori', 'Lanyard custom untuk event, kantor, dan komunitas.', 290)
+    ('Patch / Emblem', 'patch-emblem', 'aksesori-lainnya', 'aksesori-lainnya', 'Patch dan emblem untuk seragam, jaket, dan komunitas.', 260),
+    ('Lanyard', 'lanyard', 'aksesori-lainnya', 'aksesori-lainnya', 'Lanyard custom untuk event, kantor, dan komunitas.', 270),
+    ('Hang Tag / Label', 'hang-tag-label', 'aksesori-lainnya', 'aksesori-lainnya', 'Hang tag, label, dan identitas pendukung untuk produk apparel.', 280),
+    ('Aksesori Apparel', 'aksesori-apparel', 'aksesori-lainnya', 'aksesori-lainnya', 'Aksesori pendukung apparel seperti patch, label, dan detail custom.', 290),
+    ('Merchandise Custom', 'merchandise-custom', 'aksesori-lainnya', 'aksesori-lainnya', 'Item merchandise pendukung untuk event, komunitas, dan brand.', 300)
 )
 insert into public.service_categories
   (nama_kategori, slug, category_key, link_slug, deskripsi, gambar_url, image_alt, object_fit, object_position, urutan, status_aktif)
@@ -206,7 +208,7 @@ matched as (
       when text_value like '%polo%' or text_value like '%lacoste%' then 'polo-shirt'
       when text_value like '%topi%' or text_value like '%cap%' or text_value like '%hat%' or text_value like '%headwear%' then 'headwear'
       when text_value like '%kemeja%' or text_value like '%pdh%' or text_value like '%pdl%' then 'kemeja'
-      when text_value like '%tote%' or text_value like '%goodie%' or text_value like '%patch%' or text_value like '%emblem%' or text_value like '%lanyard%' then 'tas-aksesori'
+      when text_value like '%tote%' or text_value like '%goodie%' or text_value like '%patch%' or text_value like '%emblem%' or text_value like '%lanyard%' then 'aksesori-lainnya'
       else 'kaos-polos'
     end as category_slug
   from product_text
@@ -224,7 +226,7 @@ where product.id = matched.id;
 -- Kunci model dan layanan agar item lama/ambigu tidak tampil lagi.
 update public.service_categories
 set status_aktif = false
-where coalesce(category_key, '') || ':' || coalesce(slug, '') not in ('kaos-polos:kaos-cotton-combed', 'kaos-polos:kaos-oversize', 'kaos-polos:kaos-lengan-panjang', 'kaos-polos:kaos-anak', 'jersey:jersey-futsal', 'jersey:jersey-sepak-bola', 'jersey:jersey-basket', 'jersey:jersey-voli', 'jersey:jersey-badminton', 'jersey:jersey-esports', 'jaket-hoodie:hoodie', 'jaket-hoodie:crewneck', 'jaket-hoodie:jaket-bomber', 'jaket-hoodie:jaket-varsity', 'jaket-hoodie:jaket-coach', 'polo-shirt:polo-lacoste', 'polo-shirt:polo-cvc', 'polo-shirt:polo-dry-fit', 'headwear:topi-trucker', 'headwear:topi-baseball', 'headwear:snapback', 'headwear:bucket-hat', 'kemeja:kemeja-pdh', 'kemeja:kemeja-pdl', 'kemeja:kemeja-kantor', 'tas-aksesori:tote-bag', 'tas-aksesori:goodie-bag', 'tas-aksesori:patch-emblem', 'tas-aksesori:lanyard');
+where coalesce(category_key, '') || ':' || coalesce(slug, '') not in ('kaos-polos:kaos-cotton-combed', 'kaos-polos:kaos-oversize', 'kaos-polos:kaos-lengan-panjang', 'kaos-polos:kaos-anak', 'jersey:jersey-futsal', 'jersey:jersey-sepak-bola', 'jersey:jersey-basket', 'jersey:jersey-voli', 'jersey:jersey-badminton', 'jersey:jersey-esports', 'jaket-hoodie:hoodie', 'jaket-hoodie:crewneck', 'jaket-hoodie:jaket-bomber', 'jaket-hoodie:jaket-varsity', 'jaket-hoodie:jaket-coach', 'polo-shirt:polo-lacoste', 'polo-shirt:polo-cvc', 'polo-shirt:polo-dry-fit', 'headwear:topi-trucker', 'headwear:topi-baseball', 'headwear:snapback', 'headwear:bucket-hat', 'kemeja:kemeja-pdh', 'kemeja:kemeja-pdl', 'kemeja:kemeja-kantor', 'aksesori-lainnya:patch-emblem', 'aksesori-lainnya:lanyard', 'aksesori-lainnya:hang-tag-label', 'aksesori-lainnya:aksesori-apparel', 'aksesori-lainnya:merchandise-custom');
 
 update public.services
 set status_aktif = false

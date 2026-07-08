@@ -32,7 +32,7 @@ Jaket & Hoodie
 Polo Shirt
 Headwear / Topi
 Kemeja
-Tas & Aksesori
+Aksesori Lainnya
 ```
 
 Item seperti Hoodie, Jersey Futsal, Topi Trucker, Kaos Cotton Combed, dan Bordir tidak boleh menjadi kategori utama.
@@ -98,7 +98,7 @@ Tambahan halaman kategori produk:
 ```text
 /polo-shirt
 /kemeja
-/tas-aksesori
+/aksesori-lainnya
 ```
 
 ## Cara menerapkan

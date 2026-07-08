@@ -176,6 +176,18 @@ export function PimManagerAdmin() {
       updated_at: new Date().toISOString()
     }));
 
+    await supabase.from("products")
+      .update({ category_key: "aksesori-lainnya", updated_at: new Date().toISOString() })
+      .eq("category_key", "tas-aksesori");
+
+    await supabase.from("service_categories")
+      .update({ category_key: "aksesori-lainnya", link_slug: "aksesori-lainnya", updated_at: new Date().toISOString() })
+      .or("category_key.eq.tas-aksesori,link_slug.eq.tas-aksesori");
+
+    await supabase.from("page_heroes")
+      .update({ page_key: "aksesori-lainnya", updated_at: new Date().toISOString() })
+      .eq("page_key", "tas-aksesori");
+
     const { error: categoryError } = await supabase
       .from("product_categories")
       .upsert(categoryPayload, { onConflict: "slug" });

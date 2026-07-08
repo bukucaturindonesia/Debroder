@@ -73,12 +73,12 @@ export const productCategoryPresets: ProductCategoryPreset[] = [
     colorTags: ["putih", "hitam", "navy", "khaki"]
   },
   {
-    name: "Tas & Aksesori",
-    slug: "tas-aksesori",
-    subcategories: ["Tote Bag", "Goodie Bag", "Patch / Emblem", "Lanyard"],
-    intentTags: ["tas-aksesori", "merchandise", "event", "brand-apparel", "bordir"],
-    collectionTags: ["tas-aksesori", "merchandise"],
-    materialTags: ["canvas", "drill", "polyester"],
+    name: "Aksesori Lainnya",
+    slug: "aksesori-lainnya",
+    subcategories: ["Patch / Emblem", "Lanyard", "Hang Tag / Label", "Aksesori Apparel", "Merchandise Custom"],
+    intentTags: ["aksesori-lainnya", "merchandise", "event", "brand-apparel", "bordir", "patch", "emblem", "lanyard", "label"],
+    collectionTags: ["aksesori-lainnya", "merchandise"],
+    materialTags: ["polyester", "drill", "woven", "custom-material"],
     sizeTags: ["custom-size"],
     colorTags: ["custom-color"]
   }
@@ -165,10 +165,14 @@ const subcategoryAliases: Record<string, ProductSubcategoryMatch> = {
   "kemeja-pdh": { categorySlug: "kemeja", subcategory: "Kemeja PDH" },
   "kemeja-pdl": { categorySlug: "kemeja", subcategory: "Kemeja PDL" },
   "kemeja-kantor": { categorySlug: "kemeja", subcategory: "Kemeja Kantor" },
-  "tote-bag": { categorySlug: "tas-aksesori", subcategory: "Tote Bag" },
-  "goodie-bag": { categorySlug: "tas-aksesori", subcategory: "Goodie Bag" },
-  "patch-emblem": { categorySlug: "tas-aksesori", subcategory: "Patch / Emblem" },
-  lanyard: { categorySlug: "tas-aksesori", subcategory: "Lanyard" },
+  "patch-emblem": { categorySlug: "aksesori-lainnya", subcategory: "Patch / Emblem" },
+  patch: { categorySlug: "aksesori-lainnya", subcategory: "Patch / Emblem" },
+  emblem: { categorySlug: "aksesori-lainnya", subcategory: "Patch / Emblem" },
+  lanyard: { categorySlug: "aksesori-lainnya", subcategory: "Lanyard" },
+  "hang-tag": { categorySlug: "aksesori-lainnya", subcategory: "Hang Tag / Label" },
+  label: { categorySlug: "aksesori-lainnya", subcategory: "Hang Tag / Label" },
+  "aksesori-apparel": { categorySlug: "aksesori-lainnya", subcategory: "Aksesori Apparel" },
+  "merchandise-custom": { categorySlug: "aksesori-lainnya", subcategory: "Merchandise Custom" },
 };
 
 productCategoryPresets.forEach((preset) => {
