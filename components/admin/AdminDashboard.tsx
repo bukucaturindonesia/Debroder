@@ -375,11 +375,11 @@ const tableConfigs: TableConfig[] = [
   },
   {
     key: "categories",
-    label: "Kategori Produk",
-    navLabel: "Kategori Produk",
+    label: "Kategori / Model Halaman",
+    navLabel: "Kategori / Model",
     href: "/admin/categories",
     table: "service_categories",
-    description: "Atur kategori layanan dan halaman tujuannya.",
+    description: "Atur kartu kategori yang tampil di halaman publik seperti Jersey, Kaos Polos, Headwear, dan layanan. Contoh: Jersey Badminton, Jersey Basket, Jersey Voli.",
     orderField: "urutan",
     fields: [
       {
@@ -845,6 +845,9 @@ const primaryNavigationKeys = [
   "homepage-sections",
   "page-hero",
   "products",
+  "categories",
+  "services",
+  "store",
   "media",
   "campaign-banners",
   "orders",
@@ -1952,7 +1955,7 @@ export function AdminDashboard() {
               <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-5">
                 {tableConfigs
                   .filter((config) =>
-                    ["homepage-sections", "page-hero", "products", "media", "campaign-banners", "orders", "website-settings"].includes(
+                    ["homepage-sections", "page-hero", "products", "categories", "services", "store", "media", "campaign-banners", "orders", "website-settings"].includes(
                       config.key
                     )
                   )
