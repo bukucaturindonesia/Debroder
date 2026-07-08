@@ -110,7 +110,7 @@ export function ProductRecommendationDrawer({
                         <button
                           type="button"
                           onClick={() => {
-                            addItem(recommendationCartItem(item, sourceProduct));
+                            addItem(recommendationCartItem(item, sourceProduct), "additional");
                             setIsOpen(false);
                           }}
                           className="inline-flex min-h-10 items-center justify-center rounded-full bg-[#063d24] px-3 text-xs font-semibold text-white transition hover:bg-[#0f5a36]"

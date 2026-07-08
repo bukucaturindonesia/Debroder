@@ -136,7 +136,8 @@ const searchItems = [
   { title: "Maklon DTF", href: "/maklon-dtf", description: "Partner produksi DTF untuk brand apparel.", keywords: ["maklon", "dtf", "produksi"] },
   { title: "Cetak Sublim", href: "/cetak-sublim", description: "Cetak sublim untuk jersey dan apparel custom.", keywords: ["sublim", "cetak"] },
   { title: "Store DEBRODER", href: "/store", description: "Pettarani, Tello, Landak, dan Parepare.", keywords: ["lokasi", "alamat", "store"] },
-  { title: "Cara Order", href: "/cara-order", description: "Panduan pemesanan DEBRODER.", keywords: ["cara", "order", "pesan"] }
+  { title: "Cara Order", href: "/cara-order", description: "Panduan pemesanan DEBRODER.", keywords: ["cara", "order", "pesan"] },
+  { title: "Keranjang Belanja", href: "/keranjang", description: "Cek pesanan utama, layanan tambahan, estimasi normal, dan kirim ke WhatsApp.", keywords: ["keranjang", "cart", "pesanan", "whatsapp"] }
 ];
 
 const whatsappUrl = whatsappLinkWithMessage(
