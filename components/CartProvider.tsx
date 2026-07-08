@@ -4,7 +4,7 @@ import Link from "next/link";
 import { createContext, type ReactNode, useContext, useEffect, useMemo, useState } from "react";
 import { BrandIcon } from "@/components/BrandIcon";
 import { SafeImage } from "@/components/SafeImage";
-import { fallbackImages } from "@/lib/fallback-data";
+import { fallbackImages, pageHeroImageFallbacks } from "@/lib/fallback-data";
 import { contactLinks } from "@/lib/contact";
 import { absoluteUrl } from "@/lib/site";
 import { formatRupiah, whatsappLinkWithMessage } from "@/lib/url";
@@ -22,6 +22,9 @@ export type CartProductInput = {
 
 type CartServiceSelection = {
   id: string;
+  quantity: number;
+  position: string;
+  notes: string;
 };
 
 type CartItemRole = "primary" | "additional";
@@ -32,7 +35,6 @@ type CartItem = CartProductInput & {
   quantity: number;
   color: string;
   size: string;
-  printLocation: string;
   notes: string;
   services: CartServiceSelection[];
 };
@@ -54,20 +56,20 @@ type ServiceOption = {
   name: string;
   shortName: string;
   description: string;
+  defaultPosition: string;
   pricePerPcs: number;
 };
 
-type ProductRecommendation = {
+type SearchSuggestion = {
   id: string;
   name: string;
-  category: string;
-  priceLabel: string;
-  priceValue: number;
+  label: string;
   href: string;
+  imageUrl: string;
 };
 
-const storageKey = "debroder-cart-v2";
-const legacyStorageKey = "debroder-cart-v1";
+const storageKey = "debroder-cart-v3";
+const legacyStorageKeys = ["debroder-cart-v2", "debroder-cart-v1"];
 const CartContext = createContext<CartContextValue | null>(null);
 
 const serviceOptions: ServiceOption[] = [
@@ -75,7 +77,8 @@ const serviceOptions: ServiceOption[] = [
     id: "sablon-dtf-depan-kecil",
     name: "Sablon DTF Depan Kecil",
     shortName: "Sablon DTF",
-    description: "Logo kecil/dada kiri atau artwork kecil.",
+    description: "Logo kecil, dada kiri, atau artwork kecil.",
+    defaultPosition: "Depan kecil",
     pricePerPcs: 15000
   },
   {
@@ -83,6 +86,7 @@ const serviceOptions: ServiceOption[] = [
     name: "Bordir Komputer Logo Kecil",
     shortName: "Bordir Komputer",
     description: "Estimasi normal untuk logo kecil.",
+    defaultPosition: "Dada kiri",
     pricePerPcs: 20000
   },
   {
@@ -90,6 +94,7 @@ const serviceOptions: ServiceOption[] = [
     name: "Sablon DTF Belakang Besar",
     shortName: "DTF Belakang Besar",
     description: "Artwork besar untuk bagian belakang.",
+    defaultPosition: "Belakang besar",
     pricePerPcs: 25000
   },
   {
@@ -97,6 +102,7 @@ const serviceOptions: ServiceOption[] = [
     name: "Bordir Komputer Logo Besar",
     shortName: "Bordir Logo Besar",
     description: "Estimasi normal untuk bordir lebih besar/lebih detail.",
+    defaultPosition: "Logo besar",
     pricePerPcs: 30000
   },
   {
@@ -104,39 +110,58 @@ const serviceOptions: ServiceOption[] = [
     name: "Sublim Printing",
     shortName: "Sublim",
     description: "Estimasi normal untuk jersey/apparel full color.",
+    defaultPosition: "Full body",
     pricePerPcs: 35000
   }
 ];
 
-const productRecommendations: ProductRecommendation[] = [
+const searchSuggestions: SearchSuggestion[] = [
   {
-    id: "topi-trucker-rekomendasi",
-    name: "Topi Trucker",
-    category: "Headwear",
-    priceLabel: "Mulai Rp 35.000",
-    priceValue: 35000,
-    href: "/headwear"
+    id: "jersey-custom",
+    name: "Jersey Custom",
+    label: "Jersey tim, komunitas, dan event",
+    href: "/jersey",
+    imageUrl: pageHeroImageFallbacks.jersey || fallbackImages.product
   },
   {
-    id: "polo-shirt-rekomendasi",
+    id: "kaos-polos",
+    name: "Kaos Polos",
+    label: "NSA, cotton combed, dan warna lengkap",
+    href: "/kaos-polos",
+    imageUrl: pageHeroImageFallbacks["kaos-polos"] || fallbackImages.product
+  },
+  {
+    id: "polo-shirt",
     name: "Polo Shirt",
-    category: "Polo Shirt",
-    priceLabel: "Mulai Rp 80.000",
-    priceValue: 80000,
-    href: "/polo-shirt"
+    label: "Cocok untuk kantor dan komunitas",
+    href: "/polo-shirt",
+    imageUrl: pageHeroImageFallbacks["polo-shirt"] || fallbackImages.product
   },
   {
-    id: "kaos-polos-navy-rekomendasi",
-    name: "Kaos Polos Navy",
-    category: "Kaos Polos",
-    priceLabel: "Mulai Rp 45.000",
-    priceValue: 45000,
-    href: "/kaos-polos"
+    id: "headwear",
+    name: "Headwear",
+    label: "Topi, cap, dan aksesori kepala",
+    href: "/headwear",
+    imageUrl: pageHeroImageFallbacks.headwear || fallbackImages.product
+  },
+  {
+    id: "jaket-hoodie",
+    name: "Jaket & Hoodie",
+    label: "Outerwear custom untuk brand dan tim",
+    href: "/jaket-hoodie",
+    imageUrl: pageHeroImageFallbacks["jaket-hoodie"] || fallbackImages.product
+  },
+  {
+    id: "sablon-dtf",
+    name: "Sablon DTF",
+    label: "Custom desain dengan hasil tajam",
+    href: "/sablon-dtf",
+    imageUrl: pageHeroImageFallbacks["sablon-dtf"] || fallbackImages.product
   }
 ];
 
-function normalizeNumber(value: number) {
-  return Number.isFinite(value) && value > 0 ? Math.floor(value) : 1;
+function normalizeNumber(value: number, fallback = 1) {
+  return Number.isFinite(value) && value > 0 ? Math.floor(value) : fallback;
 }
 
 function createCartId(product: CartProductInput) {
@@ -157,8 +182,29 @@ function serviceById(serviceId: string) {
   return serviceOptions.find((service) => service.id === serviceId) || null;
 }
 
+function normalizeServices(services: unknown, quantity: number): CartServiceSelection[] {
+  if (!Array.isArray(services)) return [];
+  return services
+    .map((raw) => {
+      const service = raw as Partial<CartServiceSelection>;
+      if (!service.id || !serviceById(service.id)) return null;
+      return {
+        id: service.id,
+        quantity: normalizeNumber(Number(service.quantity || quantity), quantity),
+        position: service.position || serviceById(service.id)?.defaultPosition || "",
+        notes: service.notes || ""
+      };
+    })
+    .filter(Boolean) as CartServiceSelection[];
+}
+
 function selectedServices(item: CartItem) {
-  return item.services.map((service) => serviceById(service.id)).filter(Boolean) as ServiceOption[];
+  return item.services
+    .map((selection) => {
+      const service = serviceById(selection.id);
+      return service ? { service, selection } : null;
+    })
+    .filter(Boolean) as { service: ServiceOption; selection: CartServiceSelection }[];
 }
 
 function itemProductSubtotal(item: CartItem) {
@@ -166,11 +212,7 @@ function itemProductSubtotal(item: CartItem) {
 }
 
 function itemServiceSubtotal(item: CartItem) {
-  return selectedServices(item).reduce((total, service) => total + service.pricePerPcs * item.quantity, 0);
-}
-
-function itemNormalSubtotal(item: CartItem) {
-  return itemProductSubtotal(item) + itemServiceSubtotal(item);
+  return selectedServices(item).reduce((total, entry) => total + entry.service.pricePerPcs * entry.selection.quantity, 0);
 }
 
 function cartTotals(items: CartItem[]) {
@@ -192,32 +234,56 @@ function labelForItem(item: CartItem) {
 function ensureRoles(items: CartItem[]) {
   let hasPrimary = false;
   return items.map((item, index) => {
+    const quantity = normalizeNumber(Number(item.quantity || 1));
     const role: CartItemRole = !hasPrimary && (item.role === "primary" || index === 0) ? "primary" : "additional";
     if (role === "primary") hasPrimary = true;
     return {
       ...item,
       role,
-      quantity: normalizeNumber(Number(item.quantity || 1)),
+      quantity,
       color: item.color || "",
       size: item.size || "",
-      printLocation: item.printLocation || "",
       notes: item.notes || "",
-      services: Array.isArray(item.services) ? item.services : []
+      services: normalizeServices(item.services, quantity)
     };
   });
 }
 
+function serviceIsSelected(item: CartItem, serviceId: string) {
+  return item.services.some((service) => service.id === serviceId);
+}
+
+function toggleService(item: CartItem, service: ServiceOption) {
+  const exists = serviceIsSelected(item, service.id);
+  return exists
+    ? item.services.filter((selection) => selection.id !== service.id)
+    : [
+        ...item.services,
+        {
+          id: service.id,
+          quantity: item.quantity,
+          position: service.defaultPosition,
+          notes: ""
+        }
+      ];
+}
+
+function updateService(item: CartItem, serviceId: string, updates: Partial<CartServiceSelection>) {
+  return item.services.map((service) =>
+    service.id === serviceId
+      ? { ...service, ...updates, quantity: normalizeNumber(Number(updates.quantity ?? service.quantity), item.quantity) }
+      : service
+  );
+}
+
 function buildItemMessage(item: CartItem) {
-  const lines = [
-    `Produk: ${item.name}`
-  ];
+  const lines = [`Produk: ${item.name}`];
   if (item.category) lines.push(`Kategori: ${item.category}`);
   if (item.priceLabel) lines.push(`Harga produk: ${item.priceLabel}`);
   lines.push(`Jumlah: ${item.quantity} pcs`);
   if (item.color.trim()) lines.push(`Warna: ${item.color.trim()}`);
   if (item.size.trim()) lines.push(`Ukuran: ${item.size.trim()}`);
-  if (item.printLocation.trim()) lines.push(`Area produksi: ${item.printLocation.trim()}`);
-  if (item.notes.trim()) lines.push(`Catatan: ${item.notes.trim()}`);
+  if (item.notes.trim()) lines.push(`Catatan produk: ${item.notes.trim()}`);
   const productSubtotal = itemProductSubtotal(item);
   if (productSubtotal > 0) lines.push(`Subtotal produk: ${formatRupiah(productSubtotal)}`);
   if (item.href) lines.push(`Link produk: ${absoluteUrl(item.href)}`);
@@ -225,11 +291,14 @@ function buildItemMessage(item: CartItem) {
   const services = selectedServices(item);
   if (services.length) {
     lines.push("");
-    lines.push("Layanan tambahan:");
-    services.forEach((service) => {
+    lines.push("Pilihan produksi:");
+    services.forEach(({ service, selection }) => {
       lines.push(`- ${service.name}`);
+      lines.push(`  Jumlah pengerjaan: ${selection.quantity} pcs`);
+      if (selection.position.trim()) lines.push(`  Posisi: ${selection.position.trim()}`);
+      if (selection.notes.trim()) lines.push(`  Catatan: ${selection.notes.trim()}`);
       lines.push(`  Harga normal: ${formatRupiah(service.pricePerPcs)} / pcs`);
-      lines.push(`  Subtotal layanan: ${formatRupiah(service.pricePerPcs * item.quantity)}`);
+      lines.push(`  Subtotal produksi: ${formatRupiah(service.pricePerPcs * selection.quantity)}`);
     });
   }
 
@@ -270,7 +339,7 @@ function buildMessage(items: CartItem[]) {
   lines.push("");
   lines.push("ESTIMASI NORMAL");
   lines.push(`Subtotal produk: ${safeCurrency(totals.productSubtotal)}`);
-  if (totals.serviceSubtotal > 0) lines.push(`Subtotal layanan: ${formatRupiah(totals.serviceSubtotal)}`);
+  if (totals.serviceSubtotal > 0) lines.push(`Subtotal pilihan produksi: ${formatRupiah(totals.serviceSubtotal)}`);
   lines.push(`${totals.hasServices ? "Estimasi normal" : "Total"}: ${safeCurrency(totals.normalTotal)}`);
 
   if (totals.hasServices) {
@@ -289,145 +358,127 @@ function CartIcon() {
   return <BrandIcon name="cart" />;
 }
 
-function toggleService(item: CartItem, serviceId: string) {
-  const exists = item.services.some((service) => service.id === serviceId);
-  return exists
-    ? item.services.filter((service) => service.id !== serviceId)
-    : [...item.services, { id: serviceId }];
-}
-
-function serviceIsSelected(item: CartItem, serviceId: string) {
-  return item.services.some((service) => service.id === serviceId);
-}
-
-function ItemEditor({ item, compact = false }: { item: CartItem; compact?: boolean }) {
-  const cart = useCart();
-  const unitPrice = itemUnitPrice(item);
-  const productSubtotal = itemProductSubtotal(item);
-  const serviceSubtotal = itemServiceSubtotal(item);
-
+function QuantityControl({ value, onChange, ariaLabel }: { value: number; onChange: (value: number) => void; ariaLabel: string }) {
   return (
-    <article className={`border border-black/10 bg-white ${compact ? "p-4" : "p-5 sm:p-6"}`}>
-      <div className="flex items-start justify-between gap-4">
-        <div className="flex min-w-0 gap-4">
-          {item.imageUrl ? (
-            <div className="relative h-20 w-20 shrink-0 overflow-hidden bg-[#f5f5ef] sm:h-24 sm:w-24">
-              <SafeImage src={item.imageUrl} fallbackSrc={fallbackImages.product} alt={item.imageAlt || item.name} fill className="object-cover" sizes="96px" />
-            </div>
-          ) : null}
-          <div className="min-w-0">
-            <span className={`inline-flex rounded-full px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.08em] ${item.role === "primary" ? "bg-[#e8f5ee] text-[#063d24]" : "bg-[#f3f3ef] text-black/55"}`}>
-              {item.role === "primary" ? "Pesanan Utama" : "Item Tambahan"}
-            </span>
-            <h3 className="mt-3 text-base font-semibold leading-snug sm:text-lg">{item.name}</h3>
-            {labelForItem(item) ? <p className="mt-1 text-xs leading-5 text-black/50 sm:text-sm">{labelForItem(item)}</p> : null}
-          </div>
-        </div>
-        <button type="button" className="shrink-0 text-xs font-semibold text-[#b00000] underline-offset-4 hover:underline" onClick={() => cart.removeItem(item.cartId)}>
-          Hapus
-        </button>
-      </div>
-
-      <div className="mt-5 grid gap-3 sm:grid-cols-3">
-        <label className="grid gap-1 text-xs font-semibold text-black/60">
-          Jumlah
-          <input type="number" min={1} value={item.quantity} onChange={(event) => cart.updateItem(item.cartId, { quantity: normalizeNumber(Number(event.target.value)) })} className="min-h-11 border border-black/10 px-3 text-sm font-normal text-black outline-none focus:border-black" />
-        </label>
-        <label className="grid gap-1 text-xs font-semibold text-black/60">
-          Warna
-          <input value={item.color} onChange={(event) => cart.updateItem(item.cartId, { color: event.target.value })} placeholder="Contoh: Hitam" className="min-h-11 border border-black/10 px-3 text-sm font-normal text-black outline-none focus:border-black" />
-        </label>
-        <label className="grid gap-1 text-xs font-semibold text-black/60">
-          Ukuran
-          <input value={item.size} onChange={(event) => cart.updateItem(item.cartId, { size: event.target.value })} placeholder="Contoh: L / M 12 pcs" className="min-h-11 border border-black/10 px-3 text-sm font-normal text-black outline-none focus:border-black" />
-        </label>
-      </div>
-
-      <div className="mt-4 grid gap-3 sm:grid-cols-2">
-        <label className="grid gap-1 text-xs font-semibold text-black/60">
-          Area produksi / posisi desain
-          <input value={item.printLocation} onChange={(event) => cart.updateItem(item.cartId, { printLocation: event.target.value })} placeholder="Depan, belakang, lengan" className="min-h-11 border border-black/10 px-3 text-sm font-normal text-black outline-none focus:border-black" />
-        </label>
-        <label className="grid gap-1 text-xs font-semibold text-black/60">
-          Catatan desain
-          <input value={item.notes} onChange={(event) => cart.updateItem(item.cartId, { notes: event.target.value })} placeholder="Logo dada kiri, desain menyusul via WA" className="min-h-11 border border-black/10 px-3 text-sm font-normal text-black outline-none focus:border-black" />
-        </label>
-      </div>
-
-      <div className="mt-5 border-t border-black/10 pt-5">
-        <div className="flex items-end justify-between gap-4">
-          <div>
-            <p className="text-xs font-bold uppercase tracking-[0.12em] text-black/50">Layanan Tambahan</p>
-            <p className="mt-1 text-xs leading-5 text-black/55">Pilih jika dibutuhkan. Harga normal dihitung otomatis, harga terbaik dikonfirmasi via WhatsApp.</p>
-          </div>
-          <p className="shrink-0 text-sm font-semibold">{serviceSubtotal > 0 ? formatRupiah(serviceSubtotal) : "Opsional"}</p>
-        </div>
-        <div className="mt-4 grid gap-2">
-          {serviceOptions.slice(0, compact ? 3 : serviceOptions.length).map((service) => (
-            <label key={`${item.cartId}-${service.id}`} className="flex cursor-pointer items-start justify-between gap-3 border border-black/10 p-3 transition hover:border-black/30">
-              <span className="flex min-w-0 gap-3">
-                <input type="checkbox" checked={serviceIsSelected(item, service.id)} onChange={() => cart.updateItem(item.cartId, { services: toggleService(item, service.id) })} className="mt-1 h-4 w-4 accent-[#063d24]" />
-                <span className="min-w-0">
-                  <span className="block text-sm font-semibold leading-5">{service.name}</span>
-                  <span className="mt-0.5 block text-xs leading-5 text-black/55">Harga normal: {formatRupiah(service.pricePerPcs)} / pcs · {service.description}</span>
-                </span>
-              </span>
-              <span className="shrink-0 text-sm font-semibold">{formatRupiah(service.pricePerPcs * item.quantity)}</span>
-            </label>
-          ))}
-        </div>
-      </div>
-
-      <div className="mt-5 flex flex-wrap items-center justify-between gap-3 border-t border-black/10 pt-4 text-sm">
-        <div className="text-black/55">
-          Harga produk: <span className="font-semibold text-black">{unitPrice > 0 ? `${formatRupiah(unitPrice)} / pcs` : "Konfirmasi admin"}</span>
-        </div>
-        <div className="font-semibold">Subtotal produk: {safeCurrency(productSubtotal)}</div>
-      </div>
-      {item.href ? <Link href={item.href} className="mt-4 inline-block text-xs font-semibold text-[#063d24] underline-offset-4 hover:underline" onClick={cart.closeCart}>Lihat detail produk</Link> : null}
-    </article>
+    <div className="inline-flex min-h-10 items-center overflow-hidden rounded-full border border-black/10 bg-white">
+      <button type="button" className="grid h-10 w-10 place-items-center text-lg transition hover:bg-black/5" aria-label={`Kurangi ${ariaLabel}`} onClick={() => onChange(Math.max(1, value - 1))}>−</button>
+      <input value={value} onChange={(event) => onChange(normalizeNumber(Number(event.target.value || 1)))} className="h-10 w-12 border-x border-black/10 text-center text-sm font-semibold outline-none" aria-label={ariaLabel} inputMode="numeric" />
+      <button type="button" className="grid h-10 w-10 place-items-center text-lg transition hover:bg-black/5" aria-label={`Tambah ${ariaLabel}`} onClick={() => onChange(value + 1)}>+</button>
+    </div>
   );
 }
 
-function Recommendations({ compact = false }: { compact?: boolean }) {
+function CartProductHeader({ item, compact = false }: { item: CartItem; compact?: boolean }) {
+  const unitPrice = itemUnitPrice(item);
+  const subtotal = itemProductSubtotal(item);
   const cart = useCart();
-  const primary = cart.items.find((item) => item.role === "primary");
-
-  function addServiceRecommendation(serviceId: string) {
-    if (!primary) return;
-    if (serviceIsSelected(primary, serviceId)) return;
-    cart.updateItem(primary.cartId, { services: [...primary.services, { id: serviceId }] });
-  }
 
   return (
-    <section className="border border-black/10 bg-white p-4 sm:p-5">
-      <div className="flex items-end justify-between gap-4">
-        <div>
-          <p className="text-xs font-bold uppercase tracking-[0.12em] text-black/50">Rekomendasi Tambahan</p>
-          <h3 className="mt-1 text-lg font-semibold">Lengkapi kebutuhanmu</h3>
-        </div>
-        <p className="hidden text-xs text-black/50 sm:block">Tidak otomatis masuk pesanan.</p>
+    <div className="flex gap-4 sm:gap-5">
+      <div className={`${compact ? "h-24 w-24" : "h-32 w-28 sm:h-40 sm:w-36"} relative shrink-0 overflow-hidden bg-[#f2f2ee]`}>
+        <SafeImage src={item.imageUrl || fallbackImages.product} fallbackSrc={fallbackImages.product} alt={item.imageAlt || item.name} fill className="object-cover" sizes={compact ? "96px" : "144px"} />
       </div>
-      <div className="mt-4 grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
-        {serviceOptions.slice(0, compact ? 2 : 3).map((service) => {
-          const selected = primary ? serviceIsSelected(primary, service.id) : false;
+      <div className="min-w-0 flex-1">
+        <div className="flex items-start justify-between gap-4">
+          <div className="min-w-0">
+            {item.role === "primary" ? <span className="mb-2 inline-flex rounded-full bg-[#e9f4ee] px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.12em] text-[#063d24]">Pesanan Utama</span> : null}
+            <h3 className="text-base font-semibold leading-tight sm:text-lg">{item.name}</h3>
+            {labelForItem(item) ? <p className="mt-1 text-sm leading-6 text-black/55">{labelForItem(item)}</p> : null}
+          </div>
+          <button type="button" className="text-xs font-semibold text-red-700 underline-offset-4 hover:underline" onClick={() => cart.removeItem(item.cartId)}>Hapus</button>
+        </div>
+        <div className="mt-4 flex flex-wrap items-center justify-between gap-3">
+          <QuantityControl value={item.quantity} ariaLabel={`jumlah ${item.name}`} onChange={(quantity) => cart.updateItem(item.cartId, { quantity })} />
+          <div className="text-right text-sm">
+            <p className="text-black/50">{unitPrice > 0 ? `${formatRupiah(unitPrice)} / pcs` : "Harga dikonfirmasi"}</p>
+            <p className="mt-1 font-semibold">Subtotal {safeCurrency(subtotal)}</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function ProductDetails({ item }: { item: CartItem }) {
+  const cart = useCart();
+  return (
+    <div className="mt-6 grid gap-3 border-t border-black/10 pt-5 sm:grid-cols-2">
+      <label className="grid gap-2 text-xs font-semibold uppercase tracking-[0.12em] text-black/45">
+        Warna
+        <input value={item.color} onChange={(event) => cart.updateItem(item.cartId, { color: event.target.value })} placeholder="Contoh: Hitam" className="min-h-11 rounded-xl border border-black/10 px-4 text-sm font-normal normal-case tracking-normal text-black outline-none transition focus:border-[#063d24]" />
+      </label>
+      <label className="grid gap-2 text-xs font-semibold uppercase tracking-[0.12em] text-black/45">
+        Ukuran
+        <input value={item.size} onChange={(event) => cart.updateItem(item.cartId, { size: event.target.value })} placeholder="Contoh: L / Mix size" className="min-h-11 rounded-xl border border-black/10 px-4 text-sm font-normal normal-case tracking-normal text-black outline-none transition focus:border-[#063d24]" />
+      </label>
+      <label className="grid gap-2 text-xs font-semibold uppercase tracking-[0.12em] text-black/45 sm:col-span-2">
+        Catatan produk
+        <textarea value={item.notes} onChange={(event) => cart.updateItem(item.cartId, { notes: event.target.value })} placeholder="Contoh: 5 baju sablon depan kecil, 5 baju bordir dada kiri. Deadline 7 hari." rows={3} className="rounded-xl border border-black/10 p-4 text-sm font-normal normal-case leading-6 tracking-normal text-black outline-none transition focus:border-[#063d24]" />
+      </label>
+    </div>
+  );
+}
+
+function ProductionChoices({ item }: { item: CartItem }) {
+  const cart = useCart();
+  const totalProductionQty = item.services.reduce((total, service) => total + service.quantity, 0);
+
+  return (
+    <section className="mt-6 border-t border-black/10 pt-6">
+      <div className="flex flex-wrap items-end justify-between gap-3">
+        <div>
+          <p className="text-xs font-bold uppercase tracking-[0.14em] text-[#063d24]">Pilihan Produksi</p>
+          <p className="mt-1 text-sm leading-6 text-black/55">Pilih metode produksi jika produk ingin dicustom. Jumlah bisa dibuat mix, misalnya 5 pcs sablon dan 5 pcs bordir.</p>
+        </div>
+        {totalProductionQty > 0 ? <p className="rounded-full bg-[#f5f5ef] px-3 py-1 text-xs font-semibold text-black/55">Total produksi dipilih: {totalProductionQty} pcs</p> : null}
+      </div>
+      <div className="mt-4 grid gap-3">
+        {serviceOptions.map((service) => {
+          const selected = item.services.find((entry) => entry.id === service.id);
+          const selectedQty = selected?.quantity || item.quantity;
           return (
-            <button key={`recommend-service-${service.id}`} type="button" disabled={!primary || selected} onClick={() => addServiceRecommendation(service.id)} className="border border-black/10 p-4 text-left transition hover:border-black disabled:cursor-default disabled:opacity-55">
-              <p className="text-sm font-semibold">{service.shortName}</p>
-              <p className="mt-1 text-xs leading-5 text-black/55">Harga normal {formatRupiah(service.pricePerPcs)} / pcs</p>
-              <span className="mt-3 inline-block text-xs font-bold text-[#063d24]">{selected ? "Sudah dipilih" : "Tambah layanan"}</span>
-            </button>
+            <article key={`${item.cartId}-${service.id}`} className={`rounded-2xl border bg-white p-4 transition ${selected ? "border-[#063d24] ring-1 ring-[#063d24]/15" : "border-black/10 hover:border-black/25"}`}>
+              <div className="flex items-start justify-between gap-4">
+                <label className="flex min-w-0 cursor-pointer gap-3">
+                  <input type="checkbox" checked={Boolean(selected)} onChange={() => cart.updateItem(item.cartId, { services: toggleService(item, service) })} className="mt-1 h-4 w-4 accent-[#063d24]" />
+                  <span className="min-w-0">
+                    <span className="block text-sm font-semibold leading-5">{service.name}</span>
+                    <span className="mt-1 block text-xs leading-5 text-black/55">Harga normal {formatRupiah(service.pricePerPcs)} / pcs · {service.description}</span>
+                  </span>
+                </label>
+                <span className="shrink-0 text-sm font-semibold">{selected ? formatRupiah(service.pricePerPcs * selectedQty) : formatRupiah(service.pricePerPcs)}</span>
+              </div>
+              {selected ? (
+                <div className="mt-4 grid gap-3 rounded-xl bg-[#f8f8f4] p-3 sm:grid-cols-[160px_1fr]">
+                  <label className="grid gap-2 text-xs font-semibold uppercase tracking-[0.12em] text-black/45">
+                    Jumlah pcs
+                    <input value={selected.quantity} onChange={(event) => cart.updateItem(item.cartId, { services: updateService(item, service.id, { quantity: normalizeNumber(Number(event.target.value || 1), item.quantity) }) })} className="min-h-10 rounded-lg border border-black/10 bg-white px-3 text-sm font-semibold normal-case tracking-normal text-black outline-none focus:border-[#063d24]" inputMode="numeric" />
+                  </label>
+                  <label className="grid gap-2 text-xs font-semibold uppercase tracking-[0.12em] text-black/45">
+                    Posisi / detail
+                    <input value={selected.position} onChange={(event) => cart.updateItem(item.cartId, { services: updateService(item, service.id, { position: event.target.value }) })} placeholder="Contoh: dada kiri / belakang besar" className="min-h-10 rounded-lg border border-black/10 bg-white px-3 text-sm font-normal normal-case tracking-normal text-black outline-none focus:border-[#063d24]" />
+                  </label>
+                  <label className="grid gap-2 text-xs font-semibold uppercase tracking-[0.12em] text-black/45 sm:col-span-2">
+                    Catatan produksi
+                    <input value={selected.notes} onChange={(event) => cart.updateItem(item.cartId, { services: updateService(item, service.id, { notes: event.target.value }) })} placeholder="Contoh: logo perusahaan warna putih" className="min-h-10 rounded-lg border border-black/10 bg-white px-3 text-sm font-normal normal-case tracking-normal text-black outline-none focus:border-[#063d24]" />
+                  </label>
+                </div>
+              ) : null}
+            </article>
           );
         })}
-        {productRecommendations.slice(0, compact ? 2 : 3).map((product) => (
-          <button key={`recommend-product-${product.id}`} type="button" onClick={() => cart.addItem(product, "additional")} className="border border-black/10 p-4 text-left transition hover:border-black">
-            <p className="text-sm font-semibold">{product.name}</p>
-            <p className="mt-1 text-xs leading-5 text-black/55">{product.category} · {product.priceLabel}</p>
-            <span className="mt-3 inline-block text-xs font-bold text-[#063d24]">Tambah item</span>
-          </button>
-        ))}
       </div>
     </section>
+  );
+}
+
+function FullCartItem({ item }: { item: CartItem }) {
+  return (
+    <article className="rounded-[28px] border border-black/10 bg-white p-4 sm:p-6">
+      <CartProductHeader item={item} />
+      <ProductDetails item={item} />
+      <ProductionChoices item={item} />
+    </article>
   );
 }
 
@@ -437,18 +488,18 @@ function CartSummary({ compact = false }: { compact?: boolean }) {
   const checkoutHref = cart.items.length ? whatsappLinkWithMessage(contactLinks.whatsapp, buildMessage(cart.items)) : "#";
 
   return (
-    <aside className={`border border-black/10 bg-white ${compact ? "p-4" : "p-5 sm:p-6"}`}>
-      <p className="text-xs font-bold uppercase tracking-[0.14em] text-black/50">Ringkasan Estimasi</p>
-      <div className="mt-5 grid gap-3 text-sm">
+    <aside className={`rounded-[28px] border border-black/10 bg-white ${compact ? "p-4" : "p-5 sm:p-6"}`}>
+      <h2 className="text-2xl font-semibold tracking-tight">Summary</h2>
+      <div className="mt-6 grid gap-4 text-sm">
         <div className="flex items-center justify-between gap-4">
-          <span className="text-black/58">Subtotal Produk</span>
+          <span className="text-black/60">Subtotal Produk</span>
           <span className="font-semibold">{safeCurrency(totals.productSubtotal)}</span>
         </div>
         <div className="flex items-center justify-between gap-4">
-          <span className="text-black/58">Subtotal Layanan</span>
-          <span className="font-semibold">{totals.serviceSubtotal > 0 ? formatRupiah(totals.serviceSubtotal) : "Rp 0"}</span>
+          <span className="text-black/60">Pilihan Produksi</span>
+          <span className="font-semibold">{totals.serviceSubtotal > 0 ? formatRupiah(totals.serviceSubtotal) : "—"}</span>
         </div>
-        <div className="mt-2 border-t border-black/10 pt-4">
+        <div className="border-t border-black/10 pt-4">
           <div className="flex items-center justify-between gap-4">
             <span className="font-semibold">{totals.hasServices ? "Estimasi Normal" : "Total"}</span>
             <span className="text-xl font-bold text-[#063d24]">{safeCurrency(totals.normalTotal)}</span>
@@ -456,72 +507,137 @@ function CartSummary({ compact = false }: { compact?: boolean }) {
         </div>
       </div>
       {totals.hasServices ? (
-        <div className="mt-5 bg-[#fff7e6] p-4 text-xs leading-6 text-[#6a4300]">
+        <div className="mt-5 rounded-2xl bg-[#fff7e6] p-4 text-xs leading-6 text-[#6a4300]">
           Harga final bisa lebih hemat setelah admin mengecek detail desain, jumlah pesanan, dan kebutuhan produksi.
         </div>
       ) : (
-        <div className="mt-5 bg-[#f5f5ef] p-4 text-xs leading-6 text-black/58">
-          Jika hanya pesan produk tanpa layanan tambahan, biaya mengikuti harga produk yang tertera.
+        <div className="mt-5 rounded-2xl bg-[#f5f5ef] p-4 text-xs leading-6 text-black/58">
+          Jika hanya pesan produk tanpa pilihan produksi, biaya mengikuti harga produk yang tertera.
         </div>
       )}
       <a href={checkoutHref} target={cart.items.length ? "_blank" : undefined} rel={cart.items.length ? "noopener noreferrer" : undefined} className={`mt-5 inline-flex min-h-12 w-full items-center justify-center rounded-full px-5 text-center text-sm font-semibold ${cart.items.length ? "bg-[#063d24] text-white" : "pointer-events-none bg-black/10 text-black/35"}`}>
         {totals.hasServices ? "Pesan dan Dapatkan Harga Terbaik Kami" : "Pesan Produk via WhatsApp"}
       </a>
-      {cart.items.length ? <Link href="/keranjang" className="mt-3 inline-flex min-h-11 w-full items-center justify-center rounded-full border border-black/10 px-5 text-sm font-semibold transition hover:border-black" onClick={cart.closeCart}>Lihat Keranjang Penuh</Link> : null}
-      <p className="mt-4 text-center text-[11px] leading-5 text-black/45">Order akhir tetap lewat WhatsApp. Tidak perlu login.</p>
+      {!compact ? <p className="mt-4 text-center text-[11px] leading-5 text-black/45">Order akhir tetap lewat WhatsApp. Tidak perlu login.</p> : null}
     </aside>
   );
 }
 
 function EmptyCart({ fullPage = false }: { fullPage?: boolean }) {
   return (
-    <div className={`grid place-items-center bg-white p-8 text-center ${fullPage ? "min-h-[420px]" : "min-h-[280px]"}`}>
+    <div className={`grid place-items-center rounded-[28px] bg-white p-8 text-center ${fullPage ? "min-h-[420px]" : "min-h-[280px]"}`}>
       <div>
         <div className="mx-auto grid h-14 w-14 place-items-center rounded-full bg-[#f5f5ef]"><CartIcon /></div>
         <p className="mt-5 text-lg font-semibold">Keranjang masih kosong</p>
-        <p className="mx-auto mt-2 max-w-sm text-sm leading-6 text-black/55">Tambahkan produk dulu. Produk pertama akan menjadi Pesanan Utama, rekomendasi tambahan tetap muncul di bawah.</p>
+        <p className="mx-auto mt-2 max-w-sm text-sm leading-6 text-black/55">Tambahkan produk dulu. Produk pertama akan menjadi Pesanan Utama.</p>
         <Link href="/koleksi" className="mt-5 inline-flex min-h-11 items-center justify-center rounded-full bg-[#063d24] px-6 text-sm font-semibold text-white">Lihat Koleksi</Link>
       </div>
     </div>
   );
 }
 
-function CartOrderLayout({ fullPage = false }: { fullPage?: boolean }) {
+function SearchSuggestionsRow() {
+  return (
+    <section className="mt-10">
+      <div className="mb-4 flex items-center justify-between gap-4">
+        <h2 className="text-2xl font-semibold tracking-tight">Kamu mungkin mencari</h2>
+        <p className="hidden text-sm text-black/50 sm:block">Geser kiri kanan untuk melihat lainnya.</p>
+      </div>
+      <div className="flex snap-x gap-3 overflow-x-auto pb-4 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+        {searchSuggestions.map((item) => (
+          <Link key={item.id} href={item.href} className="group min-w-[240px] snap-start sm:min-w-[320px]">
+            <div className="relative aspect-[4/3] overflow-hidden bg-[#f1f1ec]">
+              <SafeImage src={item.imageUrl} fallbackSrc={fallbackImages.product} alt={item.name} fill className="object-cover transition duration-500 group-hover:scale-[1.03]" sizes="320px" />
+            </div>
+            <div className="mt-3">
+              <p className="text-base font-semibold">{item.name}</p>
+              <p className="mt-1 text-sm leading-6 text-black/55">{item.label}</p>
+            </div>
+          </Link>
+        ))}
+      </div>
+    </section>
+  );
+}
+
+function FullCartLayout() {
   const cart = useCart();
   const primaryItems = cart.items.filter((item) => item.role === "primary");
   const additionalItems = cart.items.filter((item) => item.role === "additional");
 
-  if (!cart.items.length) return <EmptyCart fullPage={fullPage} />;
+  if (!cart.items.length) {
+    return (
+      <>
+        <EmptyCart fullPage />
+        <SearchSuggestionsRow />
+      </>
+    );
+  }
 
   return (
-    <div className={fullPage ? "grid gap-6 lg:grid-cols-[1fr_380px]" : "grid gap-5"}>
-      <div className="grid gap-5">
-        <section className="grid gap-3">
-          <div className="flex items-center justify-between gap-4">
-            <div>
-              <p className="text-xs font-bold uppercase tracking-[0.14em] text-[#063d24]">Pesanan Utama</p>
-              <p className="mt-1 text-xs text-black/50">Produk utama selalu tampil paling atas agar tidak membingungkan.</p>
-            </div>
-            <button type="button" className="text-xs font-semibold text-black/55 underline-offset-4 hover:text-black hover:underline" onClick={cart.clearCart}>Kosongkan</button>
+    <>
+      <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_360px] xl:grid-cols-[minmax(0,1fr)_400px]">
+        <div>
+          <h2 className="mb-5 text-2xl font-semibold tracking-tight">Bag</h2>
+          <div className="grid gap-5">
+            {primaryItems.map((item) => <FullCartItem key={item.cartId} item={item} />)}
+            {additionalItems.length ? (
+              <section className="grid gap-4">
+                <div>
+                  <p className="text-xs font-bold uppercase tracking-[0.14em] text-black/45">Item Tambahan</p>
+                  <p className="mt-1 text-sm leading-6 text-black/55">Item ini ikut dikirim ke WhatsApp, tapi Pesanan Utama tetap menjadi fokus order.</p>
+                </div>
+                {additionalItems.map((item) => <FullCartItem key={item.cartId} item={item} />)}
+              </section>
+            ) : null}
           </div>
-          {primaryItems.map((item) => <ItemEditor key={item.cartId} item={item} compact={!fullPage} />)}
-        </section>
+        </div>
+        <div className="lg:sticky lg:top-28 lg:self-start">
+          <CartSummary />
+        </div>
+      </div>
+      <SearchSuggestionsRow />
+    </>
+  );
+}
 
-        {additionalItems.length ? (
-          <section className="grid gap-3">
-            <div>
-              <p className="text-xs font-bold uppercase tracking-[0.14em] text-black/50">Item Tambahan</p>
-              <p className="mt-1 text-xs text-black/50">Item ini ditambahkan dari rekomendasi atau produk lain.</p>
-            </div>
-            {additionalItems.map((item) => <ItemEditor key={item.cartId} item={item} compact={!fullPage} />)}
-          </section>
+function MiniCartContent() {
+  const cart = useCart();
+  const primary = cart.items.find((item) => item.role === "primary");
+  const additionalCount = cart.items.filter((item) => item.role === "additional").length;
+  const totals = cartTotals(cart.items);
+  const checkoutHref = cart.items.length ? whatsappLinkWithMessage(contactLinks.whatsapp, buildMessage(cart.items)) : "#";
+
+  if (!primary) return <EmptyCart />;
+
+  return (
+    <div className="grid gap-5">
+      <section className="rounded-[24px] border border-black/10 bg-white p-4">
+        <CartProductHeader item={primary} compact />
+        {additionalCount > 0 ? <p className="mt-4 rounded-full bg-[#f5f5ef] px-3 py-2 text-xs text-black/60">+ {additionalCount} item tambahan ikut di keranjang.</p> : null}
+      </section>
+      <section className="rounded-[24px] border border-black/10 bg-white p-4">
+        <div className="flex items-center justify-between text-sm">
+          <span className="text-black/60">Subtotal Produk</span>
+          <span className="font-semibold">{safeCurrency(totals.productSubtotal)}</span>
+        </div>
+        {totals.serviceSubtotal > 0 ? (
+          <div className="mt-3 flex items-center justify-between text-sm">
+            <span className="text-black/60">Pilihan Produksi</span>
+            <span className="font-semibold">{formatRupiah(totals.serviceSubtotal)}</span>
+          </div>
         ) : null}
-
-        <Recommendations compact={!fullPage} />
-      </div>
-      <div className={fullPage ? "lg:sticky lg:top-28 lg:self-start" : ""}>
-        <CartSummary compact={!fullPage} />
-      </div>
+        <div className="mt-4 border-t border-black/10 pt-4">
+          <div className="flex items-center justify-between gap-4">
+            <span className="font-semibold">{totals.hasServices ? "Estimasi Normal" : "Total"}</span>
+            <span className="text-lg font-bold text-[#063d24]">{safeCurrency(totals.normalTotal)}</span>
+          </div>
+        </div>
+        <Link href="/keranjang" onClick={cart.closeCart} className="mt-5 inline-flex min-h-11 w-full items-center justify-center rounded-full border border-black/10 px-5 text-sm font-semibold transition hover:border-black">Lihat Keranjang</Link>
+        <a href={checkoutHref} target="_blank" rel="noopener noreferrer" className="mt-3 inline-flex min-h-11 w-full items-center justify-center rounded-full bg-[#063d24] px-5 text-center text-sm font-semibold text-white">
+          {totals.hasServices ? "Dapatkan Harga Terbaik" : "Pesan via WhatsApp"}
+        </a>
+      </section>
     </div>
   );
 }
@@ -531,19 +647,17 @@ function CartDrawer() {
 
   return (
     <>
-      <div className={`fixed inset-0 z-[150] bg-black/45 transition ${isOpen ? "visible opacity-100" : "invisible opacity-0"}`} onMouseDown={(event) => event.target === event.currentTarget && closeCart()} />
-      <aside className={`fixed right-0 top-0 z-[160] flex h-dvh w-full max-w-xl flex-col bg-[#f7f7f2] shadow-[-18px_0_50px_rgba(0,0,0,0.18)] transition-transform duration-300 ${isOpen ? "translate-x-0" : "translate-x-full"}`} role="dialog" aria-modal="true" aria-label="Keranjang belanja">
+      <div className={`fixed inset-0 z-[150] bg-black/35 transition ${isOpen ? "visible opacity-100" : "invisible opacity-0"}`} onMouseDown={(event) => event.target === event.currentTarget && closeCart()} />
+      <aside className={`fixed right-0 top-0 z-[160] flex h-dvh w-full max-w-md flex-col bg-[#f7f7f2] shadow-[-18px_0_50px_rgba(0,0,0,0.14)] transition-transform duration-300 ${isOpen ? "translate-x-0" : "translate-x-full"}`} role="dialog" aria-modal="true" aria-label="Keranjang belanja">
         <div className="flex items-center justify-between border-b border-black/10 bg-white p-5">
           <div>
-            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-black/45">Keranjang Belanja</p>
+            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-black/45">Keranjang</p>
             <h2 className="mt-1 text-2xl font-semibold">Pesanan DEBRODER</h2>
           </div>
-          <button type="button" className="grid h-10 w-10 place-items-center rounded-full border border-black/10 text-xl leading-none transition hover:bg-[#f5f5ef]" aria-label="Tutup keranjang" onClick={closeCart}>
-            ×
-          </button>
+          <button type="button" className="grid h-10 w-10 place-items-center rounded-full border border-black/10 text-xl leading-none transition hover:bg-[#f5f5ef]" aria-label="Tutup keranjang" onClick={closeCart}>×</button>
         </div>
         <div className="flex-1 overflow-y-auto p-4 sm:p-5">
-          <CartOrderLayout />
+          <MiniCartContent />
         </div>
       </aside>
     </>
@@ -557,7 +671,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     try {
-      const raw = window.localStorage.getItem(storageKey) || window.localStorage.getItem(legacyStorageKey);
+      const raw = window.localStorage.getItem(storageKey) || legacyStorageKeys.map((key) => window.localStorage.getItem(key)).find(Boolean);
       if (raw) setItems(ensureRoles(JSON.parse(raw)));
     } catch {
       setItems([]);
@@ -606,7 +720,6 @@ export function CartProvider({ children }: { children: ReactNode }) {
             quantity: 1,
             color: "",
             size: "",
-            printLocation: "",
             notes: "",
             services: []
           }
@@ -615,7 +728,16 @@ export function CartProvider({ children }: { children: ReactNode }) {
       setIsOpen(true);
     },
     updateItem: (cartId, updates) => {
-      setItems((current) => ensureRoles(current.map((item) => item.cartId === cartId ? { ...item, ...updates, quantity: normalizeNumber(Number(updates.quantity ?? item.quantity)) } : item)));
+      setItems((current) => ensureRoles(current.map((item) => {
+        if (item.cartId !== cartId) return item;
+        const nextQuantity = normalizeNumber(Number(updates.quantity ?? item.quantity));
+        return {
+          ...item,
+          ...updates,
+          quantity: nextQuantity,
+          services: updates.services ? updates.services : item.services
+        };
+      })));
     },
     removeItem: (cartId) => {
       setItems((current) => ensureRoles(current.filter((item) => item.cartId !== cartId)));
@@ -651,13 +773,9 @@ export function CartNavButton() {
 
 export function AddToCartButton({ product, className, children = "Tambah" }: { product: CartProductInput; className?: string; children?: ReactNode }) {
   const { addItem } = useCart();
-  return (
-    <button type="button" className={className} onClick={() => addItem(product)}>
-      {children}
-    </button>
-  );
+  return <button type="button" className={className} onClick={() => addItem(product)}>{children}</button>;
 }
 
 export function CartPageContent() {
-  return <CartOrderLayout fullPage />;
+  return <FullCartLayout />;
 }
