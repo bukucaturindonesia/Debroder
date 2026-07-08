@@ -21,9 +21,9 @@ export default async function StorePage() {
   return (
     <PublicShell content={content}>
       <PageHero
-        label={pageHero?.label || "STORE"}
-        title={pageHero?.title || "Temukan Store DE BRODER Terdekat"}
-        description={pageHero?.subtitle || "Pettarani, Tello, Landak, dan Parepare."}
+        label={pageHero?.label}
+        title={pageHero?.title}
+        description={pageHero?.subtitle}
         imageUrl={pageHero?.image_url}
         mobileImageUrl={pageHero?.mobile_image_url}
         objectPosition={pageHero?.object_position}

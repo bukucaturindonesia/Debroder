@@ -101,9 +101,9 @@ export default async function KoleksiPage() {
   return (
     <PublicShell content={content}>
       <PageHero
-        label={pageHero?.label || "KOLEKSI"}
-        title={pageHero?.title || "Layanan & Produk DE BRODER"}
-        description={pageHero?.subtitle || "Temukan kebutuhan apparel, sablon, jersey, dan layanan custom dalam satu tempat."}
+        label={pageHero?.label}
+        title={pageHero?.title}
+        description={pageHero?.subtitle}
         imageUrl={pageHero?.image_url}
         mobileImageUrl={pageHero?.mobile_image_url}
         objectPosition={pageHero?.object_position}

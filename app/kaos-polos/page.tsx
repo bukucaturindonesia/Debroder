@@ -49,9 +49,9 @@ export default async function KaosPolosPage({ searchParams }: KaosPolosPageProps
   return (
     <PublicShell content={content}>
       <PageHero
-        label={pageHero?.label || "KAOS POLOS"}
-        title={pageHero?.title || "Kaos Polos New State Apparel & Cotton Combed"}
-        description={pageHero?.subtitle || "Pilihan kaos polos untuk brand, komunitas, event, dan kebutuhan harian."}
+        label={pageHero?.label}
+        title={pageHero?.title}
+        description={pageHero?.subtitle}
         imageUrl={getPageHeroImage(pageHero)}
         mobileImageUrl={pageHero?.mobile_image_url}
         objectPosition={pageHero?.object_position}
@@ -59,10 +59,10 @@ export default async function KaosPolosPage({ searchParams }: KaosPolosPageProps
         objectFit={pageHero?.object_fit}
         imageZoom={pageHero?.focal_zoom}
         mobileImageZoom={pageHero?.mobile_focal_zoom}
-        ctaText="Konsultasi Kaos Polos"
-        ctaHref={whatsappHref(content.contact.whatsapp_apparel)}
-        secondaryCtaText="Temukan Store"
-        secondaryCtaHref="/store"
+        ctaText={undefined}
+        ctaHref={undefined}
+        secondaryCtaText={undefined}
+        secondaryCtaHref={undefined}
         breadcrumbs={[{ label: "Beranda", href: "/" }, { label: "Kaos Polos" }]}
       />
       <KaosCatalog products={products} filters={content.productFilters} initialColor={initialColor} initialLabel={initialLabel} initialSort={initialSort} initialProductType={initialProductType} />

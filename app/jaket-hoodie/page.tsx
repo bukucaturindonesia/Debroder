@@ -53,12 +53,9 @@ export default async function JaketHoodiePage({ searchParams }: JaketHoodiePageP
   return (
     <PublicShell content={content}>
       <PageHero
-        label={pageHero?.label || "JAKET & HOODIE"}
-        title={pageHero?.title || "Jaket & Hoodie"}
-        description={
-          pageHero?.subtitle ||
-          "Pilihan jaket dan hoodie untuk merchandise, komunitas, event, dan brand apparel."
-        }
+        label={pageHero?.label}
+        title={pageHero?.title}
+        description={pageHero?.subtitle}
         imageUrl={pageHero?.image_url}
         mobileImageUrl={pageHero?.mobile_image_url}
         objectPosition={pageHero?.object_position}

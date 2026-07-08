@@ -50,18 +50,15 @@ export default async function CaraOrderPage() {
   return (
     <PublicShell content={content}>
       <PageHero
-        label={pageHero?.label || "CARA ORDER"}
-        title={pageHero?.title || "Cara Order di DE BRODER"}
-        description={
-          pageHero?.subtitle ||
-          "Ikuti langkah mudah untuk memesan kaos polos, sablon DTF, custom jersey, maklon DTF, dan cetak sublim di DE BRODER."
-        }
+        label={pageHero?.label}
+        title={pageHero?.title}
+        description={pageHero?.subtitle}
         imageUrl={pageHero?.image_url}
         mobileImageUrl={pageHero?.mobile_image_url}
         objectPosition={pageHero?.object_position}
         mobileObjectPosition={pageHero?.mobile_object_position}
-        ctaText="Mulai Order"
-        ctaHref={apparelLink}
+        ctaText={undefined}
+        ctaHref={undefined}
         breadcrumbs={[
           { label: "Beranda", href: "/" },
           { label: "Cara Order" }

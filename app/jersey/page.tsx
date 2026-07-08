@@ -25,9 +25,9 @@ export default async function JerseyPage() {
   return (
     <PublicShell content={content}>
       <PageHero
-        label={pageHero?.label || "CUSTOM JERSEY"}
-        title={pageHero?.title || "Jersey Custom untuk Tim dan Komunitas"}
-        description={pageHero?.subtitle || "Produksi jersey untuk tim olahraga, sekolah, instansi, dan event."}
+        label={pageHero?.label}
+        title={pageHero?.title}
+        description={pageHero?.subtitle}
         imageUrl={getPageHeroImage(pageHero)}
         mobileImageUrl={pageHero?.mobile_image_url}
         objectPosition={pageHero?.object_position}
@@ -35,10 +35,10 @@ export default async function JerseyPage() {
         objectFit={pageHero?.object_fit}
         imageZoom={pageHero?.focal_zoom}
         mobileImageZoom={pageHero?.mobile_focal_zoom}
-        ctaText="Konsultasi Jersey"
-        ctaHref={whatsappHref(content.contact.whatsapp_apparel)}
-        secondaryCtaText="Cara Order"
-        secondaryCtaHref="/cara-order"
+        ctaText={undefined}
+        ctaHref={undefined}
+        secondaryCtaText={undefined}
+        secondaryCtaHref={undefined}
         breadcrumbs={[{ label: "Beranda", href: "/" }, { label: "Jersey" }]}
       />
       <JerseyCatalog categories={categories} />

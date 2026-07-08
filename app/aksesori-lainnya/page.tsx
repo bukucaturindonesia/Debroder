@@ -18,9 +18,9 @@ export default async function AksesoriLainnyaPage() {
   return (
     <PublicShell content={content}>
       <PageHero
-        label={pageHero?.label || "TAS & AKSESORI"}
-        title={pageHero?.title || "Aksesori Lainnya Custom"}
-        description={pageHero?.subtitle || "Patch, emblem, lanyard, goodie bag, merchandise, dan aksesori promosi."}
+        label={pageHero?.label}
+        title={pageHero?.title}
+        description={pageHero?.subtitle}
         imageUrl={pageHero?.image_url}
         mobileImageUrl={pageHero?.mobile_image_url}
         objectPosition={pageHero?.object_position}

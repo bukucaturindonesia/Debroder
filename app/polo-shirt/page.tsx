@@ -18,9 +18,9 @@ export default async function PoloShirtPage() {
   return (
     <PublicShell content={content}>
       <PageHero
-        label={pageHero?.label || "POLO SHIRT"}
-        title={pageHero?.title || "Polo Shirt Custom"}
-        description={pageHero?.subtitle || "Polo shirt untuk seragam kantor, komunitas, event, dan kebutuhan brand apparel."}
+        label={pageHero?.label}
+        title={pageHero?.title}
+        description={pageHero?.subtitle}
         imageUrl={pageHero?.image_url}
         mobileImageUrl={pageHero?.mobile_image_url}
         objectPosition={pageHero?.object_position}

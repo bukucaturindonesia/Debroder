@@ -28,9 +28,9 @@ export default async function SablonDtfPage() {
   return (
     <PublicShell content={content}>
       <PageHero
-        label={pageHero?.label || "SABLON DTF"}
-        title={pageHero?.title || "Sablon DTF untuk Apparel Custom"}
-        description={pageHero?.subtitle || "Hasil sablon rapi untuk logo, desain brand, komunitas, dan produksi apparel."}
+        label={pageHero?.label}
+        title={pageHero?.title}
+        description={pageHero?.subtitle}
         imageUrl={getPageHeroImage(pageHero)}
         mobileImageUrl={pageHero?.mobile_image_url}
         objectPosition={pageHero?.object_position}
@@ -38,10 +38,10 @@ export default async function SablonDtfPage() {
         objectFit={pageHero?.object_fit}
         imageZoom={pageHero?.focal_zoom}
         mobileImageZoom={pageHero?.mobile_focal_zoom}
-        ctaText="Konsultasi Sablon DTF"
-        ctaHref={whatsappHref(content.contact.whatsapp_apparel)}
-        secondaryCtaText="Cara Order"
-        secondaryCtaHref="/cara-order"
+        ctaText={undefined}
+        ctaHref={undefined}
+        secondaryCtaText={undefined}
+        secondaryCtaHref={undefined}
         breadcrumbs={[{ label: "Beranda", href: "/" }, { label: "Sablon DTF" }]}
       />
       <ServiceCatalog services={services} whatsapp={content.contact.whatsapp_link || content.contact.whatsapp_apparel} />

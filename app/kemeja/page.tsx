@@ -18,9 +18,9 @@ export default async function KemejaPage() {
   return (
     <PublicShell content={content}>
       <PageHero
-        label={pageHero?.label || "KEMEJA"}
-        title={pageHero?.title || "Kemeja Custom"}
-        description={pageHero?.subtitle || "Kemeja PDH, PDL, kantor, komunitas, dan seragam custom."}
+        label={pageHero?.label}
+        title={pageHero?.title}
+        description={pageHero?.subtitle}
         imageUrl={pageHero?.image_url}
         mobileImageUrl={pageHero?.mobile_image_url}
         objectPosition={pageHero?.object_position}

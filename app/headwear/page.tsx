@@ -24,12 +24,9 @@ export default async function HeadwearPage() {
   return (
     <PublicShell content={content}>
       <PageHero
-        label={pageHero?.label || "HEADWEAR"}
-        title={pageHero?.title || "Headwear"}
-        description={
-          pageHero?.subtitle ||
-          "Pilihan headwear untuk topi, cap, merchandise, komunitas, dan brand apparel."
-        }
+        label={pageHero?.label}
+        title={pageHero?.title}
+        description={pageHero?.subtitle}
         imageUrl={pageHero?.image_url}
         mobileImageUrl={pageHero?.mobile_image_url}
         objectPosition={pageHero?.object_position}
