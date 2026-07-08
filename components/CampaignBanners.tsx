@@ -67,13 +67,13 @@ export function CampaignBanners({ banners }: { banners: CmsBanner[] }) {
           return (
           <article key={banner.id || banner.name} className="relative aspect-[4/5] overflow-hidden bg-[#101713] sm:aspect-[16/7]">
             <CampaignMedia banner={banner} />
-            <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/20 to-transparent sm:bg-gradient-to-r" />
-            <div className={`absolute inset-x-0 bottom-0 max-w-3xl p-6 text-white sm:p-10 lg:p-14 ${alignment}`}>
-              {banner.eyebrow ? <p className="text-xs font-semibold uppercase tracking-[0.2em] text-white/75">{banner.eyebrow}</p> : null}
-              <h2 className="mt-2 text-[28px] font-semibold leading-[1.12] tracking-normal sm:text-[40px]">{banner.title}</h2>
-              {banner.subtitle ? <p className="mt-3 max-w-2xl text-sm leading-6 text-white/80 sm:text-base">{banner.subtitle}</p> : null}
+            <div className="pointer-events-none absolute inset-x-0 bottom-0 h-[52%] bg-gradient-to-t from-black/58 via-black/18 to-transparent" />
+            <div className={`absolute inset-x-5 bottom-5 max-w-3xl text-white sm:inset-x-10 sm:bottom-10 ${alignment}`}>
+              {banner.eyebrow ? <p className="text-xs font-semibold uppercase tracking-[0.2em] text-white/82 drop-shadow-[0_1px_6px_rgba(0,0,0,0.45)]">{banner.eyebrow}</p> : null}
+              <h2 className="mt-2 text-[28px] font-semibold leading-[1.12] tracking-normal drop-shadow-[0_2px_12px_rgba(0,0,0,0.45)] sm:text-[40px]">{banner.title}</h2>
+              {banner.subtitle ? <p className="mt-3 max-w-2xl text-sm leading-6 text-white/82 drop-shadow-[0_1px_8px_rgba(0,0,0,0.40)] sm:text-base">{banner.subtitle}</p> : null}
               {cta ? (
-                <a href={cta.href} className="mt-6 inline-flex min-h-11 items-center justify-center bg-white px-6 py-3 text-sm font-semibold text-black transition hover:bg-white/90">
+                <a href={cta.href} className="mt-6 inline-flex min-h-11 items-center justify-center rounded-full bg-white px-6 py-3 text-sm font-semibold text-[#111] shadow-[0_10px_26px_rgba(0,0,0,0.18)] transition hover:bg-[#e9eee9]">
                   {cta.text}
                 </a>
               ) : null}

@@ -166,7 +166,7 @@ export function HeroSlider({ heroes }: { heroes: HeroBanner[] }) {
               )}
             </div>
 
-            <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(1,9,6,.9)_0%,rgba(1,9,6,.66)_37%,rgba(1,9,6,.12)_72%,rgba(1,9,6,.28)_100%)] sm:bg-[linear-gradient(90deg,rgba(1,9,6,.92)_0%,rgba(1,9,6,.63)_38%,rgba(1,9,6,.08)_70%,rgba(1,9,6,.24)_100%)]" />
+            <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(1,9,6,.58)_0%,rgba(1,9,6,.34)_36%,rgba(1,9,6,.04)_68%,rgba(1,9,6,.10)_100%),linear-gradient(0deg,rgba(1,9,6,.34)_0%,rgba(1,9,6,0)_46%)] sm:bg-[linear-gradient(90deg,rgba(1,9,6,.62)_0%,rgba(1,9,6,.36)_38%,rgba(1,9,6,.03)_70%,rgba(1,9,6,.08)_100%),linear-gradient(0deg,rgba(1,9,6,.30)_0%,rgba(1,9,6,0)_44%)]" />
             <div className="absolute inset-x-0 bottom-16 z-10 sm:bottom-14 lg:bottom-16">
               <div className="section-shell">
                 <div className={`max-w-[620px] text-white ${textAlignment}`}>
