@@ -16,7 +16,7 @@ export const LANDING_SECTION_DEFAULTS = [
     section_key: "plain-category",
     title: "Pakaian Polos berdasarkan Kategori",
     subtitle: "Pilih dasar apparel yang sesuai, lalu custom bersama tim DEBRODER.",
-    is_visible: true,
+    is_visible: false,
     sort_order: 70,
     metadata: {}
   },

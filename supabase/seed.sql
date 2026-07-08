@@ -313,21 +313,50 @@ values
   ('fresh-drop', 'Fresh Drops', '', true, 50, '{}'::jsonb),
   ('campaign-banners', 'Campaign Banner', '', true, 55, '{}'::jsonb),
   ('services-products', 'Shop by Category', '', true, 60, '{}'::jsonb),
-  ('plain-category', 'Pakaian Polos berdasarkan Kategori', 'Pilih dasar apparel yang sesuai, lalu custom bersama tim DEBRODER.', true, 70, '{}'::jsonb),
+  ('plain-category', 'Pakaian Polos berdasarkan Kategori', 'Pilih dasar apparel yang sesuai, lalu custom bersama tim DEBRODER.', false, 70, '{}'::jsonb),
   ('instagram-banner', 'Banner Instagram', '', true, 80, '{}'::jsonb),
   ('stores', 'Store DEBRODER', 'Konsultasikan bahan, teknik cetak, dan estimasi produksi langsung bersama tim kami.', true, 90, '{}'::jsonb),
   ('about', 'Tentang DEBRODER', '', true, 100, '{}'::jsonb)
 on conflict (section_key) do nothing;
 
-insert into public.product_categories (name, slug, description, is_active, sort_order)
-select
-  category.nama_kategori,
-  coalesce(nullif(category.slug, ''), regexp_replace(lower(category.nama_kategori), '[^a-z0-9]+', '-', 'g')),
-  category.deskripsi,
-  category.status_aktif,
-  category.urutan
-from public.service_categories category
-on conflict (slug) do nothing;
+-- Product category architecture: keep product_categories as MAIN categories only.
+-- Subtypes such as Hoodie, Jacket, Jersey Futsal, Cotton Combed, and Topi must live as subcategories, not top-level product categories.
+insert into public.product_categories
+  (name, slug, description, is_active, sort_order, show_in_collection, collection_limit, collection_sort, collection_section_order)
+values
+  ('Kaos Polos', 'kaos-polos', 'Kaos polos, cotton combed, New State Apparel, dan polo shirt untuk kebutuhan custom apparel.', true, 10, true, 8, 'sort_order', 10),
+  ('Jaket & Hoodie', 'jaket-hoodie', 'Jaket, hoodie, dan crewneck custom untuk komunitas, organisasi, event, dan brand apparel.', true, 20, true, 8, 'sort_order', 20),
+  ('Headwear', 'headwear', 'Topi dan headwear custom untuk merchandise, event, komunitas, dan brand.', true, 30, true, 8, 'sort_order', 30),
+  ('Sablon DTF', 'sablon-dtf', 'Sablon DTF A4, A3, dan meteran untuk apparel custom.', true, 40, true, 8, 'sort_order', 40),
+  ('Jersey', 'jersey', 'Jersey custom untuk tim olahraga, sekolah, komunitas, dan event.', true, 50, true, 8, 'sort_order', 50),
+  ('Cetak Sublim', 'cetak-sublim', 'Cetak sublim untuk jersey dan apparel custom full print.', true, 60, true, 8, 'sort_order', 60),
+  ('Maklon DTF', 'maklon-dtf', 'Maklon DTF untuk reseller, brand apparel, vendor, dan produksi partai besar.', true, 70, true, 8, 'sort_order', 70)
+on conflict (slug) do update set
+  name = excluded.name,
+  description = excluded.description,
+  is_active = true,
+  sort_order = excluded.sort_order,
+  show_in_collection = excluded.show_in_collection,
+  collection_limit = excluded.collection_limit,
+  collection_sort = excluded.collection_sort,
+  collection_section_order = excluded.collection_section_order;
+
+with subcategory_category_slugs as (
+  select * from (values
+    ('kaos-cotton-combed'), ('cotton-combed'), ('new-state-apparel'), ('nsa'), ('polo-shirt'), ('polo'), ('kaos-polos-anak'), ('kaos-anak'), ('kids-t-shirt'),
+    ('jacket'), ('jaket'), ('hoodie'), ('hooded'), ('crewneck'), ('crewnek'), ('bomber-jacket'), ('windbreaker'), ('zip-hoodie'), ('pullover-hoodie'),
+    ('topi'), ('cap'), ('baseball-cap'), ('trucker-cap'), ('snapback'), ('bucket-hat'), ('dad-hat'), ('visor'), ('beanie'), ('kupluk'),
+    ('jersey-futsal'), ('jersey-sepak-bola'), ('jersey-esports'), ('jersey-basket'), ('jersey-sepeda'), ('jersey-badminton'), ('jersey-voli'), ('jersey-running'), ('jersey-fishing'), ('jersey-touring'), ('jersey-komunitas'), ('jersey-event'),
+    ('dtf-a4'), ('a4'), ('dtf-a3'), ('a3'), ('dtf-meteran'), ('meteran')
+  ) as old(slug)
+)
+update public.product_categories category
+set
+  is_active = false,
+  show_in_collection = false
+from subcategory_category_slugs old
+where category.slug = old.slug
+  and category.slug not in ('kaos-polos', 'jaket-hoodie', 'headwear', 'sablon-dtf', 'jersey', 'cetak-sublim', 'maklon-dtf');
 
 insert into public.website_settings (setting_key, label, value, description, group_name)
 values

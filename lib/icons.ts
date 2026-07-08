@@ -8,7 +8,7 @@ export const brandIcons = {
   whatsapp: "/brand/additional-icons/contact/whatsapp.svg",
   instagram: "/brand/additional-icons/contact/instagram.svg",
   facebook: "/brand/additional-icons/contact/facebook.svg",
-  email: "/brand/additional-icons/contact/mail.svg",
+  email: "/brand/additional-icons/contact/email.svg",
   share: "/brand/additional-icons/commerce/share.svg",
   package: "/brand/additional-icons/commerce/package.svg",
   truck: "/brand/additional-icons/commerce/truck.svg"
