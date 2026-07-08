@@ -467,7 +467,7 @@ export function CategoryDetailPage({
         breadcrumbs={[
           { label: "Beranda", href: "/" },
           { label: "Koleksi", href: "/koleksi" },
-          { label: title }
+          { label: cleanDisplayText(title) || cleanDisplayText(pageHero?.title) || cleanDisplayText(label) || "Koleksi" }
         ]}
       />
       <section data-reveal className="bg-brand-offWhite py-12 sm:py-16">
