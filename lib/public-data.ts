@@ -115,7 +115,10 @@ const finalPageHeroKeys = [
   "jersey",
   "cetak-sublim",
   "store",
-  "cara-order"
+  "cara-order",
+  "polo-shirt",
+  "kemeja",
+  "aksesori-lainnya"
 ];
 
 function displayBrand(value?: string | null) {
@@ -338,6 +341,22 @@ function cleanInstagramBanner(banner: InstagramBanner | null) {
   };
 }
 
+function emptyTextHeroFromFallback(fallbackHero: HeroBanner, index = 0): HeroBanner {
+  return {
+    ...fallbackHero,
+    id: fallbackHero.id || `fallback-hero-${index}`,
+    badge: "",
+    headline: "",
+    subheadline: "",
+    title: "",
+    subtitle: "",
+    cta_text: "",
+    cta_primary_text: "",
+    cta_secondary_text: "",
+    status_aktif: true
+  };
+}
+
 function publicHeroes(heroes: HeroBanner[]) {
   const filtered = heroes.filter(
     (hero) =>
@@ -353,7 +372,9 @@ function publicHeroes(heroes: HeroBanner[]) {
       ])
   );
 
-  const source = filtered.length ? filtered : fallbackContent.heroes;
+  const source = filtered.length
+    ? filtered
+    : fallbackContent.heroes.map((hero, index) => emptyTextHeroFromFallback(hero, index));
 
   return source.map((hero, index) => {
     const fallbackHero = fallbackContent.heroes[index] || fallbackContent.hero;
@@ -434,6 +455,9 @@ function publicPageHeroes(pageHeroes: PageHeroContent[]) {
       ? {
           ...fallbackHero,
           ...hero,
+          label: cleanCmsText(hero.label),
+          title: cleanCmsText(hero.title),
+          subtitle: cleanCmsText(hero.subtitle),
           image_url: hero.image_url || fallbackHero.image_url,
           mobile_image_url:
             hero.mobile_image_url ||
@@ -447,14 +471,19 @@ function publicPageHeroes(pageHeroes: PageHeroContent[]) {
           mobile_object_position:
             focalPosition(hero.mobile_focal_x, hero.mobile_focal_y, hero.mobile_object_position || fallbackHero.mobile_object_position || hero.object_position || "center center")
         }
-      : fallbackHero;
+      : {
+          ...fallbackHero,
+          label: "",
+          title: "",
+          subtitle: ""
+        };
 
     return {
       ...merged,
-      image_alt: merged.image_alt || merged.title,
-      label: displayBrand(merged.label),
-      title: displayBrand(merged.title),
-      subtitle: displayBrand(merged.subtitle)
+      image_alt: cleanCmsText(merged.image_alt) || cleanCmsText(merged.title) || "Hero DE BRODER",
+      label: cleanCmsText(merged.label),
+      title: cleanCmsText(merged.title),
+      subtitle: cleanCmsText(merged.subtitle)
     };
   });
 }
@@ -609,15 +638,16 @@ export async function getPublicContent(): Promise<PublicContent> {
     testimonials,
     contact
   ] = await Promise.all([
-    readActive<HeroBanner>("hero_banners", fallbackContent.heroes),
+    readActive<HeroBanner>("hero_banners", [], "urutan", false),
     readOptionalActiveSingle<InstagramBanner>(
       "instagram_banners",
       fallbackInstagramBanner
     ),
     readActive<PageHeroContent>(
       "page_heroes",
-      fallbackContent.pageHeroes,
-      "page_key"
+      [],
+      "page_key",
+      false
     ),
     readActive<ServiceCategory>(
       "service_categories",

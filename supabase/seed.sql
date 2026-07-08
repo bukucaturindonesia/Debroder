@@ -388,3 +388,16 @@ set
     join public.homepage_sections section on section.id = item.section_id
     where item.product_id = product.id and section.slug = 'fresh-drops' and item.is_active = true
   );
+
+-- DEBRODER V1: hero text must be admin-only.
+-- Keep seeded images, but do not force default copy onto public heroes.
+update public.hero_banners
+set badge = '', headline = '', subheadline = '', title = '', subtitle = '', cta_text = '', cta_primary_text = '', cta_secondary_text = '';
+
+update public.page_heroes
+set label = '', title = '', subtitle = ''
+where page_key in (
+  'koleksi', 'kaos-polos', 'jaket-hoodie', 'headwear', 'sablon-dtf',
+  'maklon-dtf', 'jersey', 'cetak-sublim', 'store', 'cara-order',
+  'polo-shirt', 'kemeja', 'aksesori-lainnya'
+);

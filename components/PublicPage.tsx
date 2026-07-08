@@ -83,6 +83,13 @@ function findPageHero(
   return pageHeroes?.find((hero) => hero.page_key === pageKey) || null;
 }
 
+
+function cleanDisplayText(value?: string | null) {
+  const text = (value || "").trim();
+  if (!text || text === "." || text === "-" || text === "—") return "";
+  return text;
+}
+
 function actionHref(href?: string, message?: string) {
   if (!href) return undefined;
   if (href.includes("wa.me") || href.includes("whatsapp")) {
@@ -111,9 +118,9 @@ export function PageHero({
   secondaryCtaHref,
   breadcrumbs
 }: {
-  label: string;
-  title: string;
-  description: string;
+  label?: string | null;
+  title?: string | null;
+  description?: string | null;
   imageUrl?: string;
   mobileImageUrl?: string;
   objectPosition?: string;
@@ -127,7 +134,13 @@ export function PageHero({
   secondaryCtaHref?: string;
   breadcrumbs?: { label: string; href?: string }[];
 }) {
-  const primaryHref = actionHref(ctaHref);
+  const cleanLabel = cleanDisplayText(label);
+  const cleanTitle = cleanDisplayText(title);
+  const cleanDescription = cleanDisplayText(description);
+  const cleanCtaText = cleanDisplayText(ctaText);
+  const cleanSecondaryCtaText = cleanDisplayText(secondaryCtaText);
+  const primaryHref = cleanCtaText ? actionHref(ctaHref) : undefined;
+  const hasCopy = Boolean(cleanLabel || cleanTitle || cleanDescription || primaryHref || (cleanSecondaryCtaText && secondaryCtaHref));
   const desktopImage = imageUrl || fallbackImages.pageHero;
   const mobileImage = mobileImageUrl || desktopImage;
 
@@ -138,7 +151,7 @@ export function PageHero({
           <ResponsivePicture
             desktopSrc={desktopImage}
             mobileSrc={mobileImage}
-            alt={title}
+            alt={cleanTitle || cleanLabel || "Hero DEBRODER"}
             className="h-full w-full object-cover"
             priority
             desktopObjectPosition={objectPosition}
@@ -148,9 +161,9 @@ export function PageHero({
             desktopZoom={imageZoom}
             mobileZoom={mobileImageZoom}
           />
-          <div className="absolute inset-x-0 bottom-0 hidden h-[52%] bg-gradient-to-t from-black/48 via-black/14 to-transparent sm:block" />
+          {hasCopy ? <div className="absolute inset-x-0 bottom-0 hidden h-[52%] bg-gradient-to-t from-black/48 via-black/14 to-transparent sm:block" /> : null}
         </div>
-        <div className="relative px-4 py-6 text-brand-charcoal sm:absolute sm:bottom-8 sm:left-8 sm:right-8 sm:max-w-4xl sm:p-0 sm:text-white lg:bottom-10 lg:left-12 lg:right-12">
+        {hasCopy ? <div className="relative px-4 py-6 text-brand-charcoal sm:absolute sm:bottom-8 sm:left-8 sm:right-8 sm:max-w-4xl sm:p-0 sm:text-white lg:bottom-10 lg:left-12 lg:right-12">
           {breadcrumbs?.length ? (
             <nav
               aria-label="Breadcrumb"
@@ -170,15 +183,21 @@ export function PageHero({
               ))}
             </nav>
           ) : null}
-          <p className="w-fit bg-brand-charcoal px-3 py-1 text-[15px] font-medium uppercase leading-5 text-white sm:bg-white sm:text-brand-charcoal">
-            {label}
-          </p>
-          <h1 className="mt-2 max-w-4xl text-[clamp(42px,12vw,52px)] font-black uppercase leading-[0.94] tracking-normal sm:text-[64px] lg:text-[clamp(64px,5.5vw,88px)]">
-            {title}
-          </h1>
-          <p className="mt-3 max-w-2xl text-[17px] leading-[1.45] text-brand-charcoal/70 sm:text-xl sm:text-white/85">
-            {description}
-          </p>
+          {cleanLabel ? (
+            <p className="w-fit bg-brand-charcoal px-3 py-1 text-[15px] font-medium uppercase leading-5 text-white sm:bg-white sm:text-brand-charcoal">
+              {cleanLabel}
+            </p>
+          ) : null}
+          {cleanTitle ? (
+            <h1 className="mt-2 max-w-4xl text-[clamp(42px,12vw,52px)] font-black uppercase leading-[0.94] tracking-normal sm:text-[64px] lg:text-[clamp(64px,5.5vw,88px)]">
+              {cleanTitle}
+            </h1>
+          ) : null}
+          {cleanDescription ? (
+            <p className="mt-3 max-w-2xl text-[17px] leading-[1.45] text-brand-charcoal/70 sm:text-xl sm:text-white/85">
+              {cleanDescription}
+            </p>
+          ) : null}
           {primaryHref ? (
             <div className="mt-5 flex flex-col gap-3 sm:flex-row">
               <a
@@ -191,19 +210,19 @@ export function PageHero({
                     : undefined
                 }
               >
-                {ctaText}
+                {cleanCtaText}
               </a>
-              {secondaryCtaText && secondaryCtaHref ? (
+              {cleanSecondaryCtaText && secondaryCtaHref ? (
                 <Link
                   href={secondaryCtaHref}
                   className="inline-flex min-h-11 items-center justify-center rounded-full border border-brand-softGray px-6 py-3 text-sm font-semibold text-brand-charcoal transition hover:border-brand-charcoal sm:border-white/40 sm:text-white sm:hover:bg-white sm:hover:text-brand-charcoal"
                 >
-                  {secondaryCtaText}
+                  {cleanSecondaryCtaText}
                 </Link>
               ) : null}
             </div>
           ) : null}
-        </div>
+        </div> : null}
       </div>
     </section>
   );
@@ -417,9 +436,9 @@ export function CategoryDetailPage({
   productTitle
 }: {
   content: PublicContent;
-  label: string;
-  title: string;
-  description: string;
+  label?: string | null;
+  title?: string | null;
+  description?: string | null;
   details: string[];
   visualLabel: string;
   ctaText: string;
@@ -433,18 +452,18 @@ export function CategoryDetailPage({
   return (
     <PublicShell content={content}>
       <PageHero
-        label={pageHero?.label || label}
-        title={pageHero?.title || title}
-        description={pageHero?.subtitle || description}
+        label={pageHero?.label}
+        title={pageHero?.title}
+        description={pageHero?.subtitle}
         imageUrl={getPageHeroImage(pageHero)}
         mobileImageUrl={pageHero?.mobile_image_url}
         objectPosition={pageHero?.object_position}
         mobileObjectPosition={pageHero?.mobile_object_position}
         objectFit={pageHero?.object_fit}
-        ctaText={ctaText}
-        ctaHref={ctaHref}
-        secondaryCtaText="Temukan Store"
-        secondaryCtaHref="/store"
+        ctaText={undefined}
+        ctaHref={undefined}
+        secondaryCtaText={undefined}
+        secondaryCtaHref={undefined}
         breadcrumbs={[
           { label: "Beranda", href: "/" },
           { label: "Koleksi", href: "/koleksi" },
