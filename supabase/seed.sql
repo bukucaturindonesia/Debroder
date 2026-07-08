@@ -324,13 +324,13 @@ on conflict (section_key) do nothing;
 insert into public.product_categories
   (name, slug, description, is_active, sort_order, show_in_collection, collection_limit, collection_sort, collection_section_order)
 values
-  ('Kaos Polos', 'kaos-polos', 'Kaos polos, cotton combed, New State Apparel, dan polo shirt untuk kebutuhan custom apparel.', true, 10, true, 8, 'sort_order', 10),
-  ('Jaket & Hoodie', 'jaket-hoodie', 'Jaket, hoodie, dan crewneck custom untuk komunitas, organisasi, event, dan brand apparel.', true, 20, true, 8, 'sort_order', 20),
-  ('Headwear', 'headwear', 'Topi dan headwear custom untuk merchandise, event, komunitas, dan brand.', true, 30, true, 8, 'sort_order', 30),
-  ('Sablon DTF', 'sablon-dtf', 'Sablon DTF A4, A3, dan meteran untuk apparel custom.', true, 40, true, 8, 'sort_order', 40),
-  ('Jersey', 'jersey', 'Jersey custom untuk tim olahraga, sekolah, komunitas, dan event.', true, 50, true, 8, 'sort_order', 50),
-  ('Cetak Sublim', 'cetak-sublim', 'Cetak sublim untuk jersey dan apparel custom full print.', true, 60, true, 8, 'sort_order', 60),
-  ('Maklon DTF', 'maklon-dtf', 'Maklon DTF untuk reseller, brand apparel, vendor, dan produksi partai besar.', true, 70, true, 8, 'sort_order', 70)
+  ('Kaos Polos', 'kaos-polos', 'Kaos polos, kaos NSA, cotton combed, oversize, anak, dan lengan panjang.', true, 10, true, 8, 'sort_order', 10),
+  ('Jersey', 'jersey', 'Jersey custom untuk futsal, sepak bola, basket, voli, badminton, esports, dan komunitas.', true, 20, true, 8, 'sort_order', 20),
+  ('Jaket & Hoodie', 'jaket-hoodie', 'Hoodie, crewneck, jaket bomber, varsity, coach, dan outerwear custom.', true, 30, true, 8, 'sort_order', 30),
+  ('Polo Shirt', 'polo-shirt', 'Polo shirt untuk kantor, komunitas, event, dan apparel custom.', true, 40, true, 8, 'sort_order', 40),
+  ('Headwear / Topi', 'headwear', 'Topi trucker, baseball cap, snapback, bucket hat, dan headwear custom.', true, 50, true, 8, 'sort_order', 50),
+  ('Kemeja', 'kemeja', 'Kemeja PDH, PDL, kantor, komunitas, dan seragam custom.', true, 60, true, 8, 'sort_order', 60),
+  ('Tas & Aksesori', 'tas-aksesori', 'Tote bag, goodie bag, patch, emblem, lanyard, dan aksesori promosi.', true, 70, true, 8, 'sort_order', 70)
 on conflict (slug) do update set
   name = excluded.name,
   description = excluded.description,
@@ -356,7 +356,13 @@ set
   show_in_collection = false
 from subcategory_category_slugs old
 where category.slug = old.slug
-  and category.slug not in ('kaos-polos', 'jaket-hoodie', 'headwear', 'sablon-dtf', 'jersey', 'cetak-sublim', 'maklon-dtf');
+  and category.slug not in ('kaos-polos', 'jersey', 'jaket-hoodie', 'polo-shirt', 'headwear', 'kemeja', 'tas-aksesori');
+
+update public.product_categories
+set
+  is_active = false,
+  show_in_collection = false
+where slug not in ('kaos-polos', 'jersey', 'jaket-hoodie', 'polo-shirt', 'headwear', 'kemeja', 'tas-aksesori');
 
 insert into public.website_settings (setting_key, label, value, description, group_name)
 values

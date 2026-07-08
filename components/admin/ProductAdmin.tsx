@@ -11,6 +11,7 @@ import {
   subcategoryMatch
 } from "@/lib/product-category-config";
 import { createSupabaseClient, WEBSITE_IMAGES_BUCKET } from "@/lib/supabase";
+import { pimServiceMethods } from "@/lib/pim-blueprint";
 import type { FocalPoint, Product, ProductCategory } from "@/lib/types";
 import { formatRupiah } from "@/lib/url";
 
@@ -334,6 +335,10 @@ export function ProductAdminPanel() {
       setStatus("Nama dan kategori produk wajib diisi.");
       return;
     }
+    if (!form.subcategory?.trim()) {
+      setStatus("Model / subkategori wajib dipilih agar struktur PIM tidak ambigu.");
+      return;
+    }
     const supabase = createSupabaseClient();
     if (!supabase) return;
     const selectedCategory = categories.find((category) => category.id === form.product_category_id)
@@ -471,7 +476,7 @@ export function ProductAdminPanel() {
     }
     const preset = productCategoryPresets.find((item) => item.slug === slugify(name) || item.name.toLowerCase() === name.toLowerCase());
     if (!preset || !isMainProductCategory(name)) {
-      setStatus("product_categories hanya untuk kategori utama: Kaos Polos, Jaket & Hoodie, Headwear, Sablon DTF, Jersey, Cetak Sublim, atau Maklon DTF.");
+      setStatus("product_categories hanya untuk kategori utama produk: Kaos Polos, Jersey, Jaket & Hoodie, Polo Shirt, Headwear / Topi, Kemeja, atau Tas & Aksesori.");
       return;
     }
     const supabase = createSupabaseClient();
@@ -542,7 +547,7 @@ export function ProductAdminPanel() {
 
       <section className="bg-white p-5 sm:p-6">
         <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
-          <div><p className="text-xs font-semibold uppercase tracking-[.16em] text-brand-charcoal/45">PIM</p><h2 className="mt-2 text-xl font-semibold">Kategori produk</h2></div>
+          <div><p className="text-xs font-semibold uppercase tracking-[.16em] text-brand-charcoal/45">PIM</p><h2 className="mt-2 text-xl font-semibold">Kategori utama produk</h2><p className="mt-1 text-sm text-brand-charcoal/55">Hanya kelompok besar produk. Model seperti Hoodie, Jersey Futsal, dan Topi Trucker jangan dibuat sebagai kategori utama.</p></div>
           <form onSubmit={createCategory} className="flex w-full gap-2 lg:max-w-md"><input value={newCategory} onChange={(event) => setNewCategory(event.target.value)} placeholder="Kategori baru" className="min-h-11 min-w-0 flex-1 rounded-lg border border-brand-softGray px-4 text-sm" /><button disabled={savingCategory} className="rounded-full bg-brand-charcoal px-5 text-sm font-semibold text-white disabled:opacity-50">Tambah</button></form>
         </div>
         <div className="mt-4 flex flex-wrap gap-2">{categories.map((category) => <div key={category.id || category.slug} className="inline-flex items-center rounded-full border border-brand-softGray bg-white"><button type="button" onClick={() => toggleCategory(category)} className={`px-4 py-2 text-xs font-semibold ${category.is_active ? "text-brand-green" : "text-brand-charcoal/45"}`}>{category.name}</button>{isCoreCategory(category) ? <span className="border-l border-brand-softGray px-3 py-2 text-xs font-semibold text-brand-charcoal/45">Utama</span> : <button type="button" aria-label={`Nonaktifkan kategori ${category.name}`} onClick={() => deleteCategory(category)} className="border-l border-brand-softGray px-3 py-2 text-xs font-semibold text-red-700">Nonaktifkan</button>}</div>)}</div>
@@ -583,8 +588,8 @@ export function ProductAdminPanel() {
 
           {!formReady ? (
             <div className="rounded-xl border border-brand-softGray bg-brand-offWhite p-5">
-              <h3 className="text-lg font-semibold">Produk apa yang ingin ditambahkan?</h3>
-              <p className="mt-2 text-sm leading-6 text-brand-charcoal/60">Pilih kategori dulu agar PIM otomatis mengisi kategori, link, tag rekomendasi, ukuran, dan material dasar.</p>
+              <h3 className="text-lg font-semibold">Pilih kategori utama produk</h3>
+              <p className="mt-2 text-sm leading-6 text-brand-charcoal/60">Produk = barang yang dijual. Kategori = kelompok besar. Setelah memilih kategori, isi model/subkategori di langkah berikutnya.</p>
               <div className="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
                 {availableCategories.map((category) => (
                   <button
@@ -606,7 +611,7 @@ export function ProductAdminPanel() {
             <Field label="Nama produk" required><input value={form.nama} onChange={(e) => update("nama", e.target.value)} /></Field>
             <Field label="Slug"><input value={form.slug || ""} onChange={(e) => update("slug", e.target.value)} placeholder="otomatis-dari-nama" /></Field>
             <Field label="Kategori" required><select value={selectedCategoryKey} onChange={(e) => { const category = availableCategories.find((item) => item.id === e.target.value || item.slug === e.target.value); if (category) applyCategoryToForm(category); }}><option value="">Pilih kategori</option>{availableCategories.map((category) => <option key={category.id || category.slug} value={category.id || category.slug}>{category.name}</option>)}</select></Field>
-            <Field label="Subkategori"><input list="product-subcategories" value={form.subcategory || ""} onChange={(e) => update("subcategory", e.target.value)} /><datalist id="product-subcategories">{(activePreset?.subcategories || []).map((name) => <option key={name}>{name}</option>)}</datalist></Field>
+            <Field label="Model / Subkategori" required><select value={form.subcategory || ""} onChange={(e) => update("subcategory", e.target.value)}><option value="">Pilih model</option>{(activePreset?.subcategories || []).map((name) => <option key={name} value={name}>{name}</option>)}</select></Field>
             <Field label="Harga"><input type="number" min="0" value={form.price ?? ""} onChange={(e) => update("price", e.target.value)} /></Field>
             <Field label="Harga asli / pembanding"><input type="number" min="0" value={form.compare_price ?? ""} onChange={(e) => update("compare_price", e.target.value)} /></Field>
             <Field label="Stok"><input type="number" min="0" value={form.stock || 0} onChange={(e) => update("stock", Number(e.target.value))} /></Field>
@@ -628,12 +633,35 @@ export function ProductAdminPanel() {
             <Check label="Aktif" checked={form.status_aktif} onChange={(value) => update("status_aktif", value)} />
           </div>
 
+          <div className="rounded-xl border border-brand-softGray bg-white p-4">
+            <h3 className="font-semibold">Metode produksi tersedia</h3>
+            <p className="mt-1 text-xs leading-5 text-brand-charcoal/55">Centang teknik pengerjaan yang bisa dipakai untuk produk ini. Data disimpan sebagai tag intent agar tidak perlu menambah kolom database baru.</p>
+            <div className="mt-3 grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
+              {pimServiceMethods.map((service) => {
+                const checked = (form.intent_tags || []).includes(service.slug);
+                return (
+                  <Check
+                    key={service.slug}
+                    label={service.name}
+                    checked={checked}
+                    onChange={(value) => {
+                      const current = new Set(form.intent_tags || []);
+                      if (value) current.add(service.slug);
+                      else current.delete(service.slug);
+                      update("intent_tags", Array.from(current));
+                    }}
+                  />
+                );
+              })}
+            </div>
+          </div>
+
           <div className="grid gap-4 sm:grid-cols-2">
             <Field label="Material (satu per baris)"><textarea rows={3} value={listValue(form.material_tags)} onChange={(e) => update("material_tags", parseList(e.target.value))} /></Field>
             <Field label="Warna (satu per baris)"><textarea rows={3} value={listValue(form.color_tags)} onChange={(e) => update("color_tags", parseList(e.target.value))} /></Field>
             <Field label="Ukuran (satu per baris)"><textarea rows={3} value={listValue(form.size_tags)} onChange={(e) => update("size_tags", parseList(e.target.value))} /></Field>
             <Field label="Tag koleksi (satu per baris)"><textarea rows={3} value={listValue(form.collection_tags)} onChange={(e) => update("collection_tags", parseList(e.target.value))} /></Field>
-            <Field label="Tag rekomendasi / intent (satu per baris)"><textarea rows={3} value={listValue(form.intent_tags)} onChange={(e) => update("intent_tags", parseList(e.target.value))} placeholder="jersey&#10;sublim&#10;komunitas&#10;brand-apparel" /></Field>
+            <Field label="Layanan / Metode Produksi (satu per baris)"><textarea rows={3} value={listValue(form.intent_tags)} onChange={(e) => update("intent_tags", parseList(e.target.value))} placeholder="sablon-dtf&#10;bordir-komputer&#10;sublim-printing" /></Field>
           </div>
 
           <div className="rounded-xl border border-brand-softGray p-4">
