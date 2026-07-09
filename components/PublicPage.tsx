@@ -75,6 +75,56 @@ function getProductPrice(product: Product) {
   );
 }
 
+function normalizeFilterValue(value: string) {
+  return value.toLowerCase().normalize("NFKD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
+}
+
+function colorHex(value: string) {
+  const key = normalizeFilterValue(value);
+  const map: Record<string, string> = {
+    hitam: "#111111",
+    black: "#111111",
+    putih: "#f7f7f7",
+    white: "#f7f7f7",
+    navy: "#1f2a44",
+    biru: "#1d4ed8",
+    blue: "#1d4ed8",
+    merah: "#dc2626",
+    red: "#dc2626",
+    maroon: "#6f1d1b",
+    kuning: "#f59e0b",
+    yellow: "#f59e0b",
+    mustard: "#d97706",
+    abu: "#9ca3af",
+    "abu-muda": "#d1d5db",
+    "abu-tua": "#6b7280",
+    gray: "#9ca3af",
+    grey: "#9ca3af",
+    cream: "#eadfca",
+    beige: "#d6c4a5",
+    hijau: "#166534",
+    "hijau-forest": "#063d24",
+    forest: "#063d24",
+    "forest-green": "#063d24",
+    army: "#4b5320",
+    orange: "#f97316"
+  };
+  return map[key] || "#d1d5db";
+}
+
+function productMetaLine(product: Product) {
+  const items = [
+    product.color_tags?.length ? `${product.color_tags.length} Warna` : "",
+    product.size_tags?.[0] || "",
+    product.material_tags?.[0] || ""
+  ].filter(Boolean);
+  return items.slice(0, 3).join(" · ");
+}
+
+function productModel(product: Product) {
+  return [product.kategori, product.subcategory].filter(Boolean).join(" · ");
+}
+
 function findPageHero(
   pageHeroes: PageHeroContent[] | undefined,
   pageKey?: string
@@ -280,20 +330,42 @@ export function ProductGrid({ products }: { products: Product[] }) {
               focalY={product.focal_points?.catalog?.focal_y ?? product.focal_y}
               zoom={product.focal_points?.catalog?.zoom ?? product.focal_zoom}
             />
-            <h2 className="mt-3 line-clamp-2 text-sm font-semibold leading-snug text-brand-charcoal sm:mt-4 sm:text-lg">
-              {product.nama}
-            </h2>
-            <p className="mt-1 line-clamp-2 text-xs leading-5 text-brand-charcoal/60 sm:text-sm sm:leading-6">
-              {getProductDetail(product)}
-            </p>
-            {price ? (
-              <p className="mt-2 text-sm font-semibold text-brand-charcoal sm:font-medium">
-                {price}
-              </p>
-            ) : null}
+            <div className="mt-3 space-y-2">
+              {product.color_tags?.length ? (
+                <div className="flex items-center gap-1.5">
+                  {product.color_tags.slice(0, 8).map((color) => (
+                    <span
+                      key={color}
+                      title={color}
+                      className="h-3.5 w-3.5 rounded-full border border-black/10 shadow-[inset_0_0_0_1px_rgba(255,255,255,0.45)]"
+                      style={{ backgroundColor: colorHex(color) }}
+                    />
+                  ))}
+                </div>
+              ) : null}
+              {productMetaLine(product) ? (
+                <p className="text-[11px] font-medium tracking-[0.01em] text-brand-charcoal/55 sm:text-xs">{productMetaLine(product)}</p>
+              ) : null}
+              <h2 className="line-clamp-2 text-[15px] font-semibold leading-[1.22] tracking-[-0.01em] text-brand-charcoal sm:text-[17px]">
+                {product.nama}
+              </h2>
+              {productModel(product) ? (
+                <p className="text-xs leading-5 text-brand-charcoal/50 sm:text-[13px]">{productModel(product)}</p>
+              ) : null}
+              {getProductDetail(product) ? (
+                <p className="line-clamp-2 min-h-[2.5rem] text-xs leading-5 text-brand-charcoal/60 sm:text-sm sm:leading-6">
+                  {getProductDetail(product)}
+                </p>
+              ) : null}
+              {price ? (
+                <p className="text-[15px] font-bold text-brand-charcoal sm:text-[17px]">
+                  {price}
+                </p>
+              ) : null}
+            </div>
             <a
               href={whatsappHref}
-              className="mt-3 inline-flex min-h-9 w-full items-center justify-center rounded-full bg-brand-charcoal px-3 py-2 text-xs font-semibold text-white transition hover:bg-black/80 sm:mt-4 sm:min-h-10 sm:px-5 sm:py-2.5 sm:text-sm"
+              className="mt-4 inline-flex min-h-10 w-full items-center justify-center bg-brand-green px-3 py-2 text-xs font-semibold text-white transition hover:bg-brand-charcoal sm:px-5 sm:text-sm"
               target="_blank"
               rel="noopener noreferrer"
             >

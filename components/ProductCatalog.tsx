@@ -38,6 +38,52 @@ function productChips(product: Product) {
   ].filter(Boolean).slice(0, 3);
 }
 
+function colorHex(value: string) {
+  const key = normalizeFilterValue(value);
+  const map: Record<string, string> = {
+    hitam: "#111111",
+    black: "#111111",
+    putih: "#f7f7f7",
+    white: "#f7f7f7",
+    navy: "#1f2a44",
+    biru: "#1d4ed8",
+    blue: "#1d4ed8",
+    merah: "#dc2626",
+    red: "#dc2626",
+    maroon: "#6f1d1b",
+    kuning: "#f59e0b",
+    yellow: "#f59e0b",
+    mustard: "#d97706",
+    abu: "#9ca3af",
+    "abu-muda": "#d1d5db",
+    "abu-tua": "#6b7280",
+    gray: "#9ca3af",
+    grey: "#9ca3af",
+    cream: "#eadfca",
+    beige: "#d6c4a5",
+    hijau: "#166534",
+    "hijau-forest": "#063d24",
+    forest: "#063d24",
+    "forest-green": "#063d24",
+    army: "#4b5320",
+    orange: "#f97316"
+  };
+  return map[key] || "#d1d5db";
+}
+
+function productMetaLine(product: Product) {
+  const items = [
+    product.color_tags?.length ? `${product.color_tags.length} Warna` : "",
+    product.size_tags?.[0] || "",
+    product.material_tags?.[0] || ""
+  ].filter(Boolean);
+  return items.slice(0, 3).join(" · ");
+}
+
+function productModel(product: Product) {
+  return [product.kategori, product.subcategory].filter(Boolean).join(" · ");
+}
+
 function searchText(product: Product) {
   return [
     product.nama,
@@ -196,17 +242,25 @@ export function ProductCatalog({
                 {labels.length ? <div className="absolute left-2 top-2 flex flex-wrap gap-1">{labels.map((item) => <span key={String(item)} className="rounded-full bg-white/95 px-2 py-1 text-[10px] font-semibold shadow-sm">{item}</span>)}</div> : null}
               </div>
               </Link>
-              <Link href={detailHref} className="mt-3 block"><h3 className="line-clamp-2 text-[15px] font-semibold leading-snug sm:text-base">{product.nama}</h3></Link>
-              <p className="mt-1 text-sm text-brand-charcoal/55 sm:text-[15px]">{product.kategori}</p>
-              {productDetail(product) ? <p className="mt-1 line-clamp-2 text-xs leading-5 text-brand-charcoal/55 sm:text-sm">{productDetail(product)}</p> : null}
-              <p className="mt-2 text-[15px] font-semibold sm:text-base">{productPrice(product)}</p>
-              {product.compare_price ? <p className="mt-0.5 text-xs text-brand-charcoal/45 line-through">{formatRupiah(product.compare_price)}</p> : null}
-              {chips.length || stockText || product.brand ? <div className="mt-2 flex flex-wrap gap-1.5">
-                {product.brand ? <span className="bg-brand-offWhite px-2 py-1 text-[10px] font-semibold text-brand-charcoal/65">{product.brand}</span> : null}
-                {chips.map((chip) => <span key={chip} className="bg-brand-offWhite px-2 py-1 text-[10px] font-semibold text-brand-charcoal/65">{chip}</span>)}
-                {stockText ? <span className="bg-brand-offWhite px-2 py-1 text-[10px] font-semibold text-brand-charcoal/65">{stockText}</span> : null}
-              </div> : null}
-              <div className="mt-3 grid grid-cols-2 gap-2"><Link href={detailHref} className="inline-flex min-h-9 items-center justify-center border border-brand-softGray px-2 text-[11px] font-semibold sm:min-h-10 sm:text-xs">Detail</Link><AddToCartButton product={{ id: product.id || product.slug || product.nama, name: product.nama, category: product.kategori, priceLabel: productPrice(product), priceValue: priceOf(product), href: detailHref, imageUrl: getProductImage(product), imageAlt: product.image_alt || product.nama }} className="inline-flex min-h-9 items-center justify-center bg-brand-green px-2 text-[11px] font-semibold text-white sm:min-h-10 sm:text-xs">Tambah</AddToCartButton></div>
+              <div className="mt-3 space-y-2">
+                {product.color_tags?.length ? <div className="flex items-center gap-1.5">
+                  {product.color_tags.slice(0, 8).map((color) => <span key={color} title={color} className="h-3.5 w-3.5 rounded-full border border-black/10 shadow-[inset_0_0_0_1px_rgba(255,255,255,0.45)]" style={{ backgroundColor: colorHex(color) }} />)}
+                </div> : null}
+                {productMetaLine(product) ? <p className="text-[11px] font-medium tracking-[0.01em] text-brand-charcoal/55 sm:text-xs">{productMetaLine(product)}</p> : null}
+                <Link href={detailHref} className="block"><h3 className="line-clamp-2 text-[15px] font-semibold leading-[1.22] tracking-[-0.01em] text-brand-charcoal sm:text-[17px]">{product.nama}</h3></Link>
+                {productModel(product) ? <p className="text-xs leading-5 text-brand-charcoal/50 sm:text-[13px]">{productModel(product)}</p> : null}
+                {productDetail(product) ? <p className="line-clamp-2 min-h-[2.5rem] text-xs leading-5 text-brand-charcoal/60 sm:text-sm sm:leading-6">{productDetail(product)}</p> : null}
+                <div className="space-y-0.5">
+                  <p className="text-[15px] font-bold text-brand-charcoal sm:text-[17px]">{productPrice(product)}</p>
+                  {product.compare_price ? <p className="text-xs text-brand-charcoal/40 line-through">{formatRupiah(product.compare_price)}</p> : null}
+                </div>
+                {stockText || product.brand || chips.length ? <div className="flex flex-wrap gap-x-3 gap-y-1 text-[11px] font-medium text-brand-charcoal/55">
+                  {product.brand ? <span>{product.brand}</span> : null}
+                  {chips.filter((chip) => !product.color_tags?.includes(chip)).map((chip) => <span key={chip}>{chip}</span>)}
+                  {stockText ? <span>{stockText}</span> : null}
+                </div> : null}
+              </div>
+              <div className="mt-4 grid grid-cols-2 gap-2"><Link href={detailHref} className="inline-flex min-h-10 items-center justify-center border border-brand-softGray bg-white px-3 text-xs font-semibold transition hover:border-brand-charcoal">Detail</Link><AddToCartButton product={{ id: product.id || product.slug || product.nama, name: product.nama, category: product.kategori, priceLabel: productPrice(product), priceValue: priceOf(product), href: detailHref, imageUrl: getProductImage(product), imageAlt: product.image_alt || product.nama }} className="inline-flex min-h-10 items-center justify-center bg-brand-green px-3 text-xs font-semibold text-white transition hover:bg-brand-charcoal">Tambah</AddToCartButton></div>
             </article>;
         })}
       </div> : <div className="mt-6 bg-white p-8 text-center"><p className="font-semibold">Produk tidak ditemukan</p><p className="mt-2 text-sm text-brand-charcoal/60">Coba kata kunci atau kombinasi filter lain.</p></div>}
