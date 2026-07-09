@@ -777,24 +777,40 @@ export function PimV2Admin() {
     const supabase = createSupabaseClient();
     if (!supabase) return;
     const basePayload = {
-      ...formValue,
+      name: formValue.name,
       slug: formValue.slug || normalizePimSlug(formValue.name),
       price_adjustment: asNumber(formValue.price_adjustment),
       is_active: formValue.is_active !== false,
       sort_order: asNumber(formValue.sort_order)
     };
-    const payload = table === "jersey_collars"
-      ? {
-          ...basePayload,
-          group_id: formValue.group_id || null,
-          image_url: formValue.image_url || null,
-          icon_url: formValue.icon_url || null
-        }
-      : {
-          ...basePayload,
-          description: formValue.description || ""
-        };
-    const request = formValue.id ? supabase.from(table).update(payload).eq("id", formValue.id) : supabase.from(table).insert(payload);
+
+    if (table === "jersey_collars") {
+      const payload = {
+        ...basePayload,
+        group_id: formValue.group_id ?? null,
+        image_url: formValue.image_url ?? null,
+        icon_url: formValue.icon_url ?? null
+      };
+      const request = formValue.id
+        ? supabase.from("jersey_collars").update(payload).eq("id", formValue.id)
+        : supabase.from("jersey_collars").insert(payload);
+      const { error } = await request;
+      if (error) setStatus({ type: "error", text: `${label} gagal disimpan: ${error.message}` });
+      else { reset(); setStatus({ type: "success", text: `${label} berhasil disimpan.` }); await loadData(); }
+      return;
+    }
+
+    const payload = {
+      ...basePayload,
+      description: formValue.description || ""
+    };
+    const request = table === "jersey_materials"
+      ? formValue.id
+        ? supabase.from("jersey_materials").update(payload).eq("id", formValue.id)
+        : supabase.from("jersey_materials").insert(payload)
+      : formValue.id
+        ? supabase.from("jersey_addons").update(payload).eq("id", formValue.id)
+        : supabase.from("jersey_addons").insert(payload);
     const { error } = await request;
     if (error) setStatus({ type: "error", text: `${label} gagal disimpan: ${error.message}` });
     else { reset(); setStatus({ type: "success", text: `${label} berhasil disimpan.` }); await loadData(); }
