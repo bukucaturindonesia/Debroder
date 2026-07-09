@@ -14,7 +14,7 @@ export function JerseyCatalog({ categories }: { categories: ServiceCategory[] })
         <div className="max-w-2xl">
           <p className="text-xs font-medium tracking-[0.08em] text-brand-charcoal/55">Kategori Jersey</p>
           <h2 className="landing-section-title mt-2">Pilih model jersey</h2>
-          <p className="mt-3 text-sm leading-6 text-brand-charcoal/65">Pilih model, bahan, warna, kerah, dan lengan sesuai kebutuhan tim Anda.</p>
+          <p className="premium-section-copy mt-3 text-sm leading-6">Pilih model, bahan, warna, kerah, dan lengan sesuai kebutuhan tim Anda.</p>
         </div>
         {categories.length ? <div className="mt-6 grid grid-cols-1 gap-x-2 gap-y-6 md:grid-cols-2 lg:grid-cols-4">
           {categories.map((category) => {

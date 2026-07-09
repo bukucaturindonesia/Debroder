@@ -30,6 +30,8 @@ export type Product = {
   intent_tags?: string[];
   color_tags?: string[];
   size_tags?: string[];
+  size_chart?: string[];
+  bulk_order_note?: string | null;
   material_tags?: string[];
   brand?: string;
   object_fit?: "cover" | "contain";

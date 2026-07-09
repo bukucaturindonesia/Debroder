@@ -11,7 +11,7 @@ export function ServiceCatalog({ services, whatsapp }: { services: Service[]; wh
         <div className="max-w-2xl">
           <p className="text-xs font-medium tracking-[0.08em] text-brand-charcoal/55">Pilihan Layanan</p>
           <h2 className="landing-section-title mt-2">Katalog Sablon DTF</h2>
-          <p className="mt-3 text-sm leading-6 text-brand-charcoal/65">Pilih ukuran cetak, kebutuhan produksi, dan jenis pengerjaan DTF yang paling sesuai.</p>
+          <p className="premium-section-copy mt-3 text-sm leading-6">Pilih ukuran cetak, kebutuhan produksi, dan jenis pengerjaan DTF yang paling sesuai.</p>
         </div>
         {services.length ? <div className="mt-6 grid grid-cols-1 gap-x-2 gap-y-6 md:grid-cols-2 lg:grid-cols-4">
           {services.map((service) => (
@@ -28,12 +28,12 @@ export function ServiceCatalog({ services, whatsapp }: { services: Service[]; wh
                 zoom={service.focal_zoom}
                 sizes="(min-width: 1536px) 20vw, (min-width: 1024px) 25vw, (min-width: 768px) 33vw, 50vw"
               />
-              <div className="flex flex-1 flex-col p-4">
+              <div className="flex flex-1 flex-col pt-4">
                 <h3 className="line-clamp-2 text-sm font-semibold sm:text-base">{service.nama}</h3>
                 {service.harga_mulai ? <p className="mt-1 text-sm font-semibold">Mulai {formatRupiah(service.harga_mulai)}</p> : null}
                 <p className="mt-2 line-clamp-2 flex-1 text-xs leading-5 text-brand-charcoal/60 sm:text-sm">{service.deskripsi}</p>
                 <div className="mt-5 grid grid-cols-2 gap-2">
-                  <Link href={`/sablon-dtf/${service.slug}`} className="inline-flex min-h-10 items-center justify-center rounded-full border border-brand-charcoal px-3 text-sm font-semibold transition hover:bg-brand-charcoal hover:text-white">Detail</Link>
+                  <Link href={`/sablon-dtf/${service.slug}`} className="premium-ghost-button inline-flex min-h-10 items-center justify-center rounded-full border px-3 text-sm font-semibold transition">Detail</Link>
                   <a href={whatsappLinkWithMessage(whatsapp, `Halo DE BRODER, saya ingin bertanya tentang ${service.nama}.`)} target="_blank" rel="noopener noreferrer" className="inline-flex min-h-10 items-center justify-center rounded-full bg-brand-charcoal px-3 text-sm font-semibold text-white transition hover:bg-black/80">Pesan</a>
                 </div>
               </div>

@@ -395,7 +395,7 @@ export function StoreGrid({ stores }: { stores: Store[] }) {
             <PublicImage
               src={getStoreImage(store)}
               alt={store.image_alt || `Foto ${store.nama_store} DE BRODER`}
-              className="aspect-[4/3] w-full object-cover"
+              className="product-image-frame aspect-[4/3] w-full object-cover"
               fallbackSrc={fallbackImages.store}
             />
             <p className="mt-4 text-sm font-medium text-brand-charcoal/70">
@@ -418,7 +418,7 @@ export function StoreGrid({ stores }: { stores: Store[] }) {
               </a>
               <a
                 href={store.maps_link}
-                className="inline-flex min-h-11 items-center justify-center rounded-full border border-brand-softGray bg-white px-5 py-3 text-sm font-semibold text-brand-charcoal transition hover:border-brand-charcoal"
+                className="premium-ghost-button inline-flex min-h-11 items-center justify-center rounded-full border px-5 py-3 text-sm font-semibold text-brand-charcoal transition"
                 target="_blank"
                 rel="noopener noreferrer"
               >
@@ -560,7 +560,7 @@ export function CategoryDetailPage({
           <PublicImage
             src={getPageHeroImage(pageHero)}
             alt={visualLabel}
-            className="aspect-[4/3] w-full object-cover"
+            className="product-image-frame aspect-[4/3] w-full object-cover"
             sizes="(min-width: 1024px) 50vw, 100vw"
             objectPosition={pageHero?.object_position}
             fallbackSrc={fallbackImages.pageHero}

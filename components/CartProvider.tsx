@@ -18,6 +18,9 @@ export type CartProductInput = {
   href?: string;
   imageUrl?: string;
   imageAlt?: string;
+  defaultColor?: string;
+  defaultSize?: string;
+  defaultQuantity?: number;
 };
 
 type CartServiceSelection = {
@@ -114,6 +117,31 @@ const serviceOptions: ServiceOption[] = [
     pricePerPcs: 35000
   }
 ];
+
+const defaultColorOptions = [
+  { name: "Hitam", hex: "#111111" },
+  { name: "Putih", hex: "#F7F7F4" },
+  { name: "Abu Muda", hex: "#D9D9D6" },
+  { name: "Abu Tua", hex: "#6B7280" },
+  { name: "Navy", hex: "#1F2A44" },
+  { name: "Biru Royal", hex: "#1D4ED8" },
+  { name: "Biru Muda", hex: "#7DD3FC" },
+  { name: "Forest Green", hex: "#063D24" },
+  { name: "Hijau Botol", hex: "#14532D" },
+  { name: "Army", hex: "#4B5320" },
+  { name: "Merah", hex: "#DC2626" },
+  { name: "Maroon", hex: "#6F1D1B" },
+  { name: "Kuning", hex: "#FACC15" },
+  { name: "Orange", hex: "#F97316" },
+  { name: "Cream", hex: "#EADFC8" },
+  { name: "Beige", hex: "#D6C4A5" },
+  { name: "Cokelat", hex: "#7C4A2D" },
+  { name: "Ungu", hex: "#6D28D9" },
+  { name: "Pink", hex: "#F9A8D4" },
+  { name: "Tosca", hex: "#14B8A6" }
+];
+
+const defaultSizeOptions = ["S", "M", "L", "XL", "2XL", "3XL", "Mix Size"];
 
 const searchSuggestions: SearchSuggestion[] = [
   {
@@ -402,18 +430,53 @@ function CartProductHeader({ item, compact = false }: { item: CartItem; compact?
 function ProductDetails({ item }: { item: CartItem }) {
   const cart = useCart();
   return (
-    <div className="mt-6 grid gap-3 border-t border-black/10 pt-5 sm:grid-cols-2">
-      <label className="grid gap-2 text-xs font-semibold uppercase tracking-[0.12em] text-black/45">
-        Warna
-        <input value={item.color} onChange={(event) => cart.updateItem(item.cartId, { color: event.target.value })} placeholder="Contoh: Hitam" className="min-h-11 rounded-xl border border-black/10 px-4 text-sm font-normal normal-case tracking-normal text-black outline-none transition focus:border-[#063d24]" />
-      </label>
-      <label className="grid gap-2 text-xs font-semibold uppercase tracking-[0.12em] text-black/45">
-        Ukuran
-        <input value={item.size} onChange={(event) => cart.updateItem(item.cartId, { size: event.target.value })} placeholder="Contoh: L / Mix size" className="min-h-11 rounded-xl border border-black/10 px-4 text-sm font-normal normal-case tracking-normal text-black outline-none transition focus:border-[#063d24]" />
-      </label>
-      <label className="grid gap-2 text-xs font-semibold uppercase tracking-[0.12em] text-black/45 sm:col-span-2">
+    <div className="mt-6 grid gap-5 border-t border-black/5 pt-5">
+      <section>
+        <p className="text-xs font-semibold uppercase tracking-[0.14em] text-black/40">Warna</p>
+        <p className="mt-1 text-sm text-black/55">{item.color || "Pilih warna"}</p>
+        <div className="mt-3 flex flex-wrap gap-2">
+          {defaultColorOptions.map((color) => {
+            const selected = item.color === color.name;
+            return (
+              <button
+                key={color.name}
+                type="button"
+                title={color.name}
+                aria-label={`Pilih warna ${color.name}`}
+                aria-pressed={selected}
+                onClick={() => cart.updateItem(item.cartId, { color: color.name })}
+                className={`grid h-8 w-8 place-items-center rounded-full transition ${selected ? "ring-2 ring-[#063d24] ring-offset-2 ring-offset-[#F7F7F4]" : "ring-1 ring-black/10 hover:ring-black/25"}`}
+              >
+                <span className="h-6 w-6 rounded-full border border-black/10" style={{ backgroundColor: color.hex }} />
+              </button>
+            );
+          })}
+        </div>
+      </section>
+
+      <section>
+        <p className="text-xs font-semibold uppercase tracking-[0.14em] text-black/40">Ukuran</p>
+        <div className="mt-3 flex flex-wrap gap-2">
+          {defaultSizeOptions.map((size) => {
+            const selected = item.size === size;
+            return (
+              <button
+                key={size}
+                type="button"
+                aria-pressed={selected}
+                onClick={() => cart.updateItem(item.cartId, { size })}
+                className={`min-h-9 rounded-full px-3.5 text-xs font-semibold transition ${selected ? "bg-[#111111] text-white" : "bg-white/70 text-black/70 ring-1 ring-black/10 hover:ring-black/25"}`}
+              >
+                {size}
+              </button>
+            );
+          })}
+        </div>
+      </section>
+
+      <label className="grid gap-2 text-xs font-semibold uppercase tracking-[0.12em] text-black/40">
         Catatan produk
-        <textarea value={item.notes} onChange={(event) => cart.updateItem(item.cartId, { notes: event.target.value })} placeholder="Contoh: 5 baju sablon depan kecil, 5 baju bordir dada kiri. Deadline 7 hari." rows={3} className="rounded-xl border border-black/10 p-4 text-sm font-normal normal-case leading-6 tracking-normal text-black outline-none transition focus:border-[#063d24]" />
+        <textarea value={item.notes} onChange={(event) => cart.updateItem(item.cartId, { notes: event.target.value })} placeholder="Contoh: mix ukuran, deadline, atau permintaan warna khusus." rows={3} className="rounded-[18px] border-0 bg-white/70 p-4 text-sm font-normal normal-case leading-6 tracking-normal text-black outline-none ring-1 ring-black/10 transition focus:ring-[#063d24]/35" />
       </label>
     </div>
   );
@@ -437,7 +500,7 @@ function ProductionChoices({ item }: { item: CartItem }) {
           const selected = item.services.find((entry) => entry.id === service.id);
           const selectedQty = selected?.quantity || item.quantity;
           return (
-            <article key={`${item.cartId}-${service.id}`} className={`rounded-2xl border bg-white p-4 transition ${selected ? "border-[#063d24] ring-1 ring-[#063d24]/15" : "border-black/10 hover:border-black/25"}`}>
+            <article key={`${item.cartId}-${service.id}`} className={`rounded-[22px] bg-white/50 p-4 transition ${selected ? "ring-1 ring-[#063d24]/25" : "ring-1 ring-black/5 hover:ring-black/15"}`}>
               <div className="flex items-start justify-between gap-4">
                 <label className="flex min-w-0 cursor-pointer gap-3">
                   <input type="checkbox" checked={Boolean(selected)} onChange={() => cart.updateItem(item.cartId, { services: toggleService(item, service) })} className="mt-1 h-4 w-4 accent-[#063d24]" />
@@ -449,7 +512,7 @@ function ProductionChoices({ item }: { item: CartItem }) {
                 <span className="shrink-0 text-sm font-semibold">{selected ? formatRupiah(service.pricePerPcs * selectedQty) : formatRupiah(service.pricePerPcs)}</span>
               </div>
               {selected ? (
-                <div className="mt-4 grid gap-3 rounded-xl bg-[#f8f8f4] p-3 sm:grid-cols-[160px_1fr]">
+                <div className="mt-4 grid gap-3 rounded-[18px] bg-white/50 p-3 sm:grid-cols-[160px_1fr]">
                   <label className="grid gap-2 text-xs font-semibold uppercase tracking-[0.12em] text-black/45">
                     Jumlah pcs
                     <input value={selected.quantity} onChange={(event) => cart.updateItem(item.cartId, { services: updateService(item, service.id, { quantity: normalizeNumber(Number(event.target.value || 1), item.quantity) }) })} className="min-h-10 rounded-lg border border-black/10 bg-white px-3 text-sm font-semibold normal-case tracking-normal text-black outline-none focus:border-[#063d24]" inputMode="numeric" />
@@ -474,7 +537,7 @@ function ProductionChoices({ item }: { item: CartItem }) {
 
 function FullCartItem({ item }: { item: CartItem }) {
   return (
-    <article className="rounded-[28px] border border-black/10 bg-white p-4 sm:p-6">
+    <article className="rounded-[28px] bg-white/50 p-4 sm:p-6">
       <CartProductHeader item={item} />
       <ProductDetails item={item} />
       <ProductionChoices item={item} />
@@ -488,7 +551,7 @@ function CartSummary({ compact = false }: { compact?: boolean }) {
   const checkoutHref = cart.items.length ? whatsappLinkWithMessage(contactLinks.whatsapp, buildMessage(cart.items)) : "#";
 
   return (
-    <aside className={`rounded-[28px] border border-black/10 bg-white ${compact ? "p-4" : "p-5 sm:p-6"}`}>
+    <aside className={`rounded-[28px] bg-white/50 ${compact ? "p-4" : "p-5 sm:p-6"}`}>
       <h2 className="text-2xl font-semibold tracking-tight">Summary</h2>
       <div className="mt-6 grid gap-4 text-sm">
         <div className="flex items-center justify-between gap-4">
@@ -525,7 +588,7 @@ function CartSummary({ compact = false }: { compact?: boolean }) {
 
 function EmptyCart({ fullPage = false }: { fullPage?: boolean }) {
   return (
-    <div className={`grid place-items-center rounded-[28px] bg-white p-8 text-center ${fullPage ? "min-h-[420px]" : "min-h-[280px]"}`}>
+    <div className={`grid place-items-center rounded-[28px] bg-white/50 p-8 text-center ${fullPage ? "min-h-[420px]" : "min-h-[280px]"}`}>
       <div>
         <div className="mx-auto grid h-14 w-14 place-items-center rounded-full bg-[#f5f5ef]"><CartIcon /></div>
         <p className="mt-5 text-lg font-semibold">Keranjang masih kosong</p>
@@ -612,11 +675,11 @@ function MiniCartContent() {
 
   return (
     <div className="grid gap-5">
-      <section className="rounded-[24px] border border-black/10 bg-white p-4">
+      <section className="rounded-[24px] bg-white/50 p-4">
         <CartProductHeader item={primary} compact />
         {additionalCount > 0 ? <p className="mt-4 rounded-full bg-[#f5f5ef] px-3 py-2 text-xs text-black/60">+ {additionalCount} item tambahan ikut di keranjang.</p> : null}
       </section>
-      <section className="rounded-[24px] border border-black/10 bg-white p-4">
+      <section className="rounded-[24px] bg-white/50 p-4">
         <div className="flex items-center justify-between text-sm">
           <span className="text-black/60">Subtotal Produk</span>
           <span className="font-semibold">{safeCurrency(totals.productSubtotal)}</span>
@@ -649,7 +712,7 @@ function CartDrawer() {
     <>
       <div className={`fixed inset-0 z-[150] bg-black/35 transition ${isOpen ? "visible opacity-100" : "invisible opacity-0"}`} onMouseDown={(event) => event.target === event.currentTarget && closeCart()} />
       <aside className={`fixed right-0 top-0 z-[160] flex h-dvh w-full max-w-md flex-col bg-[#F7F7F4] shadow-[-18px_0_50px_rgba(0,0,0,0.14)] transition-transform duration-300 ${isOpen ? "translate-x-0" : "translate-x-full"}`} role="dialog" aria-modal="true" aria-label="Keranjang belanja">
-        <div className="flex items-center justify-between border-b border-black/10 bg-white p-5">
+        <div className="flex items-center justify-between bg-[#F7F7F4] p-5">
           <div>
             <p className="text-xs font-semibold uppercase tracking-[0.18em] text-black/45">Keranjang</p>
             <h2 className="mt-1 text-2xl font-semibold">Pesanan DEBRODER</h2>
@@ -717,9 +780,9 @@ export function CartProvider({ children }: { children: ReactNode }) {
             ...product,
             cartId: createCartId(product),
             role,
-            quantity: 1,
-            color: "",
-            size: "",
+            quantity: normalizeNumber(Number(product.defaultQuantity || 1)),
+            color: product.defaultColor || "",
+            size: product.defaultSize || "",
             notes: "",
             services: []
           }

@@ -206,6 +206,8 @@ function cleanProduct(product: Product) {
     collection_tags: product.collection_tags || [],
     color_tags: product.color_tags || [],
     size_tags: product.size_tags || [],
+    size_chart: product.size_chart || [],
+    bulk_order_note: displayBrand(product.bulk_order_note),
     material_tags: product.material_tags || [],
     gallery_urls: product.gallery_urls || [],
     specifications: product.specifications || [],
