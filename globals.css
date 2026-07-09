@@ -276,3 +276,16 @@ button,
     max-width: 90%;
   }
 }
+/* DEBRODER hero title wrap fix: do not force page hero headings into narrow columns. */
+.hero-content .hero-title {
+  max-width: min(92vw, 1080px);
+  overflow-wrap: normal;
+  word-break: normal;
+}
+
+@media (max-width: 768px) {
+  .hero-content .hero-title {
+    max-width: 92vw;
+  }
+}
+

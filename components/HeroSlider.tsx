@@ -179,7 +179,7 @@ export function HeroSlider({ heroes }: { heroes: HeroBanner[] }) {
             {hasCopy ? (
               <div className="absolute inset-x-0 bottom-16 z-10 sm:bottom-14 lg:bottom-16">
                 <div className="section-shell">
-                  <div className="hero-content mx-auto max-w-[760px] text-white">
+                  <div className="hero-content mx-auto max-w-[1120px] text-white">
                     {badge ? (
                       <p className="text-[15px] font-medium uppercase tracking-normal text-white/75 sm:text-[17px]">
                         {badge}
@@ -187,11 +187,11 @@ export function HeroSlider({ heroes }: { heroes: HeroBanner[] }) {
                     ) : null}
                     {headline ? (
                       index === 0 ? (
-                        <h1 className="hero-title mt-2 max-w-[10.5ch] whitespace-pre-line text-center text-[clamp(2.625rem,12vw,3.25rem)] sm:text-[4rem] lg:text-[clamp(4rem,6vw,5.5rem)]">
+                        <h1 className="hero-title mt-2 max-w-[min(92vw,1080px)] whitespace-pre-line text-center text-[clamp(2.625rem,12vw,3.25rem)] sm:text-[4rem] lg:text-[clamp(4rem,6vw,5.5rem)]">
                           {headline}
                         </h1>
                       ) : (
-                        <h2 className="hero-title mt-2 max-w-[10.5ch] whitespace-pre-line text-center text-[clamp(2.625rem,12vw,3.25rem)] sm:text-[4rem] lg:text-[clamp(4rem,6vw,5.5rem)]">
+                        <h2 className="hero-title mt-2 max-w-[min(92vw,1080px)] whitespace-pre-line text-center text-[clamp(2.625rem,12vw,3.25rem)] sm:text-[4rem] lg:text-[clamp(4rem,6vw,5.5rem)]">
                           {headline}
                         </h2>
                       )
