@@ -1,7 +1,9 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useCart, type CartProductInput } from "@/components/CartProvider";
+import type { ProductVariant, ProductVariantSize } from "@/lib/types";
+import { formatRupiah } from "@/lib/url";
 
 export type ProductColorOption = {
   name: string;
@@ -15,6 +17,7 @@ type ProductPurchasePanelProps = {
   sizeGuide?: string[];
   bulkOrderNote?: string | null;
   whatsappUrl?: string;
+  variants?: ProductVariant[];
 };
 
 const baseColors: ProductColorOption[] = [
@@ -44,6 +47,12 @@ const defaultSizes = ["S", "M", "L", "XL", "2XL", "3XL", "Mix Size"];
 
 function slugify(value: string) {
   return value.toLowerCase().normalize("NFKD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
+}
+
+function moneyNumber(value?: string | number | null) {
+  if (typeof value === "number" && Number.isFinite(value)) return value;
+  const parsed = Number(String(value || "").replace(/[^\d-]/g, ""));
+  return Number.isFinite(parsed) ? parsed : 0;
 }
 
 function colorHex(value: string) {
@@ -104,32 +113,124 @@ function formatGuideRow(row: string, index: number) {
   };
 }
 
+function variantLabel(variant: ProductVariant) {
+  return variant.color_name || variant.variant_name || "Varian";
+}
+
+function variantCoverImage(variant?: ProductVariant) {
+  if (!variant) return undefined;
+  const cover = variant.variant_images?.find((image) => image.is_cover) || variant.variant_images?.[0];
+  return cover?.image_url || variant.image_url || variant.images?.[0];
+}
+
+function activeVariantSizes(variant?: ProductVariant) {
+  return (variant?.sizes || []).filter((size) => size.is_active !== false);
+}
+
+function findSize(variant: ProductVariant | undefined, selectedSize: string) {
+  return activeVariantSizes(variant).find((size) => size.size_name === selectedSize);
+}
+
+function sizeIsUnavailable(size?: ProductVariantSize) {
+  return Boolean(size && Number(size.stock) <= 0);
+}
+
 export function ProductPurchasePanel({
   product,
   colors = [],
   sizes = [],
   sizeGuide = [],
   bulkOrderNote,
-  whatsappUrl
+  whatsappUrl,
+  variants = []
 }: ProductPurchasePanelProps) {
   const cart = useCart();
+  const activeVariants = useMemo(() => variants.filter((variant) => variant.is_active !== false), [variants]);
+  const hasVariants = activeVariants.length > 0;
+
   const colorOptions = useMemo(() => {
+    if (hasVariants) {
+      return activeVariants.map((variant) => ({
+        name: variantLabel(variant),
+        hex: variant.color_hex || colorHex(variantLabel(variant)),
+        variant
+      }));
+    }
+
     const productColors = uniqueList(colors);
     const baseNames = baseColors.map((color) => color.name);
-    return uniqueList([...productColors, ...baseNames]).slice(0, Math.max(20, productColors.length));
-  }, [colors]);
-  const sizeOptions = useMemo(() => uniqueList([...(sizes || []), ...defaultSizes]), [sizes]);
-  const [selectedColor, setSelectedColor] = useState(colorOptions[0] || "Hitam");
+    return uniqueList([...productColors, ...baseNames]).slice(0, Math.max(20, productColors.length)).map((name) => ({
+      name,
+      hex: colorHex(name),
+      variant: undefined
+    }));
+  }, [activeVariants, colors, hasVariants]);
+
+  const [selectedColor, setSelectedColor] = useState(colorOptions[0]?.name || "Hitam");
+  const selectedVariant = colorOptions.find((option) => option.name === selectedColor)?.variant;
+
+  const sizeOptions = useMemo(() => {
+    const variantSizes = activeVariantSizes(selectedVariant).map((size) => size.size_name);
+    return variantSizes.length ? uniqueList(variantSizes) : uniqueList([...(sizes || []), ...defaultSizes]);
+  }, [selectedVariant, sizes]);
+
   const [selectedSize, setSelectedSize] = useState(sizeOptions[0] || "S");
   const [quantity, setQuantity] = useState(1);
+
+  useEffect(() => {
+    if (!colorOptions.some((option) => option.name === selectedColor)) {
+      setSelectedColor(colorOptions[0]?.name || "Hitam");
+    }
+  }, [colorOptions, selectedColor]);
+
+  useEffect(() => {
+    if (!sizeOptions.includes(selectedSize)) {
+      setSelectedSize(sizeOptions[0] || "S");
+    }
+  }, [selectedSize, sizeOptions]);
+
+  const selectedVariantSize = findSize(selectedVariant, selectedSize);
+  const unavailable = sizeIsUnavailable(selectedVariantSize);
+  const stockLabel = selectedVariantSize
+    ? selectedVariantSize.stock > 0
+      ? `Stok ${selectedVariantSize.stock}`
+      : "Stok kosong"
+    : hasVariants
+      ? "Stok mengikuti varian"
+      : "Siap dikonfirmasi";
+  const selectedSku = selectedVariantSize?.sku || selectedVariant?.sku || product.sku;
+  const unitPriceValue = moneyNumber(product.priceValue || product.priceLabel) + moneyNumber(selectedVariant?.price_adjustment) + moneyNumber(selectedVariantSize?.price_adjustment);
+  const unitPriceLabel = unitPriceValue > 0 ? formatRupiah(unitPriceValue) : product.priceLabel;
   const guideRows = sizeGuide.length ? sizeGuide : sizeOptions.filter((size) => size !== "Mix Size").map((size) => `${size}: Sesuaikan dengan panduan ukuran produk ini.`);
 
   function addSelectedToCart() {
     cart.addItem({
       ...product,
+      priceLabel: unitPriceLabel,
+      priceValue: unitPriceValue || product.priceValue,
+      imageUrl: variantCoverImage(selectedVariant) || product.imageUrl,
       defaultColor: selectedColor,
+      defaultColorHex: colorOptions.find((option) => option.name === selectedColor)?.hex,
       defaultSize: selectedSize,
-      defaultQuantity: quantity
+      defaultQuantity: quantity,
+      variantId: selectedVariant?.id,
+      variantSizeId: selectedVariantSize?.id,
+      variantName: selectedVariant?.variant_name || selectedVariant?.color_name,
+      variantSku: selectedSku || undefined,
+      stockLabel,
+      variantSnapshot: selectedVariant
+        ? {
+            variant_id: selectedVariant.id,
+            variant_name: selectedVariant.variant_name,
+            color_name: selectedVariant.color_name,
+            color_hex: selectedVariant.color_hex,
+            size_id: selectedVariantSize?.id,
+            size_name: selectedVariantSize?.size_name,
+            sku: selectedSku,
+            stock: selectedVariantSize?.stock,
+            unit_price: unitPriceValue
+          }
+        : undefined
     });
   }
 
@@ -138,27 +239,33 @@ export function ProductPurchasePanel({
       <section>
         <div className="flex items-center justify-between gap-4">
           <p className="text-sm font-semibold text-brand-charcoal">Warna: <span className="font-normal text-brand-charcoal/60">{selectedColor}</span></p>
-          <span className="text-xs text-brand-charcoal/50">20 warna dasar</span>
+          <span className="text-xs text-brand-charcoal/50">{hasVariants ? `${colorOptions.length} varian warna` : "20 warna dasar"}</span>
         </div>
         <div className="mt-3 flex flex-wrap gap-2.5">
-          {colorOptions.map((color) => {
-            const selected = color === selectedColor;
-            const hex = colorHex(color);
+          {colorOptions.map((option) => {
+            const selected = option.name === selectedColor;
             return (
               <button
-                key={color}
+                key={option.name}
                 type="button"
-                title={color}
-                aria-label={`Pilih warna ${color}`}
+                title={option.name}
+                aria-label={`Pilih warna ${option.name}`}
                 aria-pressed={selected}
-                onClick={() => setSelectedColor(color)}
+                onClick={() => setSelectedColor(option.name)}
                 className={`grid h-9 w-9 place-items-center rounded-full transition ${selected ? "ring-2 ring-brand-green ring-offset-2 ring-offset-[#F7F7F4]" : "ring-1 ring-black/10 hover:ring-black/30"}`}
               >
-                <span className="h-7 w-7 rounded-full border border-black/10" style={{ backgroundColor: hex }} />
+                <span className="h-7 w-7 rounded-full border border-black/10" style={{ backgroundColor: option.hex }} />
               </button>
             );
           })}
         </div>
+        {hasVariants ? (
+          <div className="mt-3 flex flex-wrap gap-2 text-xs text-brand-charcoal/55">
+            {selectedSku ? <span>SKU: {selectedSku}</span> : null}
+            <span>{stockLabel}</span>
+            {selectedVariant?.price_adjustment ? <span>Penyesuaian varian {formatRupiah(moneyNumber(selectedVariant.price_adjustment))}</span> : null}
+          </div>
+        ) : null}
       </section>
 
       <section>
@@ -169,18 +276,35 @@ export function ProductPurchasePanel({
         <div className="mt-3 flex flex-wrap gap-2">
           {sizeOptions.map((size) => {
             const selected = size === selectedSize;
+            const sizeRecord = findSize(selectedVariant, size);
+            const disabled = sizeIsUnavailable(sizeRecord);
             return (
               <button
                 key={size}
                 type="button"
                 aria-pressed={selected}
+                disabled={disabled}
                 onClick={() => setSelectedSize(size)}
-                className={`min-h-10 rounded-full px-4 text-sm font-semibold transition ${selected ? "bg-brand-charcoal text-white" : "bg-white/70 text-brand-charcoal ring-1 ring-black/10 hover:ring-black/25"}`}
+                className={`min-h-10 rounded-full px-4 text-sm font-semibold transition disabled:cursor-not-allowed disabled:opacity-35 ${selected ? "bg-brand-charcoal text-white" : "bg-white/70 text-brand-charcoal ring-1 ring-black/10 hover:ring-black/25"}`}
               >
                 {size}
               </button>
             );
           })}
+        </div>
+        {selectedVariantSize ? <p className="mt-2 text-xs text-brand-charcoal/50">{stockLabel}{selectedVariantSize.price_adjustment ? ` · Tambahan ${formatRupiah(moneyNumber(selectedVariantSize.price_adjustment))}` : ""}</p> : null}
+      </section>
+
+      <section className="rounded-[22px] bg-white/60 p-4">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div>
+            <p className="text-sm font-semibold text-brand-charcoal">Estimasi harga</p>
+            <p className="mt-1 text-xs text-brand-charcoal/55">Harga mengikuti warna, ukuran, dan stok varian yang dipilih.</p>
+          </div>
+          <div className="text-right">
+            <p className="text-lg font-semibold text-brand-charcoal">{unitPriceLabel || "Konfirmasi admin"}</p>
+            <p className="text-xs text-brand-charcoal/50">/ pcs</p>
+          </div>
         </div>
       </section>
 
@@ -194,8 +318,8 @@ export function ProductPurchasePanel({
           </div>
         </div>
         <div className="grid gap-3 sm:grid-cols-2">
-          <button type="button" onClick={addSelectedToCart} className="inline-flex min-h-12 items-center justify-center rounded-full bg-brand-green px-6 text-sm font-semibold text-white transition hover:bg-brand-charcoal">
-            Tambah ke Keranjang
+          <button type="button" disabled={unavailable} onClick={addSelectedToCart} className="inline-flex min-h-12 items-center justify-center rounded-full bg-brand-green px-6 text-sm font-semibold text-white transition hover:bg-brand-charcoal disabled:cursor-not-allowed disabled:bg-black/20">
+            {unavailable ? "Varian Tidak Tersedia" : "Tambah ke Keranjang"}
           </button>
           {whatsappUrl ? (
             <a href={whatsappUrl} target="_blank" rel="noopener noreferrer" className="inline-flex min-h-12 items-center justify-center rounded-full bg-white/70 px-6 text-sm font-semibold text-brand-charcoal ring-1 ring-black/10 transition hover:ring-black/25">

@@ -38,6 +38,13 @@ function productChips(product: Product) {
   ].filter(Boolean).slice(0, 3);
 }
 
+function productColors(product: Product) {
+  const variantColors = (product.variants || [])
+    .map((variant) => variant.color_name || variant.variant_name)
+    .filter(Boolean) as string[];
+  return variantColors.length ? Array.from(new Set(variantColors)) : (product.color_tags || []);
+}
+
 function colorHex(value: string) {
   const key = normalizeFilterValue(value);
   const map: Record<string, string> = {
@@ -73,7 +80,7 @@ function colorHex(value: string) {
 
 function productMetaLine(product: Product) {
   const items = [
-    product.color_tags?.length ? `${product.color_tags.length} Warna` : "",
+    productColors(product).length ? `${productColors(product).length} Warna` : "",
     product.size_tags?.[0] || "",
     product.material_tags?.[0] || ""
   ].filter(Boolean);
@@ -112,7 +119,7 @@ function matchesColor(product: Product, selectedColor: string) {
     white: ["white", "putih"]
   };
   const accepted = aliases[selectedColor] || [selectedColor];
-  return (product.color_tags || []).some((item) => accepted.includes(normalizeFilterValue(item)));
+  return productColors(product).some((item) => accepted.includes(normalizeFilterValue(item)));
 }
 
 function labelValue(value: string): LabelValue {
@@ -175,7 +182,7 @@ export function ProductCatalog({
   const [sort, setSort] = useState<SortValue>(initialSort);
 
   const categories = useMemo(() => Array.from(new Set(products.map((product) => product.kategori).filter(Boolean))).sort(), [products]);
-  const colors = useMemo(() => Array.from(new Map(products.flatMap((product) => product.color_tags || []).filter(Boolean).map((item) => [normalizeFilterValue(item), item])).entries()).sort((a, b) => a[1].localeCompare(b[1], "id")), [products]);
+  const colors = useMemo(() => Array.from(new Map(products.flatMap((product) => productColors(product)).filter(Boolean).map((item) => [normalizeFilterValue(item), item])).entries()).sort((a, b) => a[1].localeCompare(b[1], "id")), [products]);
   const hasTypeFilter = productTypeOptions.length > 0;
   const visible = useMemo(() => {
     const needle = query.trim().toLowerCase();
@@ -243,8 +250,8 @@ export function ProductCatalog({
               </div>
               </Link>
               <div className="mt-3 space-y-2">
-                {product.color_tags?.length ? <div className="flex items-center gap-1.5">
-                  {product.color_tags.slice(0, 8).map((color) => <span key={color} title={color} className="h-3.5 w-3.5 rounded-full border border-black/10 shadow-[inset_0_0_0_1px_rgba(255,255,255,0.45)]" style={{ backgroundColor: colorHex(color) }} />)}
+                {productColors(product).length ? <div className="flex items-center gap-1.5">
+                  {productColors(product).slice(0, 8).map((color) => <span key={color} title={color} className="h-3.5 w-3.5 rounded-full border border-black/10 shadow-[inset_0_0_0_1px_rgba(255,255,255,0.45)]" style={{ backgroundColor: colorHex(color) }} />)}
                 </div> : null}
                 {productMetaLine(product) ? <p className="text-[11px] font-medium tracking-[0.01em] text-brand-charcoal/55 sm:text-xs">{productMetaLine(product)}</p> : null}
                 <Link href={detailHref} className="block"><h3 className="product-title line-clamp-2 text-[15px] leading-[1.22] tracking-[-0.01em] text-brand-charcoal sm:text-[17px]">{product.nama}</h3></Link>
@@ -256,7 +263,7 @@ export function ProductCatalog({
                 </div>
                 {stockText || product.brand || chips.length ? <div className="flex flex-wrap gap-x-3 gap-y-1 text-[11px] font-medium text-brand-charcoal/55">
                   {product.brand ? <span>{product.brand}</span> : null}
-                  {chips.filter((chip) => !product.color_tags?.includes(chip)).map((chip) => <span key={chip}>{chip}</span>)}
+                  {chips.filter((chip) => !productColors(product).includes(chip)).map((chip) => <span key={chip}>{chip}</span>)}
                   {stockText ? <span>{stockText}</span> : null}
                 </div> : null}
               </div>

@@ -15,6 +15,13 @@ import type {
   HomepageSection,
   HomepageSectionItem,
   InstagramBanner,
+  JerseyRequiredService,
+  JerseyPackage,
+  JerseyMaterial,
+  JerseyConfiguratorData,
+  JerseyCollarGroup,
+  JerseyCollar,
+  JerseyAddon,
   LandingPageSettings,
   LandingSection,
   OrderStep,
@@ -102,6 +109,120 @@ async function readOptionalActiveSingle<T>(
   }
 
   return data ? (data as T) : null;
+}
+
+
+const fallbackJerseyConfigurator: JerseyConfiguratorData = {
+  packages: [
+    { name: "Atasan Fullprint", slug: "atasan-fullprint", base_price: 100000, description: "Atasan jersey fullprint." },
+    { name: "Setelan Halfprint", slug: "setelan-halfprint", base_price: 120000, description: "Setelan dengan kombinasi area print." },
+    { name: "Setelan Fullprint", slug: "setelan-fullprint", base_price: 130000, description: "Setelan jersey fullprint." }
+  ],
+  materials: [
+    { name: "Milano", slug: "milano", price_adjustment: 0 },
+    { name: "Brazil", slug: "brazil", price_adjustment: 0 },
+    { name: "Benzema", slug: "benzema", price_adjustment: 0 },
+    { name: "Drop Needle", slug: "drop-needle", price_adjustment: 0 },
+    { name: "Emboss Topo", slug: "emboss-topo", price_adjustment: 15000 },
+    { name: "Emboss Straw", slug: "emboss-straw", price_adjustment: 15000 },
+    { name: "Emboss Mixart", slug: "emboss-mixart", price_adjustment: 15000 },
+    { name: "Emboss Monochrome", slug: "emboss-monochrome", price_adjustment: 15000 }
+  ],
+  collarGroups: [
+    { name: "Regular", slug: "regular", sort_order: 10 },
+    { name: "Classic", slug: "classic", sort_order: 20 }
+  ],
+  collars: [
+    { name: "O Neck", slug: "o-neck", group_slug: "regular", group_name: "Regular", price_adjustment: 0 },
+    { name: "V Neck", slug: "v-neck", group_slug: "regular", group_name: "Regular", price_adjustment: 0 },
+    { name: "V Silang", slug: "v-silang", group_slug: "regular", group_name: "Regular", price_adjustment: 0 },
+    { name: "V Silang Tumpul", slug: "v-silang-tumpul", group_slug: "regular", group_name: "Regular", price_adjustment: 0 },
+    { name: "V Tumpul", slug: "v-tumpul", group_slug: "regular", group_name: "Regular", price_adjustment: 0 },
+    { name: "V Narrow", slug: "v-narrow", group_slug: "regular", group_name: "Regular", price_adjustment: 0 },
+    { name: "V Narrow Adidas", slug: "v-narrow-adidas", group_slug: "regular", group_name: "Regular", price_adjustment: 0 },
+    { name: "V Neck Lapisan", slug: "v-neck-lapisan", group_slug: "regular", group_name: "Regular", price_adjustment: 0 },
+    { name: "Wangki Klasik", slug: "wangki-klasik", group_slug: "classic", group_name: "Classic", price_adjustment: 0 },
+    { name: "Wangki Adidas", slug: "wangki-adidas", group_slug: "classic", group_name: "Classic", price_adjustment: 0 },
+    { name: "Wangki Segitiga", slug: "wangki-segitiga", group_slug: "classic", group_name: "Classic", price_adjustment: 0 },
+    { name: "Wangki Tumpul Adidas", slug: "wangki-tumpul-adidas", group_slug: "classic", group_name: "Classic", price_adjustment: 0 },
+    { name: "Wangki Silang Adidas", slug: "wangki-silang-adidas", group_slug: "classic", group_name: "Classic", price_adjustment: 0 },
+    { name: "Wangki Kancing 1", slug: "wangki-kancing-1", group_slug: "classic", group_name: "Classic", price_adjustment: 0 },
+    { name: "Wangki Kancing 2", slug: "wangki-kancing-2", group_slug: "classic", group_name: "Classic", price_adjustment: 0 },
+    { name: "Wangki Klasik O", slug: "wangki-klasik-o", group_slug: "classic", group_name: "Classic", price_adjustment: 0 }
+  ],
+  addons: [
+    { name: "Lengan Panjang", slug: "lengan-panjang", price_adjustment: 10000 },
+    { name: "RIB", slug: "rib", price_adjustment: 5000 }
+  ],
+  requiredServices: [
+    { service_name: "Cetak Sublim", service_slug: "cetak-sublim" }
+  ],
+  settings: {
+    minimum_order_qty: 6,
+    price_formula: "(package_price + material_adjustment + collar_adjustment + addon_total + size_adjustment) * quantity"
+  }
+};
+
+function numberValue(value: number | string | null | undefined, fallback = 0) {
+  if (typeof value === "number" && Number.isFinite(value)) return value;
+  const parsed = Number(String(value || "").replace(/[^\d.-]/g, ""));
+  return Number.isFinite(parsed) ? parsed : fallback;
+}
+
+function readMinimumOrder(settings: Array<{ setting_key: string; setting_value: unknown }>) {
+  const setting = settings.find((item) => item.setting_key === "default_minimum_order");
+  const value = setting?.setting_value as { quantity?: number } | number | undefined;
+  if (typeof value === "number") return Math.max(1, Math.floor(value));
+  if (value && typeof value.quantity === "number") return Math.max(1, Math.floor(value.quantity));
+  return fallbackJerseyConfigurator.settings.minimum_order_qty;
+}
+
+async function readJerseyConfiguratorData(): Promise<JerseyConfiguratorData> {
+  const supabase = createSupabaseServerClient();
+  if (!supabase) return fallbackJerseyConfigurator;
+
+  try {
+    const [packagesResult, materialsResult, groupsResult, collarsResult, addonsResult, servicesResult, settingsResult] = await Promise.all([
+      supabase.from("jersey_packages").select("*").eq("is_active", true).order("sort_order", { ascending: true }),
+      supabase.from("jersey_materials").select("*").eq("is_active", true).order("sort_order", { ascending: true }),
+      supabase.from("jersey_collar_groups").select("*").eq("is_active", true).order("sort_order", { ascending: true }),
+      supabase.from("jersey_collars").select("*").eq("is_active", true).order("sort_order", { ascending: true }),
+      supabase.from("jersey_addons").select("*").eq("is_active", true).order("sort_order", { ascending: true }),
+      supabase.from("jersey_required_services").select("*").eq("is_active", true).order("sort_order", { ascending: true }),
+      supabase.from("jersey_settings").select("*")
+    ]);
+
+    if (packagesResult.error || materialsResult.error || collarsResult.error) {
+      return fallbackJerseyConfigurator;
+    }
+
+    const groups = ((groupsResult.data || []) as JerseyCollarGroup[]);
+    const groupById = new Map(groups.map((group) => [group.id, group]));
+    const collars = ((collarsResult.data || []) as JerseyCollar[]).map((collar) => {
+      const group = collar.group_id ? groupById.get(collar.group_id) : undefined;
+      return {
+        ...collar,
+        group_name: collar.group_name || group?.name || "Regular",
+        group_slug: collar.group_slug || group?.slug || "regular",
+        price_adjustment: numberValue(collar.price_adjustment)
+      };
+    });
+
+    return {
+      packages: ((packagesResult.data || []) as JerseyPackage[]).map((item) => ({ ...item, base_price: numberValue(item.base_price) })),
+      materials: ((materialsResult.data || []) as JerseyMaterial[]).map((item) => ({ ...item, price_adjustment: numberValue(item.price_adjustment) })),
+      collarGroups: groups.length ? groups : fallbackJerseyConfigurator.collarGroups,
+      collars: collars.length ? collars : fallbackJerseyConfigurator.collars,
+      addons: ((addonsResult.data || []) as JerseyAddon[]).map((item) => ({ ...item, price_adjustment: numberValue(item.price_adjustment) })),
+      requiredServices: ((servicesResult.data || []) as JerseyRequiredService[]),
+      settings: {
+        minimum_order_qty: readMinimumOrder((settingsResult.data || []) as Array<{ setting_key: string; setting_value: unknown }>),
+        price_formula: fallbackJerseyConfigurator.settings.price_formula
+      }
+    };
+  } catch {
+    return fallbackJerseyConfigurator;
+  }
 }
 
 const blockedPublicPattern = /\b(express|ekspedisi|pengiriman|distribusi)\b/i;
@@ -212,6 +333,14 @@ function cleanProduct(product: Product) {
     gallery_urls: product.gallery_urls || [],
     specifications: product.specifications || [],
     focal_points: product.focal_points || {},
+    variants: (product.variants || []).map((variant) => ({
+      ...variant,
+      variant_name: displayBrand(variant.variant_name),
+      color_name: displayBrand(variant.color_name),
+      sizes: variant.sizes || [],
+      variant_images: variant.variant_images || []
+    })),
+    size_guide: product.size_guide || null,
     nama: displayBrand(normalizedName),
     kategori: displayBrand(product.kategori),
     deskripsi: displayBrand(
@@ -265,6 +394,109 @@ async function readProductCategories(): Promise<ProductCategory[]> {
 
   if (error || !data?.length) return fallback;
   return (data as ProductCategory[]).map(cleanProductCategory);
+}
+
+async function readProducts(): Promise<Product[]> {
+  const supabase = createSupabaseServerClient();
+
+  if (!supabase) {
+    return fallbackContent.products;
+  }
+
+  const { data, error } = await supabase
+    .from("products")
+    .select("*")
+    .eq("status_aktif", true)
+    .order("urutan", { ascending: true });
+
+  if (error || !data?.length) return fallbackContent.products;
+
+  const products = data as Product[];
+  const productIds = products.map((product) => product.id).filter(Boolean) as string[];
+
+  if (!productIds.length) return products;
+
+  try {
+    const { data: variantsData } = await supabase
+      .from("product_variants")
+      .select("*")
+      .in("product_id", productIds)
+      .eq("is_active", true)
+      .order("sort_order", { ascending: true });
+
+    const variants = (variantsData || []) as NonNullable<Product["variants"]>;
+    const variantIds = variants.map((variant) => variant.id).filter(Boolean) as string[];
+
+    const [sizesResult, imagesResult, guidesResult] = await Promise.all([
+      variantIds.length
+        ? supabase
+            .from("product_variant_sizes")
+            .select("*")
+            .in("variant_id", variantIds)
+            .eq("is_active", true)
+            .order("sort_order", { ascending: true })
+        : Promise.resolve({ data: [] }),
+      variantIds.length
+        ? supabase
+            .from("product_variant_images")
+            .select("*")
+            .in("variant_id", variantIds)
+            .order("is_cover", { ascending: false })
+            .order("sort_order", { ascending: true })
+        : Promise.resolve({ data: [] }),
+      supabase
+        .from("product_size_guides")
+        .select("*")
+        .in("product_id", productIds)
+        .eq("is_active", true)
+        .order("sort_order", { ascending: true })
+    ]);
+
+    const sizesByVariant = new Map<string, NonNullable<NonNullable<Product["variants"]>[number]["sizes"]>>();
+    ((sizesResult.data || []) as NonNullable<NonNullable<Product["variants"]>[number]["sizes"]>).forEach((size) => {
+      const list = sizesByVariant.get(size.variant_id) || [];
+      list.push(size);
+      sizesByVariant.set(size.variant_id, list);
+    });
+
+    const imagesByVariant = new Map<string, NonNullable<NonNullable<Product["variants"]>[number]["variant_images"]>>();
+    ((imagesResult.data || []) as NonNullable<NonNullable<Product["variants"]>[number]["variant_images"]>).forEach((image) => {
+      const list = imagesByVariant.get(image.variant_id) || [];
+      list.push(image);
+      imagesByVariant.set(image.variant_id, list);
+    });
+
+    const variantsByProduct = new Map<string, NonNullable<Product["variants"]>>();
+    variants.forEach((variant) => {
+      const next = {
+        ...variant,
+        sizes: variant.id ? (sizesByVariant.get(variant.id) || []) : [],
+        variant_images: variant.id ? (imagesByVariant.get(variant.id) || []) : []
+      };
+      const list = variantsByProduct.get(variant.product_id) || [];
+      list.push(next);
+      variantsByProduct.set(variant.product_id, list);
+    });
+
+    const guideByProduct = new Map<string, NonNullable<Product["size_guide"]>>();
+    ((guidesResult.data || []) as NonNullable<Product["size_guide"]>[]).forEach((guide) => {
+      if (guide.product_id && !guideByProduct.has(guide.product_id)) {
+        guideByProduct.set(guide.product_id, guide);
+      }
+    });
+
+    return products.map((product) => {
+      const variants = product.id ? (variantsByProduct.get(product.id) || []) : [];
+      return {
+        ...product,
+        variants,
+        has_variants: product.has_variants || variants.length > 0,
+        size_guide: product.id ? (guideByProduct.get(product.id) || null) : null
+      };
+    });
+  } catch {
+    return products;
+  }
 }
 
 function cleanService(service: Service) {
@@ -636,7 +868,8 @@ export async function getPublicContent(): Promise<PublicContent> {
     orderSteps,
     trustAbout,
     testimonials,
-    contact
+    contact,
+    jerseyConfigurator
   ] = await Promise.all([
     readActive<HeroBanner>("hero_banners", [], "urutan", false),
     readOptionalActiveSingle<InstagramBanner>(
@@ -657,7 +890,7 @@ export async function getPublicContent(): Promise<PublicContent> {
     ),
     readProductCategories(),
     readActive<Service>("services", fallbackContent.services, "urutan", false),
-    readActive<Product>("products", fallbackContent.products, "urutan", false),
+    readProducts(),
     readActive<ProductFilter>("product_filters", fallbackProductFilters),
     readHomepageSections(),
     readLandingPageSettings(),
@@ -674,7 +907,8 @@ export async function getPublicContent(): Promise<PublicContent> {
       "contact_settings",
       fallbackContent.contact,
       true
-    )
+    ),
+    readJerseyConfiguratorData()
   ]);
 
   const cleanHeroes = publicHeroes(heroes);
@@ -701,6 +935,7 @@ export async function getPublicContent(): Promise<PublicContent> {
     contact: cleanContact({
       ...fallbackContent.contact,
       ...contact
-    })
+    }),
+    jerseyConfigurator
   };
 }

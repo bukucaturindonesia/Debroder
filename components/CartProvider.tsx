@@ -18,9 +18,17 @@ export type CartProductInput = {
   href?: string;
   imageUrl?: string;
   imageAlt?: string;
+  sku?: string;
   defaultColor?: string;
+  defaultColorHex?: string;
   defaultSize?: string;
   defaultQuantity?: number;
+  variantId?: string;
+  variantSizeId?: string;
+  variantName?: string;
+  variantSku?: string;
+  stockLabel?: string;
+  variantSnapshot?: Record<string, unknown>;
 };
 
 type CartServiceSelection = {
@@ -37,7 +45,14 @@ type CartItem = CartProductInput & {
   role: CartItemRole;
   quantity: number;
   color: string;
+  colorHex?: string;
   size: string;
+  variantId?: string;
+  variantSizeId?: string;
+  variantName?: string;
+  variantSku?: string;
+  stockLabel?: string;
+  variantSnapshot?: Record<string, unknown>;
   notes: string;
   services: CartServiceSelection[];
 };
@@ -210,6 +225,108 @@ function serviceById(serviceId: string) {
   return serviceOptions.find((service) => service.id === serviceId) || null;
 }
 
+
+function recordValue(value: unknown): Record<string, unknown> | null {
+  return value && typeof value === "object" && !Array.isArray(value) ? value as Record<string, unknown> : null;
+}
+
+function nameFromRecord(value: unknown) {
+  const record = recordValue(value);
+  return typeof record?.name === "string" ? record.name : "";
+}
+
+function priceFromRecord(value: unknown, key = "price_adjustment") {
+  const record = recordValue(value);
+  return parsePrice(record?.[key] as string | number | null | undefined);
+}
+
+function jerseySnapshotLines(snapshot?: Record<string, unknown>) {
+  if (!snapshot || snapshot.configurator_type !== "jersey") return [];
+  const teamInfo = recordValue(snapshot.team_information);
+  const priceBreakdown = recordValue(snapshot.price_breakdown);
+  const addons = Array.isArray(snapshot.addons) ? snapshot.addons : [];
+  const requiredServices = Array.isArray(snapshot.required_services) ? snapshot.required_services : [];
+  const lines = ["", "Konfigurasi jersey:"];
+  const packageName = nameFromRecord(snapshot.package);
+  const materialName = nameFromRecord(snapshot.material);
+  const collarName = nameFromRecord(snapshot.collar);
+  if (packageName) lines.push(`Paket: ${packageName}`);
+  if (materialName) {
+    const adjustment = priceFromRecord(snapshot.material);
+    lines.push(`Bahan: ${materialName}${adjustment ? ` (${formatRupiah(adjustment)})` : " (+0)"}`);
+  }
+  if (collarName) {
+    const adjustment = priceFromRecord(snapshot.collar);
+    lines.push(`Kerah: ${collarName}${adjustment ? ` (${formatRupiah(adjustment)})` : " (+0)"}`);
+  }
+  if (typeof snapshot.size === "string") lines.push(`Ukuran: ${snapshot.size}`);
+  if (addons.length) {
+    lines.push("Addon:");
+    addons.forEach((addon) => {
+      const addonName = nameFromRecord(addon);
+      const addonPrice = priceFromRecord(addon);
+      if (addonName) lines.push(`- ${addonName}${addonPrice ? ` (${formatRupiah(addonPrice)} / pcs)` : ""}`);
+    });
+  }
+  if (requiredServices.length) {
+    lines.push("Layanan wajib:");
+    requiredServices.forEach((service) => {
+      const record = recordValue(service);
+      const serviceName = typeof record?.service_name === "string" ? record.service_name : nameFromRecord(service);
+      if (serviceName) lines.push(`- ${serviceName}`);
+    });
+  }
+  if (priceBreakdown) {
+    const unitPrice = parsePrice(priceBreakdown.unitPrice as string | number | null | undefined);
+    const total = parsePrice(priceBreakdown.total as string | number | null | undefined);
+    if (unitPrice) lines.push(`Harga / pcs: ${formatRupiah(unitPrice)}`);
+    if (total) lines.push(`Estimasi total jersey: ${formatRupiah(total)}`);
+  }
+  if (teamInfo) {
+    const teamName = typeof teamInfo.teamName === "string" ? teamInfo.teamName.trim() : "";
+    const designReference = typeof teamInfo.designReference === "string" ? teamInfo.designReference.trim() : "";
+    const designFileName = typeof teamInfo.designFileName === "string" ? teamInfo.designFileName.trim() : "";
+    const playerData = typeof teamInfo.playerData === "string" ? teamInfo.playerData.trim() : "";
+    const notes = typeof teamInfo.notes === "string" ? teamInfo.notes.trim() : "";
+    if (teamName || designReference || designFileName || playerData || notes) lines.push("", "Data tim dan desain:");
+    if (teamName) lines.push(`Nama tim: ${teamName}`);
+    if (designReference) lines.push(`Referensi desain: ${designReference}`);
+    if (designFileName) lines.push(`File desain: ${designFileName}`);
+    if (playerData) lines.push(`Data pemain:\n${playerData}`);
+    if (notes) lines.push(`Catatan jersey: ${notes}`);
+  }
+  return lines;
+}
+
+function isJerseyConfiguredItem(item: Pick<CartItem, "variantSnapshot">) {
+  return item.variantSnapshot?.configurator_type === "jersey";
+}
+
+function JerseyConfigSummary({ item }: { item: CartItem }) {
+  if (!isJerseyConfiguredItem(item)) return null;
+  const snapshot = item.variantSnapshot || {};
+  const packageName = nameFromRecord(snapshot.package);
+  const materialName = nameFromRecord(snapshot.material);
+  const collarName = nameFromRecord(snapshot.collar);
+  const addons = Array.isArray(snapshot.addons) ? snapshot.addons.map(nameFromRecord).filter(Boolean) : [];
+  const requiredServices = Array.isArray(snapshot.required_services) ? snapshot.required_services.map((service) => {
+    const record = recordValue(service);
+    return typeof record?.service_name === "string" ? record.service_name : nameFromRecord(service);
+  }).filter(Boolean) : [];
+  return (
+    <div className="mt-5 rounded-[22px] bg-[#e9f4ee]/70 p-4 text-sm leading-6 text-[#063d24]">
+      <p className="text-xs font-bold uppercase tracking-[0.14em]">Konfigurasi Jersey</p>
+      <div className="mt-3 grid gap-1 text-xs text-[#063d24]/78 sm:text-sm">
+        {packageName ? <p><span className="font-semibold">Paket:</span> {packageName}</p> : null}
+        {materialName ? <p><span className="font-semibold">Bahan:</span> {materialName}</p> : null}
+        {collarName ? <p><span className="font-semibold">Kerah:</span> {collarName}</p> : null}
+        {addons.length ? <p><span className="font-semibold">Addon:</span> {addons.join(", ")}</p> : null}
+        {requiredServices.length ? <p><span className="font-semibold">Layanan wajib:</span> {requiredServices.join(", ")}</p> : null}
+      </div>
+    </div>
+  );
+}
+
 function normalizeServices(services: unknown, quantity: number): CartServiceSelection[] {
   if (!Array.isArray(services)) return [];
   return services
@@ -270,7 +387,14 @@ function ensureRoles(items: CartItem[]) {
       role,
       quantity,
       color: item.color || "",
+      colorHex: item.colorHex || item.defaultColorHex || "",
       size: item.size || "",
+      variantId: item.variantId || undefined,
+      variantSizeId: item.variantSizeId || undefined,
+      variantName: item.variantName || undefined,
+      variantSku: item.variantSku || undefined,
+      stockLabel: item.stockLabel || undefined,
+      variantSnapshot: item.variantSnapshot || undefined,
       notes: item.notes || "",
       services: normalizeServices(item.services, quantity)
     };
@@ -308,9 +432,13 @@ function buildItemMessage(item: CartItem) {
   const lines = [`Produk: ${item.name}`];
   if (item.category) lines.push(`Kategori: ${item.category}`);
   if (item.priceLabel) lines.push(`Harga produk: ${item.priceLabel}`);
+  if (item.variantName) lines.push(`Varian: ${item.variantName}`);
+  if (item.variantSku) lines.push(`SKU: ${item.variantSku}`);
   lines.push(`Jumlah: ${item.quantity} pcs`);
   if (item.color.trim()) lines.push(`Warna: ${item.color.trim()}`);
   if (item.size.trim()) lines.push(`Ukuran: ${item.size.trim()}`);
+  if (item.stockLabel) lines.push(`Info stok: ${item.stockLabel}`);
+  lines.push(...jerseySnapshotLines(item.variantSnapshot));
   if (item.notes.trim()) lines.push(`Catatan produk: ${item.notes.trim()}`);
   const productSubtotal = itemProductSubtotal(item);
   if (productSubtotal > 0) lines.push(`Subtotal produk: ${formatRupiah(productSubtotal)}`);
@@ -412,6 +540,13 @@ function CartProductHeader({ item, compact = false }: { item: CartItem; compact?
             {item.role === "primary" ? <span className="mb-2 inline-flex rounded-full bg-[#e9f4ee] px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.12em] text-[#063d24]">Pesanan Utama</span> : null}
             <h3 className="text-base font-semibold leading-tight sm:text-lg">{item.name}</h3>
             {labelForItem(item) ? <p className="mt-1 text-sm leading-6 text-black/55">{labelForItem(item)}</p> : null}
+            {(item.color || item.size || item.variantSku) ? (
+              <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-black/55">
+                {item.color ? <span className="inline-flex items-center gap-1.5"><span className="h-3 w-3 rounded-full border border-black/10" style={{ backgroundColor: item.colorHex || "#d9d9d6" }} />{item.color}</span> : null}
+                {item.size ? <span>Ukuran {item.size}</span> : null}
+                {item.variantSku ? <span>SKU {item.variantSku}</span> : null}
+              </div>
+            ) : null}
           </div>
           <button type="button" className="text-xs font-semibold text-red-700 underline-offset-4 hover:underline" onClick={() => cart.removeItem(item.cartId)}>Hapus</button>
         </div>
@@ -444,7 +579,7 @@ function ProductDetails({ item }: { item: CartItem }) {
                 title={color.name}
                 aria-label={`Pilih warna ${color.name}`}
                 aria-pressed={selected}
-                onClick={() => cart.updateItem(item.cartId, { color: color.name })}
+                onClick={() => cart.updateItem(item.cartId, { color: color.name, colorHex: color.hex })}
                 className={`grid h-8 w-8 place-items-center rounded-full transition ${selected ? "ring-2 ring-[#063d24] ring-offset-2 ring-offset-[#F7F7F4]" : "ring-1 ring-black/10 hover:ring-black/25"}`}
               >
                 <span className="h-6 w-6 rounded-full border border-black/10" style={{ backgroundColor: color.hex }} />
@@ -536,11 +671,13 @@ function ProductionChoices({ item }: { item: CartItem }) {
 }
 
 function FullCartItem({ item }: { item: CartItem }) {
+  const isJersey = isJerseyConfiguredItem(item);
   return (
     <article className="rounded-[28px] bg-white/50 p-4 sm:p-6">
       <CartProductHeader item={item} />
-      <ProductDetails item={item} />
-      <ProductionChoices item={item} />
+      <JerseyConfigSummary item={item} />
+      {!isJersey ? <ProductDetails item={item} /> : null}
+      {!isJersey ? <ProductionChoices item={item} /> : null}
     </article>
   );
 }
@@ -782,7 +919,14 @@ export function CartProvider({ children }: { children: ReactNode }) {
             role,
             quantity: normalizeNumber(Number(product.defaultQuantity || 1)),
             color: product.defaultColor || "",
+            colorHex: product.defaultColorHex || "",
             size: product.defaultSize || "",
+            variantId: product.variantId,
+            variantSizeId: product.variantSizeId,
+            variantName: product.variantName,
+            variantSku: product.variantSku,
+            stockLabel: product.stockLabel,
+            variantSnapshot: product.variantSnapshot,
             notes: "",
             services: []
           }

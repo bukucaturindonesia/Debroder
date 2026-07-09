@@ -128,3 +128,23 @@ Stage 2 menambahkan halaman admin baru `/admin/pim-v2` untuk mengelola master da
 produk, subkategori, varian warna, ukuran/stok, gambar varian, size guide, layanan produksi, dan master jersey.
 
 Pastikan `supabase/pim-v2-stage1-master-data.sql` sudah dijalankan sebelum memakai halaman ini.
+
+
+## DEBRODER PIM V2 - Stage 3
+
+Public product detail dan cart sekarang membaca varian PIM V2:
+
+- product variants
+- variant sizes
+- variant images
+- product size guides
+- variant price adjustment
+- variant snapshot in cart
+- WhatsApp message with selected variant, size, SKU, stock info
+
+Catatan lengkap: `DEBRODER-PIM-V2-STAGE3-PUBLIC-VARIANT-CART-NOTES.md`.
+
+
+## Stage 4 - PIM V2 Jersey Configurator
+
+Tambahan terbaru: public Jersey Configurator untuk halaman `/jersey/[slug]`, live pricing, minimum order, addon, required service, team information, cart snapshot, dan WhatsApp order detail. Lihat `DEBRODER-PIM-V2-STAGE4-JERSEY-CONFIGURATOR-NOTES.md`.

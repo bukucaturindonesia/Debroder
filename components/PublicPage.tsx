@@ -112,9 +112,17 @@ function colorHex(value: string) {
   return map[key] || "#d1d5db";
 }
 
+function productColors(product: Product) {
+  const variantColors = (product.variants || [])
+    .map((variant) => variant.color_name || variant.variant_name)
+    .filter(Boolean) as string[];
+  return variantColors.length ? Array.from(new Set(variantColors)) : (product.color_tags || []);
+}
+
 function productMetaLine(product: Product) {
+  const colors = productColors(product);
   const items = [
-    product.color_tags?.length ? `${product.color_tags.length} Warna` : "",
+    colors.length ? `${colors.length} Warna` : "",
     product.size_tags?.[0] || "",
     product.material_tags?.[0] || ""
   ].filter(Boolean);
@@ -331,9 +339,9 @@ export function ProductGrid({ products }: { products: Product[] }) {
               zoom={product.focal_points?.catalog?.zoom ?? product.focal_zoom}
             />
             <div className="mt-3 space-y-2">
-              {product.color_tags?.length ? (
+              {productColors(product).length ? (
                 <div className="flex items-center gap-1.5">
-                  {product.color_tags.slice(0, 8).map((color) => (
+                  {productColors(product).slice(0, 8).map((color) => (
                     <span
                       key={color}
                       title={color}
