@@ -105,3 +105,19 @@ pnpm start
 4. Deploy.
 
 Catatan: jangan pernah memasukkan Supabase service role key ke frontend atau environment publik.
+
+## DEBRODER PIM V2 - Stage 1
+
+Stage 1 sudah ditambahkan sebagai pondasi database PIM V2.
+
+Jalankan SQL berikut di Supabase SQL Editor setelah deploy file:
+
+```text
+supabase/pim-v2-stage1-master-data.sql
+```
+
+Baca catatan lengkap di:
+
+```text
+DEBRODER-PIM-V2-STAGE1-NOTES.md
+```

@@ -1,3 +1,7 @@
+export type ProductType = "standard_product" | "configurable_product" | "production_service";
+
+export type PricingMode = "fixed_price" | "variant_based" | "configurator_based" | "custom_quote";
+
 export type Product = {
   id?: string;
   nama: string;
@@ -48,6 +52,18 @@ export type Product = {
   fresh_drop?: boolean;
   stock?: number;
   product_category_id?: string | null;
+  product_subcategory_id?: string | null;
+  size_guide_id?: string | null;
+  product_type?: ProductType;
+  pricing_mode?: PricingMode;
+  sku?: string | null;
+  has_variants?: boolean;
+  uses_configurator?: boolean;
+  minimum_order_qty?: number;
+  required_services?: string[];
+  config_schema?: Record<string, unknown>;
+  admin_notes?: string;
+  public_description?: string | null;
   urutan: number;
   status_aktif: boolean;
   created_at?: string;
@@ -65,6 +81,9 @@ export type ProductCategory = {
   collection_limit?: number;
   collection_sort?: "sort_order" | "newest" | "best_seller" | "promo";
   collection_section_order?: number;
+  category_kind?: "product" | "service";
+  public_label?: string | null;
+  admin_notes?: string;
   created_at?: string;
   updated_at?: string;
 };
@@ -388,6 +407,188 @@ export type CmsBanner = {
   cta_label: string;
   cta_url: string;
   text_position?: "left" | "center" | "right";
+  is_active: boolean;
+  sort_order: number;
+  created_at?: string;
+  updated_at?: string;
+};
+
+
+export type ProductSubcategory = {
+  id?: string;
+  category_id: string;
+  name: string;
+  slug: string;
+  description?: string;
+  public_label?: string | null;
+  is_active: boolean;
+  sort_order: number;
+  admin_notes?: string;
+  created_at?: string;
+  updated_at?: string;
+};
+
+export type ProductionService = {
+  id?: string;
+  name: string;
+  slug: string;
+  service_type: "production_service" | "required_service" | "addon_service";
+  description?: string;
+  base_price?: number | string;
+  pricing_mode: "fixed_price" | "meter_based" | "area_based" | "quantity_based" | "custom_quote";
+  unit_label?: string;
+  required_for_product_types?: ProductType[];
+  is_required_default?: boolean;
+  is_active: boolean;
+  sort_order: number;
+  admin_notes?: string;
+  created_at?: string;
+  updated_at?: string;
+};
+
+export type ProductColorMaster = {
+  id?: string;
+  name: string;
+  slug: string;
+  color_hex: string;
+  color_group: string;
+  is_active: boolean;
+  sort_order: number;
+  created_at?: string;
+  updated_at?: string;
+};
+
+export type ProductSizeMaster = {
+  id?: string;
+  name: string;
+  slug: string;
+  size_group: string;
+  is_active: boolean;
+  sort_order: number;
+  created_at?: string;
+  updated_at?: string;
+};
+
+export type ProductSizeGuide = {
+  id?: string;
+  product_id?: string | null;
+  product_category_id?: string | null;
+  product_subcategory_id?: string | null;
+  title: string;
+  description?: string;
+  rows: Array<Record<string, string | number>>;
+  notes?: string[];
+  is_active: boolean;
+  sort_order: number;
+  created_at?: string;
+  updated_at?: string;
+};
+
+export type ProductVariant = {
+  id?: string;
+  product_id: string;
+  variant_name?: string;
+  color_name?: string;
+  color_hex?: string;
+  sku?: string | null;
+  price_adjustment?: number | string;
+  image_url?: string | null;
+  images?: string[];
+  object_fit?: "cover" | "contain";
+  object_position?: string;
+  is_active: boolean;
+  sort_order: number;
+  admin_notes?: string;
+  sizes?: ProductVariantSize[];
+  variant_images?: ProductVariantImage[];
+  created_at?: string;
+  updated_at?: string;
+};
+
+export type ProductVariantSize = {
+  id?: string;
+  variant_id: string;
+  size_name: string;
+  sku?: string | null;
+  stock: number;
+  price_adjustment?: number | string;
+  is_active: boolean;
+  sort_order: number;
+  created_at?: string;
+  updated_at?: string;
+};
+
+export type ProductVariantImage = {
+  id?: string;
+  variant_id: string;
+  image_url: string;
+  alt_text?: string;
+  object_fit?: "cover" | "contain";
+  object_position?: string;
+  focal_x?: number;
+  focal_y?: number;
+  focal_zoom?: number;
+  target_ratio?: string;
+  is_cover?: boolean;
+  sort_order: number;
+  created_at?: string;
+  updated_at?: string;
+};
+
+export type JerseyPackage = {
+  id?: string;
+  name: string;
+  slug: string;
+  base_price: number | string;
+  description?: string;
+  is_active: boolean;
+  sort_order: number;
+  created_at?: string;
+  updated_at?: string;
+};
+
+export type JerseyMaterial = {
+  id?: string;
+  name: string;
+  slug: string;
+  price_adjustment: number | string;
+  description?: string;
+  is_active: boolean;
+  sort_order: number;
+  created_at?: string;
+  updated_at?: string;
+};
+
+export type JerseyCollarGroup = {
+  id?: string;
+  name: string;
+  slug: string;
+  sort_order: number;
+  is_active: boolean;
+  created_at?: string;
+  updated_at?: string;
+};
+
+export type JerseyCollar = {
+  id?: string;
+  group_id?: string | null;
+  name: string;
+  slug: string;
+  price_adjustment: number | string;
+  image_url?: string | null;
+  icon_url?: string | null;
+  is_active: boolean;
+  sort_order: number;
+  created_at?: string;
+  updated_at?: string;
+};
+
+export type JerseyAddon = {
+  id?: string;
+  name: string;
+  slug: string;
+  price_adjustment: number | string;
+  description?: string;
   is_active: boolean;
   sort_order: number;
   created_at?: string;
