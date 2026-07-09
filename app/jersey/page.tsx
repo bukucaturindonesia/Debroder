@@ -43,7 +43,7 @@ export default async function JerseyPage() {
       />
       <JerseyCatalog categories={categories} />
       {products.length ? (
-        <section className="bg-white py-12 sm:py-16">
+        <section className="bg-brand-offWhite py-10 sm:py-12">
           <div className="section-shell">
             <ProductCatalog products={products} title="Produk Jersey" showHeading showCategoryFilter={false} />
           </div>

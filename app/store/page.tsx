@@ -33,7 +33,7 @@ export default async function StorePage() {
           { label: "Store" }
         ]}
       />
-      <section className="bg-brand-offWhite py-12 sm:py-16">
+      <section className="bg-brand-offWhite py-10 sm:py-12">
         <div className="section-shell">
           <StoreGrid stores={content.stores} />
         </div>

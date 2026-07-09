@@ -13,7 +13,7 @@ export default async function KeranjangPage() {
   const content = await getPublicContent();
   return (
     <PublicShell content={content}>
-      <main className="bg-[#f7f7f2] py-8 sm:py-12">
+      <main className="bg-[#F7F7F4] py-8 sm:py-12">
         <div className="section-shell">
           <div className="mb-8">
             <p className="text-xs font-semibold uppercase tracking-[0.18em] text-brand-charcoal/45">Keranjang Pesanan</p>

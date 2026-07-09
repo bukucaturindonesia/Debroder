@@ -46,9 +46,16 @@ export default async function SablonDtfPage() {
       />
       <ServiceCatalog services={services} whatsapp={content.contact.whatsapp_link || content.contact.whatsapp_apparel} />
       {products.length ? (
-        <section className="bg-white py-12 sm:py-16">
+        <section data-reveal className="bg-brand-offWhite pb-12 pt-8 sm:pb-16 sm:pt-10">
           <div className="section-shell">
-            <ProductCatalog products={products} title="Produk Sablon DTF" showHeading showCategoryFilter={false} />
+            <div className="max-w-2xl">
+              <p className="text-xs font-medium tracking-[0.08em] text-brand-charcoal/55">Produk Pendukung</p>
+              <h2 className="landing-section-title mt-2">Produk untuk Sablon DTF</h2>
+              <p className="mt-3 text-sm leading-6 text-brand-charcoal/65">Pilih produk yang cocok untuk custom DTF dan kebutuhan produksi apparel.</p>
+            </div>
+            <div className="mt-6">
+              <ProductCatalog products={products} showCategoryFilter={false} />
+            </div>
           </div>
         </section>
       ) : null}

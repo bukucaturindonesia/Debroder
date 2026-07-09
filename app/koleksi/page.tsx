@@ -101,7 +101,7 @@ function CollectionProductCard({ product }: { product: Product }) {
   return (
     <article className="group min-w-0">
       <Link href={detailHref} className="block">
-        <div className="relative aspect-[4/5] w-full overflow-hidden bg-[#f4f4ef]">
+        <div className="product-image-frame relative aspect-[4/5] w-full overflow-hidden">
           <SafeImage
             src={getProductImage(product)}
             fallbackSrc={fallbackImages.product}
@@ -179,21 +179,21 @@ export default async function KoleksiPage() {
         breadcrumbs={[{ label: "Beranda", href: "/" }, { label: "Koleksi" }]}
       />
 
-      <section className="bg-brand-offWhite py-12 sm:py-16">
+      <section className="bg-brand-offWhite py-10 sm:py-12">
         <div className="section-shell grid grid-cols-1 gap-x-2 gap-y-6 md:grid-cols-2 lg:grid-cols-4">
           {serviceCategories.length ? serviceCategories.map((category) => (
             <ServiceCard key={category.nama_kategori} service={category} />
-          )) : <p className="col-span-full bg-white p-8 text-center text-sm font-medium text-brand-charcoal/60">Belum ada kategori.</p>}
+          )) : <p className="col-span-full p-8 text-center text-sm font-medium text-brand-charcoal/60">Belum ada kategori.</p>}
         </div>
       </section>
 
-      <section className="bg-white py-12 sm:py-16">
-        <div className="section-shell space-y-14">
+      <section className="bg-brand-offWhite py-10 sm:py-12">
+        <div className="section-shell space-y-10">
           {sections.length ? sections.map(({ category, products }) => (
             <div key={category.slug}>
               <div className="flex flex-wrap items-end justify-between gap-4">
                 <div>
-                  <h2 className="section-title">{category.name}</h2>
+                  <h2 className="landing-section-title">{category.name}</h2>
                   {category.description ? <p className="mt-2 max-w-2xl text-sm leading-6 text-brand-charcoal/60">{category.description}</p> : null}
                 </div>
                 <Link href={categoryPath(category.slug)} className="text-sm font-semibold underline-offset-4 hover:underline">Lihat Semua</Link>
@@ -203,7 +203,7 @@ export default async function KoleksiPage() {
               </div>
             </div>
           )) : (
-            <div className="bg-brand-offWhite p-8 text-center">
+            <div className="p-8 text-center">
               <p className="font-semibold">Produk belum tersedia</p>
               <p className="mt-2 text-sm text-brand-charcoal/60">Produk aktif akan tampil setelah kategori PIM dan produk terhubung.</p>
             </div>

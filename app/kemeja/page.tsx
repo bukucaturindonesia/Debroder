@@ -30,7 +30,7 @@ export default async function KemejaPage() {
         mobileImageZoom={pageHero?.mobile_focal_zoom}
         breadcrumbs={[{ label: "Beranda", href: "/" }, { label: "Kemeja" }]}
       />
-      <section className="bg-white py-12 sm:py-16">
+      <section className="bg-brand-offWhite py-10 sm:py-12">
         <div className="section-shell">
           <ProductCatalog products={products} title="Koleksi Kemeja" showHeading showCategoryFilter={false} />
         </div>

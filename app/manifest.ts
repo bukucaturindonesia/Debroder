@@ -7,7 +7,7 @@ export default function manifest(): MetadataRoute.Manifest {
     description: "Kaos Polos, Sablon DTF, Maklon DTF, dan Custom Jersey",
     start_url: "/",
     display: "standalone",
-    background_color: "#F7F7F2",
+    background_color: "#F7F7F4",
     theme_color: "#174C3C",
     icons: [
       {
