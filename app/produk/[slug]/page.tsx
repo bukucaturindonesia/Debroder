@@ -6,15 +6,52 @@ import { ProductPurchasePanel } from "@/components/ProductPurchasePanel";
 import { PublicShell } from "@/components/PublicPage";
 import { getProductImage } from "@/lib/fallback-data";
 import { getPublicContent } from "@/lib/public-data";
+import type { Product, ProductSizeGuide } from "@/lib/types";
 import { formatRupiah, whatsappLinkWithMessage } from "@/lib/url";
 
 type PageProps = { params: Promise<{ slug: string }> };
 
-function sizeGuideForProduct(product: { size_chart?: string[]; size_tags?: string[]; specifications?: string[] }) {
+function sizeGuideRowsFromAdmin(guide?: ProductSizeGuide | null) {
+  if (!guide?.rows?.length) return [];
+
+  return guide.rows.map((row) => {
+    const entries = Object.entries(row).filter(([, value]) => value !== null && value !== undefined && String(value).trim() !== "");
+    const labelEntry = entries.find(([key]) => /ukuran|size|nama|label/i.test(key)) || entries[0];
+    const label = labelEntry ? String(labelEntry[1]) : "Ukuran";
+    const value = entries
+      .filter(([key]) => key !== labelEntry?.[0])
+      .map(([key, value]) => `${key}: ${value}`)
+      .join(", ");
+
+    return value ? `${label}: ${value}` : label;
+  });
+}
+
+function sizeGuideForProduct(product: Product) {
+  const adminRows = sizeGuideRowsFromAdmin(product.size_guide);
+  if (adminRows.length) return adminRows;
   if (product.size_chart?.length) return product.size_chart;
   const specRows = (product.specifications || []).filter((item) => /ukuran|size|panjang|lebar|dada|lingkar/i.test(item));
   if (specRows.length) return specRows;
   return (product.size_tags || []).map((size) => `${size}: Sesuaikan dengan panduan ukuran produk ini.`);
+}
+
+function variantImages(product: Product) {
+  return (product.variants || []).flatMap((variant) => [
+    variant.image_url,
+    ...(variant.images || []),
+    ...(variant.variant_images || []).map((image) => image.image_url)
+  ]).filter(Boolean) as string[];
+}
+
+function variantColors(product: Product) {
+  const colors = (product.variants || []).map((variant) => variant.color_name || variant.variant_name).filter(Boolean) as string[];
+  return colors.length ? colors : product.color_tags;
+}
+
+function variantSizes(product: Product) {
+  const sizes = (product.variants || []).flatMap((variant) => (variant.sizes || []).map((size) => size.size_name)).filter(Boolean);
+  return sizes.length ? Array.from(new Set(sizes)) : product.size_tags;
 }
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
@@ -36,7 +73,7 @@ export default async function ProductDetailPage({ params }: PageProps) {
   const [{ slug }, content] = await Promise.all([params, getPublicContent()]);
   const product = content.products.find((item) => item.slug === slug);
   if (!product) notFound();
-  const images = Array.from(new Set([getProductImage(product), ...(product.gallery_urls || [])].filter(Boolean)));
+  const images = Array.from(new Set([getProductImage(product), ...(product.gallery_urls || []), ...variantImages(product)].filter(Boolean)));
   const focal = product.focal_points?.detail || product.focal_points?.catalog || {
     focal_x: Number(product.focal_x ?? 50), focal_y: Number(product.focal_y ?? 50), zoom: Number(product.focal_zoom ?? 1), target_ratio: "4:5"
   };
@@ -71,13 +108,15 @@ export default async function ProductDetailPage({ params }: PageProps) {
                   priceValue: Number(product.price ?? product.harga ?? product.base_price ?? 0) || undefined,
                   href: detailHref,
                   imageUrl: getProductImage(product),
-                  imageAlt: product.image_alt || product.nama
+                  imageAlt: product.image_alt || product.nama,
+                  sku: product.sku || undefined
                 }}
-                colors={product.color_tags}
-                sizes={product.size_tags}
+                colors={variantColors(product)}
+                sizes={variantSizes(product)}
                 sizeGuide={sizeGuideForProduct(product)}
                 bulkOrderNote={product.bulk_order_note}
                 whatsappUrl={whatsappUrl}
+                variants={product.variants}
               />
               <div className="mt-8 rounded-[24px] bg-white/50 p-4">
                 <h2 className="text-base font-semibold">Deskripsi</h2>
