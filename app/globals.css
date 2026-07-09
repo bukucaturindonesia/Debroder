@@ -3,7 +3,7 @@
 @tailwind utilities;
 
 :root {
-  --background: #ffffff;
+  --background: #F7F7F2;
   --foreground: #111111;
   --font-display: "Helvetica Now Display", "Helvetica Neue", Arial, Inter,
     system-ui, sans-serif;

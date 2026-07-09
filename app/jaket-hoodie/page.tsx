@@ -68,7 +68,7 @@ export default async function JaketHoodiePage({ searchParams }: JaketHoodiePageP
           { label: "Jaket & Hoodie" }
         ]}
       />
-      <section className="bg-white py-12 sm:py-16">
+      <section className="bg-brand-offWhite py-12 sm:py-16">
         <div className="section-shell">
           <ProductCatalog products={products} title="Koleksi Jaket & Hoodie" showHeading showCategoryFilter={false} initialColor={initialColor} initialLabel={initialLabel} initialSort={initialSort} initialProductType={initialProductType} productTypeOptions={jacketTypeOptions} typeFilterLabel="Semua tipe jaket" />
         </div>
