@@ -375,8 +375,8 @@ function CartProductHeader({ item, compact = false }: { item: CartItem; compact?
 
   return (
     <div className="flex gap-4 sm:gap-5">
-      <div className={`${compact ? "h-24 w-24" : "h-32 w-28 sm:h-40 sm:w-36"} relative shrink-0 overflow-hidden bg-[#f2f2ee]`}>
-        <SafeImage src={item.imageUrl || fallbackImages.product} fallbackSrc={fallbackImages.product} alt={item.imageAlt || item.name} fill className="object-cover" sizes={compact ? "96px" : "144px"} />
+      <div className={`${compact ? "h-28 w-[88px]" : "h-36 w-[116px] sm:h-44 sm:w-[140px]"} relative shrink-0 overflow-hidden bg-[#f2f2ee]`}>
+        <SafeImage src={item.imageUrl || fallbackImages.product} fallbackSrc={fallbackImages.product} alt={item.imageAlt || item.name} fill className="object-cover" objectPosition="center center" sizes={compact ? "88px" : "140px"} />
       </div>
       <div className="min-w-0 flex-1">
         <div className="flex items-start justify-between gap-4">
@@ -546,8 +546,8 @@ function SearchSuggestionsRow() {
       <div className="flex snap-x gap-3 overflow-x-auto pb-4 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
         {searchSuggestions.map((item) => (
           <Link key={item.id} href={item.href} className="group min-w-[240px] snap-start sm:min-w-[320px]">
-            <div className="relative aspect-[4/3] overflow-hidden bg-[#f1f1ec]">
-              <SafeImage src={item.imageUrl} fallbackSrc={fallbackImages.product} alt={item.name} fill className="object-cover transition duration-500 group-hover:scale-[1.03]" sizes="320px" />
+            <div className="relative aspect-[4/5] overflow-hidden bg-[#f1f1ec]">
+              <SafeImage src={item.imageUrl} fallbackSrc={fallbackImages.product} alt={item.name} fill className="object-cover transition duration-500 group-hover:scale-[1.03]" objectPosition="center center" sizes="320px" />
             </div>
             <div className="mt-3">
               <p className="text-base font-semibold">{item.name}</p>

@@ -191,8 +191,8 @@ export function ProductCatalog({
           const stockText = typeof product.stock === "number" ? (product.stock > 0 ? `Stok ${product.stock}` : "Pre-order") : "";
           return <article key={product.id || product.slug || product.nama} className="group min-w-0">
               <Link href={detailHref} className="block">
-              <div className="relative aspect-[4/5] w-full overflow-hidden bg-white">
-                <SafeImage src={getProductImage(product)} fallbackSrc={fallbackImages.product} alt={product.image_alt || product.nama} fill className="object-cover transition duration-500 group-hover:scale-[1.02]" objectFit={product.object_fit || "cover"} focalX={focal?.focal_x ?? product.focal_x} focalY={focal?.focal_y ?? product.focal_y} zoom={focal?.zoom ?? product.focal_zoom} sizes="(min-width: 1536px) 20vw, (min-width: 1024px) 25vw, (min-width: 768px) 33vw, 50vw" />
+              <div className="relative aspect-[4/5] w-full overflow-hidden bg-[#f4f4ef]">
+                <SafeImage src={getProductImage(product)} fallbackSrc={fallbackImages.product} alt={product.image_alt || product.nama} fill className={`${(product.object_fit || "cover") === "contain" ? "object-contain p-3" : "object-cover"} transition duration-500 group-hover:scale-[1.02]`} objectFit={product.object_fit || "cover"} objectPosition={product.object_position || "center center"} focalX={focal?.focal_x ?? product.focal_x} focalY={focal?.focal_y ?? product.focal_y} zoom={focal?.zoom ?? product.focal_zoom} sizes="(min-width: 1536px) 20vw, (min-width: 1024px) 25vw, (min-width: 768px) 33vw, 50vw" />
                 {labels.length ? <div className="absolute left-2 top-2 flex flex-wrap gap-1">{labels.map((item) => <span key={String(item)} className="rounded-full bg-white/95 px-2 py-1 text-[10px] font-semibold shadow-sm">{item}</span>)}</div> : null}
               </div>
               </Link>

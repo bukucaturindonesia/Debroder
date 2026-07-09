@@ -260,7 +260,7 @@ export function ServiceCard({ service }: { service: ServiceCategory }) {
 
 export function ProductGrid({ products }: { products: Product[] }) {
   return (
-    <div className="grid grid-cols-1 gap-x-2 gap-y-6 md:grid-cols-2 lg:grid-cols-4">
+    <div className="grid grid-cols-2 gap-x-2 gap-y-6 md:grid-cols-3 lg:grid-cols-4">
       {products.map((product) => {
         const price = getProductPrice(product);
         const whatsappHref = whatsappLinkWithMessage(
@@ -273,27 +273,27 @@ export function ProductGrid({ products }: { products: Product[] }) {
             <PublicImage
               src={getProductImage(product)}
               alt={product.image_alt || product.nama}
-              className="aspect-[4/5] w-full object-cover"
-              objectPosition={product.object_position}
+              className={`aspect-[4/5] w-full ${(product.object_fit || "cover") === "contain" ? "object-contain p-3" : "object-cover"}`}
+              objectPosition={product.object_position || "center center"}
               objectFit={product.object_fit}
               focalX={product.focal_points?.catalog?.focal_x ?? product.focal_x}
               focalY={product.focal_points?.catalog?.focal_y ?? product.focal_y}
               zoom={product.focal_points?.catalog?.zoom ?? product.focal_zoom}
             />
-            <h2 className="mt-4 line-clamp-2 text-lg font-semibold text-brand-charcoal">
+            <h2 className="mt-3 line-clamp-2 text-sm font-semibold leading-snug text-brand-charcoal sm:mt-4 sm:text-lg">
               {product.nama}
             </h2>
-            <p className="mt-1 line-clamp-2 text-sm leading-6 text-brand-charcoal/60">
+            <p className="mt-1 line-clamp-2 text-xs leading-5 text-brand-charcoal/60 sm:text-sm sm:leading-6">
               {getProductDetail(product)}
             </p>
             {price ? (
-              <p className="mt-2 text-sm font-medium text-brand-charcoal">
+              <p className="mt-2 text-sm font-semibold text-brand-charcoal sm:font-medium">
                 {price}
               </p>
             ) : null}
             <a
               href={whatsappHref}
-              className="mt-4 inline-flex min-h-10 items-center justify-center rounded-full bg-brand-charcoal px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-black/80"
+              className="mt-3 inline-flex min-h-9 w-full items-center justify-center rounded-full bg-brand-charcoal px-3 py-2 text-xs font-semibold text-white transition hover:bg-black/80 sm:mt-4 sm:min-h-10 sm:px-5 sm:py-2.5 sm:text-sm"
               target="_blank"
               rel="noopener noreferrer"
             >
