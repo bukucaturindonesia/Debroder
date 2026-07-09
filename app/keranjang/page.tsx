@@ -17,9 +17,9 @@ export default async function KeranjangPage() {
         <div className="section-shell">
           <div className="mb-8">
             <p className="text-xs font-semibold uppercase tracking-[0.18em] text-brand-charcoal/45">Keranjang Pesanan</p>
-            <h1 className="mt-3 text-[34px] font-semibold leading-tight sm:text-[48px]">Bag & Summary</h1>
+            <h1 className="mt-3 text-[34px] font-semibold leading-tight sm:text-[48px]">Keranjang & Ringkasan</h1>
             <p className="mt-3 max-w-2xl text-sm leading-7 text-brand-charcoal/60 sm:text-base">
-              Produk utama tetap menjadi fokus. Atur jumlah, pilih produksi bila dibutuhkan, lalu kirim pesanan ke WhatsApp DEBRODER.
+              Pilih warna, ukuran, jumlah, dan catatan pesanan dengan tampilan yang lebih ringan. Order akhir tetap dikirim ke WhatsApp DEBRODER.
             </p>
           </div>
           <CartPageContent />

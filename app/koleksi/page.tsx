@@ -133,7 +133,7 @@ function CollectionProductCard({ product }: { product: Product }) {
         </div>
       </div>
       <div className="mt-4 grid grid-cols-2 gap-2">
-        <Link href={detailHref} className="inline-flex min-h-10 items-center justify-center border border-brand-softGray bg-white px-3 text-xs font-semibold transition hover:border-brand-charcoal">Detail</Link>
+        <Link href={detailHref} className="premium-ghost-button inline-flex min-h-10 items-center justify-center border px-3 text-xs font-semibold transition">Detail</Link>
         <AddToCartButton
           product={{ id: product.id || product.slug || product.nama, name: product.nama, category: product.kategori, priceLabel: productPrice(product), priceValue: Number(product.price ?? product.harga ?? product.base_price ?? 0) || undefined, href: detailHref, imageUrl: getProductImage(product), imageAlt: product.image_alt || product.nama }}
           className="inline-flex min-h-10 items-center justify-center bg-brand-green px-3 text-xs font-semibold text-white transition hover:bg-brand-charcoal"

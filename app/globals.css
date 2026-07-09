@@ -9,9 +9,11 @@
   --font-display: var(--font-heading);
   --font-body: "Inter", ui-sans-serif, system-ui, -apple-system,
     BlinkMacSystemFont, "Segoe UI", sans-serif;
-  --space-section-mobile: 28px;
-  --space-section-tablet: 34px;
-  --space-section-desktop: 40px;
+  --space-section-mobile: 30px;
+  --space-section-tablet: 38px;
+  --space-section-desktop: 44px;
+  --surface-soft: #efefe9;
+  --surface-muted: #e9e8e1;
 }
 
 * {
@@ -50,9 +52,48 @@ body {
 }
 
 .product-image-frame {
-  background: #f1f1ec;
+  background: #efefe9;
   border: 0;
   box-shadow: none;
+}
+
+.premium-media-surface {
+  background:
+    linear-gradient(135deg, rgba(6, 61, 36, 0.055), transparent 34%),
+    linear-gradient(315deg, rgba(17, 17, 17, 0.04), transparent 42%),
+    #efefe9;
+  border: 0;
+  box-shadow: none;
+}
+
+.premium-section-copy {
+  max-width: 680px;
+  color: rgba(17, 17, 17, 0.58);
+}
+
+.premium-filter-panel {
+  background: transparent;
+  border: 0;
+  box-shadow: none;
+}
+
+.premium-input {
+  background: rgba(255, 255, 255, 0.58);
+  border-color: rgba(17, 17, 17, 0.08);
+}
+
+.premium-input:focus {
+  border-color: rgba(6, 61, 36, 0.42);
+}
+
+.premium-ghost-button {
+  background: transparent;
+  border-color: rgba(17, 17, 17, 0.13);
+}
+
+.premium-ghost-button:hover {
+  border-color: rgba(6, 61, 36, 0.45);
+  color: #063d24;
 }
 
 .public-site {
@@ -258,7 +299,7 @@ button,
   font-weight: 600;
   min-height: 36px;
   padding-inline: 16px;
-  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.14);
+  box-shadow: 0 8px 18px rgba(0, 0, 0, 0.10);
 }
 
 @media (min-width: 640px) {

@@ -248,7 +248,7 @@ function ProductCard({ item, className = "" }: { item: ProductItem; className?: 
         <Link href={item.href}><h3 className="line-clamp-2 text-[15px] font-semibold leading-snug text-[#111] sm:text-base">{item.name}</h3></Link>
         <p className="mt-1 text-sm text-black/50 sm:text-[15px]">{item.category}</p>
         <p className="mt-2 text-[15px] font-semibold text-[#111] sm:text-base">{item.price}</p>
-        {item.cartProduct ? <AddToCartButton product={item.cartProduct} className="mt-3 inline-flex min-h-10 w-full items-center justify-center bg-[#0f5a36] px-4 text-xs font-semibold text-white">Tambah ke Keranjang</AddToCartButton> : null}
+        {item.cartProduct ? <AddToCartButton product={item.cartProduct} className="mt-3 inline-flex min-h-10 w-full items-center justify-center rounded-full bg-[#0f5a36] px-4 text-xs font-semibold text-white transition hover:bg-[#063d24]">Tambah ke Keranjang</AddToCartButton> : null}
       </div>
     </article>
   );
@@ -309,7 +309,7 @@ function StoreCard({ store, index }: { store: Store; index: number }) {
       {store.jam_operasional ? <p className="mt-3 text-xs font-medium text-black/45">{store.jam_operasional}</p> : null}
       <div className="mt-6 grid grid-cols-2 gap-2">
         <a href={whatsappHref} target="_blank" rel="noopener noreferrer" className="inline-flex min-h-11 items-center justify-center rounded-full bg-[#063d24] px-3 text-sm font-semibold text-white transition hover:bg-[#0f5a36]">WhatsApp</a>
-        <a href={store.maps_link} target="_blank" rel="noopener noreferrer" className="inline-flex min-h-11 items-center justify-center rounded-full border border-black/15 px-3 text-sm font-semibold text-[#111] transition hover:border-[#0f5a36] hover:text-[#0f5a36]">Lihat Lokasi</a>
+        <a href={store.maps_link} target="_blank" rel="noopener noreferrer" className="premium-ghost-button inline-flex min-h-11 items-center justify-center rounded-full border px-3 text-sm font-semibold text-[#111] transition">Lihat Lokasi</a>
       </div>
     </article>
   );
@@ -491,9 +491,9 @@ export default async function Home() {
             <video src={content.trustAbout.video_url} autoPlay muted loop playsInline className="aspect-[4/3] w-full object-cover" />
           ) : content.trustAbout.image_url ? (
             <ResponsivePicture desktopSrc={content.trustAbout.image_url} mobileSrc={content.trustAbout.mobile_image_url || content.trustAbout.image_url} alt="Tentang DEBRODER" className="aspect-[4/3] h-full w-full object-cover" />
-          ) : <div className="grid grid-cols-2 gap-px overflow-hidden bg-black/[0.08]">
+          ) : <div className="grid grid-cols-2 gap-6">
             {[["2016", "Berdiri"], ["4", "Store Aktif"], ["DTF", "& Apparel"], ["ID", "Kirim Indonesia"]].map(([value, label]) => (
-              <div key={`${value}-${label}`} className="bg-brand-offWhite p-5 sm:p-7">
+              <div key={`${value}-${label}`} className="p-5 sm:p-7">
                 <p className="text-2xl font-semibold tracking-normal text-[#063d24] sm:text-3xl">{value}</p>
                 <p className="mt-2 text-xs font-medium text-black/50 sm:text-sm">{label}</p>
               </div>
