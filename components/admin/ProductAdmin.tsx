@@ -476,7 +476,7 @@ export function ProductAdminPanel() {
     }
     const preset = productCategoryPresets.find((item) => item.slug === slugify(name) || item.name.toLowerCase() === name.toLowerCase());
     if (!preset || !isMainProductCategory(name)) {
-      setStatus("product_categories hanya untuk kategori utama produk: Kaos Polos, Jersey, Jaket & Hoodie, Polo Shirt, Headwear / Topi, Kemeja, atau Aksesori Lainnya.");
+      setStatus("product_categories hanya untuk kategori utama produk: Kaos Polos, Jersey, Jaket & Hoodie, Kemeja, atau Headwear. Polo Shirt NSA masuk sebagai model di Kaos Polos.");
       return;
     }
     const supabase = createSupabaseClient();

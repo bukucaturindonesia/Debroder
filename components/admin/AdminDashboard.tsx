@@ -109,10 +109,8 @@ const preferredProductCategories = [
   { label: "Kaos Polos", slug: "kaos-polos" },
   { label: "Jersey", slug: "jersey" },
   { label: "Jaket & Hoodie", slug: "jaket-hoodie" },
-  { label: "Polo Shirt", slug: "polo-shirt" },
-  { label: "Headwear / Topi", slug: "headwear" },
   { label: "Kemeja", slug: "kemeja" },
-  { label: "Aksesori Lainnya", slug: "aksesori-lainnya" }
+  { label: "Headwear", slug: "headwear" }
 ];
 
 const tableConfigs: TableConfig[] = [
@@ -423,9 +421,9 @@ const tableConfigs: TableConfig[] = [
         name: "link_slug",
         label: "Link halaman utama",
         type: "select",
-        options: ["kaos-polos", "jersey", "jaket-hoodie", "polo-shirt", "headwear", "kemeja", "aksesori-lainnya"]
+        options: ["kaos-polos", "jersey", "jaket-hoodie", "kemeja", "headwear"]
       },
-      { name: "category_key", label: "Kategori utama", type: "select", options: ["kaos-polos", "jersey", "jaket-hoodie", "polo-shirt", "headwear", "kemeja", "aksesori-lainnya"] },
+      { name: "category_key", label: "Kategori utama", type: "select", options: ["kaos-polos", "jersey", "jaket-hoodie", "kemeja", "headwear"] },
       { name: "slug", label: "Slug model", type: "text", placeholder: "jersey-futsal" },
       { name: "gallery_urls", label: "Galeri gambar (satu URL per baris)", type: "list" },
       { name: "color_options", label: "Pilihan warna (satu per baris)", type: "list" },
@@ -450,12 +448,12 @@ const tableConfigs: TableConfig[] = [
     navLabel: "Layanan",
     href: "/admin/services",
     table: "services",
-    description: "Kelola layanan/metode produksi seperti Sablon DTF, Bordir Komputer, Sublim, Maklon, dan Heat Press. Layanan bukan kategori produk utama.",
+    description: "Kelola layanan/metode produksi seperti Sablon DTF, Bordir Komputer, Sublim Printing, dan Maklon DTF. Layanan bukan kategori produk utama.",
     orderField: "urutan",
     fields: [
       { name: "nama", label: "Nama layanan", type: "text", placeholder: "Sablon DTF", required: true },
       { name: "slug", label: "Slug halaman", type: "text", placeholder: "sablon-dtf", required: true },
-      { name: "category_key", label: "Kunci layanan", type: "select", options: ["sablon-dtf", "bordir", "cetak-sublim", "polyflex", "maklon-dtf", "heat-press", "screen-printing"] },
+      { name: "category_key", label: "Kunci layanan", type: "select", options: ["sablon-dtf", "bordir", "cetak-sublim", "maklon-dtf"] },
       { name: "deskripsi", label: "Deskripsi singkat", type: "textarea", placeholder: "Hasil tajam untuk brand dan komunitas." },
       { name: "detail_body", label: "Detail layanan", type: "textarea", placeholder: "Penjelasan lengkap layanan, bahan, dan hasil." },
       { name: "available_sizes", label: "Pilihan ukuran (satu per baris)", type: "list", placeholder: "A4\nA3\nLebar 58 cm" },
@@ -555,10 +553,8 @@ const tableConfigs: TableConfig[] = [
           "kaos-polos",
           "jersey",
           "jaket-hoodie",
-          "polo-shirt",
           "headwear",
           "kemeja",
-          "aksesori-lainnya",
           "sablon-dtf",
           "maklon-dtf",
           "cetak-sublim",

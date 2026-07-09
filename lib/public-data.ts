@@ -116,9 +116,7 @@ const finalPageHeroKeys = [
   "cetak-sublim",
   "store",
   "cara-order",
-  "polo-shirt",
-  "kemeja",
-  "aksesori-lainnya"
+  "kemeja"
 ];
 
 function displayBrand(value?: string | null) {

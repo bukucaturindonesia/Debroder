@@ -14,7 +14,6 @@ insert into public.service_categories
   (nama_kategori, deskripsi, gambar_url, link_slug, urutan, status_aktif)
 values
   ('Kaos Polos', 'Kaos polos premium untuk brand, komunitas, dan kebutuhan harian', '/images/debroder/products/produk-kaos-polos.jpg', 'kaos-polos', 1, true),
-  ('Polo Shirt', 'Polo rapi untuk bisnis, seragam, dan komunitas', '/images/debroder/products/produk-kaos-polos.jpg', 'koleksi', 2, true),
   ('Jacket', 'Jacket custom untuk tim, organisasi, dan brand', '/images/debroder/products/produk-kaos-polos.jpg', 'koleksi', 3, true),
   ('Hoodie', 'Hoodie nyaman untuk merchandise dan koleksi brand', '/images/debroder/products/produk-kaos-polos.jpg', 'koleksi', 4, true),
   ('Kaos Cotton Combed', 'Cotton combed lembut untuk custom dan kebutuhan brand', '/images/debroder/products/produk-kaos-polos.jpg', 'kaos-polos', 5, true),
@@ -324,13 +323,11 @@ on conflict (section_key) do nothing;
 insert into public.product_categories
   (name, slug, description, is_active, sort_order, show_in_collection, collection_limit, collection_sort, collection_section_order)
 values
-  ('Kaos Polos', 'kaos-polos', 'Kaos polos, kaos NSA, cotton combed, oversize, anak, dan lengan panjang.', true, 10, true, 8, 'sort_order', 10),
+  ('Kaos Polos', 'kaos-polos', 'Kaos polos, kaos NSA, cotton combed, polo shirt NSA, anak, dan lengan panjang.', true, 10, true, 8, 'sort_order', 10),
   ('Jersey', 'jersey', 'Jersey custom untuk futsal, sepak bola, basket, voli, badminton, esports, dan komunitas.', true, 20, true, 8, 'sort_order', 20),
   ('Jaket & Hoodie', 'jaket-hoodie', 'Hoodie, crewneck, jaket bomber, varsity, coach, dan outerwear custom.', true, 30, true, 8, 'sort_order', 30),
-  ('Polo Shirt', 'polo-shirt', 'Polo shirt untuk kantor, komunitas, event, dan apparel custom.', true, 40, true, 8, 'sort_order', 40),
-  ('Headwear / Topi', 'headwear', 'Topi trucker, baseball cap, snapback, bucket hat, dan headwear custom.', true, 50, true, 8, 'sort_order', 50),
-  ('Kemeja', 'kemeja', 'Kemeja PDH, PDL, kantor, komunitas, dan seragam custom.', true, 60, true, 8, 'sort_order', 60),
-  ('Aksesori Lainnya', 'aksesori-lainnya', 'Patch, emblem, lanyard, goodie bag, merchandise, dan aksesori promosi.', true, 70, true, 8, 'sort_order', 70)
+  ('Kemeja', 'kemeja', 'Kemeja PDH, PDL, kantor, komunitas, dan seragam custom.', true, 40, true, 8, 'sort_order', 40),
+  ('Headwear', 'headwear', 'Topi trucker, baseball cap, snapback, bucket hat, dan headwear custom.', true, 50, true, 8, 'sort_order', 50)
 on conflict (slug) do update set
   name = excluded.name,
   description = excluded.description,
@@ -356,13 +353,13 @@ set
   show_in_collection = false
 from subcategory_category_slugs old
 where category.slug = old.slug
-  and category.slug not in ('kaos-polos', 'jersey', 'jaket-hoodie', 'polo-shirt', 'headwear', 'kemeja', 'aksesori-lainnya');
+  and category.slug not in ('kaos-polos', 'jersey', 'jaket-hoodie', 'kemeja', 'headwear');
 
 update public.product_categories
 set
   is_active = false,
   show_in_collection = false
-where slug not in ('kaos-polos', 'jersey', 'jaket-hoodie', 'polo-shirt', 'headwear', 'kemeja', 'aksesori-lainnya');
+where slug not in ('kaos-polos', 'jersey', 'jaket-hoodie', 'kemeja', 'headwear');
 
 insert into public.website_settings (setting_key, label, value, description, group_name)
 values
@@ -399,5 +396,5 @@ set label = '', title = '', subtitle = ''
 where page_key in (
   'koleksi', 'kaos-polos', 'jaket-hoodie', 'headwear', 'sablon-dtf',
   'maklon-dtf', 'jersey', 'cetak-sublim', 'store', 'cara-order',
-  'polo-shirt', 'kemeja', 'aksesori-lainnya'
+  'kemeja'
 );

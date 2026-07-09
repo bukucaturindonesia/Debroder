@@ -52,12 +52,10 @@ const collectionMenu: MegaMenuColumn[] = [
     title: "Belanja Berdasarkan Produk",
     links: [
       { label: "Kaos Polos", href: "/kaos-polos" },
-      { label: "Jaket & Hoodie", href: "/jaket-hoodie" },
-      { label: "Polo Shirt", href: "/polo-shirt" },
-      { label: "Headwear", href: "/headwear" },
-      { label: "Kemeja", href: "/kemeja" },
-      { label: "Aksesori Lainnya", href: "/aksesori-lainnya" },
       { label: "Jersey Custom", href: "/jersey" },
+      { label: "Jaket & Hoodie", href: "/jaket-hoodie" },
+      { label: "Kemeja", href: "/kemeja" },
+      { label: "Headwear", href: "/headwear" },
       { label: "Sablon DTF", href: "/sablon-dtf" },
       { label: "Maklon DTF", href: "/maklon-dtf" }
     ]
@@ -125,12 +123,11 @@ const navMegaMenus: Record<string, MegaMenuColumn[]> = {
 };
 
 const searchItems = [
-  { title: "Kaos Polos", href: "/kaos-polos", description: "Kaos polos dan cotton combed premium.", keywords: ["kaos", "baju", "cotton combed"] },
+  { title: "Kaos Polos", href: "/kaos-polos", description: "Kaos polos, cotton combed, kaos anak, lengan panjang, dan Polo Shirt NSA.", keywords: ["kaos", "baju", "cotton combed", "polo", "polo shirt nsa"] },
+  { title: "Jersey", href: "/jersey", description: "Custom jersey untuk tim, komunitas, dan instansi.", keywords: ["jersey", "tim", "olahraga"] },
   { title: "Jaket & Hoodie", href: "/jaket-hoodie", description: "Jaket dan hoodie untuk merchandise, komunitas, dan brand.", keywords: ["jaket", "jacket", "hoodie"] },
-  { title: "Polo Shirt", href: "/polo-shirt", description: "Polo shirt untuk seragam kantor, komunitas, dan bordir logo.", keywords: ["polo", "lacoste", "seragam"] },
-  { title: "Headwear", href: "/headwear", description: "Topi dan headwear untuk kebutuhan apparel custom.", keywords: ["headwear", "topi", "cap", "hat"] },
   { title: "Kemeja", href: "/kemeja", description: "Kemeja custom untuk kantor, komunitas, dan seragam.", keywords: ["kemeja", "pdh", "pdl", "seragam"] },
-  { title: "Aksesori Lainnya", href: "/aksesori-lainnya", description: "Patch, emblem, lanyard, goodie bag, dan merchandise custom.", keywords: ["aksesori", "patch", "emblem", "lanyard", "label", "merchandise"] },
+  { title: "Headwear", href: "/headwear", description: "Topi dan headwear untuk kebutuhan apparel custom.", keywords: ["headwear", "topi", "cap", "hat"] },
   { title: "Sablon DTF", href: "/sablon-dtf", description: "Sablon custom untuk brand, event, dan komunitas.", keywords: ["sablon", "dtf", "custom"] },
   { title: "Jersey", href: "/jersey", description: "Custom jersey untuk tim, komunitas, dan instansi.", keywords: ["jersey", "tim", "olahraga"] },
   { title: "Maklon DTF", href: "/maklon-dtf", description: "Partner produksi DTF untuk brand apparel.", keywords: ["maklon", "dtf", "produksi"] },

@@ -131,11 +131,11 @@ const searchSuggestions: SearchSuggestion[] = [
     imageUrl: pageHeroImageFallbacks["kaos-polos"] || fallbackImages.product
   },
   {
-    id: "polo-shirt",
-    name: "Polo Shirt",
-    label: "Cocok untuk kantor dan komunitas",
-    href: "/polo-shirt",
-    imageUrl: pageHeroImageFallbacks["polo-shirt"] || fallbackImages.product
+    id: "polo-shirt-nsa",
+    name: "Polo Shirt NSA",
+    label: "Model di kategori Kaos Polos",
+    href: "/kaos-polos",
+    imageUrl: pageHeroImageFallbacks["kaos-polos"] || fallbackImages.product
   },
   {
     id: "headwear",

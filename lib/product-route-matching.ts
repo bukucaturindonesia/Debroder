@@ -39,18 +39,18 @@ export function productMatchesRoute(product: Product, routeKey: string) {
   switch (routeKey) {
     case "kaos-polos":
       return (
-        hasAny(direct, ["kaos-polos", "kaos", "cotton", "combed", "new-state", "nsa"])
-        || hasAny(tags, ["kaos-polos"])
-      ) && !hasAny(direct, ["polo", "jaket", "jacket", "hoodie", "crewneck", "headwear", "topi", "cap", "hat", "jersey", "sablon-dtf", "maklon-dtf", "cetak-sublim"]);
+        hasAny(direct, ["kaos-polos", "kaos", "cotton", "combed", "new-state", "nsa", "polo", "polo-shirt"])
+        || hasAny(tags, ["kaos-polos", "polo-shirt-nsa"])
+      ) && !hasAny(direct, ["jaket", "jacket", "hoodie", "crewneck", "headwear", "topi", "cap", "hat", "jersey", "sablon-dtf", "maklon-dtf", "cetak-sublim"]);
 
     case "polo-shirt":
-      return hasAny(all, ["polo-shirt", "polo", "lacoste", "polo-cvc", "polo-dry-fit"]);
+      return productMatchesRoute(product, "kaos-polos");
 
     case "kemeja":
       return hasAny(all, ["kemeja", "pdh", "pdl", "seragam-kantor"]);
 
     case "aksesori-lainnya":
-      return hasAny(all, ["aksesori-lainnya", "patch", "emblem", "lanyard", "label", "hang-tag", "merchandise", "aksesori"]);
+      return productMatchesRoute(product, "headwear");
 
     case "jaket-hoodie":
       return hasAny(all, ["jaket-hoodie", "jaket", "jacket", "hoodie", "crewneck", "sweater"]);

@@ -176,17 +176,13 @@ export function PimManagerAdmin() {
       updated_at: new Date().toISOString()
     }));
 
-    await supabase.from("products")
-      .update({ category_key: "aksesori-lainnya", updated_at: new Date().toISOString() })
-      .eq("category_key", "tas-aksesori");
+    await supabase.from("service_categories")
+      .update({ category_key: "kaos-polos", link_slug: "kaos-polos", updated_at: new Date().toISOString() })
+      .or("category_key.eq.polo-shirt,link_slug.eq.polo-shirt");
 
     await supabase.from("service_categories")
-      .update({ category_key: "aksesori-lainnya", link_slug: "aksesori-lainnya", updated_at: new Date().toISOString() })
-      .or("category_key.eq.tas-aksesori,link_slug.eq.tas-aksesori");
-
-    await supabase.from("page_heroes")
-      .update({ page_key: "aksesori-lainnya", updated_at: new Date().toISOString() })
-      .eq("page_key", "tas-aksesori");
+      .update({ category_key: "headwear", link_slug: "headwear", updated_at: new Date().toISOString() })
+      .or("category_key.eq.aksesori-lainnya,category_key.eq.tas-aksesori,link_slug.eq.aksesori-lainnya,link_slug.eq.tas-aksesori");
 
     const { error: categoryError } = await supabase
       .from("product_categories")
@@ -201,6 +197,36 @@ export function PimManagerAdmin() {
     const { data: existingCategories } = await supabase
       .from("product_categories")
       .select("id,slug");
+
+    const categoryIdBySlug = new Map((existingCategories || []).map((category) => [String(category.slug), String(category.id)]));
+    const kaosPolosId = categoryIdBySlug.get("kaos-polos");
+    const headwearId = categoryIdBySlug.get("headwear");
+    const legacyPoloId = categoryIdBySlug.get("polo-shirt");
+    const legacyAccessoryIds = [categoryIdBySlug.get("aksesori-lainnya"), categoryIdBySlug.get("tas-aksesori")].filter(Boolean) as string[];
+
+    if (kaosPolosId) {
+      await supabase.from("products")
+        .update({ category_key: "kaos-polos", product_category_id: kaosPolosId, subcategory: "Polo Shirt NSA", updated_at: new Date().toISOString() })
+        .eq("category_key", "polo-shirt");
+
+      if (legacyPoloId) {
+        await supabase.from("products")
+          .update({ category_key: "kaos-polos", product_category_id: kaosPolosId, subcategory: "Polo Shirt NSA", updated_at: new Date().toISOString() })
+          .eq("product_category_id", legacyPoloId);
+      }
+    }
+
+    if (headwearId) {
+      await supabase.from("products")
+        .update({ category_key: "headwear", product_category_id: headwearId, updated_at: new Date().toISOString() })
+        .in("category_key", ["aksesori-lainnya", "tas-aksesori"]);
+
+      if (legacyAccessoryIds.length) {
+        await supabase.from("products")
+          .update({ category_key: "headwear", product_category_id: headwearId, updated_at: new Date().toISOString() })
+          .in("product_category_id", legacyAccessoryIds);
+      }
+    }
 
     await Promise.all((existingCategories || [])
       .filter((category) => !allowedSlugs.includes(String(category.slug)))
