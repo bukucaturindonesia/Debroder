@@ -213,7 +213,7 @@ export function PageHero({
           />
 
         </div>
-        {hasCopy ? <div className="absolute inset-x-4 bottom-[11%] z-10 mx-auto max-w-5xl px-0 py-0 text-center text-white drop-shadow-[0_3px_12px_rgba(0,0,0,0.22)] sm:inset-x-8 sm:bottom-[12%] lg:bottom-[13%]">
+        {hasCopy ? <div className="absolute inset-x-4 bottom-[9%] z-10 mx-auto max-w-5xl px-0 py-0 text-center text-white [text-shadow:0_2px_10px_rgba(0,0,0,0.22)] sm:inset-x-8 sm:bottom-[10%] lg:bottom-[9%]">
           {breadcrumbs?.length ? (
             <nav
               aria-label="Breadcrumb"
@@ -234,25 +234,25 @@ export function PageHero({
             </nav>
           ) : null}
           {cleanLabel ? (
-            <p className="text-[15px] font-semibold leading-5 text-white sm:text-[20px] lg:text-[22px]">
+            <p className="text-[14px] font-semibold leading-none tracking-[-0.01em] text-white sm:text-[18px] lg:text-[20px]">
               {cleanLabel}
             </p>
           ) : null}
           {cleanTitle ? (
-            <h1 className="mx-auto mt-2 max-w-5xl text-[clamp(3.2rem,14vw,5.2rem)] font-black uppercase leading-[0.88] tracking-[-0.045em] sm:text-[clamp(5rem,10vw,7.5rem)] lg:text-[clamp(5.5rem,8.2vw,8.25rem)]">
+            <h1 className="mx-auto mt-3 max-w-5xl whitespace-pre-line text-balance text-[clamp(3rem,11vw,4.7rem)] font-black uppercase leading-[0.92] tracking-[-0.04em] sm:text-[clamp(4.7rem,8.2vw,6.4rem)] lg:text-[clamp(5.25rem,6.9vw,7rem)] xl:text-[clamp(5.6rem,6.4vw,7.35rem)]">
               {cleanTitle}
             </h1>
           ) : null}
           {cleanDescription ? (
-            <p className="mx-auto mt-3 max-w-[860px] text-[17px] font-medium leading-[1.3] text-white sm:text-[22px] lg:text-[26px]">
+            <p className="mx-auto mt-5 max-w-[760px] whitespace-pre-line text-pretty text-[16px] font-medium leading-[1.38] text-white sm:text-[21px] lg:text-[24px]">
               {cleanDescription}
             </p>
           ) : null}
           {primaryHref ? (
-            <div className="mt-6 flex flex-col items-center justify-center gap-3 sm:flex-row">
+            <div className="mt-7 flex flex-col items-center justify-center gap-3 sm:flex-row">
               <a
                 href={primaryHref}
-                className="inline-flex min-h-12 items-center justify-center rounded-full bg-white px-7 py-3 text-[17px] font-semibold text-[#111] transition hover:bg-brand-offWhite sm:px-8 sm:text-xl"
+                className="inline-flex min-h-11 items-center justify-center rounded-full bg-white px-7 py-3 text-[16px] font-semibold text-[#111] transition hover:bg-brand-offWhite sm:min-h-12 sm:px-8 sm:text-[18px]"
                 target={primaryHref.startsWith("http") ? "_blank" : undefined}
                 rel={
                   primaryHref.startsWith("http")
@@ -265,7 +265,7 @@ export function PageHero({
               {cleanSecondaryCtaText && secondaryCtaHref ? (
                 <Link
                   href={secondaryCtaHref}
-                  className="inline-flex min-h-12 items-center justify-center rounded-full bg-white/90 px-7 py-3 text-[17px] font-semibold text-[#111] transition hover:bg-white sm:px-8 sm:text-xl"
+                  className="inline-flex min-h-11 items-center justify-center rounded-full bg-white/90 px-7 py-3 text-[16px] font-semibold text-[#111] transition hover:bg-white sm:min-h-12 sm:px-8 sm:text-[18px]"
                 >
                   {cleanSecondaryCtaText}
                 </Link>

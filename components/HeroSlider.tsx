@@ -169,32 +169,32 @@ export function HeroSlider({ heroes }: { heroes: HeroBanner[] }) {
             </div>
 
             {hasCopy ? (
-              <div className="absolute inset-x-0 bottom-[13%] z-10 sm:bottom-[12%] lg:bottom-[13%]">
+              <div className="absolute inset-x-0 bottom-[9%] z-10 sm:bottom-[10%] lg:bottom-[9%] xl:bottom-[8%]">
                 <div className="section-shell">
-                  <div className={`max-w-[980px] text-white drop-shadow-[0_3px_12px_rgba(0,0,0,0.22)] ${textAlignment}`}>
+                  <div className={`max-w-[1040px] text-white [text-shadow:0_2px_10px_rgba(0,0,0,0.22)] ${textAlignment}`}>
                     {badge ? (
-                      <p className="text-[15px] font-semibold tracking-normal text-white sm:text-[20px] lg:text-[22px]">
+                      <p className="text-[14px] font-semibold leading-none tracking-[-0.01em] text-white sm:text-[18px] lg:text-[20px]">
                         {badge}
                       </p>
                     ) : null}
                     {headline ? (
                       index === 0 ? (
-                        <h1 className="mt-2 whitespace-pre-line text-[clamp(3.2rem,14vw,5.2rem)] font-black uppercase leading-[0.88] tracking-[-0.045em] sm:text-[clamp(5rem,10vw,7.5rem)] lg:text-[clamp(5.5rem,8.2vw,8.25rem)]">
+                        <h1 className="mt-3 whitespace-pre-line text-balance text-[clamp(3rem,11vw,4.7rem)] font-black uppercase leading-[0.92] tracking-[-0.04em] sm:text-[clamp(4.7rem,8.2vw,6.4rem)] lg:text-[clamp(5.25rem,6.9vw,7rem)] xl:text-[clamp(5.6rem,6.4vw,7.35rem)]">
                           {headline}
                         </h1>
                       ) : (
-                        <h2 className="mt-2 whitespace-pre-line text-[clamp(3.2rem,14vw,5.2rem)] font-black uppercase leading-[0.88] tracking-[-0.045em] sm:text-[clamp(5rem,10vw,7.5rem)] lg:text-[clamp(5.5rem,8.2vw,8.25rem)]">
+                        <h2 className="mt-3 whitespace-pre-line text-balance text-[clamp(3rem,11vw,4.7rem)] font-black uppercase leading-[0.92] tracking-[-0.04em] sm:text-[clamp(4.7rem,8.2vw,6.4rem)] lg:text-[clamp(5.25rem,6.9vw,7rem)] xl:text-[clamp(5.6rem,6.4vw,7.35rem)]">
                           {headline}
                         </h2>
                       )
                     ) : null}
                     {subtitle ? (
-                      <p className="mx-auto mt-3 max-w-[860px] whitespace-pre-line text-[17px] font-medium leading-[1.3] text-white sm:text-[22px] lg:text-[26px]">
+                      <p className={`mt-5 max-w-[760px] whitespace-pre-line text-pretty text-[16px] font-medium leading-[1.38] text-white sm:text-[21px] lg:text-[24px] ${textAlignment.includes("text-center") ? "mx-auto" : textAlignment.includes("text-right") ? "ml-auto" : "mr-auto"}`}>
                         {subtitle}
                       </p>
                     ) : null}
                     {cta ? (
-                      <a href={cta.href} className="mt-6 inline-flex min-h-12 items-center justify-center rounded-full bg-white px-7 py-3 text-[17px] font-semibold text-[#111] transition duration-200 hover:bg-[#e9eee9] sm:px-8 sm:text-xl">
+                      <a href={cta.href} className="mt-7 inline-flex min-h-11 items-center justify-center rounded-full bg-white px-7 py-3 text-[16px] font-semibold text-[#111] shadow-none transition duration-200 hover:bg-[#e9eee9] sm:min-h-12 sm:px-8 sm:text-[18px]">
                         {cta.text}
                       </a>
                     ) : null}
