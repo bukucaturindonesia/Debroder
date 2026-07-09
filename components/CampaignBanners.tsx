@@ -59,7 +59,7 @@ export function CampaignBanners({ banners }: { banners: CmsBanner[] }) {
   if (!banners.length) return null;
 
   return (
-    <section data-reveal aria-label="Campaign DEBRODER" className="snap-section bg-brand-offWhite py-4 sm:py-6">
+    <section data-reveal aria-label="Campaign DEBRODER" className="snap-section bg-white py-4 sm:py-6">
       <div className="section-shell grid gap-4">
         {banners.map((banner) => {
           const alignment = banner.text_position === "center" ? "mx-auto text-center" : banner.text_position === "right" ? "ml-auto text-right" : "";
@@ -70,10 +70,10 @@ export function CampaignBanners({ banners }: { banners: CmsBanner[] }) {
             <div className="pointer-events-none absolute inset-x-0 bottom-0 h-[52%] bg-gradient-to-t from-black/58 via-black/18 to-transparent" />
             <div className={`absolute inset-x-5 bottom-5 max-w-3xl text-white sm:inset-x-10 sm:bottom-10 ${alignment}`}>
               {banner.eyebrow ? <p className="text-xs font-semibold uppercase tracking-[0.2em] text-white/82 drop-shadow-[0_1px_6px_rgba(0,0,0,0.45)]">{banner.eyebrow}</p> : null}
-              <h2 className="mt-2 text-[28px] font-semibold leading-[1.12] tracking-normal drop-shadow-[0_2px_12px_rgba(0,0,0,0.45)] sm:text-[40px]">{banner.title}</h2>
+              <h2 className="banner-title mt-2 text-[34px] drop-shadow-[0_2px_12px_rgba(0,0,0,0.45)] sm:text-[56px]">{banner.title}</h2>
               {banner.subtitle ? <p className="mt-3 max-w-2xl text-sm leading-6 text-white/82 drop-shadow-[0_1px_8px_rgba(0,0,0,0.40)] sm:text-base">{banner.subtitle}</p> : null}
               {cta ? (
-                <a href={cta.href} className="mt-6 inline-flex min-h-11 items-center justify-center rounded-full bg-white px-6 py-3 text-sm font-semibold text-[#111] shadow-[0_10px_26px_rgba(0,0,0,0.18)] transition hover:bg-[#e9eee9]">
+                <a href={cta.href} className="cta mt-6 inline-flex min-h-11 items-center justify-center rounded-full bg-white px-6 py-3 text-sm text-[#111] shadow-[0_10px_26px_rgba(0,0,0,0.18)] transition hover:bg-[#e9eee9]">
                   {cta.text}
                 </a>
               ) : null}

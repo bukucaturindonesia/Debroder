@@ -15,8 +15,15 @@ function cleanHeroText(value?: string | null) {
 
 
 function safeHeroCta(href: string, text: string) {
-  // Hero Nike Style V2: CTA harus mengikuti teks dan link dari admin.
-  // Tidak lagi diubah otomatis menjadi “Lihat Koleksi”.
+  const normalizedHref = href.toLowerCase();
+  const normalizedText = text.toLowerCase();
+  const directOrder = normalizedHref.includes("wa.me") || normalizedHref.includes("whatsapp") || normalizedHref === "/order" || normalizedHref.includes("pesan");
+  const orderText = /pesan|order|beli/.test(normalizedText);
+
+  if (directOrder || orderText) {
+    return { href: "/koleksi", text: "Lihat Koleksi" };
+  }
+
   return { href, text };
 }
 
@@ -114,7 +121,7 @@ export function HeroSlider({ heroes }: { heroes: HeroBanner[] }) {
   return (
     <section
       id="beranda"
-      className="hero-section relative h-[clamp(500px,78vh,680px)] w-full overflow-hidden bg-black sm:h-[620px] lg:h-[calc(100svh-104px)] lg:min-h-[560px] lg:max-h-[820px]"
+      className="hero-section relative h-[clamp(440px,70vh,540px)] w-full overflow-hidden bg-[#04160f] sm:h-[540px] lg:h-[calc(100svh-170px)] lg:min-h-[460px] lg:max-h-[600px]"
       aria-roledescription="carousel"
       aria-label="Koleksi utama DEBRODER"
       onTouchStart={(event) => setTouchStart(event.touches[0].clientX)}
@@ -137,7 +144,7 @@ export function HeroSlider({ heroes }: { heroes: HeroBanner[] }) {
         const mobileVideo = slide.mobile_video_url || desktopVideo;
         const desktopPosition = slide.object_position || "center center";
         const mobilePosition = slide.mobile_object_position || desktopPosition;
-        const textAlignment = slide.text_position === "right" ? "ml-auto text-right" : slide.text_position === "left" ? "mr-auto text-left" : "mx-auto text-center";
+        const textAlignment = slide.text_position === "center" ? "mx-auto text-center" : slide.text_position === "right" ? "ml-auto text-right" : "";
 
         return (
           <article
@@ -168,34 +175,36 @@ export function HeroSlider({ heroes }: { heroes: HeroBanner[] }) {
               )}
             </div>
 
+            <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(1,9,6,.58)_0%,rgba(1,9,6,.34)_36%,rgba(1,9,6,.04)_68%,rgba(1,9,6,.10)_100%),linear-gradient(0deg,rgba(1,9,6,.34)_0%,rgba(1,9,6,0)_46%)] sm:bg-[linear-gradient(90deg,rgba(1,9,6,.62)_0%,rgba(1,9,6,.36)_38%,rgba(1,9,6,.03)_70%,rgba(1,9,6,.08)_100%),linear-gradient(0deg,rgba(1,9,6,.30)_0%,rgba(1,9,6,0)_44%)]" />
             {hasCopy ? (
-              <div className="absolute inset-x-0 bottom-[9%] z-10 sm:bottom-[10%] lg:bottom-[9%] xl:bottom-[8%]">
+              <div className="absolute inset-x-0 bottom-16 z-10 sm:bottom-14 lg:bottom-16">
                 <div className="section-shell">
-                  <div className={`max-w-[1040px] text-white [text-shadow:0_2px_10px_rgba(0,0,0,0.22)] ${textAlignment}`}>
+                  <div className={`max-w-[620px] text-white ${textAlignment}`}>
                     {badge ? (
-                      <p className="text-[14px] font-semibold leading-none tracking-[-0.01em] text-white sm:text-[18px] lg:text-[20px]">
+                      <p className="text-[15px] font-medium uppercase tracking-normal text-white/75 sm:text-[17px]">
                         {badge}
                       </p>
                     ) : null}
                     {headline ? (
                       index === 0 ? (
-                        <h1 className="mt-3 whitespace-pre-line text-balance text-[clamp(3rem,11vw,4.7rem)] font-black uppercase leading-[0.92] tracking-[-0.04em] sm:text-[clamp(4.7rem,8.2vw,6.4rem)] lg:text-[clamp(5.25rem,6.9vw,7rem)] xl:text-[clamp(5.6rem,6.4vw,7.35rem)]">
+                        <h1 className="hero-title mt-2 whitespace-pre-line text-[clamp(2.625rem,12vw,3.25rem)] sm:text-[4rem] lg:text-[clamp(4rem,6vw,5.5rem)]">
                           {headline}
                         </h1>
                       ) : (
-                        <h2 className="mt-3 whitespace-pre-line text-balance text-[clamp(3rem,11vw,4.7rem)] font-black uppercase leading-[0.92] tracking-[-0.04em] sm:text-[clamp(4.7rem,8.2vw,6.4rem)] lg:text-[clamp(5.25rem,6.9vw,7rem)] xl:text-[clamp(5.6rem,6.4vw,7.35rem)]">
+                        <h2 className="hero-title mt-2 whitespace-pre-line text-[clamp(2.625rem,12vw,3.25rem)] sm:text-[4rem] lg:text-[clamp(4rem,6vw,5.5rem)]">
                           {headline}
                         </h2>
                       )
                     ) : null}
                     {subtitle ? (
-                      <p className={`mt-5 max-w-[760px] whitespace-pre-line text-pretty text-[16px] font-medium leading-[1.38] text-white sm:text-[21px] lg:text-[24px] ${textAlignment.includes("text-center") ? "mx-auto" : textAlignment.includes("text-right") ? "ml-auto" : "mr-auto"}`}>
+                      <p className="mt-2.5 max-w-lg whitespace-pre-line text-[17px] leading-[1.25] text-white/80 sm:text-xl">
                         {subtitle}
                       </p>
                     ) : null}
                     {cta ? (
-                      <a href={cta.href} className="mt-7 inline-flex min-h-11 items-center justify-center rounded-full bg-white px-7 py-3 text-[16px] font-semibold text-[#111] shadow-none transition duration-200 hover:bg-[#e9eee9] sm:min-h-12 sm:px-8 sm:text-[18px]">
+                      <a href={cta.href} className="cta mt-4 inline-flex min-h-11 items-center gap-2 rounded-full bg-white px-5 py-3 text-sm text-[#111] transition duration-200 hover:bg-[#e9eee9]">
                         {cta.text}
+                        <ArrowIcon direction="right" />
                       </a>
                     ) : null}
                   </div>

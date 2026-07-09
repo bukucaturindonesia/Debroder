@@ -28,7 +28,7 @@ export function KaosCatalog({
       <div className="section-shell">
         <div className="max-w-2xl">
           <p className="text-xs font-semibold uppercase tracking-[0.2em] text-brand-charcoal/55">Katalog</p>
-          <h2 className="mt-3 text-[28px] font-semibold leading-[1.15] tracking-normal sm:text-[36px]">Pilih kaos sesuai kebutuhan</h2>
+          <h2 className="section-title mt-3">Pilih kaos sesuai kebutuhan</h2>
           <p className="mt-3 text-sm leading-6 text-brand-charcoal/65">Cari berdasarkan nama, kategori, bahan, atau warna. Filter berjalan tanpa memuat ulang halaman.</p>
         </div>
         <div className="mt-6"><ProductCatalog products={products} showCategoryFilter={false} initialColor={initialColor} initialLabel={initialLabel} initialSort={initialSort} initialProductType={initialProductType} productTypeOptions={kaosTypeOptions} typeFilterLabel="Semua tipe kaos" /></div>

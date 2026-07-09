@@ -215,7 +215,7 @@ export function ProductCatalog({
 
   return (
     <div>
-      {showHeading ? <h2 className="text-[28px] font-semibold leading-[1.15] tracking-normal sm:text-[36px]">{title}</h2> : null}
+      {showHeading ? <h2 className="section-title">{title}</h2> : null}
       <div className={`${showHeading ? "mt-6" : ""} grid gap-3 border-y border-brand-softGray py-5 sm:grid-cols-2 ${filterGridClass}`}>
         <input aria-label="Cari produk" value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Cari produk, bahan, warna..." className="min-h-11 rounded-full border border-brand-softGray bg-white px-4 text-sm outline-none focus:border-brand-charcoal lg:col-span-2" />
         {showGroupFilter ? <select aria-label="Filter produk" value={group} onChange={(event) => setGroup(event.target.value as ProductGroup)} className="min-h-11 rounded-full border border-brand-softGray bg-white px-4 text-sm font-semibold"><option value="all">Semua produk</option><option value="jaket-hoodie">Jaket & Hoodie</option><option value="headwear">Headwear</option></select> : null}
@@ -247,11 +247,11 @@ export function ProductCatalog({
                   {product.color_tags.slice(0, 8).map((color) => <span key={color} title={color} className="h-3.5 w-3.5 rounded-full border border-black/10 shadow-[inset_0_0_0_1px_rgba(255,255,255,0.45)]" style={{ backgroundColor: colorHex(color) }} />)}
                 </div> : null}
                 {productMetaLine(product) ? <p className="text-[11px] font-medium tracking-[0.01em] text-brand-charcoal/55 sm:text-xs">{productMetaLine(product)}</p> : null}
-                <Link href={detailHref} className="block"><h3 className="line-clamp-2 text-[15px] font-semibold leading-[1.22] tracking-[-0.01em] text-brand-charcoal sm:text-[17px]">{product.nama}</h3></Link>
+                <Link href={detailHref} className="block"><h3 className="product-title line-clamp-2 text-[15px] leading-[1.22] tracking-[-0.01em] text-brand-charcoal sm:text-[17px]">{product.nama}</h3></Link>
                 {productModel(product) ? <p className="text-xs leading-5 text-brand-charcoal/50 sm:text-[13px]">{productModel(product)}</p> : null}
                 {productDetail(product) ? <p className="line-clamp-2 min-h-[2.5rem] text-xs leading-5 text-brand-charcoal/60 sm:text-sm sm:leading-6">{productDetail(product)}</p> : null}
                 <div className="space-y-0.5">
-                  <p className="text-[15px] font-bold text-brand-charcoal sm:text-[17px]">{productPrice(product)}</p>
+                  <p className="product-price text-[15px] text-brand-charcoal sm:text-[17px]">{productPrice(product)}</p>
                   {product.compare_price ? <p className="text-xs text-brand-charcoal/40 line-through">{formatRupiah(product.compare_price)}</p> : null}
                 </div>
                 {stockText || product.brand || chips.length ? <div className="flex flex-wrap gap-x-3 gap-y-1 text-[11px] font-medium text-brand-charcoal/55">
@@ -260,7 +260,7 @@ export function ProductCatalog({
                   {stockText ? <span>{stockText}</span> : null}
                 </div> : null}
               </div>
-              <div className="mt-4 grid grid-cols-2 gap-2"><Link href={detailHref} className="inline-flex min-h-10 items-center justify-center border border-brand-softGray bg-white px-3 text-xs font-semibold transition hover:border-brand-charcoal">Detail</Link><AddToCartButton product={{ id: product.id || product.slug || product.nama, name: product.nama, category: product.kategori, priceLabel: productPrice(product), priceValue: priceOf(product), href: detailHref, imageUrl: getProductImage(product), imageAlt: product.image_alt || product.nama }} className="inline-flex min-h-10 items-center justify-center bg-brand-green px-3 text-xs font-semibold text-white transition hover:bg-brand-charcoal">Tambah</AddToCartButton></div>
+              <div className="mt-4 grid grid-cols-2 gap-2"><Link href={detailHref} className="cta inline-flex min-h-10 items-center justify-center border border-brand-softGray bg-white px-3 text-xs transition hover:border-brand-charcoal">Detail</Link><AddToCartButton product={{ id: product.id || product.slug || product.nama, name: product.nama, category: product.kategori, priceLabel: productPrice(product), priceValue: priceOf(product), href: detailHref, imageUrl: getProductImage(product), imageAlt: product.image_alt || product.nama }} className="cta inline-flex min-h-10 items-center justify-center bg-brand-green px-3 text-xs text-white transition hover:bg-brand-charcoal">Tambah</AddToCartButton></div>
             </article>;
         })}
       </div> : <div className="mt-6 bg-white p-8 text-center"><p className="font-semibold">Produk tidak ditemukan</p><p className="mt-2 text-sm text-brand-charcoal/60">Coba kata kunci atau kombinasi filter lain.</p></div>}

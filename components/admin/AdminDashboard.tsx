@@ -188,18 +188,16 @@ const tableConfigs: TableConfig[] = [
     fields: [
       {
         name: "headline",
-        label: "Headline hero",
-        type: "textarea",
-        placeholder: "Contoh:\nFROM BLANK\nTO BRAND",
-        helper: "Tekan Enter untuk mengatur pecah baris seperti hero Nike.",
+        label: "Judul highlight baris 1",
+        type: "text",
+        placeholder: "Contoh: Koleksi utama DEBRODER",
         required: false
       },
       {
         name: "subheadline",
-        label: "Subheadline hero",
+        label: "Subteks highlight baris 2",
         type: "textarea",
-        placeholder: "Contoh: Kaos polos, jersey, hoodie, kemeja, dan headwear siap custom.",
-        helper: "Boleh pakai Enter jika ingin subheadline tampil dua baris.",
+        placeholder: "Contoh: Sablon DTF, Jersey, dan Custom Apparel",
         required: false
       },
       {
@@ -570,22 +568,20 @@ const tableConfigs: TableConfig[] = [
         label: "Label",
         type: "text",
         placeholder: "KOLEKSI",
-        required: false
+        required: true
       },
       {
         name: "title",
         label: "Judul",
-        type: "textarea",
-        placeholder: "Contoh:\nSABLON DTF\nPREMIUM",
-        helper: "Tekan Enter untuk mengatur pecah baris hero halaman.",
-        required: false
+        type: "text",
+        placeholder: "Layanan & Produk DE BRODER",
+        required: true
       },
       {
         name: "subtitle",
         label: "Subtitle",
         type: "textarea",
-        placeholder: "Temukan kebutuhan apparel dalam satu tempat.",
-        helper: "Boleh pakai Enter jika ingin subtitle tampil lebih presisi."
+        placeholder: "Temukan kebutuhan apparel dalam satu tempat."
       },
       {
         name: "image_url",
@@ -1608,7 +1604,7 @@ export function AdminDashboard() {
         <textarea
           value={valueToText(form[field.name])}
           onChange={(event) => updateField(field, event.target.value)}
-          rows={field.type === "list" ? 5 : field.name === "headline" || field.name === "title" ? 3 : 4}
+          rows={field.type === "list" ? 5 : 4}
           placeholder={field.placeholder}
           className={commonClass}
         />

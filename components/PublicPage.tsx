@@ -195,7 +195,7 @@ export function PageHero({
   const mobileImage = mobileImageUrl || desktopImage;
 
   return (
-    <section data-reveal className="bg-brand-offWhite">
+    <section data-reveal className="bg-white">
       <div className="relative w-full overflow-hidden bg-brand-offWhite sm:aspect-[16/5] sm:min-h-[260px] lg:aspect-[16/4.5]">
         <div className="relative aspect-[4/5] w-full sm:absolute sm:inset-0 sm:aspect-auto">
           <ResponsivePicture
@@ -211,13 +211,13 @@ export function PageHero({
             desktopZoom={imageZoom}
             mobileZoom={mobileImageZoom}
           />
-
+          {hasCopy ? <div className="absolute inset-x-0 bottom-0 hidden h-[52%] bg-gradient-to-t from-black/48 via-black/14 to-transparent sm:block" /> : null}
         </div>
-        {hasCopy ? <div className="absolute inset-x-4 bottom-[9%] z-10 mx-auto max-w-5xl px-0 py-0 text-center text-white [text-shadow:0_2px_10px_rgba(0,0,0,0.22)] sm:inset-x-8 sm:bottom-[10%] lg:bottom-[9%]">
+        {hasCopy ? <div className="relative px-4 py-6 text-brand-charcoal sm:absolute sm:bottom-8 sm:left-8 sm:right-8 sm:max-w-4xl sm:p-0 sm:text-white lg:bottom-10 lg:left-12 lg:right-12">
           {breadcrumbs?.length ? (
             <nav
               aria-label="Breadcrumb"
-              className="mb-3 hidden flex-wrap justify-center gap-2 text-xs font-medium text-white/70 sm:flex"
+              className="mb-3 flex flex-wrap gap-2 text-xs font-medium text-brand-charcoal/50 sm:text-white/70"
             >
               {breadcrumbs.map((item, index) => (
                 <span key={`${item.label}-${index}`} className="flex gap-2">
@@ -234,25 +234,25 @@ export function PageHero({
             </nav>
           ) : null}
           {cleanLabel ? (
-            <p className="text-[14px] font-semibold leading-none tracking-[-0.01em] text-white sm:text-[18px] lg:text-[20px]">
+            <p className="w-fit bg-brand-charcoal px-3 py-1 text-[15px] font-medium uppercase leading-5 text-white sm:bg-white sm:text-brand-charcoal">
               {cleanLabel}
             </p>
           ) : null}
           {cleanTitle ? (
-            <h1 className="mx-auto mt-3 max-w-5xl whitespace-pre-line text-balance text-[clamp(3rem,11vw,4.7rem)] font-black uppercase leading-[0.92] tracking-[-0.04em] sm:text-[clamp(4.7rem,8.2vw,6.4rem)] lg:text-[clamp(5.25rem,6.9vw,7rem)] xl:text-[clamp(5.6rem,6.4vw,7.35rem)]">
+            <h1 className="hero-title mt-2 max-w-4xl text-[clamp(42px,12vw,52px)] sm:text-[64px] lg:text-[clamp(64px,5.5vw,88px)]">
               {cleanTitle}
             </h1>
           ) : null}
           {cleanDescription ? (
-            <p className="mx-auto mt-5 max-w-[760px] whitespace-pre-line text-pretty text-[16px] font-medium leading-[1.38] text-white sm:text-[21px] lg:text-[24px]">
+            <p className="mt-3 max-w-2xl text-[17px] leading-[1.45] text-brand-charcoal/70 sm:text-xl sm:text-white/85">
               {cleanDescription}
             </p>
           ) : null}
           {primaryHref ? (
-            <div className="mt-7 flex flex-col items-center justify-center gap-3 sm:flex-row">
+            <div className="mt-5 flex flex-col gap-3 sm:flex-row">
               <a
                 href={primaryHref}
-                className="inline-flex min-h-11 items-center justify-center rounded-full bg-white px-7 py-3 text-[16px] font-semibold text-[#111] transition hover:bg-brand-offWhite sm:min-h-12 sm:px-8 sm:text-[18px]"
+                className="cta inline-flex min-h-11 items-center justify-center rounded-full bg-brand-charcoal px-6 py-3 text-sm text-white transition hover:bg-black/80 sm:bg-white sm:text-brand-charcoal sm:hover:bg-brand-offWhite"
                 target={primaryHref.startsWith("http") ? "_blank" : undefined}
                 rel={
                   primaryHref.startsWith("http")
@@ -265,7 +265,7 @@ export function PageHero({
               {cleanSecondaryCtaText && secondaryCtaHref ? (
                 <Link
                   href={secondaryCtaHref}
-                  className="inline-flex min-h-11 items-center justify-center rounded-full bg-white/90 px-7 py-3 text-[16px] font-semibold text-[#111] transition hover:bg-white sm:min-h-12 sm:px-8 sm:text-[18px]"
+                  className="cta inline-flex min-h-11 items-center justify-center rounded-full border border-brand-softGray px-6 py-3 text-sm text-brand-charcoal transition hover:border-brand-charcoal sm:border-white/40 sm:text-white sm:hover:bg-white sm:hover:text-brand-charcoal"
                 >
                   {cleanSecondaryCtaText}
                 </Link>
@@ -358,7 +358,7 @@ export function ProductGrid({ products }: { products: Product[] }) {
                 </p>
               ) : null}
               {price ? (
-                <p className="text-[15px] font-bold text-brand-charcoal sm:text-[17px]">
+                <p className="product-price text-[15px] text-brand-charcoal sm:text-[17px]">
                   {price}
                 </p>
               ) : null}
@@ -471,13 +471,13 @@ export function RecommendationGrid({
   currentSlug?: string;
 }) {
   return (
-    <section data-reveal className="bg-brand-offWhite py-12 sm:py-16">
+    <section data-reveal className="bg-white py-12 sm:py-16">
       <div className="section-shell">
         <div className="max-w-3xl">
           <p className="text-sm font-medium uppercase text-brand-charcoal/50">
             Rekomendasi
           </p>
-          <h2 className="mt-3 text-[28px] font-semibold leading-[1.15] tracking-normal sm:text-[36px]">
+          <h2 className="section-title mt-3">
             Layanan DE BRODER lainnya
           </h2>
         </div>
@@ -545,7 +545,7 @@ export function CategoryDetailPage({
       <section data-reveal className="bg-brand-offWhite py-12 sm:py-16">
         <div className="section-shell grid gap-6 lg:grid-cols-[0.9fr_1.1fr] lg:items-start">
           <div>
-            <h2 className="text-[28px] font-semibold leading-[1.15] tracking-normal sm:text-[36px]">Detail layanan</h2>
+            <h2 className="section-title">Detail layanan</h2>
             <div className="mt-6 grid gap-3">
               {details.map((detail) => (
                 <p
@@ -568,7 +568,7 @@ export function CategoryDetailPage({
         </div>
       </section>
       {products.length ? (
-        <section className="bg-brand-offWhite py-12 sm:py-16">
+        <section className="bg-white py-12 sm:py-16">
           <div className="section-shell">
             <ProductCatalog
               products={products}
