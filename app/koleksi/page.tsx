@@ -47,14 +47,15 @@ function CollectionProductCard({ product }: { product: Product }) {
   return (
     <article className="group min-w-0">
       <Link href={detailHref} className="block">
-        <div className="relative aspect-[4/5] w-full overflow-hidden bg-white">
+        <div className="relative aspect-[4/5] w-full overflow-hidden bg-[#f4f4ef]">
           <SafeImage
             src={getProductImage(product)}
             fallbackSrc={fallbackImages.product}
             alt={product.image_alt || product.nama}
             fill
-            className="object-cover transition duration-500 group-hover:scale-[1.02]"
+            className={`${(product.object_fit || "cover") === "contain" ? "object-contain p-3" : "object-cover"} transition duration-500 group-hover:scale-[1.02]`}
             objectFit={product.object_fit || "cover"}
+            objectPosition={product.object_position || "center center"}
             focalX={focal?.focal_x ?? product.focal_x}
             focalY={focal?.focal_y ?? product.focal_y}
             zoom={focal?.zoom ?? product.focal_zoom}
@@ -70,7 +71,7 @@ function CollectionProductCard({ product }: { product: Product }) {
       <div className="mt-3 grid grid-cols-2 gap-2">
         <Link href={detailHref} className="inline-flex min-h-9 items-center justify-center border border-brand-softGray px-2 text-[11px] font-semibold sm:min-h-10 sm:text-xs">Detail</Link>
         <AddToCartButton
-          product={{ id: product.id || product.slug || product.nama, name: product.nama, category: product.kategori, priceLabel: productPrice(product), href: detailHref }}
+          product={{ id: product.id || product.slug || product.nama, name: product.nama, category: product.kategori, priceLabel: productPrice(product), priceValue: Number(product.price ?? product.harga ?? product.base_price ?? 0) || undefined, href: detailHref, imageUrl: getProductImage(product), imageAlt: product.image_alt || product.nama }}
           className="inline-flex min-h-9 items-center justify-center bg-brand-green px-2 text-[11px] font-semibold text-white sm:min-h-10 sm:text-xs"
         >
           Tambah

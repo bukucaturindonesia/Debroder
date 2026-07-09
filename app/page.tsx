@@ -199,7 +199,7 @@ function ProductCard({ item, className = "" }: { item: ProductItem; className?: 
     <article className={`group min-w-0 ${className}`}>
       <Link href={item.href} className="block">
       <div className="relative aspect-[4/5] overflow-hidden bg-[#f2f2ed]">
-        <SafeImage src={item.image} fallbackSrc={item.fallbackImage} alt={item.imageAlt} fill sizes="(min-width: 1536px) 20vw, (min-width: 1024px) 25vw, 50vw" className={`${(item.objectFit || item.fit) === "contain" ? "object-contain p-3" : "object-cover"} transition duration-700 group-hover:scale-[1.03]`} objectFit={item.objectFit || (item.fit === "contain" ? "contain" : "cover")} objectPosition={item.objectPosition} />
+        <SafeImage src={item.image} fallbackSrc={item.fallbackImage} alt={item.imageAlt} fill sizes="(min-width: 1536px) 20vw, (min-width: 1024px) 25vw, 50vw" className={`${(item.objectFit || item.fit) === "contain" ? "object-contain p-3" : "object-cover"} transition duration-700 group-hover:scale-[1.03]`} objectFit={item.objectFit || (item.fit === "contain" ? "contain" : "cover")} objectPosition={item.objectPosition || "center center"} />
       </div>
       </Link>
       <div className="pt-3">
@@ -386,7 +386,7 @@ export default async function Home() {
                 <article key={item.name} className={`group ${horizontalCarouselItemClass}`}>
                   <Link href={item.href} className="block">
                   <div className="relative aspect-[4/5] overflow-hidden bg-white">
-                    <SafeImage src={item.image} fallbackSrc={item.fallbackImage} alt={item.imageAlt} fill sizes="(min-width: 1536px) 20vw, (min-width: 1024px) 25vw, 50vw" className={`${(item.objectFit || item.fit) === "contain" ? "object-contain p-4" : "object-cover"} transition duration-700 group-hover:scale-[1.03]`} objectFit={item.objectFit || (item.fit === "contain" ? "contain" : "cover")} objectPosition={item.objectPosition} />
+                    <SafeImage src={item.image} fallbackSrc={item.fallbackImage} alt={item.imageAlt} fill sizes="(min-width: 1536px) 20vw, (min-width: 1024px) 25vw, 50vw" className={`${(item.objectFit || item.fit) === "contain" ? "object-contain p-4" : "object-cover"} transition duration-700 group-hover:scale-[1.03]`} objectFit={item.objectFit || (item.fit === "contain" ? "contain" : "cover")} objectPosition={item.objectPosition || "center center"} />
                   </div>
                   </Link>
                   <Link href={item.href} className="mt-3 block"><h3 className="line-clamp-2 text-[15px] font-semibold leading-snug sm:text-base">{item.name}</h3></Link>
