@@ -12,7 +12,7 @@ const config: Config = {
         brand: {
           black: "#000000",
           white: "#FFFFFF",
-          offWhite: "#F7F7F2",
+          offWhite: "#F7F7F4",
           charcoal: "#111111",
           softGray: "#E5E5E5",
           muted: "#737373",

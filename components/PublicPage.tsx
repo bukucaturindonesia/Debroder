@@ -195,7 +195,7 @@ export function PageHero({
   const mobileImage = mobileImageUrl || desktopImage;
 
   return (
-    <section data-reveal className="bg-white">
+    <section data-reveal className="bg-brand-offWhite">
       <div className="relative w-full overflow-hidden bg-brand-offWhite sm:aspect-[16/5] sm:min-h-[260px] lg:aspect-[16/4.5]">
         <div className="relative aspect-[4/5] w-full sm:absolute sm:inset-0 sm:aspect-auto">
           <ResponsivePicture
@@ -390,7 +390,7 @@ export function StoreGrid({ stores }: { stores: Store[] }) {
         return (
           <article
             key={store.nama_store}
-            className="flex flex-col bg-white p-4"
+            className="flex flex-col bg-transparent py-4"
           >
             <PublicImage
               src={getStoreImage(store)}
@@ -444,7 +444,7 @@ export function OrderTimeline({
         const description = typeof step === "string" ? "" : step.description;
 
         return (
-          <article key={title} className="bg-white p-5">
+          <article key={title} className="p-5">
             <span className="text-sm font-semibold text-brand-charcoal/50">
               {String(index + 1).padStart(2, "0")}
             </span>
@@ -471,7 +471,7 @@ export function RecommendationGrid({
   currentSlug?: string;
 }) {
   return (
-    <section data-reveal className="bg-white py-12 sm:py-16">
+    <section data-reveal className="bg-brand-offWhite py-10 sm:py-12">
       <div className="section-shell">
         <div className="max-w-3xl">
           <p className="text-sm font-medium uppercase text-brand-charcoal/50">
@@ -542,7 +542,7 @@ export function CategoryDetailPage({
           { label: cleanDisplayText(title) || cleanDisplayText(pageHero?.title) || cleanDisplayText(label) || "Koleksi" }
         ]}
       />
-      <section data-reveal className="bg-brand-offWhite py-12 sm:py-16">
+      <section data-reveal className="bg-brand-offWhite py-10 sm:py-12">
         <div className="section-shell grid gap-6 lg:grid-cols-[0.9fr_1.1fr] lg:items-start">
           <div>
             <h2 className="section-title">Detail layanan</h2>
@@ -550,7 +550,7 @@ export function CategoryDetailPage({
               {details.map((detail) => (
                 <p
                   key={detail}
-                  className="bg-white px-4 py-4 text-sm font-medium leading-6 text-brand-charcoal/70"
+                  className="py-3 text-sm font-medium leading-6 text-brand-charcoal/70"
                 >
                   {detail}
                 </p>
@@ -568,7 +568,7 @@ export function CategoryDetailPage({
         </div>
       </section>
       {products.length ? (
-        <section className="bg-white py-12 sm:py-16">
+        <section className="bg-brand-offWhite py-10 sm:py-12">
           <div className="section-shell">
             <ProductCatalog
               products={products}

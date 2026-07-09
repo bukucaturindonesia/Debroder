@@ -6,21 +6,21 @@ import { formatRupiah, whatsappLinkWithMessage } from "@/lib/url";
 
 export function ServiceCatalog({ services, whatsapp }: { services: Service[]; whatsapp: string }) {
   return (
-    <section data-reveal className="bg-brand-offWhite py-12 sm:py-16">
+    <section data-reveal className="bg-brand-offWhite pb-12 pt-8 sm:pb-16 sm:pt-10">
       <div className="section-shell">
         <div className="max-w-2xl">
-          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-brand-charcoal/55">Pilihan Layanan</p>
-          <h2 className="section-title mt-3">Katalog Sablon DTF</h2>
-          <p className="mt-3 text-sm leading-6 text-brand-charcoal/65">Pilih ukuran atau jenis layanan, lalu buka detail untuk melihat informasi produksi.</p>
+          <p className="text-xs font-medium tracking-[0.08em] text-brand-charcoal/55">Pilihan Layanan</p>
+          <h2 className="landing-section-title mt-2">Katalog Sablon DTF</h2>
+          <p className="mt-3 text-sm leading-6 text-brand-charcoal/65">Pilih ukuran cetak, kebutuhan produksi, dan jenis pengerjaan DTF yang paling sesuai.</p>
         </div>
         {services.length ? <div className="mt-6 grid grid-cols-1 gap-x-2 gap-y-6 md:grid-cols-2 lg:grid-cols-4">
           {services.map((service) => (
-            <article key={service.id || service.slug} className="flex flex-col bg-white">
+            <article key={service.id || service.slug} className="flex flex-col bg-transparent">
               <SafeImage
                 src={service.image_url}
                 fallbackSrc={fallbackImages.product}
                 alt={service.image_alt || service.nama}
-                className="aspect-[4/5] w-full"
+                className="product-image-frame aspect-[4/5] w-full"
                 objectFit={service.object_fit || "cover"}
                 objectPosition={service.object_position || "center center"}
                 focalX={service.focal_x}
@@ -39,7 +39,7 @@ export function ServiceCatalog({ services, whatsapp }: { services: Service[]; wh
               </div>
             </article>
           ))}
-        </div> : <div className="mt-8 bg-white p-8 text-center text-sm font-medium text-brand-charcoal/60">Belum ada layanan Sablon DTF.</div>}
+        </div> : <div className="mt-8 p-8 text-center text-sm font-medium text-brand-charcoal/60">Belum ada layanan Sablon DTF.</div>}
       </div>
     </section>
   );

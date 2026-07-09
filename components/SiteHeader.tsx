@@ -248,14 +248,14 @@ function SearchModal({ isOpen, onClose }: { isOpen: boolean; onClose: () => void
           {results.length ? (
             <div className="grid gap-1">
               {results.map((item) => (
-                <button key={`${item.title}-${item.href}`} type="button" className="rounded-md p-4 text-left transition hover:bg-[#f5f5ef]" onClick={() => openResult(item.href)}>
+                <button key={`${item.title}-${item.href}`} type="button" className="rounded-md p-4 text-left transition hover:bg-brand-offWhite" onClick={() => openResult(item.href)}>
                   <span className="text-base font-semibold">{item.title}</span>
                   <span className="mt-1 block text-sm leading-6 text-black/55">{item.description}</span>
                 </button>
               ))}
             </div>
           ) : (
-            <p className="rounded-md bg-[#f5f5ef] p-4 text-sm text-black/65">Tidak ada hasil. Coba kata kunci lain.</p>
+            <p className="rounded-md bg-brand-offWhite p-4 text-sm text-black/65">Tidak ada hasil. Coba kata kunci lain.</p>
           )}
         </div>
       </div>
@@ -290,8 +290,8 @@ export function SiteHeader() {
   }, [isOpen]);
 
   return (
-    <header className={`sticky top-0 z-[100] border-b bg-white/95 text-[#111] backdrop-blur-md transition duration-200 ${scrolled ? "border-black/10" : "border-black/[0.06]"}`}>
-      <div className={`hidden overflow-hidden border-b border-black/[0.06] bg-[#f5f5ef] transition-[max-height,opacity,border-color] duration-300 ease-out lg:block ${scrolled ? "invisible max-h-0 border-transparent opacity-0 pointer-events-none" : "visible max-h-9 opacity-100"}`} aria-hidden={scrolled}>
+    <header className="sticky top-0 z-[100] bg-brand-offWhite/95 text-[#111] backdrop-blur-md transition duration-200">
+      <div className={`hidden overflow-hidden bg-brand-offWhite transition-[max-height,opacity] duration-300 ease-out lg:block ${scrolled ? "invisible max-h-0 opacity-0 pointer-events-none" : "visible max-h-9 opacity-100"}`} aria-hidden={scrolled}>
         <div className="section-shell flex h-9 items-center justify-between gap-4 text-xs font-semibold text-black/58">
           <p className="truncate">DEBRODER apparel, sablon, dan produksi custom.</p>
           <div className="flex items-center gap-5">
@@ -334,27 +334,27 @@ export function SiteHeader() {
         </div>
 
         <div className="flex shrink-0 items-center gap-1 sm:gap-2">
-          <button type="button" className="hidden h-10 w-[150px] items-center gap-3 rounded-full bg-[#f5f5ef] px-4 text-left text-sm text-black/55 transition hover:text-black xl:flex" aria-label="Cari produk" onClick={() => setIsSearchOpen(true)}>
+          <button type="button" className="hidden h-10 w-[150px] items-center gap-3 rounded-full bg-brand-offWhite px-4 text-left text-sm text-black/55 transition hover:text-black xl:flex" aria-label="Cari produk" onClick={() => setIsSearchOpen(true)}>
             <SearchIcon />
             <span>Cari</span>
           </button>
-          <button type="button" className="grid h-10 w-10 place-items-center rounded-full transition hover:bg-[#f5f5ef] xl:hidden" aria-label="Cari" onClick={() => setIsSearchOpen(true)}>
+          <button type="button" className="grid h-10 w-10 place-items-center rounded-full transition hover:bg-brand-offWhite xl:hidden" aria-label="Cari" onClick={() => setIsSearchOpen(true)}>
             <SearchIcon />
           </button>
-          <a href={whatsappUrl} className="grid h-10 w-10 place-items-center rounded-full transition hover:bg-[#f5f5ef]" aria-label="Hubungi WhatsApp DEBRODER" target="_blank" rel="noopener noreferrer">
+          <a href={whatsappUrl} className="grid h-10 w-10 place-items-center rounded-full transition hover:bg-brand-offWhite" aria-label="Hubungi WhatsApp DEBRODER" target="_blank" rel="noopener noreferrer">
             <ChatIcon />
           </a>
           <CartNavButton />
-          <button type="button" className="relative grid h-10 w-10 place-items-center rounded-full transition hover:bg-[#f5f5ef] lg:hidden" aria-label={isOpen ? "Tutup menu" : "Buka menu"} aria-expanded={isOpen} onClick={() => setIsOpen((current) => !current)}>
+          <button type="button" className="relative grid h-10 w-10 place-items-center rounded-full transition hover:bg-brand-offWhite lg:hidden" aria-label={isOpen ? "Tutup menu" : "Buka menu"} aria-expanded={isOpen} onClick={() => setIsOpen((current) => !current)}>
             <BrandIcon name={isOpen ? "close" : "menu"} />
           </button>
         </div>
       </nav>
 
-      <div className={`absolute inset-x-0 top-full h-[calc(100dvh-4rem)] border-t border-black/10 bg-white transition-transform duration-500 ease-in-out md:h-[calc(100dvh-78px)] lg:hidden ${isOpen ? "visible translate-x-0" : "invisible translate-x-full"}`}>
+      <div className={`absolute inset-x-0 top-full h-[calc(100dvh-4rem)] bg-brand-offWhite transition-transform duration-500 ease-in-out md:h-[calc(100dvh-78px)] lg:hidden ${isOpen ? "visible translate-x-0" : "invisible translate-x-full"}`}>
         <div className="section-shell flex h-full flex-col overflow-y-auto py-6">
           {mobileNavItems.map((item) => (
-            <Link key={item.href} href={item.href} className={`flex min-h-16 items-center justify-between border-b border-black/[0.08] text-[28px] font-semibold leading-tight transition hover:pl-1 ${pathname === item.href ? "text-[#0f5a36]" : "text-[#111]"}`}>
+            <Link key={item.href} href={item.href} className={`flex min-h-16 items-center justify-between text-[28px] font-semibold leading-tight transition hover:pl-1 ${pathname === item.href ? "text-[#0f5a36]" : "text-[#111]"}`}>
               <span>{item.label}</span><span className="text-2xl font-normal" aria-hidden="true">›</span>
             </Link>
           ))}

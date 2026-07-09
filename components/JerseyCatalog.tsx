@@ -9,12 +9,12 @@ function slugify(value: string) {
 
 export function JerseyCatalog({ categories }: { categories: ServiceCategory[] }) {
   return (
-    <section data-reveal className="bg-brand-offWhite py-12 sm:py-16">
+    <section data-reveal className="bg-brand-offWhite pb-12 pt-8 sm:pb-16 sm:pt-10">
       <div className="section-shell">
         <div className="max-w-2xl">
-          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-brand-charcoal/55">Kategori Jersey</p>
-          <h2 className="section-title mt-3">Pilih model jersey</h2>
-          <p className="mt-3 text-sm leading-6 text-brand-charcoal/65">Setiap kategori, gambar, pilihan bahan, warna, kerah, dan lengan dapat dikelola dari admin.</p>
+          <p className="text-xs font-medium tracking-[0.08em] text-brand-charcoal/55">Kategori Jersey</p>
+          <h2 className="landing-section-title mt-2">Pilih model jersey</h2>
+          <p className="mt-3 text-sm leading-6 text-brand-charcoal/65">Pilih model, bahan, warna, kerah, dan lengan sesuai kebutuhan tim Anda.</p>
         </div>
         {categories.length ? <div className="mt-6 grid grid-cols-1 gap-x-2 gap-y-6 md:grid-cols-2 lg:grid-cols-4">
           {categories.map((category) => {
@@ -22,7 +22,7 @@ export function JerseyCatalog({ categories }: { categories: ServiceCategory[] })
             return (
               <Link key={category.id || slug} href={`/jersey/${slug}`} className="group block min-w-0">
                 <article>
-                  <div className="overflow-hidden bg-white">
+                  <div className="product-image-frame overflow-hidden">
                     <SafeImage
                       src={category.gambar_url}
                       fallbackSrc={fallbackImages.product}
@@ -43,7 +43,7 @@ export function JerseyCatalog({ categories }: { categories: ServiceCategory[] })
               </Link>
             );
           })}
-        </div> : <div className="mt-8 bg-white p-8 text-center text-sm font-medium text-brand-charcoal/60">Belum ada kategori jersey.</div>}
+        </div> : <div className="mt-8 p-8 text-center text-sm font-medium text-brand-charcoal/60">Belum ada kategori jersey.</div>}
       </div>
     </section>
   );

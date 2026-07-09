@@ -216,7 +216,7 @@ export function ProductCatalog({
   return (
     <div>
       {showHeading ? <h2 className="section-title">{title}</h2> : null}
-      <div className={`${showHeading ? "mt-6" : ""} grid gap-3 border-y border-brand-softGray py-5 sm:grid-cols-2 ${filterGridClass}`}>
+      <div className={`${showHeading ? "mt-5" : ""} grid gap-3 py-4 sm:grid-cols-2 ${filterGridClass}`}>
         <input aria-label="Cari produk" value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Cari produk, bahan, warna..." className="min-h-11 rounded-full border border-brand-softGray bg-white px-4 text-sm outline-none focus:border-brand-charcoal lg:col-span-2" />
         {showGroupFilter ? <select aria-label="Filter produk" value={group} onChange={(event) => setGroup(event.target.value as ProductGroup)} className="min-h-11 rounded-full border border-brand-softGray bg-white px-4 text-sm font-semibold"><option value="all">Semua produk</option><option value="jaket-hoodie">Jaket & Hoodie</option><option value="headwear">Headwear</option></select> : null}
         {showCategoryFilter ? <select aria-label="Filter kategori" value={category} onChange={(event) => setCategory(event.target.value)} className="min-h-11 rounded-full border border-brand-softGray bg-white px-4 text-sm font-semibold"><option value="all">Semua kategori</option>{categories.map((item) => <option key={item}>{item}</option>)}</select> : null}
@@ -237,7 +237,7 @@ export function ProductCatalog({
           const stockText = typeof product.stock === "number" ? (product.stock > 0 ? `Stok ${product.stock}` : "Pre-order") : "";
           return <article key={product.id || product.slug || product.nama} className="group min-w-0">
               <Link href={detailHref} className="block">
-              <div className="relative aspect-[4/5] w-full overflow-hidden bg-[#f4f4ef]">
+              <div className="product-image-frame relative aspect-[4/5] w-full overflow-hidden">
                 <SafeImage src={getProductImage(product)} fallbackSrc={fallbackImages.product} alt={product.image_alt || product.nama} fill className={`${(product.object_fit || "cover") === "contain" ? "object-contain p-3" : "object-cover"} transition duration-500 group-hover:scale-[1.02]`} objectFit={product.object_fit || "cover"} objectPosition={product.object_position || "center center"} focalX={focal?.focal_x ?? product.focal_x} focalY={focal?.focal_y ?? product.focal_y} zoom={focal?.zoom ?? product.focal_zoom} sizes="(min-width: 1536px) 20vw, (min-width: 1024px) 25vw, (min-width: 768px) 33vw, 50vw" />
                 {labels.length ? <div className="absolute left-2 top-2 flex flex-wrap gap-1">{labels.map((item) => <span key={String(item)} className="rounded-full bg-white/95 px-2 py-1 text-[10px] font-semibold shadow-sm">{item}</span>)}</div> : null}
               </div>
@@ -263,7 +263,7 @@ export function ProductCatalog({
               <div className="mt-4 grid grid-cols-2 gap-2"><Link href={detailHref} className="cta inline-flex min-h-10 items-center justify-center border border-brand-softGray bg-white px-3 text-xs transition hover:border-brand-charcoal">Detail</Link><AddToCartButton product={{ id: product.id || product.slug || product.nama, name: product.nama, category: product.kategori, priceLabel: productPrice(product), priceValue: priceOf(product), href: detailHref, imageUrl: getProductImage(product), imageAlt: product.image_alt || product.nama }} className="cta inline-flex min-h-10 items-center justify-center bg-brand-green px-3 text-xs text-white transition hover:bg-brand-charcoal">Tambah</AddToCartButton></div>
             </article>;
         })}
-      </div> : <div className="mt-6 bg-white p-8 text-center"><p className="font-semibold">Produk tidak ditemukan</p><p className="mt-2 text-sm text-brand-charcoal/60">Coba kata kunci atau kombinasi filter lain.</p></div>}
+      </div> : <div className="mt-6 p-8 text-center"><p className="font-semibold">Produk tidak ditemukan</p><p className="mt-2 text-sm text-brand-charcoal/60">Coba kata kunci atau kombinasi filter lain.</p></div>}
     </div>
   );
 }
