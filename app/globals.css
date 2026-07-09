@@ -119,6 +119,101 @@ button,
   }
 }
 
+
+/* DEBRODER editorial/category image cards: Nike-inspired clean white text + efficient soft overlay. */
+.editorial-card {
+  isolation: isolate;
+}
+
+.editorial-card-image {
+  filter: none;
+  opacity: 1;
+}
+
+.editorial-card-overlay {
+  background: linear-gradient(
+    to top,
+    rgba(0, 0, 0, 0.34) 0%,
+    rgba(0, 0, 0, 0.20) 28%,
+    rgba(0, 0, 0, 0.08) 52%,
+    rgba(0, 0, 0, 0) 75%
+  );
+}
+
+.editorial-card-content {
+  left: 16px;
+  right: 16px;
+  bottom: 18px;
+  max-width: 80%;
+}
+
+.editorial-card-label {
+  color: #ffffff;
+  font-family: var(--font-body);
+  font-size: 11px;
+  font-weight: 500;
+  line-height: 1.2;
+  margin: 0 0 4px;
+  text-shadow: 0 1px 8px rgba(0, 0, 0, 0.32);
+}
+
+.editorial-card-title {
+  color: #ffffff;
+  display: -webkit-box;
+  font-family: var(--font-body);
+  font-size: clamp(17px, 5vw, 22px);
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  line-height: 1.08;
+  margin: 0;
+  max-width: 100%;
+  overflow: hidden;
+  text-shadow: 0 2px 14px rgba(0, 0, 0, 0.34);
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+
+.editorial-card-cta {
+  font-family: var(--font-body);
+  font-size: 13px;
+  font-weight: 600;
+  min-height: 36px;
+  padding-inline: 16px;
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.14);
+}
+
+@media (min-width: 640px) {
+  .editorial-card-content {
+    left: 24px;
+    right: 24px;
+    bottom: 28px;
+  }
+
+  .editorial-card-label {
+    font-size: 13px;
+    margin-bottom: 5px;
+  }
+
+  .editorial-card-title {
+    font-size: clamp(20px, 2vw, 28px);
+    line-height: 1.08;
+  }
+
+  .editorial-card-cta {
+    font-size: 14px;
+    min-height: 40px;
+    padding-inline: 18px;
+  }
+}
+
+@media (min-width: 1024px) {
+  .editorial-card-content {
+    left: 28px;
+    right: 28px;
+    bottom: 32px;
+  }
+}
+
 ::selection {
   background: #174c3c;
   color: #ffffff;

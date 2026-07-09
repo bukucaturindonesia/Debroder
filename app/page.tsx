@@ -68,9 +68,19 @@ function isCustomHomepageItem(item: HomepageSectionItem) {
 }
 
 function preferredHomepageItems(section: HomepageSection) {
-  if (!["featured", "trending", "services-products"].includes(section.slug)) return section.items;
+  if (!["featured", "trending", "fresh-drops", "services-products"].includes(section.slug)) return section.items;
   const customItems = section.items.filter(isCustomHomepageItem);
   return customItems.length ? customItems : section.items;
+}
+
+function cleanCmsText(value?: string | null) {
+  const text = value?.trim();
+  if (!text || text === "." || text === "-" || text === "—") return "";
+  return text;
+}
+
+function hasEditorialText(...values: Array<string | null | undefined>) {
+  return values.some((value) => Boolean(cleanCmsText(value)));
 }
 
 function productItem(product: Product): ProductItem {
@@ -102,9 +112,9 @@ function serviceHref(service: Service) {
 function editorialPlacement(item: HomepageSectionItem): EditorialItem | null {
   if (isCustomHomepageItem(item)) {
     return {
-      label: item.custom_label || "",
-      title: item.custom_title || "",
-      button: item.custom_button_label || "Lihat",
+      label: cleanCmsText(item.custom_label),
+      title: cleanCmsText(item.custom_title),
+      button: cleanCmsText(item.custom_button_label),
       href: item.custom_link_url || "#",
       image: item.custom_image_url || fallbackImages.product,
       imageAlt: item.custom_image_alt || item.custom_title || "DEBRODER",
@@ -117,9 +127,9 @@ function editorialPlacement(item: HomepageSectionItem): EditorialItem | null {
     const href = `/produk/${item.product.slug || item.product.nama.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "")}`;
     const price = formatRupiah(item.product.price ?? item.product.harga ?? item.product.base_price) || "Hubungi kami";
     return {
-      label: item.product.kategori,
-      title: item.product.nama,
-      button: "Lihat Produk",
+      label: cleanCmsText(item.product.kategori),
+      title: cleanCmsText(item.product.nama),
+      button: "Lihat",
       href,
       cartProduct: { id: item.product.id || item.product.slug || item.product.nama, name: item.product.nama, category: item.product.kategori, priceLabel: price, priceValue: Number(item.product.price ?? item.product.harga ?? item.product.base_price ?? 0) || undefined, href, imageUrl: getProductImage(item.product), imageAlt: item.product.image_alt || item.product.nama },
       image: getProductImage(item.product),
@@ -132,8 +142,8 @@ function editorialPlacement(item: HomepageSectionItem): EditorialItem | null {
   if (item.service) {
     return {
       label: "Layanan",
-      title: item.service.nama,
-      button: "Lihat Layanan",
+      title: cleanCmsText(item.service.nama),
+      button: "Lihat",
       href: serviceHref(item.service),
       image: item.service.image_url,
       imageAlt: item.service.image_alt || item.service.nama,
@@ -180,17 +190,49 @@ function BenefitIcon({ name }: { name: string }) {
 }
 
 function EditorialCard({ item, featuredCard = false, className = "" }: { item: EditorialItem; featuredCard?: boolean; className?: string }) {
+  const label = cleanCmsText(item.label);
+  const title = cleanCmsText(item.title);
+  const button = cleanCmsText(item.button);
+  const shouldShowCopy = hasEditorialText(label, title, button);
+
   return (
-    <article className={`group relative block overflow-hidden bg-[#0a1711] ${featuredCard ? "aspect-[4/5]" : "h-[400px] sm:h-[440px]"} ${className}`}>
-      <Link href={item.href} aria-label={`Lihat ${item.title}`} className="absolute inset-0 z-10" />
-      <SafeImage src={item.image} fallbackSrc={item.fallbackImage} alt={item.imageAlt} fill sizes={featuredCard ? "(min-width: 1024px) 50vw, 86vw" : "(min-width: 1024px) 33vw, 82vw"} className="object-cover transition duration-700 group-hover:scale-[1.03]" objectFit={item.objectFit || "cover"} objectPosition={item.objectPosition} />
-      <div className="pointer-events-none absolute inset-x-0 bottom-0 z-10 h-[48%] bg-gradient-to-t from-black/58 via-black/18 to-transparent" />
-      <div className="pointer-events-none absolute inset-x-0 bottom-0 z-20 p-5 text-white sm:p-7">
-        {item.label ? <p className="text-xs font-semibold text-white/82 drop-shadow-[0_1px_6px_rgba(0,0,0,0.45)]">{item.label}</p> : null}
-        <h3 className={`mt-1.5 max-w-md font-semibold leading-tight tracking-normal drop-shadow-[0_2px_12px_rgba(0,0,0,0.45)] ${featuredCard ? "text-2xl sm:text-[1.75rem]" : "text-xl sm:text-2xl"}`}>{item.title}</h3>
-        <div className="pointer-events-auto relative z-30 mt-4 flex flex-wrap gap-2"><Link href={item.href} className="inline-flex min-h-10 items-center rounded-full bg-white px-4 text-sm font-semibold text-[#111] shadow-[0_10px_26px_rgba(0,0,0,0.18)] transition hover:bg-[#e9eee9]">{item.button}</Link>{item.cartProduct ? <AddToCartButton product={item.cartProduct} className="inline-flex min-h-10 items-center rounded-full bg-[#0f5a36] px-4 text-sm font-semibold text-white shadow-[0_10px_26px_rgba(0,0,0,0.18)]">Tambah ke Keranjang</AddToCartButton> : null}</div>
-      </div>
+    <article className={`editorial-card group relative block overflow-hidden bg-[#0a1711] ${featuredCard ? "aspect-[4/5]" : "h-[400px] sm:h-[440px]"} ${className}`}>
+      <Link href={item.href} aria-label={`Lihat ${title || item.imageAlt}`} className="absolute inset-0 z-10" />
+      <SafeImage src={item.image} fallbackSrc={item.fallbackImage} alt={item.imageAlt} fill sizes={featuredCard ? "(min-width: 1024px) 50vw, 86vw" : "(min-width: 1024px) 33vw, 82vw"} className="editorial-card-image object-cover transition duration-700 group-hover:scale-[1.03]" objectFit={item.objectFit || "cover"} objectPosition={item.objectPosition} />
+      {shouldShowCopy ? <div className="editorial-card-overlay pointer-events-none absolute inset-0 z-10" /> : null}
+      {shouldShowCopy ? (
+        <div className="editorial-card-content pointer-events-none absolute z-20 text-white">
+          {label ? <p className="editorial-card-label">{label}</p> : null}
+          {title ? <h3 className="editorial-card-title">{title}</h3> : null}
+          {button ? (
+            <div className="pointer-events-auto relative z-30 mt-3 sm:mt-4">
+              <Link href={item.href} className="editorial-card-cta inline-flex items-center rounded-full bg-white text-[#111] transition hover:bg-[#e9eee9]">{button}</Link>
+            </div>
+          ) : null}
+        </div>
+      ) : null}
     </article>
+  );
+}
+
+function CategoryEditorialCard({ item, label, title, button }: { item: Visual & { href: string; name?: string; title?: string }; label?: string; title?: string; button?: string }) {
+  const cleanLabel = cleanCmsText(label);
+  const cleanTitle = cleanCmsText(title || item.title || item.name);
+  const cleanButton = cleanCmsText(button || "Lihat");
+  const shouldShowCopy = hasEditorialText(cleanLabel, cleanTitle, cleanButton);
+
+  return (
+    <Link href={item.href} aria-label={`Lihat ${cleanTitle || item.imageAlt}`} className={`editorial-card group relative aspect-[4/5] overflow-hidden bg-[#102219] ${horizontalCarouselItemClass}`}>
+      <SafeImage src={item.image} fallbackSrc={item.fallbackImage} alt={item.imageAlt} fill sizes="(min-width: 1536px) 20vw, (min-width: 1024px) 25vw, 50vw" className="editorial-card-image object-cover transition duration-700 group-hover:scale-[1.03]" objectFit={item.objectFit || "cover"} objectPosition={item.objectPosition} />
+      {shouldShowCopy ? <div className="editorial-card-overlay pointer-events-none absolute inset-0 z-10" /> : null}
+      {shouldShowCopy ? (
+        <div className="editorial-card-content pointer-events-none absolute z-20 text-white">
+          {cleanLabel ? <p className="editorial-card-label">{cleanLabel}</p> : null}
+          {cleanTitle ? <h3 className="editorial-card-title">{cleanTitle}</h3> : null}
+          {cleanButton ? <span className="editorial-card-cta pointer-events-auto relative z-30 mt-3 inline-flex items-center rounded-full bg-white text-[#111] sm:mt-4">{cleanButton}</span> : null}
+        </div>
+      ) : null}
+    </Link>
   );
 }
 
@@ -215,7 +257,7 @@ function ProductCard({ item, className = "" }: { item: ProductItem; className?: 
 function ManagedHomepageSection({ section, setting }: { section: HomepageSection; setting?: LandingSection }) {
   const carouselId = `${section.slug}-carousel`;
   const isFeatured = section.slug === "featured";
-  const isEditorial = isFeatured || section.slug === "trending";
+  const isEditorial = isFeatured || section.slug === "trending" || section.slug === "fresh-drops";
   const configuredCta = setting?.cta_label && setting.cta_url ? <Link href={setting.cta_url} className="hidden text-sm font-semibold hover:underline sm:block">{setting.cta_label}</Link> : null;
 
   if (isEditorial) {
@@ -357,19 +399,9 @@ export default async function Home() {
           <SectionHeading title={landingSection("services-products")?.title || "Shop by Category"} description={landingSection("services-products")?.subtitle} textPosition={landingSection("services-products")?.text_position} action={<div className="flex items-center gap-4">{landingSection("services-products")?.cta_label && landingSection("services-products")?.cta_url ? <Link href={landingSection("services-products")!.cta_url!} className="hidden text-sm font-semibold hover:underline sm:block">{landingSection("services-products")!.cta_label}</Link> : null}<ScrollButtons containerId="category-carousel" /></div>} />
           <div id="category-carousel" className={`${horizontalCarouselClass} gap-y-6`}>
             {shopCategoryItems.length ? shopCategoryItems.map((item) => (
-              <Link key={`${item.href}-${item.title}`} href={item.href} className={`group relative aspect-[4/5] overflow-hidden bg-[#102219] ${horizontalCarouselItemClass}`}>
-                <SafeImage src={item.image} fallbackSrc={item.fallbackImage} alt={item.imageAlt} fill sizes="(min-width: 1536px) 20vw, (min-width: 1024px) 25vw, 50vw" className="object-cover transition duration-700 group-hover:scale-[1.03]" objectFit={item.objectFit || "cover"} objectPosition={item.objectPosition} />
-                <div className="absolute inset-x-4 bottom-4 rounded-[22px] bg-white/92 p-4 text-[#111] shadow-[0_16px_34px_rgba(0,0,0,0.10)] backdrop-blur-sm sm:p-5">
-                  {item.label ? <p className="text-xs font-semibold text-black/55">{item.label}</p> : null}
-                  <h3 className="mt-1 line-clamp-2 text-base font-semibold text-[#111] sm:text-xl">{item.title}</h3>
-                  {item.button ? <span className="mt-4 inline-flex min-h-10 items-center rounded-full bg-[#111] px-4 text-sm font-semibold text-white">{item.button}</span> : null}
-                </div>
-              </Link>
+              <CategoryEditorialCard key={`${item.href}-${item.title}`} item={item} label={item.label} title={item.title} button={item.button || "Lihat"} />
             )) : homeCategories.length ? homeCategories.map((item) => (
-              <Link key={item.name} href={item.href} className={`group relative aspect-[4/5] overflow-hidden bg-[#102219] ${horizontalCarouselItemClass}`}>
-                <SafeImage src={item.image} fallbackSrc={item.fallbackImage} alt={item.imageAlt} fill sizes="(min-width: 1536px) 20vw, (min-width: 1024px) 25vw, 50vw" className="object-cover transition duration-700 group-hover:scale-[1.03]" objectFit={item.objectFit || "cover"} objectPosition={item.objectPosition} />
-                <h3 className="absolute bottom-4 left-4 right-4 rounded-[20px] bg-white/92 p-4 line-clamp-2 text-base font-semibold text-[#111] shadow-[0_16px_34px_rgba(0,0,0,0.10)] backdrop-blur-sm sm:bottom-6 sm:left-6 sm:right-6 sm:text-xl">{item.name}</h3>
-              </Link>
+              <CategoryEditorialCard key={item.name} item={item} label="Shop by Category" title={item.name} button="Lihat" />
             )) : <p className="col-span-full bg-brand-offWhite p-8 text-center text-sm text-black/55">Belum ada kategori.</p>}
           </div>
         </div>
@@ -383,17 +415,7 @@ export default async function Home() {
             <SectionHeading title={landingSection("plain-category")?.title || "Pakaian Polos berdasarkan Kategori"} description={landingSection("plain-category")?.subtitle || "Pilih dasar apparel yang sesuai, lalu custom bersama tim DEBRODER."} textPosition={landingSection("plain-category")?.text_position} action={<ScrollButtons containerId="collection-carousel" />} />
             <div id="collection-carousel" className={`${horizontalCarouselClass} gap-y-6`}>
               {plainCollectionItems.length ? plainCollectionItems.map((item) => (
-                <article key={item.name} className={`group ${horizontalCarouselItemClass}`}>
-                  <Link href={item.href} className="block">
-                  <div className="relative aspect-[4/5] overflow-hidden bg-white">
-                    <SafeImage src={item.image} fallbackSrc={item.fallbackImage} alt={item.imageAlt} fill sizes="(min-width: 1536px) 20vw, (min-width: 1024px) 25vw, 50vw" className={`${(item.objectFit || item.fit) === "contain" ? "object-contain p-4" : "object-cover"} transition duration-700 group-hover:scale-[1.03]`} objectFit={item.objectFit || (item.fit === "contain" ? "contain" : "cover")} objectPosition={item.objectPosition || "center center"} />
-                  </div>
-                  </Link>
-                  <Link href={item.href} className="mt-3 block"><h3 className="line-clamp-2 text-[15px] font-semibold leading-snug sm:text-base">{item.name}</h3></Link>
-                  <p className="mt-1 text-sm text-black/50 sm:text-[15px]">{item.category}</p>
-                  <p className="mt-2 text-[15px] font-semibold sm:text-base">{item.price}</p>
-                  {item.cartProduct ? <AddToCartButton product={item.cartProduct} className="mt-3 inline-flex min-h-10 w-full items-center justify-center bg-[#0f5a36] px-4 text-xs font-semibold text-white">Tambah ke Keranjang</AddToCartButton> : null}
-                </article>
+                <CategoryEditorialCard key={item.name} item={item} label={item.category} title={item.name} button="Lihat" />
               )) : <p className="col-span-full bg-white p-8 text-center text-sm text-black/55">Belum ada produk apparel.</p>}
             </div>
           </div>
