@@ -119,6 +119,46 @@ button,
   }
 }
 
+
+/* DEBRODER hero copy alignment: centered, compact, and visually balanced. */
+.hero-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  margin-inline: auto;
+  width: 100%;
+}
+
+.hero-content .hero-title {
+  text-align: center;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.hero-subtitle {
+  display: block;
+  width: 100%;
+  max-width: 680px;
+  text-align: center;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.hero-actions {
+  justify-content: center;
+  align-items: center;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+@media (max-width: 768px) {
+  .hero-subtitle {
+    max-width: 90%;
+  }
+}
+
 /* DEBRODER landing section headings: navbar-like, clean, not oversized. */
 .landing-section-title {
   font-family: var(--font-body);
