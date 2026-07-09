@@ -195,7 +195,7 @@ export function PageHero({
   const mobileImage = mobileImageUrl || desktopImage;
 
   return (
-    <section data-reveal className="bg-white">
+    <section data-reveal className="bg-brand-offWhite">
       <div className="relative w-full overflow-hidden bg-brand-offWhite sm:aspect-[16/5] sm:min-h-[260px] lg:aspect-[16/4.5]">
         <div className="relative aspect-[4/5] w-full sm:absolute sm:inset-0 sm:aspect-auto">
           <ResponsivePicture
@@ -471,7 +471,7 @@ export function RecommendationGrid({
   currentSlug?: string;
 }) {
   return (
-    <section data-reveal className="bg-white py-12 sm:py-16">
+    <section data-reveal className="bg-brand-offWhite py-12 sm:py-16">
       <div className="section-shell">
         <div className="max-w-3xl">
           <p className="text-sm font-medium uppercase text-brand-charcoal/50">
@@ -568,7 +568,7 @@ export function CategoryDetailPage({
         </div>
       </section>
       {products.length ? (
-        <section className="bg-white py-12 sm:py-16">
+        <section className="bg-brand-offWhite py-12 sm:py-16">
           <div className="section-shell">
             <ProductCatalog
               products={products}

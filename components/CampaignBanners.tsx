@@ -59,7 +59,7 @@ export function CampaignBanners({ banners }: { banners: CmsBanner[] }) {
   if (!banners.length) return null;
 
   return (
-    <section data-reveal aria-label="Campaign DEBRODER" className="snap-section bg-white py-4 sm:py-6">
+    <section data-reveal aria-label="Campaign DEBRODER" className="snap-section bg-brand-offWhite py-4 sm:py-6">
       <div className="section-shell grid gap-4">
         {banners.map((banner) => {
           const alignment = banner.text_position === "center" ? "mx-auto text-center" : banner.text_position === "right" ? "ml-auto text-right" : "";

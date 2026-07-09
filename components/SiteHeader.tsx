@@ -290,8 +290,8 @@ export function SiteHeader() {
   }, [isOpen]);
 
   return (
-    <header className={`sticky top-0 z-[100] border-b bg-white/95 text-[#111] backdrop-blur-md transition duration-200 ${scrolled ? "border-black/10" : "border-black/[0.06]"}`}>
-      <div className={`hidden overflow-hidden border-b border-black/[0.06] bg-[#f5f5ef] transition-[max-height,opacity,border-color] duration-300 ease-out lg:block ${scrolled ? "invisible max-h-0 border-transparent opacity-0 pointer-events-none" : "visible max-h-9 opacity-100"}`} aria-hidden={scrolled}>
+    <header className={`sticky top-0 z-[100] border-b bg-brand-offWhite/95 text-[#111] backdrop-blur-md transition duration-200 ${scrolled ? "border-black/10" : "border-black/[0.06]"}`}>
+      <div className={`hidden overflow-hidden border-b border-black/[0.06] bg-brand-offWhite transition-[max-height,opacity,border-color] duration-300 ease-out lg:block ${scrolled ? "invisible max-h-0 border-transparent opacity-0 pointer-events-none" : "visible max-h-9 opacity-100"}`} aria-hidden={scrolled}>
         <div className="section-shell flex h-9 items-center justify-between gap-4 text-xs font-semibold text-black/58">
           <p className="truncate">DEBRODER apparel, sablon, dan produksi custom.</p>
           <div className="flex items-center gap-5">
@@ -351,7 +351,7 @@ export function SiteHeader() {
         </div>
       </nav>
 
-      <div className={`absolute inset-x-0 top-full h-[calc(100dvh-4rem)] border-t border-black/10 bg-white transition-transform duration-500 ease-in-out md:h-[calc(100dvh-78px)] lg:hidden ${isOpen ? "visible translate-x-0" : "invisible translate-x-full"}`}>
+      <div className={`absolute inset-x-0 top-full h-[calc(100dvh-4rem)] border-t border-black/10 bg-brand-offWhite transition-transform duration-500 ease-in-out md:h-[calc(100dvh-78px)] lg:hidden ${isOpen ? "visible translate-x-0" : "invisible translate-x-full"}`}>
         <div className="section-shell flex h-full flex-col overflow-y-auto py-6">
           {mobileNavItems.map((item) => (
             <Link key={item.href} href={item.href} className={`flex min-h-16 items-center justify-between border-b border-black/[0.08] text-[28px] font-semibold leading-tight transition hover:pl-1 ${pathname === item.href ? "text-[#0f5a36]" : "text-[#111]"}`}>
