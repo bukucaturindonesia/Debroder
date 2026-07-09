@@ -6,6 +6,7 @@ import { Logo } from "@/components/Logo";
 import { MediaLibraryPanel } from "@/components/admin/MediaLibrary";
 import { ProductAdminPanel } from "@/components/admin/ProductAdmin";
 import { PimManagerAdmin } from "@/components/admin/PimManagerAdmin";
+import { PimV2Admin } from "@/components/admin/PimV2Admin";
 import { FocalPointEditor } from "@/components/admin/FocalPointEditor";
 import { HomepageSectionsAdmin } from "@/components/admin/HomepageSectionsAdmin";
 import { LandingSectionsAdmin } from "@/components/admin/LandingSectionsAdmin";
@@ -278,6 +279,15 @@ const tableConfigs: TableConfig[] = [
     href: "/admin/pim-manager",
     table: "",
     description: "Setup struktur PIM: kategori utama, model/subkategori, layanan, dan alur input produk.",
+    fields: []
+  },
+  {
+    key: "pim-v2",
+    label: "PIM V2 Enterprise",
+    navLabel: "PIM V2",
+    href: "/admin/pim-v2",
+    table: "",
+    description: "Kelola master data PIM V2: produk, subkategori, varian warna/ukuran, size guide, layanan produksi, dan master jersey.",
     fields: []
   },
   {
@@ -856,6 +866,7 @@ const primaryNavigationKeys = [
   "homepage-sections",
   "page-hero",
   "pim-manager",
+  "pim-v2",
   "products",
   "categories",
   "services",
@@ -2074,6 +2085,8 @@ export function AdminDashboard() {
             <HomepageSectionsAdmin showPlainCategorySetting={false} onlySlug="pakaian-polos-berdasarkan-kategori" />
           ) : activeKey === "pim-manager" ? (
             <PimManagerAdmin />
+          ) : activeKey === "pim-v2" ? (
+            <PimV2Admin />
           ) : activeKey === "products" ? (
             <ProductAdminPanel />
           ) : activeKey === "media" ? (

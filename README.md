@@ -121,3 +121,10 @@ Baca catatan lengkap di:
 ```text
 DEBRODER-PIM-V2-STAGE1-NOTES.md
 ```
+
+## DEBRODER PIM V2 - Stage 2
+
+Stage 2 menambahkan halaman admin baru `/admin/pim-v2` untuk mengelola master data PIM V2:
+produk, subkategori, varian warna, ukuran/stok, gambar varian, size guide, layanan produksi, dan master jersey.
+
+Pastikan `supabase/pim-v2-stage1-master-data.sql` sudah dijalankan sebelum memakai halaman ini.
