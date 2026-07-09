@@ -128,7 +128,7 @@ function CollectionProductCard({ product }: { product: Product }) {
         {productModel(product) ? <p className="text-xs leading-5 text-brand-charcoal/50 sm:text-[13px]">{productModel(product)}</p> : null}
         {productDetail(product) ? <p className="line-clamp-2 min-h-[2.5rem] text-xs leading-5 text-brand-charcoal/60 sm:text-sm sm:leading-6">{productDetail(product)}</p> : null}
         <div className="space-y-0.5">
-          <p className="text-[15px] font-bold text-brand-charcoal sm:text-[17px]">{productPrice(product)}</p>
+          <p className="product-price text-[15px] text-brand-charcoal sm:text-[17px]">{productPrice(product)}</p>
           {product.compare_price ? <p className="text-xs text-brand-charcoal/40 line-through">{formatRupiah(product.compare_price)}</p> : null}
         </div>
       </div>
@@ -183,17 +183,17 @@ export default async function KoleksiPage() {
         <div className="section-shell grid grid-cols-1 gap-x-2 gap-y-6 md:grid-cols-2 lg:grid-cols-4">
           {serviceCategories.length ? serviceCategories.map((category) => (
             <ServiceCard key={category.nama_kategori} service={category} />
-          )) : <p className="col-span-full bg-brand-offWhite p-8 text-center text-sm font-medium text-brand-charcoal/60">Belum ada kategori.</p>}
+          )) : <p className="col-span-full bg-white p-8 text-center text-sm font-medium text-brand-charcoal/60">Belum ada kategori.</p>}
         </div>
       </section>
 
-      <section className="bg-brand-offWhite py-12 sm:py-16">
+      <section className="bg-white py-12 sm:py-16">
         <div className="section-shell space-y-14">
           {sections.length ? sections.map(({ category, products }) => (
             <div key={category.slug}>
               <div className="flex flex-wrap items-end justify-between gap-4">
                 <div>
-                  <h2 className="text-[28px] font-semibold leading-[1.15] tracking-normal sm:text-[36px]">{category.name}</h2>
+                  <h2 className="section-title">{category.name}</h2>
                   {category.description ? <p className="mt-2 max-w-2xl text-sm leading-6 text-brand-charcoal/60">{category.description}</p> : null}
                 </div>
                 <Link href={categoryPath(category.slug)} className="text-sm font-semibold underline-offset-4 hover:underline">Lihat Semua</Link>

@@ -154,7 +154,7 @@ function SectionHeading({ title, action, description, textPosition = "left" }: {
   return (
     <div className="flex items-end justify-between gap-4">
       <div className={textPosition === "center" ? "flex-1 text-center" : textPosition === "right" ? "ml-auto text-right" : ""}>
-        <h2 className="text-[22px] font-medium leading-[1.18] tracking-[-0.01em] text-[#111] sm:text-[24px]">{title}</h2>
+        <h2 className="section-title text-[#111]">{title}</h2>
         {description ? <p className="mt-2 max-w-2xl text-sm leading-6 text-black/55 sm:text-base">{description}</p> : null}
       </div>
       {action ? <div className="shrink-0">{action}</div> : null}
@@ -223,7 +223,7 @@ function ManagedHomepageSection({ section, setting }: { section: HomepageSection
     const items = sectionItems.map(editorialPlacement).filter((item): item is EditorialItem => Boolean(item));
     if (!items.length) return null;
     return (
-      <section data-reveal id={section.slug} className={`snap-section ${isFeatured ? "bg-brand-offWhite py-6 sm:py-8" : `section-space bg-brand-offWhite`}`} >
+      <section data-reveal id={section.slug} className={`snap-section ${isFeatured ? "bg-white py-6 sm:py-8" : `section-space ${section.slug === "trending" ? "bg-[#f7f7f2]" : "bg-white"}`}`}>
         <div className={isFeatured ? "" : "section-shell"}>
           <div className={isFeatured ? "section-shell" : ""}>
             <SectionHeading title={section.title} description={setting?.subtitle} textPosition={setting?.text_position} action={<div className="flex items-center gap-4">{configuredCta}{!isFeatured ? <ScrollButtons containerId={carouselId} /> : null}</div>} />
@@ -239,7 +239,7 @@ function ManagedHomepageSection({ section, setting }: { section: HomepageSection
   const items = section.items.map(cardPlacement).filter((item): item is ProductItem => Boolean(item));
   if (!items.length) return null;
   return (
-    <section data-reveal id={section.slug} className="snap-section section-space bg-brand-offWhite">
+    <section data-reveal id={section.slug} className="snap-section section-space bg-white">
       <div className="section-shell">
         <SectionHeading title={section.title} description={setting?.subtitle} textPosition={setting?.text_position} action={<div className="flex items-center gap-4">{configuredCta || <Link href="/koleksi" className="hidden text-sm font-semibold hover:underline sm:block">Shop</Link>}<ScrollButtons containerId={carouselId} /></div>} />
         <div id={carouselId} className={`${horizontalCarouselClass} gap-y-6`}>
@@ -311,7 +311,7 @@ export default async function Home() {
   };
 
   return (
-    <main className="public-site min-h-screen bg-brand-offWhite text-[#111]">
+    <main className="public-site min-h-screen bg-white text-[#111]">
       <SiteHeader />
       <PageMotion />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(schema).replace(/</g, "\\u003c") }} />
@@ -322,7 +322,7 @@ export default async function Home() {
       </LandingSectionSlot>
 
       <LandingSectionSlot setting={landingSection("benefits")}>
-      <section data-reveal aria-label="Keunggulan DEBRODER" className="snap-section border-b border-black/[0.08] bg-brand-offWhite py-5 sm:py-6">
+      <section data-reveal aria-label="Keunggulan DEBRODER" className="snap-section border-b border-black/[0.08] bg-white py-5 sm:py-6">
         <div className="section-shell grid grid-cols-2 gap-x-4 gap-y-5 lg:grid-cols-4 lg:gap-8">
           {benefits.map((benefit) => (
             <div key={benefit.title} className="flex items-center gap-3 lg:justify-center">
@@ -352,7 +352,7 @@ export default async function Home() {
       </LandingSectionSlot>
 
       <LandingSectionSlot setting={landingSection("services-products")}>
-      <section data-reveal id="shop-category" className="snap-section section-space bg-brand-offWhite pt-4 sm:pt-6">
+      <section data-reveal id="shop-category" className="snap-section section-space bg-white pt-4 sm:pt-6">
         <div className="section-shell">
           <SectionHeading title={landingSection("services-products")?.title || "Shop by Category"} description={landingSection("services-products")?.subtitle} textPosition={landingSection("services-products")?.text_position} action={<div className="flex items-center gap-4">{landingSection("services-products")?.cta_label && landingSection("services-products")?.cta_url ? <Link href={landingSection("services-products")!.cta_url!} className="hidden text-sm font-semibold hover:underline sm:block">{landingSection("services-products")!.cta_label}</Link> : null}<ScrollButtons containerId="category-carousel" /></div>} />
           <div id="category-carousel" className={`${horizontalCarouselClass} gap-y-6`}>
@@ -378,7 +378,7 @@ export default async function Home() {
 
       <LandingSectionSlot setting={landingSection("plain-category")}>
       {content.landingSettings.showPlainCategorySection ? (
-        <section data-reveal id="koleksi" className="snap-section section-space bg-brand-offWhite">
+        <section data-reveal id="koleksi" className="snap-section section-space bg-[#f7f7f2]">
           <div className="section-shell">
             <SectionHeading title={landingSection("plain-category")?.title || "Pakaian Polos berdasarkan Kategori"} description={landingSection("plain-category")?.subtitle || "Pilih dasar apparel yang sesuai, lalu custom bersama tim DEBRODER."} textPosition={landingSection("plain-category")?.text_position} action={<ScrollButtons containerId="collection-carousel" />} />
             <div id="collection-carousel" className={`${horizontalCarouselClass} gap-y-6`}>
@@ -394,7 +394,7 @@ export default async function Home() {
                   <p className="mt-2 text-[15px] font-semibold sm:text-base">{item.price}</p>
                   {item.cartProduct ? <AddToCartButton product={item.cartProduct} className="mt-3 inline-flex min-h-10 w-full items-center justify-center bg-[#0f5a36] px-4 text-xs font-semibold text-white">Tambah ke Keranjang</AddToCartButton> : null}
                 </article>
-              )) : <p className="col-span-full bg-brand-offWhite p-8 text-center text-sm text-black/55">Belum ada produk apparel.</p>}
+              )) : <p className="col-span-full bg-white p-8 text-center text-sm text-black/55">Belum ada produk apparel.</p>}
             </div>
           </div>
         </section>
@@ -403,7 +403,7 @@ export default async function Home() {
 
       <LandingSectionSlot setting={landingSection("instagram-banner")}>
       {content.instagramBanner?.status_aktif !== false ? (
-        <section data-reveal id="instagram" className="snap-section bg-brand-offWhite py-4 sm:py-6">
+        <section data-reveal id="instagram" className="snap-section bg-white py-4 sm:py-6">
           <div className="section-shell">
             <a
               href={content.instagramBanner?.link_url || content.contact.instagram}
@@ -446,7 +446,7 @@ export default async function Home() {
       </LandingSectionSlot>
 
       <LandingSectionSlot setting={landingSection("stores")}>
-      <section data-reveal id="store" className="snap-section section-space bg-brand-offWhite">
+      <section data-reveal id="store" className="snap-section section-space bg-white">
         <div className="section-shell">
           <SectionHeading title={landingSection("stores")?.title || "Store DEBRODER"} description={landingSection("stores")?.subtitle || "Konsultasikan bahan, teknik cetak, dan estimasi produksi langsung bersama tim kami."} textPosition={landingSection("stores")?.text_position} action={<Link href={landingSection("stores")?.cta_url || "/store"} className="hidden text-sm font-semibold hover:underline sm:block">{landingSection("stores")?.cta_label || "Semua store"}</Link>} />
           <div className="no-scrollbar mt-6 flex snap-x snap-mandatory gap-4 overflow-x-auto lg:grid lg:grid-cols-4 lg:overflow-visible">
@@ -457,11 +457,11 @@ export default async function Home() {
       </LandingSectionSlot>
 
       <LandingSectionSlot setting={landingSection("about")}>
-      <section data-reveal id="tentang" className="snap-section section-space bg-brand-offWhite">
+      <section data-reveal id="tentang" className="snap-section section-space bg-[#f5f5ef]">
         <div className="section-shell grid gap-10 lg:grid-cols-[1.15fr_.85fr] lg:items-start lg:gap-20">
           <div className={content.trustAbout.text_position === "center" ? "text-center" : content.trustAbout.text_position === "right" ? "text-right" : ""}>
             <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#0f5a36]">Tentang DEBRODER</p>
-            <h2 className="mt-4 max-w-xl text-[28px] font-semibold leading-[1.12] tracking-normal sm:text-[40px]">Dibangun untuk ide yang ingin diwujudkan.</h2>
+            <h2 className="section-title mt-4 max-w-xl">Dibangun untuk ide yang ingin diwujudkan.</h2>
             <p className="mt-6 max-w-2xl whitespace-pre-line text-base leading-8 text-black/62">{content.trustAbout.about_body}</p>
             {content.trustAbout.cta_label && content.trustAbout.cta_url ? <Link href={content.trustAbout.cta_url} className="mt-6 inline-flex min-h-11 items-center bg-[#063d24] px-6 text-sm font-semibold text-white">{content.trustAbout.cta_label}</Link> : null}
           </div>

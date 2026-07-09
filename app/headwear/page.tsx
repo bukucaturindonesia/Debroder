@@ -39,7 +39,7 @@ export default async function HeadwearPage() {
           { label: "Headwear" }
         ]}
       />
-      <section className="bg-brand-offWhite py-12 sm:py-16">
+      <section className="bg-white py-12 sm:py-16">
         <div className="section-shell">
           <ProductCatalog products={products} title="Koleksi Headwear" showHeading showCategoryFilter={false} />
         </div>

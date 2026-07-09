@@ -46,7 +46,7 @@ export default async function SablonDtfPage() {
       />
       <ServiceCatalog services={services} whatsapp={content.contact.whatsapp_link || content.contact.whatsapp_apparel} />
       {products.length ? (
-        <section className="bg-brand-offWhite py-12 sm:py-16">
+        <section className="bg-white py-12 sm:py-16">
           <div className="section-shell">
             <ProductCatalog products={products} title="Produk Sablon DTF" showHeading showCategoryFilter={false} />
           </div>

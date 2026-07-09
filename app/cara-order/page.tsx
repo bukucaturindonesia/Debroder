@@ -69,9 +69,9 @@ export default async function CaraOrderPage() {
           <OrderTimeline steps={orderSteps} />
         </div>
       </section>
-      <section className="bg-brand-offWhite py-12 sm:py-16">
+      <section className="bg-white py-12 sm:py-16">
         <div className="section-shell">
-          <h2 className="text-[28px] font-semibold leading-[1.15] tracking-normal sm:text-[36px]">
+          <h2 className="section-title">
             FAQ
           </h2>
           <div className="mt-6 grid gap-4 md:grid-cols-2">
