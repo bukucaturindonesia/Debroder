@@ -119,6 +119,23 @@ button,
   }
 }
 
+/* DEBRODER landing section headings: navbar-like, clean, not oversized. */
+.landing-section-title {
+  font-family: var(--font-body);
+  font-size: clamp(1.25rem, 1.7vw, 1.75rem);
+  font-weight: 600;
+  line-height: 1.15;
+  letter-spacing: -0.012em;
+  text-transform: none;
+}
+
+@media (max-width: 639px) {
+  .landing-section-title {
+    font-size: clamp(1.125rem, 5vw, 1.375rem);
+    line-height: 1.18;
+  }
+}
+
 
 /* DEBRODER editorial/category image cards: Nike-inspired clean white text + efficient soft overlay. */
 .editorial-card {

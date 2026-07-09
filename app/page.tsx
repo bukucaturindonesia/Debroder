@@ -164,7 +164,7 @@ function SectionHeading({ title, action, description, textPosition = "left" }: {
   return (
     <div className="flex items-end justify-between gap-4">
       <div className={textPosition === "center" ? "flex-1 text-center" : textPosition === "right" ? "ml-auto text-right" : ""}>
-        <h2 className="section-title text-[#111]">{title}</h2>
+        <h2 className="landing-section-title text-[#111]">{title}</h2>
         {description ? <p className="mt-2 max-w-2xl text-sm leading-6 text-black/55 sm:text-base">{description}</p> : null}
       </div>
       {action ? <div className="shrink-0">{action}</div> : null}
