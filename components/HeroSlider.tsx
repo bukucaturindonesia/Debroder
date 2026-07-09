@@ -144,7 +144,7 @@ export function HeroSlider({ heroes }: { heroes: HeroBanner[] }) {
         const mobileVideo = slide.mobile_video_url || desktopVideo;
         const desktopPosition = slide.object_position || "center center";
         const mobilePosition = slide.mobile_object_position || desktopPosition;
-        const textAlignment = slide.text_position === "center" ? "mx-auto text-center" : slide.text_position === "right" ? "ml-auto text-right" : "";
+        // Hero copy is intentionally centered as one compact premium text block.
 
         return (
           <article
@@ -179,7 +179,7 @@ export function HeroSlider({ heroes }: { heroes: HeroBanner[] }) {
             {hasCopy ? (
               <div className="absolute inset-x-0 bottom-16 z-10 sm:bottom-14 lg:bottom-16">
                 <div className="section-shell">
-                  <div className={`max-w-[620px] text-white ${textAlignment}`}>
+                  <div className="hero-content mx-auto max-w-[760px] text-white">
                     {badge ? (
                       <p className="text-[15px] font-medium uppercase tracking-normal text-white/75 sm:text-[17px]">
                         {badge}
@@ -187,22 +187,22 @@ export function HeroSlider({ heroes }: { heroes: HeroBanner[] }) {
                     ) : null}
                     {headline ? (
                       index === 0 ? (
-                        <h1 className="hero-title mt-2 whitespace-pre-line text-[clamp(2.625rem,12vw,3.25rem)] sm:text-[4rem] lg:text-[clamp(4rem,6vw,5.5rem)]">
+                        <h1 className="hero-title mt-2 max-w-[10.5ch] whitespace-pre-line text-center text-[clamp(2.625rem,12vw,3.25rem)] sm:text-[4rem] lg:text-[clamp(4rem,6vw,5.5rem)]">
                           {headline}
                         </h1>
                       ) : (
-                        <h2 className="hero-title mt-2 whitespace-pre-line text-[clamp(2.625rem,12vw,3.25rem)] sm:text-[4rem] lg:text-[clamp(4rem,6vw,5.5rem)]">
+                        <h2 className="hero-title mt-2 max-w-[10.5ch] whitespace-pre-line text-center text-[clamp(2.625rem,12vw,3.25rem)] sm:text-[4rem] lg:text-[clamp(4rem,6vw,5.5rem)]">
                           {headline}
                         </h2>
                       )
                     ) : null}
                     {subtitle ? (
-                      <p className="mt-2.5 max-w-lg whitespace-pre-line text-[17px] leading-[1.25] text-white/80 sm:text-xl">
+                      <p className="hero-subtitle mt-3 max-w-[680px] whitespace-pre-line text-[17px] leading-[1.4] text-white/85 sm:text-xl sm:leading-[1.42]">
                         {subtitle}
                       </p>
                     ) : null}
                     {cta ? (
-                      <a href={cta.href} className="cta mt-4 inline-flex min-h-11 items-center gap-2 rounded-full bg-white px-5 py-3 text-sm text-[#111] transition duration-200 hover:bg-[#e9eee9]">
+                      <a href={cta.href} className="cta hero-actions mt-5 inline-flex min-h-11 items-center justify-center gap-2 rounded-full bg-white px-5 py-3 text-sm text-[#111] transition duration-200 hover:bg-[#e9eee9]">
                         {cta.text}
                         <ArrowIcon direction="right" />
                       </a>

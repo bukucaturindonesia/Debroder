@@ -213,11 +213,11 @@ export function PageHero({
           />
           {hasCopy ? <div className="absolute inset-x-0 bottom-0 hidden h-[52%] bg-gradient-to-t from-black/48 via-black/14 to-transparent sm:block" /> : null}
         </div>
-        {hasCopy ? <div className="relative px-4 py-6 text-brand-charcoal sm:absolute sm:bottom-8 sm:left-8 sm:right-8 sm:max-w-4xl sm:p-0 sm:text-white lg:bottom-10 lg:left-12 lg:right-12">
+        {hasCopy ? <div className="hero-content relative mx-auto px-4 py-6 text-center text-brand-charcoal sm:absolute sm:bottom-8 sm:left-1/2 sm:right-auto sm:w-full sm:max-w-4xl sm:-translate-x-1/2 sm:p-0 sm:text-white lg:bottom-10">
           {breadcrumbs?.length ? (
             <nav
               aria-label="Breadcrumb"
-              className="mb-3 flex flex-wrap gap-2 text-xs font-medium text-brand-charcoal/50 sm:text-white/70"
+              className="mb-3 flex flex-wrap justify-center gap-2 text-xs font-medium text-brand-charcoal/50 sm:text-white/70"
             >
               {breadcrumbs.map((item, index) => (
                 <span key={`${item.label}-${index}`} className="flex gap-2">
@@ -234,22 +234,22 @@ export function PageHero({
             </nav>
           ) : null}
           {cleanLabel ? (
-            <p className="w-fit bg-brand-charcoal px-3 py-1 text-[15px] font-medium uppercase leading-5 text-white sm:bg-white sm:text-brand-charcoal">
+            <p className="mx-auto w-fit bg-brand-charcoal px-3 py-1 text-center text-[15px] font-medium uppercase leading-5 text-white sm:bg-white sm:text-brand-charcoal">
               {cleanLabel}
             </p>
           ) : null}
           {cleanTitle ? (
-            <h1 className="hero-title mt-2 max-w-4xl text-[clamp(42px,12vw,52px)] sm:text-[64px] lg:text-[clamp(64px,5.5vw,88px)]">
+            <h1 className="hero-title mx-auto mt-2 max-w-[11ch] text-center text-[clamp(42px,12vw,52px)] sm:text-[64px] lg:text-[clamp(64px,5.5vw,88px)]">
               {cleanTitle}
             </h1>
           ) : null}
           {cleanDescription ? (
-            <p className="mt-3 max-w-2xl text-[17px] leading-[1.45] text-brand-charcoal/70 sm:text-xl sm:text-white/85">
+            <p className="hero-subtitle mt-3 max-w-[680px] text-center text-[17px] leading-[1.45] text-brand-charcoal/70 sm:text-xl sm:text-white/85">
               {cleanDescription}
             </p>
           ) : null}
           {primaryHref ? (
-            <div className="mt-5 flex flex-col gap-3 sm:flex-row">
+            <div className="hero-actions mt-5 flex flex-col justify-center gap-3 sm:flex-row">
               <a
                 href={primaryHref}
                 className="cta inline-flex min-h-11 items-center justify-center rounded-full bg-brand-charcoal px-6 py-3 text-sm text-white transition hover:bg-black/80 sm:bg-white sm:text-brand-charcoal sm:hover:bg-brand-offWhite"
