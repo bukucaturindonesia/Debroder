@@ -211,13 +211,13 @@ export function PageHero({
             desktopZoom={imageZoom}
             mobileZoom={mobileImageZoom}
           />
-          {hasCopy ? <div className="absolute inset-x-0 bottom-0 hidden h-[52%] bg-gradient-to-t from-black/48 via-black/14 to-transparent sm:block" /> : null}
+
         </div>
-        {hasCopy ? <div className="relative px-4 py-6 text-brand-charcoal sm:absolute sm:bottom-8 sm:left-8 sm:right-8 sm:max-w-4xl sm:p-0 sm:text-white lg:bottom-10 lg:left-12 lg:right-12">
+        {hasCopy ? <div className="absolute inset-x-4 bottom-[11%] z-10 mx-auto max-w-5xl px-0 py-0 text-center text-white drop-shadow-[0_3px_12px_rgba(0,0,0,0.22)] sm:inset-x-8 sm:bottom-[12%] lg:bottom-[13%]">
           {breadcrumbs?.length ? (
             <nav
               aria-label="Breadcrumb"
-              className="mb-3 flex flex-wrap gap-2 text-xs font-medium text-brand-charcoal/50 sm:text-white/70"
+              className="mb-3 hidden flex-wrap justify-center gap-2 text-xs font-medium text-white/70 sm:flex"
             >
               {breadcrumbs.map((item, index) => (
                 <span key={`${item.label}-${index}`} className="flex gap-2">
@@ -234,25 +234,25 @@ export function PageHero({
             </nav>
           ) : null}
           {cleanLabel ? (
-            <p className="w-fit bg-brand-charcoal px-3 py-1 text-[15px] font-medium uppercase leading-5 text-white sm:bg-white sm:text-brand-charcoal">
+            <p className="text-[15px] font-semibold leading-5 text-white sm:text-[20px] lg:text-[22px]">
               {cleanLabel}
             </p>
           ) : null}
           {cleanTitle ? (
-            <h1 className="mt-2 max-w-4xl text-[clamp(42px,12vw,52px)] font-black uppercase leading-[0.94] tracking-normal sm:text-[64px] lg:text-[clamp(64px,5.5vw,88px)]">
+            <h1 className="mx-auto mt-2 max-w-5xl text-[clamp(3.2rem,14vw,5.2rem)] font-black uppercase leading-[0.88] tracking-[-0.045em] sm:text-[clamp(5rem,10vw,7.5rem)] lg:text-[clamp(5.5rem,8.2vw,8.25rem)]">
               {cleanTitle}
             </h1>
           ) : null}
           {cleanDescription ? (
-            <p className="mt-3 max-w-2xl text-[17px] leading-[1.45] text-brand-charcoal/70 sm:text-xl sm:text-white/85">
+            <p className="mx-auto mt-3 max-w-[860px] text-[17px] font-medium leading-[1.3] text-white sm:text-[22px] lg:text-[26px]">
               {cleanDescription}
             </p>
           ) : null}
           {primaryHref ? (
-            <div className="mt-5 flex flex-col gap-3 sm:flex-row">
+            <div className="mt-6 flex flex-col items-center justify-center gap-3 sm:flex-row">
               <a
                 href={primaryHref}
-                className="inline-flex min-h-11 items-center justify-center rounded-full bg-brand-charcoal px-6 py-3 text-sm font-semibold text-white transition hover:bg-black/80 sm:bg-white sm:text-brand-charcoal sm:hover:bg-brand-offWhite"
+                className="inline-flex min-h-12 items-center justify-center rounded-full bg-white px-7 py-3 text-[17px] font-semibold text-[#111] transition hover:bg-brand-offWhite sm:px-8 sm:text-xl"
                 target={primaryHref.startsWith("http") ? "_blank" : undefined}
                 rel={
                   primaryHref.startsWith("http")
@@ -265,7 +265,7 @@ export function PageHero({
               {cleanSecondaryCtaText && secondaryCtaHref ? (
                 <Link
                   href={secondaryCtaHref}
-                  className="inline-flex min-h-11 items-center justify-center rounded-full border border-brand-softGray px-6 py-3 text-sm font-semibold text-brand-charcoal transition hover:border-brand-charcoal sm:border-white/40 sm:text-white sm:hover:bg-white sm:hover:text-brand-charcoal"
+                  className="inline-flex min-h-12 items-center justify-center rounded-full bg-white/90 px-7 py-3 text-[17px] font-semibold text-[#111] transition hover:bg-white sm:px-8 sm:text-xl"
                 >
                   {cleanSecondaryCtaText}
                 </Link>
