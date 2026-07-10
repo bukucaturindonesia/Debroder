@@ -358,11 +358,13 @@ export default async function Home() {
       <PageMotion />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(schema).replace(/</g, "\\u003c") }} />
 
-      <div className="flex flex-col">
+      {/* Hero is intentionally outside the reorderable section stack.
+          It must always remain the first landing-page section. */}
       <LandingSectionSlot setting={landingSection("hero")}>
         <HeroSlider heroes={content.heroes} />
       </LandingSectionSlot>
 
+      <div className="flex flex-col">
       <LandingSectionSlot setting={landingSection("benefits")}>
       <section data-reveal aria-label="Keunggulan DEBRODER" className="snap-section bg-brand-offWhite py-4 sm:py-5">
         <div className="section-shell grid grid-cols-2 gap-x-4 gap-y-5 lg:grid-cols-4 lg:gap-8">
@@ -478,6 +480,10 @@ export default async function Home() {
       </section>
       </LandingSectionSlot>
 
+      </div>
+
+      {/* About is intentionally outside the reorderable section stack.
+          It must always remain the final landing-page section before the footer. */}
       <LandingSectionSlot setting={landingSection("about")}>
       <section data-reveal id="tentang" className="snap-section section-space bg-brand-offWhite">
         <div className="section-shell grid gap-10 lg:grid-cols-[1.15fr_.85fr] lg:items-start lg:gap-20">
@@ -502,7 +508,6 @@ export default async function Home() {
         </div>
       </section>
       </LandingSectionSlot>
-      </div>
 
       <PublicFooter content={content} />
       <WhatsAppFloat href={whatsappHref} />
