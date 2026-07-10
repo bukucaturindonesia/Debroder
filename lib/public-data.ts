@@ -7,6 +7,11 @@ import {
 } from "@/lib/fallback-data";
 import { PLAIN_CATEGORY_SECTION_SETTING } from "@/lib/homepage-settings";
 import { productCategoryPresets } from "@/lib/product-category-config";
+import {
+  isCmsWorkflowTable,
+  isPublicCmsContent,
+  publicCmsStatusFilter
+} from "@/lib/cms-workflow";
 import { createSupabaseServerClient } from "@/lib/supabase";
 import type {
   CmsBanner,
@@ -37,7 +42,83 @@ import type {
   TrustAboutContent
 } from "@/lib/types";
 
-async function readActive<T>(
+type ActiveField = "status_aktif" | "is_active" | "is_visible";
+type PublicRevisionRow = {
+  content_id: string;
+  data: unknown;
+  publish_at?: string | null;
+  created_at?: string | null;
+};
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return Boolean(value && typeof value === "object" && !Array.isArray(value));
+}
+
+function rowIsActive(row: Record<string, unknown>, activeField?: ActiveField) {
+  if (!activeField) return true;
+  return row[activeField] !== false;
+}
+
+async function readDueScheduledCmsRows<T extends { id?: string }>(
+  table: string,
+  activeField?: ActiveField
+): Promise<T[]> {
+  const supabase = createSupabaseServerClient();
+  if (!supabase || !isCmsWorkflowTable(table)) return [];
+
+  const { data, error } = await supabase.rpc("get_due_cms_revisions", {
+    p_content_type: table
+  });
+
+  if (error || !data) return [];
+
+  const rows: Record<string, unknown>[] = [];
+
+  for (const revision of data as PublicRevisionRow[]) {
+    if (!isRecord(revision.data)) continue;
+
+    const row: Record<string, unknown> = {
+      ...revision.data,
+      id: String(revision.data.id || revision.content_id),
+      status: "published",
+      publish_at: revision.publish_at || null,
+      published_at: revision.publish_at || revision.created_at || null
+    };
+
+    if (!rowIsActive(row, activeField)) continue;
+    if (
+      hasBlockedPublicText(
+        Object.values(row).filter(
+          (value): value is string => typeof value === "string"
+        )
+      )
+    ) {
+      continue;
+    }
+
+    rows.push(row);
+  }
+
+  return rows as T[];
+}
+
+function mergeDueScheduledRows<T extends { id?: string }>(
+  rows: T[],
+  scheduledRows: T[]
+) {
+  if (!scheduledRows.length) return rows;
+  const byId = new Map(rows.map((row) => [row.id, row]));
+  scheduledRows.forEach((scheduledRow) => {
+    if (!scheduledRow.id) return;
+    byId.set(scheduledRow.id, {
+      ...(byId.get(scheduledRow.id) || {}),
+      ...scheduledRow
+    } as T);
+  });
+  return Array.from(byId.values());
+}
+
+async function readActive<T extends { id?: string }>(
   table: string,
   fallback: T[],
   order = "urutan",
@@ -49,19 +130,29 @@ async function readActive<T>(
     return fallback;
   }
 
-  const { data, error } = await supabase
+  let query = supabase
     .from(table)
     .select("*")
     .eq("status_aktif", true)
     .order(order, { ascending: true });
 
-  if (error || !data) return fallbackWhenEmpty ? fallback : [];
-  if (data.length === 0) return fallbackWhenEmpty ? fallback : [];
+  if (isCmsWorkflowTable(table)) {
+    query = query.or(publicCmsStatusFilter());
+  }
 
-  return data as T[];
+  const { data, error } = await query;
+
+  if (error || !data) return fallbackWhenEmpty ? fallback : [];
+
+  const scheduledRows = await readDueScheduledCmsRows<T>(table, "status_aktif");
+  const mergedRows = mergeDueScheduledRows(data as T[], scheduledRows);
+
+  if (mergedRows.length > 0) return mergedRows;
+  if (isCmsWorkflowTable(table)) return [];
+  return fallbackWhenEmpty ? fallback : [];
 }
 
-async function readSingle<T>(
+async function readSingle<T extends { id?: string }>(
   table: string,
   fallback: T,
   filterActive = true
@@ -78,16 +169,25 @@ async function readSingle<T>(
     query = query.eq("status_aktif", true);
   }
 
+  if (isCmsWorkflowTable(table)) {
+    query = query.or(publicCmsStatusFilter());
+  }
+
   const { data, error } = await query.maybeSingle();
 
   if (error || !data) {
-    return fallback;
+    const [scheduled] = await readDueScheduledCmsRows<T>(table, filterActive ? "status_aktif" : undefined);
+    return scheduled || fallback;
   }
 
+  const [scheduled] = await readDueScheduledCmsRows<T>(table, filterActive ? "status_aktif" : undefined);
+  if (scheduled && (scheduled as { id?: string }).id === (data as { id?: string }).id) {
+    return { ...(data as T), ...scheduled };
+  }
   return data as T;
 }
 
-async function readOptionalActiveSingle<T>(
+async function readOptionalActiveSingle<T extends { id?: string }>(
   table: string,
   fallback: T
 ): Promise<T | null> {
@@ -97,18 +197,34 @@ async function readOptionalActiveSingle<T>(
     return fallback;
   }
 
-  const { data, error } = await supabase
+  let query = supabase
     .from(table)
     .select("*")
     .eq("status_aktif", true)
-    .limit(1)
-    .maybeSingle();
+    .limit(1);
 
-  if (error) {
-    return fallback;
+  if (isCmsWorkflowTable(table)) {
+    query = query.or(publicCmsStatusFilter());
   }
 
-  return data ? (data as T) : null;
+  const { data, error } = await query.maybeSingle();
+
+  if (error) {
+    const [scheduled] = await readDueScheduledCmsRows<T>(table, "status_aktif");
+    return scheduled || fallback;
+  }
+
+  if (!data) {
+    const [scheduled] = await readDueScheduledCmsRows<T>(table, "status_aktif");
+    return scheduled || null;
+  }
+
+  const [scheduled] = await readDueScheduledCmsRows<T>(table, "status_aktif");
+  if (scheduled && (scheduled as { id?: string }).id === (data as { id?: string }).id) {
+    return { ...(data as T), ...scheduled };
+  }
+
+  return data as T;
 }
 
 
@@ -720,65 +836,151 @@ function publicPageHeroes(pageHeroes: PageHeroContent[]) {
   });
 }
 
+async function hydrateHomepageSectionItems(
+  items: HomepageSectionItem[]
+): Promise<HomepageSectionItem[]> {
+  const supabase = createSupabaseServerClient();
+  if (!supabase || items.length === 0) return items;
+
+  const productIds = Array.from(
+    new Set(
+      items
+        .map((item) => item.product_id)
+        .filter((id): id is string => Boolean(id))
+    )
+  );
+  const serviceIds = Array.from(
+    new Set(
+      items
+        .map((item) => item.service_id)
+        .filter((id): id is string => Boolean(id))
+    )
+  );
+
+  const [productResult, serviceResult] = await Promise.all([
+    productIds.length
+      ? supabase
+          .from("products")
+          .select("*")
+          .in("id", productIds)
+          .eq("status_aktif", true)
+      : Promise.resolve({ data: [], error: null }),
+    serviceIds.length
+      ? supabase
+          .from("services")
+          .select("*")
+          .in("id", serviceIds)
+          .eq("status_aktif", true)
+      : Promise.resolve({ data: [], error: null })
+  ]);
+
+  const productsById = new Map(
+    ((productResult.data || []) as Product[])
+      .filter((product) => Boolean(product.id))
+      .map((product) => [String(product.id), cleanProduct(product)])
+  );
+  const servicesById = new Map(
+    ((serviceResult.data || []) as Service[])
+      .filter((service) => Boolean(service.id))
+      .map((service) => [String(service.id), cleanService(service)])
+  );
+
+  return items.map((item) => ({
+    ...item,
+    product: item.product_id
+      ? productsById.get(item.product_id) || null
+      : null,
+    service: item.service_id
+      ? servicesById.get(item.service_id) || null
+      : null
+  }));
+}
+
 async function readHomepageSections(): Promise<HomepageSection[]> {
   const supabase = createSupabaseServerClient();
   if (!supabase) return [];
 
-  const { data, error } = await supabase
+  const now = new Date().toISOString();
+  const sectionQuery = supabase
     .from("homepage_sections")
-    .select(`
-      id,
-      title,
-      slug,
-      is_active,
-      sort_order,
-      created_at,
-      updated_at,
-      items:homepage_section_items(
-        id,
-        section_id,
-        product_id,
-        service_id,
-        custom_label,
-        custom_title,
-        custom_subtitle,
-        custom_button_label,
-        custom_link_url,
-        custom_image_url,
-        custom_mobile_image_url,
-        custom_image_alt,
-        custom_object_fit,
-        custom_object_position,
-        is_active,
-        sort_order,
-        created_at,
-        updated_at,
-        product:products(*),
-        service:services(*)
-      )
-    `)
+    .select(
+      "id,title,slug,is_active,sort_order,status,publish_at,published_at,archived_at,updated_by,created_at,updated_at"
+    )
     .eq("is_active", true)
+    .or(publicCmsStatusFilter(now))
     .order("sort_order", { ascending: true });
 
-  if (error || !data) return [];
+  const { data: baseSections, error: sectionError } = await sectionQuery;
+  if (sectionError || !baseSections) return [];
 
-  return data
-    .map((section) => {
-      const items = ((section.items || []) as unknown as HomepageSectionItem[])
-        .filter((item) => item.is_active && (
-          item.product
-          || item.service
-          || (item.custom_title && item.custom_image_url && item.custom_link_url)
-        ))
-        .map((item) => ({
-          ...item,
-          product: item.product ? cleanProduct(item.product) : null,
-          service: item.service ? cleanService(item.service) : null
-        }))
-        .sort((a, b) => a.sort_order - b.sort_order);
+  const dueSections = await readDueScheduledCmsRows<HomepageSection>(
+    "homepage_sections",
+    "is_active"
+  );
+  const sections = mergeDueScheduledRows(
+    baseSections as HomepageSection[],
+    dueSections
+  )
+    .filter(
+      (section) => section.is_active && isPublicCmsContent(section, now)
+    )
+    .sort((a, b) => a.sort_order - b.sort_order);
 
-      return { ...section, items } as HomepageSection;
-    })
+  if (sections.length === 0) return [];
+
+  const sectionIds = sections.map((section) => section.id);
+  const { data: baseItems, error: itemError } = await supabase
+    .from("homepage_section_items")
+    .select(
+      "id,section_id,product_id,service_id,custom_label,custom_title,custom_subtitle,custom_button_label,custom_link_url,custom_image_url,custom_mobile_image_url,custom_image_alt,custom_object_fit,custom_object_position,is_active,sort_order,status,publish_at,published_at,archived_at,updated_by,created_at,updated_at"
+    )
+    .in("section_id", sectionIds)
+    .eq("is_active", true)
+    .or(publicCmsStatusFilter(now))
+    .order("sort_order", { ascending: true });
+
+  if (itemError || !baseItems) return [];
+
+  const dueItems = await readDueScheduledCmsRows<HomepageSectionItem>(
+    "homepage_section_items",
+    "is_active"
+  );
+  const sectionIdSet = new Set(sectionIds);
+  const mergedItems = mergeDueScheduledRows(
+    baseItems as HomepageSectionItem[],
+    dueItems
+  )
+    .filter(
+      (item) =>
+        sectionIdSet.has(item.section_id) &&
+        item.is_active &&
+        isPublicCmsContent(item, now) &&
+        Boolean(
+          item.product_id ||
+            item.service_id ||
+            (item.custom_title &&
+              item.custom_image_url &&
+              item.custom_link_url)
+        )
+    )
+    .sort((a, b) => a.sort_order - b.sort_order);
+
+  const hydratedItems = await hydrateHomepageSectionItems(mergedItems);
+  const itemsBySection = new Map<string, HomepageSectionItem[]>();
+
+  hydratedItems.forEach((item) => {
+    const current = itemsBySection.get(item.section_id) || [];
+    current.push(item);
+    itemsBySection.set(item.section_id, current);
+  });
+
+  return sections
+    .map((section) => ({
+      ...section,
+      items: (itemsBySection.get(section.id) || []).sort(
+        (a, b) => a.sort_order - b.sort_order
+      )
+    }))
     .filter((section) => section.items.length > 0);
 }
 
@@ -786,26 +988,72 @@ async function readLandingPageSettings(): Promise<LandingPageSettings> {
   const supabase = createSupabaseServerClient();
   if (!supabase) return fallbackContent.landingSettings;
 
-  const { data: landingSection } = await supabase
+  const now = new Date().toISOString();
+  const { data: landingSection, error: landingError } = await supabase
     .from("landing_sections")
-    .select("is_visible")
+    .select(
+      "id,section_key,is_visible,status,publish_at,published_at,archived_at,updated_by"
+    )
     .eq("section_key", "plain-category")
+    .or(publicCmsStatusFilter(now))
     .maybeSingle();
 
-  if (landingSection) {
-    return { showPlainCategorySection: landingSection.is_visible !== false };
+  if (!landingError) {
+    const dueLandingSections =
+      await readDueScheduledCmsRows<LandingSection>("landing_sections");
+    const dueLandingSection = dueLandingSections.find(
+      (section) => section.section_key === "plain-category"
+    );
+    const effectiveLandingSection = dueLandingSection
+      ? {
+          ...(landingSection || {}),
+          ...dueLandingSection
+        }
+      : landingSection;
+
+    if (
+      effectiveLandingSection &&
+      isPublicCmsContent(effectiveLandingSection, now)
+    ) {
+      return {
+        showPlainCategorySection:
+          effectiveLandingSection.is_visible !== false
+      };
+    }
   }
 
-  const { data, error } = await supabase
+  const { data: homepageSection, error: homepageError } = await supabase
     .from("homepage_sections")
-    .select("slug,is_active")
+    .select(
+      "id,slug,is_active,status,publish_at,published_at,archived_at,updated_by"
+    )
     .eq("slug", PLAIN_CATEGORY_SECTION_SETTING.slug)
+    .or(publicCmsStatusFilter(now))
     .maybeSingle();
 
-  if (error || !data) return fallbackContent.landingSettings;
+  if (homepageError) return fallbackContent.landingSettings;
+
+  const dueHomepageSections =
+    await readDueScheduledCmsRows<HomepageSection>("homepage_sections");
+  const dueHomepageSection = dueHomepageSections.find(
+    (section) => section.slug === PLAIN_CATEGORY_SECTION_SETTING.slug
+  );
+  const effectiveHomepageSection = dueHomepageSection
+    ? {
+        ...(homepageSection || {}),
+        ...dueHomepageSection
+      }
+    : homepageSection;
+
+  if (
+    !effectiveHomepageSection ||
+    !isPublicCmsContent(effectiveHomepageSection, now)
+  ) {
+    return fallbackContent.landingSettings;
+  }
 
   return {
-    showPlainCategorySection: data.is_active !== false
+    showPlainCategorySection: effectiveHomepageSection.is_active !== false
   };
 }
 
@@ -813,39 +1061,51 @@ async function readLandingSections(): Promise<LandingSection[]> {
   const supabase = createSupabaseServerClient();
   if (!supabase) return fallbackContent.landingSections;
 
+  const now = new Date().toISOString();
   const { data, error } = await supabase
     .from("landing_sections")
-    .select("*")
+    .select(
+      "id,section_key,title,subtitle,is_visible,sort_order,metadata,desktop_image_url,mobile_image_url,video_url,cta_label,cta_url,text_position,status,publish_at,published_at,archived_at,updated_by,created_at,updated_at"
+    )
+    .or(publicCmsStatusFilter(now))
     .order("sort_order", { ascending: true });
 
-  if (error || !data?.length) return fallbackContent.landingSections;
+  if (error || !data) return fallbackContent.landingSections;
 
-  const stored = new Map(
-    (data as LandingSection[]).map((section) => [section.section_key, section])
-  );
-  const defaults = fallbackContent.landingSections.map((section) => ({
-    ...section,
-    ...(stored.get(section.section_key) || {})
-  }));
-  const defaultKeys = new Set(defaults.map((section) => section.section_key));
-  const custom = (data as LandingSection[]).filter(
-    (section) => !defaultKeys.has(section.section_key)
-  );
+  const scheduledRows =
+    await readDueScheduledCmsRows<LandingSection>("landing_sections");
 
-  return [...defaults, ...custom].sort((a, b) => a.sort_order - b.sort_order);
+  return mergeDueScheduledRows(data as LandingSection[], scheduledRows)
+    .filter((section) => isPublicCmsContent(section, now))
+    .sort((a, b) => a.sort_order - b.sort_order);
 }
 
 async function readCampaignBanners(): Promise<CmsBanner[]> {
   const supabase = createSupabaseServerClient();
   if (!supabase) return [];
 
+  const now = new Date().toISOString();
   const { data, error } = await supabase
     .from("cms_banners")
-    .select("*")
+    .select(
+      "id,name,media_type,desktop_media_url,mobile_media_url,poster_url,eyebrow,title,subtitle,cta_label,cta_url,text_position,is_active,sort_order,status,publish_at,published_at,archived_at,updated_by,created_at,updated_at"
+    )
     .eq("is_active", true)
+    .or(publicCmsStatusFilter(now))
     .order("sort_order", { ascending: true });
 
-  return error || !data ? [] : (data as CmsBanner[]);
+  if (error || !data) return [];
+
+  const scheduledRows = await readDueScheduledCmsRows<CmsBanner>(
+    "cms_banners",
+    "is_active"
+  );
+
+  return mergeDueScheduledRows(data as CmsBanner[], scheduledRows)
+    .filter(
+      (banner) => banner.is_active && isPublicCmsContent(banner, now)
+    )
+    .sort((a, b) => a.sort_order - b.sort_order);
 }
 
 export async function getPublicContent(): Promise<PublicContent> {

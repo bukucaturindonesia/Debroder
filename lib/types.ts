@@ -2,6 +2,41 @@ export type ProductType = "standard_product" | "configurable_product" | "product
 
 export type PricingMode = "fixed_price" | "variant_based" | "configurator_based" | "custom_quote";
 
+export type CmsStatus = "draft" | "scheduled" | "published" | "archived";
+
+export type CmsRevisionAction =
+  | "draft_saved"
+  | "published"
+  | "scheduled"
+  | "schedule_cancelled"
+  | "archived"
+  | "restored";
+
+export type CmsRevisionRecord = {
+  id?: string;
+  content_type: string;
+  content_id: string;
+  action: CmsRevisionAction;
+  status: CmsStatus;
+  data: Record<string, unknown>;
+  before_data?: Record<string, unknown> | null;
+  after_data?: Record<string, unknown> | null;
+  publish_at?: string | null;
+  published_at?: string | null;
+  archived_at?: string | null;
+  updated_by?: string | null;
+  created_at?: string;
+  updated_at?: string;
+};
+
+export type CmsWorkflowFields = {
+  status?: CmsStatus;
+  publish_at?: string | null;
+  published_at?: string | null;
+  archived_at?: string | null;
+  updated_by?: string | null;
+};
+
 export type Product = {
   id?: string;
   nama: string;
@@ -154,7 +189,7 @@ export type ServiceCategory = {
   updated_at?: string;
 };
 
-export type Store = {
+export type Store = CmsWorkflowFields & {
   id?: string;
   nama_store: string;
   layanan_utama: string;
@@ -171,7 +206,7 @@ export type Store = {
   updated_at?: string;
 };
 
-export type HeroBanner = {
+export type HeroBanner = CmsWorkflowFields & {
   id?: string;
   badge?: string;
   headline: string;
@@ -219,7 +254,7 @@ export type AboutContent = {
   updated_at?: string;
 };
 
-export type Testimonial = {
+export type Testimonial = CmsWorkflowFields & {
   id?: string;
   nama: string;
   sumber: string;
@@ -230,7 +265,7 @@ export type Testimonial = {
   updated_at?: string;
 };
 
-export type ContactSettings = {
+export type ContactSettings = CmsWorkflowFields & {
   id?: string;
   email: string;
   whatsapp_utama: string;
@@ -244,7 +279,7 @@ export type ContactSettings = {
   updated_at?: string;
 };
 
-export type InstagramBanner = {
+export type InstagramBanner = CmsWorkflowFields & {
   id?: string;
   title: string;
   image_url: string;
@@ -275,7 +310,7 @@ export type InstagramBanner = {
   updated_at?: string;
 };
 
-export type PageHeroContent = {
+export type PageHeroContent = CmsWorkflowFields & {
   id?: string;
   page_key: string;
   label: string;
@@ -300,7 +335,7 @@ export type PageHeroContent = {
   updated_at?: string;
 };
 
-export type OrderStep = {
+export type OrderStep = CmsWorkflowFields & {
   id?: string;
   title: string;
   description?: string;
@@ -310,7 +345,7 @@ export type OrderStep = {
   updated_at?: string;
 };
 
-export type TrustAboutContent = {
+export type TrustAboutContent = CmsWorkflowFields & {
   id?: string;
   trust_items: string[];
   about_body: string;
@@ -326,7 +361,7 @@ export type TrustAboutContent = {
   updated_at?: string;
 };
 
-export type ProductFilter = {
+export type ProductFilter = CmsWorkflowFields & {
   id?: string;
   filter_type: "collection" | "color" | "size" | "material" | "brand" | "price";
   name: string;
@@ -340,7 +375,7 @@ export type ProductFilter = {
   updated_at?: string;
 };
 
-export type HomepageSectionItem = {
+export type HomepageSectionItem = CmsWorkflowFields & {
   id: string;
   section_id: string;
   product_id?: string | null;
@@ -363,7 +398,7 @@ export type HomepageSectionItem = {
   updated_at?: string;
 };
 
-export type HomepageSection = {
+export type HomepageSection = CmsWorkflowFields & {
   id: string;
   title: string;
   slug: string;
@@ -378,7 +413,7 @@ export type LandingPageSettings = {
   showPlainCategorySection: boolean;
 };
 
-export type LandingSection = {
+export type LandingSection = CmsWorkflowFields & {
   id?: string;
   section_key: string;
   title: string;
@@ -396,7 +431,7 @@ export type LandingSection = {
   updated_at?: string;
 };
 
-export type CmsBanner = {
+export type CmsBanner = CmsWorkflowFields & {
   id?: string;
   name: string;
   media_type: "image" | "video";
