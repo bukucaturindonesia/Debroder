@@ -13,6 +13,12 @@ import {
   publicCmsStatusFilter
 } from "@/lib/cms-workflow";
 import { createSupabaseServerClient } from "@/lib/supabase";
+import {
+  DEFAULT_SITE_MEDIA,
+  parseSiteMediaDefaults,
+  SITE_MEDIA_SETTING_KEY,
+  type SiteMediaDefaults
+} from "@/lib/site-media";
 import type {
   CmsBanner,
   ContactSettings,
@@ -57,6 +63,26 @@ function isRecord(value: unknown): value is Record<string, unknown> {
 function rowIsActive(row: Record<string, unknown>, activeField?: ActiveField) {
   if (!activeField) return true;
   return row[activeField] !== false;
+}
+
+function resolveMediaUrl(value: string | null | undefined, fallback: string) {
+  const normalized = (value || "").trim();
+  if (!normalized || normalized.startsWith("/images/debroder/")) return fallback;
+  return normalized;
+}
+
+async function readSiteMediaDefaults(): Promise<SiteMediaDefaults> {
+  const supabase = createSupabaseServerClient();
+  if (!supabase) return DEFAULT_SITE_MEDIA;
+
+  const { data, error } = await supabase
+    .from("website_settings")
+    .select("value")
+    .eq("setting_key", SITE_MEDIA_SETTING_KEY)
+    .maybeSingle();
+
+  if (error) return DEFAULT_SITE_MEDIA;
+  return parseSiteMediaDefaults(data?.value);
 }
 
 async function readDueScheduledCmsRows<T extends { id?: string }>(
@@ -1129,6 +1155,7 @@ export async function getPublicContent(): Promise<PublicContent> {
     trustAbout,
     testimonials,
     contact,
+    siteMedia,
     jerseyConfigurator
   ] = await Promise.all([
     readActive<HeroBanner>("hero_banners", [], "urutan", false),
@@ -1168,29 +1195,108 @@ export async function getPublicContent(): Promise<PublicContent> {
       fallbackContent.contact,
       true
     ),
+    readSiteMediaDefaults(),
     readJerseyConfiguratorData()
   ]);
 
-  const cleanHeroes = publicHeroes(heroes);
+  const cleanHeroes = publicHeroes(heroes).map((hero) => ({
+    ...hero,
+    image_url: resolveMediaUrl(hero.image_url, siteMedia.heroDesktop),
+    mobile_image_url: resolveMediaUrl(hero.mobile_image_url, siteMedia.heroMobile)
+  }));
+  const resolvedInstagramBanner = cleanInstagramBanner(instagramBanner);
+  const resolvedPageHeroes = publicPageHeroes(pageHeroes).map((hero) => ({
+    ...hero,
+    image_url: resolveMediaUrl(hero.image_url, siteMedia.pageHeroDesktop),
+    mobile_image_url: resolveMediaUrl(hero.mobile_image_url, siteMedia.pageHeroMobile)
+  }));
+  const resolvedCategories = publicCategories(categories).map((category) => ({
+    ...category,
+    gambar_url: resolveMediaUrl(category.gambar_url, siteMedia.product),
+    gallery_urls: (category.gallery_urls || []).filter((url) => !url.startsWith("/images/debroder/"))
+  }));
+  const resolvedServices = services.map(cleanService).map((service) => ({
+    ...service,
+    image_url: resolveMediaUrl(service.image_url, siteMedia.product)
+  }));
+  const resolvedProducts = publicProducts(products).map((product) => {
+    const primaryImage = resolveMediaUrl(product.image_url || product.gambar_url, siteMedia.product);
+    return {
+      ...product,
+      image_url: primaryImage,
+      gambar_url: primaryImage,
+      gallery_urls: (product.gallery_urls || []).filter((url) => !url.startsWith("/images/debroder/"))
+    };
+  });
+  const resolvedHomepageSections = homepageSections.map((section) => ({
+    ...section,
+    items: section.items.map((item) => ({
+      ...item,
+      custom_image_url: item.custom_image_url
+        ? resolveMediaUrl(item.custom_image_url, siteMedia.product)
+        : item.custom_image_url,
+      custom_mobile_image_url: item.custom_mobile_image_url
+        ? resolveMediaUrl(item.custom_mobile_image_url, siteMedia.product)
+        : item.custom_mobile_image_url,
+      product: item.product
+        ? {
+            ...item.product,
+            image_url: resolveMediaUrl(item.product.image_url || item.product.gambar_url, siteMedia.product),
+            gambar_url: resolveMediaUrl(item.product.image_url || item.product.gambar_url, siteMedia.product)
+          }
+        : item.product,
+      service: item.service
+        ? {
+            ...item.service,
+            image_url: resolveMediaUrl(item.service.image_url, siteMedia.product)
+          }
+        : item.service
+    }))
+  }));
+  const resolvedStores = stores.map(cleanStore).map((store) => ({
+    ...store,
+    image_url: resolveMediaUrl(store.image_url, siteMedia.store)
+  }));
+  const resolvedTrustAbout = {
+    ...cleanTrustAbout(trustAbout),
+    image_url: resolveMediaUrl(trustAbout.image_url, siteMedia.benefit),
+    mobile_image_url: resolveMediaUrl(trustAbout.mobile_image_url, siteMedia.benefit)
+  };
+  const resolvedCampaignBanners = campaignBanners.map((banner) => ({
+    ...banner,
+    desktop_media_url: resolveMediaUrl(banner.desktop_media_url, siteMedia.bannerDesktop),
+    mobile_media_url: resolveMediaUrl(banner.mobile_media_url, siteMedia.bannerMobile),
+    poster_url: banner.poster_url ? resolveMediaUrl(banner.poster_url, siteMedia.bannerDesktop) : banner.poster_url
+  }));
 
   return {
-    hero: cleanHeroes[0] || fallbackContent.hero,
+    hero: cleanHeroes[0] || {
+      ...fallbackContent.hero,
+      image_url: siteMedia.heroDesktop,
+      mobile_image_url: siteMedia.heroMobile
+    },
     heroes: cleanHeroes,
     about: fallbackContent.about,
-    instagramBanner: cleanInstagramBanner(instagramBanner),
-    pageHeroes: publicPageHeroes(pageHeroes),
-    categories: publicCategories(categories),
+    instagramBanner: resolvedInstagramBanner
+      ? {
+          ...resolvedInstagramBanner,
+          image_url: resolveMediaUrl(resolvedInstagramBanner.image_url, siteMedia.bannerDesktop),
+          mobile_image_url: resolveMediaUrl(resolvedInstagramBanner.mobile_image_url, siteMedia.bannerMobile)
+        }
+      : null,
+    pageHeroes: resolvedPageHeroes,
+    categories: resolvedCategories,
     productCategories,
-    services: services.map(cleanService),
-    products: publicProducts(products),
+    services: resolvedServices,
+    products: resolvedProducts,
     productFilters,
-    homepageSections,
+    homepageSections: resolvedHomepageSections,
     landingSettings,
     landingSections,
-    campaignBanners,
-    stores: stores.map(cleanStore),
+    campaignBanners: resolvedCampaignBanners,
+    stores: resolvedStores,
     orderSteps: publicOrderSteps(orderSteps),
-    trustAbout: cleanTrustAbout(trustAbout),
+    trustAbout: resolvedTrustAbout,
     testimonials,
     contact: cleanContact({
       ...fallbackContent.contact,

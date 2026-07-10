@@ -25,7 +25,7 @@ export function ResponsivePicture({
   priority = false,
   desktopObjectPosition = "center center",
   mobileObjectPosition,
-  fallbackSrc = "/images/debroder/fallback/fallback-page-hero.jpg",
+  fallbackSrc = "/brand/debroder/social-preview.png",
   objectFit = "cover",
   desktopZoom = 1,
   mobileZoom

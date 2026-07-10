@@ -160,8 +160,8 @@ export function HeroSlider({ heroes }: { heroes: HeroBanner[] }) {
                 </video>
               ) : (
                 <ResponsivePicture
-                  desktopSrc={slide.image_url || "/images/debroder/editorial/hero-apparel-wide.webp"}
-                  mobileSrc={slide.mobile_image_url || "/images/debroder/editorial/hero-apparel-mobile.webp"}
+                  desktopSrc={slide.image_url || "/brand/debroder/social-preview.png"}
+                  mobileSrc={slide.mobile_image_url || "/brand/debroder/social-preview.png"}
                   alt={slide.image_alt || headline.replace(/\n/g, " ") || "Hero DEBRODER"}
                   priority={index === 0}
                   className="h-full w-full object-cover"

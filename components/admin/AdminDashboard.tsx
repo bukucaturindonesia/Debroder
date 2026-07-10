@@ -4,6 +4,7 @@ import { FormEvent, useEffect, useMemo, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { Logo } from "@/components/Logo";
 import { MediaLibraryPanel } from "@/components/admin/MediaLibrary";
+import { SiteMediaSettingsAdmin } from "@/components/admin/SiteMediaSettingsAdmin";
 import { ProductAdminPanel } from "@/components/admin/ProductAdmin";
 import { PimManagerAdmin } from "@/components/admin/PimManagerAdmin";
 import { PimV2Admin } from "@/components/admin/PimV2Admin";
@@ -217,14 +218,14 @@ const tableConfigs: TableConfig[] = [
         name: "image_url",
         label: "Upload Hero Desktop",
         type: "image",
-        placeholder: "/images/debroder/hero/hero-home.jpg",
+        placeholder: "Pilih dari Media Library atau upload foto",
         helper: "Rekomendasi 1920x900."
       },
       {
         name: "mobile_image_url",
         label: "Upload Hero Mobile",
         type: "image",
-        placeholder: "/images/debroder/hero/hero-home-mobile.jpg",
+        placeholder: "Pilih dari Media Library atau upload foto",
         helper: "Rekomendasi 1080x1350."
       },
       {
@@ -272,6 +273,15 @@ const tableConfigs: TableConfig[] = [
     ]
   },
 
+  {
+    key: "site-media",
+    label: "Gambar Website",
+    navLabel: "Gambar Website",
+    href: "/admin/site-media",
+    table: "",
+    description: "Atur gambar default/fallback website dari Media Library agar tidak ada foto kosong.",
+    fields: []
+  },
   {
     key: "pim-manager",
     label: "PIM Manager",
@@ -341,7 +351,7 @@ const tableConfigs: TableConfig[] = [
         name: "image_url",
         label: "Gambar produk",
         type: "image",
-        placeholder: "/images/debroder/products/kaos-polos.jpg",
+        placeholder: "Pilih dari Media Library atau upload foto",
         helper: "Rekomendasi 1200x1200."
       },
       {
@@ -419,7 +429,7 @@ const tableConfigs: TableConfig[] = [
         name: "gambar_url",
         label: "Gambar kategori",
         type: "image",
-        placeholder: "/images/debroder/products/kaos-polos.jpg"
+        placeholder: "Pilih dari Media Library atau upload foto"
       },
       {
         name: "image_alt",
@@ -500,14 +510,14 @@ const tableConfigs: TableConfig[] = [
         name: "image_url",
         label: "Upload Banner Desktop",
         type: "image",
-        placeholder: "/images/debroder/banners/instagram-banner.jpg",
+        placeholder: "Pilih dari Media Library atau upload foto",
         helper: "Rekomendasi 1920x800."
       },
       {
         name: "mobile_image_url",
         label: "Upload Banner Mobile",
         type: "image",
-        placeholder: "/images/debroder/banners/instagram-banner-mobile.jpg",
+        placeholder: "Pilih dari Media Library atau upload foto",
         helper: "Rekomendasi 1080x1350."
       },
       { name: "video_url", label: "Video desktop", type: "video", placeholder: "Pilih video dari Media Library" },
@@ -597,14 +607,14 @@ const tableConfigs: TableConfig[] = [
         name: "image_url",
         label: "Upload Hero Desktop",
         type: "image",
-        placeholder: "/images/debroder/page-heroes/hero-1.jpg",
+        placeholder: "Pilih dari Media Library atau upload foto",
         helper: "Rekomendasi 1920x800."
       },
       {
         name: "mobile_image_url",
         label: "Upload Hero Mobile",
         type: "image",
-        placeholder: "/images/debroder/page-heroes/hero-1-mobile.jpg",
+        placeholder: "Pilih dari Media Library atau upload foto",
         helper: "Rekomendasi 1080x1350."
       },
       {
@@ -687,7 +697,7 @@ const tableConfigs: TableConfig[] = [
         name: "image_url",
         label: "Foto store",
         type: "image",
-        placeholder: "/images/debroder/stores/store-pettarani.jpg",
+        placeholder: "Pilih dari Media Library atau upload foto",
         helper: "Rekomendasi 1200x800."
       },
       {
@@ -872,6 +882,7 @@ const primaryNavigationKeys = [
   "services",
   "store",
   "media",
+  "site-media",
   "campaign-banners",
   "orders",
   "website-settings"
@@ -1291,7 +1302,7 @@ export function AdminDashboard() {
       payload.gambar_url =
         valueToText(payload.image_url) ||
         valueToText(payload.gambar_url) ||
-        "/images/debroder/fallback/fallback-product.jpg";
+        "/brand/debroder/open-graph-logo.png";
       payload.whatsapp_link =
         valueToText(payload.whatsapp_link) || "https://wa.me/6285355333364";
       payload.kategori = valueToText(payload.kategori) || "Produk";
@@ -1309,7 +1320,7 @@ export function AdminDashboard() {
       payload.slug = valueToText(payload.slug) || makeSlug(valueToText(payload.nama));
       payload.image_url =
         valueToText(payload.image_url) ||
-        "/images/debroder/fallback/fallback-product.jpg";
+        "/brand/debroder/open-graph-logo.png";
       payload.deskripsi = valueToText(payload.deskripsi);
       payload.image_alt = valueToText(payload.image_alt) || valueToText(payload.nama);
       const serviceSlug = valueToText(payload.slug);
@@ -1454,13 +1465,13 @@ export function AdminDashboard() {
     }));
     const { data: sessionData } = await supabase.auth.getSession();
     const folderMap: Record<string, string> = {
-      hero: "Hero",
-      products: "Produk",
-      services: "Produk",
-      categories: "Kategori",
-      store: "Store",
-      banner: "Galeri",
-      "page-hero": "Hero"
+      hero: "hero",
+      products: "products",
+      services: "services",
+      categories: "categories",
+      store: "store",
+      banner: "banner",
+      "page-hero": "page-hero"
     };
     await supabase.from("media_assets").insert({
       name: file.name,
@@ -1470,7 +1481,7 @@ export function AdminDashboard() {
       media_type: isVideo ? "video" : "image",
       mime_type: file.type,
       size_bytes: file.size,
-      folder: isVideo ? "Video" : folderMap[activeKey] || "Galeri",
+      folder: isVideo ? "video" : folderMap[activeKey] || "gallery",
       uploaded_by: sessionData.session?.user.id || null
     });
     loadMediaChoices();
@@ -1978,7 +1989,7 @@ export function AdminDashboard() {
               <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-5">
                 {tableConfigs
                   .filter((config) =>
-                    ["homepage-sections", "page-hero", "products", "categories", "services", "store", "media", "campaign-banners", "orders", "website-settings"].includes(
+                    ["homepage-sections", "page-hero", "products", "categories", "services", "store", "media", "site-media", "campaign-banners", "orders", "website-settings"].includes(
                       config.key
                     )
                   )
@@ -2091,6 +2102,8 @@ export function AdminDashboard() {
             <ProductAdminPanel />
           ) : activeKey === "media" ? (
             <MediaLibraryPanel />
+          ) : activeKey === "site-media" ? (
+            <SiteMediaSettingsAdmin />
           ) : activeKey === "campaign-banners" ? (
             <CampaignBannerAdmin />
           ) : activeKey === "orders" ? (

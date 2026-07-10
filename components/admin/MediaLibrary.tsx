@@ -32,13 +32,18 @@ const folders = [
   "hero",
   "hero-mobile",
   "products",
+  "categories",
+  "services",
+  "page-hero",
+  "jersey",
   "featured",
   "trending",
   "fresh-drop",
   "store",
   "banner",
   "about",
-  "benefits"
+  "benefits",
+  "social-preview"
 ];
 const imageTypes = ["image/jpeg", "image/png", "image/webp"];
 const videoTypes = ["video/mp4", "video/webm"];
@@ -126,8 +131,17 @@ function usageName(row: UsageRow, prefix: string) {
   return `${prefix}: ${String(row.nama || row.nama_kategori || row.nama_store || row.headline || row.title || row.page_key || "Konten")}`;
 }
 
+function valueUsesUrl(value: unknown, url: string): boolean {
+  if (value === url) return true;
+  if (Array.isArray(value)) return value.some((item) => valueUsesUrl(item, url));
+  if (value && typeof value === "object") {
+    return Object.values(value as Record<string, unknown>).some((item) => valueUsesUrl(item, url));
+  }
+  return false;
+}
+
 function rowUsesUrl(row: UsageRow, url: string) {
-  return Object.values(row).some((value) => value === url || (Array.isArray(value) && value.includes(url)));
+  return Object.values(row).some((value) => valueUsesUrl(value, url));
 }
 
 export function MediaLibraryPanel() {
@@ -154,7 +168,12 @@ export function MediaLibraryPanel() {
       ["hero_banners", "id,headline,image_url,mobile_image_url", "Hero Landing"],
       ["instagram_banners", "id,title,image_url,mobile_image_url", "Banner"],
       ["page_heroes", "id,page_key,title,image_url,mobile_image_url", "Page Hero"],
-      ["stores", "id,nama_store,image_url", "Store"]
+      ["stores", "id,nama_store,image_url", "Store"],
+      ["homepage_section_items", "id,custom_title,custom_image_url,custom_mobile_image_url", "Homepage Item"],
+      ["landing_sections", "id,title,desktop_image_url,mobile_image_url,video_url", "Landing Section"],
+      ["cms_banners", "id,name,desktop_media_url,mobile_media_url,poster_url", "Campaign Banner"],
+      ["trust_about_content", "id,image_url,mobile_image_url,video_url", "Tentang"],
+      ["website_settings", "id,label,value", "Pengaturan Website"]
     ] as const;
     const results = await Promise.all(sources.map(async ([table, select, prefix]) => {
       const result = await supabase.from(table).select(select);
@@ -385,7 +404,7 @@ export function MediaLibraryPanel() {
           {visibleAssets.map((asset) => {
             const draft = editing[asset.id] || {};
             return <article key={asset.id} className="border border-brand-softGray bg-white p-4">
-              {asset.media_type === "video" ? <video src={asset.public_url} muted playsInline preload="metadata" controls poster={asset.thumbnail_url || undefined} className="aspect-video w-full bg-brand-offWhite object-cover" /> : <img src={asset.public_url} alt={asset.alt_text || asset.name} loading="lazy" onError={(event) => { event.currentTarget.src = "/images/debroder/fallback/fallback-product.jpg"; }} className="aspect-video w-full bg-brand-offWhite object-cover" />}
+              {asset.media_type === "video" ? <video src={asset.public_url} muted playsInline preload="metadata" controls poster={asset.thumbnail_url || undefined} className="aspect-video w-full bg-brand-offWhite object-cover" /> : <img src={asset.public_url} alt={asset.alt_text || asset.name} loading="lazy" onError={(event) => { event.currentTarget.src = "/brand/debroder/open-graph-logo.png"; }} className="aspect-video w-full bg-brand-offWhite object-cover" />}
               <h3 className="mt-3 truncate text-sm font-semibold" title={asset.name}>{asset.name}</h3>
               <dl className="mt-2 grid grid-cols-2 gap-x-3 gap-y-1 text-xs text-brand-charcoal/55"><div><dt className="font-semibold">Dimensi</dt><dd>{asset.width && asset.height ? `${asset.width} × ${asset.height}px` : "—"}</dd></div><div><dt className="font-semibold">Ukuran</dt><dd>{readableSize(asset.size_bytes)}</dd></div><div><dt className="font-semibold">Upload</dt><dd>{new Intl.DateTimeFormat("id-ID", { dateStyle: "medium" }).format(new Date(asset.created_at))}</dd></div><div><dt className="font-semibold">Tipe</dt><dd>{asset.mime_type}</dd></div></dl>
               <div className="mt-3 grid gap-2">

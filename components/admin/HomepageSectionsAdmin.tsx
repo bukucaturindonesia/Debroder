@@ -300,7 +300,7 @@ function itemImage(item: EditableItem) {
     item.product?.image_url ||
     item.product?.gambar_url ||
     item.service?.image_url ||
-    "/images/debroder/fallback/fallback-product.jpg"
+    "/brand/debroder/open-graph-logo.png"
   );
 }
 

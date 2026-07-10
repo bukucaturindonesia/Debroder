@@ -22,17 +22,17 @@ import { productCategoryPresets } from "@/lib/product-category-config";
 import { whatsappLinkWithMessage } from "@/lib/url";
 
 export const fallbackImages = {
-  hero: "/images/debroder/hero/hero-1.jpg",
-  heroMobile: "/images/debroder/hero/hero-1-mobile.jpg",
-  heroSecondary: "/images/debroder/hero/hero-2.jpg",
-  heroSecondaryMobile: "/images/debroder/hero/hero-2-mobile.jpg",
-  pageHero: "/images/debroder/fallback/fallback-page-hero.jpg",
-  pageHeroMobile: "/images/debroder/fallback/fallback-page-hero-mobile.jpg",
-  product: "/images/debroder/fallback/fallback-product.jpg",
-  banner: "/images/debroder/fallback/fallback-banner.jpg",
-  bannerMobile: "/images/debroder/fallback/fallback-banner-mobile.jpg",
-  store: "/images/debroder/fallback/fallback-store.jpg",
-  benefit: "/images/debroder/fallback/fallback-product.jpg"
+  hero: "/brand/debroder/social-preview.png",
+  heroMobile: "/brand/debroder/social-preview.png",
+  heroSecondary: "/brand/debroder/social-preview.png",
+  heroSecondaryMobile: "/brand/debroder/social-preview.png",
+  pageHero: "/brand/debroder/social-preview.png",
+  pageHeroMobile: "/brand/debroder/social-preview.png",
+  product: "/brand/debroder/social-preview.png",
+  banner: "/brand/debroder/social-preview.png",
+  bannerMobile: "/brand/debroder/social-preview.png",
+  store: "/brand/debroder/social-preview.png",
+  benefit: "/brand/debroder/social-preview.png"
 } as const;
 
 export const fallbackProductFilters: ProductFilter[] = [
@@ -67,57 +67,57 @@ export const fallbackProductCategories: ProductCategory[] = productCategoryPrese
 }));
 
 export const storeImageFallbacks: Record<string, string> = {
-  "STORE PETTARANI": "/images/debroder/stores/store-pettarani.jpg",
-  "STORE TELLO": "/images/debroder/stores/store-tello.jpg",
-  "STORE LANDAK": "/images/debroder/stores/store-landak.jpg",
-  "STORE PAREPARE": "/images/debroder/stores/store-parepare.jpg"
+  "STORE PETTARANI": "/brand/debroder/social-preview.png",
+  "STORE TELLO": "/brand/debroder/social-preview.png",
+  "STORE LANDAK": "/brand/debroder/social-preview.png",
+  "STORE PAREPARE": "/brand/debroder/social-preview.png"
 };
 
 export const productImageFallbacks: Record<string, string> = {
   "Kaos Polos New State Apparel":
-    "/images/debroder/products/produk-kaos-polos.jpg",
-  "Kaos Polos Import": "/images/debroder/products/produk-kaos-polos.jpg",
+    "/brand/debroder/open-graph-logo.png",
+  "Kaos Polos Import": "/brand/debroder/open-graph-logo.png",
   "Kaos Polos Cotton Combed":
-    "/images/debroder/products/produk-kaos-polos.jpg",
-  "Kaos Cotton Combed": "/images/debroder/products/produk-kaos-polos.jpg",
+    "/brand/debroder/open-graph-logo.png",
+  "Kaos Cotton Combed": "/brand/debroder/open-graph-logo.png",
   "Distributor Kaos NSA":
-    "/images/debroder/products/produk-kaos-polos.jpg",
-  "Sablon DTF Custom": "/images/debroder/products/produk-sablon-dtf.jpg",
-  "Custom Jersey": "/images/debroder/products/produk-jersey.jpg",
-  "Maklon DTF": "/images/debroder/products/produk-maklon-dtf.jpg",
-  "Cetak Sublim": "/images/debroder/products/produk-cetak-sublim.jpg"
+    "/brand/debroder/open-graph-logo.png",
+  "Sablon DTF Custom": "/brand/debroder/open-graph-logo.png",
+  "Custom Jersey": "/brand/debroder/open-graph-logo.png",
+  "Maklon DTF": "/brand/debroder/open-graph-logo.png",
+  "Cetak Sublim": "/brand/debroder/open-graph-logo.png"
 };
 
 export const pageHeroImageFallbacks: Record<string, string> = {
-  koleksi: "/images/debroder/page-heroes/hero-1.jpg",
-  "kaos-polos": "/images/debroder/page-heroes/hero-kaos-polos.jpg",
-  "jaket-hoodie": "/images/debroder/page-heroes/hero-jaket-hoodie.jpg",
-  "polo-shirt": "/images/debroder/page-heroes/hero-kaos-polos.jpg",
-  headwear: "/images/debroder/page-heroes/hero-headwear.jpg",
-  kemeja: "/images/debroder/page-heroes/hero-jaket-hoodie.jpg",
-  "aksesori-lainnya": "/images/debroder/page-heroes/hero-headwear.jpg",
-  "sablon-dtf": "/images/debroder/page-heroes/hero-sablon-dtf.jpg",
-  "maklon-dtf": "/images/debroder/page-heroes/hero-maklon-dtf.jpg",
-  jersey: "/images/debroder/page-heroes/hero-jersey.jpg",
-  "cetak-sublim": "/images/debroder/page-heroes/hero-cetak-sublim.jpg",
-  store: "/images/debroder/page-heroes/hero-store.jpg",
-  "cara-order": "/images/debroder/page-heroes/hero-cara-order.jpg"
+  koleksi: "/brand/debroder/social-preview.png",
+  "kaos-polos": "/brand/debroder/social-preview.png",
+  "jaket-hoodie": "/brand/debroder/social-preview.png",
+  "polo-shirt": "/brand/debroder/social-preview.png",
+  headwear: "/brand/debroder/social-preview.png",
+  kemeja: "/brand/debroder/social-preview.png",
+  "aksesori-lainnya": "/brand/debroder/social-preview.png",
+  "sablon-dtf": "/brand/debroder/social-preview.png",
+  "maklon-dtf": "/brand/debroder/social-preview.png",
+  jersey: "/brand/debroder/social-preview.png",
+  "cetak-sublim": "/brand/debroder/social-preview.png",
+  store: "/brand/debroder/social-preview.png",
+  "cara-order": "/brand/debroder/social-preview.png"
 };
 
 export const pageHeroMobileImageFallbacks: Record<string, string> = {
-  koleksi: "/images/debroder/page-heroes/hero-1-mobile.jpg",
-  "kaos-polos": "/images/debroder/page-heroes/hero-kaos-polos-mobile.jpg",
-  "jaket-hoodie": "/images/debroder/page-heroes/hero-jaket-hoodie-mobile.jpg",
-  "polo-shirt": "/images/debroder/page-heroes/hero-kaos-polos-mobile.jpg",
-  headwear: "/images/debroder/page-heroes/hero-headwear-mobile.jpg",
-  kemeja: "/images/debroder/page-heroes/hero-jaket-hoodie-mobile.jpg",
-  "aksesori-lainnya": "/images/debroder/page-heroes/hero-headwear-mobile.jpg",
-  "sablon-dtf": "/images/debroder/page-heroes/hero-sablon-dtf-mobile.jpg",
-  "maklon-dtf": "/images/debroder/page-heroes/hero-maklon-dtf-mobile.jpg",
-  jersey: "/images/debroder/page-heroes/hero-jersey-mobile.jpg",
-  "cetak-sublim": "/images/debroder/page-heroes/hero-cetak-sublim-mobile.jpg",
-  store: "/images/debroder/page-heroes/hero-store-mobile.jpg",
-  "cara-order": "/images/debroder/page-heroes/hero-cara-order-mobile.jpg"
+  koleksi: "/brand/debroder/social-preview.png",
+  "kaos-polos": "/brand/debroder/social-preview.png",
+  "jaket-hoodie": "/brand/debroder/social-preview.png",
+  "polo-shirt": "/brand/debroder/social-preview.png",
+  headwear: "/brand/debroder/social-preview.png",
+  kemeja: "/brand/debroder/social-preview.png",
+  "aksesori-lainnya": "/brand/debroder/social-preview.png",
+  "sablon-dtf": "/brand/debroder/social-preview.png",
+  "maklon-dtf": "/brand/debroder/social-preview.png",
+  jersey: "/brand/debroder/social-preview.png",
+  "cetak-sublim": "/brand/debroder/social-preview.png",
+  store: "/brand/debroder/social-preview.png",
+  "cara-order": "/brand/debroder/social-preview.png"
 };
 
 export function getStoreImage(store: Pick<Store, "nama_store" | "image_url">) {
@@ -220,7 +220,7 @@ export const fallbackCategories: ServiceCategory[] = [
   {
     nama_kategori: "Kaos Polos",
     deskripsi: "Kaos polos, cotton combed, lengan panjang, kaos anak, dan Polo Shirt NSA.",
-    gambar_url: "/images/debroder/products/produk-kaos-polos.jpg",
+    gambar_url: "/brand/debroder/open-graph-logo.png",
     link_slug: "kaos-polos",
     category_key: "kaos-polos",
     slug: "kaos-polos",
@@ -230,7 +230,7 @@ export const fallbackCategories: ServiceCategory[] = [
   {
     nama_kategori: "Jersey",
     deskripsi: "Jersey custom untuk futsal, sepak bola, basket, voli, badminton, dan esports.",
-    gambar_url: "/images/debroder/products/produk-jersey.jpg",
+    gambar_url: "/brand/debroder/open-graph-logo.png",
     link_slug: "jersey",
     category_key: "jersey",
     slug: "jersey",
@@ -240,7 +240,7 @@ export const fallbackCategories: ServiceCategory[] = [
   {
     nama_kategori: "Jaket & Hoodie",
     deskripsi: "Hoodie, crewneck, bomber, varsity, dan coach custom.",
-    gambar_url: "/images/debroder/products/produk-jaket-hoodie.jpg",
+    gambar_url: "/brand/debroder/open-graph-logo.png",
     link_slug: "jaket-hoodie",
     category_key: "jaket-hoodie",
     slug: "jaket-hoodie",
@@ -250,7 +250,7 @@ export const fallbackCategories: ServiceCategory[] = [
   {
     nama_kategori: "Kemeja",
     deskripsi: "Kemeja PDH, PDL, kantor, komunitas, dan seragam custom.",
-    gambar_url: "/images/debroder/products/produk-kaos-polos.jpg",
+    gambar_url: "/brand/debroder/open-graph-logo.png",
     link_slug: "kemeja",
     category_key: "kemeja",
     slug: "kemeja",
@@ -260,7 +260,7 @@ export const fallbackCategories: ServiceCategory[] = [
   {
     nama_kategori: "Headwear",
     deskripsi: "Topi trucker, baseball, snapback, bucket hat, dan headwear custom.",
-    gambar_url: "/images/debroder/products/produk-kaos-polos.jpg",
+    gambar_url: "/brand/debroder/open-graph-logo.png",
     link_slug: "headwear",
     category_key: "headwear",
     slug: "headwear",
@@ -270,7 +270,7 @@ export const fallbackCategories: ServiceCategory[] = [
   {
     nama_kategori: "Kaos Cotton Combed",
     deskripsi: "Kaos cotton combed untuk sablon dan kebutuhan apparel.",
-    gambar_url: "/images/debroder/products/produk-kaos-polos.jpg",
+    gambar_url: "/brand/debroder/open-graph-logo.png",
     image_alt: "Kaos cotton combed DE BRODER",
     category_key: "kaos-polos",
     slug: "kaos-cotton-combed",
@@ -281,7 +281,7 @@ export const fallbackCategories: ServiceCategory[] = [
   {
     nama_kategori: "Kaos Lengan Panjang",
     deskripsi: "Kaos lengan panjang untuk komunitas, event, dan custom apparel.",
-    gambar_url: "/images/debroder/products/produk-kaos-polos.jpg",
+    gambar_url: "/brand/debroder/open-graph-logo.png",
     image_alt: "Kaos lengan panjang DE BRODER",
     category_key: "kaos-polos",
     slug: "kaos-lengan-panjang",
@@ -292,7 +292,7 @@ export const fallbackCategories: ServiceCategory[] = [
   {
     nama_kategori: "Kaos Anak",
     deskripsi: "Kaos polos anak untuk custom desain dan kebutuhan keluarga.",
-    gambar_url: "/images/debroder/products/produk-kaos-polos.jpg",
+    gambar_url: "/brand/debroder/open-graph-logo.png",
     image_alt: "Kaos anak DE BRODER",
     category_key: "kaos-polos",
     slug: "kaos-anak",
@@ -303,7 +303,7 @@ export const fallbackCategories: ServiceCategory[] = [
   {
     nama_kategori: "Polo Shirt NSA",
     deskripsi: "Polo Shirt NSA sebagai model di dalam kategori Kaos Polos.",
-    gambar_url: "/images/debroder/products/produk-kaos-polos.jpg",
+    gambar_url: "/brand/debroder/open-graph-logo.png",
     image_alt: "Polo Shirt NSA DE BRODER",
     category_key: "kaos-polos",
     slug: "polo-shirt-nsa",
@@ -314,7 +314,7 @@ export const fallbackCategories: ServiceCategory[] = [
   {
     nama_kategori: "Jersey Futsal",
     deskripsi: "Jersey futsal custom untuk tim dan komunitas.",
-    gambar_url: "/images/debroder/products/produk-jersey.jpg",
+    gambar_url: "/brand/debroder/open-graph-logo.png",
     image_alt: "Jersey futsal custom DE BRODER",
     category_key: "jersey",
     slug: "jersey-futsal",
@@ -325,7 +325,7 @@ export const fallbackCategories: ServiceCategory[] = [
   {
     nama_kategori: "Jersey Sepak Bola",
     deskripsi: "Jersey sepak bola custom dengan nama dan nomor.",
-    gambar_url: "/images/debroder/products/produk-jersey.jpg",
+    gambar_url: "/brand/debroder/open-graph-logo.png",
     image_alt: "Jersey sepak bola custom DE BRODER",
     category_key: "jersey",
     slug: "jersey-sepak-bola",
@@ -336,7 +336,7 @@ export const fallbackCategories: ServiceCategory[] = [
   {
     nama_kategori: "Jersey Basket",
     deskripsi: "Jersey basket custom untuk tim, sekolah, dan event.",
-    gambar_url: "/images/debroder/products/produk-jersey.jpg",
+    gambar_url: "/brand/debroder/open-graph-logo.png",
     image_alt: "Jersey basket custom DE BRODER",
     category_key: "jersey",
     slug: "jersey-basket",
@@ -347,7 +347,7 @@ export const fallbackCategories: ServiceCategory[] = [
   {
     nama_kategori: "Jersey Voli",
     deskripsi: "Jersey voli custom untuk tim dan turnamen.",
-    gambar_url: "/images/debroder/products/produk-jersey.jpg",
+    gambar_url: "/brand/debroder/open-graph-logo.png",
     image_alt: "Jersey voli custom DE BRODER",
     category_key: "jersey",
     slug: "jersey-voli",
@@ -358,7 +358,7 @@ export const fallbackCategories: ServiceCategory[] = [
   {
     nama_kategori: "Jersey Badminton",
     deskripsi: "Jersey badminton untuk klub, komunitas, dan event.",
-    gambar_url: "/images/debroder/products/produk-jersey.jpg",
+    gambar_url: "/brand/debroder/open-graph-logo.png",
     image_alt: "Jersey badminton custom DE BRODER",
     category_key: "jersey",
     slug: "jersey-badminton",
@@ -369,7 +369,7 @@ export const fallbackCategories: ServiceCategory[] = [
   {
     nama_kategori: "Jersey Esports",
     deskripsi: "Jersey esports custom untuk tim dan komunitas gaming.",
-    gambar_url: "/images/debroder/products/produk-jersey.jpg",
+    gambar_url: "/brand/debroder/open-graph-logo.png",
     image_alt: "Jersey esports custom DE BRODER",
     category_key: "jersey",
     slug: "jersey-esports",
@@ -380,7 +380,7 @@ export const fallbackCategories: ServiceCategory[] = [
   {
     nama_kategori: "Hoodie",
     deskripsi: "Hoodie custom untuk komunitas, event, dan brand apparel.",
-    gambar_url: "/images/debroder/products/produk-jaket-hoodie.jpg",
+    gambar_url: "/brand/debroder/open-graph-logo.png",
     image_alt: "Hoodie custom DE BRODER",
     category_key: "jaket-hoodie",
     slug: "hoodie",
@@ -391,7 +391,7 @@ export const fallbackCategories: ServiceCategory[] = [
   {
     nama_kategori: "Crewneck",
     deskripsi: "Crewneck custom untuk merchandise dan brand apparel.",
-    gambar_url: "/images/debroder/products/produk-jaket-hoodie.jpg",
+    gambar_url: "/brand/debroder/open-graph-logo.png",
     image_alt: "Crewneck custom DE BRODER",
     category_key: "jaket-hoodie",
     slug: "crewneck",
@@ -402,7 +402,7 @@ export const fallbackCategories: ServiceCategory[] = [
   {
     nama_kategori: "Jaket Bomber",
     deskripsi: "Jaket bomber custom untuk komunitas dan organisasi.",
-    gambar_url: "/images/debroder/products/produk-jaket-hoodie.jpg",
+    gambar_url: "/brand/debroder/open-graph-logo.png",
     image_alt: "Jaket bomber custom DE BRODER",
     category_key: "jaket-hoodie",
     slug: "jaket-bomber",
@@ -413,7 +413,7 @@ export const fallbackCategories: ServiceCategory[] = [
   {
     nama_kategori: "Jaket Varsity",
     deskripsi: "Jaket varsity custom untuk sekolah, kampus, dan komunitas.",
-    gambar_url: "/images/debroder/products/produk-jaket-hoodie.jpg",
+    gambar_url: "/brand/debroder/open-graph-logo.png",
     image_alt: "Jaket varsity custom DE BRODER",
     category_key: "jaket-hoodie",
     slug: "jaket-varsity",
@@ -424,7 +424,7 @@ export const fallbackCategories: ServiceCategory[] = [
   {
     nama_kategori: "Jaket Coach",
     deskripsi: "Jaket coach custom untuk event, brand, dan komunitas.",
-    gambar_url: "/images/debroder/products/produk-jaket-hoodie.jpg",
+    gambar_url: "/brand/debroder/open-graph-logo.png",
     image_alt: "Jaket coach custom DE BRODER",
     category_key: "jaket-hoodie",
     slug: "jaket-coach",
@@ -435,7 +435,7 @@ export const fallbackCategories: ServiceCategory[] = [
   {
     nama_kategori: "Kemeja PDH",
     deskripsi: "Kemeja PDH untuk seragam kantor, instansi, dan organisasi.",
-    gambar_url: "/images/debroder/products/produk-kaos-polos.jpg",
+    gambar_url: "/brand/debroder/open-graph-logo.png",
     image_alt: "Kemeja PDH custom DE BRODER",
     category_key: "kemeja",
     slug: "kemeja-pdh",
@@ -446,7 +446,7 @@ export const fallbackCategories: ServiceCategory[] = [
   {
     nama_kategori: "Kemeja PDL",
     deskripsi: "Kemeja PDL untuk lapangan, komunitas, dan organisasi.",
-    gambar_url: "/images/debroder/products/produk-kaos-polos.jpg",
+    gambar_url: "/brand/debroder/open-graph-logo.png",
     image_alt: "Kemeja PDL custom DE BRODER",
     category_key: "kemeja",
     slug: "kemeja-pdl",
@@ -457,7 +457,7 @@ export const fallbackCategories: ServiceCategory[] = [
   {
     nama_kategori: "Kemeja Kantor",
     deskripsi: "Kemeja kantor custom untuk perusahaan dan tim.",
-    gambar_url: "/images/debroder/products/produk-kaos-polos.jpg",
+    gambar_url: "/brand/debroder/open-graph-logo.png",
     image_alt: "Kemeja kantor custom DE BRODER",
     category_key: "kemeja",
     slug: "kemeja-kantor",
@@ -468,7 +468,7 @@ export const fallbackCategories: ServiceCategory[] = [
   {
     nama_kategori: "Kemeja Komunitas",
     deskripsi: "Kemeja custom untuk komunitas, organisasi, dan event.",
-    gambar_url: "/images/debroder/products/produk-kaos-polos.jpg",
+    gambar_url: "/brand/debroder/open-graph-logo.png",
     image_alt: "Kemeja komunitas custom DE BRODER",
     category_key: "kemeja",
     slug: "kemeja-komunitas",
@@ -479,7 +479,7 @@ export const fallbackCategories: ServiceCategory[] = [
   {
     nama_kategori: "Topi Trucker",
     deskripsi: "Topi trucker untuk merchandise dan bordir logo.",
-    gambar_url: "/images/debroder/products/produk-kaos-polos.jpg",
+    gambar_url: "/brand/debroder/open-graph-logo.png",
     image_alt: "Topi trucker custom DE BRODER",
     category_key: "headwear",
     slug: "topi-trucker",
@@ -490,7 +490,7 @@ export const fallbackCategories: ServiceCategory[] = [
   {
     nama_kategori: "Topi Baseball",
     deskripsi: "Topi baseball custom untuk komunitas dan brand.",
-    gambar_url: "/images/debroder/products/produk-kaos-polos.jpg",
+    gambar_url: "/brand/debroder/open-graph-logo.png",
     image_alt: "Topi baseball custom DE BRODER",
     category_key: "headwear",
     slug: "topi-baseball",
@@ -501,7 +501,7 @@ export const fallbackCategories: ServiceCategory[] = [
   {
     nama_kategori: "Snapback",
     deskripsi: "Snapback custom untuk brand, event, dan komunitas.",
-    gambar_url: "/images/debroder/products/produk-kaos-polos.jpg",
+    gambar_url: "/brand/debroder/open-graph-logo.png",
     image_alt: "Snapback custom DE BRODER",
     category_key: "headwear",
     slug: "snapback",
@@ -512,7 +512,7 @@ export const fallbackCategories: ServiceCategory[] = [
   {
     nama_kategori: "Bucket Hat",
     deskripsi: "Bucket hat custom untuk merchandise dan event.",
-    gambar_url: "/images/debroder/products/produk-kaos-polos.jpg",
+    gambar_url: "/brand/debroder/open-graph-logo.png",
     image_alt: "Bucket hat custom DE BRODER",
     category_key: "headwear",
     slug: "bucket-hat",
@@ -527,7 +527,7 @@ export const fallbackServices: Service[] = [
     nama: "Sablon DTF",
     slug: "sablon-dtf",
     deskripsi: "Hasil tajam dan fleksibel untuk kaos, brand, serta komunitas.",
-    image_url: "/images/debroder/products/produk-sablon-dtf.jpg",
+    image_url: "/brand/debroder/open-graph-logo.png",
     image_alt: "Sablon DTF custom DE BRODER",
     category_key: "sablon-dtf",
     detail_body: "Sablon DTF penuh warna untuk kaos custom, brand, komunitas, event, dan produksi satuan maupun partai.",
@@ -542,7 +542,7 @@ export const fallbackServices: Service[] = [
     nama: "Sablon DTF Ukuran A4",
     slug: "sablon-dtf-a4",
     deskripsi: "Pilihan praktis untuk logo, desain dada, dan artwork berukuran kecil.",
-    image_url: "/images/debroder/products/produk-sablon-dtf.jpg",
+    image_url: "/brand/debroder/open-graph-logo.png",
     image_alt: "Sablon DTF ukuran A4 DE BRODER",
     category_key: "sablon-dtf",
     detail_body: "Cocok untuk desain depan, belakang, logo komunitas, dan kebutuhan custom dengan bidang cetak hingga A4.",
@@ -557,7 +557,7 @@ export const fallbackServices: Service[] = [
     nama: "Sablon DTF Ukuran A3",
     slug: "sablon-dtf-a3",
     deskripsi: "Bidang cetak lebih besar untuk desain utama pada apparel.",
-    image_url: "/images/debroder/products/produk-sablon-dtf.jpg",
+    image_url: "/brand/debroder/open-graph-logo.png",
     image_alt: "Sablon DTF ukuran A3 DE BRODER",
     category_key: "sablon-dtf",
     detail_body: "Pilihan untuk artwork besar dengan detail warna tajam pada kaos dan apparel berbahan sesuai rekomendasi produksi.",
@@ -572,7 +572,7 @@ export const fallbackServices: Service[] = [
     nama: "Sablon DTF Meteran",
     slug: "sablon-dtf-meteran",
     deskripsi: "Efisien untuk banyak desain dan kebutuhan produksi apparel.",
-    image_url: "/images/debroder/products/produk-sablon-dtf.jpg",
+    image_url: "/brand/debroder/open-graph-logo.png",
     image_alt: "Sablon DTF meteran DE BRODER",
     category_key: "sablon-dtf",
     detail_body: "Layanan cetak lembaran meteran untuk brand, reseller, dan produksi dengan banyak artwork dalam satu susunan desain.",
@@ -587,7 +587,7 @@ export const fallbackServices: Service[] = [
     nama: "Custom Jersey",
     slug: "jersey",
     deskripsi: "Jersey custom untuk tim olahraga, sekolah, dan instansi.",
-    image_url: "/images/debroder/products/produk-jersey.jpg",
+    image_url: "/brand/debroder/open-graph-logo.png",
     harga_mulai: 75000,
     urutan: 10,
     status_aktif: true
@@ -596,7 +596,7 @@ export const fallbackServices: Service[] = [
     nama: "Maklon DTF",
     slug: "maklon-dtf",
     deskripsi: "Partner produksi DTF untuk reseller dan brand apparel.",
-    image_url: "/images/debroder/products/produk-maklon-dtf.jpg",
+    image_url: "/brand/debroder/open-graph-logo.png",
     harga_mulai: 25000,
     urutan: 11,
     status_aktif: true
@@ -605,7 +605,7 @@ export const fallbackServices: Service[] = [
     nama: "Cetak Sublim",
     slug: "cetak-sublim",
     deskripsi: "Cetak warna menyeluruh untuk jersey dan apparel custom.",
-    image_url: "/images/debroder/products/produk-cetak-sublim.jpg",
+    image_url: "/brand/debroder/open-graph-logo.png",
     harga_mulai: 35000,
     urutan: 12,
     status_aktif: true
@@ -614,7 +614,7 @@ export const fallbackServices: Service[] = [
     nama: "Kaos NSA",
     slug: "kaos-polos",
     deskripsi: "Kaos New State Apparel siap pakai atau siap custom.",
-    image_url: "/images/debroder/products/produk-kaos-polos.jpg",
+    image_url: "/brand/debroder/open-graph-logo.png",
     harga_mulai: 45000,
     urutan: 13,
     status_aktif: true
@@ -623,7 +623,7 @@ export const fallbackServices: Service[] = [
     nama: "Cotton Combed",
     slug: "kaos-polos",
     deskripsi: "Kaos cotton combed nyaman untuk brand dan kebutuhan harian.",
-    image_url: "/images/debroder/products/produk-kaos-polos.jpg",
+    image_url: "/brand/debroder/open-graph-logo.png",
     harga_mulai: 45000,
     urutan: 14,
     status_aktif: true
@@ -639,8 +639,8 @@ export const fallbackProducts: Product[] = [
       "Kaos polos New State Apparel untuk brand, event, dan kebutuhan harian",
     short_detail:
       "Kaos polos New State Apparel untuk brand, event, dan kebutuhan harian",
-    gambar_url: "/images/debroder/products/produk-kaos-polos.jpg",
-    image_url: "/images/debroder/products/produk-kaos-polos.jpg",
+    gambar_url: "/brand/debroder/open-graph-logo.png",
+    image_url: "/brand/debroder/open-graph-logo.png",
     image_alt: "Kaos polos New State Apparel DE BRODER",
     collection_tags: ["best-seller"],
     intent_tags: ["kaos-polos", "sablon-dtf", "komunitas", "brand-apparel"],
@@ -660,8 +660,8 @@ export const fallbackProducts: Product[] = [
     badge: "",
     deskripsi: "Kaos cotton combed untuk custom dan kebutuhan brand",
     short_detail: "Kaos cotton combed untuk custom dan kebutuhan brand",
-    gambar_url: "/images/debroder/products/produk-kaos-polos.jpg",
-    image_url: "/images/debroder/products/produk-kaos-polos.jpg",
+    gambar_url: "/brand/debroder/open-graph-logo.png",
+    image_url: "/brand/debroder/open-graph-logo.png",
     image_alt: "Kaos cotton combed DE BRODER",
     collection_tags: ["new-arrival"],
     intent_tags: ["kaos-polos", "sablon-dtf", "brand-apparel"],
@@ -681,8 +681,8 @@ export const fallbackProducts: Product[] = [
     badge: "",
     deskripsi: "Sablon DTF untuk logo, brand, dan komunitas",
     short_detail: "Sablon DTF untuk logo, brand, dan komunitas",
-    gambar_url: "/images/debroder/products/produk-sablon-dtf.jpg",
-    image_url: "/images/debroder/products/produk-sablon-dtf.jpg",
+    gambar_url: "/brand/debroder/open-graph-logo.png",
+    image_url: "/brand/debroder/open-graph-logo.png",
     intent_tags: ["sablon-dtf", "kaos-polos", "maklon-dtf"],
     whatsapp_link: contactLinks.whatsapp,
     link_url: "/sablon-dtf",
@@ -696,8 +696,8 @@ export const fallbackProducts: Product[] = [
     badge: "",
     deskripsi: "Jersey custom untuk tim dan komunitas",
     short_detail: "Jersey custom untuk tim dan komunitas",
-    gambar_url: "/images/debroder/products/produk-jersey.jpg",
-    image_url: "/images/debroder/products/produk-jersey.jpg",
+    gambar_url: "/brand/debroder/open-graph-logo.png",
+    image_url: "/brand/debroder/open-graph-logo.png",
     intent_tags: ["jersey", "sublim", "tim", "komunitas"],
     whatsapp_link: contactLinks.whatsapp,
     link_url: "/jersey",
@@ -711,8 +711,8 @@ export const fallbackProducts: Product[] = [
     badge: "",
     deskripsi: "Produksi DTF untuk reseller dan brand apparel",
     short_detail: "Produksi DTF untuk reseller dan brand apparel",
-    gambar_url: "/images/debroder/products/produk-maklon-dtf.jpg",
-    image_url: "/images/debroder/products/produk-maklon-dtf.jpg",
+    gambar_url: "/brand/debroder/open-graph-logo.png",
+    image_url: "/brand/debroder/open-graph-logo.png",
     intent_tags: ["maklon-dtf", "reseller", "brand-apparel", "partai-besar"],
     whatsapp_link: contactLinks.whatsapp,
     link_url: "/maklon-dtf",
@@ -726,8 +726,8 @@ export const fallbackProducts: Product[] = [
     badge: "",
     deskripsi: "Cetak sublim untuk jersey dan apparel custom",
     short_detail: "Cetak sublim untuk jersey dan apparel custom",
-    gambar_url: "/images/debroder/products/produk-cetak-sublim.jpg",
-    image_url: "/images/debroder/products/produk-cetak-sublim.jpg",
+    gambar_url: "/brand/debroder/open-graph-logo.png",
+    image_url: "/brand/debroder/open-graph-logo.png",
     intent_tags: ["cetak-sublim", "jersey", "tim", "partai-besar"],
     whatsapp_link: contactLinks.whatsapp,
     link_url: "/cetak-sublim",
@@ -741,8 +741,8 @@ export const fallbackProducts: Product[] = [
     badge: "",
     deskripsi: "Pilihan kaos NSA untuk kebutuhan store dan produksi",
     short_detail: "Pilihan kaos NSA untuk kebutuhan store dan produksi",
-    gambar_url: "/images/debroder/products/produk-kaos-polos.jpg",
-    image_url: "/images/debroder/products/produk-kaos-polos.jpg",
+    gambar_url: "/brand/debroder/open-graph-logo.png",
+    image_url: "/brand/debroder/open-graph-logo.png",
     image_alt: "Distributor kaos NSA DE BRODER",
     collection_tags: ["best-seller"],
     intent_tags: ["kaos-polos", "grosir", "brand-apparel"],

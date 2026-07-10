@@ -458,6 +458,36 @@ create table if not exists public.website_settings (
   updated_at timestamptz not null default now()
 );
 
+insert into public.website_settings (
+  setting_key,
+  label,
+  value,
+  description,
+  group_name
+)
+values (
+  'site_media_defaults',
+  'Gambar Default Website',
+  jsonb_build_object(
+    'heroDesktop', '/brand/debroder/social-preview.png',
+    'heroMobile', '/brand/debroder/social-preview.png',
+    'product', '/brand/debroder/open-graph-logo.png',
+    'pageHeroDesktop', '/brand/debroder/social-preview.png',
+    'pageHeroMobile', '/brand/debroder/social-preview.png',
+    'bannerDesktop', '/brand/debroder/social-preview.png',
+    'bannerMobile', '/brand/debroder/social-preview.png',
+    'store', '/brand/debroder/social-preview.png',
+    'benefit', '/brand/debroder/social-preview.png',
+    'socialPreview', '/brand/debroder/social-preview.png'
+  ),
+  'Fallback media publik yang dipilih dari Media Library melalui admin.',
+  'public_media'
+)
+on conflict (setting_key) do update set
+  label = excluded.label,
+  description = excluded.description,
+  group_name = excluded.group_name;
+
 alter table if exists public.products
   add column if not exists product_category_id uuid references public.product_categories(id) on delete set null,
   add column if not exists intent_tags text[] not null default '{}',
@@ -1315,6 +1345,15 @@ create policy "Superadmin can manage order status history"
 on public.order_status_history for all
 using (public.is_superadmin())
 with check (public.is_superadmin());
+
+drop policy if exists "Public can read public media settings" on public.website_settings;
+create policy "Public can read public media settings"
+on public.website_settings for select
+to anon, authenticated
+using (
+  group_name = 'public_media'
+  and setting_key = 'site_media_defaults'
+);
 
 drop policy if exists "Superadmin can manage website settings" on public.website_settings;
 create policy "Superadmin can manage website settings"
