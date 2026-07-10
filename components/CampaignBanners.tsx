@@ -48,17 +48,43 @@ function CampaignMedia({ banner }: { banner: CmsBanner }) {
   );
 }
 
-export function CampaignBanners({ banners }: { banners: CmsBanner[] }) {
+type CampaignBannersProps = {
+  banners: CmsBanner[];
+  fallbackDesktopSrc: string;
+  fallbackMobileSrc?: string | null;
+};
+
+export function CampaignBanners({ banners, fallbackDesktopSrc, fallbackMobileSrc }: CampaignBannersProps) {
   const activeBanners = banners
     .filter((banner) => banner.is_active !== false)
     .sort((a, b) => (a.sort_order || 0) - (b.sort_order || 0))
     .slice(0, 1);
-  if (!activeBanners.length) return null;
+
+  const visibleBanners: CmsBanner[] = activeBanners.length
+    ? activeBanners
+    : [
+        {
+          id: "built-for-identity-fallback",
+          name: "Built for Identity",
+          media_type: "image",
+          desktop_media_url: fallbackDesktopSrc,
+          mobile_media_url: fallbackMobileSrc || fallbackDesktopSrc,
+          poster_url: null,
+          eyebrow: "",
+          title: "BUILT FOR IDENTITY",
+          subtitle: "Apparel custom untuk tim, komunitas, dan perusahaan yang ingin tampil beda.",
+          cta_label: "Jelajahi Koleksi",
+          cta_url: "/koleksi",
+          text_position: "center",
+          is_active: true,
+          sort_order: 0
+        }
+      ];
 
   return (
     <section aria-label="Campaign DEBRODER" className="campaign-section section-space bg-white">
       <div className="section-shell">
-        {activeBanners.map((banner) => {
+        {visibleBanners.map((banner) => {
           const title = cleanText(banner.title) || "BUILT FOR IDENTITY";
           const subtitle = cleanText(banner.subtitle) || "Apparel custom untuk tim, komunitas, dan perusahaan yang ingin tampil beda.";
           const ctaLabel = cleanText(banner.cta_label) || "Jelajahi Koleksi";
