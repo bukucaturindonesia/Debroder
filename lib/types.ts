@@ -559,6 +559,7 @@ export type ProductVariantImage = {
   id?: string;
   variant_id: string;
   image_url: string;
+  image_role?: "front" | "back" | "detail" | "lifestyle";
   alt_text?: string;
   object_fit?: "cover" | "contain";
   object_position?: string;

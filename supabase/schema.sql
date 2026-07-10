@@ -1614,6 +1614,7 @@ create table if not exists public.product_variant_images (
   id uuid primary key default gen_random_uuid(),
   variant_id uuid not null references public.product_variants(id) on delete cascade,
   image_url text not null,
+  image_role text,
   alt_text text not null default '',
   object_fit text not null default 'cover',
   object_position text not null default 'center center',
@@ -1630,6 +1631,10 @@ create table if not exists public.product_variant_images (
 alter table if exists public.product_variant_images drop constraint if exists product_variant_images_object_fit_check;
 alter table if exists public.product_variant_images
   add constraint product_variant_images_object_fit_check check (object_fit in ('cover', 'contain'));
+
+alter table if exists public.product_variant_images drop constraint if exists product_variant_images_role_check;
+alter table if exists public.product_variant_images
+  add constraint product_variant_images_role_check check (image_role is null or image_role in ('front', 'back', 'detail', 'lifestyle'));
 
 -- 6) Pricing rules foundation for future dynamic pricing.
 create table if not exists public.product_pricing_rules (

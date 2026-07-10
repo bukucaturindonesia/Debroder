@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { useCart, type CartProductInput } from "@/components/CartProvider";
+import { useOptionalProductVariantGallery } from "@/components/ProductVariantGalleryContext";
 import type { ProductVariant, ProductVariantSize } from "@/lib/types";
 import { formatRupiah } from "@/lib/url";
 
@@ -145,6 +146,7 @@ export function ProductPurchasePanel({
   variants = []
 }: ProductPurchasePanelProps) {
   const cart = useCart();
+  const variantGallery = useOptionalProductVariantGallery();
   const activeVariants = useMemo(() => variants.filter((variant) => variant.is_active !== false), [variants]);
   const hasVariants = activeVariants.length > 0;
 
@@ -188,6 +190,10 @@ export function ProductPurchasePanel({
       setSelectedSize(sizeOptions[0] || "S");
     }
   }, [selectedSize, sizeOptions]);
+
+  useEffect(() => {
+    variantGallery?.selectVariant(selectedVariant?.id || null);
+  }, [selectedVariant?.id, variantGallery]);
 
   const selectedVariantSize = findSize(selectedVariant, selectedSize);
   const unavailable = sizeIsUnavailable(selectedVariantSize);

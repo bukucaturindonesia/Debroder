@@ -2,6 +2,7 @@ import Link from "next/link";
 import type { ReactNode } from "react";
 import { PageMotion } from "@/components/PageMotion";
 import { ProductCatalog } from "@/components/ProductCatalog";
+import { ProductImageSwap } from "@/components/ProductImageSwap";
 import { PublicFooter } from "@/components/PublicFooter";
 import { ResponsivePicture } from "@/components/ResponsivePicture";
 import { SafeImage } from "@/components/SafeImage";
@@ -9,9 +10,9 @@ import { SiteHeader } from "@/components/SiteHeader";
 import {
   fallbackImages,
   getPageHeroImage,
-  getProductImage,
   getStoreImage
 } from "@/lib/fallback-data";
+import { getProductCardImages } from "@/lib/product-gallery";
 import type {
   PageHeroContent,
   Product,
@@ -321,6 +322,7 @@ export function ProductGrid({ products }: { products: Product[] }) {
     <div className="grid grid-cols-2 gap-x-2 gap-y-6 md:grid-cols-3 lg:grid-cols-4">
       {products.map((product) => {
         const price = getProductPrice(product);
+        const cardImages = getProductCardImages(product);
         const whatsappHref = whatsappLinkWithMessage(
           product.whatsapp_link || "",
           `Halo DE BRODER, saya ingin bertanya tentang ${product.nama}.`
@@ -328,16 +330,21 @@ export function ProductGrid({ products }: { products: Product[] }) {
 
         return (
           <article key={product.nama} className="bg-transparent">
-            <PublicImage
-              src={getProductImage(product)}
-              alt={product.image_alt || product.nama}
-              className={`aspect-[4/5] w-full ${(product.object_fit || "cover") === "contain" ? "object-contain p-3" : "object-cover"}`}
-              objectPosition={product.object_position || "center center"}
-              objectFit={product.object_fit}
-              focalX={product.focal_points?.catalog?.focal_x ?? product.focal_x}
-              focalY={product.focal_points?.catalog?.focal_y ?? product.focal_y}
-              zoom={product.focal_points?.catalog?.zoom ?? product.focal_zoom}
-            />
+            <div className="group">
+              <ProductImageSwap
+                primarySrc={cardImages.primary}
+                hoverSrc={cardImages.hover}
+                fallbackSrc={fallbackImages.product}
+                alt={product.image_alt || product.nama}
+                imageClassName={(product.object_fit || "cover") === "contain" ? "object-contain p-3" : "object-cover"}
+                objectPosition={product.object_position || "center center"}
+                objectFit={product.object_fit || "cover"}
+                focalX={product.focal_points?.catalog?.focal_x ?? product.focal_x}
+                focalY={product.focal_points?.catalog?.focal_y ?? product.focal_y}
+                zoom={product.focal_points?.catalog?.zoom ?? product.focal_zoom}
+                sizes="(min-width: 1024px) 25vw, 50vw"
+              />
+            </div>
             <div className="mt-3 space-y-2">
               {productColors(product).length ? (
                 <div className="flex items-center gap-1.5">

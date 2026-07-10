@@ -3,8 +3,9 @@
 import Link from "next/link";
 import { useMemo, useState } from "react";
 import { AddToCartButton } from "@/components/CartProvider";
-import { SafeImage } from "@/components/SafeImage";
+import { ProductImageSwap } from "@/components/ProductImageSwap";
 import { fallbackImages, getProductImage } from "@/lib/fallback-data";
+import { getProductCardImages } from "@/lib/product-gallery";
 import { matchesProductType, type ProductTypeOption } from "@/lib/product-taxonomy";
 import type { Product } from "@/lib/types";
 import { formatRupiah } from "@/lib/url";
@@ -242,12 +243,23 @@ export function ProductCatalog({
           const detailHref = `/produk/${product.slug || slugify(product.nama)}`;
           const chips = productChips(product);
           const stockText = typeof product.stock === "number" ? (product.stock > 0 ? `Stok ${product.stock}` : "Pre-order") : "";
+          const cardImages = getProductCardImages(product);
           return <article key={product.id || product.slug || product.nama} className="group min-w-0">
-              <Link href={detailHref} className="block">
-              <div className="product-image-frame relative aspect-[4/5] w-full overflow-hidden">
-                <SafeImage src={getProductImage(product)} fallbackSrc={fallbackImages.product} alt={product.image_alt || product.nama} fill className={`${(product.object_fit || "cover") === "contain" ? "object-contain p-3" : "object-cover"} transition duration-500 group-hover:scale-[1.02]`} objectFit={product.object_fit || "cover"} objectPosition={product.object_position || "center center"} focalX={focal?.focal_x ?? product.focal_x} focalY={focal?.focal_y ?? product.focal_y} zoom={focal?.zoom ?? product.focal_zoom} sizes="(min-width: 1536px) 20vw, (min-width: 1024px) 25vw, (min-width: 768px) 33vw, 50vw" />
-                {labels.length ? <div className="absolute left-2 top-2 flex flex-wrap gap-1">{labels.map((item) => <span key={String(item)} className="rounded-full bg-white/95 px-2 py-1 text-[10px] font-semibold shadow-sm">{item}</span>)}</div> : null}
-              </div>
+              <Link href={detailHref} className="relative block">
+              <ProductImageSwap
+                primarySrc={cardImages.primary}
+                hoverSrc={cardImages.hover}
+                fallbackSrc={fallbackImages.product}
+                alt={product.image_alt || product.nama}
+                imageClassName={(product.object_fit || "cover") === "contain" ? "object-contain p-3" : "object-cover"}
+                objectFit={product.object_fit || "cover"}
+                objectPosition={product.object_position || "center center"}
+                focalX={focal?.focal_x ?? product.focal_x}
+                focalY={focal?.focal_y ?? product.focal_y}
+                zoom={focal?.zoom ?? product.focal_zoom}
+                sizes="(min-width: 1536px) 20vw, (min-width: 1024px) 25vw, (min-width: 768px) 33vw, 50vw"
+              />
+              {labels.length ? <div className="pointer-events-none absolute left-2 top-2 flex flex-wrap gap-1">{labels.map((item) => <span key={String(item)} className="rounded-full bg-white/95 px-2 py-1 text-[10px] font-semibold shadow-sm">{item}</span>)}</div> : null}
               </Link>
               <div className="mt-3 space-y-2">
                 {productColors(product).length ? <div className="flex items-center gap-1.5">

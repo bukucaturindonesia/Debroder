@@ -1,8 +1,8 @@
-/* eslint-disable @next/next/no-img-element */
 "use client";
 
-import { FormEvent, useEffect, useMemo, useState } from "react";
+import { FormEvent, useEffect, useState } from "react";
 import { createSupabaseClient } from "@/lib/supabase";
+import { VariantGalleryManager } from "@/components/admin/VariantGalleryManager";
 import {
   normalizePimSlug,
   pimV2PricingModes,
@@ -116,11 +116,12 @@ type VariantImageRow = {
   id?: string;
   variant_id: string;
   image_url: string;
+  image_role?: "front" | "back" | "detail" | "lifestyle";
   alt_text?: string;
   object_fit?: "cover" | "contain";
   object_position?: string;
   is_cover?: boolean;
-  sort_order?: number;
+  sort_order: number;
 };
 
 type SizeGuideRow = {
@@ -244,15 +245,6 @@ const emptyVariantSize: VariantSizeRow = {
   sort_order: 0
 };
 
-const emptyVariantImage: VariantImageRow = {
-  variant_id: "",
-  image_url: "",
-  alt_text: "",
-  object_fit: "cover",
-  object_position: "center center",
-  is_cover: false,
-  sort_order: 0
-};
 
 const emptySizeGuide: SizeGuideRow = {
   product_id: null,
@@ -387,7 +379,6 @@ export function PimV2Admin() {
   const [sizeForm, setSizeForm] = useState<SizeRow>({ ...emptySize });
   const [variantForm, setVariantForm] = useState<VariantRow>({ ...emptyVariant });
   const [variantSizeForm, setVariantSizeForm] = useState<VariantSizeRow>({ ...emptyVariantSize });
-  const [variantImageForm, setVariantImageForm] = useState<VariantImageRow>({ ...emptyVariantImage });
   const [sizeGuideForm, setSizeGuideForm] = useState<SizeGuideRow>({ ...emptySizeGuide });
   const [rowsText, setRowsText] = useState(JSON.stringify(emptySizeGuide.rows, null, 2));
   const [notesText, setNotesText] = useState("");
@@ -481,7 +472,6 @@ export function PimV2Admin() {
   const selectedProductVariants = variants.filter((variant) => variant.product_id === selectedProductId);
   const activeCategories = categories.filter((category) => category.category_kind !== "service" && category.is_active !== false);
   const productSubcategories = subcategories.filter((item) => item.category_id === productPatch.product_category_id);
-  const selectedVariant = variants.find((variant) => variant.id === variantSizeForm.variant_id || variant.id === variantImageForm.variant_id) || null;
 
   function productName(id?: string | null) {
     return products.find((item) => item.id === id)?.nama || "—";
@@ -696,33 +686,6 @@ export function PimV2Admin() {
     }
   }
 
-  async function saveVariantImage(event: FormEvent) {
-    event.preventDefault();
-    const supabase = createSupabaseClient();
-    if (!supabase) return;
-    const payload = {
-      ...variantImageForm,
-      alt_text: variantImageForm.alt_text || selectedVariant?.variant_name || "Gambar varian",
-      object_fit: variantImageForm.object_fit || "cover",
-      object_position: variantImageForm.object_position || "center center",
-      is_cover: Boolean(variantImageForm.is_cover),
-      sort_order: asNumber(variantImageForm.sort_order)
-    };
-    if (!payload.variant_id || !payload.image_url) {
-      setStatus({ type: "error", text: "Pilih varian dan isi URL gambar terlebih dahulu." });
-      return;
-    }
-    const request = variantImageForm.id
-      ? supabase.from("product_variant_images").update(payload).eq("id", variantImageForm.id)
-      : supabase.from("product_variant_images").insert(payload);
-    const { error } = await request;
-    if (error) setStatus({ type: "error", text: `Gambar varian gagal disimpan: ${error.message}` });
-    else {
-      setVariantImageForm({ ...emptyVariantImage, variant_id: payload.variant_id });
-      setStatus({ type: "success", text: "Gambar varian berhasil disimpan." });
-      await loadData();
-    }
-  }
 
   async function saveSizeGuide(event: FormEvent) {
     event.preventDefault();
@@ -957,7 +920,7 @@ export function PimV2Admin() {
             <form onSubmit={saveVariantSize} className="bg-white p-5 sm:p-7">
               <SmallLabel>Ukuran, Stok, SKU</SmallLabel>
               <div className="mt-5 grid gap-4 sm:grid-cols-2">
-                <Field label="Varian"><select value={variantSizeForm.variant_id} onChange={(event) => { setVariantSizeForm((current) => ({ ...current, variant_id: event.target.value })); setVariantImageForm((current) => ({ ...current, variant_id: event.target.value })); }}><option value="">Pilih varian</option>{selectedProductVariants.map((variant) => <option key={variant.id} value={variant.id}>{variant.variant_name || variant.color_name}</option>)}</select></Field>
+                <Field label="Varian"><select value={variantSizeForm.variant_id} onChange={(event) => setVariantSizeForm((current) => ({ ...current, variant_id: event.target.value }))}><option value="">Pilih varian</option>{selectedProductVariants.map((variant) => <option key={variant.id} value={variant.id}>{variant.variant_name || variant.color_name}</option>)}</select></Field>
                 <Field label="Ukuran"><select value={variantSizeForm.size_name} onChange={(event) => setVariantSizeForm((current) => ({ ...current, size_name: event.target.value }))}>{sizes.map((size) => <option key={size.id} value={size.name}>{size.name}</option>)}</select></Field>
                 <Field label="Stok"><input type="number" min={0} value={variantSizeForm.stock || 0} onChange={(event) => setVariantSizeForm((current) => ({ ...current, stock: asNumber(event.target.value) }))} /></Field>
                 <Field label="SKU ukuran"><input value={variantSizeForm.sku || ""} onChange={(event) => setVariantSizeForm((current) => ({ ...current, sku: event.target.value }))} /></Field>
@@ -967,16 +930,12 @@ export function PimV2Admin() {
               <button className="mt-5 min-h-11 rounded-full bg-brand-charcoal px-5 text-sm font-semibold text-white">Simpan ukuran / stok</button>
             </form>
 
-            <form onSubmit={saveVariantImage} className="bg-white p-5 sm:p-7">
-              <SmallLabel>Gambar Varian</SmallLabel>
-              <div className="mt-5 grid gap-4">
-                <Field label="Varian"><select value={variantImageForm.variant_id} onChange={(event) => setVariantImageForm((current) => ({ ...current, variant_id: event.target.value }))}><option value="">Pilih varian</option>{selectedProductVariants.map((variant) => <option key={variant.id} value={variant.id}>{variant.variant_name || variant.color_name}</option>)}</select></Field>
-                <Field label="URL gambar"><input value={variantImageForm.image_url} onChange={(event) => setVariantImageForm((current) => ({ ...current, image_url: event.target.value }))} placeholder="https://..." /></Field>
-                <div className="grid gap-4 sm:grid-cols-2"><Field label="Alt text"><input value={variantImageForm.alt_text || ""} onChange={(event) => setVariantImageForm((current) => ({ ...current, alt_text: event.target.value }))} /></Field><Field label="Urutan"><input type="number" value={variantImageForm.sort_order || 0} onChange={(event) => setVariantImageForm((current) => ({ ...current, sort_order: asNumber(event.target.value) }))} /></Field></div>
-                <Toggle label="Jadikan cover varian" checked={Boolean(variantImageForm.is_cover)} onChange={(value) => setVariantImageForm((current) => ({ ...current, is_cover: value }))} />
-                <button className="min-h-11 rounded-full bg-brand-charcoal px-5 text-sm font-semibold text-white">Simpan gambar varian</button>
-              </div>
-            </form>
+            <VariantGalleryManager
+              variants={selectedProductVariants}
+              images={variantImages}
+              onChanged={loadData}
+              onStatus={setStatus}
+            />
 
             <div className="bg-white p-5 sm:p-7">
               <SmallLabel>Daftar Varian</SmallLabel>

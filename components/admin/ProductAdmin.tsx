@@ -2,7 +2,9 @@
 "use client";
 
 import { ChangeEvent, FormEvent, useEffect, useMemo, useState } from "react";
+import Link from "next/link";
 import { FocalPointEditor } from "@/components/admin/FocalPointEditor";
+import { ProductImageSwap } from "@/components/ProductImageSwap";
 import {
   categoryPath,
   categoryPreset,
@@ -12,10 +14,18 @@ import {
 } from "@/lib/product-category-config";
 import { createSupabaseClient, WEBSITE_IMAGES_BUCKET } from "@/lib/supabase";
 import { pimServiceMethods } from "@/lib/pim-blueprint";
+import {
+  applyProductGalleryToProduct,
+  isFourFiveRatio,
+  mediaDimensionLabel,
+  PRODUCT_GALLERY_LIMIT,
+  PRODUCT_IMAGE_SLOTS,
+  productGalleryFromForm
+} from "@/lib/product-gallery";
 import type { FocalPoint, Product, ProductCategory } from "@/lib/types";
 import { formatRupiah } from "@/lib/url";
 
-type MediaChoice = { id: string; name: string; public_url: string; alt_text?: string; folder?: string };
+type MediaChoice = { id: string; name: string; public_url: string; alt_text?: string; folder?: string; width?: number | null; height?: number | null };
 type SortKey = "urutan" | "nama" | "price" | "newest";
 
 const emptyProduct: Product = {
@@ -141,11 +151,15 @@ export function ProductAdminPanel() {
   const [products, setProducts] = useState<Product[]>([]);
   const [categories, setCategories] = useState<ProductCategory[]>([]);
   const [media, setMedia] = useState<MediaChoice[]>([]);
+  const [mediaPickerSlot, setMediaPickerSlot] = useState<number | null>(null);
+  const [mediaSearch, setMediaSearch] = useState("");
+  const [onlyFourFiveMedia, setOnlyFourFiveMedia] = useState(true);
   const [form, setForm] = useState<Product>({ ...emptyProduct });
   const [editingId, setEditingId] = useState<string | null>(null);
   const [query, setQuery] = useState("");
   const [categoryFilter, setCategoryFilter] = useState("all");
   const [statusFilter, setStatusFilter] = useState("all");
+  const [galleryFilter, setGalleryFilter] = useState<"all" | "complete" | "incomplete">("all");
   const [sort, setSort] = useState<SortKey>("urutan");
   const [focalContext, setFocalContext] = useState("catalog");
   const [status, setStatus] = useState("");
@@ -163,7 +177,7 @@ export function ProductAdminPanel() {
     const [productResult, categoryResult, mediaResult] = await Promise.all([
       supabase.from("products").select("*").order("urutan", { ascending: true }),
       supabase.from("product_categories").select("*").order("sort_order", { ascending: true }),
-      supabase.from("media_assets").select("id,name,public_url,alt_text,folder").eq("status_aktif", true).eq("media_type", "image").order("created_at", { ascending: false })
+      supabase.from("media_assets").select("id,name,public_url,alt_text,folder,width,height").eq("status_aktif", true).eq("media_type", "image").order("created_at", { ascending: false })
     ]);
     window.clearTimeout(slowTimer);
     setLoading(false);
@@ -181,6 +195,15 @@ export function ProductAdminPanel() {
 
   const availableCategories = useMemo(() => categoryChoices(categories).filter((category) => category.is_active !== false), [categories]);
   const categoryNames = useMemo(() => availableCategories.map((category) => category.name).sort(), [availableCategories]);
+  const filteredMedia = useMemo(() => {
+    const needle = mediaSearch.trim().toLowerCase();
+    return media.filter((item) => {
+      const matchesSearch = !needle || `${item.name} ${item.folder || ""} ${item.alt_text || ""}`.toLowerCase().includes(needle);
+      const ratio = isFourFiveRatio(item.width, item.height);
+      const matchesRatio = !onlyFourFiveMedia || ratio === true;
+      return matchesSearch && matchesRatio;
+    });
+  }, [media, mediaSearch, onlyFourFiveMedia]);
   const activePreset = categoryPreset(availableCategories.find((category) => category.id === form.product_category_id)?.slug || form.kategori || "");
 
   const visibleProducts = useMemo(() => {
@@ -196,13 +219,18 @@ export function ProductAdminPanel() {
         );
       })
       .filter((product) => statusFilter === "all" || String(product.status_aktif) === statusFilter)
+      .filter((product) => {
+        if (galleryFilter === "all") return true;
+        const complete = productGalleryFromForm(product).filter((url) => url !== placeholderProductImage).length === PRODUCT_GALLERY_LIMIT;
+        return galleryFilter === "complete" ? complete : !complete;
+      })
       .sort((a, b) => {
         if (sort === "nama") return a.nama.localeCompare(b.nama, "id");
         if (sort === "price") return Number(a.price || 0) - Number(b.price || 0);
         if (sort === "newest") return new Date(b.created_at || 0).getTime() - new Date(a.created_at || 0).getTime();
         return a.urutan - b.urutan;
       });
-  }, [availableCategories, categoryFilter, products, query, sort, statusFilter]);
+  }, [availableCategories, categoryFilter, galleryFilter, products, query, sort, statusFilter]);
 
   function update<K extends keyof Product>(key: K, value: Product[K]) {
     setForm((current) => ({ ...current, [key]: value }));
@@ -222,9 +250,9 @@ export function ProductAdminPanel() {
       size_tags: preset?.sizeTags || [],
       material_tags: preset?.materialTags || [],
       link_url: categoryPath(category.slug),
-      image_url: placeholderProductImage,
-      gambar_url: placeholderProductImage,
-      object_fit: "contain",
+      image_url: "",
+      gambar_url: "",
+      object_fit: "cover",
       image_alt: category.name,
       focal_points: {}
     });
@@ -246,9 +274,9 @@ export function ProductAdminPanel() {
         size_tags: preset?.sizeTags || [],
         material_tags: preset?.materialTags || [],
         link_url: categoryPath(category.slug),
-        image_url: current.image_url || placeholderProductImage,
-        gambar_url: current.gambar_url || current.image_url || placeholderProductImage,
-        object_fit: hasCustomImage ? current.object_fit : "contain",
+        image_url: current.image_url || "",
+        gambar_url: current.gambar_url || current.image_url || "",
+        object_fit: hasCustomImage ? current.object_fit : "cover",
         image_alt: current.image_alt || category.name
       };
     });
@@ -267,25 +295,68 @@ export function ProductAdminPanel() {
     setFocalContext("catalog");
   }
 
-  function moveGallery(index: number, direction: -1 | 1) {
-    const images = [...(form.gallery_urls || [])];
+  function currentGalleryImages(product = form) {
+    return productGalleryFromForm(product).filter((url) => url !== placeholderProductImage);
+  }
+
+  function setGallerySlot(index: number, url: string) {
+    const currentImages = currentGalleryImages();
+    const currentAtSlot = currentImages[index] || "";
+    const cleanUrl = url.trim();
+
+    if (cleanUrl && currentImages.some((item, itemIndex) => item === cleanUrl && itemIndex !== index)) {
+      setStatus("Foto tersebut sudah digunakan pada slot lain. Pilih foto yang berbeda.");
+      return;
+    }
+
+    const nextImages = [...currentImages];
+    if (!cleanUrl) {
+      if (index < nextImages.length) nextImages.splice(index, 1);
+    } else if (index <= nextImages.length) {
+      nextImages[index] = cleanUrl;
+    } else {
+      setStatus("Isi slot foto secara berurutan mulai dari Foto 1.");
+      return;
+    }
+
+    setForm((current) => applyProductGalleryToProduct(current, nextImages));
+    if (index === 0 && cleanUrl && currentAtSlot !== cleanUrl && !form.image_alt) {
+      const selected = media.find((item) => item.public_url === cleanUrl);
+      if (selected?.alt_text) update("image_alt", selected.alt_text);
+    }
+  }
+
+  function moveGallerySlot(index: number, direction: -1 | 1) {
+    const images = currentGalleryImages();
     const nextIndex = index + direction;
     if (nextIndex < 0 || nextIndex >= images.length) return;
     [images[index], images[nextIndex]] = [images[nextIndex], images[index]];
-    update("gallery_urls", images);
+    setForm((current) => applyProductGalleryToProduct(current, images));
   }
 
-  async function uploadImage(event: ChangeEvent<HTMLInputElement>, gallery = false) {
+  function makeGalleryPrimary(index: number) {
+    const images = currentGalleryImages();
+    if (index <= 0 || index >= images.length) return;
+    const [selected] = images.splice(index, 1);
+    images.unshift(selected);
+    setForm((current) => applyProductGalleryToProduct(current, images));
+    setStatus("Foto utama diperbarui. Periksa urutan peran foto sebelum menyimpan produk.");
+  }
+
+  async function uploadImage(event: ChangeEvent<HTMLInputElement>, slotIndex = 0) {
     const file = event.target.files?.[0];
+    event.target.value = "";
     if (!file) return;
     if (!["image/jpeg", "image/png", "image/webp"].includes(file.type) || file.size > 10 * 1024 * 1024) {
       setStatus("Gunakan JPG, PNG, atau WebP maksimal 10 MB.");
       return;
     }
+    const dimensions = await imageDimensions(file);
+    const ratioIsFourFive = isFourFiveRatio(dimensions.width, dimensions.height);
     const supabase = createSupabaseClient();
     if (!supabase) return;
     setUploading(true);
-    setStatus("Mengupload gambar produk...");
+    setStatus(`Mengupload ${PRODUCT_IMAGE_SLOTS[slotIndex]?.shortLabel || "gambar"}...`);
     const hash = await contentHash(file);
     const { data: duplicate } = await supabase.from("media_assets").select("public_url,name").eq("content_hash", hash).limit(1).maybeSingle();
     let publicUrl = duplicate?.public_url as string | undefined;
@@ -299,7 +370,6 @@ export function ProductAdminPanel() {
         return;
       }
       publicUrl = supabase.storage.from(WEBSITE_IMAGES_BUCKET).getPublicUrl(path).data.publicUrl;
-      const dimensions = await imageDimensions(file);
       const { data: session } = await supabase.auth.getSession();
       await supabase.from("media_assets").insert({
         name: file.name,
@@ -318,15 +388,13 @@ export function ProductAdminPanel() {
         uploaded_by: session.session?.user.id || null
       });
     }
-    if (gallery) update("gallery_urls", Array.from(new Set([...(form.gallery_urls || []), publicUrl])));
-    else {
-      update("image_url", publicUrl);
-      update("gambar_url", publicUrl);
-      if (!form.image_alt) update("image_alt", file.name.replace(/\.[^.]+$/, ""));
-    }
+    setGallerySlot(slotIndex, publicUrl || "");
+    if (slotIndex === 0 && !form.image_alt) update("image_alt", file.name.replace(/\.[^.]+$/, ""));
     setUploading(false);
-    setStatus(duplicate ? "Gambar yang sama sudah ada; media lama digunakan kembali." : "Gambar ditambahkan ke Media Library.");
+    const ratioNote = ratioIsFourFive === false ? " Foto bukan rasio 4:5 dan akan dicrop oleh tampilan." : "";
+    const successMessage = `${duplicate ? "Media lama digunakan kembali" : "Gambar masuk ke Media Library"} dan dipasang ke slot ${slotIndex + 1}.${ratioNote}`;
     await loadData();
+    setStatus(successMessage);
   }
 
   async function saveProduct(event: FormEvent) {
@@ -351,7 +419,18 @@ export function ProductAdminPanel() {
     setSaving(true);
     const catalogFocal = focalFor(form, "catalog");
     const selectedPreset = selectedCategory ? categoryPreset(selectedCategory.slug || selectedCategory.name) : activePreset;
-    const imageUrl = form.image_url || placeholderProductImage;
+    const normalizedGallery = currentGalleryImages().slice(0, PRODUCT_GALLERY_LIMIT);
+    const imageUrl = normalizedGallery[0] || "";
+    if (!imageUrl) {
+      setSaving(false);
+      setStatus("Foto 1 · Tampak depan wajib dipilih sebelum produk disimpan.");
+      return;
+    }
+    if (form.status_aktif && normalizedGallery.length < PRODUCT_GALLERY_LIMIT) {
+      setSaving(false);
+      setStatus("Produk aktif wajib memiliki 4 foto. Lengkapi semua slot atau nonaktifkan produk sementara sebagai draft kerja.");
+      return;
+    }
     const productSlug = form.slug?.trim() || slugify(form.nama);
     if (!productSlug) {
       setSaving(false);
@@ -382,6 +461,7 @@ export function ProductAdminPanel() {
       link_url: categoryPath(selectedCategory.slug),
       gambar_url: imageUrl,
       image_url: imageUrl,
+      gallery_urls: normalizedGallery.slice(1),
       image_alt: form.image_alt?.trim() || form.nama,
       deskripsi: form.description?.trim() || form.deskripsi?.trim() || form.short_detail?.trim() || "",
       description: form.description?.trim() || form.deskripsi?.trim() || "",
@@ -537,6 +617,9 @@ export function ProductAdminPanel() {
   }
 
   const focalValue = focalFor(form, focalContext);
+  const galleryImages = currentGalleryImages();
+  const galleryComplete = galleryImages.length === PRODUCT_GALLERY_LIMIT;
+  const activeMediaPickerSlot = mediaPickerSlot ?? 0;
   const labels = [form.label_new && "New", form.label_promo && "Promo", form.label_best_seller && "Best Seller"].filter(Boolean);
   const formReady = Boolean(editingId || form.product_category_id || form.kategori);
   const selectedCategoryKey = form.product_category_id || availableCategories.find((category) => category.name === form.kategori)?.slug || "";
@@ -664,19 +747,74 @@ export function ProductAdminPanel() {
             <Field label="Layanan / Metode Produksi (satu per baris)"><textarea rows={3} value={listValue(form.intent_tags)} onChange={(e) => update("intent_tags", parseList(e.target.value))} placeholder="sablon-dtf&#10;bordir-komputer&#10;sublim-printing" /></Field>
           </div>
 
-          <div className="rounded-xl border border-brand-softGray p-4">
-            <h3 className="font-semibold">Gambar produk</h3>
-            <p className="mt-2 text-xs leading-5 text-brand-charcoal/55">Standar katalog DEBRODER: rasio 4:5, ideal 1600 × 2000 px, minimal 1080 × 1350 px, format JPG/PNG/WebP, maksimal 2 MB. Atur fokus lewat editor di bawah agar produk tidak terpotong.</p>
-            <div className="mt-3 grid gap-3 sm:grid-cols-2">
-              <Field label="Pilih gambar utama dari Media Library"><select value={form.image_url || ""} onChange={(e) => { update("image_url", e.target.value); update("gambar_url", e.target.value); const selected = media.find((item) => item.public_url === e.target.value); if (selected?.alt_text && !form.image_alt) update("image_alt", selected.alt_text); }}><option value="">Pilih media</option>{media.map((item) => <option key={item.id} value={item.public_url}>{item.folder ? `${item.folder} / ` : ""}{item.name}</option>)}</select></Field>
-              <Field label="Alt text"><input value={form.image_alt || ""} onChange={(e) => update("image_alt", e.target.value)} /></Field>
+          <div className="rounded-xl border border-brand-softGray bg-white p-4 sm:p-5">
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-[.16em] text-brand-green">Galeri produk standar</p>
+                <h3 className="mt-1 text-lg font-semibold">4 foto konsisten untuk semua produk</h3>
+                <p className="mt-2 max-w-2xl text-xs leading-5 text-brand-charcoal/55">Gunakan master 2000 × 2500 px dengan rasio 4:5. Urutan slot otomatis digunakan di seluruh website: depan, belakang, detail, lalu lifestyle/samping.</p>
+              </div>
+              <div className="flex shrink-0 flex-wrap items-center gap-2">
+                <Link href="/admin/media" className="rounded-full border border-brand-softGray bg-white px-3 py-1.5 text-xs font-semibold text-brand-charcoal transition hover:border-brand-green">
+                  Kelola Media Library
+                </Link>
+                <div className={`rounded-full px-3 py-1.5 text-xs font-semibold ${galleryComplete ? "bg-green-50 text-green-800" : "bg-amber-50 text-amber-800"}`}>
+                  {galleryImages.length} / {PRODUCT_GALLERY_LIMIT} foto
+                </div>
+              </div>
             </div>
-            <div className="mt-3 flex flex-wrap gap-2">
-              <label className="cursor-pointer rounded-full bg-brand-charcoal px-4 py-2 text-xs font-semibold text-white">{uploading ? "Mengupload..." : "Upload gambar utama"}<input className="sr-only" type="file" accept="image/jpeg,image/png,image/webp" disabled={uploading} onChange={(e) => uploadImage(e)} /></label>
-              <label className="cursor-pointer rounded-full border border-brand-softGray px-4 py-2 text-xs font-semibold">Tambah ke galeri<input className="sr-only" type="file" accept="image/jpeg,image/png,image/webp" disabled={uploading} onChange={(e) => uploadImage(e, true)} /></label>
-              <select aria-label="Tambah media ke galeri" value="" onChange={(e) => { if (e.target.value) update("gallery_urls", Array.from(new Set([...(form.gallery_urls || []), e.target.value]))); }} className="min-h-9 rounded-full border border-brand-softGray bg-white px-3 text-xs font-semibold"><option value="">Pilih galeri dari library</option>{media.map((item) => <option key={item.id} value={item.public_url}>{item.name}</option>)}</select>
+
+            <div className="mt-5 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+              {PRODUCT_IMAGE_SLOTS.map((slot, index) => {
+                const url = galleryImages[index] || "";
+                const selectedMedia = media.find((item) => item.public_url === url);
+                const ratioStatus = isFourFiveRatio(selectedMedia?.width, selectedMedia?.height);
+                const slotEnabled = index <= galleryImages.length;
+                return (
+                  <div key={slot.key} className={`overflow-hidden border ${url ? "border-brand-softGray" : "border-dashed border-brand-charcoal/20"} bg-brand-offWhite`}>
+                    <div className="relative aspect-[4/5] overflow-hidden bg-[#efefe9]">
+                      {url ? <img src={url} alt={slot.label} className="h-full w-full object-cover" /> : <div className="grid h-full place-items-center p-5 text-center"><div><p className="text-3xl font-semibold text-brand-charcoal/20">0{index + 1}</p><p className="mt-2 text-xs font-semibold text-brand-charcoal/45">Belum ada foto</p></div></div>}
+                      <span className="absolute left-2 top-2 rounded-full bg-white/95 px-2.5 py-1 text-[10px] font-semibold text-brand-charcoal">{slot.shortLabel}</span>
+                      {url ? <span className={`absolute bottom-2 right-2 rounded-full px-2.5 py-1 text-[10px] font-semibold ${ratioStatus === true ? "bg-green-50 text-green-800" : ratioStatus === false ? "bg-amber-50 text-amber-800" : "bg-white/95 text-brand-charcoal/60"}`}>{ratioStatus === true ? "Rasio 4:5" : ratioStatus === false ? "Akan dicrop" : "4:5 display"}</span> : null}
+                    </div>
+                    <div className="space-y-3 bg-white p-3">
+                      <div>
+                        <p className="text-xs font-semibold text-brand-charcoal">{slot.label}</p>
+                        <p className="mt-1 min-h-10 text-[11px] leading-5 text-brand-charcoal/50">{slot.description}</p>
+                        {url ? <p className="mt-1 truncate text-[10px] text-brand-charcoal/40">{mediaDimensionLabel(selectedMedia?.width, selectedMedia?.height)}</p> : null}
+                      </div>
+                      <button
+                        type="button"
+                        disabled={!slotEnabled || uploading}
+                        onClick={() => { setMediaPickerSlot(index); setMediaSearch(""); }}
+                        className="min-h-10 w-full rounded-full border border-brand-softGray bg-white px-3 text-xs font-semibold disabled:cursor-not-allowed disabled:opacity-45"
+                      >
+                        {slotEnabled ? url ? "Ganti dari Media Library" : "Pilih dari Media Library" : "Isi slot sebelumnya dahulu"}
+                      </button>
+                      <label className={`flex min-h-10 cursor-pointer items-center justify-center rounded-full px-3 text-xs font-semibold ${slotEnabled && !uploading ? "bg-brand-charcoal text-white" : "cursor-not-allowed bg-brand-softGray text-brand-charcoal/40"}`}>
+                        {uploading ? "Mengupload..." : url ? "Ganti dengan upload" : "Upload ke slot ini"}
+                        <input className="sr-only" type="file" accept="image/jpeg,image/png,image/webp" disabled={!slotEnabled || uploading} onChange={(event) => uploadImage(event, index)} />
+                      </label>
+                      {url ? <div className="grid grid-cols-2 gap-2">
+                        {index > 0 ? <button type="button" onClick={() => makeGalleryPrimary(index)} className="min-h-9 rounded-full border border-brand-softGray px-2 text-[10px] font-semibold">Jadikan utama</button> : <span className="grid min-h-9 place-items-center rounded-full bg-green-50 px-2 text-[10px] font-semibold text-green-800">Gambar utama</span>}
+                        <button type="button" onClick={() => setGallerySlot(index, "")} className="min-h-9 rounded-full px-2 text-[10px] font-semibold text-red-700">Hapus</button>
+                      </div> : null}
+                      {url && index > 0 ? <div className="grid grid-cols-2 gap-2">
+                        <button type="button" onClick={() => moveGallerySlot(index, -1)} className="min-h-9 rounded-full border border-brand-softGray px-2 text-[10px] font-semibold">← Geser</button>
+                        <button type="button" onClick={() => moveGallerySlot(index, 1)} disabled={index >= galleryImages.length - 1} className="min-h-9 rounded-full border border-brand-softGray px-2 text-[10px] font-semibold disabled:opacity-35">Geser →</button>
+                      </div> : null}
+                    </div>
+                  </div>
+                );
+              })}
             </div>
-            {form.gallery_urls?.length ? <div className="mt-4 grid grid-cols-3 gap-2 sm:grid-cols-5">{form.gallery_urls.map((url, index) => <div key={url} className="relative"><img src={url} alt="Galeri produk" className="aspect-[4/5] w-full bg-brand-offWhite object-cover" /><button type="button" aria-label="Hapus dari galeri" onClick={() => update("gallery_urls", form.gallery_urls?.filter((item) => item !== url))} className="absolute right-1 top-1 rounded-full bg-white px-2 py-1 text-xs shadow">×</button><div className="absolute bottom-1 left-1 flex gap-1"><button type="button" aria-label="Geser gambar ke kiri" onClick={() => moveGallery(index, -1)} disabled={index === 0} className="rounded bg-white px-2 py-1 text-xs shadow disabled:opacity-40">←</button><button type="button" aria-label="Geser gambar ke kanan" onClick={() => moveGallery(index, 1)} disabled={index === (form.gallery_urls?.length || 0) - 1} className="rounded bg-white px-2 py-1 text-xs shadow disabled:opacity-40">→</button></div></div>)}</div> : null}
+
+            {!galleryComplete ? <p className="mt-4 border-l-2 border-amber-500 pl-3 text-xs leading-5 text-brand-charcoal/60">Produk nonaktif dapat disimpan sambil dilengkapi. Untuk mengaktifkan produk di website, keempat slot wajib terisi.</p> : <p className="mt-4 border-l-2 border-brand-green pl-3 text-xs font-semibold leading-5 text-brand-green">Galeri lengkap. Katalog memakai foto depan dan hover belakang; halaman detail memakai keempat foto.</p>}
+
+            <div className="mt-5 grid gap-3 sm:grid-cols-2">
+              <Field label="Alt text gambar utama"><input value={form.image_alt || ""} onChange={(e) => update("image_alt", e.target.value)} placeholder={form.nama ? `${form.nama} tampak depan` : "Deskripsi gambar untuk aksesibilitas"} /></Field>
+              <div className="rounded-lg bg-brand-offWhite p-3 text-xs leading-5 text-brand-charcoal/55"><strong className="text-brand-charcoal">Aturan tampilan otomatis:</strong><br />Kartu desktop: depan → hover belakang.<br />Detail desktop: grid 2 kolom.<br />Detail mobile: swipe 1–4.</div>
+            </div>
           </div>
 
           {form.image_url ? <div><div className="mb-3 flex flex-wrap gap-2">{focalContexts.map((context) => <button key={context.key} type="button" onClick={() => setFocalContext(context.key)} className={`rounded-full px-4 py-2 text-xs font-semibold ${focalContext === context.key ? "bg-brand-green text-white" : "border border-brand-softGray"}`}>{context.label}</button>)}</div><FocalPointEditor src={form.image_url} alt={form.image_alt || form.nama} value={focalValue} onChange={(value) => setForm((current) => ({ ...current, focal_points: { ...(current.focal_points || {}), [focalContext]: value }, ...(focalContext === "catalog" ? { focal_x: value.focal_x, focal_y: value.focal_y, focal_zoom: value.zoom, target_ratio: value.target_ratio } : {}) }))} onSave={() => setStatus("Fokus diperbarui di formulir. Simpan produk untuk menerbitkan perubahan.")} /></div> : null}
@@ -695,25 +833,113 @@ export function ProductAdminPanel() {
         <aside className="self-start bg-white p-5 xl:sticky xl:top-24">
           <p className="text-xs font-semibold uppercase tracking-[.18em] text-brand-charcoal/50">Preview kartu</p>
           <div className="mt-4 overflow-hidden bg-brand-offWhite">
-            <div className="relative aspect-[4/5] overflow-hidden bg-brand-offWhite">{form.image_url ? <img src={form.image_url} alt={form.image_alt || form.nama} className="h-full w-full" style={{ objectFit: form.object_fit || "cover", objectPosition: `${focalFor(form, "catalog").focal_x}% ${focalFor(form, "catalog").focal_y}%`, transform: `scale(${focalFor(form, "catalog").zoom})`, transformOrigin: `${focalFor(form, "catalog").focal_x}% ${focalFor(form, "catalog").focal_y}%` }} /> : <div className="grid h-full place-items-center text-sm text-brand-charcoal/40">Pilih gambar</div>}{labels.length ? <div className="absolute left-3 top-3 flex flex-wrap gap-1">{labels.map((label) => <span key={String(label)} className="rounded-full bg-white px-2 py-1 text-[10px] font-semibold shadow">{label}</span>)}</div> : null}</div>
-            <div className="p-4"><h3 className="line-clamp-2 font-semibold">{form.nama || "Nama produk"}</h3><p className="mt-2 text-sm font-semibold">{formatRupiah(form.price) || "Harga belum diisi"}</p>{form.compare_price ? <p className="text-xs text-brand-charcoal/45 line-through">{formatRupiah(form.compare_price)}</p> : null}</div>
+            <div className="group relative">
+              {galleryImages[0] ? <ProductImageSwap
+                primarySrc={galleryImages[0]}
+                hoverSrc={galleryImages[1]}
+                fallbackSrc={placeholderProductImage}
+                alt={form.image_alt || form.nama || "Preview produk"}
+                imageClassName={(form.object_fit || "cover") === "contain" ? "object-contain p-3" : "object-cover"}
+                objectFit={form.object_fit || "cover"}
+                objectPosition={`${focalFor(form, "catalog").focal_x}% ${focalFor(form, "catalog").focal_y}%`}
+                focalX={focalFor(form, "catalog").focal_x}
+                focalY={focalFor(form, "catalog").focal_y}
+                zoom={focalFor(form, "catalog").zoom}
+                sizes="320px"
+              /> : <div className="grid aspect-[4/5] place-items-center text-sm text-brand-charcoal/40">Pilih Foto 1</div>}
+              {labels.length ? <div className="pointer-events-none absolute left-3 top-3 flex flex-wrap gap-1">{labels.map((label) => <span key={String(label)} className="rounded-full bg-white px-2 py-1 text-[10px] font-semibold shadow">{label}</span>)}</div> : null}
+            </div>
+            <div className="p-4"><p className="mb-2 text-[10px] font-semibold uppercase tracking-[.12em] text-brand-charcoal/40">Arahkan cursor untuk foto belakang</p><h3 className="line-clamp-2 font-semibold">{form.nama || "Nama produk"}</h3><p className="mt-2 text-sm font-semibold">{formatRupiah(form.price) || "Harga belum diisi"}</p>{form.compare_price ? <p className="text-xs text-brand-charcoal/45 line-through">{formatRupiah(form.compare_price)}</p> : null}</div>
           </div>
         </aside>
       </div>
 
       <section className="bg-white p-5 sm:p-7">
         <div className="flex flex-wrap items-end justify-between gap-4"><div><h2 className="text-xl font-semibold">Daftar produk</h2><p className="mt-1 text-sm text-brand-charcoal/55">{visibleProducts.length} produk</p></div></div>
-        <div className="mt-5 grid gap-3 md:grid-cols-4">
+        <div className="mt-5 grid gap-3 md:grid-cols-5">
           <input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Cari nama atau kategori..." className="min-h-11 rounded-lg border border-brand-softGray px-4 text-sm" />
           <select value={categoryFilter} onChange={(e) => setCategoryFilter(e.target.value)}><option value="all">Semua kategori</option>{categoryNames.map((name) => <option key={name}>{name}</option>)}</select>
           <select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)}><option value="all">Semua status</option><option value="true">Aktif</option><option value="false">Nonaktif</option></select>
+          <select value={galleryFilter} onChange={(e) => setGalleryFilter(e.target.value as "all" | "complete" | "incomplete")}><option value="all">Semua galeri</option><option value="complete">Galeri lengkap 4/4</option><option value="incomplete">Galeri belum lengkap</option></select>
           <select value={sort} onChange={(e) => setSort(e.target.value as SortKey)}><option value="urutan">Urutan tampil</option><option value="nama">Nama A–Z</option><option value="price">Harga</option><option value="newest">Terbaru</option></select>
         </div>
 
         {loading ? <div className="mt-5 grid gap-3">{[1, 2, 3].map((item) => <div key={item} className="h-20 animate-pulse bg-brand-offWhite" />)}</div> : visibleProducts.length ? (
-          <div className="mt-5 overflow-x-auto"><table className="w-full min-w-[850px] text-left text-sm"><thead><tr className="border-b border-brand-softGray text-xs uppercase tracking-wide text-brand-charcoal/50"><th className="p-3">Produk</th><th className="p-3">Kategori</th><th className="p-3">Harga</th><th className="p-3">Status</th><th className="p-3">Urutan</th><th className="p-3">Aksi</th></tr></thead><tbody>{visibleProducts.map((product) => <tr key={product.id || product.slug} className="border-b border-brand-softGray/70"><td className="p-3"><div className="flex items-center gap-3"><img src={product.image_url || product.gambar_url} alt={product.image_alt || product.nama} className="aspect-[4/5] w-14 bg-brand-offWhite object-cover" /><div><p className="font-semibold">{product.nama}</p><p className="text-xs text-brand-charcoal/45">/{product.slug}</p></div></div></td><td className="p-3">{product.kategori}{product.subcategory ? <span className="block text-xs text-brand-charcoal/45">{product.subcategory}</span> : null}</td><td className="p-3 font-semibold">{formatRupiah(product.price) || "—"}</td><td className="p-3"><span className={`rounded-full px-3 py-1 text-xs font-semibold ${product.status_aktif ? "bg-green-50 text-green-800" : "bg-gray-100 text-gray-600"}`}>{product.status_aktif ? "Aktif" : "Nonaktif"}</span></td><td className="p-3">{product.urutan}</td><td className="p-3"><div className="flex flex-wrap gap-2"><button type="button" onClick={() => startEdit(product)} className="rounded-full bg-brand-charcoal px-3 py-2 text-xs font-semibold text-white">Edit</button><button type="button" onClick={() => duplicateProduct(product)} className="rounded-full border border-brand-softGray px-3 py-2 text-xs font-semibold">Duplikat</button><button type="button" onClick={() => deleteProduct(product)} className="rounded-full px-3 py-2 text-xs font-semibold text-red-700">Hapus</button></div></td></tr>)}</tbody></table></div>
+          <div className="mt-5 overflow-x-auto">
+            <table className="w-full min-w-[980px] text-left text-sm">
+              <thead>
+                <tr className="border-b border-brand-softGray text-xs uppercase tracking-wide text-brand-charcoal/50">
+                  <th className="p-3">Produk</th>
+                  <th className="p-3">Kategori</th>
+                  <th className="p-3">Harga</th>
+                  <th className="p-3">Galeri</th>
+                  <th className="p-3">Status</th>
+                  <th className="p-3">Urutan</th>
+                  <th className="p-3">Aksi</th>
+                </tr>
+              </thead>
+              <tbody>
+                {visibleProducts.map((product) => {
+                  const productGalleryCount = productGalleryFromForm(product).filter((url) => url !== placeholderProductImage).length;
+                  const productGalleryComplete = productGalleryCount === PRODUCT_GALLERY_LIMIT;
+                  return (
+                    <tr key={product.id || product.slug} className="border-b border-brand-softGray/70">
+                      <td className="p-3"><div className="flex items-center gap-3"><img src={product.image_url || product.gambar_url || placeholderProductImage} alt={product.image_alt || product.nama} className="aspect-[4/5] w-14 bg-brand-offWhite object-cover" /><div><p className="font-semibold">{product.nama}</p><p className="text-xs text-brand-charcoal/45">/{product.slug}</p></div></div></td>
+                      <td className="p-3">{product.kategori}{product.subcategory ? <span className="block text-xs text-brand-charcoal/45">{product.subcategory}</span> : null}</td>
+                      <td className="p-3 font-semibold">{formatRupiah(product.price) || "—"}</td>
+                      <td className="p-3"><span className={`rounded-full px-3 py-1 text-xs font-semibold ${productGalleryComplete ? "bg-green-50 text-green-800" : "bg-amber-50 text-amber-800"}`}>{productGalleryCount} / {PRODUCT_GALLERY_LIMIT}</span></td>
+                      <td className="p-3"><span className={`rounded-full px-3 py-1 text-xs font-semibold ${product.status_aktif ? "bg-green-50 text-green-800" : "bg-gray-100 text-gray-600"}`}>{product.status_aktif ? "Aktif" : "Nonaktif"}</span></td>
+                      <td className="p-3">{product.urutan}</td>
+                      <td className="p-3"><div className="flex flex-wrap gap-2"><button type="button" onClick={() => startEdit(product)} className="rounded-full bg-brand-charcoal px-3 py-2 text-xs font-semibold text-white">Edit</button><button type="button" onClick={() => duplicateProduct(product)} className="rounded-full border border-brand-softGray px-3 py-2 text-xs font-semibold">Duplikat</button><button type="button" onClick={() => deleteProduct(product)} className="rounded-full px-3 py-2 text-xs font-semibold text-red-700">Hapus</button></div></td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
         ) : <div className="mt-5 bg-brand-offWhite p-8 text-center"><p className="font-semibold">Tidak ada produk</p><p className="mt-2 text-sm text-brand-charcoal/55">Ubah filter atau buat produk pertama.</p></div>}
       </section>
+
+      {mediaPickerSlot !== null ? (
+        <div className="fixed inset-0 z-[120] bg-black/55 p-3 sm:p-6" onClick={() => setMediaPickerSlot(null)}>
+          <div className="mx-auto flex h-full max-w-6xl flex-col overflow-hidden bg-white" onClick={(event) => event.stopPropagation()} role="dialog" aria-modal="true" aria-label="Pilih foto dari Media Library">
+            <div className="flex items-start justify-between gap-4 border-b border-brand-softGray p-4 sm:p-5">
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-[.16em] text-brand-green">Media Library</p>
+                <h3 className="mt-1 text-xl font-semibold">Pilih {PRODUCT_IMAGE_SLOTS[activeMediaPickerSlot]?.label}</h3>
+                <p className="mt-1 text-xs text-brand-charcoal/55">Klik satu foto untuk memasangnya. Foto yang sudah dipakai pada slot lain tidak dapat dipilih ulang.</p>
+              </div>
+              <button type="button" onClick={() => setMediaPickerSlot(null)} aria-label="Tutup Media Library" className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-brand-offWhite text-xl">×</button>
+            </div>
+            <div className="grid gap-3 border-b border-brand-softGray p-4 sm:grid-cols-[1fr_auto] sm:p-5">
+              <input value={mediaSearch} onChange={(event) => setMediaSearch(event.target.value)} placeholder="Cari nama file, folder, atau alt text..." className="min-h-11 rounded-full border border-brand-softGray px-4 text-sm outline-none focus:border-brand-green" autoFocus />
+              <label className="flex min-h-11 items-center gap-2 rounded-full bg-brand-offWhite px-4 text-xs font-semibold"><input type="checkbox" checked={onlyFourFiveMedia} onChange={(event) => setOnlyFourFiveMedia(event.target.checked)} className="h-4 w-4 accent-brand-green" />Hanya media 4:5</label>
+            </div>
+            <div className="flex-1 overflow-y-auto p-4 sm:p-5">
+              <div className="mb-4 flex items-center justify-between gap-4"><p className="text-sm font-semibold">{filteredMedia.length} media ditemukan</p><p className="text-xs text-brand-charcoal/45">Rekomendasi: 2000 × 2500 px</p></div>
+              {filteredMedia.length ? <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
+                {filteredMedia.map((item) => {
+                  const usedIndex = galleryImages.indexOf(item.public_url);
+                  const usedElsewhere = usedIndex >= 0 && usedIndex !== activeMediaPickerSlot;
+                  const ratio = isFourFiveRatio(item.width, item.height);
+                  return (
+                    <button
+                      key={`picker-${item.id}`}
+                      type="button"
+                      disabled={usedElsewhere}
+                      onClick={() => { setGallerySlot(activeMediaPickerSlot, item.public_url); setMediaPickerSlot(null); }}
+                      className={`group overflow-hidden border text-left transition ${galleryImages[activeMediaPickerSlot] === item.public_url ? "border-brand-green ring-2 ring-brand-green/20" : "border-brand-softGray hover:border-brand-green"} disabled:cursor-not-allowed disabled:opacity-40`}
+                    >
+                      <div className="relative aspect-[4/5] overflow-hidden bg-brand-offWhite"><img src={item.public_url} alt={item.alt_text || item.name} className="h-full w-full object-cover transition duration-300 group-hover:scale-[1.02]" />{usedElsewhere ? <span className="absolute inset-x-2 bottom-2 bg-black/70 px-2 py-1 text-center text-[10px] font-semibold text-white">Dipakai di Foto {usedIndex + 1}</span> : null}</div>
+                      <div className="p-2.5"><p className="truncate text-xs font-semibold">{item.name}</p><p className="mt-1 truncate text-[10px] text-brand-charcoal/45">{item.folder || "Tanpa folder"}</p><div className="mt-2 flex items-center justify-between gap-2 text-[10px]"><span className={ratio === true ? "font-semibold text-green-700" : ratio === false ? "font-semibold text-amber-700" : "text-brand-charcoal/45"}>{ratio === true ? "4:5" : ratio === false ? "Perlu crop" : "Rasio ?"}</span><span className="text-brand-charcoal/45">{item.width && item.height ? `${item.width}×${item.height}` : "—"}</span></div></div>
+                    </button>
+                  );
+                })}
+              </div> : <div className="grid min-h-64 place-items-center bg-brand-offWhite p-6 text-center"><div><p className="font-semibold">Media tidak ditemukan</p><p className="mt-2 text-sm text-brand-charcoal/55">Ubah pencarian atau matikan filter “Hanya media 4:5”.</p><button type="button" onClick={() => { setMediaSearch(""); setOnlyFourFiveMedia(false); }} className="mt-4 rounded-full bg-brand-charcoal px-5 py-2 text-xs font-semibold text-white">Tampilkan semua media</button></div></div>}
+            </div>
+          </div>
+        </div>
+      ) : null}
     </div>
   );
 }

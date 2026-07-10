@@ -2,7 +2,12 @@
 "use client";
 
 import { type ReactNode, useEffect, useMemo, useState } from "react";
-import { LANDING_SECTION_DEFAULTS } from "@/lib/homepage-settings";
+import {
+  LANDING_SECTION_DEFAULTS,
+  LANDING_SECTION_POSITION_LABELS,
+  getLandingSectionOrder,
+  type LandingSectionKey
+} from "@/lib/homepage-settings";
 import { createSupabaseClient } from "@/lib/supabase";
 import type { LandingSection } from "@/lib/types";
 
@@ -15,6 +20,8 @@ type MediaChoice = {
 
 export function LandingSectionEditor({ sectionKey }: { sectionKey: string }) {
   const fallback = LANDING_SECTION_DEFAULTS.find((item) => item.section_key === sectionKey);
+  const fixedOrder = getLandingSectionOrder(sectionKey, fallback?.sort_order ?? 999);
+  const fixedPositionLabel = LANDING_SECTION_POSITION_LABELS[sectionKey as LandingSectionKey] || `Posisi ${fixedOrder}`;
   const [section, setSection] = useState<LandingSection | null>(null);
   const [media, setMedia] = useState<MediaChoice[]>([]);
   const [status, setStatus] = useState("");
@@ -27,9 +34,18 @@ export function LandingSectionEditor({ sectionKey }: { sectionKey: string }) {
     setLoading(true);
 
     await supabase.from("landing_sections").upsert(
-      { ...fallback, metadata: {} },
+      { ...fallback, sort_order: fixedOrder, metadata: {} },
       { onConflict: "section_key", ignoreDuplicates: true }
     );
+
+    // Keep existing database rows aligned with the canonical public order.
+    // The public page also uses fixed DOM order, so a stale value can never
+    // move About above Hero again.
+    await supabase
+      .from("landing_sections")
+      .update({ sort_order: fixedOrder })
+      .eq("section_key", sectionKey)
+      .neq("sort_order", fixedOrder);
 
     const [sectionResult, mediaResult] = await Promise.all([
       supabase.from("landing_sections").select("*").eq("section_key", sectionKey).maybeSingle(),
@@ -72,7 +88,7 @@ export function LandingSectionEditor({ sectionKey }: { sectionKey: string }) {
       cta_url: section.cta_url?.trim() || "",
       text_position: section.text_position || "left",
       is_visible: section.is_visible,
-      sort_order: Number(section.sort_order),
+      sort_order: fixedOrder,
       metadata: section.metadata || {}
     }).eq("section_key", section.section_key);
     setSaving(false);
@@ -92,7 +108,7 @@ export function LandingSectionEditor({ sectionKey }: { sectionKey: string }) {
 
       <div className="mt-5 grid gap-4 lg:grid-cols-2">
         <Field label="Judul"><input value={section.title} onChange={(event) => update({ title: event.target.value })} /></Field>
-        <Field label="Urutan tampil"><input type="number" min="0" value={section.sort_order} onChange={(event) => update({ sort_order: Number(event.target.value) })} /></Field>
+        <Field label="Posisi landing page"><input value={fixedPositionLabel} readOnly aria-readonly="true" className="bg-brand-offWhite text-brand-charcoal/70" /></Field>
         <Field label="Subtitle"><textarea rows={3} value={section.subtitle} onChange={(event) => update({ subtitle: event.target.value })} /></Field>
         <Field label="Posisi teks"><select value={section.text_position || "left"} onChange={(event) => update({ text_position: event.target.value as LandingSection["text_position"] })}><option value="left">Kiri</option><option value="center">Tengah</option><option value="right">Kanan</option></select></Field>
         <Field label="Gambar desktop"><select value={section.desktop_image_url || ""} onChange={(event) => update({ desktop_image_url: event.target.value })}><option value="">Tidak digunakan</option>{images.map((asset) => <option key={asset.id} value={asset.public_url}>{asset.name}</option>)}</select></Field>
