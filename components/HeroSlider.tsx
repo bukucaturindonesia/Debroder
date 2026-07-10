@@ -121,7 +121,7 @@ export function HeroSlider({ heroes }: { heroes: HeroBanner[] }) {
   return (
     <section
       id="beranda"
-      className="hero-section relative h-[clamp(440px,70vh,540px)] w-full overflow-hidden bg-[#04160f] sm:h-[540px] lg:h-[calc(100svh-170px)] lg:min-h-[460px] lg:max-h-[600px]"
+      className="hero-section relative h-[calc(100svh-64px)] min-h-[560px] w-full overflow-hidden bg-[#04160f] md:h-[calc(100svh-78px)] md:min-h-[600px] lg:h-[calc(100svh-114px)] lg:min-h-[620px]"
       aria-roledescription="carousel"
       aria-label="Koleksi utama DEBRODER"
       onTouchStart={(event) => setTouchStart(event.touches[0].clientX)}
@@ -177,7 +177,7 @@ export function HeroSlider({ heroes }: { heroes: HeroBanner[] }) {
 
             <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(1,9,6,.58)_0%,rgba(1,9,6,.34)_36%,rgba(1,9,6,.04)_68%,rgba(1,9,6,.10)_100%),linear-gradient(0deg,rgba(1,9,6,.34)_0%,rgba(1,9,6,0)_46%)] sm:bg-[linear-gradient(90deg,rgba(1,9,6,.62)_0%,rgba(1,9,6,.36)_38%,rgba(1,9,6,.03)_70%,rgba(1,9,6,.08)_100%),linear-gradient(0deg,rgba(1,9,6,.30)_0%,rgba(1,9,6,0)_44%)]" />
             {hasCopy ? (
-              <div className="absolute inset-x-0 bottom-16 z-10 sm:bottom-14 lg:bottom-16">
+              <div className="absolute inset-x-0 bottom-[10%] z-10 sm:bottom-[11%] lg:bottom-[12%]">
                 <div className="section-shell">
                   <div className="hero-content mx-auto max-w-[1120px] text-white">
                     {badge ? (
