@@ -52,7 +52,7 @@ type ProductItem = Visual & {
 
 const horizontalCarouselClass = "native-carousel no-scrollbar mt-5 flex snap-x snap-mandatory gap-3 overflow-x-auto sm:gap-4";
 const horizontalCarouselItemClass = "min-w-[76vw] shrink-0 snap-start sm:min-w-[44vw] lg:min-w-[31.5%]";
-const categoryCarouselItemClass = "min-w-[76vw] shrink-0 snap-start sm:min-w-[44vw] lg:min-w-[30.25%]";
+const categoryCarouselItemClass = "category-carousel-card";
 
 function isCustomHomepageItem(item: HomepageSectionItem) {
   return Boolean(item.custom_title && item.custom_image_url && item.custom_link_url);
@@ -461,7 +461,7 @@ export default async function Home() {
                 </div>
               }
             />
-            <div id="category-carousel" className={`${horizontalCarouselClass} premium-scrollbar pb-4`}>
+            <div id="category-carousel" className="category-carousel native-carousel premium-scrollbar mt-5 flex snap-x snap-mandatory gap-3 overflow-x-auto pb-4 sm:gap-4">
               {shopCategoryItems.length ? shopCategoryItems.map((item) => (
                 <CategoryEditorialCard key={`${item.href}-${item.title}`} item={item} />
               )) : homeCategories.length ? homeCategories.map((item) => (
