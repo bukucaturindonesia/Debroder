@@ -3,17 +3,17 @@
 @tailwind utilities;
 
 :root {
-  --background: #FFFFFF;
+  --background: #F7F7F4;
   --foreground: #111111;
   --font-heading: "Barlow Condensed", "Arial Narrow", "Helvetica Neue Condensed", sans-serif;
   --font-display: var(--font-heading);
   --font-body: "Inter", ui-sans-serif, system-ui, -apple-system,
     BlinkMacSystemFont, "Segoe UI", sans-serif;
-  --space-section-mobile: 48px;
-  --space-section-tablet: 64px;
-  --space-section-desktop: 72px;
-  --surface-soft: #f5f5f5;
-  --surface-muted: #efefef;
+  --space-section-mobile: 30px;
+  --space-section-tablet: 38px;
+  --space-section-desktop: 44px;
+  --surface-soft: #efefe9;
+  --surface-muted: #e9e8e1;
 }
 
 * {
@@ -21,8 +21,9 @@
 }
 
 html {
-  scroll-behavior: auto;
+  scroll-behavior: smooth;
   scroll-padding-top: 78px;
+  scroll-snap-type: y proximity;
 }
 
 body {
@@ -38,20 +39,20 @@ body {
 /* DEBRODER global canvas: one continuous off-white surface for public pages. */
 html,
 body {
-  background: #FFFFFF;
+  background: #F7F7F4;
 }
 
 .public-site {
-  background: #FFFFFF;
+  background: #F7F7F4;
 }
 
 .public-site section:not(.keep-section-bg),
 .public-site .section-canvas {
-  background-color: #FFFFFF;
+  background-color: #F7F7F4;
 }
 
 .product-image-frame {
-  background: #f5f5f5;
+  background: #efefe9;
   border: 0;
   box-shadow: none;
 }
@@ -60,7 +61,7 @@ body {
   background:
     linear-gradient(135deg, rgba(6, 61, 36, 0.055), transparent 34%),
     linear-gradient(315deg, rgba(17, 17, 17, 0.04), transparent 42%),
-    #f5f5f5;
+    #efefe9;
   border: 0;
   box-shadow: none;
 }
@@ -252,9 +253,9 @@ button,
 .editorial-card-overlay {
   background: linear-gradient(
     to top,
-    rgba(0, 0, 0, 0.48) 0%,
-    rgba(0, 0, 0, 0.20) 34%,
-    rgba(0, 0, 0, 0.05) 58%,
+    rgba(0, 0, 0, 0.34) 0%,
+    rgba(0, 0, 0, 0.20) 28%,
+    rgba(0, 0, 0, 0.08) 52%,
     rgba(0, 0, 0, 0) 75%
   );
 }
@@ -298,7 +299,7 @@ button,
   font-weight: 600;
   min-height: 36px;
   padding-inline: 16px;
-  box-shadow: none;
+  box-shadow: 0 8px 18px rgba(0, 0, 0, 0.10);
 }
 
 @media (min-width: 640px) {
@@ -350,6 +351,7 @@ button,
 .snap-section,
 .hero-section {
   scroll-margin-top: 78px;
+  scroll-snap-align: start;
 }
 
 .no-scrollbar {
@@ -360,71 +362,6 @@ button,
 
 .no-scrollbar::-webkit-scrollbar {
   display: none;
-}
-
-.native-carousel {
-  scroll-behavior: auto;
-  touch-action: pan-x;
-  -webkit-overflow-scrolling: touch;
-}
-
-
-/* Blueprint v1.0: Shop by Category uses 4:5 editorial posters, 3.2 visible on desktop. */
-.category-carousel {
-  scroll-padding-inline: 0;
-  overscroll-behavior-inline: contain;
-}
-
-.category-carousel-card {
-  flex: 0 0 76%;
-  min-width: 0;
-  scroll-snap-align: start;
-}
-
-@media (min-width: 640px) {
-  .category-carousel-card {
-    flex-basis: 44%;
-  }
-}
-
-@media (min-width: 1024px) {
-  .category-carousel-card {
-    flex-basis: calc((100% - 2rem) / 3.2);
-  }
-}
-
-/* Keep section rhythm consistent and avoid oversized blank bands. */
-.public-site > .section-space + .section-space,
-.public-site > div + .section-space {
-  scroll-margin-top: 78px;
-}
-
-.premium-scrollbar {
-  scrollbar-width: thin;
-  scrollbar-color: rgba(17, 17, 17, 0.42) rgba(17, 17, 17, 0.08);
-}
-
-.premium-scrollbar::-webkit-scrollbar {
-  display: block;
-  height: 4px;
-}
-
-.premium-scrollbar::-webkit-scrollbar-track {
-  background: rgba(17, 17, 17, 0.08);
-}
-
-.premium-scrollbar::-webkit-scrollbar-thumb {
-  background: rgba(17, 17, 17, 0.42);
-  border-radius: 999px;
-}
-
-.campaign-copy-title {
-  font-family: var(--font-heading);
-  font-size: clamp(3rem, 7vw, 6.75rem);
-  font-weight: 900;
-  letter-spacing: -0.035em;
-  line-height: 0.88;
-  text-transform: uppercase;
 }
 
 .responsive-picture-img {
@@ -531,63 +468,58 @@ button,
   }
 }
 
-
-/* Trending is a fixed three-poster composition on every viewport.
-   It intentionally does not scroll or show carousel controls. */
-.trending-grid {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 4px;
-  width: 100%;
-}
-
-.trending-static-card {
-  min-width: 0;
-  width: 100%;
-}
-
-/* On phone widths all three 4:5 posters remain visible together.
-   Copy scales with the card so the row never overflows horizontally. */
-@media (max-width: 639px) {
-  .trending-static-card .editorial-card-content {
-    left: 7px;
-    right: 7px;
-    bottom: 8px;
-    max-width: calc(100% - 14px);
-  }
-
-  .trending-static-card .editorial-card-label {
-    font-size: clamp(7px, 2.2vw, 9px);
-    line-height: 1.1;
-    margin-bottom: 3px;
-  }
-
-  .trending-static-card .editorial-card-title {
-    font-size: clamp(9px, 2.8vw, 12px);
-    line-height: 1.05;
-    -webkit-line-clamp: 2;
-  }
-
-  .trending-static-card .editorial-card-cta {
-    font-size: clamp(7px, 2.2vw, 9px);
-    min-height: 22px;
-    padding-inline: 8px;
-  }
-
-  .trending-static-card .editorial-card-content .mt-3,
-  .trending-static-card .editorial-card-content .sm\:mt-4 {
-    margin-top: 6px;
-  }
-}
-
-@media (min-width: 640px) {
-  .trending-grid {
-    gap: 12px;
-  }
-}
+/* =========================================================
+   DEBRODER Landing Page — Desktop Spacing V11
+   Scope: spacing only. No layout, card, media, text, CMS,
+   carousel, header, or mobile behavior is changed.
+   ========================================================= */
 
 @media (min-width: 1024px) {
-  .trending-grid {
-    gap: 16px;
+  /* Trust / benefit strip: compact like the Nike reference. */
+  main > section[aria-label="Keunggulan DEBRODER"] {
+    padding-top: 16px !important;
+    padding-bottom: 16px !important;
+  }
+
+  /* Use one controlled top gap instead of stacked top + bottom
+     padding between adjacent landing-page sections. */
+  #featured.section-space,
+  #featured.snap-section {
+    padding-top: 56px !important;
+    padding-bottom: 0 !important;
+  }
+
+  #trending.section-space,
+  #trending.snap-section {
+    padding-top: 64px !important;
+    padding-bottom: 0 !important;
+  }
+
+  .campaign-section.section-space,
+  section[aria-label="Campaign DEBRODER"].section-space {
+    padding-top: 64px !important;
+    padding-bottom: 0 !important;
+  }
+
+  #fresh-drop.section-space,
+  #fresh-drops.section-space,
+  #fresh-drop.snap-section,
+  #fresh-drops.snap-section {
+    padding-top: 64px !important;
+    padding-bottom: 0 !important;
+  }
+
+  #shop-category.section-space,
+  #shop-category.snap-section,
+  #store.section-space,
+  #store.snap-section {
+    padding-top: 64px !important;
+    padding-bottom: 0 !important;
+  }
+
+  #tentang.section-space,
+  #tentang.snap-section {
+    padding-top: 64px !important;
+    padding-bottom: 72px !important;
   }
 }
