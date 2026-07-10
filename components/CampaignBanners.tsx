@@ -43,18 +43,21 @@ function CampaignMedia({ banner }: { banner: CmsBanner }) {
 }
 
 export function CampaignBanners({ banners }: { banners: CmsBanner[] }) {
-  const activeBanners = banners.filter((banner) => banner.is_active !== false);
+  const activeBanners = banners
+    .filter((banner) => banner.is_active !== false)
+    .sort((a, b) => (a.sort_order || 0) - (b.sort_order || 0))
+    .slice(0, 1);
   if (!activeBanners.length) return null;
 
   return (
-    <section aria-label="Campaign DEBRODER" className="campaign-section bg-white py-10 sm:py-14 lg:py-20">
-      <div className="section-shell grid gap-20 sm:gap-24">
+    <section aria-label="Campaign DEBRODER" className="campaign-section section-space bg-white">
+      <div className="section-shell">
         {activeBanners.map((banner) => {
           const ctaVisible = Boolean(banner.cta_label && banner.cta_url);
 
           return (
             <article key={banner.id || banner.name}>
-              <div className="relative aspect-[4/5] overflow-hidden bg-[#efefef] sm:aspect-[16/7]">
+              <div className="relative aspect-[4/5] overflow-hidden bg-[#efefef] sm:aspect-[16/7] lg:max-h-[680px]">
                 <CampaignMedia banner={banner} />
               </div>
 
