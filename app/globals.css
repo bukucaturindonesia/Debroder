@@ -667,3 +667,19 @@ button,
     scrollbar-width: none !important;
   }
 }
+/* DEBRODER Featured desktop refinement
+   Desktop only: hilangkan gap antar 2 foto Featured. */
+
+@media (min-width: 1024px) {
+  .featured-grid,
+  .featured-section .grid,
+  [data-section="featured"] .grid {
+    gap: 0 !important;
+  }
+
+  .featured-grid > *,
+  .featured-section .grid > *,
+  [data-section="featured"] .grid > * {
+    margin: 0 !important;
+  }
+}
