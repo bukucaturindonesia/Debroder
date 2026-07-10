@@ -1,24 +1,31 @@
-# Urutan Landing Page DEBRODER
+# DEBRODER Landing Page Blueprint v1.0 — FROZEN
 
-Urutan publik dikunci di DOM agar urutan visual, keyboard, screen reader, dan SEO selalu sama:
+Public homepage order:
 
-1. Hero Slider
-2. Keunggulan DEBRODER
-3. Featured
-4. Shop by Category
+1. Smart Header
+2. Hero Slider
+3. Trust Strip
+4. Featured
 5. Trending
-6. Fresh Drop
-7. Pakaian Polos berdasarkan Kategori
-8. Campaign Banner
-9. Instagram
-10. Store DEBRODER
-11. Tentang DEBRODER
-12. Footer
+6. Editorial Campaign Block
+7. Fresh Drop
+8. Shop by Category
+9. Store & Cara Order
+10. Tentang DEBRODER
+11. Footer
 
-## Sinkronisasi database lama
+Legacy homepage sections `plain-category` and `instagram-banner` remain in CMS data for backward compatibility, but are not rendered by the frozen v1.0 public homepage.
 
-Kode publik sudah menggunakan urutan di atas tanpa bergantung pada nilai lama database. Untuk merapikan nilai `sort_order` yang terlihat di admin, jalankan sekali melalui Supabase SQL Editor:
+## Data source
 
-`supabase/fix-landing-page-order.sql`
+- Hero, Featured, Trending, Editorial Campaign, Shop by Category, About: CMS.
+- Fresh Drop: products selected from PIM; active products are used as a safe fallback.
+- Store: store records.
 
-SQL tersebut hanya memperbarui angka urutan. Konten, gambar, CTA, status visibility, dan media tidak diubah.
+## Interaction rules
+
+- Native browser/touchpad scrolling; no global smooth-scroll library.
+- No vertical scroll snapping.
+- Content carousels do not auto-slide.
+- Mobile carousels show approximately 1.3 cards.
+- Header utility and promo bars are hidden on first load and while browsing; they appear only after the user has left the top and returns to the absolute top.

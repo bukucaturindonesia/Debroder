@@ -244,14 +244,14 @@ on conflict do nothing;
 insert into public.homepage_sections (title, slug, is_active, sort_order)
 values
   ('Featured', 'featured', true, 30),
-  ('Shop by Category', 'services-products', true, 40),
-  ('Trending', 'trending', true, 50),
-  ('Fresh Drops', 'fresh-drops', true, 60)
+  ('Trending', 'trending', true, 40),
+  ('Shop by Category', 'services-products', true, 70),
+  ('Fresh Drop', 'fresh-drops', true, 60)
 on conflict (slug) do nothing;
 
 insert into public.homepage_sections (title, slug, is_active, sort_order)
 values
-  ('Pakaian Polos Berdasarkan Kategori', 'pakaian-polos-berdasarkan-kategori', true, 70)
+  ('Pakaian Polos Berdasarkan Kategori', 'pakaian-polos-berdasarkan-kategori', false, 900)
 on conflict (slug) do update set
   title = excluded.title;
 
@@ -306,16 +306,16 @@ insert into public.landing_sections
   (section_key, title, subtitle, is_visible, sort_order, metadata)
 values
   ('hero', 'Hero / Hero Slider', '', true, 10, '{}'::jsonb),
-  ('benefits', '4 Keunggulan', '', true, 20, '{}'::jsonb),
+  ('benefits', 'Trust Strip', '', true, 20, '{}'::jsonb),
   ('featured-products', 'Featured', '', true, 30, '{}'::jsonb),
-  ('services-products', 'Shop by Category', '', true, 40, '{}'::jsonb),
-  ('trending', 'Trending', '', true, 50, '{}'::jsonb),
-  ('fresh-drop', 'Fresh Drops', '', true, 60, '{}'::jsonb),
-  ('plain-category', 'Pakaian Polos berdasarkan Kategori', 'Pilih dasar apparel yang sesuai, lalu custom bersama tim DEBRODER.', false, 70, '{}'::jsonb),
-  ('campaign-banners', 'Campaign Banner', '', true, 80, '{}'::jsonb),
-  ('instagram-banner', 'Banner Instagram', '', true, 90, '{}'::jsonb),
-  ('stores', 'Store DEBRODER', 'Konsultasikan bahan, teknik cetak, dan estimasi produksi langsung bersama tim kami.', true, 100, '{}'::jsonb),
-  ('about', 'Tentang DEBRODER', '', true, 110, '{}'::jsonb)
+  ('trending', 'Trending', '', true, 40, '{}'::jsonb),
+  ('campaign-banners', 'Editorial Campaign', '', true, 50, '{}'::jsonb),
+  ('fresh-drop', 'Fresh Drop', '', true, 60, '{}'::jsonb),
+  ('services-products', 'Shop by Category', '', true, 70, '{}'::jsonb),
+  ('stores', 'Store DEBRODER', 'Konsultasikan bahan, teknik cetak, dan estimasi produksi langsung bersama tim kami.', true, 80, '{}'::jsonb),
+  ('about', 'Built to Create', '', true, 90, '{}'::jsonb),
+  ('plain-category', 'Pakaian Polos berdasarkan Kategori', 'Pilih dasar apparel yang sesuai, lalu custom bersama tim DEBRODER.', false, 900, '{}'::jsonb),
+  ('instagram-banner', 'Banner Instagram', '', false, 910, '{}'::jsonb)
 on conflict (section_key) do nothing;
 
 -- Product category architecture: keep product_categories as MAIN categories only.
