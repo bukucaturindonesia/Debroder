@@ -52,6 +52,7 @@ type ProductItem = Visual & {
 
 const horizontalCarouselClass = "native-carousel no-scrollbar mt-5 flex snap-x snap-mandatory gap-3 overflow-x-auto sm:gap-4";
 const horizontalCarouselItemClass = "min-w-[76vw] shrink-0 snap-start sm:min-w-[44vw] lg:min-w-[31.5%]";
+const categoryCarouselItemClass = "min-w-[76vw] shrink-0 snap-start sm:min-w-[44vw] lg:min-w-[30.25%]";
 
 function isCustomHomepageItem(item: HomepageSectionItem) {
   return Boolean(item.custom_title && item.custom_image_url && item.custom_link_url);
@@ -226,24 +227,20 @@ function EditorialCard({
   );
 }
 
-function CategoryCard({ item, title }: { item: Visual & { href: string; name?: string; title?: string }; title?: string }) {
-  const cleanTitle = cleanCmsText(title || item.title || item.name);
+function CategoryEditorialCard({ item }: { item: EditorialItem }) {
+  const categoryItem: EditorialItem = {
+    ...item,
+    label: cleanCmsText(item.label) || "Kategori",
+    title: cleanCmsText(item.title) || item.imageAlt,
+    button: cleanCmsText(item.button) || "Lihat"
+  };
+
   return (
-    <Link href={item.href} aria-label={`Lihat ${cleanTitle || item.imageAlt}`} className={`group block ${horizontalCarouselItemClass}`}>
-      <div className="relative aspect-[4/5] overflow-hidden bg-[#efefef]">
-        <ResponsivePicture
-          desktopSrc={item.image}
-          mobileSrc={item.mobileImage || item.image}
-          fallbackSrc={item.fallbackImage}
-          alt={item.imageAlt}
-          className="h-full w-full object-cover transition duration-500 group-hover:scale-[1.02]"
-          objectFit={item.objectFit || "cover"}
-          desktopObjectPosition={item.objectPosition}
-          mobileObjectPosition={item.objectPosition}
-        />
-      </div>
-      {cleanTitle ? <h3 className="pt-4 text-lg font-medium leading-tight text-[#111] sm:text-xl">{cleanTitle}</h3> : null}
-    </Link>
+    <EditorialCard
+      item={categoryItem}
+      variant="trending"
+      className={categoryCarouselItemClass}
+    />
   );
 }
 
@@ -425,7 +422,11 @@ export default async function Home() {
       })() : null}
 
       <LandingSectionSlot setting={landingSection("campaign-banners")}>
-        <CampaignBanners banners={content.campaignBanners} />
+        <CampaignBanners
+          banners={content.campaignBanners}
+          fallbackDesktopSrc={landingSection("campaign-banners")?.desktop_image_url || content.heroes[0]?.image_url || content.hero.image_url || fallbackImages.banner}
+          fallbackMobileSrc={landingSection("campaign-banners")?.mobile_image_url || content.heroes[0]?.mobile_image_url || content.hero.mobile_image_url || fallbackImages.bannerMobile}
+        />
       </LandingSectionSlot>
 
       {freshDropSection ? (() => {
@@ -462,9 +463,18 @@ export default async function Home() {
             />
             <div id="category-carousel" className={`${horizontalCarouselClass} premium-scrollbar pb-4`}>
               {shopCategoryItems.length ? shopCategoryItems.map((item) => (
-                <CategoryCard key={`${item.href}-${item.title}`} item={item} title={item.title} />
+                <CategoryEditorialCard key={`${item.href}-${item.title}`} item={item} />
               )) : homeCategories.length ? homeCategories.map((item) => (
-                <CategoryCard key={item.name} item={item} title={item.name} />
+                <CategoryEditorialCard
+                  key={item.name}
+                  item={{
+                    ...item,
+                    label: "Kategori",
+                    title: item.name,
+                    button: "Lihat",
+                    href: item.href
+                  }}
+                />
               )) : <p className="p-8 text-center text-sm text-black/55">Belum ada kategori.</p>}
             </div>
           </div>
