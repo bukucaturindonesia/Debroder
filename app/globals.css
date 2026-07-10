@@ -632,3 +632,38 @@ button,
     margin-bottom: 0 !important;
   }
 }
+/* DEBRODER Mobile Trending refinement
+   Mobile only: Trending menjadi carousel 1.2 card.
+   Desktop tetap 3 card statis. */
+
+@media (max-width: 767px) {
+  .trending-grid {
+    display: grid !important;
+    grid-auto-flow: column !important;
+    grid-auto-columns: 83.333% !important; /* 1.2 card terlihat */
+    grid-template-columns: none !important;
+    gap: 12px !important;
+
+    overflow-x: auto !important;
+    overflow-y: hidden !important;
+    scroll-snap-type: x mandatory !important;
+    overscroll-behavior-inline: contain !important;
+
+    padding-bottom: 4px !important;
+    -webkit-overflow-scrolling: touch !important;
+  }
+
+  .trending-static-card {
+    width: 100% !important;
+    min-width: 0 !important;
+    scroll-snap-align: start !important;
+  }
+
+  .trending-grid::-webkit-scrollbar {
+    display: none !important;
+  }
+
+  .trending-grid {
+    scrollbar-width: none !important;
+  }
+}
