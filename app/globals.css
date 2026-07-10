@@ -591,3 +591,44 @@ button,
     gap: 16px;
   }
 }
+/* DEBRODER Desktop spacing refinement v11
+   Only desktop spacing. Do not replace the full globals.css file. */
+
+@media (min-width: 1024px) {
+  .section-space {
+    padding-top: 64px !important;
+    padding-bottom: 64px !important;
+  }
+
+  .trust-strip,
+  .benefit-strip {
+    margin-top: 0 !important;
+    margin-bottom: 0 !important;
+  }
+
+  .trust-strip + .section-space,
+  .benefit-strip + .section-space {
+    padding-top: 56px !important;
+  }
+
+  .campaign-section {
+    padding-top: 64px !important;
+    padding-bottom: 64px !important;
+  }
+
+  .campaign-section + .section-space {
+    padding-top: 64px !important;
+  }
+
+  .section-shell > .section-header,
+  .section-shell > h2,
+  .landing-section-title {
+    margin-bottom: 24px !important;
+  }
+
+  .homepage-section,
+  .landing-section {
+    margin-top: 0 !important;
+    margin-bottom: 0 !important;
+  }
+}
