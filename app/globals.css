@@ -570,42 +570,15 @@ button,
   }
 }
 
-/* Homepage rhythm: spacing is defined once, between sections, not doubled. */
-@media (min-width: 1024px) {
-  .benefit-grid {
-    width: min(1180px, calc(100% - 96px));
-  }
-
-  .public-site .home-section {
-    padding-bottom: 0;
-  }
-
-  .public-site .home-featured {
-    padding-top: 48px;
-  }
-
-  .public-site .home-trending,
-  .public-site .home-campaign,
-  .public-site .home-fresh-drop,
-  .public-site .home-categories,
-  .public-site .home-store,
-  .public-site .home-about {
-    padding-top: 56px;
-  }
-
-  .public-site .home-about {
-    padding-bottom: 72px;
-  }
-}
-
-
 /* =========================================================
-   DEBRODER Landing v13 — section rhythm + mobile touch fix
-   Scope: homepage only. Other public/admin pages stay unchanged.
+   DEBRODER Landing Blueprint v1.0 — section rhythm
+   Scope: homepage only. Uses an 8px-based spacing system.
+   Each section owns only its TOP gap so adjacent sections do
+   not accidentally double their vertical whitespace.
    ========================================================= */
 
-/* Horizontal carousels must still allow the page to move vertically.
-   `pan-x` alone can make a vertical swipe feel trapped on mobile. */
+/* Keep horizontal carousels responsive to touch while allowing
+   vertical page scrolling to begin from the same gesture area. */
 .public-site .native-carousel,
 .public-site .no-scrollbar,
 .public-site .trending-grid {
@@ -619,76 +592,73 @@ button,
   overscroll-behavior-y: auto;
 }
 
-/* Define homepage spacing once, from the start of each section.
-   Removing bottom padding prevents two adjacent sections from adding
-   their spacing together. */
+/* Mobile: reduced, but never cramped. */
+.public-site {
+  --home-gap-featured: 48px;
+  --home-gap-editorial: 56px;
+  --home-gap-major: 64px;
+  --home-gap-commerce: 64px;
+  --home-gap-support: 64px;
+  --home-gap-about: 72px;
+  --home-end-space: 72px;
+}
+
 .public-site .home-section {
   padding-bottom: 0 !important;
 }
 
-/* Mobile rhythm */
 .public-site .home-featured {
-  padding-top: 32px !important;
+  padding-top: var(--home-gap-featured) !important;
 }
 
-.public-site .home-trending,
+.public-site .home-trending {
+  padding-top: var(--home-gap-editorial) !important;
+}
+
 .public-site .home-campaign {
-  padding-top: 40px !important;
+  padding-top: var(--home-gap-major) !important;
 }
 
 .public-site .home-fresh-drop,
-.public-site .home-categories,
-.public-site .home-store,
-.public-site .home-about {
-  padding-top: 44px !important;
+.public-site .home-categories {
+  padding-top: var(--home-gap-commerce) !important;
+}
+
+.public-site .home-store {
+  padding-top: var(--home-gap-support) !important;
 }
 
 .public-site .home-about {
-  padding-bottom: 56px !important;
+  padding-top: var(--home-gap-about) !important;
+  padding-bottom: var(--home-end-space) !important;
 }
 
-/* Tablet rhythm */
+/* Tablet: increase rhythm while preserving a composed layout. */
 @media (min-width: 640px) {
-  .public-site .home-featured {
-    padding-top: 40px !important;
-  }
-
-  .public-site .home-trending,
-  .public-site .home-campaign {
-    padding-top: 48px !important;
-  }
-
-  .public-site .home-fresh-drop,
-  .public-site .home-categories,
-  .public-site .home-store,
-  .public-site .home-about {
-    padding-top: 52px !important;
-  }
-
-  .public-site .home-about {
-    padding-bottom: 64px !important;
+  .public-site {
+    --home-gap-featured: 56px;
+    --home-gap-editorial: 64px;
+    --home-gap-major: 72px;
+    --home-gap-commerce: 72px;
+    --home-gap-support: 72px;
+    --home-gap-about: 80px;
+    --home-end-space: 80px;
   }
 }
 
-/* Desktop rhythm — compact, editorial, and consistent with blueprint. */
+/* Desktop: generous editorial rhythm from the frozen blueprint. */
 @media (min-width: 1024px) {
-  .public-site .home-featured {
-    padding-top: 40px !important;
+  .benefit-grid {
+    width: min(1180px, calc(100% - 96px));
   }
 
-  .public-site .home-trending,
-  .public-site .home-campaign {
-    padding-top: 48px !important;
-  }
-
-  .public-site .home-fresh-drop,
-  .public-site .home-categories,
-  .public-site .home-store,
-  .public-site .home-about {
-    padding-top: 56px !important;
-  }
-
-  .public-site .home-about {
-    padding-bottom: 72px !important;
+  .public-site {
+    --home-gap-featured: 72px;
+    --home-gap-editorial: 88px;
+    --home-gap-major: 96px;
+    --home-gap-commerce: 88px;
+    --home-gap-support: 88px;
+    --home-gap-about: 96px;
+    --home-end-space: 96px;
   }
 }
