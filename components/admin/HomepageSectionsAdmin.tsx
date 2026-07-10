@@ -22,6 +22,8 @@ type MediaChoice = {
   public_url: string;
   media_type: "image" | "video";
 };
+type SaveMode = "draft" | "published";
+
 type CustomDraft = {
   custom_label: string;
   custom_title: string;
@@ -34,6 +36,30 @@ type CustomDraft = {
   custom_object_fit: "cover" | "contain";
   custom_object_position: string;
 };
+
+
+function workflowFields(mode: SaveMode) {
+  const published = mode === "published";
+  return {
+    status: mode,
+    published_at: published ? new Date().toISOString() : null,
+    publish_at: null,
+    archived_at: null,
+  };
+}
+
+function workflowLabel(status?: string | null) {
+  if (status === "published") return "Tayang";
+  if (status === "scheduled") return "Terjadwal";
+  if (status === "archived") return "Diarsipkan";
+  return "Draft";
+}
+
+function workflowBadgeClass(status?: string | null) {
+  return status === "published"
+    ? "bg-emerald-50 text-emerald-700"
+    : "bg-amber-50 text-amber-700";
+}
 
 const customCardSectionSlugs = new Set([
   "featured",
@@ -596,7 +622,16 @@ export function HomepageSectionsAdmin({
     setSaving(true);
     const { error } = await supabase
       .from("homepage_sections")
-      .insert({ title, slug, is_active: true, sort_order: newSortOrder });
+      .insert({
+        title,
+        slug,
+        is_active: true,
+        sort_order: newSortOrder,
+        status: "published",
+        published_at: new Date().toISOString(),
+        publish_at: null,
+        archived_at: null,
+      });
     setSaving(false);
     if (error) {
       setStatus(`Section gagal dibuat: ${error.message}`);
@@ -609,7 +644,7 @@ export function HomepageSectionsAdmin({
     await loadData();
   }
 
-  async function saveSection(section: EditableSection) {
+  async function saveSection(section: EditableSection, mode: SaveMode) {
     const supabase = createSupabaseClient();
     if (!supabase) return;
     setSaving(true);
@@ -620,13 +655,16 @@ export function HomepageSectionsAdmin({
         slug: section.slug.trim() || slugify(section.title),
         is_active: section.is_active,
         sort_order: Number(section.sort_order),
+        ...workflowFields(mode),
       })
       .eq("id", section.id);
     setSaving(false);
     setStatus(
       error
         ? `Section gagal disimpan: ${error.message}`
-        : "Section homepage disimpan.",
+        : mode === "published"
+          ? "Section disimpan dan dipublikasikan."
+          : "Section disimpan sebagai draft.",
     );
     if (!error) await loadData();
   }
@@ -680,7 +718,7 @@ export function HomepageSectionsAdmin({
     if (!error) await loadData();
   }
 
-  async function addItem(section: EditableSection) {
+  async function addItem(section: EditableSection, mode: SaveMode) {
     if (isCustomSection(section)) {
       setStatus(
         "Section ini memakai custom card. Gunakan form Tambah custom card.",
@@ -711,6 +749,7 @@ export function HomepageSectionsAdmin({
       sort_order: section.items.length
         ? Math.max(...section.items.map((item) => item.sort_order)) + 10
         : 10,
+      ...workflowFields(mode),
     });
     if (error) {
       setStatus(
@@ -721,18 +760,36 @@ export function HomepageSectionsAdmin({
       return;
     }
     setSelection((current) => ({ ...current, [section.id]: "" }));
-    setStatus("Item ditambahkan ke homepage tanpa mengubah data aslinya.");
+    setStatus(
+      mode === "published"
+        ? "Item ditambahkan dan dipublikasikan tanpa mengubah data aslinya."
+        : "Item ditambahkan sebagai draft tanpa mengubah data aslinya.",
+    );
     await loadData();
   }
 
-  async function addCustomItem(section: EditableSection) {
+  async function addCustomItem(section: EditableSection, mode: SaveMode) {
     const draft = { ...emptyCustomDraft, ...(customDrafts[section.id] || {}) };
     if (
-      !draft.custom_title.trim() ||
-      !draft.custom_link_url.trim() ||
+      mode === "published" &&
+      (!draft.custom_title.trim() ||
+        !draft.custom_link_url.trim() ||
+        !draft.custom_image_url.trim())
+    ) {
+      setStatus(
+        "Untuk publish, custom card wajib memiliki judul, link tujuan, dan gambar.",
+      );
+      return;
+    }
+    if (
+      mode === "draft" &&
+      !draft.custom_title.trim() &&
+      !draft.custom_label.trim() &&
+      !draft.custom_subtitle.trim() &&
+      !draft.custom_link_url.trim() &&
       !draft.custom_image_url.trim()
     ) {
-      setStatus("Custom card wajib memiliki judul, link tujuan, dan gambar.");
+      setStatus("Isi minimal judul, label, subtitle, link, atau gambar sebelum menyimpan draft.");
       return;
     }
     const supabase = createSupabaseClient();
@@ -756,6 +813,7 @@ export function HomepageSectionsAdmin({
       sort_order: section.items.length
         ? Math.max(...section.items.map((item) => item.sort_order)) + 10
         : 10,
+      ...workflowFields(mode),
     });
     if (error) {
       setStatus(`Custom card gagal ditambahkan: ${error.message}`);
@@ -765,7 +823,11 @@ export function HomepageSectionsAdmin({
       ...current,
       [section.id]: emptyCustomDraft,
     }));
-    setStatus("Custom card ditambahkan.");
+    setStatus(
+      mode === "published"
+        ? "Custom card disimpan dan dipublikasikan."
+        : "Custom card disimpan sebagai draft.",
+    );
     await loadData();
   }
 
@@ -790,7 +852,7 @@ export function HomepageSectionsAdmin({
     );
   }
 
-  async function saveItems(section: EditableSection) {
+  async function saveItems(section: EditableSection, mode: SaveMode) {
     const supabase = createSupabaseClient();
     if (!supabase) return;
     setSaving(true);
@@ -812,6 +874,7 @@ export function HomepageSectionsAdmin({
             custom_object_fit: item.custom_object_fit || "cover",
             custom_object_position:
               item.custom_object_position || "center center",
+            ...workflowFields(mode),
           })
           .eq("id", item.id),
       ),
@@ -821,7 +884,9 @@ export function HomepageSectionsAdmin({
     setStatus(
       error
         ? `Item gagal disimpan: ${error.message}`
-        : "Status dan urutan item disimpan.",
+        : mode === "published"
+          ? "Item disimpan dan dipublikasikan."
+          : "Item disimpan sebagai draft.",
     );
     if (!error) await loadData();
   }
@@ -949,6 +1014,14 @@ export function HomepageSectionsAdmin({
             key={section.id}
             className="border border-brand-softGray bg-white p-5 sm:p-6"
           >
+            <div className="mb-4 flex items-center justify-between gap-3">
+              <span className={`rounded-full px-3 py-1 text-[11px] font-semibold ${workflowBadgeClass(section.status)}`}>
+                Status: {workflowLabel(section.status)}
+              </span>
+              <p className="text-xs text-brand-charcoal/50">
+                Draft tidak tampil di website sampai dipublikasikan.
+              </p>
+            </div>
             <div className="grid gap-3 lg:grid-cols-[1fr_1fr_120px_auto] lg:items-end">
               <label className="text-sm font-semibold">
                 Judul
@@ -1019,11 +1092,19 @@ export function HomepageSectionsAdmin({
               </button>
               <button
                 type="button"
-                onClick={() => saveSection(section)}
+                onClick={() => saveSection(section, "draft")}
+                disabled={saving}
+                className="rounded-full border border-brand-charcoal px-4 py-2 text-xs font-semibold disabled:opacity-50"
+              >
+                Simpan Draft
+              </button>
+              <button
+                type="button"
+                onClick={() => saveSection(section, "published")}
                 disabled={saving}
                 className="rounded-full bg-brand-green px-4 py-2 text-xs font-semibold text-white disabled:opacity-50"
               >
-                Simpan section
+                Simpan &amp; Publish
               </button>
               {!onlySlug ? (
                 <button
@@ -1183,13 +1264,24 @@ export function HomepageSectionsAdmin({
                       className="min-h-24 rounded-lg border border-brand-softGray px-4 py-3 text-sm md:col-span-2"
                     />
                   </div>
-                  <button
-                    type="button"
-                    onClick={() => addCustomItem(section)}
-                    className="mt-4 min-h-11 rounded-full border border-brand-charcoal px-5 text-sm font-semibold"
-                  >
-                    Tambahkan custom card
-                  </button>
+                  <div className="mt-4 flex flex-wrap gap-2">
+                    <button
+                      type="button"
+                      onClick={() => addCustomItem(section, "draft")}
+                      disabled={saving}
+                      className="min-h-11 rounded-full border border-brand-charcoal px-5 text-sm font-semibold disabled:opacity-50"
+                    >
+                      Simpan Draft
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => addCustomItem(section, "published")}
+                      disabled={saving}
+                      className="min-h-11 rounded-full bg-brand-green px-5 text-sm font-semibold text-white disabled:opacity-50"
+                    >
+                      Simpan &amp; Publish
+                    </button>
+                  </div>
                 </div>
               ) : (
                 <div className="mt-3">
@@ -1222,10 +1314,19 @@ export function HomepageSectionsAdmin({
                     </select>
                     <button
                       type="button"
-                      onClick={() => addItem(section)}
-                      className="min-h-11 rounded-full border border-brand-charcoal px-5 text-sm font-semibold"
+                      onClick={() => addItem(section, "draft")}
+                      disabled={saving}
+                      className="min-h-11 rounded-full border border-brand-charcoal px-5 text-sm font-semibold disabled:opacity-50"
                     >
-                      Tambahkan item
+                      Simpan Draft
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => addItem(section, "published")}
+                      disabled={saving}
+                      className="min-h-11 rounded-full bg-brand-green px-5 text-sm font-semibold text-white disabled:opacity-50"
+                    >
+                      Simpan &amp; Publish
                     </button>
                   </div>
                 </div>
@@ -1258,6 +1359,9 @@ export function HomepageSectionsAdmin({
                                 ? "Produk"
                                 : "Layanan"}
                           </p>
+                          <span className={`mt-2 inline-flex rounded-full px-2.5 py-1 text-[10px] font-semibold ${workflowBadgeClass(item.status)}`}>
+                            {workflowLabel(item.status)}
+                          </span>
                         </div>
                         <label className="flex items-center gap-2 text-xs font-semibold">
                           <input
@@ -1411,14 +1515,24 @@ export function HomepageSectionsAdmin({
                       ) : null}
                     </div>
                   ))}
-                  <button
-                    type="button"
-                    onClick={() => saveItems(section)}
-                    disabled={saving}
-                    className="justify-self-start rounded-full bg-brand-charcoal px-5 py-2.5 text-xs font-semibold text-white disabled:opacity-50"
-                  >
-                    Simpan item
-                  </button>
+                  <div className="flex flex-wrap gap-2">
+                    <button
+                      type="button"
+                      onClick={() => saveItems(section, "draft")}
+                      disabled={saving}
+                      className="rounded-full border border-brand-charcoal px-5 py-2.5 text-xs font-semibold disabled:opacity-50"
+                    >
+                      Simpan Draft
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => saveItems(section, "published")}
+                      disabled={saving}
+                      className="rounded-full bg-brand-charcoal px-5 py-2.5 text-xs font-semibold text-white disabled:opacity-50"
+                    >
+                      Simpan &amp; Publish
+                    </button>
+                  </div>
                 </div>
               ) : (
                 <p className="mt-4 bg-brand-offWhite p-4 text-sm text-brand-charcoal/60">
