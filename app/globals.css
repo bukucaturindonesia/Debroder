@@ -683,3 +683,19 @@ button,
     margin: 0 !important;
   }
 }
+/* DEBRODER Featured refinement
+   Desktop & mobile: hilangkan jarak antar foto Featured. */
+
+.featured-grid,
+.featured-section .grid,
+[data-section="featured"] .grid {
+  gap: 0 !important;
+  row-gap: 0 !important;
+  column-gap: 0 !important;
+}
+
+.featured-grid > *,
+.featured-section .grid > *,
+[data-section="featured"] .grid > * {
+  margin: 0 !important;
+}
