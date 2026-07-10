@@ -500,3 +500,63 @@ button,
   }
 }
 
+
+/* Trending is a fixed three-poster composition on every viewport.
+   It intentionally does not scroll or show carousel controls. */
+.trending-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 4px;
+  width: 100%;
+}
+
+.trending-static-card {
+  min-width: 0;
+  width: 100%;
+}
+
+/* On phone widths all three 4:5 posters remain visible together.
+   Copy scales with the card so the row never overflows horizontally. */
+@media (max-width: 639px) {
+  .trending-static-card .editorial-card-content {
+    left: 7px;
+    right: 7px;
+    bottom: 8px;
+    max-width: calc(100% - 14px);
+  }
+
+  .trending-static-card .editorial-card-label {
+    font-size: clamp(7px, 2.2vw, 9px);
+    line-height: 1.1;
+    margin-bottom: 3px;
+  }
+
+  .trending-static-card .editorial-card-title {
+    font-size: clamp(9px, 2.8vw, 12px);
+    line-height: 1.05;
+    -webkit-line-clamp: 2;
+  }
+
+  .trending-static-card .editorial-card-cta {
+    font-size: clamp(7px, 2.2vw, 9px);
+    min-height: 22px;
+    padding-inline: 8px;
+  }
+
+  .trending-static-card .editorial-card-content .mt-3,
+  .trending-static-card .editorial-card-content .sm\:mt-4 {
+    margin-top: 6px;
+  }
+}
+
+@media (min-width: 640px) {
+  .trending-grid {
+    gap: 12px;
+  }
+}
+
+@media (min-width: 1024px) {
+  .trending-grid {
+    gap: 16px;
+  }
+}

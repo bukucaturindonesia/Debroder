@@ -52,7 +52,6 @@ type ProductItem = Visual & {
 
 const horizontalCarouselClass = "native-carousel no-scrollbar mt-5 flex snap-x snap-mandatory gap-3 overflow-x-auto sm:gap-4";
 const horizontalCarouselItemClass = "min-w-[76vw] shrink-0 snap-start sm:min-w-[44vw] lg:min-w-[31.5%]";
-const horizontalEditorialItemClass = "min-w-[76vw] shrink-0 snap-start sm:min-w-[44vw] lg:min-w-[calc((100%_-_32px)_/_3)]";
 
 function isCustomHomepageItem(item: HomepageSectionItem) {
   return Boolean(item.custom_title && item.custom_image_url && item.custom_link_url);
@@ -289,27 +288,22 @@ function ManagedHomepageSection({ section, setting, fallbackProducts = [] }: { s
             title={section.title}
             description={setting?.subtitle}
             textPosition={setting?.text_position}
-            action={
-              <div className="flex items-center gap-4">
-                {configuredCta}
-                {!isFeatured ? <ScrollButtons containerId={carouselId} /> : null}
-              </div>
-            }
+            action={configuredCta}
           />
           <div
             id={carouselId}
             className={
               isFeatured
                 ? "mt-5 grid grid-cols-1 gap-3 sm:gap-4 lg:grid-cols-2"
-                : horizontalCarouselClass
+                : "trending-grid mt-5"
             }
           >
-            {items.slice(0, isFeatured ? 2 : undefined).map((item, index) => (
+            {items.slice(0, isFeatured ? 2 : 3).map((item, index) => (
               <EditorialCard
                 key={sectionItems[index]?.id || `${item.href}-${index}`}
                 item={item}
                 variant={isFeatured ? "featured" : "trending"}
-                className={isFeatured ? "" : horizontalEditorialItemClass}
+                className={isFeatured ? "" : "trending-static-card"}
               />
             ))}
           </div>
