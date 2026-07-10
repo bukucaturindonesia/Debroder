@@ -774,6 +774,28 @@ alter table if exists public.trust_about_content
   add column if not exists text_position text not null default 'left',
   add column if not exists urutan integer not null default 0;
 
+-- Trust & Tentang is a singleton CMS document.
+-- Keep one canonical row during setup and prevent future duplicates.
+with ranked_trust_about as (
+  select
+    id,
+    row_number() over (
+      order by
+        status_aktif desc,
+        updated_at desc nulls last,
+        created_at desc nulls last,
+        id desc
+    ) as row_number
+  from public.trust_about_content
+)
+delete from public.trust_about_content target
+using ranked_trust_about ranked
+where target.id = ranked.id
+  and ranked.row_number > 1;
+
+create unique index if not exists trust_about_content_singleton_unique_idx
+  on public.trust_about_content ((1));
+
 alter table if exists public.landing_sections drop constraint if exists landing_sections_text_position_check;
 alter table if exists public.landing_sections add constraint landing_sections_text_position_check check (text_position in ('left', 'center', 'right'));
 alter table if exists public.cms_banners drop constraint if exists cms_banners_text_position_check;

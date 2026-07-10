@@ -189,7 +189,12 @@ async function readSingle<T extends { id?: string }>(
     return fallback;
   }
 
-  let query = supabase.from(table).select("*").limit(1);
+  let query = supabase
+    .from(table)
+    .select("*")
+    .order("updated_at", { ascending: false })
+    .order("created_at", { ascending: false })
+    .limit(1);
 
   if (filterActive) {
     query = query.eq("status_aktif", true);

@@ -53,6 +53,7 @@ type TableConfig = {
   table: string;
   description: string;
   orderField?: string;
+  singleton?: boolean;
   fields: FieldConfig[];
 };
 type AdminValue = string | number | boolean | string[] | null | undefined;
@@ -742,7 +743,8 @@ const tableConfigs: TableConfig[] = [
     navLabel: "Trust & Tentang",
     href: "/admin/trust-about",
     table: "trust_about_content",
-    description: "Atur trust item dan paragraf Tentang Kami.",
+    description: "Kelola satu konten resmi Trust & Tentang. Form ini selalu mengedit data yang sama dan tidak membuat duplikat.",
+    singleton: true,
     fields: [
       {
         name: "trust_items",
@@ -1148,7 +1150,12 @@ export function AdminDashboard() {
 
     setIsLoading(true);
     let query = supabase.from(config.table).select("*");
-    if (config.orderField) {
+    if (config.singleton) {
+      query = query
+        .order("updated_at", { ascending: false })
+        .order("created_at", { ascending: false })
+        .limit(1);
+    } else if (config.orderField) {
       query = query.order(config.orderField, { ascending: true });
     }
     const { data, error } = await query;
@@ -1159,7 +1166,19 @@ export function AdminDashboard() {
       return;
     }
 
-    setRows((data || []) as AdminRow[]);
+    const loadedRows = (data || []) as AdminRow[];
+    setRows(loadedRows);
+
+    if (config.singleton) {
+      const singletonRow = loadedRows[0];
+      if (singletonRow) {
+        setEditingId(singletonRow.id || null);
+        setForm({ ...singletonRow });
+      } else {
+        setEditingId(null);
+        setForm(emptyForm(config.fields));
+      }
+    }
   }
 
   async function loadMediaChoices() {
@@ -1406,6 +1425,11 @@ export function AdminDashboard() {
   }
 
   function resetForm() {
+    if (activeConfig.singleton && rows[0]) {
+      setEditingId(rows[0].id || null);
+      setForm({ ...rows[0] });
+      return;
+    }
     setEditingId(null);
     setForm(emptyForm(activeConfig.fields));
   }
@@ -1505,11 +1529,24 @@ export function AdminDashboard() {
       ...prepared.payload,
       updated_at: new Date().toISOString()
     };
-    const result = editingId
+
+    let targetId = editingId;
+    if (activeConfig.singleton && !targetId) {
+      const { data: existingSingleton } = await supabase
+        .from(activeConfig.table)
+        .select("id")
+        .order("updated_at", { ascending: false })
+        .order("created_at", { ascending: false })
+        .limit(1)
+        .maybeSingle();
+      targetId = existingSingleton?.id || null;
+    }
+
+    const result = targetId
       ? await supabase
           .from(activeConfig.table)
           .update(payload)
-          .eq("id", editingId)
+          .eq("id", targetId)
           .select("*")
           .single()
       : await supabase.from(activeConfig.table).insert(payload).select("*").single();
@@ -1534,17 +1571,23 @@ export function AdminDashboard() {
     }
 
     setStatus(
-      editingId
-        ? "Perubahan tersimpan dan sudah diverifikasi dari database."
+      targetId
+        ? activeConfig.singleton
+          ? "Konten Trust & Tentang berhasil diperbarui. Website publik akan membaca data tunggal ini."
+          : "Perubahan tersimpan dan sudah diverifikasi dari database."
         : "Data baru tersimpan dan sudah diverifikasi dari database."
     );
-    resetForm();
+    if (!activeConfig.singleton) resetForm();
     await Promise.all([loadRows(), loadOverview(), loadMediaChoices()]);
     router.refresh();
   }
 
   async function deleteRow(row: AdminRow) {
     if (!row.id || !activeConfig.table) return;
+    if (activeConfig.singleton) {
+      setStatus("Konten Trust & Tentang adalah data tunggal dan tidak dapat dihapus. Nonaktifkan jika sementara tidak ingin ditampilkan.");
+      return;
+    }
     if (!window.confirm("Hapus data ini?")) return;
 
     const supabase = createSupabaseClient();
@@ -2125,7 +2168,11 @@ export function AdminDashboard() {
                 className="border border-brand-softGray bg-white p-5"
               >
                 <h2 className="text-2xl font-semibold">
-                  {editingId ? "Edit Data" : "Tambah Baru"}
+                  {activeConfig.singleton
+                    ? "Konten Tunggal"
+                    : editingId
+                      ? "Edit Data"
+                      : "Tambah Baru"}
                 </h2>
                 <div className="mt-5 grid gap-4">
                   {activeConfig.fields.map((field) => (
@@ -2146,21 +2193,27 @@ export function AdminDashboard() {
                     disabled={isLoading}
                     className="inline-flex min-h-11 items-center justify-center rounded-full bg-brand-charcoal px-6 py-3 text-sm font-semibold text-white disabled:opacity-50"
                   >
-                    {isLoading ? "Menyimpan..." : "Simpan Perubahan"}
+                    {isLoading
+                      ? "Menyimpan..."
+                      : activeConfig.singleton
+                        ? "Simpan & Terapkan"
+                        : "Simpan Perubahan"}
                   </button>
                   <button
                     type="button"
                     onClick={resetForm}
                     className="inline-flex min-h-11 items-center justify-center rounded-full border border-brand-softGray px-6 py-3 text-sm font-semibold text-brand-charcoal transition hover:border-brand-charcoal"
                   >
-                    Reset
+                    {activeConfig.singleton ? "Batalkan Perubahan" : "Reset"}
                   </button>
                 </div>
               </form>
 
-              <div className="border border-brand-softGray bg-white p-5">
+              <div className={`border border-brand-softGray bg-white p-5 ${activeConfig.singleton ? "self-start" : ""}`}>
                 <div className="flex items-center justify-between gap-4">
-                  <h2 className="text-2xl font-semibold">Data</h2>
+                  <h2 className="text-2xl font-semibold">
+                    {activeConfig.singleton ? "Status Konten" : "Data"}
+                  </h2>
                   <button
                     type="button"
                     onClick={() => loadRows()}
@@ -2169,7 +2222,32 @@ export function AdminDashboard() {
                     Refresh
                   </button>
                 </div>
-                {activeKey === "products" ? (
+                {activeConfig.singleton ? (
+                  <div className="mt-5 grid gap-4">
+                    <div className="border border-brand-softGray bg-brand-offWhite p-4">
+                      <p className="text-sm font-semibold">
+                        {rows[0] ? "Data tunggal ditemukan" : "Belum ada data"}
+                      </p>
+                      <p className="mt-2 text-sm leading-6 text-brand-charcoal/65">
+                        Halaman publik selalu membaca satu data Trust & Tentang terbaru. Tidak ada tombol tambah atau hapus agar konten tidak terduplikasi.
+                      </p>
+                      {rows[0]?.updated_at ? (
+                        <p className="mt-3 text-xs font-semibold text-brand-charcoal/50">
+                          Terakhir diperbarui: {new Date(String(rows[0].updated_at)).toLocaleString("id-ID")}
+                        </p>
+                      ) : null}
+                    </div>
+                    {previewUrl(rows[0] || {}) ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img
+                        src={previewUrl(rows[0] || {})}
+                        alt="Preview Tentang DEBRODER"
+                        className="aspect-[4/3] w-full bg-brand-offWhite object-cover"
+                      />
+                    ) : null}
+                  </div>
+                ) : null}
+                {!activeConfig.singleton && activeKey === "products" ? (
                   <div className="mt-5 border-y border-brand-softGray py-4">
                     <p className="text-xs font-semibold uppercase tracking-[0.16em] text-brand-charcoal/50">
                       Filter kategori
@@ -2196,6 +2274,7 @@ export function AdminDashboard() {
                     </div>
                   </div>
                 ) : null}
+                {!activeConfig.singleton ? (
                 <div className="mt-5 grid gap-4">
                   {visibleRows.map((row) => {
                     const image = previewUrl(row);
@@ -2268,6 +2347,7 @@ export function AdminDashboard() {
                     </p>
                   ) : null}
                 </div>
+                ) : null}
               </div>
             </div>
           )}
