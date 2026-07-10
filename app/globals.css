@@ -598,3 +598,97 @@ button,
   }
 }
 
+
+/* =========================================================
+   DEBRODER Landing v13 — section rhythm + mobile touch fix
+   Scope: homepage only. Other public/admin pages stay unchanged.
+   ========================================================= */
+
+/* Horizontal carousels must still allow the page to move vertically.
+   `pan-x` alone can make a vertical swipe feel trapped on mobile. */
+.public-site .native-carousel,
+.public-site .no-scrollbar,
+.public-site .trending-grid {
+  touch-action: manipulation;
+}
+
+.public-site .native-carousel,
+.public-site .category-carousel,
+.public-site .trending-grid {
+  overscroll-behavior-x: auto;
+  overscroll-behavior-y: auto;
+}
+
+/* Define homepage spacing once, from the start of each section.
+   Removing bottom padding prevents two adjacent sections from adding
+   their spacing together. */
+.public-site .home-section {
+  padding-bottom: 0 !important;
+}
+
+/* Mobile rhythm */
+.public-site .home-featured {
+  padding-top: 32px !important;
+}
+
+.public-site .home-trending,
+.public-site .home-campaign {
+  padding-top: 40px !important;
+}
+
+.public-site .home-fresh-drop,
+.public-site .home-categories,
+.public-site .home-store,
+.public-site .home-about {
+  padding-top: 44px !important;
+}
+
+.public-site .home-about {
+  padding-bottom: 56px !important;
+}
+
+/* Tablet rhythm */
+@media (min-width: 640px) {
+  .public-site .home-featured {
+    padding-top: 40px !important;
+  }
+
+  .public-site .home-trending,
+  .public-site .home-campaign {
+    padding-top: 48px !important;
+  }
+
+  .public-site .home-fresh-drop,
+  .public-site .home-categories,
+  .public-site .home-store,
+  .public-site .home-about {
+    padding-top: 52px !important;
+  }
+
+  .public-site .home-about {
+    padding-bottom: 64px !important;
+  }
+}
+
+/* Desktop rhythm — compact, editorial, and consistent with blueprint. */
+@media (min-width: 1024px) {
+  .public-site .home-featured {
+    padding-top: 40px !important;
+  }
+
+  .public-site .home-trending,
+  .public-site .home-campaign {
+    padding-top: 48px !important;
+  }
+
+  .public-site .home-fresh-drop,
+  .public-site .home-categories,
+  .public-site .home-store,
+  .public-site .home-about {
+    padding-top: 56px !important;
+  }
+
+  .public-site .home-about {
+    padding-bottom: 72px !important;
+  }
+}
