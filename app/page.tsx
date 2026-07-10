@@ -180,14 +180,26 @@ function BenefitIcon({ name }: { name: string }) {
   );
 }
 
-function EditorialCard({ item, className = "" }: { item: EditorialItem; className?: string }) {
+function EditorialCard({
+  item,
+  className = "",
+  variant = "trending"
+}: {
+  item: EditorialItem;
+  className?: string;
+  variant?: "featured" | "trending";
+}) {
   const label = cleanCmsText(item.label);
   const title = cleanCmsText(item.title);
   const button = cleanCmsText(item.button);
   const shouldShowCopy = hasEditorialText(label, title, button);
 
+  const mediaClass = variant === "featured"
+    ? "aspect-[4/5] sm:aspect-[5/4] lg:aspect-auto lg:h-[clamp(520px,62vh,680px)]"
+    : "aspect-[4/5]";
+
   return (
-    <article className={`editorial-card group relative block aspect-[4/5] overflow-hidden bg-[#0a1711] ${className}`}>
+    <article className={`editorial-card group relative block overflow-hidden bg-[#0a1711] ${mediaClass} ${className}`}>
       <Link href={item.href} aria-label={`Lihat ${title || item.imageAlt}`} className="absolute inset-0 z-10" />
       <ResponsivePicture
         desktopSrc={item.image}
@@ -271,13 +283,35 @@ function ManagedHomepageSection({ section, setting, fallbackProducts = [] }: { s
     const items = sectionItems.map(editorialPlacement).filter((item): item is EditorialItem => Boolean(item));
     if (!items.length) return null;
     return (
-      <section id={section.slug} className={`${isFeatured ? "bg-white py-12 sm:py-16 lg:py-20" : "section-space bg-white"}`}>
-        <div className={isFeatured ? "" : "section-shell"}>
-          <div className={isFeatured ? "section-shell" : ""}>
-            <SectionHeading title={section.title} description={setting?.subtitle} textPosition={setting?.text_position} action={<div className="flex items-center gap-4">{configuredCta}{!isFeatured ? <ScrollButtons containerId={carouselId} /> : null}</div>} />
-          </div>
-          <div id={carouselId} className={isFeatured ? "mt-5 grid grid-cols-1 gap-1 sm:gap-2 lg:grid-cols-2" : horizontalCarouselClass}>
-            {items.slice(0, isFeatured ? 2 : undefined).map((item, index) => <EditorialCard key={sectionItems[index]?.id || `${item.href}-${index}`} item={item} className={isFeatured ? "" : horizontalEditorialItemClass} />)}
+      <section id={section.slug} className="section-space bg-white">
+        <div className="section-shell">
+          <SectionHeading
+            title={section.title}
+            description={setting?.subtitle}
+            textPosition={setting?.text_position}
+            action={
+              <div className="flex items-center gap-4">
+                {configuredCta}
+                {!isFeatured ? <ScrollButtons containerId={carouselId} /> : null}
+              </div>
+            }
+          />
+          <div
+            id={carouselId}
+            className={
+              isFeatured
+                ? "mt-5 grid grid-cols-1 gap-3 sm:gap-4 lg:grid-cols-2"
+                : horizontalCarouselClass
+            }
+          >
+            {items.slice(0, isFeatured ? 2 : undefined).map((item, index) => (
+              <EditorialCard
+                key={sectionItems[index]?.id || `${item.href}-${index}`}
+                item={item}
+                variant={isFeatured ? "featured" : "trending"}
+                className={isFeatured ? "" : horizontalEditorialItemClass}
+              />
+            ))}
           </div>
         </div>
       </section>
