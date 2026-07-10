@@ -2083,6 +2083,14 @@ export function AdminDashboard() {
             <>
               <LandingSectionsAdmin />
               <HomepageSectionsAdmin showPlainCategorySetting={false} />
+              <section className="mt-8 border-t border-brand-softGray pt-8">
+                <div className="mb-4">
+                  <p className="text-xs font-semibold uppercase tracking-[0.18em] text-brand-charcoal/45">Editorial Campaign</p>
+                  <h2 className="mt-2 text-2xl font-semibold">Built for Identity</h2>
+                  <p className="mt-2 text-sm text-brand-charcoal/60">Edit banner besar, gambar mobile, headline, subtitle, dan CTA langsung dari CMS Landing Page.</p>
+                </div>
+                <CampaignBannerAdmin />
+              </section>
             </>
           ) : activeKey === "featured-products" ? (
             <HomepageSectionsAdmin showPlainCategorySetting={false} onlySlug="featured" />

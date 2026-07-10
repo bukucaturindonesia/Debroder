@@ -13,17 +13,17 @@ type MediaChoice = {
 };
 
 const emptyBanner: CmsBanner = {
-  name: "",
+  name: "Built for Identity",
   media_type: "image",
   desktop_media_url: "",
   mobile_media_url: "",
   poster_url: "",
   eyebrow: "",
-  title: "",
-  subtitle: "",
-  cta_label: "",
-  cta_url: "",
-  text_position: "left",
+  title: "BUILT FOR IDENTITY",
+  subtitle: "Apparel custom untuk tim, komunitas, dan perusahaan yang ingin tampil beda.",
+  cta_label: "Jelajahi Koleksi",
+  cta_url: "/koleksi",
+  text_position: "center",
   is_active: true,
   sort_order: 0
 };
@@ -138,7 +138,7 @@ export function CampaignBannerAdmin() {
     <div className="mt-6 grid gap-6 xl:grid-cols-[minmax(0,.9fr)_minmax(0,1.1fr)]">
       <form onSubmit={saveBanner} className="bg-white p-5 sm:p-6">
         <div className="flex items-center justify-between gap-3">
-          <div><h2 className="text-xl font-semibold">{editingId ? "Edit campaign" : "Campaign baru"}</h2><p className="mt-1 text-sm text-brand-charcoal/55">Pilih foto atau video dari Media Library.</p></div>
+          <div><h2 className="text-xl font-semibold">{editingId ? "Edit Built for Identity" : "Built for Identity"}</h2><p className="mt-1 text-sm text-brand-charcoal/55">Pilih media dari Media Library atau tempel URL gambar secara manual.</p></div>
           {editingId ? <button type="button" onClick={reset} className="text-sm font-semibold underline">Batal</button> : null}
         </div>
         {status ? <p role="status" className="mt-4 bg-brand-offWhite p-3 text-sm font-semibold">{status}</p> : null}
@@ -146,14 +146,33 @@ export function CampaignBannerAdmin() {
         <div className="mt-5 grid gap-4">
           <Field label="Nama internal"><input required value={form.name} onChange={(event) => update("name", event.target.value)} /></Field>
           <Field label="Tipe media"><select value={form.media_type} onChange={(event) => update("media_type", event.target.value as CmsBanner["media_type"])}><option value="image">Image</option><option value="video">Video</option></select></Field>
-          <Field label="Media desktop"><select required value={form.desktop_media_url} onChange={(event) => update("desktop_media_url", event.target.value)}><option value="">Pilih media...</option>{primaryMedia.map((asset) => <option key={asset.id} value={asset.public_url}>{asset.name}</option>)}</select></Field>
-          <Field label="Media mobile (opsional)"><select value={form.mobile_media_url || ""} onChange={(event) => update("mobile_media_url", event.target.value)}><option value="">Gunakan media desktop</option>{primaryMedia.map((asset) => <option key={asset.id} value={asset.public_url}>{asset.name}</option>)}</select></Field>
+          <Field label="Media desktop dari Media Library"><select value={form.desktop_media_url} onChange={(event) => update("desktop_media_url", event.target.value)}><option value="">Pilih media...</option>{primaryMedia.map((asset) => <option key={asset.id} value={asset.public_url}>{asset.name}</option>)}</select></Field>
+          <Field label="URL gambar/video desktop"><input required value={form.desktop_media_url} onChange={(event) => update("desktop_media_url", event.target.value)} placeholder="https://... atau /brand/..." /></Field>
+          <Field label="Media mobile dari Media Library (opsional)"><select value={form.mobile_media_url || ""} onChange={(event) => update("mobile_media_url", event.target.value)}><option value="">Gunakan media desktop</option>{primaryMedia.map((asset) => <option key={asset.id} value={asset.public_url}>{asset.name}</option>)}</select></Field>
+          <Field label="URL gambar/video mobile (opsional)"><input value={form.mobile_media_url || ""} onChange={(event) => update("mobile_media_url", event.target.value)} placeholder="Kosongkan untuk memakai media desktop" /></Field>
           {form.media_type === "video" ? <Field label="Poster image"><select value={form.poster_url || ""} onChange={(event) => update("poster_url", event.target.value)}><option value="">Tanpa poster</option>{imageMedia.map((asset) => <option key={asset.id} value={asset.public_url}>{asset.name}</option>)}</select></Field> : null}
           <div className="grid gap-4 sm:grid-cols-2"><Field label="Eyebrow"><input value={form.eyebrow} onChange={(event) => update("eyebrow", event.target.value)} /></Field><Field label="Urutan"><input type="number" min="0" value={form.sort_order} onChange={(event) => update("sort_order", Number(event.target.value))} /></Field></div>
           <Field label="Title"><input required value={form.title} onChange={(event) => update("title", event.target.value)} /></Field>
           <Field label="Subtitle"><textarea rows={3} value={form.subtitle} onChange={(event) => update("subtitle", event.target.value)} /></Field>
           <div className="grid gap-4 sm:grid-cols-2"><Field label="CTA label"><input value={form.cta_label} onChange={(event) => update("cta_label", event.target.value)} /></Field><Field label="CTA URL"><input value={form.cta_url} onChange={(event) => update("cta_url", event.target.value)} /></Field></div>
           <Field label="Posisi teks"><select value={form.text_position || "left"} onChange={(event) => update("text_position", event.target.value as CmsBanner["text_position"])}><option value="left">Kiri</option><option value="center">Tengah</option><option value="right">Kanan</option></select></Field>
+
+          {form.desktop_media_url ? (
+            <div className="overflow-hidden border border-brand-softGray bg-brand-offWhite">
+              <div className="relative aspect-[16/7] w-full overflow-hidden bg-brand-charcoal">
+                {form.media_type === "video" ? (
+                  <video src={form.desktop_media_url} poster={form.poster_url || undefined} muted controls className="h-full w-full object-cover" />
+                ) : (
+                  <img src={form.desktop_media_url} alt="Preview Built for Identity" className="h-full w-full object-cover" />
+                )}
+              </div>
+              <div className="px-4 py-5 text-center">
+                <h3 className="text-2xl font-black uppercase tracking-[-0.03em]">{form.title || "BUILT FOR IDENTITY"}</h3>
+                {form.subtitle ? <p className="mt-2 text-sm text-brand-charcoal/60">{form.subtitle}</p> : null}
+                {form.cta_label ? <span className="mt-4 inline-flex rounded-full bg-brand-charcoal px-4 py-2 text-xs font-semibold text-white">{form.cta_label}</span> : null}
+              </div>
+            </div>
+          ) : null}
           <label className="flex min-h-11 items-center gap-2 text-sm font-semibold"><input type="checkbox" checked={form.is_active} onChange={(event) => update("is_active", event.target.checked)} className="h-4 w-4 accent-brand-green" />Aktif di landing page</label>
           <button disabled={saving} className="min-h-11 rounded-full bg-brand-green px-6 text-sm font-semibold text-white disabled:opacity-50">{saving ? "Menyimpan..." : "Simpan campaign"}</button>
         </div>
