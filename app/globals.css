@@ -532,12 +532,11 @@ button,
 }
 
 
-/* Trending is a fixed three-poster composition on every viewport.
-   It intentionally does not scroll or show carousel controls. */
+/* Trending: desktop uses three fixed posters; mobile uses a native 1.2-card carousel. */
 .trending-grid {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 4px;
+  gap: 16px;
   width: 100%;
 }
 
@@ -546,48 +545,56 @@ button,
   width: 100%;
 }
 
-/* On phone widths all three 4:5 posters remain visible together.
-   Copy scales with the card so the row never overflows horizontally. */
-@media (max-width: 639px) {
-  .trending-static-card .editorial-card-content {
-    left: 7px;
-    right: 7px;
-    bottom: 8px;
-    max-width: calc(100% - 14px);
-  }
-
-  .trending-static-card .editorial-card-label {
-    font-size: clamp(7px, 2.2vw, 9px);
-    line-height: 1.1;
-    margin-bottom: 3px;
-  }
-
-  .trending-static-card .editorial-card-title {
-    font-size: clamp(9px, 2.8vw, 12px);
-    line-height: 1.05;
-    -webkit-line-clamp: 2;
-  }
-
-  .trending-static-card .editorial-card-cta {
-    font-size: clamp(7px, 2.2vw, 9px);
-    min-height: 22px;
-    padding-inline: 8px;
-  }
-
-  .trending-static-card .editorial-card-content .mt-3,
-  .trending-static-card .editorial-card-content .sm\:mt-4 {
-    margin-top: 6px;
-  }
-}
-
-@media (min-width: 640px) {
+@media (max-width: 767px) {
   .trending-grid {
+    grid-template-columns: none;
+    grid-auto-flow: column;
+    grid-auto-columns: 83.333%;
     gap: 12px;
+    overflow-x: auto;
+    overflow-y: hidden;
+    scroll-snap-type: x mandatory;
+    scroll-padding-inline: 0;
+    overscroll-behavior-inline: contain;
+    scrollbar-width: none;
+    touch-action: pan-x;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .trending-grid::-webkit-scrollbar {
+    display: none;
+  }
+
+  .trending-static-card {
+    scroll-snap-align: start;
   }
 }
 
+/* Homepage rhythm: spacing is defined once, between sections, not doubled. */
 @media (min-width: 1024px) {
-  .trending-grid {
-    gap: 16px;
+  .benefit-grid {
+    width: min(1180px, calc(100% - 96px));
+  }
+
+  .public-site .home-section {
+    padding-bottom: 0;
+  }
+
+  .public-site .home-featured {
+    padding-top: 48px;
+  }
+
+  .public-site .home-trending,
+  .public-site .home-campaign,
+  .public-site .home-fresh-drop,
+  .public-site .home-categories,
+  .public-site .home-store,
+  .public-site .home-about {
+    padding-top: 56px;
+  }
+
+  .public-site .home-about {
+    padding-bottom: 72px;
   }
 }
+

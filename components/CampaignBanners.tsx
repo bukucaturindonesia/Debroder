@@ -82,7 +82,7 @@ export function CampaignBanners({ banners, fallbackDesktopSrc, fallbackMobileSrc
       ];
 
   return (
-    <section aria-label="Campaign DEBRODER" className="campaign-section section-space bg-white">
+    <section aria-label="Campaign DEBRODER" className="home-section home-campaign campaign-section section-space bg-white">
       <div className="section-shell">
         {visibleBanners.map((banner) => {
           const title = cleanText(banner.title) || "BUILT FOR IDENTITY";

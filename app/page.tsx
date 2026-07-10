@@ -279,7 +279,10 @@ function ManagedHomepageSection({ section, setting, fallbackProducts = [] }: { s
     const items = sectionItems.map(editorialPlacement).filter((item): item is EditorialItem => Boolean(item));
     if (!items.length) return null;
     return (
-      <section id={section.slug} className="section-space bg-white">
+      <section
+        id={section.slug}
+        className={`home-section section-space bg-white ${isFeatured ? "home-featured" : "home-trending"}`}
+      >
         <div className="section-shell">
           <SectionHeading
             title={section.title}
@@ -291,7 +294,7 @@ function ManagedHomepageSection({ section, setting, fallbackProducts = [] }: { s
             id={carouselId}
             className={
               isFeatured
-                ? "mt-5 grid grid-cols-1 gap-3 sm:gap-4 lg:grid-cols-2"
+                ? "mt-5 grid grid-cols-1 gap-0 lg:grid-cols-2"
                 : "trending-grid mt-5"
             }
           >
@@ -313,7 +316,10 @@ function ManagedHomepageSection({ section, setting, fallbackProducts = [] }: { s
   const items = configuredItems.length ? configuredItems : fallbackProducts.map(productItem);
   if (!items.length) return null;
   return (
-    <section id={section.slug} className="section-space bg-white">
+    <section
+      id={section.slug}
+      className={`home-section section-space bg-white ${section.slug === "fresh-drops" ? "home-fresh-drop" : ""}`}
+    >
       <div className="section-shell">
         <SectionHeading title={section.title} description={setting?.subtitle} textPosition={setting?.text_position} action={<div className="flex items-center gap-4">{configuredCta || <Link href="/koleksi" className="hidden text-sm font-semibold hover:underline sm:block">Shop</Link>}<ScrollButtons containerId={carouselId} /></div>} />
         <div id={carouselId} className={`${horizontalCarouselClass} gap-y-6`}>
@@ -395,9 +401,9 @@ export default async function Home() {
 
       <LandingSectionSlot setting={landingSection("benefits")}>
         <section aria-label="Keunggulan DEBRODER" className="trust-strip border-y border-black/10 bg-white">
-          <div className="section-shell no-scrollbar flex snap-x snap-mandatory overflow-x-auto lg:grid lg:grid-cols-4 lg:overflow-visible">
+          <div className="benefit-grid section-shell no-scrollbar flex snap-x snap-mandatory overflow-x-auto lg:grid lg:grid-cols-4 lg:overflow-visible">
             {benefits.map((benefit) => (
-              <div key={benefit.title} className="flex min-w-[72vw] snap-start items-center gap-3 border-r border-black/10 px-1 py-5 last:border-r-0 sm:min-w-[42vw] lg:min-w-0 lg:justify-center lg:px-5">
+              <div key={benefit.title} className="flex min-w-[72vw] snap-start items-center gap-3 border-r border-black/10 px-1 py-4 last:border-r-0 sm:min-w-[42vw] lg:min-w-0 lg:justify-center lg:px-3">
                 <BenefitIcon name={benefit.icon} />
                 <div>
                   <h2 className="text-sm font-semibold leading-5">{benefit.title}</h2>
@@ -444,7 +450,7 @@ export default async function Home() {
       ) : null}
 
       <LandingSectionSlot setting={landingSection("services-products")}>
-        <section id="shop-category" className="section-space bg-white">
+        <section id="shop-category" className="home-section home-categories section-space bg-white">
           <div className="section-shell">
             <SectionHeading
               title={landingSection("services-products")?.title || "Shop by Category"}
@@ -482,7 +488,7 @@ export default async function Home() {
       </LandingSectionSlot>
 
       <LandingSectionSlot setting={landingSection("stores")}>
-        <section id="store" className="section-space bg-white">
+        <section id="store" className="home-section home-store section-space bg-white">
           <div className="section-shell">
             <SectionHeading
               title={landingSection("stores")?.title || "Store DEBRODER"}
@@ -509,7 +515,7 @@ export default async function Home() {
       </LandingSectionSlot>
 
       <LandingSectionSlot setting={landingSection("about")}>
-        <section id="tentang" className="section-space bg-white">
+        <section id="tentang" className="home-section home-about section-space bg-white">
           <div className="section-shell grid gap-10 border-t border-black/10 pt-12 lg:grid-cols-[1.05fr_.95fr] lg:items-center lg:gap-20 lg:pt-16">
             <div className={content.trustAbout.text_position === "center" ? "text-center" : content.trustAbout.text_position === "right" ? "text-right" : ""}>
               <p className="text-sm font-medium text-black/55">Tentang DEBRODER</p>
