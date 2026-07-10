@@ -3,8 +3,10 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ProductGallery } from "@/components/ProductGallery";
 import { ProductPurchasePanel } from "@/components/ProductPurchasePanel";
+import { ProductVariantGalleryProvider } from "@/components/ProductVariantGalleryContext";
 import { PublicShell } from "@/components/PublicPage";
 import { getProductImage } from "@/lib/fallback-data";
+import { getProductGalleryImages } from "@/lib/product-gallery";
 import { getPublicContent } from "@/lib/public-data";
 import type { Product, ProductSizeGuide } from "@/lib/types";
 import { formatRupiah, whatsappLinkWithMessage } from "@/lib/url";
@@ -36,13 +38,6 @@ function sizeGuideForProduct(product: Product) {
   return (product.size_tags || []).map((size) => `${size}: Sesuaikan dengan panduan ukuran produk ini.`);
 }
 
-function variantImages(product: Product) {
-  return (product.variants || []).flatMap((variant) => [
-    variant.image_url,
-    ...(variant.images || []),
-    ...(variant.variant_images || []).map((image) => image.image_url)
-  ]).filter(Boolean) as string[];
-}
 
 function variantColors(product: Product) {
   const colors = (product.variants || []).map((variant) => variant.color_name || variant.variant_name).filter(Boolean) as string[];
@@ -73,7 +68,7 @@ export default async function ProductDetailPage({ params }: PageProps) {
   const [{ slug }, content] = await Promise.all([params, getPublicContent()]);
   const product = content.products.find((item) => item.slug === slug);
   if (!product) notFound();
-  const images = Array.from(new Set([getProductImage(product), ...(product.gallery_urls || []), ...variantImages(product)].filter(Boolean)));
+  const images = getProductGalleryImages(product);
   const focal = product.focal_points?.detail || product.focal_points?.catalog || {
     focal_x: Number(product.focal_x ?? 50), focal_y: Number(product.focal_y ?? 50), zoom: Number(product.focal_zoom ?? 1), target_ratio: "4:5"
   };
@@ -86,6 +81,7 @@ export default async function ProductDetailPage({ params }: PageProps) {
       <main className="bg-brand-offWhite py-8 sm:py-12">
         <div className="section-shell">
           <nav aria-label="Breadcrumb" className="flex flex-wrap items-center gap-2 text-xs font-medium text-brand-charcoal/55"><Link href="/">Beranda</Link><span>/</span><Link href="/koleksi">Koleksi</Link><span>/</span><span aria-current="page">{product.nama}</span></nav>
+          <ProductVariantGalleryProvider baseImages={images} variants={product.variants || []}>
           <div className="mt-6 grid gap-8 lg:grid-cols-[minmax(0,1.08fr)_minmax(360px,0.72fr)] lg:gap-14">
             <ProductGallery images={images} alt={product.image_alt || product.nama} focal={focal} />
             <div className="self-start rounded-[32px] bg-white/40 p-5 sm:p-7 lg:sticky lg:top-24">
@@ -125,6 +121,7 @@ export default async function ProductDetailPage({ params }: PageProps) {
               {product.specifications?.length ? <div className="mt-4 rounded-[24px] bg-white/50 p-4"><h2 className="text-base font-semibold">Spesifikasi</h2><dl className="mt-3 divide-y divide-black/5">{product.specifications.map((item) => { const [key, ...rest] = item.split(":"); return <div key={item} className="grid gap-1 py-3 text-sm sm:grid-cols-[120px_1fr] sm:gap-3"><dt className="font-semibold">{rest.length ? key : "Detail"}</dt><dd className="text-brand-charcoal/60">{rest.length ? rest.join(":").trim() : item}</dd></div>; })}</dl></div> : null}
             </div>
           </div>
+          </ProductVariantGalleryProvider>
         </div>
       </main>
     </PublicShell>

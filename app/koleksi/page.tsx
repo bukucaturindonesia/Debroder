@@ -2,8 +2,9 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { AddToCartButton } from "@/components/CartProvider";
 import { PageHero, PublicShell, ServiceCard } from "@/components/PublicPage";
-import { SafeImage } from "@/components/SafeImage";
+import { ProductImageSwap } from "@/components/ProductImageSwap";
 import { fallbackImages, getProductImage } from "@/lib/fallback-data";
+import { getProductCardImages } from "@/lib/product-gallery";
 import { categoryPath, collectionLimit, collectionOrder } from "@/lib/product-category-config";
 import { productsForCategoryRoute } from "@/lib/product-route-matching";
 import { getPublicContent } from "@/lib/public-data";
@@ -97,25 +98,24 @@ function sortProducts(products: Product[], category: ProductCategory) {
 function CollectionProductCard({ product }: { product: Product }) {
   const detailHref = `/produk/${product.slug || slugify(product.nama)}`;
   const focal = product.focal_points?.catalog;
+  const cardImages = getProductCardImages(product);
 
   return (
     <article className="group min-w-0">
       <Link href={detailHref} className="block">
-        <div className="product-image-frame relative aspect-[4/5] w-full overflow-hidden">
-          <SafeImage
-            src={getProductImage(product)}
-            fallbackSrc={fallbackImages.product}
-            alt={product.image_alt || product.nama}
-            fill
-            className={`${(product.object_fit || "cover") === "contain" ? "object-contain p-3" : "object-cover"} transition duration-500 group-hover:scale-[1.02]`}
-            objectFit={product.object_fit || "cover"}
-            objectPosition={product.object_position || "center center"}
-            focalX={focal?.focal_x ?? product.focal_x}
-            focalY={focal?.focal_y ?? product.focal_y}
-            zoom={focal?.zoom ?? product.focal_zoom}
-            sizes="(min-width: 1024px) 25vw, 50vw"
-          />
-        </div>
+        <ProductImageSwap
+          primarySrc={cardImages.primary}
+          hoverSrc={cardImages.hover}
+          fallbackSrc={fallbackImages.product}
+          alt={product.image_alt || product.nama}
+          imageClassName={(product.object_fit || "cover") === "contain" ? "object-contain p-3" : "object-cover"}
+          objectFit={product.object_fit || "cover"}
+          objectPosition={product.object_position || "center center"}
+          focalX={focal?.focal_x ?? product.focal_x}
+          focalY={focal?.focal_y ?? product.focal_y}
+          zoom={focal?.zoom ?? product.focal_zoom}
+          sizes="(min-width: 1024px) 25vw, 50vw"
+        />
       </Link>
       <div className="mt-3 space-y-2">
         {product.color_tags?.length ? <div className="flex items-center gap-1.5">

@@ -3,6 +3,7 @@ import type { ReactNode } from "react";
 import { CampaignBanners } from "@/components/CampaignBanners";
 import { AddToCartButton, type CartProductInput } from "@/components/CartProvider";
 import { HeroSlider } from "@/components/HeroSlider";
+import { ProductImageSwap } from "@/components/ProductImageSwap";
 import { PageMotion } from "@/components/PageMotion";
 import { PublicFooter } from "@/components/PublicFooter";
 import { ResponsivePicture } from "@/components/ResponsivePicture";
@@ -11,6 +12,7 @@ import { ScrollButtons } from "@/components/ScrollButtons";
 import { SiteHeader } from "@/components/SiteHeader";
 import { WhatsAppFloat } from "@/components/WhatsAppFloat";
 import { fallbackImages, getProductImage, getStoreImage } from "@/lib/fallback-data";
+import { getProductCardImages } from "@/lib/product-gallery";
 import { PLAIN_CATEGORY_SECTION_SETTING } from "@/lib/homepage-settings";
 import { getPublicContent } from "@/lib/public-data";
 import { absoluteUrl, siteConfig } from "@/lib/site";
@@ -26,7 +28,7 @@ const benefits = [
 
 function LandingSectionSlot({ setting, children }: { setting?: LandingSection; children: ReactNode }) {
   if (setting?.is_visible === false) return null;
-  return <div style={{ order: setting?.sort_order ?? 0 }}>{children}</div>;
+  return <div>{children}</div>;
 }
 
 function managedSectionKey(slug: string) {
@@ -51,6 +53,7 @@ type EditorialItem = Visual & {
 };
 type ProductItem = Visual & {
   id?: string;
+  hoverImage?: string | null;
   name: string;
   category: string;
   price: string;
@@ -86,6 +89,7 @@ function hasEditorialText(...values: Array<string | null | undefined>) {
 function productItem(product: Product): ProductItem {
   const href = `/produk/${product.slug || product.nama.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "")}`;
   const price = formatRupiah(product.price ?? product.harga ?? product.base_price) || "Hubungi kami";
+  const cardImages = getProductCardImages(product);
   return {
     id: product.id || product.slug || product.nama,
     name: product.nama,
@@ -93,7 +97,8 @@ function productItem(product: Product): ProductItem {
     price,
     href,
     cartProduct: { id: product.id || product.slug || product.nama, name: product.nama, category: product.kategori, priceLabel: price, priceValue: Number(product.price ?? product.harga ?? product.base_price ?? 0) || undefined, href, imageUrl: getProductImage(product), imageAlt: product.image_alt || product.nama },
-    image: getProductImage(product),
+    image: cardImages.primary,
+    hoverImage: cardImages.hover,
     imageAlt: product.image_alt || product.nama,
     fallbackImage: fallbackImages.product,
     objectFit: product.object_fit,
@@ -240,9 +245,16 @@ function ProductCard({ item, className = "" }: { item: ProductItem; className?: 
   return (
     <article className={`group min-w-0 ${className}`}>
       <Link href={item.href} className="block">
-      <div className="product-image-frame relative aspect-[4/5] overflow-hidden">
-        <SafeImage src={item.image} fallbackSrc={item.fallbackImage} alt={item.imageAlt} fill sizes="(min-width: 1536px) 20vw, (min-width: 1024px) 25vw, 50vw" className={`${(item.objectFit || item.fit) === "contain" ? "object-contain p-3" : "object-cover"} transition duration-700 group-hover:scale-[1.03]`} objectFit={item.objectFit || (item.fit === "contain" ? "contain" : "cover")} objectPosition={item.objectPosition || "center center"} />
-      </div>
+      <ProductImageSwap
+        primarySrc={item.image}
+        hoverSrc={item.hoverImage}
+        fallbackSrc={item.fallbackImage}
+        alt={item.imageAlt}
+        imageClassName={(item.objectFit || item.fit) === "contain" ? "object-contain p-3" : "object-cover"}
+        objectFit={item.objectFit || (item.fit === "contain" ? "contain" : "cover")}
+        objectPosition={item.objectPosition || "center center"}
+        sizes="(min-width: 1536px) 20vw, (min-width: 1024px) 25vw, 50vw"
+      />
       </Link>
       <div className="pt-3">
         <Link href={item.href}><h3 className="line-clamp-2 text-[15px] font-semibold leading-snug text-[#111] sm:text-base">{item.name}</h3></Link>
@@ -334,9 +346,21 @@ export default async function Home() {
     content.landingSections.map((section) => [section.section_key, section])
   );
   const landingSection = (sectionKey: string) => landingSectionMap.get(sectionKey);
+  const featuredSection = content.homepageSections.find((section) => section.slug === "featured");
   const shopCategorySection = content.homepageSections.find((section) => section.slug === "services-products");
+  const trendingSection = content.homepageSections.find((section) => section.slug === "trending");
+  const freshDropSection = content.homepageSections.find((section) => section.slug === "fresh-drops");
   const plainCategorySection = content.homepageSections.find((section) => section.slug === PLAIN_CATEGORY_SECTION_SETTING.slug);
-  const homepageSections = content.homepageSections.filter((section) => section.slug !== "services-products" && section.slug !== PLAIN_CATEGORY_SECTION_SETTING.slug);
+  const canonicalHomepageSlugs = new Set([
+    "featured",
+    "services-products",
+    "trending",
+    "fresh-drops",
+    PLAIN_CATEGORY_SECTION_SETTING.slug
+  ]);
+  const additionalHomepageSections = content.homepageSections.filter(
+    (section) => !canonicalHomepageSlugs.has(section.slug)
+  );
   const shopCategoryItems = shopCategorySection
     ? preferredHomepageItems(shopCategorySection).map(editorialPlacement).filter((item): item is EditorialItem => Boolean(item))
     : [];
@@ -364,7 +388,6 @@ export default async function Home() {
         <HeroSlider heroes={content.heroes} />
       </LandingSectionSlot>
 
-      <div className="flex flex-col">
       <LandingSectionSlot setting={landingSection("benefits")}>
       <section data-reveal aria-label="Keunggulan DEBRODER" className="snap-section bg-brand-offWhite py-4 sm:py-5">
         <div className="section-shell grid grid-cols-2 gap-x-4 gap-y-5 lg:grid-cols-4 lg:gap-8">
@@ -381,19 +404,11 @@ export default async function Home() {
       </section>
       </LandingSectionSlot>
 
-      {homepageSections.map((section) => {
-        const setting = landingSection(managedSectionKey(section.slug));
-        const managedSection = setting?.title ? { ...section, title: setting.title } : section;
-        return (
-          <LandingSectionSlot key={section.id} setting={setting}>
-            <ManagedHomepageSection section={managedSection} setting={setting} />
-          </LandingSectionSlot>
-        );
-      })}
-
-      <LandingSectionSlot setting={landingSection("campaign-banners")}>
-        <CampaignBanners banners={content.campaignBanners} />
-      </LandingSectionSlot>
+      {featuredSection ? (() => {
+        const setting = landingSection("featured-products");
+        const managedSection = setting?.title ? { ...featuredSection, title: setting.title } : featuredSection;
+        return <LandingSectionSlot setting={setting}><ManagedHomepageSection section={managedSection} setting={setting} /></LandingSectionSlot>;
+      })() : null}
 
       <LandingSectionSlot setting={landingSection("services-products")}>
       <section data-reveal id="shop-category" className="snap-section section-space bg-brand-offWhite pt-3 sm:pt-5">
@@ -410,6 +425,24 @@ export default async function Home() {
       </section>
       </LandingSectionSlot>
 
+      {trendingSection ? (() => {
+        const setting = landingSection("trending");
+        const managedSection = setting?.title ? { ...trendingSection, title: setting.title } : trendingSection;
+        return <LandingSectionSlot setting={setting}><ManagedHomepageSection section={managedSection} setting={setting} /></LandingSectionSlot>;
+      })() : null}
+
+      {freshDropSection ? (() => {
+        const setting = landingSection("fresh-drop");
+        const managedSection = setting?.title ? { ...freshDropSection, title: setting.title } : freshDropSection;
+        return <LandingSectionSlot setting={setting}><ManagedHomepageSection section={managedSection} setting={setting} /></LandingSectionSlot>;
+      })() : null}
+
+      {additionalHomepageSections.map((section) => {
+        const setting = landingSection(managedSectionKey(section.slug));
+        const managedSection = setting?.title ? { ...section, title: setting.title } : section;
+        return <LandingSectionSlot key={section.id} setting={setting}><ManagedHomepageSection section={managedSection} setting={setting} /></LandingSectionSlot>;
+      })}
+
       <LandingSectionSlot setting={landingSection("plain-category")}>
       {content.landingSettings.showPlainCategorySection ? (
         <section data-reveal id="koleksi" className="snap-section section-space bg-brand-offWhite">
@@ -423,6 +456,10 @@ export default async function Home() {
           </div>
         </section>
       ) : null}
+      </LandingSectionSlot>
+
+      <LandingSectionSlot setting={landingSection("campaign-banners")}>
+        <CampaignBanners banners={content.campaignBanners} />
       </LandingSectionSlot>
 
       <LandingSectionSlot setting={landingSection("instagram-banner")}>
@@ -479,8 +516,6 @@ export default async function Home() {
         </div>
       </section>
       </LandingSectionSlot>
-
-      </div>
 
       {/* About is intentionally outside the reorderable section stack.
           It must always remain the final landing-page section before the footer. */}
