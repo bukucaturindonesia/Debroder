@@ -258,14 +258,14 @@ const requiredHomepageSections: Record<
   string,
   { title: string; sort_order: number }
 > = {
-  featured: { title: "Featured", sort_order: 10 },
-  trending: { title: "Trending", sort_order: 20 },
-  "fresh-drops": { title: "Fresh Drops", sort_order: 30 },
+  featured: { title: "Featured", sort_order: 30 },
+  trending: { title: "Trending", sort_order: 40 },
+  "fresh-drops": { title: "Fresh Drop", sort_order: 60 },
   [PLAIN_CATEGORY_SECTION_SETTING.slug]: {
     title: PLAIN_CATEGORY_SECTION_SETTING.title,
     sort_order: PLAIN_CATEGORY_SECTION_SETTING.sortOrder,
   },
-  "services-products": { title: "Shop by Category", sort_order: 60 },
+  "services-products": { title: "Shop by Category", sort_order: 70 },
 };
 const homepageSectionSelect = `
   *,

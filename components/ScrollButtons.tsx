@@ -13,7 +13,12 @@ export function ScrollButtons({ containerId }: { containerId: string }) {
     const container = document.getElementById(containerId);
     if (!container) return;
 
-    const amount = Math.max(280, Math.round(container.clientWidth * 0.82));
+    const firstCard = container.firstElementChild as HTMLElement | null;
+    const styles = window.getComputedStyle(container);
+    const gap = Number.parseFloat(styles.columnGap || styles.gap || "0") || 0;
+    const amount = firstCard
+      ? Math.round(firstCard.getBoundingClientRect().width + gap)
+      : Math.max(280, Math.round(container.clientWidth * 0.82));
     container.scrollBy({ left: direction === "next" ? amount : -amount, behavior: "smooth" });
   }
 

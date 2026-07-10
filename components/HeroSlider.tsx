@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { ResponsivePicture } from "@/components/ResponsivePicture";
 import { fallbackImages } from "@/lib/fallback-data";
 import type { HeroBanner } from "@/lib/types";
@@ -13,19 +13,6 @@ function cleanHeroText(value?: string | null) {
   return text;
 }
 
-
-function safeHeroCta(href: string, text: string) {
-  const normalizedHref = href.toLowerCase();
-  const normalizedText = text.toLowerCase();
-  const directOrder = normalizedHref.includes("wa.me") || normalizedHref.includes("whatsapp") || normalizedHref === "/order" || normalizedHref.includes("pesan");
-  const orderText = /pesan|order|beli/.test(normalizedText);
-
-  if (directOrder || orderText) {
-    return { href: "/koleksi", text: "Lihat Koleksi" };
-  }
-
-  return { href, text };
-}
 
 function ArrowIcon({ direction }: { direction: "left" | "right" }) {
   return (
@@ -54,10 +41,8 @@ export function HeroSlider({ heroes }: { heroes: HeroBanner[] }) {
   );
   const [activeIndex, setActiveIndex] = useState(0);
   const [paused, setPaused] = useState(false);
-  const [progress, setProgress] = useState(0);
   const [reducedMotion, setReducedMotion] = useState(false);
   const [touchStart, setTouchStart] = useState<number | null>(null);
-  const progressRef = useRef(0);
   const total = slides.length;
 
   useEffect(() => {
@@ -69,43 +54,23 @@ export function HeroSlider({ heroes }: { heroes: HeroBanner[] }) {
   }, []);
 
   useEffect(() => {
-    progressRef.current = progress;
-  }, [progress]);
-
-  useEffect(() => {
     if (total <= 1 || paused || reducedMotion) return;
 
-    const tick = 50 / SLIDE_DURATION;
-    const timer = window.setInterval(() => {
-      const nextProgress = progressRef.current + tick;
-      if (nextProgress >= 1) {
-        progressRef.current = 0;
-        setProgress(0);
-        setActiveIndex((current) => (current + 1) % total);
-        return;
-      }
-      progressRef.current = nextProgress;
-      setProgress(nextProgress);
-    }, 50);
+    const timer = window.setTimeout(() => {
+      setActiveIndex((current) => (current + 1) % total);
+    }, SLIDE_DURATION);
 
-    return () => window.clearInterval(timer);
-  }, [paused, reducedMotion, total]);
+    return () => window.clearTimeout(timer);
+  }, [activeIndex, paused, reducedMotion, total]);
 
   if (!slides.length) return null;
 
-  function resetProgress() {
-    progressRef.current = 0;
-    setProgress(0);
-  }
-
   function goNext() {
     setActiveIndex((current) => (current + 1) % total);
-    resetProgress();
   }
 
   function goPrev() {
     setActiveIndex((current) => (current - 1 + total) % total);
-    resetProgress();
   }
 
   function handleTouchEnd(x: number) {
@@ -121,7 +86,7 @@ export function HeroSlider({ heroes }: { heroes: HeroBanner[] }) {
   return (
     <section
       id="beranda"
-      className="hero-section relative h-[calc(100svh-64px)] min-h-[560px] w-full overflow-hidden bg-[#04160f] md:h-[calc(100svh-78px)] md:min-h-[600px] lg:h-[calc(100svh-114px)] lg:min-h-[620px]"
+      className="hero-section relative h-[calc(100svh-64px)] min-h-[560px] w-full overflow-hidden bg-[#04160f] md:h-[calc(100svh-78px)] md:min-h-[600px]"
       aria-roledescription="carousel"
       aria-label="Koleksi utama DEBRODER"
       onTouchStart={(event) => setTouchStart(event.touches[0].clientX)}
@@ -136,10 +101,11 @@ export function HeroSlider({ heroes }: { heroes: HeroBanner[] }) {
         const badge = cleanHeroText(slide.badge);
         const headline = cleanHeroText(slide.headline) || cleanHeroText(slide.title);
         const subtitle = cleanHeroText(slide.subheadline) || cleanHeroText(slide.subtitle);
-        const ctaText = cleanHeroText(slide.cta_text) || cleanHeroText(slide.cta_primary_text);
-        const ctaHref = slide.cta_link || slide.cta_primary_link || "/koleksi";
-        const cta = ctaText ? safeHeroCta(ctaHref, ctaText) : null;
-        const hasCopy = Boolean(badge || headline || subtitle || cta);
+        const primaryText = cleanHeroText(slide.cta_text) || cleanHeroText(slide.cta_primary_text);
+        const primaryHref = slide.cta_link || slide.cta_primary_link || "/koleksi";
+        const secondaryText = cleanHeroText(slide.cta_secondary_text);
+        const secondaryHref = slide.cta_secondary_link || "/cara-order";
+        const hasCopy = Boolean(badge || headline || subtitle || primaryText || secondaryText);
         const desktopVideo = slide.desktop_video_url || slide.hero_video_url || slide.video_url;
         const mobileVideo = slide.mobile_video_url || desktopVideo;
         const desktopPosition = slide.object_position || "center center";
@@ -152,7 +118,7 @@ export function HeroSlider({ heroes }: { heroes: HeroBanner[] }) {
             className="relative h-full w-full shrink-0"
             aria-hidden={!active}
           >
-            <div className={`absolute inset-0 transition-transform duration-[5600ms] ease-out ${active && !paused && !reducedMotion ? "scale-[1.02]" : "scale-100"}`}>
+            <div className="absolute inset-0">
               {desktopVideo ? (
                 <video autoPlay muted loop playsInline preload={index === 0 ? "metadata" : "none"} className="h-full w-full object-cover" style={{ objectPosition: desktopPosition }}>
                   {mobileVideo ? <source src={mobileVideo} media="(max-width: 767px)" /> : null}
@@ -161,7 +127,7 @@ export function HeroSlider({ heroes }: { heroes: HeroBanner[] }) {
               ) : (
                 <ResponsivePicture
                   desktopSrc={slide.image_url || "/brand/debroder/social-preview.png"}
-                  mobileSrc={slide.mobile_image_url || "/brand/debroder/social-preview.png"}
+                  mobileSrc={slide.mobile_image_url || slide.image_url || "/brand/debroder/social-preview.png"}
                   alt={slide.image_alt || headline.replace(/\n/g, " ") || "Hero DEBRODER"}
                   priority={index === 0}
                   className="h-full w-full object-cover"
@@ -175,7 +141,7 @@ export function HeroSlider({ heroes }: { heroes: HeroBanner[] }) {
               )}
             </div>
 
-            <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(1,9,6,.58)_0%,rgba(1,9,6,.34)_36%,rgba(1,9,6,.04)_68%,rgba(1,9,6,.10)_100%),linear-gradient(0deg,rgba(1,9,6,.34)_0%,rgba(1,9,6,0)_46%)] sm:bg-[linear-gradient(90deg,rgba(1,9,6,.62)_0%,rgba(1,9,6,.36)_38%,rgba(1,9,6,.03)_70%,rgba(1,9,6,.08)_100%),linear-gradient(0deg,rgba(1,9,6,.30)_0%,rgba(1,9,6,0)_44%)]" />
+            <div className="absolute inset-0 bg-[linear-gradient(0deg,rgba(0,0,0,.44)_0%,rgba(0,0,0,.12)_48%,rgba(0,0,0,.08)_100%)]" />
             {hasCopy ? (
               <div className="absolute inset-x-0 bottom-[10%] z-10 sm:bottom-[11%] lg:bottom-[12%]">
                 <div className="section-shell">
@@ -201,11 +167,19 @@ export function HeroSlider({ heroes }: { heroes: HeroBanner[] }) {
                         {subtitle}
                       </p>
                     ) : null}
-                    {cta ? (
-                      <a href={cta.href} className="cta hero-actions mt-5 inline-flex min-h-11 items-center justify-center gap-2 rounded-full bg-white px-5 py-3 text-sm text-[#111] transition duration-200 hover:bg-[#e9eee9]">
-                        {cta.text}
-                        <ArrowIcon direction="right" />
-                      </a>
+                    {primaryText || secondaryText ? (
+                      <div className="hero-actions mt-5 flex flex-wrap justify-center gap-2">
+                        {primaryText ? (
+                          <a href={primaryHref} className="cta inline-flex min-h-11 items-center justify-center rounded-full bg-white px-5 py-3 text-sm text-[#111] transition duration-200 hover:bg-[#e9e9e9]">
+                            {primaryText}
+                          </a>
+                        ) : null}
+                        {secondaryText ? (
+                          <a href={secondaryHref} className="cta inline-flex min-h-11 items-center justify-center rounded-full bg-white px-5 py-3 text-sm text-[#111] transition duration-200 hover:bg-[#e9e9e9]">
+                            {secondaryText}
+                          </a>
+                        ) : null}
+                      </div>
                     ) : null}
                   </div>
                 </div>
@@ -227,12 +201,16 @@ export function HeroSlider({ heroes }: { heroes: HeroBanner[] }) {
           <button type="button" onClick={goNext} aria-label="Slide berikutnya" className="grid h-10 w-10 place-items-center rounded-full border border-white/25 bg-black/28 backdrop-blur-md transition hover:bg-white hover:text-[#111]">
             <ArrowIcon direction="right" />
           </button>
-          <div className="ml-1 hidden items-center gap-2 text-[11px] font-semibold tabular-nums sm:flex">
-            <span>{String(activeIndex + 1).padStart(2, "0")}</span>
-            <span className="h-px w-20 overflow-hidden bg-white/35">
-              <span className="block h-full bg-white" style={{ width: `${Math.max(2, progress * 100)}%` }} />
-            </span>
-            <span className="text-white/55">{String(total).padStart(2, "0")}</span>
+          <div className="ml-1 hidden items-center gap-2 sm:flex" aria-label={`Slide ${activeIndex + 1} dari ${total}`}>
+            {slides.map((slide, index) => (
+              <button
+                key={slide.id || index}
+                type="button"
+                aria-label={`Buka slide ${index + 1}`}
+                onClick={() => setActiveIndex(index)}
+                className={`h-1.5 rounded-full transition-[width,background-color] duration-200 ${index === activeIndex ? "w-7 bg-white" : "w-1.5 bg-white/50 hover:bg-white/80"}`}
+              />
+            ))}
           </div>
         </div>
       ) : null}

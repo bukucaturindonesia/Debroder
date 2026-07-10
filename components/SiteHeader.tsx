@@ -158,10 +158,10 @@ function CloseIcon() {
   return <BrandIcon name="close" />;
 }
 
-function MegaDropdown({ columns, scrolled }: { columns: MegaMenuColumn[]; scrolled: boolean }) {
+function MegaDropdown({ columns, expanded }: { columns: MegaMenuColumn[]; expanded: boolean }) {
   return (
-    <div className={`invisible fixed left-1/2 z-[120] w-[min(980px,calc(100vw-32px))] -translate-x-1/2 translate-y-3 pt-4 opacity-0 transition duration-200 group-hover/nav:visible group-hover/nav:translate-y-0 group-hover/nav:opacity-100 group-focus-within/nav:visible group-focus-within/nav:translate-y-0 group-focus-within/nav:opacity-100 ${scrolled ? "top-[78px]" : "top-[114px]"}`}>
-      <div className="grid grid-cols-3 gap-10 rounded-[28px] border border-black/10 bg-white p-9 text-left shadow-[0_18px_50px_rgba(0,0,0,0.14)]">
+    <div className={`invisible fixed left-1/2 z-[120] w-[min(980px,calc(100vw-32px))] -translate-x-1/2 translate-y-2 pt-3 opacity-0 transition duration-200 group-hover/nav:visible group-hover/nav:translate-y-0 group-hover/nav:opacity-100 group-focus-within/nav:visible group-focus-within/nav:translate-y-0 group-focus-within/nav:opacity-100 ${expanded ? "top-[164px]" : "top-[78px]"}`}>
+      <div className="grid grid-cols-3 gap-10 border border-black/10 bg-white p-9 text-left shadow-[0_18px_50px_rgba(0,0,0,0.12)]">
         {columns.map((column) => (
           <div key={column.title}>
             <p className="text-[15px] font-semibold text-[#111]">{column.title}</p>
@@ -267,17 +267,44 @@ export function SiteHeader() {
   const pathname = usePathname();
   const [isOpen, setIsOpen] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
-  const [scrolled, setScrolled] = useState(false);
+  const [expanded, setExpanded] = useState(false);
+  const hasLeftTopRef = useRef(false);
 
   useEffect(() => {
-    const handleScroll = () => setScrolled(window.scrollY > 8);
-    handleScroll();
+    let frame = 0;
+
+    const handleScroll = () => {
+      if (frame) return;
+      frame = window.requestAnimationFrame(() => {
+        frame = 0;
+        const y = window.scrollY;
+
+        if (y > 24) {
+          hasLeftTopRef.current = true;
+          setExpanded(false);
+          return;
+        }
+
+        if (y <= 1 && hasLeftTopRef.current) {
+          setExpanded(true);
+          return;
+        }
+
+        if (y > 1) setExpanded(false);
+      });
+    };
+
     window.addEventListener("scroll", handleScroll, { passive: true });
-    return () => window.removeEventListener("scroll", handleScroll);
+    return () => {
+      window.removeEventListener("scroll", handleScroll);
+      if (frame) window.cancelAnimationFrame(frame);
+    };
   }, []);
 
   useEffect(() => {
     setIsOpen(false);
+    setExpanded(false);
+    hasLeftTopRef.current = false;
   }, [pathname]);
 
   useEffect(() => {
@@ -290,10 +317,10 @@ export function SiteHeader() {
   }, [isOpen]);
 
   return (
-    <header className="sticky top-0 z-[100] bg-brand-offWhite/95 text-[#111] backdrop-blur-md transition duration-200">
-      <div className={`hidden overflow-hidden bg-brand-offWhite transition-[max-height,opacity] duration-300 ease-out lg:block ${scrolled ? "invisible max-h-0 opacity-0 pointer-events-none" : "visible max-h-9 opacity-100"}`} aria-hidden={scrolled}>
-        <div className="section-shell flex h-9 items-center justify-between gap-4 text-xs font-semibold text-black/58">
-          <p className="truncate">DEBRODER apparel, sablon, dan produksi custom.</p>
+    <header className="sticky top-0 z-[100] bg-white text-[#111]">
+      <div className={`hidden overflow-hidden bg-[#f5f5f5] transition-[max-height,opacity] duration-200 ease-out lg:block ${expanded ? "visible max-h-8 opacity-100" : "invisible max-h-0 opacity-0 pointer-events-none"}`} aria-hidden={!expanded}>
+        <div className="section-shell flex h-8 items-center justify-between gap-4 text-[12px] font-medium text-black/65">
+          <p className="truncate">DEBRODER Apparel & Printing</p>
           <div className="flex items-center gap-5">
             {topbarItems.map((item) => (
               <Link key={item.href} href={item.href} className={`transition hover:text-[#0f5a36] ${pathname === item.href ? "text-[#0f5a36]" : ""}`}>
@@ -303,7 +330,7 @@ export function SiteHeader() {
           </div>
         </div>
       </div>
-      <nav className="section-shell flex h-16 items-center justify-between gap-4 md:h-[78px]" aria-label="Navigasi utama">
+      <nav className="section-shell flex h-16 items-center justify-between gap-4 bg-white md:h-[78px]" aria-label="Navigasi utama">
         <Link href="/" className="shrink-0" aria-label="DEBRODER beranda">
           <Logo variant="primary-dark" size="sm" className="transition duration-200 hover:opacity-70" />
         </Link>
@@ -320,7 +347,7 @@ export function SiteHeader() {
                     <ChevronDownIcon />
                     <span className={`absolute inset-x-0 bottom-0 h-0.5 origin-center bg-[#0f5a36] transition-transform duration-200 ${active ? "scale-x-100" : "scale-x-0"}`} />
                   </Link>
-                  <MegaDropdown columns={megaMenu} scrolled={scrolled} />
+                  <MegaDropdown columns={megaMenu} expanded={expanded} />
                 </div>
               );
             }
@@ -334,24 +361,31 @@ export function SiteHeader() {
         </div>
 
         <div className="flex shrink-0 items-center gap-1 sm:gap-2">
-          <button type="button" className="hidden h-10 w-[150px] items-center gap-3 rounded-full bg-brand-offWhite px-4 text-left text-sm text-black/55 transition hover:text-black xl:flex" aria-label="Cari produk" onClick={() => setIsSearchOpen(true)}>
+          <button type="button" className="hidden h-10 w-[150px] items-center gap-3 rounded-full bg-[#f5f5f5] px-4 text-left text-sm text-black/55 transition hover:text-black xl:flex" aria-label="Cari produk" onClick={() => setIsSearchOpen(true)}>
             <SearchIcon />
             <span>Cari</span>
           </button>
-          <button type="button" className="grid h-10 w-10 place-items-center rounded-full transition hover:bg-brand-offWhite xl:hidden" aria-label="Cari" onClick={() => setIsSearchOpen(true)}>
+          <button type="button" className="grid h-10 w-10 place-items-center rounded-full transition hover:bg-[#f5f5f5] xl:hidden" aria-label="Cari" onClick={() => setIsSearchOpen(true)}>
             <SearchIcon />
           </button>
-          <a href={whatsappUrl} className="grid h-10 w-10 place-items-center rounded-full transition hover:bg-brand-offWhite" aria-label="Hubungi WhatsApp DEBRODER" target="_blank" rel="noopener noreferrer">
+          <a href={whatsappUrl} className="grid h-10 w-10 place-items-center rounded-full transition hover:bg-[#f5f5f5]" aria-label="Hubungi WhatsApp DEBRODER" target="_blank" rel="noopener noreferrer">
             <ChatIcon />
           </a>
           <CartNavButton />
-          <button type="button" className="relative grid h-10 w-10 place-items-center rounded-full transition hover:bg-brand-offWhite lg:hidden" aria-label={isOpen ? "Tutup menu" : "Buka menu"} aria-expanded={isOpen} onClick={() => setIsOpen((current) => !current)}>
+          <button type="button" className="relative grid h-10 w-10 place-items-center rounded-full transition hover:bg-[#f5f5f5] lg:hidden" aria-label={isOpen ? "Tutup menu" : "Buka menu"} aria-expanded={isOpen} onClick={() => setIsOpen((current) => !current)}>
             <BrandIcon name={isOpen ? "close" : "menu"} />
           </button>
         </div>
       </nav>
 
-      <div className={`absolute inset-x-0 top-full h-[calc(100dvh-4rem)] bg-brand-offWhite transition-transform duration-500 ease-in-out md:h-[calc(100dvh-78px)] lg:hidden ${isOpen ? "visible translate-x-0" : "invisible translate-x-full"}`}>
+      <div className={`hidden overflow-hidden bg-[#f5f5f5] text-center transition-[max-height,opacity] duration-200 ease-out lg:block ${expanded ? "visible max-h-[54px] opacity-100" : "invisible max-h-0 opacity-0 pointer-events-none"}`} aria-hidden={!expanded}>
+        <div className="flex h-[54px] flex-col items-center justify-center leading-tight">
+          <p className="text-[15px] font-medium">Konsultasi desain gratis untuk kebutuhan apparel custom</p>
+          <a href={whatsappUrl} target="_blank" rel="noopener noreferrer" className="mt-1 text-xs font-semibold underline underline-offset-2 hover:no-underline">Hubungi WhatsApp</a>
+        </div>
+      </div>
+
+      <div className={`absolute inset-x-0 top-full h-[calc(100dvh-4rem)] bg-white transition-transform duration-300 ease-out md:h-[calc(100dvh-78px)] lg:hidden ${isOpen ? "visible translate-x-0" : "invisible translate-x-full"}`}>
         <div className="section-shell flex h-full flex-col overflow-y-auto py-6">
           {mobileNavItems.map((item) => (
             <Link key={item.href} href={item.href} className={`flex min-h-16 items-center justify-between text-[28px] font-semibold leading-tight transition hover:pl-1 ${pathname === item.href ? "text-[#0f5a36]" : "text-[#111]"}`}>
