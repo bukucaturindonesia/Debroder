@@ -1,6 +1,12 @@
 import type { CmsBanner } from "@/lib/types";
 import { ResponsivePicture } from "@/components/ResponsivePicture";
 
+function cleanText(value?: string | null) {
+  const text = value?.trim();
+  if (!text || text === "." || text === "-" || text === "—") return "";
+  return text;
+}
+
 function CampaignMedia({ banner }: { banner: CmsBanner }) {
   if (banner.media_type === "video") {
     const mobileUrl = banner.mobile_media_url || banner.desktop_media_url;
@@ -53,36 +59,30 @@ export function CampaignBanners({ banners }: { banners: CmsBanner[] }) {
     <section aria-label="Campaign DEBRODER" className="campaign-section section-space bg-white">
       <div className="section-shell">
         {activeBanners.map((banner) => {
-          const ctaVisible = Boolean(banner.cta_label && banner.cta_url);
+          const title = cleanText(banner.title) || "BUILT FOR IDENTITY";
+          const subtitle = cleanText(banner.subtitle) || "Apparel custom untuk tim, komunitas, dan perusahaan yang ingin tampil beda.";
+          const ctaLabel = cleanText(banner.cta_label) || "Jelajahi Koleksi";
+          const ctaUrl = banner.cta_url || "/koleksi";
 
           return (
             <article key={banner.id || banner.name}>
-              <div className="relative aspect-[4/5] overflow-hidden bg-[#efefef] sm:aspect-[16/7] lg:max-h-[680px]">
+              <div className="relative aspect-[4/5] overflow-hidden bg-[#efefef] sm:aspect-auto sm:h-[clamp(460px,60vh,560px)] lg:h-[clamp(560px,74vh,760px)]">
                 <CampaignMedia banner={banner} />
               </div>
 
-              <div className="mx-auto max-w-5xl px-2 pt-9 text-center sm:pt-12">
-                {banner.eyebrow ? (
-                  <p className="text-sm font-medium text-[#111]">{banner.eyebrow}</p>
-                ) : null}
-                {banner.title ? (
-                  <h2 className="campaign-copy-title mt-2 whitespace-pre-line text-[#111]">
-                    {banner.title}
-                  </h2>
-                ) : null}
-                {banner.subtitle ? (
-                  <p className="mx-auto mt-3 max-w-2xl text-[15px] leading-6 text-black/70 sm:text-lg">
-                    {banner.subtitle}
-                  </p>
-                ) : null}
-                {ctaVisible ? (
-                  <a
-                    href={banner.cta_url}
-                    className="mt-7 inline-flex min-h-11 items-center justify-center rounded-full bg-[#111] px-6 py-3 text-sm font-semibold text-white transition hover:bg-black/75"
-                  >
-                    {banner.cta_label}
-                  </a>
-                ) : null}
+              <div className="mx-auto max-w-5xl px-2 pt-10 text-center sm:pt-12 lg:pt-14">
+                <h2 className="campaign-copy-title whitespace-pre-line text-[#111]">
+                  {title}
+                </h2>
+                <p className="mx-auto mt-4 max-w-2xl text-[15px] leading-6 text-black/70 sm:text-lg sm:leading-7">
+                  {subtitle}
+                </p>
+                <a
+                  href={ctaUrl}
+                  className="mt-7 inline-flex min-h-11 items-center justify-center rounded-full bg-[#111] px-6 py-3 text-sm font-semibold text-white transition hover:bg-black/75"
+                >
+                  {ctaLabel}
+                </a>
               </div>
             </article>
           );
