@@ -225,9 +225,9 @@ export function TieredProductPurchasePanel({
 
   useEffect(() => {
     const productId = product.id;
-    const supabase = createSupabaseClient();
+    const supabaseClient = createSupabaseClient();
 
-    if (!supabase || !productId) {
+    if (!supabaseClient || !productId) {
       setPricingLoading(false);
       return;
     }
@@ -238,7 +238,7 @@ export function TieredProductPurchasePanel({
       setPricingLoading(true);
 
       const [tierResult, minimumResult] = await Promise.all([
-        supabase
+        supabaseClient
           .from("product_price_tiers")
           .select(
             "id,product_id,min_quantity,max_quantity,unit_price,quote_required,status,sort_order"
@@ -246,7 +246,7 @@ export function TieredProductPurchasePanel({
           .eq("product_id", productId)
           .eq("status", "active")
           .order("min_quantity", { ascending: true }),
-        supabase
+        supabaseClient
           .from("product_minimum_rules")
           .select(
             "id,product_id,minimum_quantity,minimum_for_tier_quantity,quotation_quantity,status"
