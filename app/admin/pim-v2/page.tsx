@@ -1,10 +1,12 @@
 import { AdminDashboard } from "@/components/admin/AdminDashboard";
 import { VariantDeleteManager } from "@/components/admin/VariantDeleteManager";
+import { BulkCustomManager } from "@/components/admin/BulkCustomManager";
 
 export default function AdminPimV2Page() {
   return (
     <>
       <AdminDashboard />
+      <BulkCustomManager />
       <VariantDeleteManager />
     </>
   );
