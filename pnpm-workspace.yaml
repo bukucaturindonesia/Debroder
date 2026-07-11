@@ -1,5 +1,7 @@
-allowBuilds:
-  sharp: true
-  unrs-resolver: true
+nodeLinker: hoisted
+packageImportMethod: copy
 
-trustLockfile: true
+onlyBuiltDependencies:
+  - esbuild
+  - sharp
+  - unrs-resolver

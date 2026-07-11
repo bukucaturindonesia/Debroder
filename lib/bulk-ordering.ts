@@ -1,11 +1,11 @@
 import type {
   CartItem,
   CustomService,
-  Product,
+  PimProduct as Product,
   ProductMinimumRule,
   ProductPriceTier,
-  ProductVariant,
-  ProductVariantSize,
+  PimProductVariant as ProductVariant,
+  PimProductVariantSize as ProductVariantSize,
   ServiceAllocation,
   ValidationIssue
 } from "@/lib/types";

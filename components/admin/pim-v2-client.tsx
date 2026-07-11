@@ -3,11 +3,11 @@
 import { useMemo, useState } from "react";
 import type {
   CustomService,
-  Product,
+  PimProduct as Product,
   ProductMinimumRule,
   ProductPriceTier,
-  ProductVariant,
-  ProductVariantSize,
+  PimProductVariant as ProductVariant,
+  PimProductVariantSize as ProductVariantSize,
   ServicePricingType,
   ValidationIssue
 } from "@/lib/types";

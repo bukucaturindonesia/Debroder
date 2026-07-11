@@ -182,7 +182,7 @@ export async function DELETE(request: Request) {
   return NextResponse.json({ ok: true });
 }
 
-function asCleanToken(value: FormDataEntryValue | null): string | null {
+function asCleanToken(value: unknown): string | null {
   if (typeof value !== "string") {
     return null;
   }
@@ -210,11 +210,11 @@ function getExtension(name: string): string | null {
 function isAllowedMimeType(mimeType: string): boolean {
   if (ALLOWED_MIME_TYPES.has(mimeType)) {
     return true;
+  }
+
+  return ALLOWED_MIME_PREFIXES.some((prefix) => mimeType.startsWith(prefix));
 }
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null && !Array.isArray(value);
-}
-
-  return ALLOWED_MIME_PREFIXES.some((prefix) => mimeType.startsWith(prefix));
 }

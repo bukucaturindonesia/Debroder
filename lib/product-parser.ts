@@ -1,13 +1,13 @@
 import type {
   ImageRole,
-  Product,
-  ProductCategory,
+  PimProduct as Product,
+  PimProductCategory as ProductCategory,
   ProductMinimumRule,
   ProductPriceTier,
   ProductSize,
-  ProductVariant,
-  ProductVariantImage,
-  ProductVariantSize,
+  PimProductVariant as ProductVariant,
+  PimProductVariantImage as ProductVariantImage,
+  PimProductVariantSize as ProductVariantSize,
   SizeStatus,
   VariantStatus
 } from "@/lib/types";

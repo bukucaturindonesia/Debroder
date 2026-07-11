@@ -39,10 +39,19 @@ v1.1 - Bulk & Custom Ordering
 
 ## Validation Status
 
-- Lint: BLOCKED - `node_modules\.pnpm\eslint@9.39.5\...\eslint\bin\eslint.js` cannot be opened
-- Typecheck: BLOCKED - `node_modules\.pnpm\typescript@5.9.3\...\typescript\bin\tsc` cannot be opened
-- Tests: BLOCKED - `node_modules\.pnpm\vitest@4.1.10_...\vitest\vitest.mjs` cannot be opened
-- Build: BLOCKED - `node_modules\.pnpm\next@15.5.20_...\next\dist\bin\next` cannot be opened
+## Deployment Recovery
+
+- Clean install: PASS
+- Lint: PASS
+- Typecheck: PASS
+- Tests: PASS
+- Build: PASS
+- Vercel: FAIL (blocked: team terhubung tidak memiliki project DEBRODER)
+
+- Lint: PASS (0 errors; 19 non-blocking warnings)
+- Typecheck: PASS
+- Tests: PASS (12/12)
+- Build: PASS (Next.js 15.5.19; 58 routes/pages)
 
 ## Last Successful Checkpoint
 
@@ -50,34 +59,10 @@ v1.1 source implementation, migration, admin/customer UI, API routes, and tests 
 
 ## Current Blocker
 
-`DEBRODER_Blueprint_v1.0-v1.3_FROZEN.txt` was not present in the workspace. Work continued from the attached v1.1 execution brief, the v1.0 report, the progress ledger, and the checked-in migrations.
+Local dependency installation and all validation gates have recovered. The remaining blocker is Vercel linkage: the connected `OKDEAL` team currently returns no projects, so a DEBRODER deployment cannot be inspected or redeployed from this workspace.
 
-Local validation is blocked by filesystem permissions on vendor files under `node_modules`. Confirmed attempts:
-
-1. Added bundled Codex Node runtime to `PATH` and ran `pnpm typecheck`; failed with `EPERM` reading TypeScript `bin\tsc`.
-2. Ran `pnpm install --offline`; dependency tree was already up to date and permissions did not change.
-3. Ran `pnpm install --force --offline`; dependency tree still was not regenerated.
-4. Ran `pnpm test`; failed with `EPERM` reading Vitest `vitest.mjs`.
-5. Checked file attributes/encryption; files are not encrypted or OneDrive placeholders, but `Get-Acl` is denied.
-6. Requested approval to delete/regenerate `node_modules`; the approval tool rejected the escalation because of usage-limit approval failure.
-
-The folder `.git` exists but is empty, so git status/diff is not available in this workspace snapshot.
+The folder `.git` is empty in this workspace snapshot, so Git status/diff remains unavailable.
 
 ## Next Action
 
-Regenerate dependencies once approval/permissions are available:
-
-```powershell
-$workspace=(Resolve-Path -LiteralPath '.').Path
-$target=(Resolve-Path -LiteralPath 'node_modules').Path
-if (-not $target.StartsWith($workspace, [System.StringComparison]::OrdinalIgnoreCase)) { throw "Refusing to remove outside workspace: $target" }
-Remove-Item -LiteralPath $target -Recurse -Force
-$env:Path='C:\Users\gknma\.cache\codex-runtimes\codex-primary-runtime\dependencies\node\bin;C:\Users\gknma\.cache\codex-runtimes\codex-primary-runtime\dependencies\bin\override;C:\Users\gknma\.cache\codex-runtimes\codex-primary-runtime\dependencies\bin\fallback;' + $env:Path
-pnpm install --offline
-pnpm test
-pnpm typecheck
-pnpm lint
-pnpm build
-```
-
-After validation passes, apply `supabase/migrations/20260711010000_v1_1_bulk_custom_ordering.sql` to the Supabase project and verify RLS/storage policies with real authenticated users.
+Import or link the DEBRODER repository to a Vercel project under the accessible team, configure the variables listed in `.env.example`, deploy, and verify that the deployment reaches `Ready`. Do not apply additional migrations as part of deployment recovery.

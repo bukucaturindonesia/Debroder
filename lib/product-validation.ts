@@ -1,4 +1,4 @@
-import type { Product, ValidationIssue } from "@/lib/types";
+import type { PimProduct as Product, ValidationIssue } from "@/lib/types";
 import { getVariantThumbnail } from "@/lib/product-utils";
 
 const SLUG_PATTERN = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;

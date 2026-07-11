@@ -83,7 +83,7 @@ export function CampaignBanners({ banners, fallbackDesktopSrc, fallbackMobileSrc
 
   return (
     <section aria-label="Campaign DEBRODER" className="home-section home-campaign campaign-section section-space bg-white">
-      <div className="section-shell">
+      <div className="campaign-shell">
         {visibleBanners.map((banner) => {
           const title = cleanText(banner.title) || "BUILT FOR IDENTITY";
           const subtitle = cleanText(banner.subtitle) || "Apparel custom untuk tim, komunitas, dan perusahaan yang ingin tampil beda.";
@@ -92,11 +92,11 @@ export function CampaignBanners({ banners, fallbackDesktopSrc, fallbackMobileSrc
 
           return (
             <article key={banner.id || banner.name}>
-              <div className="relative aspect-[4/5] overflow-hidden bg-[#efefef] sm:aspect-auto sm:h-[clamp(460px,60vh,560px)] lg:h-[clamp(560px,74vh,760px)]">
+              <div className="relative aspect-[4/5] overflow-hidden bg-[#efefef] sm:aspect-[16/7]">
                 <CampaignMedia banner={banner} />
               </div>
 
-              <div className="mx-auto max-w-5xl px-2 pt-10 text-center sm:pt-12 lg:pt-14">
+              <div className="campaign-copy mx-auto max-w-5xl px-5 pt-8 text-center sm:pt-10 lg:pt-12">
                 <h2 className="campaign-copy-title whitespace-pre-line text-[#111]">
                   {title}
                 </h2>

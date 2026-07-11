@@ -338,9 +338,18 @@ button,
   color: #ffffff;
 }
 
-.section-shell {
-  width: min(1440px, calc(100% - 32px));
+/* Landing layout frame system: full bleed, editorial shell, and scrolling rails. */
+.section-shell,
+.campaign-shell {
   margin-inline: auto;
+}
+
+.section-shell {
+  width: min(1808px, calc(100% - 40px));
+}
+
+.campaign-shell {
+  width: min(1824px, calc(100% - 32px));
 }
 
 .section-space {
@@ -354,49 +363,36 @@ button,
 
 .no-scrollbar {
   scrollbar-width: none;
-  scroll-padding-inline: 1px;
-  overscroll-behavior-inline: contain;
 }
 
 .no-scrollbar::-webkit-scrollbar {
   display: none;
 }
 
-.native-carousel {
+.native-carousel,
+.home-bleed-rail,
+.trending-grid {
   scroll-behavior: auto;
-  touch-action: pan-x;
+  touch-action: manipulation;
   -webkit-overflow-scrolling: touch;
 }
 
-
-/* Blueprint v1.0: Shop by Category uses 4:5 editorial posters, 3.2 visible on desktop. */
-.category-carousel {
+.home-bleed-rail {
+  gap: 12px;
+  padding-inline: 20px;
   scroll-padding-inline: 0;
   overscroll-behavior-inline: contain;
+  overscroll-behavior-block: auto;
 }
 
-.category-carousel-card {
-  flex: 0 0 76%;
+.fresh-drop-card,
+.category-rail-card {
+  flex: 0 0 78vw;
   min-width: 0;
-  scroll-snap-align: start;
 }
 
-@media (min-width: 640px) {
-  .category-carousel-card {
-    flex-basis: 44%;
-  }
-}
-
-@media (min-width: 1024px) {
-  .category-carousel-card {
-    flex-basis: calc((100% - 2rem) / 3.2);
-  }
-}
-
-/* Keep section rhythm consistent and avoid oversized blank bands. */
-.public-site > .section-space + .section-space,
-.public-site > div + .section-space {
-  scroll-margin-top: 78px;
+.featured-media-grid {
+  width: 100%;
 }
 
 .premium-scrollbar {
@@ -476,31 +472,176 @@ button,
   }
 }
 
+/* DEBRODER hero title wrap fix: do not force page hero headings into narrow columns. */
+.hero-content .hero-title {
+  max-width: min(92vw, 1080px);
+  overflow-wrap: normal;
+  word-break: normal;
+}
+
+@media (max-width: 768px) {
+  .hero-content .hero-title {
+    max-width: 92vw;
+  }
+}
+
+/* =========================================================
+   DEBRODER Landing Blueprint v1.0 — final homepage geometry
+   ========================================================= */
+
+/* Trending: three composed posters on desktop, 1.2-card native rail on mobile. */
+.trending-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+  width: 100%;
+}
+
+.trending-static-card {
+  min-width: 0;
+  width: 100%;
+}
+
+/* Each section owns only its top spacing to prevent doubled whitespace. */
+.public-site {
+  --home-gap-featured: 40px;
+  --home-gap-trending: 48px;
+  --home-gap-campaign: 56px;
+  --home-gap-commerce: 56px;
+  --home-gap-support: 64px;
+  --home-gap-about: 64px;
+  --home-end-space: 64px;
+}
+
+.public-site .home-section {
+  padding-bottom: 0 !important;
+}
+
+.public-site .home-featured {
+  padding-top: var(--home-gap-featured) !important;
+}
+
+.public-site .home-trending {
+  padding-top: var(--home-gap-trending) !important;
+}
+
+.public-site .home-campaign {
+  padding-top: var(--home-gap-campaign) !important;
+}
+
+.public-site .home-fresh-drop,
+.public-site .home-categories {
+  padding-top: var(--home-gap-commerce) !important;
+}
+
+.public-site .home-store {
+  padding-top: var(--home-gap-support) !important;
+}
+
+.public-site .home-about {
+  padding-top: var(--home-gap-about) !important;
+  padding-bottom: var(--home-end-space) !important;
+  border: 0 !important;
+  box-shadow: none !important;
+}
+
+.public-site .home-about::before,
+.public-site .home-about::after {
+  content: none !important;
+}
+
+@media (max-width: 767px) {
+  .trending-grid {
+    grid-template-columns: none;
+    grid-auto-flow: column;
+    grid-auto-columns: 83.333%;
+    gap: 12px;
+    overflow-x: auto;
+    overflow-y: hidden;
+    scroll-snap-type: x mandatory;
+    scroll-padding-inline: 0;
+    overscroll-behavior-inline: contain;
+    overscroll-behavior-block: auto;
+    scrollbar-width: none;
+  }
+
+  .trending-grid::-webkit-scrollbar {
+    display: none;
+  }
+
+  .trending-static-card {
+    scroll-snap-align: start;
+  }
+}
+
 @media (min-width: 640px) {
   .section-shell {
-    width: min(1440px, calc(100% - 40px));
+    width: min(1808px, calc(100% - 64px));
+  }
+
+  .campaign-shell {
+    width: min(1824px, calc(100% - 48px));
+  }
+
+  .home-bleed-rail {
+    gap: 16px;
+    padding-inline: 32px;
+  }
+
+  .fresh-drop-card,
+  .category-rail-card {
+    flex-basis: 44vw;
   }
 
   .section-space {
     padding-block: var(--space-section-tablet);
   }
-}
 
-@media (min-width: 768px) {
-  .section-shell {
-    width: min(1440px, calc(100% - 64px));
+  .public-site {
+    --home-gap-featured: 48px;
+    --home-gap-trending: 56px;
+    --home-gap-campaign: 64px;
+    --home-gap-commerce: 64px;
+    --home-gap-support: 72px;
+    --home-gap-about: 72px;
+    --home-end-space: 72px;
   }
 }
 
 @media (min-width: 1024px) {
+  .section-shell {
+    width: min(1808px, calc(100% - 96px));
+  }
+
+  .campaign-shell {
+    width: min(1824px, calc(100% - 96px));
+  }
+
+  .home-bleed-rail {
+    padding-inline: 48px;
+  }
+
+  .fresh-drop-card,
+  .category-rail-card {
+    flex-basis: min(560px, calc((100vw - 128px) / 3.2));
+  }
+
   .section-space {
     padding-block: var(--space-section-desktop);
   }
-}
 
-@media (min-width: 1280px) {
-  .section-shell {
-    width: min(1440px, calc(100% - 96px));
+  .benefit-grid {
+    width: min(1280px, calc(100% - 96px));
+  }
+
+  .public-site {
+    --home-gap-featured: 56px;
+    --home-gap-trending: 72px;
+    --home-gap-campaign: 72px;
+    --home-gap-commerce: 80px;
+    --home-gap-support: 80px;
+    --home-gap-about: 80px;
+    --home-end-space: 80px;
   }
 }
 
@@ -516,149 +657,5 @@ button,
     animation-iteration-count: 1 !important;
     scroll-behavior: auto !important;
     transition-duration: 0.01ms !important;
-  }
-}
-/* DEBRODER hero title wrap fix: do not force page hero headings into narrow columns. */
-.hero-content .hero-title {
-  max-width: min(92vw, 1080px);
-  overflow-wrap: normal;
-  word-break: normal;
-}
-
-@media (max-width: 768px) {
-  .hero-content .hero-title {
-    max-width: 92vw;
-  }
-}
-
-
-/* Trending: desktop uses three fixed posters; mobile uses a native 1.2-card carousel. */
-.trending-grid {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 16px;
-  width: 100%;
-}
-
-.trending-static-card {
-  min-width: 0;
-  width: 100%;
-}
-
-@media (max-width: 767px) {
-  .trending-grid {
-    grid-template-columns: none;
-    grid-auto-flow: column;
-    grid-auto-columns: 83.333%;
-    gap: 12px;
-    overflow-x: auto;
-    overflow-y: hidden;
-    scroll-snap-type: x mandatory;
-    scroll-padding-inline: 0;
-    overscroll-behavior-inline: contain;
-    scrollbar-width: none;
-    touch-action: pan-x;
-    -webkit-overflow-scrolling: touch;
-  }
-
-  .trending-grid::-webkit-scrollbar {
-    display: none;
-  }
-
-  .trending-static-card {
-    scroll-snap-align: start;
-  }
-}
-
-/* =========================================================
-   DEBRODER Landing Blueprint v1.0 — section rhythm
-   Scope: homepage only. Uses an 8px-based spacing system.
-   Each section owns only its TOP gap so adjacent sections do
-   not accidentally double their vertical whitespace.
-   ========================================================= */
-
-/* Keep horizontal carousels responsive to touch while allowing
-   vertical page scrolling to begin from the same gesture area. */
-.public-site .native-carousel,
-.public-site .no-scrollbar,
-.public-site .trending-grid {
-  touch-action: manipulation;
-}
-
-.public-site .native-carousel,
-.public-site .category-carousel,
-.public-site .trending-grid {
-  overscroll-behavior-x: auto;
-  overscroll-behavior-y: auto;
-}
-
-/* Mobile: reduced, but never cramped. */
-.public-site {
-  --home-gap-featured: 48px;
-  --home-gap-editorial: 56px;
-  --home-gap-major: 64px;
-  --home-gap-commerce: 64px;
-  --home-gap-support: 64px;
-  --home-gap-about: 72px;
-  --home-end-space: 72px;
-}
-
-.public-site .home-section {
-  padding-bottom: 0 !important;
-}
-
-.public-site .home-featured {
-  padding-top: var(--home-gap-featured) !important;
-}
-
-.public-site .home-trending {
-  padding-top: var(--home-gap-editorial) !important;
-}
-
-.public-site .home-campaign {
-  padding-top: var(--home-gap-major) !important;
-}
-
-.public-site .home-fresh-drop,
-.public-site .home-categories {
-  padding-top: var(--home-gap-commerce) !important;
-}
-
-.public-site .home-store {
-  padding-top: var(--home-gap-support) !important;
-}
-
-.public-site .home-about {
-  padding-top: var(--home-gap-about) !important;
-  padding-bottom: var(--home-end-space) !important;
-}
-
-/* Tablet: increase rhythm while preserving a composed layout. */
-@media (min-width: 640px) {
-  .public-site {
-    --home-gap-featured: 56px;
-    --home-gap-editorial: 64px;
-    --home-gap-major: 72px;
-    --home-gap-commerce: 72px;
-    --home-gap-support: 72px;
-    --home-gap-about: 80px;
-    --home-end-space: 80px;
-  }
-}
-
-/* Desktop: generous editorial rhythm from the frozen blueprint. */
-@media (min-width: 1024px) {
-  .benefit-grid {
-    width: min(1180px, calc(100% - 96px));
-  }
-
-  .public-site {
-    --home-gap-featured: 72px;
-    --home-gap-editorial: 88px;
-    --home-gap-major: 96px;
-    --home-gap-commerce: 88px;
-    --home-gap-support: 88px;
-    --home-gap-about: 96px;
-    --home-end-space: 96px;
   }
 }

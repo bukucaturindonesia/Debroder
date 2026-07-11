@@ -114,7 +114,7 @@ export function PublicFooter({ content }: { content: PublicContent }) {
           <p className="mt-6 inline-flex items-center gap-2 text-[15px] text-black/58"><span aria-hidden="true">◎</span>Indonesia</p>
         </div>
 
-        <div className="mt-14 flex flex-col gap-6 border-t border-black/10 pt-6 text-sm text-black/55 lg:flex-row lg:items-center lg:justify-between">
+        <div className="mt-16 flex flex-col gap-6 text-sm text-black/55 lg:mt-20 lg:flex-row lg:items-center lg:justify-between">
           <div className="flex flex-wrap gap-x-6 gap-y-3">
             <p>{content.contact.copyright_text || "© 2026 DEBRODER. All rights reserved."}</p>
             <Link href="/cara-order" className="transition hover:text-[#111]">Syarat & Ketentuan</Link>

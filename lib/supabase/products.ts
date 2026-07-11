@@ -1,13 +1,13 @@
 import { sampleProducts } from "@/data/sample-products";
 import type {
-  Product,
-  ProductCategory,
+  PimProduct as Product,
+  PimProductCategory as ProductCategory,
   ProductMinimumRule,
   ProductPriceTier,
   ProductSize,
-  ProductVariant,
-  ProductVariantImage,
-  ProductVariantSize,
+  PimProductVariant as ProductVariant,
+  PimProductVariantImage as ProductVariantImage,
+  PimProductVariantSize as ProductVariantSize,
   RevalidationInput,
   RevalidationResult
 } from "@/lib/types";

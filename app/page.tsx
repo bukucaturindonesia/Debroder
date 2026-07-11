@@ -50,9 +50,6 @@ type ProductItem = Visual & {
   fit: string;
 };
 
-const horizontalCarouselClass = "native-carousel no-scrollbar mt-5 flex snap-x snap-mandatory gap-3 overflow-x-auto sm:gap-4";
-const horizontalCarouselItemClass = "min-w-[76vw] shrink-0 snap-start sm:min-w-[44vw] lg:min-w-[31.5%]";
-const categoryCarouselItemClass = "category-carousel-card";
 
 function isCustomHomepageItem(item: HomepageSectionItem) {
   return Boolean(item.custom_title && item.custom_image_url && item.custom_link_url);
@@ -228,19 +225,26 @@ function EditorialCard({
 }
 
 function CategoryEditorialCard({ item }: { item: EditorialItem }) {
-  const categoryItem: EditorialItem = {
-    ...item,
-    label: cleanCmsText(item.label) || "Kategori",
-    title: cleanCmsText(item.title) || item.imageAlt,
-    button: cleanCmsText(item.button) || "Lihat"
-  };
+  const title = cleanCmsText(item.title) || item.imageAlt;
 
   return (
-    <EditorialCard
-      item={categoryItem}
-      variant="trending"
-      className={categoryCarouselItemClass}
-    />
+    <article className="category-rail-card min-w-0 shrink-0 snap-start">
+      <Link href={item.href} className="group block" aria-label={`Lihat kategori ${title}`}>
+        <div className="aspect-[4/5] overflow-hidden bg-[#f2f2f2]">
+          <ResponsivePicture
+            desktopSrc={item.image}
+            mobileSrc={item.mobileImage || item.image}
+            fallbackSrc={item.fallbackImage}
+            alt={item.imageAlt}
+            className="h-full w-full object-cover transition duration-500 group-hover:scale-[1.02]"
+            objectFit={item.objectFit || "cover"}
+            desktopObjectPosition={item.objectPosition}
+            mobileObjectPosition={item.objectPosition}
+          />
+        </div>
+        <h3 className="mt-3 text-base font-medium tracking-[-0.01em] text-[#111] sm:text-lg">{title}</h3>
+      </Link>
+    </article>
   );
 }
 
@@ -256,7 +260,7 @@ function ProductCard({ item, className = "" }: { item: ProductItem; className?: 
         imageClassName={(item.objectFit || item.fit) === "contain" ? "object-contain p-3" : "object-cover"}
         objectFit={item.objectFit || (item.fit === "contain" ? "contain" : "cover")}
         objectPosition={item.objectPosition || "center center"}
-        sizes="(min-width: 1536px) 20vw, (min-width: 1024px) 25vw, 50vw"
+        sizes="(min-width: 1536px) 30vw, (min-width: 1024px) 31vw, (min-width: 640px) 44vw, 78vw"
       />
       </Link>
       <div className="pt-3">
@@ -271,39 +275,57 @@ function ProductCard({ item, className = "" }: { item: ProductItem; className?: 
 function ManagedHomepageSection({ section, setting, fallbackProducts = [] }: { section: HomepageSection; setting?: LandingSection; fallbackProducts?: Product[] }) {
   const carouselId = `${section.slug}-carousel`;
   const isFeatured = section.slug === "featured";
-  const isEditorial = isFeatured || section.slug === "trending";
-  const configuredCta = setting?.cta_label && setting.cta_url ? <Link href={setting.cta_url} className="hidden text-sm font-semibold hover:underline sm:block">{setting.cta_label}</Link> : null;
+  const isTrending = section.slug === "trending";
+  const isEditorial = isFeatured || isTrending;
+  const configuredCta = setting?.cta_label && setting.cta_url
+    ? <Link href={setting.cta_url} className="hidden text-sm font-semibold hover:underline sm:block">{setting.cta_label}</Link>
+    : null;
 
   if (isEditorial) {
     const sectionItems = preferredHomepageItems(section);
     const items = sectionItems.map(editorialPlacement).filter((item): item is EditorialItem => Boolean(item));
     if (!items.length) return null;
+
+    if (isFeatured) {
+      return (
+        <section id={section.slug} className="home-section home-featured section-space bg-white">
+          <div className="section-shell">
+            <SectionHeading
+              title={section.title}
+              description={setting?.subtitle}
+              textPosition={setting?.text_position}
+              action={configuredCta}
+            />
+          </div>
+          <div id={carouselId} className="featured-media-grid mt-5 grid grid-cols-1 gap-0 lg:grid-cols-2">
+            {items.slice(0, 2).map((item, index) => (
+              <EditorialCard
+                key={sectionItems[index]?.id || `${item.href}-${index}`}
+                item={item}
+                variant="featured"
+              />
+            ))}
+          </div>
+        </section>
+      );
+    }
+
     return (
-      <section
-        id={section.slug}
-        className={`home-section section-space bg-white ${isFeatured ? "home-featured" : "home-trending"}`}
-      >
-        <div className="section-shell">
+      <section id={section.slug} className="home-section home-trending section-space bg-white">
+        <div className="section-shell trending-shell">
           <SectionHeading
             title={section.title}
             description={setting?.subtitle}
             textPosition={setting?.text_position}
             action={configuredCta}
           />
-          <div
-            id={carouselId}
-            className={
-              isFeatured
-                ? "mt-5 grid grid-cols-1 gap-0 lg:grid-cols-2"
-                : "trending-grid mt-5"
-            }
-          >
-            {items.slice(0, isFeatured ? 2 : 3).map((item, index) => (
+          <div id={carouselId} className="trending-grid mt-5">
+            {items.slice(0, 3).map((item, index) => (
               <EditorialCard
                 key={sectionItems[index]?.id || `${item.href}-${index}`}
                 item={item}
-                variant={isFeatured ? "featured" : "trending"}
-                className={isFeatured ? "" : "trending-static-card"}
+                variant="trending"
+                className="trending-static-card"
               />
             ))}
           </div>
@@ -315,16 +337,30 @@ function ManagedHomepageSection({ section, setting, fallbackProducts = [] }: { s
   const configuredItems = section.items.map(cardPlacement).filter((item): item is ProductItem => Boolean(item));
   const items = configuredItems.length ? configuredItems : fallbackProducts.map(productItem);
   if (!items.length) return null;
+
   return (
-    <section
-      id={section.slug}
-      className={`home-section section-space bg-white ${section.slug === "fresh-drops" ? "home-fresh-drop" : ""}`}
-    >
+    <section id={section.slug} className="home-section home-fresh-drop section-space bg-white">
       <div className="section-shell">
-        <SectionHeading title={section.title} description={setting?.subtitle} textPosition={setting?.text_position} action={<div className="flex items-center gap-4">{configuredCta || <Link href="/koleksi" className="hidden text-sm font-semibold hover:underline sm:block">Shop</Link>}<ScrollButtons containerId={carouselId} /></div>} />
-        <div id={carouselId} className={`${horizontalCarouselClass} gap-y-6`}>
-          {items.map((item, index) => <ProductCard key={section.items[index]?.id || `${item.href}-${index}`} item={item} className={horizontalCarouselItemClass} />)}
-        </div>
+        <SectionHeading
+          title={section.title}
+          description={setting?.subtitle}
+          textPosition={setting?.text_position}
+          action={
+            <div className="flex items-center gap-4">
+              {configuredCta || <Link href="/koleksi" className="hidden text-sm font-semibold hover:underline sm:block">Shop</Link>}
+              <ScrollButtons containerId={carouselId} />
+            </div>
+          }
+        />
+      </div>
+      <div id={carouselId} className="home-bleed-rail fresh-drop-rail no-scrollbar mt-5 flex snap-x snap-mandatory overflow-x-auto">
+        {items.map((item, index) => (
+          <ProductCard
+            key={section.items[index]?.id || `${item.href}-${index}`}
+            item={item}
+            className="fresh-drop-card shrink-0 snap-start"
+          />
+        ))}
       </div>
     </section>
   );
@@ -467,22 +503,22 @@ export default async function Home() {
                 </div>
               }
             />
-            <div id="category-carousel" className="category-carousel native-carousel premium-scrollbar mt-5 flex snap-x snap-mandatory gap-3 overflow-x-auto pb-4 sm:gap-4">
-              {shopCategoryItems.length ? shopCategoryItems.map((item) => (
-                <CategoryEditorialCard key={`${item.href}-${item.title}`} item={item} />
-              )) : homeCategories.length ? homeCategories.map((item) => (
-                <CategoryEditorialCard
-                  key={item.name}
-                  item={{
-                    ...item,
-                    label: "Kategori",
-                    title: item.name,
-                    button: "Lihat",
-                    href: item.href
-                  }}
-                />
-              )) : <p className="p-8 text-center text-sm text-black/55">Belum ada kategori.</p>}
-            </div>
+          </div>
+          <div id="category-carousel" className="home-bleed-rail category-carousel no-scrollbar mt-5 flex snap-x snap-mandatory overflow-x-auto pb-4">
+            {shopCategoryItems.length ? shopCategoryItems.map((item) => (
+              <CategoryEditorialCard key={`${item.href}-${item.title}`} item={item} />
+            )) : homeCategories.length ? homeCategories.map((item) => (
+              <CategoryEditorialCard
+                key={item.name}
+                item={{
+                  ...item,
+                  label: "",
+                  title: item.name,
+                  button: "",
+                  href: item.href
+                }}
+              />
+            )) : <p className="px-5 py-8 text-sm text-black/55">Belum ada kategori.</p>}
           </div>
         </section>
       </LandingSectionSlot>
@@ -516,7 +552,7 @@ export default async function Home() {
 
       <LandingSectionSlot setting={landingSection("about")}>
         <section id="tentang" className="home-section home-about section-space bg-white">
-          <div className="section-shell grid gap-10 border-t border-black/10 pt-12 lg:grid-cols-[1.05fr_.95fr] lg:items-center lg:gap-20 lg:pt-16">
+          <div className="section-shell grid gap-10 lg:grid-cols-[1.05fr_.95fr] lg:items-center lg:gap-20">
             <div className={content.trustAbout.text_position === "center" ? "text-center" : content.trustAbout.text_position === "right" ? "text-right" : ""}>
               <p className="text-sm font-medium text-black/55">Tentang DEBRODER</p>
               <h2 className="section-title mt-4 max-w-2xl">{landingSection("about")?.title || "Built to Create"}</h2>

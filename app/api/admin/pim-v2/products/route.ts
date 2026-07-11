@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import type { Product } from "@/lib/types";
+import type { PimProduct as Product } from "@/lib/types";
 import { isAdminRequest } from "@/lib/admin-auth";
 import { parseProductPayload } from "@/lib/product-parser";
 import { validatePublishProduct } from "@/lib/product-validation";

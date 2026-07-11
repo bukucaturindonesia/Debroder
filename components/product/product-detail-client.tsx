@@ -6,7 +6,7 @@ import type {
   CartItem,
   CustomService,
   CustomerUploadRef,
-  Product,
+  PimProduct as Product,
   ProductConfigurationSnapshot,
   ProductSize,
   RevalidationResult

@@ -1,8 +1,8 @@
 import type {
-  Product,
-  ProductVariant,
-  ProductVariantImage,
-  ProductVariantSize
+  PimProduct as Product,
+  PimProductVariant as ProductVariant,
+  PimProductVariantImage as ProductVariantImage,
+  PimProductVariantSize as ProductVariantSize
 } from "@/lib/types";
 
 export function getActiveVariants(product: Product): ProductVariant[] {
@@ -89,4 +89,3 @@ export function isVariantOutOfStock(variant: ProductVariant): boolean {
     (variantSize) => variantSize.stockQuantity <= 0
   );
 }
-

@@ -1,31 +1,33 @@
 {
-  "name": "debroder",
-  "version": "0.1.0",
+  "name": "debroder-official",
+  "version": "1.0.0",
   "private": true,
-  "packageManager": "pnpm@11.7.0",
+  "packageManager": "pnpm@10.12.4",
   "scripts": {
     "dev": "next dev",
+    "typecheck": "tsc --noEmit",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint . --max-warnings=0",
-    "typecheck": "tsc --noEmit",
+    "lint": "eslint .",
     "test": "vitest run"
   },
   "dependencies": {
-    "@supabase/supabase-js": "2.110.2",
-    "next": "15.5.20",
-    "react": "19.2.7",
-    "react-dom": "19.2.7"
+    "@supabase/supabase-js": "^2.108.2",
+    "next": "^15.0.0",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0"
   },
   "devDependencies": {
-    "@eslint/eslintrc": "3.3.6",
-    "@types/node": "26.1.1",
-    "@types/react": "19.2.17",
-    "@types/react-dom": "19.2.3",
-    "eslint": "9.39.5",
-    "eslint-config-next": "15.5.20",
-    "typescript": "5.9.3",
-    "vitest": "4.1.10"
+    "@eslint/eslintrc": "3.3.1",
+    "@types/node": "^20.17.6",
+    "@types/react": "^19.0.0",
+    "@types/react-dom": "^19.0.0",
+    "autoprefixer": "^10.4.20",
+    "eslint": "9.39.1",
+    "eslint-config-next": "15.5.19",
+    "postcss": "^8.4.49",
+    "tailwindcss": "^3.4.17",
+    "typescript": "^5.7.0",
+    "vitest": "3.2.4"
   }
 }
-

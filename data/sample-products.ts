@@ -1,4 +1,4 @@
-import type { Product } from "@/lib/types";
+import type { PimProduct as Product } from "@/lib/types";
 
 const categoryApparel = {
   id: "cat-apparel",
