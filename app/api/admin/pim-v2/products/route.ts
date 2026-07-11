@@ -64,17 +64,38 @@ async function upsertProduct(product: Product): Promise<{ id: string }> {
     throw new Error("Supabase admin client is unavailable.");
   }
 
+  const { data: categoryData, error: categoryError } = await client
+    .from("product_categories")
+    .select("name")
+    .eq("id", product.productCategoryId)
+    .maybeSingle();
+
+  if (categoryError) {
+    throw new Error(`Failed to resolve product category: ${categoryError.message}`);
+  }
+
+  const categoryName =
+    typeof categoryData?.name === "string" && categoryData.name.trim().length > 0
+      ? categoryData.name
+      : "Produk";
+
   const { data, error } = await client
     .from("products")
     .upsert(
       {
         id: product.id.startsWith("prod-") ? undefined : product.id,
         name: product.name,
+        nama: product.name,
         slug: product.slug,
         product_category_id: product.productCategoryId,
+        kategori: categoryName,
         base_price: product.basePrice,
+        price: product.basePrice,
+        harga: product.basePrice,
         description: product.description,
+        deskripsi: product.description ?? "",
         status: product.status,
+        status_aktif: product.status === "active",
         sku: product.sku
       },
       { onConflict: "slug" }
@@ -96,12 +117,16 @@ async function upsertProduct(product: Product): Promise<{ id: string }> {
           id: variant.id.startsWith("var-") ? undefined : variant.id,
           product_id: productId,
           name: variant.name,
+          variant_name: variant.name,
+          color_name: variant.name,
           slug: variant.slug,
           hex_code: variant.hexCode,
+          color_hex: variant.hexCode,
           sku: variant.sku,
           sort_order: variant.sortOrder,
           is_default: variant.isDefault,
           status: variant.status,
+          is_active: variant.status === "active",
           price_adjustment: variant.priceAdjustment
         },
         { onConflict: "sku" }
@@ -145,10 +170,13 @@ async function upsertProduct(product: Product): Promise<{ id: string }> {
             id: variantSize.id.startsWith("vsize-") ? undefined : variantSize.id,
             variant_id: variantId,
             size_id: variantSize.sizeId,
+            size_name: variantSize.size.name,
             sku: variantSize.sku,
             stock_quantity: variantSize.stockQuantity,
+            stock: variantSize.stockQuantity,
             price_adjustment: variantSize.priceAdjustment,
-            status: variantSize.status
+            status: variantSize.status,
+            is_active: variantSize.status === "active"
           },
           { onConflict: "sku" }
         );

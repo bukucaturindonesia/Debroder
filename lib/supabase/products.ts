@@ -76,13 +76,12 @@ const PRODUCT_SELECT = `
       stock_quantity,
       price_adjustment,
       status,
-      product_sizes (
+      product_size_master!product_variant_sizes_size_id_fkey (
         id,
         name,
         slug,
         sort_order,
-        status,
-        price_adjustment
+        is_active
       )
     )
   )
@@ -151,7 +150,6 @@ export async function revalidateCartItems(
   }
 
   return latestItems.map(({ input, latest }) => {
-
     if (!latest) {
       return {
         product_variant_size_id: input.product_variant_size_id,
@@ -344,7 +342,7 @@ function mapImageRow(row: Record<string, unknown>): ProductVariantImage {
 }
 
 function mapVariantSizeRow(row: Record<string, unknown>): ProductVariantSize {
-  const sizeRow = takeFirstRecord(row.product_sizes);
+  const sizeRow = takeFirstRecord(row.product_size_master);
 
   if (!sizeRow) {
     throw new Error(`Variant size ${asString(row.id)} is missing size master data.`);
@@ -368,8 +366,8 @@ function mapSizeRow(row: Record<string, unknown>): ProductSize {
     name: asString(row.name),
     slug: asString(row.slug),
     sortOrder: asNumber(row.sort_order),
-    status: asString(row.status) === "inactive" ? "inactive" : "active",
-    priceAdjustment: asNumber(row.price_adjustment)
+    status: asBoolean(row.is_active) ? "active" : "inactive",
+    priceAdjustment: 0
   };
 }
 
