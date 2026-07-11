@@ -1,0 +1,661 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --background: #FFFFFF;
+  --foreground: #111111;
+  --font-heading: "Barlow Condensed", "Arial Narrow", "Helvetica Neue Condensed", sans-serif;
+  --font-display: var(--font-heading);
+  --font-body: "Inter", ui-sans-serif, system-ui, -apple-system,
+    BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --space-section-mobile: 48px;
+  --space-section-tablet: 64px;
+  --space-section-desktop: 72px;
+  --surface-soft: #f5f5f5;
+  --surface-muted: #efefef;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: auto;
+  scroll-padding-top: 78px;
+}
+
+body {
+  margin: 0;
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-body);
+  overflow-x: hidden;
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+
+/* DEBRODER global canvas: one continuous off-white surface for public pages. */
+html,
+body {
+  background: #FFFFFF;
+}
+
+.public-site {
+  background: #FFFFFF;
+}
+
+.public-site section:not(.keep-section-bg),
+.public-site .section-canvas {
+  background-color: #FFFFFF;
+}
+
+.product-image-frame {
+  background: #f5f5f5;
+  border: 0;
+  box-shadow: none;
+}
+
+.premium-media-surface {
+  background:
+    linear-gradient(135deg, rgba(6, 61, 36, 0.055), transparent 34%),
+    linear-gradient(315deg, rgba(17, 17, 17, 0.04), transparent 42%),
+    #f5f5f5;
+  border: 0;
+  box-shadow: none;
+}
+
+.premium-section-copy {
+  max-width: 680px;
+  color: rgba(17, 17, 17, 0.58);
+}
+
+.premium-filter-panel {
+  background: transparent;
+  border: 0;
+  box-shadow: none;
+}
+
+.premium-input {
+  background: rgba(255, 255, 255, 0.58);
+  border-color: rgba(17, 17, 17, 0.08);
+}
+
+.premium-input:focus {
+  border-color: rgba(6, 61, 36, 0.42);
+}
+
+.premium-ghost-button {
+  background: transparent;
+  border-color: rgba(17, 17, 17, 0.13);
+}
+
+.premium-ghost-button:hover {
+  border-color: rgba(6, 61, 36, 0.45);
+  color: #063d24;
+}
+
+.public-site {
+  font-family: var(--font-body);
+  font-weight: 400;
+  line-height: 1.45;
+  overflow-x: clip;
+}
+
+.public-site h1,
+.public-site h2,
+.public-site h3,
+.public-site p {
+  margin-block-end: 0;
+}
+
+.public-site h2:not(.section-title):not(.banner-title) {
+  font-weight: 700;
+  line-height: 1.05;
+}
+
+.public-site button,
+.public-site [role="button"] {
+  font-weight: 600;
+}
+
+
+.font-heading,
+.hero-title,
+.section-title,
+.banner-title {
+  font-family: var(--font-heading);
+  text-transform: uppercase;
+  letter-spacing: -0.02em;
+}
+
+.hero-title {
+  font-weight: 800;
+  line-height: 0.95;
+  font-size: clamp(3rem, 8vw, 7rem);
+}
+
+.section-title {
+  font-weight: 800;
+  line-height: 1;
+  letter-spacing: -0.015em;
+  font-size: clamp(2rem, 4vw, 4rem);
+}
+
+.banner-title {
+  font-weight: 900;
+  line-height: 0.95;
+}
+
+.product-title {
+  font-family: var(--font-body);
+  font-weight: 700;
+}
+
+.product-price {
+  font-family: var(--font-body);
+  font-weight: 600;
+}
+
+button,
+.btn,
+.cta,
+.nav-link {
+  font-family: var(--font-body);
+}
+
+button,
+.btn,
+.cta {
+  font-weight: 600;
+}
+
+@media (max-width: 639px) {
+  .hero-title {
+    font-size: clamp(2.75rem, 14vw, 4.5rem);
+    line-height: 0.92;
+  }
+
+  .section-title {
+    font-size: clamp(2rem, 10vw, 3rem);
+  }
+}
+
+
+/* DEBRODER hero copy alignment: centered, compact, and visually balanced. */
+.hero-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  margin-inline: auto;
+  width: 100%;
+}
+
+.hero-content .hero-title {
+  text-align: center;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.hero-subtitle {
+  display: block;
+  width: 100%;
+  max-width: 680px;
+  text-align: center;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.hero-actions {
+  justify-content: center;
+  align-items: center;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+@media (max-width: 768px) {
+  .hero-subtitle {
+    max-width: 90%;
+  }
+}
+
+/* DEBRODER landing section headings: navbar-like, clean, not oversized. */
+.landing-section-title {
+  font-family: var(--font-body);
+  font-size: clamp(1.25rem, 1.7vw, 1.75rem);
+  font-weight: 600;
+  line-height: 1.15;
+  letter-spacing: -0.012em;
+  text-transform: none;
+}
+
+@media (max-width: 639px) {
+  .landing-section-title {
+    font-size: clamp(1.125rem, 5vw, 1.375rem);
+    line-height: 1.18;
+  }
+}
+
+
+/* DEBRODER editorial/category image cards: Nike-inspired clean white text + efficient soft overlay. */
+.editorial-card {
+  isolation: isolate;
+}
+
+.editorial-card-image {
+  filter: none;
+  opacity: 1;
+}
+
+.editorial-card-overlay {
+  background: linear-gradient(
+    to top,
+    rgba(0, 0, 0, 0.48) 0%,
+    rgba(0, 0, 0, 0.20) 34%,
+    rgba(0, 0, 0, 0.05) 58%,
+    rgba(0, 0, 0, 0) 75%
+  );
+}
+
+.editorial-card-content {
+  left: 16px;
+  right: 16px;
+  bottom: 18px;
+  max-width: 80%;
+}
+
+.editorial-card-label {
+  color: #ffffff;
+  font-family: var(--font-body);
+  font-size: 11px;
+  font-weight: 500;
+  line-height: 1.2;
+  margin: 0 0 4px;
+  text-shadow: 0 1px 8px rgba(0, 0, 0, 0.32);
+}
+
+.editorial-card-title {
+  color: #ffffff;
+  display: -webkit-box;
+  font-family: var(--font-body);
+  font-size: clamp(17px, 5vw, 22px);
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  line-height: 1.08;
+  margin: 0;
+  max-width: 100%;
+  overflow: hidden;
+  text-shadow: 0 2px 14px rgba(0, 0, 0, 0.34);
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+
+.editorial-card-cta {
+  font-family: var(--font-body);
+  font-size: 13px;
+  font-weight: 600;
+  min-height: 36px;
+  padding-inline: 16px;
+  box-shadow: none;
+}
+
+@media (min-width: 640px) {
+  .editorial-card-content {
+    left: 24px;
+    right: 24px;
+    bottom: 28px;
+  }
+
+  .editorial-card-label {
+    font-size: 13px;
+    margin-bottom: 5px;
+  }
+
+  .editorial-card-title {
+    font-size: clamp(20px, 2vw, 28px);
+    line-height: 1.08;
+  }
+
+  .editorial-card-cta {
+    font-size: 14px;
+    min-height: 40px;
+    padding-inline: 18px;
+  }
+}
+
+@media (min-width: 1024px) {
+  .editorial-card-content {
+    left: 28px;
+    right: 28px;
+    bottom: 32px;
+  }
+}
+
+::selection {
+  background: #174c3c;
+  color: #ffffff;
+}
+
+/* Landing layout frame system: full bleed, editorial shell, and scrolling rails. */
+.section-shell,
+.campaign-shell {
+  margin-inline: auto;
+}
+
+.section-shell {
+  width: min(1808px, calc(100% - 40px));
+}
+
+.campaign-shell {
+  width: min(1824px, calc(100% - 32px));
+}
+
+.section-space {
+  padding-block: var(--space-section-mobile);
+}
+
+.snap-section,
+.hero-section {
+  scroll-margin-top: 78px;
+}
+
+.no-scrollbar {
+  scrollbar-width: none;
+}
+
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+.native-carousel,
+.home-bleed-rail,
+.trending-grid {
+  scroll-behavior: auto;
+  touch-action: manipulation;
+  -webkit-overflow-scrolling: touch;
+}
+
+.home-bleed-rail {
+  gap: 12px;
+  padding-inline: 20px;
+  scroll-padding-inline: 0;
+  overscroll-behavior-inline: contain;
+  overscroll-behavior-block: auto;
+}
+
+.fresh-drop-card,
+.category-rail-card {
+  flex: 0 0 78vw;
+  min-width: 0;
+}
+
+.featured-media-grid {
+  width: 100%;
+}
+
+.premium-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(17, 17, 17, 0.42) rgba(17, 17, 17, 0.08);
+}
+
+.premium-scrollbar::-webkit-scrollbar {
+  display: block;
+  height: 4px;
+}
+
+.premium-scrollbar::-webkit-scrollbar-track {
+  background: rgba(17, 17, 17, 0.08);
+}
+
+.premium-scrollbar::-webkit-scrollbar-thumb {
+  background: rgba(17, 17, 17, 0.42);
+  border-radius: 999px;
+}
+
+.campaign-copy-title {
+  font-family: var(--font-heading);
+  font-size: clamp(3rem, 7vw, 6.75rem);
+  font-weight: 900;
+  letter-spacing: -0.035em;
+  line-height: 0.88;
+  text-transform: uppercase;
+}
+
+.responsive-picture-img {
+  object-position: var(--desktop-object-position, center center);
+  scale: var(--desktop-image-zoom, 1);
+  transform-origin: var(--desktop-object-position, center center);
+}
+
+.fade-up {
+  animation: fade-up 640ms ease both;
+}
+
+.motion-ready [data-reveal] {
+  opacity: 0;
+  transform: translateY(16px);
+  transition:
+    opacity 600ms ease,
+    transform 600ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.motion-ready [data-reveal].is-visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+@keyframes fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(18px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (max-width: 767px) {
+  .responsive-picture-img {
+    object-position: var(
+      --mobile-object-position,
+      var(--desktop-object-position, center center)
+    );
+    scale: var(--mobile-image-zoom, var(--desktop-image-zoom, 1));
+    transform-origin: var(
+      --mobile-object-position,
+      var(--desktop-object-position, center center)
+    );
+  }
+}
+
+/* DEBRODER hero title wrap fix: do not force page hero headings into narrow columns. */
+.hero-content .hero-title {
+  max-width: min(92vw, 1080px);
+  overflow-wrap: normal;
+  word-break: normal;
+}
+
+@media (max-width: 768px) {
+  .hero-content .hero-title {
+    max-width: 92vw;
+  }
+}
+
+/* =========================================================
+   DEBRODER Landing Blueprint v1.0 — final homepage geometry
+   ========================================================= */
+
+/* Trending: three composed posters on desktop, 1.2-card native rail on mobile. */
+.trending-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+  width: 100%;
+}
+
+.trending-static-card {
+  min-width: 0;
+  width: 100%;
+}
+
+/* Each section owns only its top spacing to prevent doubled whitespace. */
+.public-site {
+  --home-gap-featured: 40px;
+  --home-gap-trending: 48px;
+  --home-gap-campaign: 56px;
+  --home-gap-commerce: 56px;
+  --home-gap-support: 64px;
+  --home-gap-about: 64px;
+  --home-end-space: 64px;
+}
+
+.public-site .home-section {
+  padding-bottom: 0 !important;
+}
+
+.public-site .home-featured {
+  padding-top: var(--home-gap-featured) !important;
+}
+
+.public-site .home-trending {
+  padding-top: var(--home-gap-trending) !important;
+}
+
+.public-site .home-campaign {
+  padding-top: var(--home-gap-campaign) !important;
+}
+
+.public-site .home-fresh-drop,
+.public-site .home-categories {
+  padding-top: var(--home-gap-commerce) !important;
+}
+
+.public-site .home-store {
+  padding-top: var(--home-gap-support) !important;
+}
+
+.public-site .home-about {
+  padding-top: var(--home-gap-about) !important;
+  padding-bottom: var(--home-end-space) !important;
+  border: 0 !important;
+  box-shadow: none !important;
+}
+
+.public-site .home-about::before,
+.public-site .home-about::after {
+  content: none !important;
+}
+
+@media (max-width: 767px) {
+  .trending-grid {
+    grid-template-columns: none;
+    grid-auto-flow: column;
+    grid-auto-columns: 83.333%;
+    gap: 12px;
+    overflow-x: auto;
+    overflow-y: hidden;
+    scroll-snap-type: x mandatory;
+    scroll-padding-inline: 0;
+    overscroll-behavior-inline: contain;
+    overscroll-behavior-block: auto;
+    scrollbar-width: none;
+  }
+
+  .trending-grid::-webkit-scrollbar {
+    display: none;
+  }
+
+  .trending-static-card {
+    scroll-snap-align: start;
+  }
+}
+
+@media (min-width: 640px) {
+  .section-shell {
+    width: min(1808px, calc(100% - 64px));
+  }
+
+  .campaign-shell {
+    width: min(1824px, calc(100% - 48px));
+  }
+
+  .home-bleed-rail {
+    gap: 16px;
+    padding-inline: 32px;
+  }
+
+  .fresh-drop-card,
+  .category-rail-card {
+    flex-basis: 44vw;
+  }
+
+  .section-space {
+    padding-block: var(--space-section-tablet);
+  }
+
+  .public-site {
+    --home-gap-featured: 48px;
+    --home-gap-trending: 56px;
+    --home-gap-campaign: 64px;
+    --home-gap-commerce: 64px;
+    --home-gap-support: 72px;
+    --home-gap-about: 72px;
+    --home-end-space: 72px;
+  }
+}
+
+@media (min-width: 1024px) {
+  .section-shell {
+    width: min(1808px, calc(100% - 96px));
+  }
+
+  .campaign-shell {
+    width: min(1824px, calc(100% - 96px));
+  }
+
+  .home-bleed-rail {
+    padding-inline: 48px;
+  }
+
+  .fresh-drop-card,
+  .category-rail-card {
+    flex-basis: min(560px, calc((100vw - 128px) / 3.2));
+  }
+
+  .section-space {
+    padding-block: var(--space-section-desktop);
+  }
+
+  .benefit-grid {
+    width: min(1280px, calc(100% - 96px));
+  }
+
+  .public-site {
+    --home-gap-featured: 56px;
+    --home-gap-trending: 72px;
+    --home-gap-campaign: 72px;
+    --home-gap-commerce: 80px;
+    --home-gap-support: 80px;
+    --home-gap-about: 80px;
+    --home-end-space: 80px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
+  }
+}
