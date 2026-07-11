@@ -21,6 +21,15 @@ import {
   WEBSITE_IMAGES_BUCKET
 } from "@/lib/supabase";
 import { formatRupiah } from "@/lib/url";
+import {
+  cmsBadgeClass,
+  cmsStatusLabel,
+  isCmsWorkflowTable,
+  publishCmsNow,
+  saveCmsDraft,
+  type CmsStatus,
+  type CmsWorkflowMeta
+} from "@/lib/cms-workflow";
 
 type FieldType =
   | "text"
@@ -53,11 +62,26 @@ type TableConfig = {
   table: string;
   description: string;
   orderField?: string;
-  singleton?: boolean;
   fields: FieldConfig[];
 };
 type AdminValue = string | number | boolean | string[] | null | undefined;
 type AdminRow = Record<string, AdminValue> & { id?: string };
+
+function adminWorkflowMeta(row: AdminRow): CmsWorkflowMeta {
+  const allowed: CmsStatus[] = ["draft", "scheduled", "published", "archived"];
+  const rawStatus = typeof row.status === "string" ? row.status : "draft";
+  const status = allowed.includes(rawStatus as CmsStatus)
+    ? (rawStatus as CmsStatus)
+    : "draft";
+
+  return {
+    status,
+    publish_at: typeof row.publish_at === "string" ? row.publish_at : null,
+    published_at: typeof row.published_at === "string" ? row.published_at : null,
+    archived_at: typeof row.archived_at === "string" ? row.archived_at : null
+  };
+}
+
 type MediaChoice = { id: string; name: string; public_url: string; media_type: "image" | "video" };
 type OverviewStats = {
   products: number;
@@ -743,8 +767,7 @@ const tableConfigs: TableConfig[] = [
     navLabel: "Trust & Tentang",
     href: "/admin/trust-about",
     table: "trust_about_content",
-    description: "Kelola satu konten resmi Trust & Tentang. Form ini selalu mengedit data yang sama dan tidak membuat duplikat.",
-    singleton: true,
+    description: "Atur trust item dan paragraf Tentang Kami.",
     fields: [
       {
         name: "trust_items",
@@ -1150,12 +1173,7 @@ export function AdminDashboard() {
 
     setIsLoading(true);
     let query = supabase.from(config.table).select("*");
-    if (config.singleton) {
-      query = query
-        .order("updated_at", { ascending: false })
-        .order("created_at", { ascending: false })
-        .limit(1);
-    } else if (config.orderField) {
+    if (config.orderField) {
       query = query.order(config.orderField, { ascending: true });
     }
     const { data, error } = await query;
@@ -1166,19 +1184,7 @@ export function AdminDashboard() {
       return;
     }
 
-    const loadedRows = (data || []) as AdminRow[];
-    setRows(loadedRows);
-
-    if (config.singleton) {
-      const singletonRow = loadedRows[0];
-      if (singletonRow) {
-        setEditingId(singletonRow.id || null);
-        setForm({ ...singletonRow });
-      } else {
-        setEditingId(null);
-        setForm(emptyForm(config.fields));
-      }
-    }
+    setRows((data || []) as AdminRow[]);
   }
 
   async function loadMediaChoices() {
@@ -1425,11 +1431,6 @@ export function AdminDashboard() {
   }
 
   function resetForm() {
-    if (activeConfig.singleton && rows[0]) {
-      setEditingId(rows[0].id || null);
-      setForm({ ...rows[0] });
-      return;
-    }
     setEditingId(null);
     setForm(emptyForm(activeConfig.fields));
   }
@@ -1518,6 +1519,10 @@ export function AdminDashboard() {
     const supabase = createSupabaseClient();
     if (!supabase || !activeConfig.table) return;
 
+    const workflowEnabled = isCmsWorkflowTable(activeConfig.table);
+    const submitter = (event.nativeEvent as SubmitEvent).submitter as HTMLButtonElement | null;
+    const saveMode = submitter?.value === "published" ? "published" : "draft";
+
     const prepared = preparePayload();
     if (prepared.error || !prepared.payload) {
       setStatus(prepared.error || "Data belum valid.");
@@ -1530,64 +1535,98 @@ export function AdminDashboard() {
       updated_at: new Date().toISOString()
     };
 
-    let targetId = editingId;
-    if (activeConfig.singleton && !targetId) {
-      const { data: existingSingleton } = await supabase
-        .from(activeConfig.table)
-        .select("id")
-        .order("updated_at", { ascending: false })
-        .order("created_at", { ascending: false })
-        .limit(1)
-        .maybeSingle();
-      targetId = existingSingleton?.id || null;
+    let savedRow: AdminRow | null = null;
+
+    if (workflowEnabled) {
+      let contentId = editingId;
+
+      if (!contentId) {
+        const inserted = await supabase
+          .from(activeConfig.table)
+          .insert({
+            ...payload,
+            status: "draft",
+            publish_at: null,
+            published_at: null,
+            archived_at: null
+          })
+          .select("*")
+          .single();
+
+        if (inserted.error || !inserted.data?.id) {
+          setIsLoading(false);
+          setStatus(friendlyError(inserted.error?.message));
+          return;
+        }
+
+        contentId = String(inserted.data.id);
+      }
+
+      const workflowResult = saveMode === "published"
+        ? await publishCmsNow(supabase, activeConfig.table, contentId, payload)
+        : await saveCmsDraft(supabase, activeConfig.table, contentId, payload);
+
+      if (!workflowResult.success) {
+        setIsLoading(false);
+        setStatus(workflowResult.error.message);
+        return;
+      }
+
+      savedRow = (workflowResult.data || payload) as AdminRow;
+    } else {
+      const result = editingId
+        ? await supabase
+            .from(activeConfig.table)
+            .update(payload)
+            .eq("id", editingId)
+            .select("*")
+            .single()
+        : await supabase.from(activeConfig.table).insert(payload).select("*").single();
+
+      if (result.error) {
+        setIsLoading(false);
+        setStatus(friendlyError(result.error.message));
+        return;
+      }
+
+      savedRow = result.data as AdminRow;
     }
 
-    const result = targetId
-      ? await supabase
-          .from(activeConfig.table)
-          .update(payload)
-          .eq("id", targetId)
-          .select("*")
-          .single()
-      : await supabase.from(activeConfig.table).insert(payload).select("*").single();
     setIsLoading(false);
 
-    if (result.error) {
-      setStatus(friendlyError(result.error.message));
-      return;
-    }
-
-    const savedRow = result.data as AdminRow;
     const imageFields = ["image_url", "mobile_image_url", "gambar_url"];
-    const imageMismatch = imageFields.some(
+    const imageMismatch = Boolean(savedRow) && imageFields.some(
       (fieldName) =>
         valueToText(payload[fieldName]) &&
-        valueToText(savedRow[fieldName]) !== valueToText(payload[fieldName])
+        valueToText(savedRow?.[fieldName]) !== valueToText(payload[fieldName])
     );
 
-    if (imageMismatch) {
-      setStatus("Data tersimpan, tetapi URL gambar belum terverifikasi. Muat ulang lalu periksa kembali.");
+    if (imageMismatch && saveMode === "published") {
+      setStatus("Data dipublikasikan, tetapi URL gambar belum terverifikasi. Muat ulang lalu periksa kembali.");
       return;
     }
 
-    setStatus(
-      targetId
-        ? activeConfig.singleton
-          ? "Konten Trust & Tentang berhasil diperbarui. Website publik akan membaca data tunggal ini."
-          : "Perubahan tersimpan dan sudah diverifikasi dari database."
-        : "Data baru tersimpan dan sudah diverifikasi dari database."
-    );
-    if (!activeConfig.singleton) resetForm();
+    if (workflowEnabled) {
+      setStatus(
+        saveMode === "published"
+          ? "Perubahan disimpan dan dipublikasikan ke website."
+          : "Perubahan disimpan sebagai draft dan belum tampil di website."
+      );
+    } else {
+      setStatus(
+        editingId
+          ? "Perubahan tersimpan dan sudah diverifikasi dari database."
+          : "Data baru tersimpan dan sudah diverifikasi dari database."
+      );
+    }
+
+    resetForm();
     await Promise.all([loadRows(), loadOverview(), loadMediaChoices()]);
     router.refresh();
   }
 
   async function deleteRow(row: AdminRow) {
     if (!row.id || !activeConfig.table) return;
-    if (activeConfig.singleton) {
-      setStatus("Konten Trust & Tentang adalah data tunggal dan tidak dapat dihapus. Nonaktifkan jika sementara tidak ingin ditampilkan.");
-      return;
-    }
     if (!window.confirm("Hapus data ini?")) return;
 
     const supabase = createSupabaseClient();
@@ -2168,11 +2207,7 @@ export function AdminDashboard() {
                 className="border border-brand-softGray bg-white p-5"
               >
                 <h2 className="text-2xl font-semibold">
-                  {activeConfig.singleton
-                    ? "Konten Tunggal"
-                    : editingId
-                      ? "Edit Data"
-                      : "Tambah Baru"}
+                  {editingId ? "Edit Data" : "Tambah Baru"}
                 </h2>
                 <div className="mt-5 grid gap-4">
                   {activeConfig.fields.map((field) => (
@@ -2187,33 +2222,68 @@ export function AdminDashboard() {
                     </label>
                   ))}
                 </div>
-                <div className="mt-6 flex flex-col gap-3 sm:flex-row">
-                  <button
-                    type="submit"
-                    disabled={isLoading}
-                    className="inline-flex min-h-11 items-center justify-center rounded-full bg-brand-charcoal px-6 py-3 text-sm font-semibold text-white disabled:opacity-50"
-                  >
-                    {isLoading
-                      ? "Menyimpan..."
-                      : activeConfig.singleton
-                        ? "Simpan & Terapkan"
-                        : "Simpan Perubahan"}
-                  </button>
-                  <button
-                    type="button"
-                    onClick={resetForm}
-                    className="inline-flex min-h-11 items-center justify-center rounded-full border border-brand-softGray px-6 py-3 text-sm font-semibold text-brand-charcoal transition hover:border-brand-charcoal"
-                  >
-                    {activeConfig.singleton ? "Batalkan Perubahan" : "Reset"}
-                  </button>
-                </div>
+                {isCmsWorkflowTable(activeConfig.table) ? (
+                  <>
+                    <div className="mt-5 flex items-center justify-between gap-3 rounded-lg border border-brand-softGray bg-brand-offWhite px-4 py-3">
+                      <div>
+                        <p className="text-xs font-semibold uppercase tracking-[0.14em] text-brand-charcoal/45">Status konten</p>
+                        <p className="mt-1 text-sm font-semibold">{cmsStatusLabel(adminWorkflowMeta(form))}</p>
+                      </div>
+                      <span className={`rounded-full border px-3 py-1 text-xs font-semibold ${cmsBadgeClass(adminWorkflowMeta(form))}`}>
+                        {cmsStatusLabel(adminWorkflowMeta(form))}
+                      </span>
+                    </div>
+                    <div className="mt-6 flex flex-col gap-3 sm:flex-row">
+                      <button
+                        type="submit"
+                        name="save_mode"
+                        value="draft"
+                        disabled={isLoading}
+                        className="inline-flex min-h-11 items-center justify-center rounded-full border border-brand-charcoal px-6 py-3 text-sm font-semibold text-brand-charcoal disabled:opacity-50"
+                      >
+                        {isLoading ? "Menyimpan..." : "Simpan Draft"}
+                      </button>
+                      <button
+                        type="submit"
+                        name="save_mode"
+                        value="published"
+                        disabled={isLoading}
+                        className="inline-flex min-h-11 items-center justify-center rounded-full bg-brand-green px-6 py-3 text-sm font-semibold text-white disabled:opacity-50"
+                      >
+                        {isLoading ? "Menerbitkan..." : "Simpan & Publish"}
+                      </button>
+                      <button
+                        type="button"
+                        onClick={resetForm}
+                        className="inline-flex min-h-11 items-center justify-center rounded-full border border-brand-softGray px-6 py-3 text-sm font-semibold text-brand-charcoal transition hover:border-brand-charcoal"
+                      >
+                        Reset
+                      </button>
+                    </div>
+                  </>
+                ) : (
+                  <div className="mt-6 flex flex-col gap-3 sm:flex-row">
+                    <button
+                      type="submit"
+                      disabled={isLoading}
+                      className="inline-flex min-h-11 items-center justify-center rounded-full bg-brand-charcoal px-6 py-3 text-sm font-semibold text-white disabled:opacity-50"
+                    >
+                      {isLoading ? "Menyimpan..." : "Simpan Perubahan"}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={resetForm}
+                      className="inline-flex min-h-11 items-center justify-center rounded-full border border-brand-softGray px-6 py-3 text-sm font-semibold text-brand-charcoal transition hover:border-brand-charcoal"
+                    >
+                      Reset
+                    </button>
+                  </div>
+                )}
               </form>
 
-              <div className={`border border-brand-softGray bg-white p-5 ${activeConfig.singleton ? "self-start" : ""}`}>
+              <div className="border border-brand-softGray bg-white p-5">
                 <div className="flex items-center justify-between gap-4">
-                  <h2 className="text-2xl font-semibold">
-                    {activeConfig.singleton ? "Status Konten" : "Data"}
-                  </h2>
+                  <h2 className="text-2xl font-semibold">Data</h2>
                   <button
                     type="button"
                     onClick={() => loadRows()}
@@ -2222,32 +2292,7 @@ export function AdminDashboard() {
                     Refresh
                   </button>
                 </div>
-                {activeConfig.singleton ? (
-                  <div className="mt-5 grid gap-4">
-                    <div className="border border-brand-softGray bg-brand-offWhite p-4">
-                      <p className="text-sm font-semibold">
-                        {rows[0] ? "Data tunggal ditemukan" : "Belum ada data"}
-                      </p>
-                      <p className="mt-2 text-sm leading-6 text-brand-charcoal/65">
-                        Halaman publik selalu membaca satu data Trust & Tentang terbaru. Tidak ada tombol tambah atau hapus agar konten tidak terduplikasi.
-                      </p>
-                      {rows[0]?.updated_at ? (
-                        <p className="mt-3 text-xs font-semibold text-brand-charcoal/50">
-                          Terakhir diperbarui: {new Date(String(rows[0].updated_at)).toLocaleString("id-ID")}
-                        </p>
-                      ) : null}
-                    </div>
-                    {previewUrl(rows[0] || {}) ? (
-                      // eslint-disable-next-line @next/next/no-img-element
-                      <img
-                        src={previewUrl(rows[0] || {})}
-                        alt="Preview Tentang DEBRODER"
-                        className="aspect-[4/3] w-full bg-brand-offWhite object-cover"
-                      />
-                    ) : null}
-                  </div>
-                ) : null}
-                {!activeConfig.singleton && activeKey === "products" ? (
+                {activeKey === "products" ? (
                   <div className="mt-5 border-y border-brand-softGray py-4">
                     <p className="text-xs font-semibold uppercase tracking-[0.16em] text-brand-charcoal/50">
                       Filter kategori
@@ -2274,7 +2319,6 @@ export function AdminDashboard() {
                     </div>
                   </div>
                 ) : null}
-                {!activeConfig.singleton ? (
                 <div className="mt-5 grid gap-4">
                   {visibleRows.map((row) => {
                     const image = previewUrl(row);
@@ -2347,7 +2391,6 @@ export function AdminDashboard() {
                     </p>
                   ) : null}
                 </div>
-                ) : null}
               </div>
             </div>
           )}

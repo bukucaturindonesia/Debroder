@@ -4,6 +4,12 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { LANDING_SECTION_DEFAULTS } from "@/lib/homepage-settings";
 import { createSupabaseClient } from "@/lib/supabase";
+import {
+  cmsBadgeClass,
+  cmsStatusLabel,
+  publishCmsNow,
+  saveCmsDraft
+} from "@/lib/cms-workflow";
 import type { LandingSection } from "@/lib/types";
 
 function sectionLabel(section: LandingSection) {
@@ -78,25 +84,36 @@ export function LandingSectionsAdmin() {
     ));
   }
 
-  async function saveSection(section: LandingSection) {
+  async function saveSection(section: LandingSection, mode: "draft" | "published") {
+    if (!section.id) return;
     const supabase = createSupabaseClient();
     if (!supabase) return;
     setSavingKey(section.section_key);
 
-    const { error } = await supabase
-      .from("landing_sections")
-      .update({
-        title: section.title.trim(),
-        subtitle: section.subtitle.trim(),
-        is_visible: section.is_visible,
-        sort_order: Number(section.sort_order),
-        metadata: section.metadata || {}
-      })
-      .eq("section_key", section.section_key);
+    const payload = {
+      title: section.title.trim(),
+      subtitle: section.subtitle.trim(),
+      is_visible: section.is_visible,
+      sort_order: Number(section.sort_order),
+      metadata: section.metadata || {}
+    };
+
+    const result = mode === "published"
+      ? await publishCmsNow(supabase, "landing_sections", section.id, payload)
+      : await saveCmsDraft(supabase, "landing_sections", section.id, payload);
 
     setSavingKey(null);
-    setStatus(error ? `Section gagal disimpan: ${error.message}` : `${section.title} disimpan.`);
-    if (!error) await loadSections();
+    if (!result.success) {
+      setStatus(`Section gagal disimpan: ${result.error.message}`);
+      return;
+    }
+
+    setStatus(
+      mode === "published"
+        ? `${section.title} disimpan dan dipublikasikan.`
+        : `${section.title} disimpan sebagai draft.`
+    );
+    await loadSections();
   }
 
   async function moveSection(section: LandingSection, direction: -1 | 1) {
@@ -142,6 +159,9 @@ export function LandingSectionsAdmin() {
               <div className="min-w-0 flex-1">
                 <p className="text-xs font-semibold uppercase tracking-[0.16em] text-brand-charcoal/45">{section.section_key}</p>
                 <h3 className="mt-2 text-lg font-semibold">{sectionLabel(section)}</h3>
+                <span className={`mt-3 inline-flex rounded-full border px-3 py-1 text-xs font-semibold ${cmsBadgeClass(section)}`}>
+                  {cmsStatusLabel(section)}
+                </span>
               </div>
               <label className="inline-flex min-h-11 items-center gap-3 text-sm font-semibold">
                 <input
@@ -166,7 +186,12 @@ export function LandingSectionsAdmin() {
             <div className="mt-5 flex flex-wrap gap-2">
               <button type="button" onClick={() => moveSection(section, -1)} disabled={index === 0 || savingKey !== null} className="rounded-full border border-brand-softGray px-4 py-2 text-xs font-semibold disabled:opacity-40">Naik</button>
               <button type="button" onClick={() => moveSection(section, 1)} disabled={index === sections.length - 1 || savingKey !== null} className="rounded-full border border-brand-softGray px-4 py-2 text-xs font-semibold disabled:opacity-40">Turun</button>
-              <button type="button" onClick={() => saveSection(section)} disabled={savingKey !== null} className="rounded-full bg-brand-green px-5 py-2 text-xs font-semibold text-white disabled:opacity-50">{savingKey === section.section_key ? "Menyimpan..." : "Simpan"}</button>
+              <button type="button" onClick={() => saveSection(section, "draft")} disabled={savingKey !== null} className="rounded-full border border-brand-charcoal px-5 py-2 text-xs font-semibold disabled:opacity-50">
+                {savingKey === section.section_key ? "Menyimpan..." : "Simpan Draft"}
+              </button>
+              <button type="button" onClick={() => saveSection(section, "published")} disabled={savingKey !== null} className="rounded-full bg-brand-green px-5 py-2 text-xs font-semibold text-white disabled:opacity-50">
+                {savingKey === section.section_key ? "Menerbitkan..." : "Simpan & Publish"}
+              </button>
             </div>
           </article>
         ))

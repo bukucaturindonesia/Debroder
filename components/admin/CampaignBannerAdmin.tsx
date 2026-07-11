@@ -3,6 +3,12 @@
 
 import { FormEvent, type ReactNode, useEffect, useMemo, useState } from "react";
 import { createSupabaseClient } from "@/lib/supabase";
+import {
+  cmsBadgeClass,
+  cmsStatusLabel,
+  publishCmsNow,
+  saveCmsDraft
+} from "@/lib/cms-workflow";
 import type { CmsBanner } from "@/lib/types";
 
 type MediaChoice = {
@@ -85,10 +91,26 @@ export function CampaignBannerAdmin() {
     window.scrollTo({ top: 0, behavior: "smooth" });
   }
 
-  async function saveBanner(event: FormEvent) {
+  async function saveBanner(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    if (!form.name.trim() || !form.title.trim() || !form.desktop_media_url.trim()) {
-      setStatus("Nama internal, title, dan media desktop wajib diisi.");
+    const submitter = (event.nativeEvent as SubmitEvent).submitter as HTMLButtonElement | null;
+    const mode = submitter?.value === "published" ? "published" : "draft";
+
+    if (
+      mode === "published" &&
+      (!form.name.trim() || !form.title.trim() || !form.desktop_media_url.trim())
+    ) {
+      setStatus("Untuk publish, nama internal, title, dan media desktop wajib diisi.");
+      return;
+    }
+
+    if (
+      mode === "draft" &&
+      !form.name.trim() &&
+      !form.title.trim() &&
+      !form.desktop_media_url.trim()
+    ) {
+      setStatus("Isi minimal nama, title, atau media sebelum menyimpan draft.");
       return;
     }
 
@@ -110,17 +132,44 @@ export function CampaignBannerAdmin() {
       is_active: form.is_active,
       sort_order: Number(form.sort_order)
     };
-    const result = editingId
-      ? await supabase.from("cms_banners").update(payload).eq("id", editingId)
-      : await supabase.from("cms_banners").insert(payload);
-    setSaving(false);
 
-    if (result.error) {
+    let contentId = editingId;
+    if (!contentId) {
+      const inserted = await supabase
+        .from("cms_banners")
+        .insert({
+          ...payload,
+          status: "draft",
+          publish_at: null,
+          published_at: null,
+          archived_at: null
+        })
+        .select("*")
+        .single();
+
+      if (inserted.error || !inserted.data?.id) {
+        setSaving(false);
+        setStatus(`Campaign banner gagal disimpan: ${inserted.error?.message || "ID tidak tersedia"}`);
+        return;
+      }
+      contentId = String(inserted.data.id);
+    }
+
+    const result = mode === "published"
+      ? await publishCmsNow(supabase, "cms_banners", contentId, payload)
+      : await saveCmsDraft(supabase, "cms_banners", contentId, payload);
+
+    setSaving(false);
+    if (!result.success) {
       setStatus(`Campaign banner gagal disimpan: ${result.error.message}`);
       return;
     }
 
-    setStatus("Campaign banner disimpan ke Supabase.");
+    setStatus(
+      mode === "published"
+        ? "Campaign banner disimpan dan dipublikasikan."
+        : "Campaign banner disimpan sebagai draft."
+    );
     reset();
     await loadData();
   }
@@ -138,7 +187,13 @@ export function CampaignBannerAdmin() {
     <div className="mt-6 grid gap-6 xl:grid-cols-[minmax(0,.9fr)_minmax(0,1.1fr)]">
       <form onSubmit={saveBanner} className="bg-white p-5 sm:p-6">
         <div className="flex items-center justify-between gap-3">
-          <div><h2 className="text-xl font-semibold">{editingId ? "Edit Built for Identity" : "Built for Identity"}</h2><p className="mt-1 text-sm text-brand-charcoal/55">Pilih media dari Media Library atau tempel URL gambar secara manual.</p></div>
+          <div>
+            <h2 className="text-xl font-semibold">{editingId ? "Edit Built for Identity" : "Built for Identity"}</h2>
+            <p className="mt-1 text-sm text-brand-charcoal/55">Pilih media dari Media Library atau tempel URL gambar secara manual.</p>
+            <span className={`mt-3 inline-flex rounded-full border px-3 py-1 text-xs font-semibold ${cmsBadgeClass(form)}`}>
+              {cmsStatusLabel(form)}
+            </span>
+          </div>
           {editingId ? <button type="button" onClick={reset} className="text-sm font-semibold underline">Batal</button> : null}
         </div>
         {status ? <p role="status" className="mt-4 bg-brand-offWhite p-3 text-sm font-semibold">{status}</p> : null}
@@ -174,7 +229,14 @@ export function CampaignBannerAdmin() {
             </div>
           ) : null}
           <label className="flex min-h-11 items-center gap-2 text-sm font-semibold"><input type="checkbox" checked={form.is_active} onChange={(event) => update("is_active", event.target.checked)} className="h-4 w-4 accent-brand-green" />Aktif di landing page</label>
-          <button disabled={saving} className="min-h-11 rounded-full bg-brand-green px-6 text-sm font-semibold text-white disabled:opacity-50">{saving ? "Menyimpan..." : "Simpan campaign"}</button>
+          <div className="flex flex-col gap-3 sm:flex-row">
+            <button type="submit" name="save_mode" value="draft" disabled={saving} className="min-h-11 rounded-full border border-brand-charcoal px-6 text-sm font-semibold disabled:opacity-50">
+              {saving ? "Menyimpan..." : "Simpan Draft"}
+            </button>
+            <button type="submit" name="save_mode" value="published" disabled={saving} className="min-h-11 rounded-full bg-brand-green px-6 text-sm font-semibold text-white disabled:opacity-50">
+              {saving ? "Menerbitkan..." : "Simpan & Publish"}
+            </button>
+          </div>
         </div>
       </form>
 
@@ -185,7 +247,14 @@ export function CampaignBannerAdmin() {
             <div className="relative aspect-[4/3] overflow-hidden bg-brand-charcoal">
               {banner.media_type === "video" ? <video src={banner.desktop_media_url} poster={banner.poster_url || undefined} muted playsInline className="h-full w-full object-cover" /> : <img src={banner.desktop_media_url} alt={banner.title} className="h-full w-full object-cover" />}
             </div>
-            <div className="min-w-0"><p className="text-xs font-semibold uppercase tracking-[0.15em] text-brand-charcoal/45">{banner.media_type} / {banner.is_active ? "Aktif" : "Nonaktif"}</p><h3 className="mt-2 truncate font-semibold">{banner.name}</h3><p className="mt-1 truncate text-sm text-brand-charcoal/60">{banner.title}</p></div>
+            <div className="min-w-0">
+              <p className="text-xs font-semibold uppercase tracking-[0.15em] text-brand-charcoal/45">{banner.media_type} / {banner.is_active ? "Aktif" : "Nonaktif"}</p>
+              <h3 className="mt-2 truncate font-semibold">{banner.name}</h3>
+              <p className="mt-1 truncate text-sm text-brand-charcoal/60">{banner.title}</p>
+              <span className={`mt-2 inline-flex rounded-full border px-2.5 py-1 text-[10px] font-semibold ${cmsBadgeClass(banner)}`}>
+                {cmsStatusLabel(banner)}
+              </span>
+            </div>
             <div className="flex gap-2 sm:flex-col"><button type="button" onClick={() => startEdit(banner)} className="rounded-full border border-brand-softGray px-4 py-2 text-xs font-semibold">Edit</button><button type="button" onClick={() => deleteBanner(banner)} className="rounded-full px-4 py-2 text-xs font-semibold text-red-700">Hapus</button></div>
           </article>
         ))}</div> : <p className="mt-5 bg-brand-offWhite p-5 text-sm text-brand-charcoal/60">Belum ada campaign banner.</p>}

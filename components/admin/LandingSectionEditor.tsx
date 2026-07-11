@@ -9,6 +9,12 @@ import {
   type LandingSectionKey
 } from "@/lib/homepage-settings";
 import { createSupabaseClient } from "@/lib/supabase";
+import {
+  cmsBadgeClass,
+  cmsStatusLabel,
+  publishCmsNow,
+  saveCmsDraft
+} from "@/lib/cms-workflow";
 import type { LandingSection } from "@/lib/types";
 
 type MediaChoice = {
@@ -73,12 +79,13 @@ export function LandingSectionEditor({ sectionKey }: { sectionKey: string }) {
     setSection((current) => current ? { ...current, ...patch } : current);
   }
 
-  async function save() {
-    if (!section) return;
+  async function save(mode: "draft" | "published") {
+    if (!section?.id) return;
     const supabase = createSupabaseClient();
     if (!supabase) return;
     setSaving(true);
-    const { error } = await supabase.from("landing_sections").update({
+
+    const payload = {
       title: section.title.trim(),
       subtitle: section.subtitle.trim(),
       desktop_image_url: section.desktop_image_url || null,
@@ -90,9 +97,24 @@ export function LandingSectionEditor({ sectionKey }: { sectionKey: string }) {
       is_visible: section.is_visible,
       sort_order: fixedOrder,
       metadata: section.metadata || {}
-    }).eq("section_key", section.section_key);
+    };
+
+    const result = mode === "published"
+      ? await publishCmsNow(supabase, "landing_sections", section.id, payload)
+      : await saveCmsDraft(supabase, "landing_sections", section.id, payload);
+
     setSaving(false);
-    setStatus(error ? `Pengaturan section gagal disimpan: ${error.message}` : "Pengaturan section disimpan.");
+    if (!result.success) {
+      setStatus(`Pengaturan section gagal disimpan: ${result.error.message}`);
+      return;
+    }
+
+    if (result.data) setSection(result.data as LandingSection);
+    setStatus(
+      mode === "published"
+        ? "Pengaturan section disimpan dan dipublikasikan."
+        : "Pengaturan section disimpan sebagai draft."
+    );
   }
 
   if (!fallback) return null;
@@ -101,7 +123,13 @@ export function LandingSectionEditor({ sectionKey }: { sectionKey: string }) {
   return (
     <section className="mt-6 border border-brand-softGray bg-white p-5 sm:p-6">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-        <div><p className="text-xs font-semibold uppercase tracking-[.16em] text-brand-charcoal/45">Pengaturan section</p><h2 className="mt-2 text-xl font-semibold">{section.title}</h2></div>
+        <div>
+          <p className="text-xs font-semibold uppercase tracking-[.16em] text-brand-charcoal/45">Pengaturan section</p>
+          <h2 className="mt-2 text-xl font-semibold">{section.title}</h2>
+          <span className={`mt-3 inline-flex rounded-full border px-3 py-1 text-xs font-semibold ${cmsBadgeClass(section)}`}>
+            {cmsStatusLabel(section)}
+          </span>
+        </div>
         <label className="inline-flex min-h-11 items-center gap-3 text-sm font-semibold"><input type="checkbox" checked={section.is_visible} onChange={(event) => update({ is_visible: event.target.checked })} className="sr-only" /><span className={`flex h-7 w-12 items-center rounded-full p-1 ${section.is_visible ? "justify-end bg-brand-green" : "justify-start bg-brand-charcoal/25"}`}><span className="h-5 w-5 rounded-full bg-white shadow" /></span>{section.is_visible ? "ON" : "OFF"}</label>
       </div>
       {status ? <p role="status" className="mt-4 bg-brand-offWhite p-3 text-sm font-semibold">{status}</p> : null}
@@ -118,7 +146,14 @@ export function LandingSectionEditor({ sectionKey }: { sectionKey: string }) {
       </div>
 
       {section.desktop_image_url ? <div className="mt-5 overflow-hidden bg-brand-offWhite"><img src={section.desktop_image_url} alt="Preview section" className="aspect-[16/6] w-full object-cover" /></div> : null}
-      <button type="button" onClick={save} disabled={saving} className="mt-5 min-h-11 rounded-full bg-brand-green px-6 text-sm font-semibold text-white disabled:opacity-50">{saving ? "Menyimpan..." : "Simpan pengaturan section"}</button>
+      <div className="mt-5 flex flex-col gap-3 sm:flex-row">
+        <button type="button" onClick={() => save("draft")} disabled={saving} className="min-h-11 rounded-full border border-brand-charcoal px-6 text-sm font-semibold disabled:opacity-50">
+          {saving ? "Menyimpan..." : "Simpan Draft"}
+        </button>
+        <button type="button" onClick={() => save("published")} disabled={saving} className="min-h-11 rounded-full bg-brand-green px-6 text-sm font-semibold text-white disabled:opacity-50">
+          {saving ? "Menerbitkan..." : "Simpan & Publish"}
+        </button>
+      </div>
     </section>
   );
 }
