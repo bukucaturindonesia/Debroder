@@ -1,5 +1,5 @@
-import { AdminDashboard } from "@/components/admin/AdminDashboard";
+import { OrderListAdmin } from "@/components/admin/OrderListAdmin";
 
-export default function AdminOrdersPage() {
-  return <AdminDashboard />;
+export default function OrderListPage() {
+  return <OrderListAdmin />;
 }

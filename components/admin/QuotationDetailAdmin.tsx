@@ -17,6 +17,7 @@ import { QuotationServiceManager } from "@/components/admin/QuotationServiceMana
 import { QuotationLifecycleManager } from "@/components/admin/QuotationLifecycleManager";
 import { QuotationVersionManager } from "@/components/admin/QuotationVersionManager";
 import { MockupApprovalManager } from "@/components/admin/MockupApprovalManager";
+import { OrderConversionManager } from "@/components/admin/OrderConversionManager";
 
 type Quotation = {
   id: string;
@@ -291,6 +292,7 @@ export function QuotationDetailAdmin() {
           }`}
           actions={
             <>
+              <OrderConversionManager />
               <MockupApprovalManager />
               <QuotationVersionManager />
               <QuotationLifecycleManager />
