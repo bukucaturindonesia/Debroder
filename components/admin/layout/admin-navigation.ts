@@ -98,7 +98,8 @@ export const adminNavigationGroups: readonly AdminNavigationGroup[] = [
     label: "SISTEM",
     roles: FULL_ADMIN_ROLES,
     items: [
-      { label: "Pengaturan", href: "/admin/website-settings", roles: FULL_ADMIN_ROLES }
+      { label: "Pengaturan", href: "/admin/website-settings", roles: FULL_ADMIN_ROLES },
+      { label: "Penomoran Dokumen", href: "/admin/document-numbering", roles: FULL_ADMIN_ROLES }
     ]
   }
 ] as const;
@@ -225,7 +226,8 @@ export function getAdminBreadcrumbs(pathname: string): AdminBreadcrumbItem[] {
     "/admin/categories": "Katalog",
     "/admin/services": "Katalog",
     "/admin/store": "Katalog",
-    "/admin/website-settings": "Sistem"
+    "/admin/website-settings": "Sistem",
+    "/admin/document-numbering": "Sistem"
   };
 
   const matchingRoute = Object.keys(groupMap).find(
@@ -243,5 +245,8 @@ export function getAdminBreadcrumbs(pathname: string): AdminBreadcrumbItem[] {
 }
 
 export function isLegacyAdminRoute(pathname: string) {
-  return !pathname.startsWith("/admin/orders");
+  return !(
+    pathname.startsWith("/admin/orders") ||
+    pathname.startsWith("/admin/document-numbering")
+  );
 }
