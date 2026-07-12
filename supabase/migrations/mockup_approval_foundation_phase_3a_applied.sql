@@ -1,0 +1,3 @@
+-- Applied to Supabase project lzennundwqqtyvvcnzbg
+-- Migration name: mockup_approval_foundation_phase_3a
+-- Adds mockup sets, parts, immutable file versions, archive lifecycle, history, and RLS.
