@@ -3,6 +3,7 @@
 import { FormEvent, useEffect, useMemo, useState } from "react";
 import { useParams } from "next/navigation";
 import { createSupabaseClient } from "@/lib/supabase";
+import { PaymentCompletionPanel } from "@/components/admin/PaymentCompletionPanel";
 
 type PaymentRow = {
   id: string;
@@ -36,6 +37,11 @@ type OrderSummary = {
   payment_balance: number;
   payment_percentage: number;
   payment_requirement_met: boolean;
+  payment_requirement_type: string;
+  payment_required_percentage: number;
+  payment_required_amount: number | null;
+  payment_effective_total: number;
+  payment_production_eligible: boolean;
 };
 
 const PAYMENT_STATUS: Record<string, string> = {
@@ -90,6 +96,7 @@ export function PaymentTrackingManager() {
   const [summary, setSummary] = useState<OrderSummary | null>(null);
   const [rows, setRows] = useState<PaymentRow[]>([]);
   const [role, setRole] = useState("");
+  const [actorNames, setActorNames] = useState<Record<string, string>>({});
   const [open, setOpen] = useState(false);
   const [tab, setTab] = useState<"active" | "archive">("active");
   const [loading, setLoading] = useState(true);
@@ -128,7 +135,7 @@ export function PaymentTrackingManager() {
       supabase
         .from("orders")
         .select(
-          "total_amount,payment_total_verified,payment_balance,payment_percentage,payment_requirement_met"
+          "total_amount,payment_total_verified,payment_balance,payment_percentage,payment_requirement_met,payment_requirement_type,payment_required_percentage,payment_required_amount,payment_effective_total,payment_production_eligible"
         )
         .eq("id", orderId)
         .maybeSingle(),
@@ -154,6 +161,11 @@ export function PaymentTrackingManager() {
     setSummary(orderResult.data as OrderSummary);
     setRows((paymentResult.data || []) as PaymentRow[]);
     setRole(String(profileResult.data?.role || ""));
+    const actorIds = Array.from(new Set((paymentResult.data || []).map((row) => row.archived_by).filter((value): value is string => typeof value === "string")));
+    if (actorIds.length > 0) {
+      const { data: profiles } = await supabase.from("profiles").select("id,email").in("id", actorIds);
+      setActorNames(Object.fromEntries((profiles || []).map((profile) => [profile.id, profile.email || "Admin DEBRODER"])));
+    }
   }
 
   useEffect(() => {
@@ -520,6 +532,19 @@ export function PaymentTrackingManager() {
                 />
               </section>
 
+              <PaymentCompletionPanel
+                orderId={orderId}
+                summary={summary}
+                payments={rows.map((row) => ({
+                  id: row.id,
+                  payment_number: row.payment_number,
+                  amount: row.amount,
+                  status: row.status
+                }))}
+                role={role}
+                onChanged={loadData}
+              />
+
               {message ? (
                 <div className="mt-5 border border-brand-softGray bg-white p-4 text-sm font-semibold">
                   {message}
@@ -598,7 +623,7 @@ export function PaymentTrackingManager() {
                           <p className="mt-2 text-xs leading-5 text-brand-charcoal/55">
                             Diarsipkan: {dateTime(row.archived_at)}
                             <br />
-                            Oleh: {row.archived_by || "-"}
+                            Oleh: {row.archived_by ? actorNames[row.archived_by] || "Admin DEBRODER" : "-"}
                             <br />
                             Alasan: {row.archive_reason || "-"}
                           </p>
