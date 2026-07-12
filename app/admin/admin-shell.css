@@ -1,0 +1,145 @@
+.admin-shell-root {
+  min-height: 100vh;
+  background: #f7f7f5;
+  color: #151515;
+}
+
+.admin-shell-desktop-sidebar {
+  position: fixed;
+  inset: 0 auto 0 0;
+  z-index: 40;
+  display: none;
+  width: 280px;
+  border-right: 1px solid rgba(21, 21, 21, 0.12);
+}
+
+.admin-shell-main {
+  min-width: 0;
+  min-height: 100vh;
+}
+
+.admin-shell-content {
+  min-width: 0;
+  padding: 16px;
+}
+
+.admin-shell-mobile-layer {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+}
+
+.admin-shell-mobile-backdrop {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.42);
+}
+
+.admin-shell-mobile-sidebar {
+  position: relative;
+  width: min(86vw, 320px);
+  height: 100%;
+  box-shadow: 16px 0 40px rgba(0, 0, 0, 0.18);
+}
+
+.admin-shell-flash {
+  position: fixed;
+  top: 76px;
+  right: 16px;
+  z-index: 70;
+  display: flex;
+  max-width: min(420px, calc(100vw - 32px));
+  align-items: center;
+  justify-content: space-between;
+  border: 1px solid;
+  padding: 14px 16px;
+  font-size: 14px;
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.12);
+}
+
+.admin-shell-flash-success {
+  border-color: #a7f3d0;
+  background: #ecfdf5;
+  color: #065f46;
+}
+
+.admin-shell-flash-error {
+  border-color: #fecaca;
+  background: #fef2f2;
+  color: #991b1b;
+}
+
+.admin-shell-flash-info {
+  border-color: rgba(21, 21, 21, 0.14);
+  background: white;
+  color: #151515;
+}
+
+/* Adapter untuk halaman AdminDashboard lama agar memakai satu sidebar saja. */
+.admin-shell-legacy > main {
+  min-height: auto !important;
+  background: transparent !important;
+}
+
+.admin-shell-legacy > main > div.grid {
+  display: block !important;
+}
+
+.admin-shell-legacy > main > div.grid > aside {
+  display: none !important;
+}
+
+.admin-shell-legacy > main > div.grid > section {
+  padding: 0 !important;
+}
+
+.admin-shell-legacy > main > div.grid > section > header {
+  margin: 0 0 24px !important;
+}
+
+.admin-shell-legacy > main > div.grid > section > header > div > button,
+.admin-shell-legacy > main > div.grid > section > header > select {
+  display: none !important;
+}
+
+/* Halaman quotation baru mengikuti padding Admin Shell. */
+.admin-shell-modern > main {
+  min-height: auto !important;
+  background: transparent !important;
+  padding: 0 !important;
+}
+
+.admin-shell-modern > main > div {
+  max-width: none !important;
+  margin: 0 !important;
+}
+
+@media (min-width: 640px) {
+  .admin-shell-content {
+    padding: 24px;
+  }
+
+  .admin-shell-flash {
+    right: 24px;
+  }
+}
+
+@media (min-width: 1024px) {
+  .admin-shell-desktop-sidebar {
+    display: block;
+  }
+
+  .admin-shell-main {
+    margin-left: 280px;
+  }
+
+  .admin-shell-content {
+    padding: 32px;
+  }
+
+  .admin-shell-flash {
+    right: 32px;
+  }
+}

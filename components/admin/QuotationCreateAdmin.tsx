@@ -4,6 +4,13 @@ import Link from "next/link";
 import { FormEvent, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { createSupabaseClient } from "@/lib/supabase";
+import { AdminPageHeader } from "@/components/admin/layout/AdminPageHeader";
+import { AdminAlert, AdminLoadingState } from "@/components/admin/ui/AdminFeedback";
+import { setAdminFlash } from "@/components/admin/layout/admin-flash";
+import {
+  isAdminRole,
+  QUOTATION_ROLES
+} from "@/components/admin/layout/admin-navigation";
 
 type FormState = {
   customer_name: string;
@@ -44,16 +51,22 @@ function toNonNegativeInteger(value: string) {
 export function QuotationCreateAdmin() {
   const router = useRouter();
   const [form, setForm] = useState<FormState>(initialForm);
-  const [message, setMessage] = useState("Memeriksa akses...");
+  const [message, setMessage] = useState("");
+  const [checkingAccess, setCheckingAccess] = useState(true);
   const [allowed, setAllowed] = useState(false);
   const [saving, setSaving] = useState(false);
   const [userId, setUserId] = useState<string | null>(null);
 
   useEffect(() => {
+    let active = true;
+
     async function checkAccess() {
       const supabase = createSupabaseClient();
       if (!supabase) {
-        setMessage("Supabase belum dikonfigurasi.");
+        if (active) {
+          setMessage("Supabase belum dikonfigurasi.");
+          setCheckingAccess(false);
+        }
         return;
       }
 
@@ -71,29 +84,29 @@ export function QuotationCreateAdmin() {
         .eq("id", user.id)
         .maybeSingle();
 
-      const acceptedRoles = [
-        "owner",
-        "superadmin",
-        "super_admin",
-        "sales_admin",
-        "admin"
-      ];
+      if (!active) return;
 
       if (
         error ||
         !profile ||
-        !acceptedRoles.includes(String(profile.role))
+        !isAdminRole(profile.role) ||
+        !QUOTATION_ROLES.includes(profile.role)
       ) {
         setMessage("Akses membuat quotation ditolak.");
+        setCheckingAccess(false);
         return;
       }
 
       setUserId(user.id);
       setAllowed(true);
-      setMessage("");
+      setCheckingAccess(false);
     }
 
     void checkAccess();
+
+    return () => {
+      active = false;
+    };
   }, [router]);
 
   function updateField(name: keyof FormState, value: string) {
@@ -102,6 +115,7 @@ export function QuotationCreateAdmin() {
 
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    if (saving) return;
 
     if (!form.customer_name.trim()) {
       setMessage("Nama pelanggan wajib diisi.");
@@ -154,218 +168,232 @@ export function QuotationCreateAdmin() {
       .select("id,quotation_number")
       .single();
 
-    setSaving(false);
-
     if (error || !data) {
-      setMessage(`Quotation gagal dibuat: ${error?.message || "Data kosong"}`);
+      setSaving(false);
+      setMessage("Quotation gagal dibuat. Periksa data lalu coba kembali.");
       return;
     }
 
-    router.push(`/admin/orders/quotations/${data.id}`);
+    setAdminFlash(
+      `Draft ${data.quotation_number} berhasil dibuat.`,
+      "success"
+    );
+    router.replace(`/admin/orders/quotations/${data.id}`);
+    router.refresh();
+  }
+
+  if (checkingAccess) {
+    return (
+      <main className="text-brand-charcoal">
+        <AdminLoadingState label="Memeriksa akses pembuatan quotation..." />
+      </main>
+    );
   }
 
   if (!allowed) {
     return (
-      <main className="min-h-screen bg-brand-offWhite p-6 text-brand-charcoal">
-        <div className="mx-auto mt-20 max-w-lg border border-brand-softGray bg-white p-8 text-center">
-          <h1 className="text-3xl font-semibold">Buat Quotation</h1>
-          <p className="mt-4 text-sm font-medium text-brand-charcoal/70">
-            {message}
-          </p>
-        </div>
+      <main className="text-brand-charcoal">
+        <AdminAlert type="error">
+          {message || "Akses membuat quotation ditolak."}
+        </AdminAlert>
       </main>
     );
   }
 
   const inputClass =
-    "mt-2 min-h-11 w-full rounded-lg border border-brand-softGray px-4 text-sm outline-none focus:border-brand-charcoal";
+    "mt-2 min-h-11 w-full rounded-lg border border-brand-softGray px-4 text-sm outline-none focus:border-brand-charcoal disabled:bg-brand-offWhite disabled:text-brand-charcoal/50";
   const textareaClass =
-    "mt-2 w-full rounded-lg border border-brand-softGray px-4 py-3 text-sm outline-none focus:border-brand-charcoal";
+    "mt-2 w-full rounded-lg border border-brand-softGray px-4 py-3 text-sm outline-none focus:border-brand-charcoal disabled:bg-brand-offWhite disabled:text-brand-charcoal/50";
 
   return (
-    <main className="min-h-screen bg-brand-offWhite p-4 text-brand-charcoal sm:p-6 lg:p-8">
-      <div className="mx-auto max-w-5xl">
-        <header className="border border-brand-softGray bg-white p-5 sm:p-7">
-          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-brand-charcoal/50">
-            DEBRODER v1.2 · Formal Quotation
-          </p>
-          <h1 className="mt-2 text-3xl font-semibold">Buat Quotation Baru</h1>
-          <p className="mt-2 text-sm leading-6 text-brand-charcoal/65">
-            Tahap ini membuat header quotation. Produk, varian, ukuran, layanan,
-            dan rincian harga ditambahkan pada halaman detail berikutnya.
-          </p>
-        </header>
+    <main className="text-brand-charcoal">
+      <div className="mx-auto grid max-w-5xl gap-6">
+        <AdminPageHeader
+          eyebrow="DEBRODER v1.2 · Formal Quotation"
+          title="Buat Quotation Baru"
+          description="Buat data awal pelanggan. Produk, varian, ukuran, layanan, dan harga dilanjutkan pada halaman detail."
+        />
 
-        {message ? (
-          <p className="mt-5 border border-brand-softGray bg-white p-4 text-sm font-semibold">
-            {message}
-          </p>
-        ) : null}
+        {message ? <AdminAlert type="error">{message}</AdminAlert> : null}
 
         <form
           onSubmit={submit}
-          className="mt-6 grid gap-6 border border-brand-softGray bg-white p-5 sm:p-7"
+          aria-busy={saving}
+          className="grid gap-6 border border-brand-softGray bg-white p-5 sm:p-7"
         >
-          <section>
-            <h2 className="text-xl font-semibold">Data Pelanggan</h2>
-            <div className="mt-5 grid gap-4 md:grid-cols-2">
-              <label className="text-sm font-semibold">
-                Nama pelanggan *
-                <input
-                  value={form.customer_name}
-                  onChange={(event) =>
-                    updateField("customer_name", event.target.value)
-                  }
-                  className={inputClass}
-                />
-              </label>
-              <label className="text-sm font-semibold">
-                Nama perusahaan
-                <input
-                  value={form.company_name}
-                  onChange={(event) =>
-                    updateField("company_name", event.target.value)
-                  }
-                  className={inputClass}
-                />
-              </label>
-              <label className="text-sm font-semibold">
-                WhatsApp *
-                <input
-                  value={form.customer_phone}
-                  onChange={(event) =>
-                    updateField("customer_phone", event.target.value)
-                  }
-                  placeholder="08xxxxxxxxxx"
-                  className={inputClass}
-                />
-              </label>
-              <label className="text-sm font-semibold">
-                Email
-                <input
-                  type="email"
-                  value={form.customer_email}
-                  onChange={(event) =>
-                    updateField("customer_email", event.target.value)
-                  }
-                  className={inputClass}
-                />
-              </label>
-              <label className="text-sm font-semibold">
-                Nomor PO pelanggan
-                <input
-                  value={form.po_number}
-                  onChange={(event) =>
-                    updateField("po_number", event.target.value)
-                  }
-                  className={inputClass}
-                />
-              </label>
-              <label className="text-sm font-semibold">
-                Berlaku sampai
-                <input
-                  type="date"
-                  value={form.valid_until}
-                  onChange={(event) =>
-                    updateField("valid_until", event.target.value)
-                  }
-                  className={inputClass}
-                />
-              </label>
-            </div>
-          </section>
+          <fieldset disabled={saving} className="contents">
+            <section>
+              <h2 className="text-xl font-semibold">Data Pelanggan</h2>
+              <div className="mt-5 grid gap-4 md:grid-cols-2">
+                <label className="text-sm font-semibold">
+                  Nama pelanggan *
+                  <input
+                    value={form.customer_name}
+                    onChange={(event) =>
+                      updateField("customer_name", event.target.value)
+                    }
+                    autoComplete="name"
+                    className={inputClass}
+                  />
+                </label>
+                <label className="text-sm font-semibold">
+                  Nama perusahaan
+                  <input
+                    value={form.company_name}
+                    onChange={(event) =>
+                      updateField("company_name", event.target.value)
+                    }
+                    className={inputClass}
+                  />
+                </label>
+                <label className="text-sm font-semibold">
+                  WhatsApp *
+                  <input
+                    value={form.customer_phone}
+                    onChange={(event) =>
+                      updateField("customer_phone", event.target.value)
+                    }
+                    inputMode="tel"
+                    autoComplete="tel"
+                    placeholder="08xxxxxxxxxx"
+                    className={inputClass}
+                  />
+                </label>
+                <label className="text-sm font-semibold">
+                  Email
+                  <input
+                    type="email"
+                    value={form.customer_email}
+                    onChange={(event) =>
+                      updateField("customer_email", event.target.value)
+                    }
+                    autoComplete="email"
+                    className={inputClass}
+                  />
+                </label>
+                <label className="text-sm font-semibold">
+                  Nomor PO pelanggan
+                  <input
+                    value={form.po_number}
+                    onChange={(event) =>
+                      updateField("po_number", event.target.value)
+                    }
+                    placeholder="Opsional, isi bila pelanggan memiliki PO"
+                    className={inputClass}
+                  />
+                  <span className="mt-2 block text-xs font-medium leading-5 text-brand-charcoal/55">
+                    Kosongkan untuk pelanggan perorangan atau pelanggan yang belum mengirim Purchase Order.
+                  </span>
+                </label>
+                <label className="text-sm font-semibold">
+                  Berlaku sampai
+                  <input
+                    type="date"
+                    value={form.valid_until}
+                    onChange={(event) =>
+                      updateField("valid_until", event.target.value)
+                    }
+                    className={inputClass}
+                  />
+                </label>
+              </div>
+            </section>
 
-          <section className="border-t border-brand-softGray pt-6">
-            <h2 className="text-xl font-semibold">Alamat</h2>
-            <div className="mt-5 grid gap-4 md:grid-cols-2">
-              <label className="text-sm font-semibold">
-                Alamat penagihan
-                <textarea
-                  rows={4}
-                  value={form.billing_address}
-                  onChange={(event) =>
-                    updateField("billing_address", event.target.value)
-                  }
-                  className={textareaClass}
-                />
-              </label>
-              <label className="text-sm font-semibold">
-                Alamat pengiriman
-                <textarea
-                  rows={4}
-                  value={form.shipping_address}
-                  onChange={(event) =>
-                    updateField("shipping_address", event.target.value)
-                  }
-                  className={textareaClass}
-                />
-              </label>
-            </div>
-          </section>
+            <section className="border-t border-brand-softGray pt-6">
+              <h2 className="text-xl font-semibold">Alamat</h2>
+              <div className="mt-5 grid gap-4 md:grid-cols-2">
+                <label className="text-sm font-semibold">
+                  Alamat penagihan
+                  <textarea
+                    rows={4}
+                    value={form.billing_address}
+                    onChange={(event) =>
+                      updateField("billing_address", event.target.value)
+                    }
+                    className={textareaClass}
+                  />
+                </label>
+                <label className="text-sm font-semibold">
+                  Alamat pengiriman
+                  <textarea
+                    rows={4}
+                    value={form.shipping_address}
+                    onChange={(event) =>
+                      updateField("shipping_address", event.target.value)
+                    }
+                    className={textareaClass}
+                  />
+                </label>
+              </div>
+            </section>
 
-          <section className="border-t border-brand-softGray pt-6">
-            <h2 className="text-xl font-semibold">Biaya & Catatan Awal</h2>
-            <div className="mt-5 grid gap-4 md:grid-cols-2">
-              <label className="text-sm font-semibold">
-                Biaya tambahan
-                <input
-                  type="number"
-                  min={0}
-                  value={form.additional_cost}
-                  onChange={(event) =>
-                    updateField("additional_cost", event.target.value)
-                  }
-                  className={inputClass}
-                />
-              </label>
-              <label className="text-sm font-semibold">
-                Potongan harga
-                <input
-                  type="number"
-                  min={0}
-                  value={form.discount_total}
-                  onChange={(event) =>
-                    updateField("discount_total", event.target.value)
-                  }
-                  className={inputClass}
-                />
-              </label>
-              <label className="text-sm font-semibold md:col-span-2">
-                Catatan untuk pelanggan
-                <textarea
-                  rows={4}
-                  value={form.public_notes}
-                  onChange={(event) =>
-                    updateField("public_notes", event.target.value)
-                  }
-                  className={textareaClass}
-                />
-              </label>
-              <label className="text-sm font-semibold md:col-span-2">
-                Catatan internal
-                <textarea
-                  rows={4}
-                  value={form.internal_notes}
-                  onChange={(event) =>
-                    updateField("internal_notes", event.target.value)
-                  }
-                  className={textareaClass}
-                />
-              </label>
-            </div>
-          </section>
+            <section className="border-t border-brand-softGray pt-6">
+              <h2 className="text-xl font-semibold">Biaya & Catatan Awal</h2>
+              <div className="mt-5 grid gap-4 md:grid-cols-2">
+                <label className="text-sm font-semibold">
+                  Biaya tambahan
+                  <input
+                    type="number"
+                    min={0}
+                    value={form.additional_cost}
+                    onChange={(event) =>
+                      updateField("additional_cost", event.target.value)
+                    }
+                    className={inputClass}
+                  />
+                </label>
+                <label className="text-sm font-semibold">
+                  Potongan harga
+                  <input
+                    type="number"
+                    min={0}
+                    value={form.discount_total}
+                    onChange={(event) =>
+                      updateField("discount_total", event.target.value)
+                    }
+                    className={inputClass}
+                  />
+                </label>
+                <label className="text-sm font-semibold md:col-span-2">
+                  Catatan untuk pelanggan
+                  <textarea
+                    rows={4}
+                    value={form.public_notes}
+                    onChange={(event) =>
+                      updateField("public_notes", event.target.value)
+                    }
+                    className={textareaClass}
+                  />
+                </label>
+                <label className="text-sm font-semibold md:col-span-2">
+                  Catatan internal
+                  <textarea
+                    rows={4}
+                    value={form.internal_notes}
+                    onChange={(event) =>
+                      updateField("internal_notes", event.target.value)
+                    }
+                    className={textareaClass}
+                  />
+                </label>
+              </div>
+            </section>
+          </fieldset>
 
           <div className="flex flex-col gap-3 border-t border-brand-softGray pt-6 sm:flex-row">
             <button
               type="submit"
               disabled={saving}
-              className="inline-flex min-h-11 items-center justify-center rounded-full bg-brand-green px-6 text-sm font-semibold text-white disabled:opacity-50"
+              className="inline-flex min-h-11 items-center justify-center rounded-full bg-brand-green px-6 text-sm font-semibold text-white disabled:cursor-not-allowed disabled:opacity-50"
             >
-              {saving ? "Menyimpan..." : "Buat Draft Quotation"}
+              {saving ? "Menyimpan Draft..." : "Buat Draft Quotation"}
             </button>
             <Link
               href="/admin/orders/quotations"
-              className="inline-flex min-h-11 items-center justify-center rounded-full border border-brand-softGray px-6 text-sm font-semibold"
+              aria-disabled={saving}
+              className={`inline-flex min-h-11 items-center justify-center rounded-full border border-brand-softGray px-6 text-sm font-semibold ${
+                saving ? "pointer-events-none opacity-50" : ""
+              }`}
             >
               Batal
             </Link>

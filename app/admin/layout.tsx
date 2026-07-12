@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import type { ReactNode } from "react";
-import { AdminPrimaryNavigation } from "@/components/admin/AdminPrimaryNavigation";
+import { AdminShell } from "@/components/admin/layout/AdminShell";
+import "./admin-shell.css";
 
 export const metadata: Metadata = {
   robots: {
@@ -10,10 +11,5 @@ export const metadata: Metadata = {
 };
 
 export default function AdminLayout({ children }: { children: ReactNode }) {
-  return (
-    <>
-      <AdminPrimaryNavigation />
-      {children}
-    </>
-  );
+  return <AdminShell>{children}</AdminShell>;
 }
