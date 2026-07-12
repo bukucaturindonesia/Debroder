@@ -1,0 +1,3 @@
+-- Applied to Supabase project lzennundwqqtyvvcnzbg
+-- Migration name: quotation_versioning_phase_2
+-- Adds immutable quotation snapshots and latest-version approval protection.
