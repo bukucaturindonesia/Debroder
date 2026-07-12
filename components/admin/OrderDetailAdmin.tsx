@@ -114,17 +114,13 @@ export function OrderDetailAdmin() {
     if (!supabase) return;
 
     setWorking(true);
-    const { error } = await supabase
-      .from("orders")
-      .update({
-        shipping_address: shippingAddress.trim(),
-        delivery_method: deliveryMethod,
-        customer_notes: customerNotes.trim(),
-        admin_notes: adminNotes.trim(),
-        updated_at: new Date().toISOString()
-      })
-      .eq("id", order.id)
-      .is("archived_at", null);
+    const { error } = await supabase.rpc("update_order_delivery_details", {
+      p_order_id: order.id,
+      p_delivery_method: deliveryMethod,
+      p_shipping_address: shippingAddress.trim(),
+      p_customer_notes: customerNotes.trim(),
+      p_admin_notes: adminNotes.trim()
+    });
 
     setWorking(false);
 

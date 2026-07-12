@@ -15,7 +15,7 @@ type Row = {
   archive_reason: string | null;
 };
 
-const SUPER_ROLES = ["owner", "superadmin", "super_admin"];
+const SUPER_ROLES = ["superadmin", "super_admin"];
 
 export function OrderArchiveAdmin() {
   const [rows, setRows] = useState<Row[]>([]);
