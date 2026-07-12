@@ -1,0 +1,3 @@
+-- Applied to Supabase project lzennundwqqtyvvcnzbg
+-- Migration name: quotation_service_lifecycle_phase_1d
+-- Live migration adds service archive lifecycle functions and updates quotation totals.

@@ -12,6 +12,7 @@ import {
 } from "@/components/admin/layout/admin-navigation";
 import { QuotationItemManager } from "@/components/admin/QuotationItemManager";
 import { QuotationProductItemPanel } from "@/components/admin/QuotationProductItemPanel";
+import { QuotationServiceManager } from "@/components/admin/QuotationServiceManager";
 
 type Quotation = {
   id: string;
@@ -362,6 +363,7 @@ export function QuotationDetailAdmin() {
 
                 <div className="flex flex-wrap items-center gap-2">
                   <QuotationItemManager />
+                  <QuotationServiceManager />
                   <QuotationProductItemPanel />
                 </div>
               </div>
