@@ -6,6 +6,7 @@ import { useParams, useRouter } from "next/navigation";
 import { createSupabaseClient } from "@/lib/supabase";
 import { AdminPageHeader } from "@/components/admin/layout/AdminPageHeader";
 import { AdminErrorState, AdminLoadingState } from "@/components/admin/ui/AdminFeedback";
+import { PaymentTrackingManager } from "@/components/admin/PaymentTrackingManager";
 
 type Order = {
   id: string;
@@ -183,6 +184,7 @@ export function OrderDetailAdmin() {
           description={`${order.customer_name}${order.company_name ? ` · ${order.company_name}` : ""}`}
           actions={
             <>
+              <PaymentTrackingManager />
               {order.quotation_id ? (
                 <Link
                   href={`/admin/orders/quotations/${order.quotation_id}`}

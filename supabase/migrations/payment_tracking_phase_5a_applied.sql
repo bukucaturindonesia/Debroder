@@ -1,0 +1,3 @@
+-- Applied to Supabase project lzennundwqqtyvvcnzbg
+-- Migration name: payment_tracking_phase_5a
+-- Adds order_payments, payment numbering, private proof storage, balance summary, lifecycle RPC, RLS.
