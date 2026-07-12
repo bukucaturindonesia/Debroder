@@ -3,6 +3,10 @@
 import { useEffect, useMemo, useState } from "react";
 import { useParams } from "next/navigation";
 import { createSupabaseClient } from "@/lib/supabase";
+import {
+  getQuotationStatusCopy,
+  getQuotationVersionStatusLabel
+} from "@/lib/quotation-status-copy";
 
 type VersionRow = {
   id: string;
@@ -26,16 +30,6 @@ type QuotationMeta = {
   latest_version_id: string | null;
   sent_version_id: string | null;
   approved_version_id: string | null;
-};
-
-const STATUS_LABELS: Record<string, string> = {
-  draft: "Draft",
-  sent: "Terkirim",
-  revision_requested: "Minta Revisi",
-  approved: "Disetujui",
-  rejected: "Ditolak",
-  expired: "Kedaluwarsa",
-  superseded: "Digantikan"
 };
 
 function date(value: string | null) {
@@ -196,9 +190,9 @@ export function QuotationVersionManager() {
                 <p className="text-xs font-semibold uppercase tracking-[0.18em] text-brand-charcoal/45">
                   v1.2 · Phase 2
                 </p>
-                <h2 className="mt-2 text-2xl font-semibold">Versioning Quotation</h2>
+                <h2 className="mt-2 text-2xl font-semibold">Riwayat Versi Penawaran</h2>
                 <p className="mt-2 text-sm leading-6 text-brand-charcoal/60">
-                  Setiap versi terkirim disimpan sebagai snapshot yang tidak dapat ditimpa atau dihapus.
+                  Setiap versi yang dikirim disimpan sebagai riwayat tetap dan tidak dapat ditimpa atau dihapus.
                 </p>
               </div>
               <button
@@ -220,7 +214,7 @@ export function QuotationVersionManager() {
                   </p>
                   <p className="mt-2 text-2xl font-semibold">v{meta.current_version}</p>
                   <p className="mt-1 text-sm text-brand-charcoal/60">
-                    Status quotation: {meta.status}
+                    Status penawaran: {getQuotationStatusCopy(meta.status).adminLabel}
                   </p>
                 </div>
 
@@ -239,7 +233,7 @@ export function QuotationVersionManager() {
                       <div className="flex items-center justify-between gap-3">
                         <span className="font-semibold">Versi {version.version_number}</span>
                         <span className="text-xs font-semibold">
-                          {STATUS_LABELS[version.version_status] || version.version_status}
+                          {getQuotationVersionStatusLabel(version.version_status)}
                         </span>
                       </div>
                       <p className="mt-2 text-xs opacity-70">{date(version.created_at)}</p>
@@ -247,9 +241,9 @@ export function QuotationVersionManager() {
                   ))
                 ) : (
                   <div className="border border-dashed border-brand-softGray bg-white p-6 text-center">
-                    <p className="font-semibold">Belum ada snapshot versi</p>
+                    <p className="font-semibold">Belum ada versi yang dikirim</p>
                     <p className="mt-2 text-sm text-brand-charcoal/60">
-                      Snapshot pertama dibuat otomatis ketika quotation ditandai Terkirim.
+                      Versi pertama dibuat otomatis saat penawaran ditandai sudah dikirim ke pelanggan.
                     </p>
                   </div>
                 )}
@@ -268,7 +262,7 @@ export function QuotationVersionManager() {
                       Buat versi revisi baru
                     </h3>
                     <p className="mt-2 text-sm leading-6 text-amber-900/80">
-                      Versi sebelumnya tetap tersimpan. Quotation akan kembali menjadi Draft agar data dapat diedit.
+                      Versi sebelumnya tetap tersimpan. Penawaran akan kembali menjadi Draft Penawaran agar data dapat diperbarui.
                     </p>
                     <textarea
                       rows={4}
@@ -294,17 +288,17 @@ export function QuotationVersionManager() {
                       <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
                         <div>
                           <p className="text-xs font-semibold uppercase tracking-[0.14em] text-brand-charcoal/45">
-                            Snapshot
+                            Salinan Riwayat
                           </p>
                           <h3 className="mt-2 text-2xl font-semibold">
                             Versi {selected.version_number}
                           </h3>
                           <p className="mt-2 text-sm text-brand-charcoal/60">
-                            {selected.change_note || "Tanpa catatan versi"}
+                            {selected.change_note || "Tidak ada catatan perubahan pada versi ini"}
                           </p>
                         </div>
                         <span className="w-fit rounded-full border border-brand-softGray px-3 py-1.5 text-xs font-semibold">
-                          {STATUS_LABELS[selected.version_status] || selected.version_status}
+                          {getQuotationVersionStatusLabel(selected.version_status)}
                         </span>
                       </div>
 
@@ -333,7 +327,7 @@ export function QuotationVersionManager() {
                     </section>
 
                     <section className="border border-brand-softGray bg-white p-5 sm:p-6">
-                      <h3 className="text-xl font-semibold">Item pada Versi Ini</h3>
+                      <h3 className="text-xl font-semibold">Produk pada Versi Ini</h3>
                       {Array.isArray(selected.snapshot.items) &&
                       selected.snapshot.items.length ? (
                         <div className="mt-5 divide-y divide-brand-softGray border-y border-brand-softGray">
@@ -374,19 +368,19 @@ export function QuotationVersionManager() {
                         </div>
                       ) : (
                         <p className="mt-4 text-sm text-brand-charcoal/60">
-                          Tidak ada item pada snapshot ini.
+                          Tidak ada produk pada versi ini.
                         </p>
                       )}
                     </section>
                   </>
                 ) : (
                   <div className="border border-dashed border-brand-softGray bg-white p-8 text-center">
-                    <p className="font-semibold">Belum ada versi untuk ditampilkan</p>
+                    <p className="font-semibold">Belum ada riwayat versi untuk ditampilkan</p>
                   </div>
                 )}
 
                 <div className="border border-brand-softGray bg-white p-4 text-sm leading-6 text-brand-charcoal/60">
-                  Versi historis tidak memiliki tombol Edit, Arsipkan, atau Hapus karena merupakan dokumen audit yang immutable. Revisi selalu dibuat sebagai versi baru.
+                  Versi lama tidak dapat diedit, diarsipkan, atau dihapus karena menjadi bukti riwayat penawaran. Setiap perubahan harus dibuat sebagai versi baru.
                 </div>
               </div>
             </div>

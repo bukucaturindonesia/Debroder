@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 import { createSupabaseClient } from "@/lib/supabase";
+import { getQuotationStatusLabel } from "@/lib/quotation-status-copy";
 import { AdminAlert, AdminErrorState, AdminLoadingState } from "@/components/admin/ui/AdminFeedback";
 import { AdminPageHeader } from "@/components/admin/layout/AdminPageHeader";
 import {
@@ -63,19 +64,6 @@ type StatusHistory = {
   to_status: string;
   note: string | null;
   created_at: string;
-};
-
-const STATUS_LABELS: Record<string, string> = {
-  draft: "Draft",
-  submitted: "Diajukan",
-  under_review: "Dalam Review",
-  pricing: "Penyusunan Harga",
-  sent: "Terkirim",
-  revision_requested: "Minta Revisi",
-  approved: "Disetujui",
-  rejected: "Ditolak",
-  expired: "Kedaluwarsa",
-  converted_to_order: "Menjadi Order"
 };
 
 const PRICING_LABELS: Record<string, string> = {
@@ -165,7 +153,7 @@ export function QuotationDetailAdmin() {
     setLoading(false);
 
     if (quotationResult.error) {
-      setMessage("Detail quotation gagal dimuat.");
+      setMessage("Detail penawaran gagal dimuat.");
       return;
     }
 
@@ -174,7 +162,7 @@ export function QuotationDetailAdmin() {
       setItems([]);
       setHistory([]);
       setNotFound(true);
-      setMessage("Quotation tidak ditemukan atau tautannya sudah tidak berlaku.");
+      setMessage("Penawaran tidak ditemukan atau tautannya sudah tidak berlaku.");
       return;
     }
 
@@ -271,7 +259,7 @@ export function QuotationDetailAdmin() {
     return (
       <main className="text-brand-charcoal">
         <AdminErrorState
-          title="Quotation tidak ditemukan"
+          title="Penawaran tidak ditemukan"
           description={message}
           action={
             <Link
@@ -295,7 +283,7 @@ export function QuotationDetailAdmin() {
     <main className="text-brand-charcoal">
       <div className="grid gap-6">
         <AdminPageHeader
-          eyebrow="DEBRODER v1.2 · Formal Quotation"
+          eyebrow="DEBRODER v1.2 · Penawaran Resmi"
           title={quotation.quotation_number}
           description={`${quotation.customer_name}${
             quotation.company_name ? ` · ${quotation.company_name}` : ""
@@ -323,7 +311,7 @@ export function QuotationDetailAdmin() {
 
         <div className="flex flex-wrap items-center gap-2">
           <span className="inline-flex rounded-full border border-brand-softGray bg-white px-3 py-1.5 text-xs font-semibold">
-            {STATUS_LABELS[quotation.status] || quotation.status}
+            {getQuotationStatusLabel(quotation.status, "admin")}
           </span>
           {quotation.has_pending_pricing ? (
             <span className="inline-flex rounded-full border border-amber-200 bg-amber-50 px-3 py-1.5 text-xs font-semibold text-amber-800">
@@ -495,11 +483,10 @@ export function QuotationDetailAdmin() {
                       <p className="text-sm font-semibold">
                         {entry.from_status
                           ? `${
-                              STATUS_LABELS[entry.from_status] ||
-                              entry.from_status
+                              getQuotationStatusLabel(entry.from_status, "admin")
                             } → `
                           : ""}
-                        {STATUS_LABELS[entry.to_status] || entry.to_status}
+                        {getQuotationStatusLabel(entry.to_status, "admin")}
                       </p>
                       <p className="mt-1 text-xs text-brand-charcoal/55">
                         {formatDate(entry.created_at, true)}

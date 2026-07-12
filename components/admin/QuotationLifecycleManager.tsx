@@ -3,6 +3,11 @@
 import { FormEvent, useEffect, useMemo, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { createSupabaseClient } from "@/lib/supabase";
+import {
+  getQuotationStatusCopy,
+  getQuotationStatusErrorMessage,
+  getQuotationStatusTransitions
+} from "@/lib/quotation-status-copy";
 
 type Quotation = {
   id: string;
@@ -35,19 +40,6 @@ type EditState = {
   internal_notes: string;
   additional_cost: string;
   discount_total: string;
-};
-
-const NEXT_STATUS: Record<string, Array<[string, string]>> = {
-  draft: [["submitted", "Ajukan"]],
-  submitted: [["under_review", "Mulai Review"], ["draft", "Kembalikan ke Draft"]],
-  under_review: [["pricing", "Susun Harga"], ["submitted", "Kembali ke Diajukan"]],
-  pricing: [["sent", "Tandai Terkirim"], ["under_review", "Kembali ke Review"]],
-  sent: [
-    ["approved", "Setujui"],
-    ["revision_requested", "Minta Revisi"],
-    ["rejected", "Tolak"],
-    ["expired", "Kedaluwarsa"]
-  ]
 };
 
 function dateInput(value: string | null) {
@@ -96,7 +88,7 @@ export function QuotationLifecycleManager() {
     setLoading(false);
 
     if (error || !data) {
-      setMessage("Data quotation belum berhasil dimuat.");
+      setMessage("Data penawaran belum berhasil dimuat.");
       return;
     }
 
@@ -116,7 +108,7 @@ export function QuotationLifecycleManager() {
       additional_cost: String(row.additional_cost || 0),
       discount_total: String(row.discount_total || 0)
     });
-    setStatusTarget(NEXT_STATUS[row.status]?.[0]?.[0] || "");
+    setStatusTarget(getQuotationStatusTransitions(row.status)[0]?.value || "");
   }
 
   useEffect(() => {
@@ -163,7 +155,7 @@ export function QuotationLifecycleManager() {
 
     if (error) {
       setWorking(false);
-      setMessage("Perubahan quotation gagal disimpan.");
+      setMessage("Perubahan penawaran gagal disimpan.");
       return;
     }
 
@@ -174,11 +166,11 @@ export function QuotationLifecycleManager() {
     setWorking(false);
 
     if (totalError) {
-      setMessage("Data tersimpan, tetapi total quotation belum diperbarui.");
+      setMessage("Data tersimpan, tetapi total penawaran belum berhasil diperbarui.");
       return;
     }
 
-    setMessage("Quotation berhasil diperbarui.");
+    setMessage("Penawaran berhasil diperbarui.");
     await loadQuotation();
     window.location.reload();
   }
@@ -191,6 +183,16 @@ export function QuotationLifecycleManager() {
     setWorking(true);
     setMessage("");
 
+    const selectedTransition = getQuotationStatusTransitions(
+      quotation.status
+    ).find((item) => item.value === statusTarget);
+
+    if (selectedTransition?.noteRequired && !statusNote.trim()) {
+      setWorking(false);
+      setMessage("Catatan perubahan wajib diisi untuk tindakan ini.");
+      return;
+    }
+
     const { error } = await supabase.rpc("transition_quotation_status", {
       p_quotation_id: quotation.id,
       p_to_status: statusTarget,
@@ -200,12 +202,16 @@ export function QuotationLifecycleManager() {
     setWorking(false);
 
     if (error) {
-      setMessage("Perubahan status ditolak. Periksa item, harga, kontak, atau catatan wajib.");
+      setMessage(getQuotationStatusErrorMessage(error.message));
       return;
     }
 
     setStatusNote("");
-    setMessage("Status quotation berhasil diperbarui.");
+    setMessage(
+      `Status penawaran berhasil diubah menjadi ${
+        getQuotationStatusCopy(statusTarget).adminLabel
+      }.`
+    );
     await loadQuotation();
     window.location.reload();
   }
@@ -226,7 +232,7 @@ export function QuotationLifecycleManager() {
     setWorking(false);
 
     if (error) {
-      setMessage("Quotation gagal diarsipkan.");
+      setMessage("Penawaran gagal dipindahkan ke Gudang Arsip.");
       return;
     }
 
@@ -247,7 +253,10 @@ export function QuotationLifecycleManager() {
   }
 
   const editable = quotation.status === "draft";
-  const transitions = NEXT_STATUS[quotation.status] || [];
+  const transitions = getQuotationStatusTransitions(quotation.status);
+  const currentStatusCopy = getQuotationStatusCopy(quotation.status);
+  const selectedTransition =
+    transitions.find((item) => item.value === statusTarget) || null;
   const inputClass =
     "mt-2 min-h-11 w-full rounded-lg border border-brand-softGray px-4 text-sm outline-none focus:border-brand-charcoal disabled:bg-brand-offWhite";
 
@@ -261,7 +270,7 @@ export function QuotationLifecycleManager() {
         }}
         className="inline-flex min-h-10 items-center rounded-full border border-brand-softGray bg-white px-4 text-sm font-semibold transition hover:border-brand-charcoal"
       >
-        Kelola Quotation
+        Kelola Penawaran
       </button>
 
       {open ? (
@@ -270,11 +279,11 @@ export function QuotationLifecycleManager() {
             <header className="flex flex-col gap-5 border-b border-brand-softGray bg-white p-5 sm:flex-row sm:items-start sm:justify-between sm:p-7">
               <div>
                 <p className="text-xs font-semibold uppercase tracking-[0.18em] text-brand-charcoal/45">
-                  Formal Quotation
+                  Penawaran Resmi
                 </p>
-                <h2 className="mt-2 text-2xl font-semibold">Kelola Quotation</h2>
+                <h2 className="mt-2 text-2xl font-semibold">Kelola Penawaran</h2>
                 <p className="mt-2 text-sm text-brand-charcoal/60">
-                  Edit data, jalankan alur status, atau pindahkan quotation ke arsip.
+                  Perbarui data, jalankan tahapan penawaran, atau pindahkan penawaran ke Gudang Arsip.
                 </p>
               </div>
               <button
@@ -320,7 +329,7 @@ export function QuotationLifecycleManager() {
                 <form onSubmit={saveEdit} className="mt-6 grid gap-5">
                   {!editable ? (
                     <div className="border border-amber-200 bg-amber-50 p-4 text-sm font-semibold text-amber-900">
-                      Data quotation hanya dapat diedit saat status masih Draft.
+                      Data penawaran hanya dapat diedit saat masih berstatus Draft Penawaran.
                     </div>
                   ) : null}
 
@@ -429,32 +438,62 @@ export function QuotationLifecycleManager() {
                     <p className="text-xs font-semibold uppercase tracking-[0.14em] text-brand-charcoal/45">
                       Status saat ini
                     </p>
-                    <p className="mt-2 text-xl font-semibold">{quotation.status}</p>
+                    <p className="mt-2 text-xl font-semibold">
+                      {currentStatusCopy.adminLabel}
+                    </p>
+                    <p className="mt-2 max-w-2xl text-sm leading-6 text-brand-charcoal/60">
+                      {currentStatusCopy.adminDescription}
+                    </p>
                   </div>
 
                   {transitions.length ? (
                     <>
                       <label className="text-sm font-semibold">
-                        Aksi status
+                        Langkah berikutnya
                         <select
                           value={statusTarget}
                           onChange={(e) => setStatusTarget(e.target.value)}
                           className={inputClass}
                         >
-                          {transitions.map(([value, label]) => (
-                            <option key={value} value={value}>
-                              {label}
+                          {transitions.map((transition) => (
+                            <option
+                              key={transition.value}
+                              value={transition.value}
+                            >
+                              {transition.label}
                             </option>
                           ))}
                         </select>
                       </label>
+
+                      {selectedTransition ? (
+                        <div className="border border-brand-softGray bg-white p-4">
+                          <p className="text-sm font-semibold">
+                            {selectedTransition.label}
+                          </p>
+                          <p className="mt-2 text-sm leading-6 text-brand-charcoal/60">
+                            {selectedTransition.description}
+                          </p>
+                        </div>
+                      ) : null}
+
                       <label className="text-sm font-semibold">
                         Catatan perubahan
+                        {selectedTransition?.noteRequired ? (
+                          <span className="ml-1 text-red-700">*</span>
+                        ) : (
+                          <span className="ml-1 font-normal text-brand-charcoal/50">
+                            (opsional)
+                          </span>
+                        )}
                         <textarea
                           rows={4}
                           value={statusNote}
                           onChange={(e) => setStatusNote(e.target.value)}
-                          placeholder="Wajib untuk penolakan, revisi, atau kedaluwarsa lebih awal"
+                          placeholder={
+                            selectedTransition?.notePlaceholder ||
+                            "Tuliskan catatan perubahan, bila diperlukan"
+                          }
                           className="mt-2 w-full rounded-lg border border-brand-softGray px-4 py-3 text-sm"
                         />
                       </label>
@@ -464,12 +503,15 @@ export function QuotationLifecycleManager() {
                         disabled={working || !statusTarget}
                         className="w-fit rounded-full bg-brand-charcoal px-6 py-3 text-sm font-semibold text-white disabled:opacity-45"
                       >
-                        {working ? "Memproses..." : "Jalankan Perubahan Status"}
+                        {working
+                          ? "Menyimpan perubahan..."
+                          : selectedTransition?.buttonLabel ||
+                            "Simpan Perubahan Status"}
                       </button>
                     </>
                   ) : (
                     <div className="border border-dashed border-brand-softGray bg-white p-6 text-center">
-                      <p className="font-semibold">Tidak ada transisi lanjutan pada Phase 1.</p>
+                      <p className="font-semibold">Tidak ada tindakan status lanjutan untuk penawaran ini.</p>
                     </div>
                   )}
                 </div>
@@ -478,9 +520,9 @@ export function QuotationLifecycleManager() {
               {tab === "archive" ? (
                 <div className="mt-6">
                   <div className="border border-amber-200 bg-amber-50 p-5">
-                    <h3 className="text-xl font-semibold text-amber-900">Arsipkan quotation?</h3>
+                    <h3 className="text-xl font-semibold text-amber-900">Pindahkan penawaran ke Gudang Arsip?</h3>
                     <p className="mt-2 text-sm leading-6 text-amber-900/80">
-                      Quotation akan hilang dari daftar aktif tetapi tetap dapat dipulihkan dari Gudang Arsip.
+                      Penawaran akan hilang dari daftar aktif, tetapi tetap dapat dipulihkan dari Gudang Arsip.
                     </p>
                   </div>
                   <label className="mt-5 block text-sm font-semibold">

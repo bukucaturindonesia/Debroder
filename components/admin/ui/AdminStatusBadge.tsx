@@ -1,15 +1,8 @@
-const QUOTATION_STATUS_LABELS: Record<string, string> = {
-  draft: "Draft",
-  submitted: "Diajukan",
-  under_review: "Dalam Review",
-  pricing: "Penyusunan Harga",
-  sent: "Terkirim",
-  revision_requested: "Minta Revisi",
-  approved: "Disetujui",
-  rejected: "Ditolak",
-  expired: "Kedaluwarsa",
-  converted_to_order: "Menjadi Order"
-};
+import {
+  getQuotationStatusDescription,
+  getQuotationStatusLabel as getSharedQuotationStatusLabel,
+  getQuotationStatusOptions as getSharedQuotationStatusOptions
+} from "@/lib/quotation-status-copy";
 
 const QUOTATION_STATUS_CLASSES: Record<string, string> = {
   draft: "border-brand-softGray bg-brand-offWhite text-brand-charcoal",
@@ -24,12 +17,15 @@ const QUOTATION_STATUS_CLASSES: Record<string, string> = {
   converted_to_order: "border-brand-green/20 bg-brand-green/10 text-brand-green"
 };
 
-export function getQuotationStatusLabel(status: string) {
-  return QUOTATION_STATUS_LABELS[status] || "Status tidak dikenal";
+export function getQuotationStatusLabelForAdmin(status: string) {
+  return getSharedQuotationStatusLabel(status, "admin");
 }
 
+// Dipertahankan agar import lama tidak rusak.
+export const getQuotationStatusLabel = getQuotationStatusLabelForAdmin;
+
 export function getQuotationStatusOptions() {
-  return Object.entries(QUOTATION_STATUS_LABELS);
+  return getSharedQuotationStatusOptions();
 }
 
 export function AdminStatusBadge({ status }: { status: string }) {
@@ -39,9 +35,9 @@ export function AdminStatusBadge({ status }: { status: string }) {
         QUOTATION_STATUS_CLASSES[status] ||
         "border-brand-softGray bg-brand-offWhite text-brand-charcoal"
       }`}
-      title={status}
+      title={getQuotationStatusDescription(status, "admin")}
     >
-      {getQuotationStatusLabel(status)}
+      {getQuotationStatusLabelForAdmin(status)}
     </span>
   );
 }
