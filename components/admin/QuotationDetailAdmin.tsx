@@ -146,9 +146,10 @@ export function QuotationDetailAdmin() {
       supabase
         .from("quotation_items")
         .select(
-          "id,product_name_snapshot,variant_name_snapshot,color_name_snapshot,size_name_snapshot,sku_snapshot,quantity,unit_price,pricing_status,subtotal,customer_notes,sort_order"
+          "id,product_name_snapshot,variant_name_snapshot,color_name_snapshot,size_name_snapshot,sku_snapshot,quantity,unit_price,pricing_status,subtotal,customer_notes,sort_order,archived_at"
         )
         .eq("quotation_id", quotationId)
+        .is("archived_at", null)
         .order("sort_order", { ascending: true })
         .order("created_at", { ascending: true }),
       supabase

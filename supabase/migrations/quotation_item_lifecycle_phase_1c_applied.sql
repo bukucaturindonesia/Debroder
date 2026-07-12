@@ -1,0 +1,7 @@
+-- Applied to Supabase project lzennundwqqtyvvcnzbg as quotation_item_lifecycle_phase_1c.
+-- Keep this marker for repository history. The live migration added:
+-- quotation_items.archived_at, archived_by, archive_reason;
+-- active/archive indexes;
+-- archive_quotation_item, restore_quotation_item,
+-- permanently_delete_quotation_item;
+-- refreshed totals excluding archived items.
