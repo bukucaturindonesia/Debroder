@@ -92,7 +92,8 @@ export const adminNavigationGroups: readonly AdminNavigationGroup[] = [
           { label: "Formal Quotation", href: "/admin/orders/quotations", roles: QUOTATION_ROLES },
           { label: "Job Order", href: "/admin/job-orders", roles: FULL_ADMIN_ROLES },
           { label: "Work Item", href: "/admin/work-items", roles: FULL_ADMIN_ROLES },
-          { label: "Status Produksi", href: "/admin/production", roles: FULL_ADMIN_ROLES }
+          { label: "Status Produksi", href: "/admin/production", roles: FULL_ADMIN_ROLES },
+          { label: "Quality Control", href: "/admin/quality-control", roles: FULL_ADMIN_ROLES }
         ]
       }
     ]
@@ -153,6 +154,8 @@ export function getRoleHome(role: AdminRole) {
 }
 
 export function getCurrentNavigationLabel(pathname: string) {
+  if (pathname.startsWith("/admin/quality-control/")) return "Detail Quality Control";
+  if (pathname === "/admin/quality-control") return "Quality Control";
   if (pathname === "/admin/production") return "Status Produksi";
   if (pathname.startsWith("/admin/work-items/")) return "Detail Work Item";
   if (pathname === "/admin/work-items") return "Work Item";
@@ -190,6 +193,15 @@ export function getAdminBreadcrumbs(pathname: string): AdminBreadcrumbItem[] {
     return [{ label: "Dashboard" }];
   }
 
+
+  if (pathname.startsWith("/admin/quality-control")) {
+    const crumbs: AdminBreadcrumbItem[] = [
+      { label: "Operasional" },
+      { label: "Quality Control", href: pathname === "/admin/quality-control" ? undefined : "/admin/quality-control" }
+    ];
+    if (pathname !== "/admin/quality-control") crumbs.push({ label: "Detail Quality Control" });
+    return crumbs;
+  }
 
   if (pathname === "/admin/production") {
     return [{ label: "Operasional" }, { label: "Status Produksi" }];
@@ -261,7 +273,8 @@ export function getAdminBreadcrumbs(pathname: string): AdminBreadcrumbItem[] {
     "/admin/document-numbering": "Sistem",
     "/admin/job-orders": "Operasional",
     "/admin/work-items": "Operasional",
-    "/admin/production": "Operasional"
+    "/admin/production": "Operasional",
+    "/admin/quality-control": "Operasional"
   };
 
   const matchingRoute = Object.keys(groupMap).find(

@@ -553,7 +553,12 @@ export function WorkItemDetailAdmin() {
         ) : null}
 
         {row.status === "awaiting_qc" ? (
-          <AdminAlert type="success">Work Item sudah diserahkan ke Quality Control dan tidak dapat ditandai selesai sebelum pemeriksaan Phase 10.</AdminAlert>
+          <section className="border border-brand-softGray bg-white p-5 sm:p-7">
+            <AdminAlert type="success">Work Item sudah diserahkan ke Quality Control dan tidak dapat ditandai selesai sebelum pemeriksaan Phase 10.</AdminAlert>
+            <Link href={`/admin/quality-control?work_item=${row.id}`} className="mt-4 inline-flex min-h-10 items-center rounded-full bg-brand-green px-5 text-sm font-semibold text-white">
+              Buka Quality Control
+            </Link>
+          </section>
         ) : null}
 
         <section className="grid gap-5 border border-brand-softGray bg-white p-5 sm:p-7 lg:grid-cols-2">
