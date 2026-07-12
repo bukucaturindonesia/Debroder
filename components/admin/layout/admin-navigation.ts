@@ -89,7 +89,8 @@ export const adminNavigationGroups: readonly AdminNavigationGroup[] = [
         roles: QUOTATION_ROLES,
         children: [
           { label: "Pesanan", href: "/admin/orders", roles: QUOTATION_ROLES, exact: true },
-          { label: "Formal Quotation", href: "/admin/orders/quotations", roles: QUOTATION_ROLES }
+          { label: "Formal Quotation", href: "/admin/orders/quotations", roles: QUOTATION_ROLES },
+          { label: "Job Order", href: "/admin/job-orders", roles: FULL_ADMIN_ROLES }
         ]
       }
     ]
@@ -150,6 +151,8 @@ export function getRoleHome(role: AdminRole) {
 }
 
 export function getCurrentNavigationLabel(pathname: string) {
+  if (pathname.startsWith("/admin/job-orders/")) return "Detail Job Order";
+  if (pathname === "/admin/job-orders") return "Job Order";
   if (pathname === "/admin/orders/quotations/new") return "Buat Quotation";
   if (pathname.startsWith("/admin/orders/quotations/")) return "Detail Quotation";
   if (pathname === "/admin/orders/archive") return "Gudang Arsip Pesanan";
@@ -180,6 +183,15 @@ export type AdminBreadcrumbItem = {
 export function getAdminBreadcrumbs(pathname: string): AdminBreadcrumbItem[] {
   if (pathname === "/admin/dashboard" || pathname === "/admin") {
     return [{ label: "Dashboard" }];
+  }
+
+  if (pathname.startsWith("/admin/job-orders")) {
+    const crumbs: AdminBreadcrumbItem[] = [
+      { label: "Operasional" },
+      { label: "Job Order", href: pathname === "/admin/job-orders" ? undefined : "/admin/job-orders" }
+    ];
+    if (pathname !== "/admin/job-orders") crumbs.push({ label: "Detail Job Order" });
+    return crumbs;
   }
 
   if (pathname.startsWith("/admin/orders/quotations")) {
@@ -227,7 +239,8 @@ export function getAdminBreadcrumbs(pathname: string): AdminBreadcrumbItem[] {
     "/admin/services": "Katalog",
     "/admin/store": "Katalog",
     "/admin/website-settings": "Sistem",
-    "/admin/document-numbering": "Sistem"
+    "/admin/document-numbering": "Sistem",
+    "/admin/job-orders": "Operasional"
   };
 
   const matchingRoute = Object.keys(groupMap).find(
@@ -247,6 +260,7 @@ export function getAdminBreadcrumbs(pathname: string): AdminBreadcrumbItem[] {
 export function isLegacyAdminRoute(pathname: string) {
   return !(
     pathname.startsWith("/admin/orders") ||
-    pathname.startsWith("/admin/document-numbering")
+    pathname.startsWith("/admin/document-numbering") ||
+    pathname.startsWith("/admin/job-orders")
   );
 }

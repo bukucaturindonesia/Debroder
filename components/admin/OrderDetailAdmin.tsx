@@ -185,6 +185,12 @@ export function OrderDetailAdmin() {
           actions={
             <>
               <PaymentTrackingManager />
+              <Link
+                href={`/admin/job-orders?order=${order.id}`}
+                className="inline-flex min-h-10 items-center rounded-full border border-brand-softGray bg-white px-5 text-sm font-semibold"
+              >
+                Job Order
+              </Link>
               {order.quotation_id ? (
                 <Link
                   href={`/admin/orders/quotations/${order.quotation_id}`}
