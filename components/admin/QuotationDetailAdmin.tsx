@@ -4,6 +4,14 @@ import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 import { createSupabaseClient } from "@/lib/supabase";
+import { AdminAlert, AdminErrorState, AdminLoadingState } from "@/components/admin/ui/AdminFeedback";
+import { AdminPageHeader } from "@/components/admin/layout/AdminPageHeader";
+import {
+  isAdminRole,
+  QUOTATION_ROLES
+} from "@/components/admin/layout/admin-navigation";
+import { QuotationItemManager } from "@/components/admin/QuotationItemManager";
+import { QuotationProductItemPanel } from "@/components/admin/QuotationProductItemPanel";
 
 type Quotation = {
   id: string;
@@ -54,14 +62,6 @@ type StatusHistory = {
   created_at: string;
 };
 
-const ALLOWED_ROLES = [
-  "owner",
-  "superadmin",
-  "super_admin",
-  "sales_admin",
-  "admin"
-];
-
 const STATUS_LABELS: Record<string, string> = {
   draft: "Draft",
   submitted: "Diajukan",
@@ -83,7 +83,6 @@ const PRICING_LABELS: Record<string, string> = {
 
 function formatMoney(value: number | null | undefined) {
   if (value === null || value === undefined) return "Menunggu harga";
-
   return new Intl.NumberFormat("id-ID", {
     style: "currency",
     currency: "IDR",
@@ -93,7 +92,6 @@ function formatMoney(value: number | null | undefined) {
 
 function formatDate(value: string | null | undefined, includeTime = false) {
   if (!value) return "-";
-
   return new Intl.DateTimeFormat("id-ID", {
     dateStyle: "medium",
     ...(includeTime ? { timeStyle: "short" } : {})
@@ -112,8 +110,9 @@ export function QuotationDetailAdmin() {
   const [quotation, setQuotation] = useState<Quotation | null>(null);
   const [items, setItems] = useState<QuotationItem[]>([]);
   const [history, setHistory] = useState<StatusHistory[]>([]);
-  const [message, setMessage] = useState("Memeriksa akses...");
+  const [message, setMessage] = useState("");
   const [allowed, setAllowed] = useState(false);
+  const [checkingAccess, setCheckingAccess] = useState(true);
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
 
@@ -162,7 +161,7 @@ export function QuotationDetailAdmin() {
     setLoading(false);
 
     if (quotationResult.error) {
-      setMessage(`Detail quotation gagal dimuat: ${quotationResult.error.message}`);
+      setMessage("Detail quotation gagal dimuat.");
       return;
     }
 
@@ -171,18 +170,12 @@ export function QuotationDetailAdmin() {
       setItems([]);
       setHistory([]);
       setNotFound(true);
-      setMessage(
-        "Quotation tidak ditemukan. Data mungkin sudah dihapus atau tautannya tidak valid."
-      );
+      setMessage("Quotation tidak ditemukan atau tautannya sudah tidak berlaku.");
       return;
     }
 
     if (itemResult.error || historyResult.error) {
-      setMessage(
-        `Sebagian detail gagal dimuat: ${
-          itemResult.error?.message || historyResult.error?.message
-        }`
-      );
+      setMessage("Sebagian rincian quotation belum berhasil dimuat.");
     }
 
     setQuotation(quotationResult.data as Quotation);
@@ -191,11 +184,16 @@ export function QuotationDetailAdmin() {
   }
 
   useEffect(() => {
+    let active = true;
+
     async function checkAccess() {
       const supabase = createSupabaseClient();
       if (!supabase) {
-        setMessage("Supabase belum dikonfigurasi.");
-        setLoading(false);
+        if (active) {
+          setMessage("Supabase belum dikonfigurasi.");
+          setCheckingAccess(false);
+          setLoading(false);
+        }
         return;
       }
 
@@ -213,84 +211,73 @@ export function QuotationDetailAdmin() {
         .eq("id", user.id)
         .maybeSingle();
 
+      if (!active) return;
+
       if (
         error ||
         !profile ||
-        !ALLOWED_ROLES.includes(String(profile.role))
+        !isAdminRole(profile.role) ||
+        !QUOTATION_ROLES.includes(profile.role)
       ) {
         setMessage("Akses detail quotation ditolak.");
+        setCheckingAccess(false);
         setLoading(false);
         return;
       }
 
       setAllowed(true);
+      setCheckingAccess(false);
       await loadQuotation();
     }
 
     void checkAccess();
+
+    return () => {
+      active = false;
+    };
   }, [quotationId, router]);
+
+  if (checkingAccess) {
+    return (
+      <main className="text-brand-charcoal">
+        <AdminLoadingState label="Memeriksa akses quotation..." />
+      </main>
+    );
+  }
 
   if (!allowed) {
     return (
-      <main className="min-h-screen bg-brand-offWhite p-6 text-brand-charcoal">
-        <div className="mx-auto mt-20 max-w-lg border border-brand-softGray bg-white p-8 text-center">
-          <h1 className="text-3xl font-semibold">Detail Quotation</h1>
-          <p className="mt-4 text-sm font-medium text-brand-charcoal/70">
-            {message}
-          </p>
-          <Link
-            href="/admin/orders/quotations"
-            className="mt-6 inline-flex min-h-11 items-center justify-center rounded-full border border-brand-charcoal px-5 text-sm font-semibold"
-          >
-            Kembali ke Daftar
-          </Link>
-        </div>
+      <main className="text-brand-charcoal">
+        <AdminAlert type="error">
+          {message || "Akses detail quotation ditolak."}
+        </AdminAlert>
       </main>
     );
   }
 
   if (loading) {
     return (
-      <main className="min-h-screen bg-brand-offWhite p-6 text-brand-charcoal">
-        <div className="mx-auto mt-20 max-w-lg border border-brand-softGray bg-white p-8 text-center">
-          <h1 className="text-3xl font-semibold">Memuat Quotation</h1>
-          <p className="mt-4 text-sm font-medium text-brand-charcoal/70">
-            Mohon tunggu, data sedang diperiksa.
-          </p>
-        </div>
+      <main className="text-brand-charcoal">
+        <AdminLoadingState label="Memuat detail quotation..." />
       </main>
     );
   }
 
   if (notFound || !quotation) {
     return (
-      <main className="min-h-screen bg-brand-offWhite p-4 text-brand-charcoal sm:p-6 lg:p-8">
-        <div className="mx-auto mt-16 max-w-xl border border-brand-softGray bg-white p-8 text-center">
-          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-brand-charcoal/45">
-            Formal Quotation
-          </p>
-          <h1 className="mt-3 text-3xl font-semibold">
-            Quotation tidak ditemukan
-          </h1>
-          <p className="mt-4 text-sm leading-6 text-brand-charcoal/65">
-            {message}
-          </p>
-          <div className="mt-7 flex flex-col justify-center gap-3 sm:flex-row">
+      <main className="text-brand-charcoal">
+        <AdminErrorState
+          title="Quotation tidak ditemukan"
+          description={message}
+          action={
             <Link
               href="/admin/orders/quotations"
               className="inline-flex min-h-11 items-center justify-center rounded-full bg-brand-charcoal px-6 text-sm font-semibold text-white"
             >
               Kembali ke Daftar
             </Link>
-            <button
-              type="button"
-              onClick={() => void loadQuotation()}
-              className="inline-flex min-h-11 items-center justify-center rounded-full border border-brand-softGray px-6 text-sm font-semibold"
-            >
-              Coba Lagi
-            </button>
-          </div>
-        </div>
+          }
+        />
       </main>
     );
   }
@@ -301,170 +288,133 @@ export function QuotationDetailAdmin() {
       : quotation.estimated_total;
 
   return (
-    <main className="min-h-screen bg-brand-offWhite p-4 text-brand-charcoal sm:p-6 lg:p-8">
-      <div className="mx-auto max-w-7xl">
-        <header className="border border-brand-softGray bg-white p-5 sm:p-7">
-          <div className="flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between">
-            <div>
-              <p className="text-xs font-semibold uppercase tracking-[0.2em] text-brand-charcoal/45">
-                DEBRODER v1.2 · Formal Quotation
-              </p>
-              <h1 className="mt-2 text-3xl font-semibold sm:text-4xl">
-                {quotation.quotation_number}
-              </h1>
-              <div className="mt-3 flex flex-wrap items-center gap-2">
-                <span className="inline-flex rounded-full border border-brand-softGray bg-brand-offWhite px-3 py-1 text-xs font-semibold">
-                  {STATUS_LABELS[quotation.status] || quotation.status}
-                </span>
-                {quotation.has_pending_pricing ? (
-                  <span className="inline-flex rounded-full border border-amber-200 bg-amber-50 px-3 py-1 text-xs font-semibold text-amber-800">
-                    Ada harga pending
-                  </span>
-                ) : null}
-              </div>
-            </div>
-
-            <div className="flex flex-wrap gap-3">
+    <main className="text-brand-charcoal">
+      <div className="grid gap-6">
+        <AdminPageHeader
+          eyebrow="DEBRODER v1.2 · Formal Quotation"
+          title={quotation.quotation_number}
+          description={`${quotation.customer_name}${
+            quotation.company_name ? ` · ${quotation.company_name}` : ""
+          }`}
+          actions={
+            <>
               <Link
                 href="/admin/orders/quotations"
-                className="inline-flex min-h-11 items-center justify-center rounded-full border border-brand-softGray px-5 text-sm font-semibold"
+                className="inline-flex min-h-10 items-center justify-center rounded-full border border-brand-softGray bg-white px-5 text-sm font-semibold"
               >
-                Kembali ke Daftar
+                Kembali
               </Link>
               <button
                 type="button"
                 onClick={() => void loadQuotation()}
-                className="inline-flex min-h-11 items-center justify-center rounded-full border border-brand-charcoal px-5 text-sm font-semibold"
+                className="inline-flex min-h-10 items-center justify-center rounded-full border border-brand-charcoal bg-white px-5 text-sm font-semibold"
               >
                 Refresh
               </button>
-            </div>
-          </div>
-        </header>
+            </>
+          }
+        />
 
-        {message ? (
-          <p className="mt-5 border border-brand-softGray bg-white p-4 text-sm font-semibold">
-            {message}
-          </p>
-        ) : null}
+        <div className="flex flex-wrap items-center gap-2">
+          <span className="inline-flex rounded-full border border-brand-softGray bg-white px-3 py-1.5 text-xs font-semibold">
+            {STATUS_LABELS[quotation.status] || quotation.status}
+          </span>
+          {quotation.has_pending_pricing ? (
+            <span className="inline-flex rounded-full border border-amber-200 bg-amber-50 px-3 py-1.5 text-xs font-semibold text-amber-800">
+              Ada harga pending
+            </span>
+          ) : null}
+        </div>
 
-        <div className="mt-6 grid gap-6 xl:grid-cols-[1.35fr_0.65fr]">
-          <div className="grid gap-6">
+        {message ? <AdminAlert type="warning">{message}</AdminAlert> : null}
+
+        <div className="grid gap-6 xl:grid-cols-[minmax(0,1.45fr)_minmax(320px,0.55fr)]">
+          <div className="grid content-start gap-6">
             <section className="border border-brand-softGray bg-white p-5 sm:p-7">
               <h2 className="text-2xl font-semibold">Data Pelanggan</h2>
               <dl className="mt-5 grid gap-5 sm:grid-cols-2">
-                <div>
-                  <dt className="text-xs font-semibold uppercase tracking-[0.14em] text-brand-charcoal/45">
-                    Nama
-                  </dt>
-                  <dd className="mt-2 font-semibold">{quotation.customer_name}</dd>
-                </div>
-                <div>
-                  <dt className="text-xs font-semibold uppercase tracking-[0.14em] text-brand-charcoal/45">
-                    Perusahaan
-                  </dt>
-                  <dd className="mt-2 font-semibold">
-                    {quotation.company_name || "-"}
-                  </dd>
-                </div>
-                <div>
-                  <dt className="text-xs font-semibold uppercase tracking-[0.14em] text-brand-charcoal/45">
-                    WhatsApp
-                  </dt>
-                  <dd className="mt-2 font-semibold">
-                    {quotation.customer_phone}
-                  </dd>
-                </div>
-                <div>
-                  <dt className="text-xs font-semibold uppercase tracking-[0.14em] text-brand-charcoal/45">
-                    Email
-                  </dt>
-                  <dd className="mt-2 font-semibold">
-                    {quotation.customer_email || "-"}
-                  </dd>
-                </div>
-                <div>
-                  <dt className="text-xs font-semibold uppercase tracking-[0.14em] text-brand-charcoal/45">
-                    Nomor PO
-                  </dt>
-                  <dd className="mt-2 font-semibold">
-                    {quotation.po_number || "-"}
-                  </dd>
-                </div>
-                <div>
-                  <dt className="text-xs font-semibold uppercase tracking-[0.14em] text-brand-charcoal/45">
-                    Berlaku sampai
-                  </dt>
-                  <dd className="mt-2 font-semibold">
-                    {formatDate(quotation.valid_until)}
-                  </dd>
-                </div>
+                <DataPoint label="Nama" value={quotation.customer_name} />
+                <DataPoint label="Perusahaan" value={quotation.company_name} />
+                <DataPoint label="WhatsApp" value={quotation.customer_phone} />
+                <DataPoint label="Email" value={quotation.customer_email} />
+                <DataPoint label="Nomor PO" value={quotation.po_number} />
+                <DataPoint
+                  label="Berlaku sampai"
+                  value={formatDate(quotation.valid_until)}
+                />
               </dl>
             </section>
 
             <section className="border border-brand-softGray bg-white p-5 sm:p-7">
-              <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+              <div className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
                 <div>
                   <p className="text-xs font-semibold uppercase tracking-[0.18em] text-brand-charcoal/45">
-                    Rincian
+                    Rincian Quotation
                   </p>
-                  <h2 className="mt-2 text-2xl font-semibold">Produk & Layanan</h2>
+                  <h2 className="mt-2 text-2xl font-semibold">
+                    Produk & Layanan
+                  </h2>
+                  <p className="mt-2 text-sm text-brand-charcoal/60">
+                    {items.length} item produk tersimpan
+                  </p>
                 </div>
-                <span className="text-sm font-semibold text-brand-charcoal/60">
-                  {items.length} item
-                </span>
+
+                <div className="flex flex-wrap items-center gap-2">
+                  <QuotationItemManager />
+                  <QuotationProductItemPanel />
+                </div>
               </div>
 
               {items.length ? (
-                <div className="mt-5 grid gap-3">
+                <div className="mt-6 divide-y divide-brand-softGray border-y border-brand-softGray">
                   {items.map((item) => (
                     <article
                       key={item.id}
-                      className="border border-brand-softGray bg-brand-offWhite p-4"
+                      className="grid gap-4 py-5 md:grid-cols-[minmax(0,1fr)_auto] md:items-center"
                     >
-                      <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-                        <div>
-                          <h3 className="font-semibold">
-                            {item.product_name_snapshot}
-                          </h3>
-                          <p className="mt-1 text-sm text-brand-charcoal/65">
-                            {[
-                              item.color_name_snapshot ||
-                                item.variant_name_snapshot,
-                              item.size_name_snapshot,
-                              item.sku_snapshot
-                            ]
-                              .filter(Boolean)
-                              .join(" · ") || "Tanpa varian"}
+                      <div className="min-w-0">
+                        <h3 className="font-semibold">
+                          {item.product_name_snapshot}
+                        </h3>
+                        <p className="mt-1 text-sm text-brand-charcoal/60">
+                          {[
+                            item.color_name_snapshot ||
+                              item.variant_name_snapshot,
+                            item.size_name_snapshot,
+                            item.sku_snapshot
+                          ]
+                            .filter(Boolean)
+                            .join(" · ") || "Tanpa varian"}
+                        </p>
+                        {item.customer_notes ? (
+                          <p className="mt-2 text-sm text-brand-charcoal/60">
+                            Catatan: {item.customer_notes}
                           </p>
-                          {item.customer_notes ? (
-                            <p className="mt-2 text-sm text-brand-charcoal/65">
-                              Catatan: {item.customer_notes}
-                            </p>
-                          ) : null}
-                        </div>
-                        <div className="text-left sm:text-right">
+                        ) : null}
+                      </div>
+
+                      <div className="flex items-end justify-between gap-6 md:block md:text-right">
+                        <div>
                           <p className="text-sm font-semibold">
                             {item.quantity} pcs
                           </p>
-                          <p className="mt-1 font-semibold">
-                            {formatMoney(item.subtotal)}
-                          </p>
-                          <p className="mt-1 text-xs font-semibold text-brand-charcoal/55">
+                          <p className="mt-1 text-xs font-semibold text-brand-charcoal/50">
                             {PRICING_LABELS[item.pricing_status] ||
                               item.pricing_status}
                           </p>
                         </div>
+                        <p className="font-semibold">
+                          {formatMoney(item.subtotal)}
+                        </p>
                       </div>
                     </article>
                   ))}
                 </div>
               ) : (
-                <div className="mt-5 border border-dashed border-brand-softGray bg-brand-offWhite p-6 text-center">
+                <div className="mt-6 border border-dashed border-brand-softGray bg-brand-offWhite p-8 text-center">
                   <p className="font-semibold">Belum ada produk</p>
                   <p className="mt-2 text-sm leading-6 text-brand-charcoal/60">
-                    Draft sudah aman tersimpan. Penambahan produk, warna, ukuran,
-                    quantity, dan layanan akan ditambahkan pada tahap berikutnya.
+                    Gunakan tombol Tambah Produk di kanan atas bagian ini.
                   </p>
                 </div>
               )}
@@ -537,7 +487,10 @@ export function QuotationDetailAdmin() {
                     >
                       <p className="text-sm font-semibold">
                         {entry.from_status
-                          ? `${STATUS_LABELS[entry.from_status] || entry.from_status} → `
+                          ? `${
+                              STATUS_LABELS[entry.from_status] ||
+                              entry.from_status
+                            } → `
                           : ""}
                         {STATUS_LABELS[entry.to_status] || entry.to_status}
                       </p>
@@ -569,6 +522,23 @@ export function QuotationDetailAdmin() {
         </div>
       </div>
     </main>
+  );
+}
+
+function DataPoint({
+  label,
+  value
+}: {
+  label: string;
+  value: string | null;
+}) {
+  return (
+    <div>
+      <dt className="text-xs font-semibold uppercase tracking-[0.14em] text-brand-charcoal/45">
+        {label}
+      </dt>
+      <dd className="mt-2 font-semibold">{value || "-"}</dd>
+    </div>
   );
 }
 

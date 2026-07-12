@@ -362,9 +362,13 @@ export function QuotationProductItemPanel() {
 
   if (loading) {
     return (
-      <div className="fixed bottom-5 right-5 z-40 rounded-full border border-brand-softGray bg-white px-5 py-3 text-sm font-semibold shadow-lg">
+      <button
+        type="button"
+        disabled
+        className="inline-flex min-h-10 items-center justify-center rounded-full border border-brand-softGray bg-white px-4 text-sm font-semibold text-brand-charcoal/45"
+      >
         Memuat produk...
-      </div>
+      </button>
     );
   }
 
@@ -377,16 +381,10 @@ export function QuotationProductItemPanel() {
           setOpen(true);
         }}
         disabled={!editable || !products.length}
-        className="fixed bottom-5 right-5 z-40 inline-flex min-h-12 items-center justify-center rounded-full bg-brand-green px-6 text-sm font-semibold text-white shadow-lg transition hover:opacity-90 disabled:cursor-not-allowed disabled:bg-brand-charcoal/35"
+        className="inline-flex min-h-10 items-center justify-center rounded-full bg-brand-green px-5 text-sm font-semibold text-white transition hover:opacity-90 disabled:cursor-not-allowed disabled:bg-brand-charcoal/35"
       >
-        + Tambah Produk
+        Tambah Produk
       </button>
-
-      {!editable && quotationStatus ? (
-        <p className="fixed bottom-20 right-5 z-30 max-w-xs border border-amber-200 bg-amber-50 p-3 text-xs font-semibold text-amber-900 shadow-sm">
-          Produk hanya dapat ditambahkan saat quotation masih Draft.
-        </p>
-      ) : null}
 
       {open ? (
         <div className="fixed inset-0 z-[80] overflow-y-auto bg-black/45 p-4 sm:p-8">

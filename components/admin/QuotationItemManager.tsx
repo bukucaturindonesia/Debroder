@@ -139,9 +139,9 @@ export function QuotationItemManager() {
           setMessage("");
           setOpen(true);
         }}
-        className="fixed bottom-20 right-5 z-40 inline-flex min-h-11 items-center justify-center rounded-full border border-brand-softGray bg-white px-5 text-sm font-semibold text-brand-charcoal shadow-lg transition hover:border-brand-charcoal"
+        className="inline-flex min-h-10 items-center justify-center rounded-full border border-brand-softGray bg-white px-4 text-sm font-semibold text-brand-charcoal transition hover:border-brand-charcoal"
       >
-        Kelola Produk ({items.length})
+        Kelola Produk
       </button>
 
       {open ? (
