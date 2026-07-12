@@ -13,6 +13,7 @@ import {
 import { QuotationItemManager } from "@/components/admin/QuotationItemManager";
 import { QuotationProductItemPanel } from "@/components/admin/QuotationProductItemPanel";
 import { QuotationServiceManager } from "@/components/admin/QuotationServiceManager";
+import { QuotationLifecycleManager } from "@/components/admin/QuotationLifecycleManager";
 
 type Quotation = {
   id: string;
@@ -300,6 +301,7 @@ export function QuotationDetailAdmin() {
           }`}
           actions={
             <>
+              <QuotationLifecycleManager />
               <Link
                 href="/admin/orders/quotations"
                 className="inline-flex min-h-10 items-center justify-center rounded-full border border-brand-softGray bg-white px-5 text-sm font-semibold"

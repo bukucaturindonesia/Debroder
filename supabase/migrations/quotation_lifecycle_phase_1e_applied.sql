@@ -1,0 +1,3 @@
+-- Applied to Supabase project lzennundwqqtyvvcnzbg
+-- Migration name: quotation_lifecycle_phase_1e
+-- Adds quotation archive lifecycle and hardens status transitions.
