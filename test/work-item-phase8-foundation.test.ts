@@ -49,7 +49,7 @@ describe("Phase 8 database contract", () => {
     expect(migration).toContain("create table if not exists public.work_item_dependency_history");
     expect(migration).toContain("create table if not exists public.work_item_deletion_audit");
     expect(migration).toContain("prevent_work_item_history_mutation");
-    expect(migration).toContain("work_item yang sudah mempunyai catatan qc tidak dapat dihapus permanen");
+    expect(migration).toContain("work item yang sudah mempunyai catatan qc tidak dapat dihapus permanen");
   });
 
   it("allocates numbers before inserting strict Work Item rows", () => {
@@ -65,7 +65,7 @@ describe("Phase 8 database contract", () => {
   it("locks direct table writes and public RPC execution", () => {
     expect(migration).toContain("revoke insert,update,delete,truncate,references,trigger");
     expect(migration).toContain("from public,anon");
-    expect(migration).toContain("production staff read work_items");
+    expect(migration).toContain("production staff read %s");
     expect(migration).toContain("hanya super admin yang dapat menghapus permanen");
   });
 

@@ -9,10 +9,13 @@ import {
   isSuperAdminRole
 } from "@/lib/job-orders";
 
-const foundationSql = readFileSync(
-  resolve("supabase/migrations/20260712095523_v1_2_phase_7_job_order_foundation_and_security.sql"),
-  "utf8"
-).toLowerCase();
+const foundationSql = [
+  "20260712070529_phase7_to_phase9_production_foundation.sql",
+  "20260712095523_v1_2_phase_7_job_order_foundation_and_security.sql"
+]
+  .map((file) => readFileSync(resolve("supabase/migrations", file), "utf8"))
+  .join("\n")
+  .toLowerCase();
 const atomicSql = readFileSync(
   resolve("supabase/migrations/20260712095652_v1_2_phase_7_job_order_creation_atomic_number.sql"),
   "utf8"
@@ -36,7 +39,7 @@ describe("Phase 7 Job Order foundation helpers", () => {
   it("opens release only after the Phase 8 Work Item gate", () => {
     expect(getFoundationTransitions("draft")).toEqual(["ready", "cancelled"]);
     expect(getFoundationTransitions("ready")).toEqual(["draft", "released", "cancelled"]);
-    expect(getFoundationTransitions("released")).toEqual([]);
+    expect(getFoundationTransitions("released")).toEqual(["in_progress", "on_hold", "cancelled"]);
     expect(canEditJobOrder("ready")).toBe(true);
     expect(canEditJobOrder("released")).toBe(false);
   });

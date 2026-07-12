@@ -13,8 +13,10 @@ import {
   canEditWorkItem,
   formatWorkItemDate,
   formatWorkItemTarget,
-  getPhase8WorkItemTransitions,
+  getPhase9WorkItemTransitions,
+  getWorkItemTransitionLabel,
   isWorkItemRole,
+  workItemTransitionNeedsReason,
   isWorkItemSuperAdmin,
   readSnapshotObject,
   type WorkItemJobOrder,
@@ -357,7 +359,7 @@ export function WorkItemDetailAdmin() {
 
   async function transitionStatus() {
     if (!row || !transitionTarget || !canManage || working) return;
-    if (transitionTarget === "cancelled" && !transitionReason.trim()) {
+    if (workItemTransitionNeedsReason(transitionTarget) && !transitionReason.trim()) {
       setNotice({ type: "error", text: "Alasan pembatalan wajib diisi." });
       return;
     }
@@ -450,7 +452,7 @@ export function WorkItemDetailAdmin() {
     );
   }
 
-  const transitions = row.archived_at ? [] : getPhase8WorkItemTransitions(row.status);
+  const transitions = row.archived_at ? [] : getPhase9WorkItemTransitions(row.status, jobOrder?.status);
   const instruction = readSnapshotObject(row.instruction_snapshot);
   const sourceType = row.source_order_item_service_id
     ? "Layanan produksi"
@@ -462,13 +464,16 @@ export function WorkItemDetailAdmin() {
     <main className="text-brand-charcoal">
       <div className="grid gap-6">
         <AdminPageHeader
-          eyebrow="DEBRODER v1.2 · Phase 8"
+          eyebrow="DEBRODER v1.2 · Phase 9"
           title={row.work_item_number}
           description={`${row.title} · ${jobOrder?.job_order_number || "Job Order tidak tersedia"}`}
           actions={
             <>
               <Link href={`/admin/work-items?job_order=${row.job_order_id}`} className="inline-flex min-h-10 items-center rounded-full border border-brand-softGray bg-white px-5 text-sm font-semibold">
                 Kembali
+              </Link>
+              <Link href="/admin/production" className="inline-flex min-h-10 items-center rounded-full border border-brand-softGray bg-white px-5 text-sm font-semibold">
+                Status Produksi
               </Link>
               {jobOrder ? (
                 <Link href={`/admin/job-orders/${jobOrder.id}`} className="inline-flex min-h-10 items-center rounded-full border border-brand-softGray bg-white px-5 text-sm font-semibold">
@@ -521,13 +526,16 @@ export function WorkItemDetailAdmin() {
           <Data label="Sumber" value={sourceType} />
           <Data label="Dibuat oleh" value={actorLabel(row.created_by)} />
           <Data label="Diperbarui" value={formatWorkItemDate(row.updated_at)} />
+          <Data label="Mulai" value={formatWorkItemDate(row.started_at)} />
+          <Data label="Ditahan" value={formatWorkItemDate(row.paused_at)} />
+          <Data label="Dilanjutkan" value={formatWorkItemDate(row.resumed_at)} />
         </section>
 
         {!row.archived_at && transitions.length > 0 ? (
           <section className="border border-brand-softGray bg-white p-5 sm:p-7">
-            <h2 className="text-xl font-semibold">Tindakan Persiapan</h2>
+            <h2 className="text-xl font-semibold">Kontrol Pekerjaan</h2>
             <p className="mt-2 text-sm leading-6 text-brand-charcoal/60">
-              Phase 8 hanya mengatur Draft, Siap Dikerjakan, dan Dibatalkan. Status produksi aktif dibuka pada Phase 9.
+              Mulai, tahan, lanjutkan, atau kirim pekerjaan ke Quality Control. Keputusan lulus dan perbaikan diselesaikan pada Phase 10.
             </p>
             <div className="mt-5 flex flex-wrap gap-3">
               {transitions.map((target) => (
@@ -535,13 +543,17 @@ export function WorkItemDetailAdmin() {
                   key={target}
                   type="button"
                   onClick={() => setTransitionTarget(target)}
-                  className={`rounded-full px-5 py-2.5 text-sm font-semibold ${target === "cancelled" ? "border border-red-300 text-red-700" : "bg-brand-charcoal text-white"}`}
+                  className={`rounded-full px-5 py-2.5 text-sm font-semibold ${target === "cancelled" ? "border border-red-300 text-red-700" : target === "on_hold" ? "border border-amber-300 text-amber-800" : "bg-brand-charcoal text-white"}`}
                 >
-                  {target === "ready" ? "Tandai Siap Dikerjakan" : target === "draft" ? "Kembalikan ke Draft" : "Batalkan Work Item"}
+                  {getWorkItemTransitionLabel(target)}
                 </button>
               ))}
             </div>
           </section>
+        ) : null}
+
+        {row.status === "awaiting_qc" ? (
+          <AdminAlert type="success">Work Item sudah diserahkan ke Quality Control dan tidak dapat ditandai selesai sebelum pemeriksaan Phase 10.</AdminAlert>
         ) : null}
 
         <section className="grid gap-5 border border-brand-softGray bg-white p-5 sm:p-7 lg:grid-cols-2">
@@ -691,7 +703,7 @@ export function WorkItemDetailAdmin() {
       {transitionTarget ? (
         <Modal title="Ubah Status Work Item" description={`${WORK_ITEM_STATUS_LABELS[row.status]} → ${WORK_ITEM_STATUS_LABELS[transitionTarget]}`}>
           <textarea rows={3} value={transitionNote} onChange={(event) => setTransitionNote(event.target.value)} placeholder="Catatan tindakan (opsional)" className="mt-5 w-full rounded-lg border border-brand-softGray px-4 py-3" />
-          {transitionTarget === "cancelled" ? <textarea rows={3} value={transitionReason} onChange={(event) => setTransitionReason(event.target.value)} placeholder="Alasan pembatalan wajib diisi" className="mt-4 w-full rounded-lg border border-red-300 px-4 py-3" /> : null}
+          {workItemTransitionNeedsReason(transitionTarget) ? <textarea rows={3} value={transitionReason} onChange={(event) => setTransitionReason(event.target.value)} placeholder={transitionTarget === "on_hold" ? "Alasan penahanan wajib diisi" : transitionTarget === "rework" ? "Alasan perbaikan wajib diisi" : "Alasan pembatalan wajib diisi"} className="mt-4 w-full rounded-lg border border-amber-300 px-4 py-3" /> : null}
           <ModalActions working={working} primary="Konfirmasi Status" onPrimary={() => void transitionStatus()} onCancel={() => setTransitionTarget(null)} />
         </Modal>
       ) : null}

@@ -94,10 +94,44 @@ export function canArchiveWorkItem(status: WorkItemStatus) {
   return status === "draft" || status === "completed" || status === "cancelled";
 }
 
-export function getPhase8WorkItemTransitions(status: WorkItemStatus) {
+export function getPhase9WorkItemTransitions(status: WorkItemStatus, jobOrderStatus?: string | null) {
   if (status === "draft") return ["ready", "cancelled"] as WorkItemStatus[];
-  if (status === "ready") return ["draft", "cancelled"] as WorkItemStatus[];
+  if (status === "ready") {
+    return ["released", "in_progress"].includes(jobOrderStatus || "")
+      ? (["draft", "in_progress", "cancelled"] as WorkItemStatus[])
+      : (["draft", "cancelled"] as WorkItemStatus[]);
+  }
+  if (status === "in_progress" && jobOrderStatus === "in_progress") {
+    return ["on_hold", "awaiting_qc", "cancelled"] as WorkItemStatus[];
+  }
+  if (status === "on_hold" && jobOrderStatus === "in_progress") {
+    return ["in_progress", "cancelled"] as WorkItemStatus[];
+  }
+  if (status === "rework" && jobOrderStatus === "in_progress") {
+    return ["in_progress", "awaiting_qc", "cancelled"] as WorkItemStatus[];
+  }
   return [] as WorkItemStatus[];
+}
+
+export function getPhase8WorkItemTransitions(status: WorkItemStatus) {
+  return getPhase9WorkItemTransitions(status, null);
+}
+
+export function workItemTransitionNeedsReason(status: WorkItemStatus) {
+  return status === "on_hold" || status === "cancelled" || status === "rework";
+}
+
+export function getWorkItemTransitionLabel(status: WorkItemStatus) {
+  return {
+    ready: "Tandai Siap Dikerjakan",
+    draft: "Kembalikan ke Draft",
+    in_progress: "Mulai / Lanjutkan Pekerjaan",
+    on_hold: "Tahan Pekerjaan",
+    awaiting_qc: "Kirim ke Quality Control",
+    rework: "Kembalikan untuk Perbaikan",
+    completed: "Selesaikan",
+    cancelled: "Batalkan Work Item"
+  }[status];
 }
 
 export function formatWorkItemDate(value: string | null | undefined) {

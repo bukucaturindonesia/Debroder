@@ -2,7 +2,10 @@
 
 | ID | Severity | Phase | Issue | Status | Note |
 |---|---:|---|---|---|---|
-| V12-014 | Medium | 7–8 | Release to production depends on Work Items. | CLOSED IN PHASE 8 | Job Order release is now gated by Work Item readiness and database checks. |
-| V12-015 | Medium | 8 | Full local typecheck/lint/test/build could not be run in the sandbox due missing project dependencies. | OPEN UNTIL VERCEL/LOCAL CHECK | Vercel deployment or local installed repo must confirm. |
-| V12-016 | Medium | 8 | Phase 8 UI must be owner-verified in browser after deploy. | OPEN | Check list, detail, generate, manual create, assign, dependency, archive/restore. |
-| V12-017 | Medium | 9 | Production execution statuses beyond Work Item preparation are not part of Phase 8. | DEFERRED | Continue in Phase 9 only after Phase 8 deploy is stable. |
+| V12-014 | Medium | 7–8 | Release to production depends on Work Items. | CLOSED IN PHASE 8 | Job Order release is gated by active Work Items being ready. |
+| V12-015 | Medium | 8–9 | Local quality gates were previously unavailable. | MOSTLY CLOSED | Typecheck passed, lint passed with 0 errors, and 44/44 tests passed. Full build compilation passed; final page-data/build confirmation remains for Vercel. |
+| V12-016 | Medium | 8 | Phase 8 UI required owner verification after deploy. | OWNER CONFIRMED | User supplied the repository after Phase 8 and stated the state was safe. |
+| V12-017 | Medium | 9 | Production execution statuses were deferred from Phase 8. | CLOSED IN PHASE 9 | Start, hold, resume, cancel, progress, and `awaiting_qc` handoff are implemented. |
+| V12-018 | Medium | 9 | Full sandbox build did not complete page-data collection. | OPEN UNTIL VERCEL | Compilation, type validation, and lint stage passed. The sandbox cannot reliably complete runtime/external page-data work. |
+| V12-019 | Medium | 9 | Phase 9 production controls require owner browser verification. | OPEN | Verify dashboard, start, hold, resume, cancel reason, progress, and QC handoff on desktop/mobile. |
+| V12-020 | Planned | 10 | QC decision and Work Item/Job Order completion are intentionally unavailable. | DEFERRED TO PHASE 10 | This is the required boundary, not a Phase 9 defect. |

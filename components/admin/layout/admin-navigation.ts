@@ -91,7 +91,8 @@ export const adminNavigationGroups: readonly AdminNavigationGroup[] = [
           { label: "Pesanan", href: "/admin/orders", roles: QUOTATION_ROLES, exact: true },
           { label: "Formal Quotation", href: "/admin/orders/quotations", roles: QUOTATION_ROLES },
           { label: "Job Order", href: "/admin/job-orders", roles: FULL_ADMIN_ROLES },
-          { label: "Work Item", href: "/admin/work-items", roles: FULL_ADMIN_ROLES }
+          { label: "Work Item", href: "/admin/work-items", roles: FULL_ADMIN_ROLES },
+          { label: "Status Produksi", href: "/admin/production", roles: FULL_ADMIN_ROLES }
         ]
       }
     ]
@@ -152,6 +153,7 @@ export function getRoleHome(role: AdminRole) {
 }
 
 export function getCurrentNavigationLabel(pathname: string) {
+  if (pathname === "/admin/production") return "Status Produksi";
   if (pathname.startsWith("/admin/work-items/")) return "Detail Work Item";
   if (pathname === "/admin/work-items") return "Work Item";
   if (pathname.startsWith("/admin/job-orders/")) return "Detail Job Order";
@@ -188,6 +190,10 @@ export function getAdminBreadcrumbs(pathname: string): AdminBreadcrumbItem[] {
     return [{ label: "Dashboard" }];
   }
 
+
+  if (pathname === "/admin/production") {
+    return [{ label: "Operasional" }, { label: "Status Produksi" }];
+  }
 
   if (pathname.startsWith("/admin/work-items")) {
     const crumbs: AdminBreadcrumbItem[] = [
@@ -254,7 +260,8 @@ export function getAdminBreadcrumbs(pathname: string): AdminBreadcrumbItem[] {
     "/admin/website-settings": "Sistem",
     "/admin/document-numbering": "Sistem",
     "/admin/job-orders": "Operasional",
-    "/admin/work-items": "Operasional"
+    "/admin/work-items": "Operasional",
+    "/admin/production": "Operasional"
   };
 
   const matchingRoute = Object.keys(groupMap).find(
@@ -276,6 +283,7 @@ export function isLegacyAdminRoute(pathname: string) {
     pathname.startsWith("/admin/orders") ||
     pathname.startsWith("/admin/document-numbering") ||
     pathname.startsWith("/admin/job-orders") ||
-    pathname.startsWith("/admin/work-items")
+    pathname.startsWith("/admin/work-items") ||
+    pathname.startsWith("/admin/production")
   );
 }

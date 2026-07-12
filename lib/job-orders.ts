@@ -31,6 +31,12 @@ export type JobOrderRow = {
   ready_at: string | null;
   released_by: string | null;
   released_at: string | null;
+  started_at: string | null;
+  paused_at: string | null;
+  resumed_at: string | null;
+  completed_at: string | null;
+  cancelled_at: string | null;
+  cancel_reason: string | null;
   created_by: string | null;
   updated_by: string | null;
   created_at: string;
@@ -44,8 +50,8 @@ export const JOB_ORDER_STATUS_LABELS: Record<JobOrderStatus, string> = {
   draft: "Draft",
   ready: "Siap Dirilis",
   released: "Dirilis ke Produksi",
-  in_progress: "Berjalan",
-  on_hold: "Ditahan",
+  in_progress: "Produksi Berjalan",
+  on_hold: "Produksi Ditahan",
   completed: "Selesai",
   cancelled: "Dibatalkan"
 };
@@ -73,10 +79,33 @@ export function canArchiveJobOrder(status: JobOrderStatus) {
   return status === "draft" || status === "completed" || status === "cancelled";
 }
 
-export function getFoundationTransitions(status: JobOrderStatus) {
+export function getPhase9JobOrderTransitions(status: JobOrderStatus) {
   if (status === "draft") return ["ready", "cancelled"] as JobOrderStatus[];
   if (status === "ready") return ["draft", "released", "cancelled"] as JobOrderStatus[];
+  if (status === "released") return ["in_progress", "on_hold", "cancelled"] as JobOrderStatus[];
+  if (status === "in_progress") return ["on_hold", "cancelled"] as JobOrderStatus[];
+  if (status === "on_hold") return ["in_progress", "cancelled"] as JobOrderStatus[];
   return [] as JobOrderStatus[];
+}
+
+export function getFoundationTransitions(status: JobOrderStatus) {
+  return getPhase9JobOrderTransitions(status);
+}
+
+export function jobOrderTransitionNeedsReason(status: JobOrderStatus) {
+  return status === "on_hold" || status === "cancelled";
+}
+
+export function getJobOrderTransitionLabel(status: JobOrderStatus) {
+  return {
+    ready: "Tandai Siap Dirilis",
+    draft: "Kembalikan ke Draft",
+    released: "Rilis ke Produksi",
+    in_progress: "Mulai / Lanjutkan Produksi",
+    on_hold: "Tahan Produksi",
+    cancelled: "Batalkan Job Order",
+    completed: "Selesaikan"
+  }[status];
 }
 
 export function formatJobOrderDate(value: string | null | undefined) {

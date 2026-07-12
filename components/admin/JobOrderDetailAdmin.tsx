@@ -12,7 +12,9 @@ import {
   canArchiveJobOrder,
   canEditJobOrder,
   formatJobOrderDate,
-  getFoundationTransitions,
+  getJobOrderTransitionLabel,
+  getPhase9JobOrderTransitions,
+  jobOrderTransitionNeedsReason,
   type JobOrderPriority,
   type JobOrderRow,
   type JobOrderStatus
@@ -92,7 +94,7 @@ export function JobOrderDetailAdmin() {
     const [jobResult, historyResult, revisionsResult, actorsResult] = await Promise.all([
       supabase
         .from("job_orders")
-        .select("id,job_order_number,order_id,quotation_id,approved_mockup_set_id,status,priority,target_date,internal_notes,production_notes,order_snapshot,mockup_snapshot,payment_snapshot,progress_percentage,ready_by,ready_at,released_by,released_at,created_by,updated_by,created_at,updated_at,archived_at,archived_by,archive_reason")
+        .select("id,job_order_number,order_id,quotation_id,approved_mockup_set_id,status,priority,target_date,internal_notes,production_notes,order_snapshot,mockup_snapshot,payment_snapshot,progress_percentage,ready_by,ready_at,released_by,released_at,started_at,paused_at,resumed_at,completed_at,cancelled_at,cancel_reason,created_by,updated_by,created_at,updated_at,archived_at,archived_by,archive_reason")
         .eq("id", jobOrderId)
         .maybeSingle(),
       supabase
@@ -171,7 +173,7 @@ export function JobOrderDetailAdmin() {
 
   async function transitionStatus() {
     if (!row || !transitionTarget || working) return;
-    if (["cancelled", "on_hold"].includes(transitionTarget) && !transitionReason.trim()) {
+    if (jobOrderTransitionNeedsReason(transitionTarget) && !transitionReason.trim()) {
       setNotice({ type: "error", text: "Alasan wajib diisi untuk tindakan ini." });
       return;
     }
@@ -234,19 +236,22 @@ export function JobOrderDetailAdmin() {
   const sourceOrder = objectValue(orderSnapshot.order);
   const sourceItems = arrayValue(orderSnapshot.items);
   const paymentSnapshot = objectValue(row.payment_snapshot);
-  const foundationTransitions = getFoundationTransitions(row.status);
+  const productionTransitions = getPhase9JobOrderTransitions(row.status);
 
   return (
     <main className="text-brand-charcoal">
       <div className="grid gap-6">
         <AdminPageHeader
-          eyebrow="DEBRODER v1.2 · Phase 7–8"
+          eyebrow="DEBRODER v1.2 · Phase 9"
           title={row.job_order_number}
           description={`${String(sourceOrder.order_number || "Pesanan")}${sourceOrder.customer_name ? ` · ${String(sourceOrder.customer_name)}` : ""}`}
           actions={
             <>
               <Link href="/admin/job-orders" className="inline-flex min-h-10 items-center rounded-full border border-brand-softGray bg-white px-5 text-sm font-semibold">
                 Kembali
+              </Link>
+              <Link href="/admin/production" className="inline-flex min-h-10 items-center rounded-full border border-brand-softGray bg-white px-5 text-sm font-semibold">
+                Status Produksi
               </Link>
               <Link href={`/admin/work-items?job_order=${row.id}`} className="inline-flex min-h-10 items-center rounded-full border border-brand-softGray bg-white px-5 text-sm font-semibold">
                 Kelola Work Item
@@ -276,27 +281,34 @@ export function JobOrderDetailAdmin() {
           <Data label="Dibuat" value={formatJobOrderDate(row.created_at)} />
           <Data label="Siap Dirilis" value={row.ready_at ? `${formatJobOrderDate(row.ready_at)} · ${actorLabel(row.ready_by)}` : "-"} />
           <Data label="Dirilis" value={row.released_at ? `${formatJobOrderDate(row.released_at)} · ${actorLabel(row.released_by)}` : "-"} />
+          <Data label="Produksi Dimulai" value={formatJobOrderDate(row.started_at)} />
+          <Data label="Terakhir Ditahan" value={formatJobOrderDate(row.paused_at)} />
+          <Data label="Terakhir Dilanjutkan" value={formatJobOrderDate(row.resumed_at)} />
         </section>
 
-        {foundationTransitions.length ? (
+        {productionTransitions.length ? (
           <section className="border border-brand-softGray bg-white p-5 sm:p-7">
-            <h2 className="text-xl font-semibold">Tindakan Fase 7</h2>
+            <h2 className="text-xl font-semibold">Kontrol Produksi</h2>
             <p className="mt-2 text-sm leading-6 text-brand-charcoal/60">
-              Fondasi ini mengelola Draft dan Siap Dirilis. Pelepasan ke produksi baru dibuka setelah Work Item Phase 8 tersedia.
+              Rilis, mulai, tahan, atau lanjutkan produksi. Penyelesaian Job Order tetap menunggu Quality Control Phase 10.
             </p>
             <div className="mt-5 flex flex-wrap gap-2">
-              {foundationTransitions.map((status) => (
+              {productionTransitions.map((status) => (
                 <button
                   key={status}
                   type="button"
                   onClick={() => setTransitionTarget(status)}
-                  className={`rounded-full px-5 py-2.5 text-sm font-semibold ${status === "cancelled" ? "border border-red-200 text-red-700" : "bg-brand-green text-white"}`}
+                  className={`rounded-full px-5 py-2.5 text-sm font-semibold ${status === "cancelled" ? "border border-red-200 text-red-700" : status === "on_hold" ? "border border-amber-300 text-amber-800" : "bg-brand-green text-white"}`}
                 >
-                  {status === "ready" ? "Tandai Siap Dirilis" : status === "released" ? "Rilis ke Produksi" : status === "draft" ? "Kembalikan ke Draft" : "Batalkan Job Order"}
+                  {getJobOrderTransitionLabel(status)}
                 </button>
               ))}
             </div>
           </section>
+        ) : null}
+
+        {row.status === "in_progress" && Number(row.progress_percentage || 0) >= 90 ? (
+          <AdminAlert type="success">Produksi sudah mencapai serah-terima QC. Lanjutkan pemeriksaan pada Phase 10 sebelum Job Order ditandai selesai.</AdminAlert>
         ) : null}
 
         <section className="grid gap-5 lg:grid-cols-2">
@@ -407,9 +419,9 @@ export function JobOrderDetailAdmin() {
             <h2 className="text-2xl font-semibold">Ubah Status Job Order</h2>
             <p className="mt-2 text-sm text-brand-charcoal/60">Tujuan: {JOB_ORDER_STATUS_LABELS[transitionTarget]}</p>
             <textarea rows={3} value={transitionNote} onChange={(event) => setTransitionNote(event.target.value)} placeholder="Catatan tindakan" className="mt-5 w-full rounded-lg border border-brand-softGray px-4 py-3" />
-            {transitionTarget === "cancelled" ? <textarea rows={3} value={transitionReason} onChange={(event) => setTransitionReason(event.target.value)} placeholder="Alasan pembatalan wajib diisi" className="mt-4 w-full rounded-lg border border-red-200 px-4 py-3" /> : null}
+            {jobOrderTransitionNeedsReason(transitionTarget) ? <textarea rows={3} value={transitionReason} onChange={(event) => setTransitionReason(event.target.value)} placeholder={transitionTarget === "on_hold" ? "Alasan penahanan wajib diisi" : "Alasan pembatalan wajib diisi"} className="mt-4 w-full rounded-lg border border-amber-300 px-4 py-3" /> : null}
             <div className="mt-6 flex flex-wrap gap-3">
-              <button type="button" onClick={() => void transitionStatus()} disabled={working || (transitionTarget === "cancelled" && !transitionReason.trim())} className="rounded-full bg-brand-green px-6 py-3 text-sm font-semibold text-white disabled:opacity-45">{working ? "Memproses..." : "Konfirmasi"}</button>
+              <button type="button" onClick={() => void transitionStatus()} disabled={working || (jobOrderTransitionNeedsReason(transitionTarget) && !transitionReason.trim())} className="rounded-full bg-brand-green px-6 py-3 text-sm font-semibold text-white disabled:opacity-45">{working ? "Memproses..." : "Konfirmasi"}</button>
               <button type="button" onClick={() => setTransitionTarget(null)} disabled={working} className="rounded-full border border-brand-softGray px-6 py-3 text-sm font-semibold">Batal</button>
             </div>
           </section>
