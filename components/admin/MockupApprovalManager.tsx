@@ -147,6 +147,9 @@ export function MockupApprovalManager() {
   const [uploadPart, setUploadPart] = useState<MockupPart | null>(null);
   const [uploadFile, setUploadFile] = useState<File | null>(null);
   const [uploadNotes, setUploadNotes] = useState("");
+  const [reviewDays, setReviewDays] = useState("7");
+  const [reviewUrl, setReviewUrl] = useState("");
+  const [showReviewLink, setShowReviewLink] = useState(false);
 
   async function loadData() {
     const supabase = createSupabaseClient();
@@ -629,6 +632,92 @@ export function MockupApprovalManager() {
     await loadData();
   }
 
+
+  async function createReviewLink() {
+    if (!selectedSet || workingId) return;
+    const supabase = createSupabaseClient();
+    if (!supabase) return;
+
+    const days = Math.max(1, Math.min(30, Math.floor(Number(reviewDays) || 7)));
+    setWorkingId(selectedSet.id);
+    setMessage("");
+
+    const { data, error } = await supabase.rpc("create_mockup_review_link", {
+      p_mockup_set_id: selectedSet.id,
+      p_expires_in_days: days
+    });
+
+    setWorkingId(null);
+
+    if (error || !data?.[0]?.token) {
+      setMessage(
+        "Tautan belum dapat dibuat. Pastikan mockup sudah berstatus Siap Diperiksa."
+      );
+      return;
+    }
+
+    const url = `${window.location.origin}/persetujuan/mockup/${data[0].token}`;
+    setReviewUrl(url);
+    setShowReviewLink(true);
+    setMessage("Tautan persetujuan pelanggan berhasil dibuat.");
+    await loadData();
+  }
+
+  async function copyReviewLink() {
+    if (!reviewUrl) return;
+    try {
+      await navigator.clipboard.writeText(reviewUrl);
+      setMessage("Tautan persetujuan berhasil disalin.");
+    } catch {
+      setMessage("Tautan belum dapat disalin otomatis. Salin secara manual.");
+    }
+  }
+
+  async function revokeReviewLink() {
+    if (!selectedSet || workingId) return;
+    const supabase = createSupabaseClient();
+    if (!supabase) return;
+
+    setWorkingId(selectedSet.id);
+    const { error } = await supabase.rpc("revoke_mockup_review_link", {
+      p_mockup_set_id: selectedSet.id
+    });
+    setWorkingId(null);
+
+    if (error) {
+      setMessage("Tautan persetujuan gagal dinonaktifkan.");
+      return;
+    }
+
+    setReviewUrl("");
+    setShowReviewLink(false);
+    setMessage("Tautan persetujuan pelanggan sudah dinonaktifkan.");
+    await loadData();
+  }
+
+  async function prepareRevision(part: MockupPart) {
+    if (workingId) return;
+    const supabase = createSupabaseClient();
+    if (!supabase) return;
+
+    setWorkingId(part.id);
+    const { error } = await supabase.rpc("prepare_mockup_part_revision", {
+      p_mockup_part_id: part.id,
+      p_note: "Revisi mulai dikerjakan oleh admin."
+    });
+    setWorkingId(null);
+
+    if (error) {
+      setMessage("Bagian desain belum dapat dipindahkan ke proses revisi.");
+      return;
+    }
+
+    setMessage(
+      "Bagian desain masuk proses revisi. Unggah file versi baru setelah perbaikan selesai."
+    );
+    await loadData();
+  }
+
   if (loading) {
     return (
       <button
@@ -660,7 +749,7 @@ export function MockupApprovalManager() {
             <header className="flex flex-col gap-5 border-b border-brand-softGray bg-white p-5 lg:flex-row lg:items-start lg:justify-between lg:p-7">
               <div>
                 <p className="text-xs font-semibold uppercase tracking-[0.18em] text-brand-charcoal/45">
-                  v1.2 · Phase 3A
+                  v1.2 · Phase 3B
                 </p>
                 <h2 className="mt-2 text-2xl font-semibold">
                   Mockup & Persetujuan Desain
@@ -797,6 +886,25 @@ export function MockupApprovalManager() {
                               >
                                 Tandai Siap Diperiksa
                               </button>
+                              {selectedSet.status === "ready_for_review" ? (
+                                <button
+                                  type="button"
+                                  onClick={() => setShowReviewLink(true)}
+                                  className="rounded-full bg-brand-green px-4 py-2 text-sm font-semibold text-white"
+                                >
+                                  Kirim ke Pelanggan
+                                </button>
+                              ) : null}
+                              {selectedSet.status === "awaiting_customer" ? (
+                                <button
+                                  type="button"
+                                  onClick={() => void revokeReviewLink()}
+                                  disabled={Boolean(workingId)}
+                                  className="rounded-full border border-red-200 px-4 py-2 text-sm font-semibold text-red-700 disabled:opacity-45"
+                                >
+                                  Nonaktifkan Tautan
+                                </button>
+                              ) : null}
                               <button
                                 type="button"
                                 onClick={() => {
@@ -928,17 +1036,28 @@ export function MockupApprovalManager() {
                                     </div>
 
                                     <div className="flex flex-wrap gap-2">
-                                      <button
-                                        type="button"
-                                        onClick={() => {
-                                          setUploadPart(part);
-                                          setUploadFile(null);
-                                          setUploadNotes("");
-                                        }}
-                                        className="rounded-full bg-brand-green px-4 py-2 text-sm font-semibold text-white"
-                                      >
-                                        Unggah File
-                                      </button>
+                                      {part.status === "revision_requested" ? (
+                                        <button
+                                          type="button"
+                                          onClick={() => void prepareRevision(part)}
+                                          disabled={Boolean(workingId)}
+                                          className="rounded-full bg-amber-800 px-4 py-2 text-sm font-semibold text-white disabled:opacity-45"
+                                        >
+                                          Mulai Revisi
+                                        </button>
+                                      ) : (
+                                        <button
+                                          type="button"
+                                          onClick={() => {
+                                            setUploadPart(part);
+                                            setUploadFile(null);
+                                            setUploadNotes("");
+                                          }}
+                                          className="rounded-full bg-brand-green px-4 py-2 text-sm font-semibold text-white"
+                                        >
+                                          Unggah File
+                                        </button>
+                                      )}
                                       <button
                                         type="button"
                                         onClick={() => openEditPart(part)}
@@ -980,7 +1099,7 @@ export function MockupApprovalManager() {
                         </section>
 
                         <div className="border border-blue-200 bg-blue-50 p-4 text-sm leading-6 text-blue-900">
-                          Pengiriman ke pelanggan dan aksi Setuju/Minta Revisi akan diaktifkan pada Phase 3B setelah jalur publik aman tersedia. Tidak ada tombol dummy yang diaktifkan pada tahap ini.
+                          Mockup yang berstatus Siap Diperiksa dapat dikirim melalui tautan publik aman. Pelanggan dapat menyetujui atau meminta revisi untuk setiap bagian secara terpisah.
                         </div>
                       </>
                     ) : (
@@ -1139,6 +1258,63 @@ export function MockupApprovalManager() {
             </div>
           </section>
         </div>
+      ) : null}
+
+
+      {showReviewLink && selectedSet ? (
+        <ModalShell title="Kirim Mockup ke Pelanggan">
+          <p className="text-sm leading-6 text-brand-charcoal/65">
+            Buat tautan privat untuk pelanggan. Tautan lama otomatis dinonaktifkan ketika tautan baru dibuat.
+          </p>
+          <label className="mt-5 block text-sm font-semibold">
+            Masa berlaku tautan
+            <select
+              value={reviewDays}
+              onChange={(event) => setReviewDays(event.target.value)}
+              className="mt-2 min-h-11 w-full rounded-lg border border-brand-softGray px-4"
+            >
+              <option value="3">3 hari</option>
+              <option value="7">7 hari</option>
+              <option value="14">14 hari</option>
+              <option value="30">30 hari</option>
+            </select>
+          </label>
+
+          {reviewUrl ? (
+            <div className="mt-5 border border-brand-softGray bg-brand-offWhite p-4">
+              <p className="text-xs font-semibold uppercase tracking-[0.14em] text-brand-charcoal/45">
+                Tautan Persetujuan
+              </p>
+              <p className="mt-2 break-all text-sm font-semibold">{reviewUrl}</p>
+              <button
+                type="button"
+                onClick={() => void copyReviewLink()}
+                className="mt-4 rounded-full bg-brand-charcoal px-5 py-2.5 text-sm font-semibold text-white"
+              >
+                Salin Tautan
+              </button>
+            </div>
+          ) : null}
+
+          <div className="mt-6 flex flex-wrap gap-3">
+            <button
+              type="button"
+              onClick={() => void createReviewLink()}
+              disabled={Boolean(workingId)}
+              className="rounded-full bg-brand-green px-6 py-3 text-sm font-semibold text-white disabled:opacity-50"
+            >
+              {workingId ? "Membuat Tautan..." : "Buat Tautan Baru"}
+            </button>
+            <button
+              type="button"
+              onClick={() => setShowReviewLink(false)}
+              disabled={Boolean(workingId)}
+              className="rounded-full border border-brand-softGray px-6 py-3 text-sm font-semibold"
+            >
+              Tutup
+            </button>
+          </div>
+        </ModalShell>
       ) : null}
 
       {setMode ? (

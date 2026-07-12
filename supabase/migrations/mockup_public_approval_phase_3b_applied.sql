@@ -1,0 +1,3 @@
+-- Applied to Supabase project lzennundwqqtyvvcnzbg
+-- Migration name: mockup_public_approval_phase_3b
+-- Adds secure public review tokens, per-part decisions, revision workflow, and automatic approval completion.
