@@ -240,13 +240,16 @@ export function JobOrderDetailAdmin() {
     <main className="text-brand-charcoal">
       <div className="grid gap-6">
         <AdminPageHeader
-          eyebrow="DEBRODER v1.2 · Phase 7 Foundation"
+          eyebrow="DEBRODER v1.2 · Phase 7–8"
           title={row.job_order_number}
           description={`${String(sourceOrder.order_number || "Pesanan")}${sourceOrder.customer_name ? ` · ${String(sourceOrder.customer_name)}` : ""}`}
           actions={
             <>
               <Link href="/admin/job-orders" className="inline-flex min-h-10 items-center rounded-full border border-brand-softGray bg-white px-5 text-sm font-semibold">
                 Kembali
+              </Link>
+              <Link href={`/admin/work-items?job_order=${row.id}`} className="inline-flex min-h-10 items-center rounded-full border border-brand-softGray bg-white px-5 text-sm font-semibold">
+                Kelola Work Item
               </Link>
               {canEditJobOrder(row.status) ? (
                 <button type="button" onClick={() => setEditOpen(true)} className="inline-flex min-h-10 items-center rounded-full border border-brand-softGray bg-white px-5 text-sm font-semibold">
@@ -289,7 +292,7 @@ export function JobOrderDetailAdmin() {
                   onClick={() => setTransitionTarget(status)}
                   className={`rounded-full px-5 py-2.5 text-sm font-semibold ${status === "cancelled" ? "border border-red-200 text-red-700" : "bg-brand-green text-white"}`}
                 >
-                  {status === "ready" ? "Tandai Siap Dirilis" : status === "draft" ? "Kembalikan ke Draft" : "Batalkan Job Order"}
+                  {status === "ready" ? "Tandai Siap Dirilis" : status === "released" ? "Rilis ke Produksi" : status === "draft" ? "Kembalikan ke Draft" : "Batalkan Job Order"}
                 </button>
               ))}
             </div>

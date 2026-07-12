@@ -75,7 +75,7 @@ export function canArchiveJobOrder(status: JobOrderStatus) {
 
 export function getFoundationTransitions(status: JobOrderStatus) {
   if (status === "draft") return ["ready", "cancelled"] as JobOrderStatus[];
-  if (status === "ready") return ["draft", "cancelled"] as JobOrderStatus[];
+  if (status === "ready") return ["draft", "released", "cancelled"] as JobOrderStatus[];
   return [] as JobOrderStatus[];
 }
 

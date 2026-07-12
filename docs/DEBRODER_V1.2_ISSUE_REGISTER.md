@@ -1,17 +1,8 @@
 # DEBRODER v1.2 Issue Register
 
-| ID | Severity | Phase | Problem | Files / DB objects | Status | Verification |
-|---|---|---|---|---|---|---|
-| V12-001 | High | 5A | Repository migration is marker-only while live DB contains the real payment schema/functions. Fresh rebuild is not reproducible. | `supabase/migrations/payment_tracking_phase_5a_applied.sql`, `order_payments`, payment RPCs | Open | Live schema/RPC audit captured 2026-07-12 |
-| V12-002 | High | 5B | Verified balance currently sums only payment rows; no immutable adjustment/reversal/refund ledger. | `refresh_order_payment_summary` | Implemented | Live transaction test produced effective total 40,000 from verified 50,000 and debit 10,000 |
-| V12-003 | High | 5B | Payment requirement is hardcoded to 100% of order total. | `orders.payment_requirement_met` | Implemented | Live transaction test verified 50% requirement and production eligibility result |
-| V12-004 | High | 5B | No secure tokenized customer payment submission flow. | payment link/public route/storage | Implemented | Main migration applied; route/page production build passed |
-| V12-005 | Medium | 5A | Archive UI displays raw `archived_by` UUID. | `PaymentTrackingManager.tsx` | Implemented | Actor email mapping with non-UUID fallback; build passed |
-| V12-006 | Critical | 5B | Final payment audit/RPC ACL migration could not be applied because the approval service reached its usage limit. | `20260712143745_v1_2_phase_5b_payment_audit_lock.sql` | Blocked | Supabase migration list confirms only main Phase 5B migration is live |
-| V12-007 | High | 13 | Supabase advisors report legacy public sequence tables without RLS and multiple older SECURITY DEFINER functions executable by anon. Payment-specific fixes are in V12-006; remaining modules require Phase 13 consolidation. | Live database advisors | Open | Supabase security advisor 2026-07-12 |
-| V12-009 | High | 6 | Central numbering source migration was missing from repository while objects already existed live. | `supabase/migrations/*phase_6*`, document numbering tables/functions | Implemented | Source synchronized and live migrations audited |
-| V12-010 | High | 6 | Legacy separate sequences could generate duplicates after central allocator activation. | quotation/order/payment sequences | Implemented | Existing sequence alignment migration applied |
-| V12-011 | High | 6 | Phase 6 admin UI, navigation, archive warehouse, and human-readable actors were missing. | `/admin/document-numbering`, `DocumentNumberingAdmin.tsx` | Implemented | Quality gate pending |
-| V12-012 | High | 7 | Live Phase 7 migration sources were missing from repository while Job Order objects already existed remotely. | `supabase/migrations/*phase_7*`, shared production foundation | Implemented in package | Remote migration history and live functions inspected |
-| V12-013 | High | 7 | Job Order had no discoverable admin list/detail/create/archive UI. | `/admin/job-orders`, order detail entry, navigation | Implemented in foundation | Deployment and browser verification pending |
-| V12-014 | Medium | 7–8 | Release to production depends on Work Items; exposing release before Phase 8 would create a dead workflow. | Job Order detail transitions | Safely deferred | Foundation UI stops at Siap Dirilis |
+| ID | Severity | Phase | Issue | Status | Note |
+|---|---:|---|---|---|---|
+| V12-014 | Medium | 7–8 | Release to production depends on Work Items. | CLOSED IN PHASE 8 | Job Order release is now gated by Work Item readiness and database checks. |
+| V12-015 | Medium | 8 | Full local typecheck/lint/test/build could not be run in the sandbox due missing project dependencies. | OPEN UNTIL VERCEL/LOCAL CHECK | Vercel deployment or local installed repo must confirm. |
+| V12-016 | Medium | 8 | Phase 8 UI must be owner-verified in browser after deploy. | OPEN | Check list, detail, generate, manual create, assign, dependency, archive/restore. |
+| V12-017 | Medium | 9 | Production execution statuses beyond Work Item preparation are not part of Phase 8. | DEFERRED | Continue in Phase 9 only after Phase 8 deploy is stable. |

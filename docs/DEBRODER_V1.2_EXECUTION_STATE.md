@@ -1,61 +1,32 @@
 # DEBRODER v1.2 Execution State
 
-- Repository: `bukucaturindonesia/Debroder`
-- Base commit: `0047a0a56edc50e81fcf4cef6f57742b1c78dbd3`
-- Base commit message: `feat(v1.2): complete Phase 6 document numbering`
-- Last owner-confirmed phase: Phase 6 — Document Numbering
-- Active phase: Phase 7 — Job Order
-- Active batch: Foundation
+- Repository base observed: Phase 7 Job Order foundation.
+- Active phase: Phase 8 Work Item foundation.
+- Status: Phase 8 source package prepared; waiting for user GitHub Desktop commit and Vercel deployment.
 
-## Phase 7 live database state
+## Phase 8 database status
 
-Remote migration history already contains:
+Applied migration names on the connected Supabase project:
 
-- `20260712070529 phase7_to_phase9_production_foundation`
-- `20260712095523 v1_2_phase_7_job_order_foundation_and_security`
-- `20260712095652 v1_2_phase_7_job_order_creation_atomic_number`
-- `20260712100924 v1_2_phase_7_notification_dependency_ambiguity_fix`
-- `20260712101029 v1_2_phase_7_job_order_history_trigger_alignment`
+- `v1_2_phase_8_work_item_schema_and_audit`
+- `v1_2_phase_8_work_item_creation_and_dependencies`
+- `v1_2_phase_8_work_item_status_and_archive`
+- `v1_2_phase_8_work_item_security_and_delete`
 
-Verified live objects:
+The database lifecycle probe passed for generation, idempotency, manual create, assignment, revision, dependency, ready transition, restore, and permanent-delete audit. Temporary probe rows were cleaned up.
 
-- `job_orders`
-- `job_order_status_history`
-- `job_order_revisions`
-- `job_order_deletion_audit`
-- secure Job Order RPCs
-- read-only production RLS policies
-- immutable history triggers
-- direct table mutation grants removed
+## Phase 8 UI/source status
 
-No SQL was applied while preparing this repository package.
+Included in this package:
 
-## Phase 7 foundation repository changes
+- Work Item navigation, list, detail, archive, restore, delete, assignment, dependency, and revision/history screens.
+- Job Order detail link to Work Items.
+- Job Order release transition unlocked behind the Work Item database gate.
 
-- synchronized remote migration sources;
-- `/admin/job-orders` list, eligible-order queue, and Gudang Arsip;
-- `/admin/job-orders/[id]` detail, edit, snapshots, history, and foundation status transitions;
-- order-detail entry point;
-- admin navigation and breadcrumbs;
-- centralized Job Order types and copy;
-- Phase 7 static tests and documentation.
+## Next step
 
-## Verification
+Commit this package to GitHub and confirm Vercel deployment. Do not start Phase 9 until Phase 8 is visible and safe in production.
 
-- TypeScript syntax parse: PASS
-- Targeted live database object audit: PASS
-- Previous live Phase 7 core transaction: PASS
-- Full dependency-based quality gate: pending Vercel/working copy
+## Status label
 
-## Next exact action
-
-1. Copy the Phase 7 foundation package into the repository root.
-2. Commit and push.
-3. Confirm Vercel build succeeds.
-4. Open Job Order list/detail and verify empty states/navigation.
-5. Use an eligible test order only when available.
-6. After owner confirmation, continue Phase 7 completion or proceed to Phase 8 Work Item foundation as directed.
-
-## Status
-
-`PHASE 7 FOUNDATION IMPLEMENTED — NOT TECHNICALLY VERIFIED — NOT OWNER VERIFIED`
+`PHASE 8 SOURCE READY — DATABASE PROBE PASSED — OWNER/VERCEL VERIFICATION PENDING`

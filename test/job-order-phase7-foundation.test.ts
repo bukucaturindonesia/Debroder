@@ -33,9 +33,9 @@ describe("Phase 7 Job Order foundation helpers", () => {
     expect(JOB_ORDER_STATUS_LABELS.released).toBe("Dirilis ke Produksi");
   });
 
-  it("limits the foundation UI to safe pre-release transitions", () => {
+  it("opens release only after the Phase 8 Work Item gate", () => {
     expect(getFoundationTransitions("draft")).toEqual(["ready", "cancelled"]);
-    expect(getFoundationTransitions("ready")).toEqual(["draft", "cancelled"]);
+    expect(getFoundationTransitions("ready")).toEqual(["draft", "released", "cancelled"]);
     expect(getFoundationTransitions("released")).toEqual([]);
     expect(canEditJobOrder("ready")).toBe(true);
     expect(canEditJobOrder("released")).toBe(false);

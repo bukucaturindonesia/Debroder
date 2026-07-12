@@ -90,7 +90,8 @@ export const adminNavigationGroups: readonly AdminNavigationGroup[] = [
         children: [
           { label: "Pesanan", href: "/admin/orders", roles: QUOTATION_ROLES, exact: true },
           { label: "Formal Quotation", href: "/admin/orders/quotations", roles: QUOTATION_ROLES },
-          { label: "Job Order", href: "/admin/job-orders", roles: FULL_ADMIN_ROLES }
+          { label: "Job Order", href: "/admin/job-orders", roles: FULL_ADMIN_ROLES },
+          { label: "Work Item", href: "/admin/work-items", roles: FULL_ADMIN_ROLES }
         ]
       }
     ]
@@ -151,6 +152,8 @@ export function getRoleHome(role: AdminRole) {
 }
 
 export function getCurrentNavigationLabel(pathname: string) {
+  if (pathname.startsWith("/admin/work-items/")) return "Detail Work Item";
+  if (pathname === "/admin/work-items") return "Work Item";
   if (pathname.startsWith("/admin/job-orders/")) return "Detail Job Order";
   if (pathname === "/admin/job-orders") return "Job Order";
   if (pathname === "/admin/orders/quotations/new") return "Buat Quotation";
@@ -183,6 +186,16 @@ export type AdminBreadcrumbItem = {
 export function getAdminBreadcrumbs(pathname: string): AdminBreadcrumbItem[] {
   if (pathname === "/admin/dashboard" || pathname === "/admin") {
     return [{ label: "Dashboard" }];
+  }
+
+
+  if (pathname.startsWith("/admin/work-items")) {
+    const crumbs: AdminBreadcrumbItem[] = [
+      { label: "Operasional" },
+      { label: "Work Item", href: pathname === "/admin/work-items" ? undefined : "/admin/work-items" }
+    ];
+    if (pathname !== "/admin/work-items") crumbs.push({ label: "Detail Work Item" });
+    return crumbs;
   }
 
   if (pathname.startsWith("/admin/job-orders")) {
@@ -240,7 +253,8 @@ export function getAdminBreadcrumbs(pathname: string): AdminBreadcrumbItem[] {
     "/admin/store": "Katalog",
     "/admin/website-settings": "Sistem",
     "/admin/document-numbering": "Sistem",
-    "/admin/job-orders": "Operasional"
+    "/admin/job-orders": "Operasional",
+    "/admin/work-items": "Operasional"
   };
 
   const matchingRoute = Object.keys(groupMap).find(
@@ -261,6 +275,7 @@ export function isLegacyAdminRoute(pathname: string) {
   return !(
     pathname.startsWith("/admin/orders") ||
     pathname.startsWith("/admin/document-numbering") ||
-    pathname.startsWith("/admin/job-orders")
+    pathname.startsWith("/admin/job-orders") ||
+    pathname.startsWith("/admin/work-items")
   );
 }
