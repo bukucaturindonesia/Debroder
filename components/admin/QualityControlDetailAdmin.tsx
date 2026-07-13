@@ -525,7 +525,7 @@ export function QualityControlDetailAdmin() {
           {editable && canManage ? (
             <div className="mt-5 grid gap-3 rounded-lg border border-dashed border-brand-softGray bg-brand-offWhite p-4 sm:grid-cols-[1fr_auto] sm:items-center">
               <input type="file" accept="image/png,image/jpeg,image/webp,application/pdf" onChange={(event) => setUploadFile(event.target.files?.[0] || null)} className="text-sm" />
-              <button type="button" onClick={() => void uploadProof()} disabled={!uploadFile || working} className="rounded-full bg-brand-charcoal px-5 py-2.5 text-sm font-semibold text-white disabled:opacity-45">{working ? "Memproses..." : "Upload Bukti"}</button>
+              <button type="button" onClick={() => void uploadProof()} disabled={!uploadFile || working} className="rounded-full bg-brand-charcoal px-5 py-2.5 text-sm font-semibold text-white disabled:opacity-45">{working ? "Memproses..." : "Upload Bukti QC"}</button>
             </div>
           ) : null}
           <div className="mt-5 grid gap-3">

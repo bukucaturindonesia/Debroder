@@ -1,5 +1,6 @@
 "use client";
 
+import { AdminNotificationBell } from "@/components/admin/AdminNotificationBell";
 import { AdminBreadcrumb } from "./AdminBreadcrumb";
 import type { AdminRole } from "./admin-navigation";
 import { getCurrentNavigationLabel } from "./admin-navigation";
@@ -45,6 +46,7 @@ export function AdminHeader({
         </div>
 
         <div className="flex shrink-0 items-center gap-2">
+          <AdminNotificationBell />
           <span className="hidden rounded-full border border-brand-softGray bg-brand-offWhite px-3 py-2 text-xs font-semibold text-brand-charcoal/70 sm:inline-flex">
             {ROLE_LABELS[role]}
           </span>

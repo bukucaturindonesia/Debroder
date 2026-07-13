@@ -2,18 +2,21 @@
 
 ## Open
 
-- V12-010 — Local sandbox cannot run full dependency-based quality gates because `node_modules` is absent and package manager/dependency downloads are blocked. Verify final build on Vercel.
-
-## Closed in Phase 10
-
-- V12-009 — QC workflow needed alignment beyond legacy `phase10_qc_phase11_fulfillment`; resolved with Phase 10 QC-specific schema, workflow, completion, storage, and lifecycle migrations.
-
-## Closed in Phase 11
-
-- V12-011 — Duplicate legacy immutable trigger blocked controlled permanent deletion of archived fulfillment. Resolved by migration `20260713003444_v1_2_phase_11_history_trigger_alignment.sql`; transactional lifecycle test passed with rollback.
-
-## V12-012 — Phase 11 deployment verification
+### V12-013 — Owner deployment/UI verification
 
 - Severity: Gate
 - Status: OPEN
-- Detail: Source, database alignment, and transactional lifecycle verification completed. Final Vercel build and owner UI verification are pending.
+- Detail: Phase 12 source, remote database alignment, transaction smoke test, typecheck, lint, tests, and production build verification pass. Owner still needs to verify the deployed UI using Admin, Sales Admin, and Super Admin accounts.
+
+### V12-014 — External notification providers
+
+- Severity: Deferred
+- Status: DEFERRED BY PHASE 12 SCOPE
+- Detail: Email, WhatsApp, SMS, and push templates may exist, but provider delivery remains `not_configured` until credentials and provider workers are explicitly approved.
+
+## Closed in Phase 12
+
+- V12-010 — Local dependency-based quality gates were previously blocked. Dependencies were installed for verification; typecheck, lint, test, and build now run successfully.
+- V12-012 — Phase 11 deployment verification was treated as completed per owner instruction that Phase 11 is finished.
+- V12-015 — Phase 12 database/source uncertainty. Resolved by checking remote migration history and live notification tables/RPCs before coding; no migration was reapplied.
+- V12-016 — Existing Phase 10 static contract expected `Upload Bukti QC`. Restored the label without changing Phase 10 workflow.

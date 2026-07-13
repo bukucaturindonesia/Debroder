@@ -94,7 +94,8 @@ export const adminNavigationGroups: readonly AdminNavigationGroup[] = [
           { label: "Work Item", href: "/admin/work-items", roles: FULL_ADMIN_ROLES },
           { label: "Status Produksi", href: "/admin/production", roles: FULL_ADMIN_ROLES },
           { label: "Quality Control", href: "/admin/quality-control", roles: FULL_ADMIN_ROLES },
-          { label: "Pengiriman & Pickup", href: "/admin/fulfillments", roles: FULL_ADMIN_ROLES }
+          { label: "Pengiriman & Pickup", href: "/admin/fulfillments", roles: FULL_ADMIN_ROLES },
+          { label: "Notifikasi", href: "/admin/notifications", roles: QUOTATION_ROLES }
         ]
       }
     ]
@@ -147,7 +148,11 @@ export function getNavigationGroups(role: AdminRole) {
 
 export function roleCanAccessPath(role: AdminRole, pathname: string) {
   if (hasRole(role, FULL_ADMIN_ROLES)) return true;
-  return pathname.startsWith("/admin/orders");
+  if (pathname.startsWith("/admin/orders")) return true;
+  if (pathname === "/admin/notifications/templates" || pathname.startsWith("/admin/notifications/templates/")) {
+    return false;
+  }
+  return pathname.startsWith("/admin/notifications");
 }
 
 export function getRoleHome(role: AdminRole) {
@@ -155,6 +160,10 @@ export function getRoleHome(role: AdminRole) {
 }
 
 export function getCurrentNavigationLabel(pathname: string) {
+  if (pathname === "/admin/notifications/templates") return "Template Notifikasi";
+  if (pathname === "/admin/notifications/history") return "Riwayat Notifikasi";
+  if (pathname.startsWith("/admin/notifications/")) return "Detail Notifikasi";
+  if (pathname === "/admin/notifications") return "Notifikasi";
   if (pathname.startsWith("/admin/fulfillments/")) return "Detail Pengiriman & Pickup";
   if (pathname === "/admin/fulfillments") return "Pengiriman & Pickup";
   if (pathname.startsWith("/admin/quality-control/")) return "Detail Quality Control";
@@ -196,6 +205,25 @@ export function getAdminBreadcrumbs(pathname: string): AdminBreadcrumbItem[] {
     return [{ label: "Dashboard" }];
   }
 
+
+
+  if (pathname.startsWith("/admin/notifications")) {
+    const crumbs: AdminBreadcrumbItem[] = [
+      { label: "Operasional" },
+      {
+        label: "Notifikasi",
+        href: pathname === "/admin/notifications" ? undefined : "/admin/notifications"
+      }
+    ];
+    if (pathname === "/admin/notifications/templates") {
+      crumbs.push({ label: "Template" });
+    } else if (pathname === "/admin/notifications/history") {
+      crumbs.push({ label: "Riwayat" });
+    } else if (pathname !== "/admin/notifications") {
+      crumbs.push({ label: "Detail Notifikasi" });
+    }
+    return crumbs;
+  }
 
   if (pathname.startsWith("/admin/fulfillments")) {
     const crumbs: AdminBreadcrumbItem[] = [
@@ -287,7 +315,8 @@ export function getAdminBreadcrumbs(pathname: string): AdminBreadcrumbItem[] {
     "/admin/work-items": "Operasional",
     "/admin/production": "Operasional",
     "/admin/quality-control": "Operasional",
-    "/admin/fulfillments": "Operasional"
+    "/admin/fulfillments": "Operasional",
+    "/admin/notifications": "Operasional"
   };
 
   const matchingRoute = Object.keys(groupMap).find(
@@ -312,6 +341,7 @@ export function isLegacyAdminRoute(pathname: string) {
     pathname.startsWith("/admin/work-items") ||
     pathname.startsWith("/admin/production") ||
     pathname.startsWith("/admin/quality-control") ||
-    pathname.startsWith("/admin/fulfillments")
+    pathname.startsWith("/admin/fulfillments") ||
+    pathname.startsWith("/admin/notifications")
   );
 }
