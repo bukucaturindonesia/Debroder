@@ -1,0 +1,3 @@
+revoke all on public.fulfillments,public.fulfillment_items,public.fulfillment_files,public.fulfillment_status_history,public.fulfillment_revisions,public.fulfillment_deletion_audit from public,anon;
+revoke insert,update,delete,truncate,references,trigger on public.fulfillments,public.fulfillment_items,public.fulfillment_files,public.fulfillment_status_history,public.fulfillment_revisions,public.fulfillment_deletion_audit from authenticated;
+grant select on public.fulfillments,public.fulfillment_items,public.fulfillment_files,public.fulfillment_status_history,public.fulfillment_revisions,public.fulfillment_deletion_audit to authenticated;
