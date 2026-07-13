@@ -35,7 +35,7 @@ function DesktopColumn({ title, children, dark }: { title: string; children: Rea
 
 function MobileAccordion({ title, children, dark }: { title: string; children: ReactNode; dark: boolean }) {
   return (
-    <details className={`group border-b ${dark ? "border-white/12" : "border-black/10"}`}>
+    <details className={`group ${dark ? "" : "border-b border-black/10"}`}>
       <summary className="flex min-h-14 cursor-pointer list-none items-center justify-between text-[15px] font-semibold marker:hidden">
         {title}
         <span className="text-xl font-normal transition group-open:rotate-45" aria-hidden="true">+</span>
@@ -71,7 +71,7 @@ export function PublicFooter({ content, variant = "default" }: { content: Public
   ].filter((item) => Boolean(item.href));
 
   return (
-    <footer className={`border-t ${dark ? "border-white/12 bg-[#050505] text-white" : "border-black/10 bg-white text-[#111]"}`}>
+    <footer className={dark ? "bg-[#050505] text-white" : "border-t border-black/10 bg-white text-[#111]"}>
       <div className="section-shell py-14 sm:py-16 lg:py-20">
         <div className="hidden grid-cols-[1fr_1fr_1.2fr_.7fr] gap-12 md:grid lg:gap-20">
           <DesktopColumn title="Belanja" dark={dark}>

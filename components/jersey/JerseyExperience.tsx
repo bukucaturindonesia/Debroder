@@ -85,7 +85,7 @@ function JerseyHero({ hero }: { hero: PageHeroContent | undefined }) {
 function CenteredEditorial({ item }: { item: CmsBanner }) {
   const href = jerseyItemHref(item, item.cta_url, "/jersey/shop");
   return (
-    <section className="jersey-section keep-section-bg border-y border-white/10 bg-[#050505] text-center text-white">
+    <section className="jersey-section keep-section-bg bg-[#050505] text-center text-white">
       <div className="jersey-shell mx-auto max-w-5xl">
         {item.eyebrow ? <p className="jersey-neon text-xs font-semibold uppercase tracking-[0.18em]">{item.eyebrow}</p> : null}
         <h2 className="mt-3 font-heading text-[clamp(2.5rem,6vw,6rem)] font-extrabold uppercase leading-[.92] tracking-[-0.035em]">{item.title}</h2>
@@ -109,10 +109,8 @@ function SplitCampaign({ items, label }: { items: CmsBanner[]; label: string }) 
               <CampaignMedia item={item} className="h-full w-full transition-transform duration-500 group-hover:scale-[1.012]" />
               <div aria-hidden="true" className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent" style={{ "--tw-gradient-from": `rgba(0,0,0,${overlay})` } as CSSProperties} />
               <div className="absolute inset-x-0 bottom-0 p-5 sm:p-7">
-                {item.eyebrow ? <p className="jersey-neon text-[11px] font-semibold uppercase tracking-[0.18em]">{item.eyebrow}</p> : null}
-                <h2 className="mt-2 font-heading text-[clamp(2rem,4vw,4.5rem)] font-bold uppercase leading-[.92] tracking-[-0.03em]">{item.title}</h2>
-                {item.subtitle ? <p className="mt-3 max-w-lg text-sm leading-6 text-white/72 sm:text-base">{item.subtitle}</p> : null}
-                {item.cta_label && href ? <span className="mt-5 inline-flex min-h-10 items-center rounded-full bg-white px-4 text-xs font-semibold text-black">{item.cta_label}</span> : null}
+                <h2 className="font-heading text-[clamp(2rem,4vw,4.5rem)] font-bold uppercase leading-[.92] tracking-[-0.03em]">{item.title}</h2>
+                {href ? <span className="mt-5 inline-flex min-h-10 items-center rounded-full bg-white px-4 text-xs font-semibold text-black">Jelajahi</span> : null}
               </div>
             </div>
           );
@@ -132,22 +130,20 @@ function WideEditorial({ item }: { item: CmsBanner }) {
         <CampaignMedia item={item} className="h-full w-full" />
         <div aria-hidden="true" className="absolute inset-0 bg-gradient-to-r from-black via-black/20 to-transparent" style={{ "--tw-gradient-from": `rgba(0,0,0,${overlay})` } as CSSProperties} />
         <div className="absolute inset-x-0 bottom-0 max-w-3xl p-5 sm:p-8 lg:p-12">
-          {item.eyebrow ? <p className="jersey-neon text-xs font-semibold uppercase tracking-[0.18em]">{item.eyebrow}</p> : null}
-          <h2 className="mt-3 font-heading text-[clamp(2.5rem,5vw,5.5rem)] font-extrabold uppercase leading-[.92] tracking-[-0.035em]">{item.title}</h2>
-          {item.subtitle ? <p className="mt-4 max-w-2xl text-sm leading-6 text-white/72 sm:text-base sm:leading-7">{item.subtitle}</p> : null}
-          {item.cta_label && href ? <div className="mt-6"><ActionLink href={href}>{item.cta_label}</ActionLink></div> : null}
+          <h2 className="font-heading text-[clamp(2.5rem,5vw,5.5rem)] font-extrabold uppercase leading-[.92] tracking-[-0.035em]">{item.title}</h2>
+          {href ? <div className="mt-6"><ActionLink href={href}>Jelajahi</ActionLink></div> : null}
         </div>
       </div>
     </section>
   );
 }
 
-function EditorialCampaign({ item, id, supportHref }: { item: CmsBanner; id?: string; supportHref?: string }) {
-  const fallback = item.section_type === "custom_cta" || item.section_type === "team_package_campaign" ? "/jersey/configurator" : "/jersey/shop";
+function EditorialCampaign({ item, supportHref }: { item: CmsBanner; supportHref?: string }) {
+  const fallback = item.section_type === "custom_cta" ? "/jersey/configurator" : "/jersey/shop";
   const primary = jerseyItemHref(item, item.cta_url, fallback);
   const secondary = jerseyItemHref(item, item.secondary_cta_url, supportHref || "");
   return (
-    <section id={id} className="jersey-anchor jersey-section keep-section-bg border-t border-white/10 bg-[#050505] text-white">
+    <section className="jersey-section keep-section-bg bg-[#050505] text-white">
       <div className="jersey-shell grid gap-8 lg:grid-cols-2 lg:items-center">
         {item.desktop_media_url ? <div className="aspect-[4/5] overflow-hidden bg-[#101010] sm:aspect-[16/11] lg:aspect-[4/5]"><CampaignMedia item={item} className="h-full w-full" /></div> : null}
         <div className="max-w-2xl lg:px-8">
@@ -168,16 +164,14 @@ function OrderSteps({ item }: { item: CmsBanner }) {
   const steps = jerseySectionItems(item);
   if (!steps.length) return null;
   return (
-    <section id="cara-order-jersey" className="jersey-anchor jersey-section keep-section-bg border-t border-white/10 bg-[#050505] text-white">
+    <section id="cara-order-jersey" className="jersey-anchor jersey-section keep-section-bg bg-[#050505] text-white">
       <div className="jersey-shell">
-        <p className="jersey-neon text-xs font-semibold uppercase tracking-[0.18em]">Dari Pilihan ke Produksi</p>
-        <h2 className="mt-3 font-heading text-[clamp(2.5rem,5vw,5.5rem)] font-extrabold uppercase tracking-[-0.035em]">{item.title || "Cara Order Jersey"}</h2>
-        {item.subtitle ? <p className="mt-4 max-w-2xl text-base leading-7 text-white/65">{item.subtitle}</p> : null}
-        <ol className="mt-[var(--jersey-heading-gap)] grid border-t border-white/12 md:grid-cols-2 lg:grid-cols-4">
+        <h2 className="font-heading text-[clamp(2.5rem,5vw,5.5rem)] font-extrabold uppercase tracking-[-0.035em]">{item.title || "Cara Order Jersey"}</h2>
+        <ol className="mt-[var(--jersey-heading-gap)] grid gap-x-[var(--jersey-heading-gap)] gap-y-[var(--jersey-compact-gap)] md:grid-cols-2 lg:grid-cols-4">
           {steps.map((step, index) => (
-            <li key={`${index}-${step}`} className="grid grid-cols-[40px_1fr] gap-3 border-b border-white/12 py-5 md:px-4 md:first:pl-0 lg:min-h-36 lg:border-r lg:last:border-r-0">
+            <li key={`${index}-${step}`} className="grid grid-cols-[44px_minmax(0,1fr)] items-start gap-3 py-2">
               <span className="jersey-neon font-heading text-2xl font-bold">{String(index + 1).padStart(2, "0")}</span>
-              <p className="text-sm font-medium leading-6 text-white/68">{step}</p>
+              <p className="text-sm font-medium leading-6 text-white/78">{step}</p>
             </li>
           ))}
         </ol>
@@ -190,7 +184,7 @@ function ClosingCampaign({ item }: { item: CmsBanner }) {
   const primary = jerseyItemHref(item, item.cta_url, "/jersey/shop");
   const secondary = jerseyItemHref(item, item.secondary_cta_url, "/jersey/configurator");
   return (
-    <section className="keep-section-bg relative overflow-hidden border-y border-white/10 bg-[#050505] py-[clamp(72px,9vw,144px)] text-center text-white">
+    <section className="keep-section-bg relative overflow-hidden bg-[#050505] py-[clamp(72px,9vw,144px)] text-center text-white">
       {item.desktop_media_url ? <div className="absolute inset-0 opacity-20"><CampaignMedia item={item} className="h-full w-full" /><div className="absolute inset-0 bg-black/55" /></div> : null}
       <div className="jersey-shell relative">
         <p className="jersey-neon font-heading text-[clamp(3.5rem,10vw,10rem)] font-extrabold uppercase leading-[.82] tracking-[-0.045em]">{item.title || "DEBRODER JERSEY"}</p>
@@ -217,7 +211,6 @@ export function JerseyExperience({ content, hero, categories }: { content: Publi
   const centered = firstByType(sections, "centered_editorial_copy");
   const wide = firstByType(sections, "wide_campaign");
   const custom = firstByType(sections, "custom_cta");
-  const packageCampaign = firstByType(sections, "team_package_campaign");
   const orderSteps = firstByType(sections, "order_steps");
   const closing = firstByType(sections, "closing_campaign");
   const supportHref = whatsappHref(content.contact.whatsapp_apparel, "Halo DEBRODER, saya ingin berkonsultasi tentang Jersey Custom.");
@@ -232,7 +225,6 @@ export function JerseyExperience({ content, hero, categories }: { content: Publi
       {wide ? <WideEditorial item={wide} /> : null}
       <SplitCampaign items={split02} label="Campaign Jersey Komunitas dan Instansi" />
       {custom ? <EditorialCampaign item={custom} supportHref={supportHref} /> : null}
-      {packageCampaign ? <EditorialCampaign item={packageCampaign} id="paket-tim" /> : null}
       {orderSteps ? <OrderSteps item={orderSteps} /> : null}
       {closing ? <ClosingCampaign item={closing} /> : null}
     </>

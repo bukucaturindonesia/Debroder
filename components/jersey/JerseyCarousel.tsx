@@ -37,10 +37,8 @@ function CarouselCard({ item }: { item: CmsBanner }) {
         style={{ "--tw-gradient-from": `rgba(0,0,0,${overlay})` } as CSSProperties}
       />
       <div className="absolute inset-x-0 bottom-0 p-5 sm:p-6">
-        {item.eyebrow ? <p className="jersey-neon text-[11px] font-semibold uppercase tracking-[0.18em]">{item.eyebrow}</p> : null}
-        <h3 className="mt-2 font-heading text-2xl font-bold uppercase leading-[.95] tracking-[-0.025em] text-white sm:text-3xl">{item.title}</h3>
-        {item.subtitle ? <p className="mt-3 line-clamp-2 text-sm leading-5 text-white/72">{item.subtitle}</p> : null}
-        {href && item.cta_label ? <span className="mt-5 inline-flex min-h-10 items-center rounded-full bg-white px-4 text-xs font-semibold text-black">{item.cta_label}</span> : null}
+        <h3 className="font-heading text-2xl font-bold uppercase leading-[.95] tracking-[-0.025em] text-white sm:text-3xl">{item.title}</h3>
+        {href ? <span className="mt-5 inline-flex min-h-10 items-center rounded-full bg-white px-4 text-xs font-semibold text-black">Jelajahi</span> : null}
       </div>
     </div>
   );

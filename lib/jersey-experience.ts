@@ -6,7 +6,6 @@ export const JERSEY_SECTION_TYPES = [
   "split_campaign",
   "wide_campaign",
   "custom_cta",
-  "team_package_campaign",
   "order_steps",
   "closing_campaign"
 ] as const;
@@ -27,7 +26,6 @@ export const JERSEY_NAV_ITEMS = [
   { label: "Futsal", href: "/jersey#jersey-carousel-01" },
   { label: "Esports", href: "/jersey#jersey-carousel-01" },
   { label: "Custom", href: "/jersey/configurator" },
-  { label: "Paket Tim", href: "/jersey#paket-tim" },
   { label: "Shop All", href: "/jersey/shop" }
 ] as const;
 
@@ -35,7 +33,6 @@ const supportedExternalTarget = /^https:\/\/(?:wa\.me|api\.whatsapp\.com)\//i;
 const supportedAnchors = new Set([
   "jersey-carousel-01",
   "jersey-carousel-02",
-  "paket-tim",
   "cara-order-jersey"
 ]);
 
@@ -230,22 +227,13 @@ export function jerseyFallbackSections(pageHero: PageHeroContent | undefined, ca
       secondary_cta_label: "Konsultasi dengan Admin",
       secondary_cta_url: ""
     }),
-    banner("team_package_campaign", "paket-tim", 80, {
-      title: "Satu Tim, Satu Identitas",
-      subtitle: "Untuk klub, sekolah, komunitas, perusahaan, instansi, dan event.",
-      desktop_media_url: sources[1]?.gambar_url || media,
-      mobile_media_url: sources[1]?.gambar_url || media,
-      image_alt: sources[1]?.image_alt || "Paket tim DEBRODER Jersey",
-      cta_label: "Mulai Paket Tim",
-      cta_url: "/jersey/configurator"
-    }),
-    banner("order_steps", "cara-order", 90, {
+    banner("order_steps", "cara-order", 80, {
       title: "Cara Order Jersey",
       subtitle: "Satu alur resmi dari pilihan awal hingga jersey diterima.",
       desktop_media_url: media,
       metadata: { items: JERSEY_ORDER_STEPS }
     }),
-    banner("closing_campaign", "closing", 100, {
+    banner("closing_campaign", "closing", 90, {
       title: "DEBRODER JERSEY",
       subtitle: "Dibuat untuk tim yang membawa identitasnya ke setiap pertandingan.",
       desktop_media_url: media,
@@ -262,7 +250,9 @@ export function jerseyFallbackSections(pageHero: PageHeroContent | undefined, ca
 }
 
 export function resolvedJerseySections(managed: CmsBanner[], pageHero: PageHeroContent | undefined, categories: ServiceCategory[]) {
-  const published = managed.filter((item) => item.is_active !== false).sort((a, b) => a.sort_order - b.sort_order);
+  const published = managed
+    .filter((item) => item.is_active !== false && item.section_type !== "team_package_campaign")
+    .sort((a, b) => a.sort_order - b.sort_order);
   return published.length ? published : jerseyFallbackSections(pageHero, categories);
 }
 

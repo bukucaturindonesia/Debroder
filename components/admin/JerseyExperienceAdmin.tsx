@@ -63,7 +63,7 @@ const typeLabels: Record<string, string> = {
   centered_editorial_copy: "Centered Editorial Copy",
   wide_campaign: "Wide Editorial Campaign",
   custom_cta: "Custom Jersey CTA",
-  team_package_campaign: "Paket Tim Campaign",
+  team_package_campaign: "Paket Tim Campaign (legacy, tidak ditampilkan)",
   order_steps: "Cara Order",
   closing_campaign: "Closing Campaign"
 };
@@ -143,6 +143,15 @@ export function JerseyExperienceAdmin() {
     }
     if (["poster_carousel", "split_campaign"].includes(form.section_type || "") && !form.section_group?.trim()) {
       setMessage("Carousel dan split campaign wajib memiliki section group.");
+      return;
+    }
+    const requiresPrimaryTarget = ["poster_carousel", "split_campaign", "wide_campaign", "centered_editorial_copy", "custom_cta"].includes(form.section_type || "");
+    if (mode !== "draft" && requiresPrimaryTarget && !validJerseyHref(form.cta_url)) {
+      setMessage("Section ini belum dapat dipublish karena target CTA utama kosong atau tidak valid.");
+      return;
+    }
+    if (mode !== "draft" && form.secondary_cta_label?.trim() && !validJerseyHref(form.secondary_cta_url)) {
+      setMessage("CTA kedua belum dapat dipublish karena targetnya kosong atau tidak valid.");
       return;
     }
     if (!validTarget(form.cta_url) || !validTarget(form.secondary_cta_url)) {
@@ -244,7 +253,7 @@ export function JerseyExperienceAdmin() {
           <div className="mt-5 grid gap-4">
             <Field label="Tipe section"><select value={form.section_type} onChange={(event) => update("section_type", event.target.value)}>{JERSEY_SECTION_TYPES.map((type) => <option key={type} value={type}>{typeLabels[type]}</option>)}</select></Field>
             <div className="grid gap-4 sm:grid-cols-2"><Field label="Nama internal"><input value={form.name} onChange={(event) => update("name", event.target.value)} /></Field><Field label="Section key"><input value={form.section_key || ""} onChange={(event) => update("section_key", event.target.value)} placeholder="football" /></Field></div>
-            <div className="grid gap-4 sm:grid-cols-2"><Field label="Section group"><select value={form.section_group || ""} onChange={(event) => update("section_group", event.target.value)}><option value="">Tidak dikelompokkan</option><option value="carousel-01">Carousel 01</option><option value="split-01">Split 01</option><option value="carousel-02">Carousel 02</option><option value="split-02">Split 02</option></select></Field><Field label="Anchor ID"><input value={form.anchor_id || ""} onChange={(event) => update("anchor_id", event.target.value)} placeholder="paket-tim" /></Field></div>
+            <div className="grid gap-4 sm:grid-cols-2"><Field label="Section group"><select value={form.section_group || ""} onChange={(event) => update("section_group", event.target.value)}><option value="">Tidak dikelompokkan</option><option value="carousel-01">Carousel 01</option><option value="split-01">Split 01</option><option value="carousel-02">Carousel 02</option><option value="split-02">Split 02</option></select></Field><Field label="Anchor ID"><input value={form.anchor_id || ""} onChange={(event) => update("anchor_id", event.target.value)} placeholder="jersey-carousel-01" /></Field></div>
             <Field label="Judul section / carousel"><input value={form.section_heading || ""} onChange={(event) => update("section_heading", event.target.value)} placeholder="Dibuat untuk Cara Tim Anda Bergerak" /></Field>
             <Field label="Deskripsi section"><textarea rows={2} value={form.section_description || ""} onChange={(event) => update("section_description", event.target.value)} /></Field>
             <div className="grid gap-4 sm:grid-cols-2"><Field label="Tipe media"><select value={form.media_type} onChange={(event) => update("media_type", event.target.value as CmsBanner["media_type"])}><option value="image">Image</option><option value="video">Video</option></select></Field><Field label="Sort order"><input type="number" value={form.sort_order} onChange={(event) => update("sort_order", Number(event.target.value))} /></Field></div>

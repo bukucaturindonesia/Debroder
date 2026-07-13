@@ -28,9 +28,13 @@ Last updated: 13 July 2026
 ## Commerce Jersey experience state
 
 - `/jersey` is an editorial mini landing and no longer embeds the full product catalog.
-- The owner-approved `/jersey` addendum order is implemented: contextual header, Hero, Carousel 01, centered editorial copy, Split 01, Carousel 02, Wide Banner, Split 02, Custom CTA, Paket Tim, Cara Order, and Closing Campaign.
+- The final owner-approved `/jersey` order is implemented: contextual header, Hero, Carousel 01, centered editorial copy, Split 01, Carousel 02, Wide Banner, Split 02, Custom CTA, Cara Order, and Closing Campaign.
 - The page is scoped to a near-black editorial theme with white/off-white hierarchy and neon green accents; campaign media remains image-first and product data remains outside CMS.
+- Image-led carousel, split, and wide editorial cards render only the campaign title and a consistent `Jelajahi` CTA pill; CMS subtitles and eyebrow copy remain stored but are intentionally not rendered inside cards.
 - Global navbar remains shared and scrolls out naturally. The single Jersey identity/contextual bar is sticky, one row on desktop, and two-row/native-horizontal-scroll on mobile.
+- The legacy Paket Tim public section, navigation item, fallback item, and dead anchor are removed from the public experience; any existing CMS record remains safely stored but is filtered from public rendering.
+- Contextual and section dividers are removed. Menu underline appears only on hover or keyboard focus, while the current route remains identified by glow, weight, and `aria-current`.
+- Cara Order retains seven lifecycle steps in a borderless responsive 4/2/1-column grid. Route-level loading reserves final media ratios and the Jersey error boundary provides retry and catalog recovery actions.
 - `/jersey/shop` is the PIM-backed catalog transition and product cards retain canonical `/produk/[slug]` detail routes.
 - `/jersey/configurator` is the official Custom CTA target and reuses the existing `JerseyConfigurator` domain logic.
 - CMS presentation data extends the existing `page_heroes` and `cms_banners` sources; no parallel Jersey product store was introduced.
@@ -66,10 +70,13 @@ Last updated: 13 July 2026
 - Typecheck: PASS
 - Lint: PASS, 0 errors / 23 warnings outside the Jersey implementation
 - Phase 14 tests: PASS, 9 tests
-- Jersey tests: PASS, 5 tests
-- Full tests: PASS, 15 files / 87 tests
+- Jersey tests: PASS, 8 tests
+- Full tests: PASS, 15 files / 90 tests
 - Build: PASS, 86 generated pages; Jersey public/admin routes included
-- Browser: PASS at 1600, 1440, 1280, 1024, 768, 430, 390, and 360 px for page-level overflow, black theme continuity, sticky navigation, carousel ratios, arrow states, broken loaded images, page errors, and console errors
+- Browser: PASS at 1600, 1440, 1280, 1024, 768, 430, 390, and 360 px for the final ten-section composition, page-level overflow, black theme continuity, zero section/footer dividers, sticky navigation, carousel ratios, arrow states, seven-step order layout, broken loaded images, page errors, and console errors
+- Contextual interaction: PASS; current Home has no permanent underline, hover moves the underline between menu items, and keyboard focus exposes the same underline
+- Carousel ratio: PASS at approximately 3.29–3.33 cards on desktop, 2.27 at tablet, and 1.30–1.31 on mobile
+- Legacy Paket Tim check: PASS; no menu item, public section, fallback copy, or `#paket-tim` anchor remains
 - Header behavior: PASS; utility/navbar/promo are visible at desktop first load, the shared global header scrolls out naturally, and the contextual Jersey bar alone remains sticky
 - Broken route/CTA smoke: PASS for all rendered internal links and approved in-page anchors
 - Regression browser smoke: PASS for `/`, `/jersey/shop`, `/jersey/configurator`, and `/kaos-polos`
