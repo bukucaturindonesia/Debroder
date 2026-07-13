@@ -1,5 +1,6 @@
-export const WORK_ITEM_ROLES = ["owner", "superadmin", "super_admin", "admin"] as const;
+export const WORK_ITEM_ROLES = ["owner", "superadmin", "super_admin", "admin", "production_admin"] as const;
 export const WORK_ITEM_SUPER_ADMIN_ROLES = ["superadmin", "super_admin"] as const;
+export const WORK_ITEM_VIEWER_ROLES = [...WORK_ITEM_ROLES, "operator"] as const;
 
 export type WorkItemStatus =
   | "draft"
@@ -78,6 +79,10 @@ export const WORK_ITEM_PRIORITY_LABELS: Record<WorkItemPriority, string> = {
 
 export function isWorkItemRole(role: string | null | undefined) {
   return Boolean(role && WORK_ITEM_ROLES.includes(role as (typeof WORK_ITEM_ROLES)[number]));
+}
+
+export function isWorkItemViewerRole(role: string | null | undefined) {
+  return Boolean(role && WORK_ITEM_VIEWER_ROLES.includes(role as (typeof WORK_ITEM_VIEWER_ROLES)[number]));
 }
 
 export function isWorkItemSuperAdmin(role: string | null | undefined) {

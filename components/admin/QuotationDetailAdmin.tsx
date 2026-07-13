@@ -9,7 +9,8 @@ import { AdminAlert, AdminErrorState, AdminLoadingState } from "@/components/adm
 import { AdminPageHeader } from "@/components/admin/layout/AdminPageHeader";
 import {
   isAdminRole,
-  QUOTATION_ROLES
+  QUOTATION_ROLES,
+  QUOTATION_VIEW_ROLES
 } from "@/components/admin/layout/admin-navigation";
 import { QuotationItemManager } from "@/components/admin/QuotationItemManager";
 import { QuotationProductItemPanel } from "@/components/admin/QuotationProductItemPanel";
@@ -105,6 +106,7 @@ export function QuotationDetailAdmin() {
   const [history, setHistory] = useState<StatusHistory[]>([]);
   const [message, setMessage] = useState("");
   const [allowed, setAllowed] = useState(false);
+  const [role, setRole] = useState<string | null>(null);
   const [checkingAccess, setCheckingAccess] = useState(true);
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
@@ -211,7 +213,7 @@ export function QuotationDetailAdmin() {
         error ||
         !profile ||
         !isAdminRole(profile.role) ||
-        !QUOTATION_ROLES.includes(profile.role)
+        !QUOTATION_VIEW_ROLES.includes(profile.role)
       ) {
         setMessage("Akses detail quotation ditolak.");
         setCheckingAccess(false);
@@ -219,6 +221,7 @@ export function QuotationDetailAdmin() {
         return;
       }
 
+      setRole(profile.role);
       setAllowed(true);
       setCheckingAccess(false);
       await loadQuotation();
@@ -281,6 +284,10 @@ export function QuotationDetailAdmin() {
       ? quotation.confirmed_total
       : quotation.estimated_total;
 
+  const canManageQuotation = Boolean(
+    role && QUOTATION_ROLES.includes(role as (typeof QUOTATION_ROLES)[number])
+  );
+
   return (
     <main className="text-brand-charcoal">
       <div className="grid gap-6">
@@ -292,10 +299,14 @@ export function QuotationDetailAdmin() {
           }`}
           actions={
             <>
-              <OrderConversionManager />
+              {canManageQuotation ? (
+                <>
+                  <OrderConversionManager />
+                  <QuotationVersionManager />
+                  <QuotationLifecycleManager />
+                </>
+              ) : null}
               <MockupApprovalManager />
-              <QuotationVersionManager />
-              <QuotationLifecycleManager />
               <Link
                 href="/admin/orders/quotations"
                 className="inline-flex min-h-10 items-center justify-center rounded-full border border-brand-softGray bg-white px-5 text-sm font-semibold"
@@ -357,11 +368,13 @@ export function QuotationDetailAdmin() {
                   </p>
                 </div>
 
-                <div className="flex flex-wrap items-center gap-2">
-                  <QuotationItemManager />
-                  <QuotationServiceManager />
-                  <QuotationProductItemPanel />
-                </div>
+                {canManageQuotation ? (
+                  <div className="flex flex-wrap items-center gap-2">
+                    <QuotationItemManager />
+                    <QuotationServiceManager />
+                    <QuotationProductItemPanel />
+                  </div>
+                ) : null}
               </div>
 
               {items.length ? (
@@ -413,7 +426,7 @@ export function QuotationDetailAdmin() {
                 <div className="mt-6 border border-dashed border-brand-softGray bg-brand-offWhite p-8 text-center">
                   <p className="font-semibold">Belum ada produk</p>
                   <p className="mt-2 text-sm leading-6 text-brand-charcoal/60">
-                    Gunakan tombol Tambah Produk di kanan atas bagian ini.
+                    {canManageQuotation ? "Gunakan tombol Tambah Produk di kanan atas bagian ini." : "Belum ada item produk pada quotation ini."}
                   </p>
                 </div>
               )}

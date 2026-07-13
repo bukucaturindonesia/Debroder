@@ -16,6 +16,7 @@ import {
   getPhase9WorkItemTransitions,
   getWorkItemTransitionLabel,
   isWorkItemRole,
+  isWorkItemViewerRole,
   workItemTransitionNeedsReason,
   isWorkItemSuperAdmin,
   readSnapshotObject,
@@ -131,6 +132,8 @@ export function WorkItemDetailAdmin() {
   const [deleteConfirmation, setDeleteConfirmation] = useState("");
 
   const canManage = isWorkItemRole(role);
+  const canView = isWorkItemViewerRole(role);
+  const canTransition = canManage || role === "operator";
   const canDelete = isWorkItemSuperAdmin(role);
 
   const loadData = useCallback(async () => {
@@ -358,7 +361,7 @@ export function WorkItemDetailAdmin() {
   }
 
   async function transitionStatus() {
-    if (!row || !transitionTarget || !canManage || working) return;
+    if (!row || !transitionTarget || !canTransition || working) return;
     if (workItemTransitionNeedsReason(transitionTarget) && !transitionReason.trim()) {
       setNotice({ type: "error", text: "Alasan pembatalan wajib diisi." });
       return;
@@ -510,7 +513,7 @@ export function WorkItemDetailAdmin() {
         />
 
         {notice ? <AdminAlert type={notice.type}>{notice.text}</AdminAlert> : null}
-        {!canManage ? <AdminAlert type="error">Akun ini tidak mempunyai akses operasional Work Item.</AdminAlert> : null}
+        {!canView ? <AdminAlert type="error">Akun ini tidak mempunyai akses operasional Work Item.</AdminAlert> : !canManage ? <AdminAlert type="info">Mode operator: perubahan dibatasi pada status Work Item yang ditugaskan kepada akun ini.</AdminAlert> : null}
         {row.archived_at ? (
           <AdminAlert type="warning">
             Work Item diarsipkan {formatWorkItemDate(row.archived_at)} oleh {actorLabel(row.archived_by)}{row.archive_reason ? ` · ${row.archive_reason}` : ""}.
@@ -531,7 +534,7 @@ export function WorkItemDetailAdmin() {
           <Data label="Dilanjutkan" value={formatWorkItemDate(row.resumed_at)} />
         </section>
 
-        {!row.archived_at && transitions.length > 0 ? (
+        {!row.archived_at && canTransition && transitions.length > 0 ? (
           <section className="border border-brand-softGray bg-white p-5 sm:p-7">
             <h2 className="text-xl font-semibold">Kontrol Pekerjaan</h2>
             <p className="mt-2 text-sm leading-6 text-brand-charcoal/60">

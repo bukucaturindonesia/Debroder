@@ -1,4 +1,4 @@
-export const QC_ROLES = ["owner", "superadmin", "super_admin", "admin"] as const;
+export const QC_ROLES = ["owner", "superadmin", "super_admin", "admin", "production_admin", "quality_control"] as const;
 export const QC_SUPER_ADMIN_ROLES = ["superadmin", "super_admin"] as const;
 
 export type QcWorkflowStatus = "draft" | "in_review" | "finalized";

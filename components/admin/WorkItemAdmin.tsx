@@ -14,6 +14,7 @@ import {
   formatWorkItemTarget,
   isWorkItemRole,
   isWorkItemSuperAdmin,
+  isWorkItemViewerRole,
   readSnapshotObject,
   type WorkItemJobOrder,
   type WorkItemPriority,
@@ -85,6 +86,7 @@ export function WorkItemAdmin() {
   const [deleteConfirmation, setDeleteConfirmation] = useState("");
 
   const canManage = isWorkItemRole(role);
+  const canView = isWorkItemViewerRole(role);
   const canDelete = isWorkItemSuperAdmin(role);
 
   const loadData = useCallback(async () => {
@@ -343,8 +345,10 @@ export function WorkItemAdmin() {
 
         {notice ? <AdminAlert type={notice.type}>{notice.text}</AdminAlert> : null}
 
-        {!canManage ? (
+        {!canView ? (
           <AdminAlert type="error">Akun ini tidak mempunyai akses operasional Work Item.</AdminAlert>
+        ) : !canManage ? (
+          <AdminAlert type="info">Mode operator: hanya Work Item yang ditugaskan kepada akun ini yang ditampilkan.</AdminAlert>
         ) : null}
 
         <section className="grid gap-4 border border-brand-softGray bg-white p-4 sm:p-5 lg:grid-cols-[1fr_280px]">

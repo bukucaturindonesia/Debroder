@@ -7,7 +7,7 @@ import { createSupabaseClient } from "@/lib/supabase";
 import { AdminPageHeader } from "@/components/admin/layout/AdminPageHeader";
 import { AdminAlert, AdminEmptyState, AdminErrorState, AdminLoadingState } from "@/components/admin/ui/AdminFeedback";
 import { AdminStatusBadge, getQuotationStatusOptions } from "@/components/admin/ui/AdminStatusBadge";
-import { isAdminRole, QUOTATION_ROLES } from "@/components/admin/layout/admin-navigation";
+import { isAdminRole, QUOTATION_ROLES, QUOTATION_VIEW_ROLES } from "@/components/admin/layout/admin-navigation";
 
 type Row = {
   id: string;
@@ -46,6 +46,7 @@ export function QuotationListAdmin() {
   const [loading, setLoading] = useState(true);
   const [checkingAccess, setCheckingAccess] = useState(true);
   const [allowed, setAllowed] = useState(false);
+  const [role, setRole] = useState<string | null>(null);
 
   const loadRows = useCallback(async () => {
     const supabase = createSupabaseClient();
@@ -88,13 +89,14 @@ export function QuotationListAdmin() {
         error ||
         !profile ||
         !isAdminRole(profile.role) ||
-        !QUOTATION_ROLES.includes(profile.role)
+        !QUOTATION_VIEW_ROLES.includes(profile.role)
       ) {
         setMessage("Akses quotation ditolak.");
         setCheckingAccess(false);
         setLoading(false);
         return;
       }
+      setRole(profile.role);
       setAllowed(true);
       setCheckingAccess(false);
       await loadRows();
@@ -137,6 +139,7 @@ export function QuotationListAdmin() {
           title="Formal Quotation"
           description="Kelola quotation aktif, status, harga, dan siklus arsip."
           actions={
+            role && QUOTATION_ROLES.includes(role as (typeof QUOTATION_ROLES)[number]) ? (
             <>
               <Link
                 href="/admin/orders/quotations/archive"
@@ -151,6 +154,7 @@ export function QuotationListAdmin() {
                 Buat Quotation
               </Link>
             </>
+            ) : null
           }
         />
 

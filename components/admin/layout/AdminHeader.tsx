@@ -3,16 +3,8 @@
 import { AdminNotificationBell } from "@/components/admin/AdminNotificationBell";
 import { AdminBreadcrumb } from "./AdminBreadcrumb";
 import type { AdminRole } from "./admin-navigation";
-import { getCurrentNavigationLabel } from "./admin-navigation";
+import { getCurrentNavigationLabel, ROLE_LABELS } from "./admin-navigation";
 import { usePathname } from "next/navigation";
-
-const ROLE_LABELS: Record<AdminRole, string> = {
-  owner: "Owner",
-  superadmin: "Super Admin",
-  super_admin: "Super Admin",
-  sales_admin: "Sales Admin",
-  admin: "Admin"
-};
 
 export function AdminHeader({
   role,

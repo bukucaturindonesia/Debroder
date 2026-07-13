@@ -1,4 +1,4 @@
-export const FULFILLMENT_ROLES = ["owner", "superadmin", "super_admin", "admin"] as const;
+export const FULFILLMENT_ROLES = ["owner", "superadmin", "super_admin", "admin", "production_admin", "store_staff"] as const;
 export const FULFILLMENT_SUPER_ADMIN_ROLES = ["superadmin", "super_admin"] as const;
 
 export type FulfillmentMethod = "shipping" | "pickup";
