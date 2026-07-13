@@ -42,6 +42,8 @@ type Quotation = {
   confirmed_total: number | null;
   estimated_total: number | null;
   has_pending_pricing: boolean;
+  repeated_from_order_id: string | null;
+  repeat_reason: string | null;
   created_at: string;
   updated_at: string;
 };
@@ -134,7 +136,7 @@ export function QuotationDetailAdmin() {
       supabase
         .from("quotations")
         .select(
-          "id,quotation_number,customer_name,company_name,customer_email,customer_phone,billing_address,shipping_address,po_number,status,currency,valid_until,public_notes,internal_notes,product_subtotal,service_subtotal,additional_cost,discount_total,confirmed_total,estimated_total,has_pending_pricing,created_at,updated_at"
+          "id,quotation_number,customer_name,company_name,customer_email,customer_phone,billing_address,shipping_address,po_number,status,currency,valid_until,public_notes,internal_notes,product_subtotal,service_subtotal,additional_cost,discount_total,confirmed_total,estimated_total,has_pending_pricing,repeated_from_order_id,repeat_reason,created_at,updated_at"
         )
         .eq("id", quotationId)
         .maybeSingle(),
@@ -336,6 +338,24 @@ export function QuotationDetailAdmin() {
         </div>
 
         {message ? <AdminAlert type="warning">{message}</AdminAlert> : null}
+
+        {quotation.repeated_from_order_id ? (
+          <section className="border border-brand-green/20 bg-brand-green/5 p-5 text-sm">
+            <p className="font-semibold text-brand-green">Quotation Repeat Order</p>
+            <p className="mt-2 text-brand-charcoal/70">
+              Quotation ini dibuat dari order lama dan tetap memakai proses pemeriksaan harga, stok, layanan, serta approval desain yang baru.
+            </p>
+            {quotation.repeat_reason ? (
+              <p className="mt-2"><strong>Alasan:</strong> {quotation.repeat_reason}</p>
+            ) : null}
+            <Link
+              href={`/admin/orders/${quotation.repeated_from_order_id}`}
+              className="mt-3 inline-flex font-semibold text-brand-green underline"
+            >
+              Buka order sumber
+            </Link>
+          </section>
+        ) : null}
 
         <div className="grid gap-6 xl:grid-cols-[minmax(0,1.45fr)_minmax(320px,0.55fr)]">
           <div className="grid content-start gap-6">

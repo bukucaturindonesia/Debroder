@@ -126,12 +126,13 @@ describe("Phase 13 backend and UI contract", () => {
     expect(auditUi).toContain("Coba lagi");
   });
 
-  it("integrates role-aware navigation and assigned operator UX without Phase 14", () => {
+  it("keeps role-aware navigation and assigned operator UX compatible with Phase 14", () => {
     expect(navigation).toContain('href: "/admin/access-control"');
     expect(navigation).toContain('href: "/admin/audit-log"');
     expect(navigation).toContain('role === "quality_control"');
     expect(workItemUi).toContain("Mode operator");
     expect(workItemDetailUi).toContain("canTransition");
-    expect(navigation).not.toContain("repeat-order");
+    expect(navigation).toContain('href: "/admin/repeat-orders"');
+    expect(navigation).not.toContain("phase-15");
   });
 });

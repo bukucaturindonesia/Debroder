@@ -2,61 +2,72 @@
 
 ## Checkpoint
 
-**Phase 13 — Role & Audit v1.2: COMPLETE, TECHNICALLY VERIFIED, READY TO DEPLOY**
+**Phase 14 — Repeat Order v1.2: COMPLETE, TECHNICALLY VERIFIED, READY TO DEPLOY**
 
-Phase 12 remains COMPLETE AND DEPLOYED. Phase 14 application implementation has not started. A pre-existing remote migration named `phase14_repeat_order` was already present before this run and was left completely untouched.
+- Phase 12 Notification Management: COMPLETE AND DEPLOYED; no Phase 14 changes.
+- Phase 13 Role & Audit: COMPLETE AND DEPLOYED; role/audit integration retained.
+- Phase 15: NOT STARTED.
 
-## Completed in Phase 13
+## Completed in Phase 14
 
-- official v1.2 role catalog and labels
-- server/client role validation
-- database-backed permission matrix
-- authenticated role update RPC with last-Super-Admin protection
-- role-aware admin navigation and landing route
-- access-control service/API/page/UI
-- system-audit service/API/page/UI
-- append-only audit display with before/after
-- role, permission, quantity/price, status, payment, and file audit coverage
-- specialist role integration for Designer, Production Admin, Operator, Finance, Quality Control, and Store Staff
-- loading, empty, error, retry, and success states
-- Phase 13 contract and flow tests
+- TypeScript types and server validation
+- repeat-order query/service layer
+- authenticated API routes
+- role and permission enforcement
+- eligible source-order selection
+- current price-tier, variant, size, and stock checks
+- safe item/service/design-reference copy
+- confirmation dialog and idempotent creation
+- repeat-order workspace
+- order-detail and customer-history integration
+- quotation-origin integration
+- append-only history and audit visibility
+- loading, empty, success, retry, and error states
+- Phase 14 contract tests and full regression suite
 
 ## Database handoff
 
-Existing remote migrations retained:
+Existing remote migration retained and not replayed:
 
-- `phase13_permissions_matrix`
-- `phase13_append_only_audit`
+- `20260712071131 phase14_repeat_order`
 
-New corrective migrations applied once:
+No Phase 14 migration was created locally or applied in this run.
 
-- `20260713042309 v1_2_phase_13_role_catalog_and_rls_alignment`
-- `20260713042359 v1_2_phase_13_production_history_rls`
+Remote database checks:
 
-Remote checks:
+- RPC `create_repeat_order_quotation`: available
+- source relation and history foreign keys: PASS
+- unique idempotency constraints/indexes: PASS
+- RLS/history append-only trigger: PASS
+- role permission compatibility: PASS
+- transactional double-call smoke test: PASS and ROLLBACK
+- smoke records remaining: 0
 
-- official profile role constraint: PASS
-- specialist role matrix: PASS
-- Phase 13 RLS policies: 42
-- required audit/guard triggers: PASS
-- transactional audit smoke test: PASS and ROLLBACK
+## Official flow note
+
+The remote foundation creates a new draft quotation linked to the source order. Product prices and stock are revalidated, services remain pending when required, and the quotation then uses the existing approval/conversion lifecycle to become a new official order. The old order is never modified, and WhatsApp is not the main transaction flow.
 
 ## Quality gates
 
 - `npm run typecheck`: PASS
 - `npm run lint`: PASS — 0 errors, 24 pre-existing warnings
-- `npm test`: PASS — 13 files, 73 tests
-- `test/role-audit-phase13.test.ts`: PASS — 9 tests
-- `npm run build`: PASS — 80 pages/routes
+- Phase 14 tests: PASS — 9 tests
+- Full tests: PASS — 14 files, 82 tests
+- Production build: PASS — 83 generated entries/routes
+- `git diff --check`: PASS
 
-Sandbox build note: Google Fonts were mocked temporarily because external Google Fonts DNS was unavailable. Standalone typecheck/lint had already passed. A temporary single-CPU Next build setting was used to avoid sandbox worker stalling. Production source files were restored after build and contain no build-only configuration.
+Sandbox build note: Google Fonts were mocked temporarily because external Google Fonts DNS was unavailable. Standalone typecheck and lint passed first. Temporary build-only Next settings were restored and are not part of production source.
 
-## Next action
+## Verification entry points
 
-Deploy the Phase 13 source and perform the UI verification checklist in `docs/DEBRODER_V1.2_PHASE13_ROLE_AUDIT.md`.
+- `/admin/repeat-orders`
+- `/admin/orders/[id]`
+- `/admin/orders/quotations/[id]`
+- `/admin/audit-log`
+- `/admin/notifications`
 
 ## Hard stop
 
-**Phase 14 — Repeat Order: NOT STARTED.**
+**Phase 15: NOT STARTED.**
 
-Do not start Phase 14 without explicit owner approval. Do not replay Phase 13 migrations, reset the database, or alter Phase 12 notification foundations.
+Do not replay `phase14_repeat_order`, reset the database, alter Phase 12 notification foundations, or start Phase 15 without a new explicit owner instruction.

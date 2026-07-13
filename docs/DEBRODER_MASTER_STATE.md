@@ -6,42 +6,56 @@ Last updated: 13 July 2026
 
 - Phase 11 — Shipping / Pickup & Fulfillment: COMPLETE
 - Phase 12 — Notification Management v1.2: COMPLETE AND DEPLOYED
-- Phase 13 — Role & Audit v1.2: COMPLETE, TECHNICALLY VERIFIED, READY TO DEPLOY
-- Phase 14 — Repeat Order application implementation: NOT STARTED
+- Phase 13 — Role & Audit v1.2: COMPLETE AND DEPLOYED
+- Phase 14 — Repeat Order v1.2: COMPLETE, TECHNICALLY VERIFIED, READY TO DEPLOY
+- Phase 15: NOT STARTED
 
 ## Database state
 
 - Supabase project: `DEBRODER APPAREL`
-- Database synchronized through Phase 13 corrective migrations.
-- Existing Phase 13 foundations were preserved.
-- No database reset, migration replay, table/data deletion, or history cleanup was performed.
-- Latest Phase 13 migrations:
-  - `20260713042309 v1_2_phase_13_role_catalog_and_rls_alignment`
-  - `20260713042359 v1_2_phase_13_production_history_rls`
+- Phase 14 foundation migration already present remotely:
+  - `20260712071131 phase14_repeat_order`
+- The migration was not reopened, edited, recreated, or reapplied.
+- No database reset, data deletion, table/function/trigger/RLS deletion, or migration-history cleanup occurred.
+- No new Phase 14 migration was necessary.
 
-## Phase 13 state
+## Phase 14 state
 
-- Official role catalog implemented.
-- Permission matrix is database-backed and migration-controlled.
-- Role mutation uses secured authenticated RPC.
-- RLS is aligned additively across order, quotation, mockup, payment, production, QC, fulfillment, and access-control read surfaces.
-- Operator visibility is constrained to assigned Work Items.
-- System audit is append-only and exposes before/after history to authorized roles only.
-- Phase 12 notification lifecycle is preserved.
+- Authorized roles: Owner, Super Admin aliases, Admin, and Sales Admin.
+- Backend also requires `order.read` and `quotation.write`.
+- Eligible source statuses: `siap_diambil`, `siap_dikirim`, `selesai`.
+- Source order remains immutable during Repeat Order.
+- New draft quotation stores `repeated_from_order_id`, reason, and idempotency key.
+- Products are repriced using active product/tier/variant/size rules when possible.
+- Stock is rechecked and differences are shown before confirmation.
+- Service pricing and manual combinations remain pending.
+- Design files remain private and are referenced through the source relationship; a new approval lifecycle is required.
+- Repeat history is append-only and audit is written to `system_audit_log`.
+- Double calls with the same idempotency key resolve to one quotation.
+
+## Integration state
+
+- Repeat Order workspace added to role-aware admin navigation.
+- Order detail contains Repeat Order confirmation and customer history.
+- Quotation detail shows its source order and repeat reason.
+- Phase 12 notification test remains green.
+- Phase 13 role/audit test remains green after its phase-boundary assertion was updated for the now-authorized Phase 14 route.
+- Six missing Phase 13 route files from the uploaded deploy archive were restored from the verified Phase 13 checkpoint to prevent regression.
 
 ## Quality state
 
 - Typecheck: PASS
-- Lint: PASS, 0 errors, 24 pre-existing warnings
-- Tests: PASS, 13 files / 73 tests
-- Phase 13 tests: PASS, 9 tests
-- Build: PASS, 80 routes/pages generated
-- Database smoke test: PASS and ROLLBACK
+- Lint: PASS, 0 errors / 24 pre-existing warnings
+- Phase 14 tests: PASS, 9 tests
+- Full tests: PASS, 14 files / 82 tests
+- Build: PASS, 83 generated entries/routes
+- Database transactional smoke test: PASS and ROLLBACK
+- Smoke records remaining: 0
 
-## Repository note
+## Repository instruction note
 
-The source package used for this checkpoint did not contain a project-level `AGENTS.md`. No repository instruction file was fabricated. The missing master state and current handoff documents were created as part of the required Phase 13 closeout.
+No project-level `AGENTS.md` was present in the supplied source. No instruction file was fabricated.
 
 ## Frozen boundary
 
-Do not start Phase 14, reapply completed migrations, reset the database, or modify the frozen landing architecture without a new explicit owner instruction.
+The frozen landing architecture and Phase 12/13 database foundations were not modified. Phase 15 must not begin without explicit owner approval.

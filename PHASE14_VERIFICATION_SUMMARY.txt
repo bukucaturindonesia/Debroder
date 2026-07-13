@@ -1,0 +1,53 @@
+DEBRODER v1.2 PHASE 14 — REPEAT ORDER
+STATUS: COMPLETE, TECHNICALLY VERIFIED, READY TO DEPLOY
+
+Scope:
+- Repeat Order from eligible historical orders
+- active product/tier/variant/size price recheck
+- stock and availability recheck
+- service/design reference carry-forward
+- authenticated role and permission enforcement
+- idempotent formal quotation creation
+- source relation, append-only history, and system audit
+- order detail, customer history, quotation origin, and Repeat Order workspace
+
+Database:
+- Existing remote migration 20260712071131 phase14_repeat_order confirmed.
+- Migration was not reopened, edited, recreated, or reapplied.
+- No new migration was required.
+- Transactional RPC smoke test: PASS and ROLLBACK.
+- Double call produced one quotation and one history row.
+- Source order remained unchanged.
+- Copied item relationship: PASS.
+- Smoke records remaining after rollback: 0.
+
+Access control:
+- Allowed: owner, superadmin, super_admin, admin, sales_admin.
+- Backend also requires order.read and quotation.write.
+- Other operational roles are rejected by the Repeat Order preview/create backend.
+
+Quality gates:
+- npm run typecheck: PASS
+- npm run lint: PASS (0 errors; 24 pre-existing warnings outside Phase 14)
+- Phase 14 tests: PASS (9 tests)
+- Full test suite: PASS (14 files, 82 tests)
+- npm run build: PASS (83 generated entries/routes)
+- git diff --check: PASS
+
+Build environment note:
+- Google Fonts DNS was unavailable in the sandbox.
+- A temporary Next font mock, single-CPU setting, and duplicate in-build lint/typecheck skip were used only after standalone lint/typecheck passed.
+- Production source configuration was restored.
+
+Regression:
+- Phase 12 notification tests: PASS.
+- Phase 13 role/audit tests: PASS.
+- Six missing Phase 13 route/page files in the supplied archive were restored from the verified Phase 13 checkpoint.
+
+Official flow note:
+- The existing database foundation creates a new linked draft quotation.
+- The quotation must pass current price, stock, service, and design review before existing conversion creates the new official order.
+- The old order is not changed.
+- WhatsApp is not the primary transaction path.
+
+Phase 15: NOT STARTED.

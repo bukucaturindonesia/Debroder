@@ -7,6 +7,8 @@ import { createSupabaseClient } from "@/lib/supabase";
 import { AdminPageHeader } from "@/components/admin/layout/AdminPageHeader";
 import { AdminErrorState, AdminLoadingState } from "@/components/admin/ui/AdminFeedback";
 import { PaymentTrackingManager } from "@/components/admin/PaymentTrackingManager";
+import { RepeatOrderDialog } from "@/components/admin/RepeatOrderDialog";
+import { CustomerOrderHistory } from "@/components/admin/CustomerOrderHistory";
 
 type Order = {
   id: string;
@@ -184,6 +186,7 @@ export function OrderDetailAdmin() {
           description={`${order.customer_name}${order.company_name ? ` · ${order.company_name}` : ""}`}
           actions={
             <>
+              <RepeatOrderDialog orderId={order.id} />
               <PaymentTrackingManager />
               <Link
                 href={`/admin/job-orders?order=${order.id}`}
@@ -268,6 +271,8 @@ export function OrderDetailAdmin() {
             ))}
           </div>
         </section>
+
+        <CustomerOrderHistory orderId={order.id} />
       </div>
 
       {editOpen ? (

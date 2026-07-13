@@ -28,6 +28,7 @@ export type AdminNavigationGroup = {
 export const FULL_ADMIN_ROLES: readonly AdminRole[] = ["owner", "superadmin", "super_admin", "admin"];
 export const QUOTATION_ROLES: readonly AdminRole[] = ["owner", "superadmin", "super_admin", "sales_admin", "admin"];
 export const QUOTATION_VIEW_ROLES: readonly AdminRole[] = [...QUOTATION_ROLES, "designer"];
+export const REPEAT_ORDER_ROLES: readonly AdminRole[] = QUOTATION_ROLES;
 const ALL_STAFF_ROLES: readonly AdminRole[] = ADMIN_ROLES;
 const ORDER_READ_ROLES: readonly AdminRole[] = ["owner", "superadmin", "super_admin", "admin", "sales_admin", "finance", "production_admin", "store_staff"];
 const QUOTATION_READ_ROLES: readonly AdminRole[] = QUOTATION_VIEW_ROLES;
@@ -74,6 +75,7 @@ export const adminNavigationGroups: readonly AdminNavigationGroup[] = [
       roles: ALL_STAFF_ROLES,
       children: [
         { label: "Pesanan", href: "/admin/orders", roles: ORDER_READ_ROLES, exact: true },
+        { label: "Repeat Order", href: "/admin/repeat-orders", roles: REPEAT_ORDER_ROLES },
         { label: "Formal Quotation", href: "/admin/orders/quotations", roles: QUOTATION_READ_ROLES },
         { label: "Job Order", href: "/admin/job-orders", roles: PRODUCTION_ROLES },
         { label: "Work Item", href: "/admin/work-items", roles: PRODUCTION_ROLES },
@@ -168,6 +170,7 @@ export function getCurrentNavigationLabel(pathname: string) {
   if (pathname === "/admin/work-items") return "Work Item";
   if (pathname.startsWith("/admin/job-orders/")) return "Detail Job Order";
   if (pathname === "/admin/job-orders") return "Job Order";
+  if (pathname === "/admin/repeat-orders") return "Repeat Order";
   if (pathname === "/admin/orders/quotations/new") return "Buat Quotation";
   if (pathname.startsWith("/admin/orders/quotations/")) return "Detail Quotation";
   if (pathname === "/admin/orders/archive") return "Gudang Arsip Pesanan";
@@ -184,6 +187,7 @@ export function getAdminBreadcrumbs(pathname: string): AdminBreadcrumbItem[] {
   if (pathname === "/admin/dashboard" || pathname === "/admin") return [{ label: "Dashboard" }];
   if (pathname === "/admin/access-control") return [{ label: "Sistem" }, { label: "Role & Permission" }];
   if (pathname === "/admin/audit-log") return [{ label: "Sistem" }, { label: "Audit Sistem" }];
+  if (pathname === "/admin/repeat-orders") return [{ label: "Order", href: "/admin/orders" }, { label: "Repeat Order" }];
   if (pathname.startsWith("/admin/notifications")) {
     const crumbs: AdminBreadcrumbItem[] = [{ label: "Operasional" }, { label: "Notifikasi", href: pathname === "/admin/notifications" ? undefined : "/admin/notifications" }];
     if (pathname === "/admin/notifications/templates") crumbs.push({ label: "Template" });
@@ -196,5 +200,5 @@ export function getAdminBreadcrumbs(pathname: string): AdminBreadcrumbItem[] {
 }
 
 export function isLegacyAdminRoute(pathname: string) {
-  return !(pathname.startsWith("/admin/orders") || pathname.startsWith("/admin/document-numbering") || pathname.startsWith("/admin/job-orders") || pathname.startsWith("/admin/work-items") || pathname.startsWith("/admin/production") || pathname.startsWith("/admin/quality-control") || pathname.startsWith("/admin/fulfillments") || pathname.startsWith("/admin/notifications") || pathname.startsWith("/admin/access-control") || pathname.startsWith("/admin/audit-log"));
+  return !(pathname.startsWith("/admin/orders") || pathname.startsWith("/admin/document-numbering") || pathname.startsWith("/admin/job-orders") || pathname.startsWith("/admin/work-items") || pathname.startsWith("/admin/production") || pathname.startsWith("/admin/quality-control") || pathname.startsWith("/admin/fulfillments") || pathname.startsWith("/admin/notifications") || pathname.startsWith("/admin/access-control") || pathname.startsWith("/admin/audit-log") || pathname.startsWith("/admin/repeat-orders"));
 }
