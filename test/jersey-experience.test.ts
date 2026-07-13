@@ -43,10 +43,10 @@ describe("Jersey commerce experience", () => {
   it("separates inspiration, catalog, product detail, and configurator routes", () => {
     const landing = readFileSync("app/jersey/page.tsx", "utf8");
     const shop = readFileSync("app/jersey/shop/page.tsx", "utf8");
-    const catalog = readFileSync("components/ProductCatalog.tsx", "utf8");
+    const catalog = readFileSync("components/jersey/JerseyShopCatalog.tsx", "utf8");
     const configurator = readFileSync("app/jersey/configurator/page.tsx", "utf8");
     expect(landing).not.toContain("ProductCatalog");
-    expect(shop).toContain("ProductCatalog");
+    expect(shop).toContain("JerseyShopCatalog");
     expect(catalog).toContain("`/produk/${product.slug");
     expect(configurator).toContain("JerseyConfigurator");
   });

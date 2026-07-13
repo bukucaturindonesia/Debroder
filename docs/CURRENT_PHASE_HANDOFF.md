@@ -14,7 +14,12 @@ Implemented locally:
 - legacy Paket Tim removed from public composition, fallback, navigation, and approved anchors without deleting shared CMS data;
 - borderless seven-step Cara Order grid and divider-free dark Jersey footer;
 - reserved-ratio route loading state and recoverable route error state;
-- PIM-backed `/jersey/shop` catalog transition;
+- PIM-backed `/jersey/shop` commerce shell with a white/black contextual navbar and no stacked global navbar;
+- URL-backed search, subcategory, color, size, availability, price, and sort state derived only from actual PIM data;
+- compact sticky Show/Hide Filters + Sort By toolbar, 240 px desktop sidebar, focus-managed mobile drawer with Escape/focus trap, and Reset/Terapkan actions;
+- three product cards per row on desktop in both sidebar states, two cards on mobile, stable 4:5 media, fine-pointer second-image hover, and proportional grid resizing;
+- PIM product status, price, color count, canonical `/produk/[slug]` links, Load More, and loading/empty/retry states;
+- universal Jersey product detail styling on `/produk/[slug]`, with custom-only products sent to the official Configurator and Ready Stock products retaining variant/size/quantity/Add to Cart plus same-cart Buy Now;
 - official `/jersey/configurator` integration using the existing configurator;
 - strict CTA route/anchor validation and canonical `/produk/[slug]` product detail flow;
 - two responsive native-scroll carousel groups with 3.2 visible cards on desktop, 2.2 on tablet, and about 1.27 on mobile, plus accessible arrows and disabled states;
@@ -26,10 +31,10 @@ Verification completed:
 
 - TypeScript: PASS;
 - lint: PASS with 0 errors and 23 existing warnings outside this implementation;
-- targeted Jersey test: PASS, 8 tests;
-- full suite: PASS, 15 files / 90 tests;
+- targeted Jersey tests: PASS, 13 tests;
+- full suite: PASS, 16 files / 95 tests;
 - production build: PASS;
-- HTTP route smoke: PASS for public Jersey routes, admin CMS route, and sitemap;
+- HTTP route smoke: PASS for `/jersey`, `/jersey/shop`, a filtered/sorted shop URL, `/produk/custom-jersey`, `/jersey/configurator`, `/keranjang`, and the fallback product image;
 - browser at 1600, 1440, 1280, 1024, 768, 430, 390, and 360 px: PASS for the final ten-section sequence, no page overflow, black theme continuity, zero section/footer borders, sticky nav, carousel ratios/arrow states, seven order steps, loaded image integrity, console errors, and page errors;
 - underline initial/hover/move/focus behavior: PASS; no permanent Home underline;
 - Paket Tim removal: PASS for public DOM, navigation, fallback copy, and anchor;
@@ -37,6 +42,14 @@ Verification completed:
 - rendered internal CTA and approved anchor check: PASS; no broken route found;
 - browser regression smoke for `/`, `/jersey/shop`, `/jersey/configurator`, and `/kaos-polos`: PASS;
 - click flow: PASS through shop, canonical product detail, and Configurator.
+
+Verification limits found in this run:
+
+- browser runner was unavailable; Playwright existed but Chromium was absent and its download was blocked, so the new shop/detail UI has not been visually or console-verified at the required viewport matrix;
+- `/checkout` returns 404;
+- public cart checkout remains WhatsApp-based and does not create an official order, although an existing single-product `create_public_order` RPC and Order Management tables/UI are present elsewhere in the repository;
+- end-to-end checkout → order → payment → Admin verification is therefore NO-GO, not passed;
+- no database migration or remote mutation was run.
 
 Pending deployment gates:
 
@@ -46,6 +59,8 @@ Pending deployment gates:
 - real DEBRODER Jersey campaign photography must be selected and published in CMS; the source archive only provides local brand artwork for safe fallback rendering;
 - owner should repeat responsive visual QA with final production media and focal points after CMS publication;
 - deployment and authenticated CMS publication remain outside this local implementation checkpoint.
+- implement or approve one official server-side cart checkout using the existing order tables/RPC domain, including multi-item repricing, stock validation, idempotency, payment-on-the-same-order, and Admin visibility; do not create a second order system;
+- repeat browser QA for `/jersey/shop` and Jersey `/produk/[slug]` at 1600/1440/1280/1024/768/430/390/360 px once a browser-enabled environment is available.
 
 ## Checkpoint
 

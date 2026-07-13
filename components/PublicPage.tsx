@@ -607,20 +607,24 @@ export function PublicShell({
   children,
   headerMode = "sticky",
   headerExpandedAtTop = false,
-  theme = "default"
+  theme = "default",
+  showHeader = true
 }: {
   content: PublicContent;
   children: ReactNode;
   headerMode?: "sticky" | "natural";
   headerExpandedAtTop?: boolean;
-  theme?: "default" | "jersey";
+  theme?: "default" | "jersey" | "jersey-commerce";
+  showHeader?: boolean;
 }) {
+  const jerseyEditorial = theme === "jersey";
+  const jerseyCommerce = theme === "jersey-commerce";
   return (
-    <main className={`public-site min-h-screen ${theme === "jersey" ? "jersey-theme bg-[#050505] text-white" : "bg-brand-offWhite text-brand-charcoal"}`}>
-      <SiteHeader positionMode={headerMode} expandedAtTop={headerExpandedAtTop} />
+    <main className={`public-site min-h-screen ${jerseyEditorial ? "jersey-theme bg-[#050505] text-white" : jerseyCommerce ? "jersey-commerce-theme bg-white text-[#111111]" : "bg-brand-offWhite text-brand-charcoal"}`}>
+      {showHeader ? <SiteHeader positionMode={headerMode} expandedAtTop={headerExpandedAtTop} /> : null}
       <PageMotion />
       {children}
-      <PublicFooter content={content} variant={theme === "jersey" ? "dark" : "default"} />
+      <PublicFooter content={content} variant={jerseyEditorial ? "dark" : "default"} />
     </main>
   );
 }

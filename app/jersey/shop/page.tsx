@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
-import { JerseyChrome } from "@/components/jersey/JerseyChrome";
-import { ProductCatalog } from "@/components/ProductCatalog";
+import { Suspense } from "react";
+import { JerseyCommerceNav } from "@/components/jersey/JerseyCommerceNav";
+import { JerseyShopCatalog } from "@/components/jersey/JerseyShopCatalog";
 import { PublicShell } from "@/components/PublicPage";
 import { productsForCategoryRoute } from "@/lib/product-route-matching";
 import { getPublicContent } from "@/lib/public-data";
@@ -16,20 +17,32 @@ export default async function JerseyShopPage() {
   const products = productsForCategoryRoute(content.products, content.productCategories, "jersey");
 
   return (
-    <PublicShell content={content} headerMode="natural">
-      <JerseyChrome />
-      <header className="bg-[#f4f3ef] py-12 sm:py-16">
-        <div className="section-shell">
-          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#063D24]">DEBRODER JERSEY</p>
-          <h1 className="mt-3 font-heading text-5xl font-extrabold uppercase leading-[0.92] tracking-[-0.035em] sm:text-7xl">Shop All Jersey</h1>
-          <p className="mt-4 max-w-2xl text-base leading-7 text-black/60">Pilih jersey Ready Stock atau produk yang mendukung kebutuhan custom. Data produk, harga, varian, dan stok tetap berasal dari PIM.</p>
-        </div>
-      </header>
-      <section className="bg-white py-10 sm:py-14 lg:py-16">
-        <div className="section-shell">
-          <ProductCatalog products={products} showCategoryFilter={false} />
-        </div>
-      </section>
+    <PublicShell content={content} theme="jersey-commerce" showHeader={false}>
+      <Suspense fallback={<ShopShellSkeleton />}>
+        <JerseyCommerceNav />
+        <JerseyShopCatalog products={products} />
+      </Suspense>
     </PublicShell>
+  );
+}
+
+function ShopShellSkeleton() {
+  return (
+    <div className="min-h-screen bg-white text-black" aria-label="Memuat katalog Jersey">
+      <div className="h-14 border-b border-black/10" />
+      <div className="section-shell py-12">
+        <div className="h-4 w-32 animate-pulse bg-black/10 motion-reduce:animate-none" />
+        <div className="mt-4 h-14 w-3/4 max-w-xl animate-pulse bg-black/10 motion-reduce:animate-none" />
+      </div>
+      <div className="h-14 border-y border-black/10" />
+      <div className="section-shell grid grid-cols-2 gap-4 py-8 lg:grid-cols-3">
+        {Array.from({ length: 6 }).map((_, index) => (
+          <div key={index}>
+            <div className="aspect-[4/5] animate-pulse bg-black/[0.06] motion-reduce:animate-none" />
+            <div className="mt-3 h-4 w-3/4 animate-pulse bg-black/10 motion-reduce:animate-none" />
+          </div>
+        ))}
+      </div>
+    </div>
   );
 }

@@ -56,6 +56,21 @@ body {
   box-shadow: none;
 }
 
+@media (hover: hover) and (pointer: fine) {
+  .group:hover .product-image-primary.has-secondary {
+    opacity: 0;
+  }
+
+  .group:hover .product-image-secondary {
+    opacity: 1;
+    transform: scale(1.01);
+  }
+
+  .group:hover .product-image-primary:not(.has-secondary) {
+    transform: scale(1.02);
+  }
+}
+
 .premium-media-surface {
   background:
     linear-gradient(135deg, rgba(6, 61, 36, 0.055), transparent 34%),

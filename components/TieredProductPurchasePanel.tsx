@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useRouter } from "next/navigation";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useCart, type CartProductInput } from "@/components/CartProvider";
 import { useOptionalProductVariantGallery } from "@/components/ProductVariantGalleryContext";
 import { createSupabaseClient } from "@/lib/supabase";
@@ -40,6 +41,8 @@ type ProductPurchasePanelProps = {
   bulkOrderNote?: string | null;
   whatsappUrl?: string;
   variants?: ProductVariant[];
+  showBuyNow?: boolean;
+  monochrome?: boolean;
 };
 
 const baseColors: ProductColorOption[] = [
@@ -168,10 +171,14 @@ export function TieredProductPurchasePanel({
   sizeGuide = [],
   bulkOrderNote,
   whatsappUrl,
-  variants = []
+  variants = [],
+  showBuyNow = false,
+  monochrome = false
 }: ProductPurchasePanelProps) {
   const cart = useCart();
+  const router = useRouter();
   const variantGallery = useOptionalProductVariantGallery();
+  const interactionLocked = useRef(false);
 
   const [tiers, setTiers] = useState<ProductPriceTier[]>([]);
   const [minimumRule, setMinimumRule] =
@@ -369,7 +376,11 @@ export function TieredProductPurchasePanel({
         );
 
   function addSelectedToCart() {
-    if (belowMinimum || unavailable) return;
+    if (belowMinimum || unavailable || interactionLocked.current) return false;
+    interactionLocked.current = true;
+    window.setTimeout(() => {
+      interactionLocked.current = false;
+    }, 500);
 
     cart.addItem({
       ...product,
@@ -416,6 +427,13 @@ export function TieredProductPurchasePanel({
         subtotal: subtotal || null
       }
     });
+    return true;
+  }
+
+  function buySelectedNow() {
+    if (!addSelectedToCart()) return;
+    cart.closeCart();
+    router.push("/keranjang");
   }
 
   return (
@@ -448,7 +466,7 @@ export function TieredProductPurchasePanel({
                 onClick={() => setSelectedColor(option.name)}
                 className={`grid h-9 w-9 place-items-center rounded-full transition ${
                   selected
-                    ? "ring-2 ring-brand-green ring-offset-2 ring-offset-[#F7F7F4]"
+                    ? `ring-2 ${monochrome ? "ring-black" : "ring-brand-green"} ring-offset-2 ring-offset-[#F7F7F4]`
                     : "ring-1 ring-black/10 hover:ring-black/30"
                 }`}
               >
@@ -561,7 +579,9 @@ export function TieredProductPurchasePanel({
               ? "bg-red-50 text-red-800"
               : quoteRequired
                 ? "bg-amber-50 text-amber-900"
-                : "bg-[#e9f4ee] text-[#063d24]"
+                : monochrome
+                  ? "bg-black/[0.06] text-black"
+                  : "bg-[#e9f4ee] text-[#063d24]"
           }`}
         >
           <div className="flex flex-wrap items-start justify-between gap-4">
@@ -590,22 +610,34 @@ export function TieredProductPurchasePanel({
           </div>
         </div>
 
-        <button
-          type="button"
-          disabled={unavailable || belowMinimum || pricingLoading}
-          onClick={addSelectedToCart}
-          className="inline-flex min-h-12 items-center justify-center rounded-full bg-brand-green px-6 text-sm font-semibold text-white transition hover:bg-brand-charcoal disabled:cursor-not-allowed disabled:bg-black/20"
-        >
-          {unavailable
-            ? "Varian Tidak Tersedia"
-            : pricingLoading
-              ? "Memuat Harga..."
-              : belowMinimum
-                ? `Minimum ${minimumQuantity} pcs`
-                : quoteRequired
-                  ? "Tambahkan untuk Penawaran"
-                  : "Tambah ke Keranjang"}
-        </button>
+        <div className={`grid gap-2 ${showBuyNow ? "sm:grid-cols-2" : ""}`}>
+          <button
+            type="button"
+            disabled={unavailable || belowMinimum || pricingLoading}
+            onClick={addSelectedToCart}
+            className={`inline-flex min-h-12 items-center justify-center rounded-full px-6 text-sm font-semibold transition disabled:cursor-not-allowed disabled:bg-black/20 ${monochrome ? "bg-black text-white hover:bg-black/75" : "bg-brand-green text-white hover:bg-brand-charcoal"}`}
+          >
+            {unavailable
+              ? "Varian Tidak Tersedia"
+              : pricingLoading
+                ? "Memuat Harga..."
+                : belowMinimum
+                  ? `Minimum ${minimumQuantity} pcs`
+                  : quoteRequired
+                    ? "Tambahkan untuk Penawaran"
+                    : "Tambah ke Keranjang"}
+          </button>
+          {showBuyNow ? (
+            <button
+              type="button"
+              disabled={unavailable || belowMinimum || pricingLoading}
+              onClick={buySelectedNow}
+              className="inline-flex min-h-12 items-center justify-center rounded-full border border-black bg-white px-6 text-sm font-semibold text-black transition hover:bg-black hover:text-white disabled:cursor-not-allowed disabled:border-black/20 disabled:text-black/30"
+            >
+              Buy Now
+            </button>
+          ) : null}
+        </div>
 
         {whatsappUrl ? (
           <a
@@ -621,7 +653,7 @@ export function TieredProductPurchasePanel({
 
       <section className="rounded-[22px] bg-white/60 p-4">
         <div className="flex items-start gap-3">
-          <span className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-[#e9f4ee] text-lg">
+          <span className={`grid h-10 w-10 shrink-0 place-items-center rounded-full text-lg ${monochrome ? "bg-black/[0.06]" : "bg-[#e9f4ee]"}`}>
             👕
           </span>
           <div>

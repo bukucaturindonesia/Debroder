@@ -1,12 +1,19 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { Suspense } from "react";
+import { JerseyCommerceNav } from "@/components/jersey/JerseyCommerceNav";
 import { ProductGallery } from "@/components/ProductGallery";
 import { TieredProductPurchasePanel } from "@/components/TieredProductPurchasePanel";
 import { ProductVariantGalleryProvider } from "@/components/ProductVariantGalleryContext";
 import { PublicShell } from "@/components/PublicPage";
 import { getProductImage } from "@/lib/fallback-data";
 import { getProductGalleryImages } from "@/lib/product-gallery";
+import {
+  jerseyHasCustomAvailability,
+  jerseyHasReadyStock
+} from "@/lib/jersey-commerce";
+import { productMatchesRoute } from "@/lib/product-route-matching";
 import { getPublicContent } from "@/lib/public-data";
 import type { Product, ProductSizeGuide } from "@/lib/types";
 import { formatRupiah, whatsappLinkWithMessage } from "@/lib/url";
@@ -135,10 +142,23 @@ export default async function ProductDetailPage({ params }: PageProps) {
     formatRupiah(product.price ?? product.harga ?? product.base_price) ||
     "Hubungi kami";
   const detailHref = `/produk/${product.slug || slug}`;
+  const isJersey = productMatchesRoute(product, "jersey");
+  const hasReadyStock = jerseyHasReadyStock(product);
+  const hasCustomAvailability = jerseyHasCustomAvailability(product);
+  const showPurchasePanel = !isJersey || hasReadyStock || !hasCustomAvailability;
 
   return (
-    <PublicShell content={content}>
-      <main className="bg-brand-offWhite py-8 sm:py-12">
+    <PublicShell
+      content={content}
+      theme={isJersey ? "jersey-commerce" : "default"}
+      showHeader={!isJersey}
+    >
+      {isJersey ? (
+        <Suspense fallback={<div className="h-14 border-b border-black/10 bg-white" />}>
+          <JerseyCommerceNav />
+        </Suspense>
+      ) : null}
+      <main className={`${isJersey ? "bg-white" : "bg-brand-offWhite"} py-8 sm:py-12`}>
         <div className="section-shell">
           <nav
             aria-label="Breadcrumb"
@@ -146,7 +166,9 @@ export default async function ProductDetailPage({ params }: PageProps) {
           >
             <Link href="/">Beranda</Link>
             <span>/</span>
-            <Link href="/koleksi">Koleksi</Link>
+            <Link href={isJersey ? "/jersey/shop" : "/koleksi"}>
+              {isJersey ? "Jersey" : "Koleksi"}
+            </Link>
             <span>/</span>
             <span aria-current="page">{product.nama}</span>
           </nav>
@@ -162,7 +184,7 @@ export default async function ProductDetailPage({ params }: PageProps) {
                 focal={focal}
               />
 
-              <div className="self-start rounded-[32px] bg-white/40 p-5 sm:p-7 lg:sticky lg:top-24">
+              <div className={`self-start p-5 sm:p-7 lg:sticky lg:top-24 ${isJersey ? "border-t border-black/10 bg-white" : "rounded-[32px] bg-white/40"}`}>
                 <p className="text-xs font-semibold uppercase tracking-[.16em] text-brand-charcoal/50">
                   {product.kategori}
                   {product.subcategory
@@ -198,33 +220,59 @@ export default async function ProductDetailPage({ params }: PageProps) {
                   Harga akhir berubah otomatis mengikuti jumlah pesanan.
                 </p>
 
-                <TieredProductPurchasePanel
-                  product={{
-                    id: product.id || product.slug || product.nama,
-                    name: product.nama,
-                    category: product.kategori,
-                    priceLabel,
-                    priceValue:
-                      Number(
-                        product.price ??
-                          product.harga ??
-                          product.base_price ??
-                          0
-                      ) || undefined,
-                    href: detailHref,
-                    imageUrl: getProductImage(product),
-                    imageAlt: product.image_alt || product.nama,
-                    sku: product.sku || undefined
-                  }}
-                  colors={variantColors(product)}
-                  sizes={variantSizes(product)}
-                  sizeGuide={sizeGuideForProduct(product)}
-                  bulkOrderNote={product.bulk_order_note}
-                  whatsappUrl={whatsappUrl}
-                  variants={product.variants}
-                />
+                {showPurchasePanel ? (
+                  <TieredProductPurchasePanel
+                    product={{
+                      id: product.id || product.slug || product.nama,
+                      name: product.nama,
+                      category: product.kategori,
+                      priceLabel,
+                      priceValue:
+                        Number(
+                          product.price ??
+                            product.harga ??
+                            product.base_price ??
+                            0
+                        ) || undefined,
+                      href: detailHref,
+                      imageUrl: getProductImage(product),
+                      imageAlt: product.image_alt || product.nama,
+                      sku: product.sku || undefined
+                    }}
+                    colors={variantColors(product)}
+                    sizes={variantSizes(product)}
+                    sizeGuide={sizeGuideForProduct(product)}
+                    bulkOrderNote={product.bulk_order_note}
+                    whatsappUrl={whatsappUrl}
+                    variants={product.variants}
+                    showBuyNow={isJersey && hasReadyStock}
+                    monochrome={isJersey}
+                  />
+                ) : (
+                  <section className="mt-7 border-y border-black/10 py-6">
+                    <h2 className="text-xl font-bold">Jersey Custom</h2>
+                    <p className="mt-2 text-sm leading-6 text-black/60">
+                      Produk ini disiapkan melalui Jersey Configurator agar model, bahan, warna, logo, nama, nomor, dan jumlah pemain tercatat dalam satu alur.
+                    </p>
+                    <Link
+                      href="/jersey/configurator"
+                      className="mt-5 inline-flex min-h-12 items-center justify-center rounded-full bg-black px-6 text-sm font-semibold text-white outline-none transition hover:bg-black/75 focus-visible:ring-2 focus-visible:ring-black focus-visible:ring-offset-2"
+                    >
+                      Mulai Konfigurasi Jersey
+                    </Link>
+                  </section>
+                )}
 
-                <div className="mt-8 rounded-[24px] bg-white/50 p-4">
+                {isJersey && hasReadyStock && hasCustomAvailability ? (
+                  <Link
+                    href="/jersey/configurator"
+                    className="mt-3 inline-flex min-h-11 items-center text-sm font-semibold text-black underline decoration-1 underline-offset-4 outline-none focus-visible:ring-2 focus-visible:ring-black focus-visible:ring-offset-2"
+                  >
+                    Atau buat Jersey Custom
+                  </Link>
+                ) : null}
+
+                <div className={`mt-8 p-4 ${isJersey ? "border-t border-black/10 bg-white" : "rounded-[24px] bg-white/50"}`}>
                   <h2 className="text-base font-semibold">Deskripsi</h2>
                   <p className="mt-3 whitespace-pre-line text-sm leading-7 text-brand-charcoal/60">
                     {product.description ||
@@ -234,7 +282,7 @@ export default async function ProductDetailPage({ params }: PageProps) {
                 </div>
 
                 {product.specifications?.length ? (
-                  <div className="mt-4 rounded-[24px] bg-white/50 p-4">
+                  <div className={`mt-4 p-4 ${isJersey ? "border-t border-black/10 bg-white" : "rounded-[24px] bg-white/50"}`}>
                     <h2 className="text-base font-semibold">
                       Spesifikasi
                     </h2>

@@ -34,7 +34,7 @@ export function ProductImageSwap({
         fallbackSrc={fallbackSrc}
         alt={alt}
         fill
-        className={`${imageClassName} transition-[opacity,transform] duration-300 ease-out ${hoverSrc ? "md:group-hover:opacity-0" : "group-hover:scale-[1.02]"}`}
+        className={`${imageClassName} product-image-primary ${hoverSrc ? "has-secondary" : ""} transition-[opacity,transform] duration-300 ease-out`}
         objectFit={objectFit}
         objectPosition={objectPosition}
         focalX={focalX}
@@ -48,7 +48,7 @@ export function ProductImageSwap({
           fallbackSrc={primarySrc || fallbackSrc}
           alt={`${alt} tampak belakang`}
           fill
-          className={`${imageClassName} pointer-events-none opacity-0 transition-[opacity,transform] duration-300 ease-out md:group-hover:opacity-100 md:group-hover:scale-[1.01]`}
+          className={`${imageClassName} product-image-secondary pointer-events-none opacity-0 transition-[opacity,transform] duration-300 ease-out`}
           objectFit={objectFit}
           objectPosition={objectPosition}
           sizes={sizes}

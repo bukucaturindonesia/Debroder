@@ -692,6 +692,7 @@ export const fallbackProducts: Product[] = [
   },
   {
     nama: "Custom Jersey",
+    slug: "custom-jersey",
     kategori: "Jersey",
     badge: "",
     deskripsi: "Jersey custom untuk tim dan komunitas",
@@ -699,6 +700,9 @@ export const fallbackProducts: Product[] = [
     gambar_url: "/brand/debroder/open-graph-logo.png",
     image_url: "/brand/debroder/open-graph-logo.png",
     intent_tags: ["jersey", "sublim", "tim", "komunitas"],
+    product_type: "configurable_product",
+    pricing_mode: "configurator_based",
+    uses_configurator: true,
     whatsapp_link: contactLinks.whatsapp,
     link_url: "/jersey",
     price: 75000,
