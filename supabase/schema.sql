@@ -389,8 +389,14 @@ create table if not exists public.cms_banners (
   cta_url text not null default '',
   text_position text not null default 'left' check (text_position in ('left', 'center', 'right')),
   experience_key text not null default 'landing' check (experience_key ~ '^[a-z0-9-]+$'),
-  section_type text not null default 'wide_campaign' check (section_type in ('wide_campaign', 'split_campaign', 'poster_carousel', 'custom_cta', 'team_package_campaign', 'order_steps', 'closing_campaign')),
+  section_type text not null default 'wide_campaign' check (section_type in ('wide_campaign', 'split_campaign', 'poster_carousel', 'centered_editorial_copy', 'custom_cta', 'team_package_campaign', 'order_steps', 'closing_campaign')),
   section_key text not null default '',
+  section_group text not null default '',
+  section_heading text not null default '',
+  section_description text not null default '',
+  anchor_id text not null default '',
+  overlay_strength numeric not null default 0.42 check (overlay_strength between 0 and 1),
+  theme_variant text not null default 'dark',
   secondary_cta_label text not null default '',
   secondary_cta_url text not null default '',
   image_alt text not null default '',
@@ -536,6 +542,12 @@ alter table if exists public.cms_banners
   add column if not exists experience_key text not null default 'landing',
   add column if not exists section_type text not null default 'wide_campaign',
   add column if not exists section_key text not null default '',
+  add column if not exists section_group text not null default '',
+  add column if not exists section_heading text not null default '',
+  add column if not exists section_description text not null default '',
+  add column if not exists anchor_id text not null default '',
+  add column if not exists overlay_strength numeric not null default 0.42,
+  add column if not exists theme_variant text not null default 'dark',
   add column if not exists secondary_cta_label text not null default '',
   add column if not exists secondary_cta_url text not null default '',
   add column if not exists image_alt text not null default '',
@@ -619,6 +631,9 @@ create index if not exists cms_banners_order_idx
 
 create index if not exists cms_banners_experience_order_idx
   on public.cms_banners (experience_key, section_type, is_active, sort_order);
+
+create index if not exists cms_banners_jersey_group_order_idx
+  on public.cms_banners (experience_key, section_type, section_group, is_active, sort_order);
 
 create index if not exists products_category_idx
   on public.products (product_category_id);

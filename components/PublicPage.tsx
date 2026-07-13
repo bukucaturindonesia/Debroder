@@ -605,18 +605,22 @@ export function CategoryDetailPage({
 export function PublicShell({
   content,
   children,
-  headerMode = "sticky"
+  headerMode = "sticky",
+  headerExpandedAtTop = false,
+  theme = "default"
 }: {
   content: PublicContent;
   children: ReactNode;
   headerMode?: "sticky" | "natural";
+  headerExpandedAtTop?: boolean;
+  theme?: "default" | "jersey";
 }) {
   return (
-    <main className="public-site min-h-screen bg-brand-offWhite text-brand-charcoal">
-      <SiteHeader positionMode={headerMode} />
+    <main className={`public-site min-h-screen ${theme === "jersey" ? "jersey-theme bg-[#050505] text-white" : "bg-brand-offWhite text-brand-charcoal"}`}>
+      <SiteHeader positionMode={headerMode} expandedAtTop={headerExpandedAtTop} />
       <PageMotion />
       {children}
-      <PublicFooter content={content} />
+      <PublicFooter content={content} variant={theme === "jersey" ? "dark" : "default"} />
     </main>
   );
 }

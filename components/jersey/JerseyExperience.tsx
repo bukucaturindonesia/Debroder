@@ -1,45 +1,33 @@
 import Link from "next/link";
-import type { ReactNode } from "react";
+import { type CSSProperties, type ReactNode } from "react";
 import { ResponsivePicture } from "@/components/ResponsivePicture";
 import { JerseyCarousel } from "@/components/jersey/JerseyCarousel";
 import {
+  jerseyItemHref,
+  jerseyRowsByGroup,
   jerseySectionItems,
   resolvedJerseySections,
-  safeJerseyHref
+  validJerseyHref
 } from "@/lib/jersey-experience";
 import type { CmsBanner, PageHeroContent, PublicContent, ServiceCategory } from "@/lib/types";
 import { whatsappHref } from "@/lib/url";
 
-function ActionLink({ href, children, variant = "dark" }: { href: string; children: ReactNode; variant?: "dark" | "light" | "outline" | "hero" }) {
-  const className = variant === "hero"
-    ? "inline-flex min-h-12 items-center justify-center rounded-full bg-[#111] px-6 text-sm font-semibold text-white transition hover:bg-[#063D24] sm:bg-white sm:text-[#111] sm:hover:bg-[#f1f1ed]"
-    : variant === "light"
-    ? "inline-flex min-h-12 items-center justify-center rounded-full bg-white px-6 text-sm font-semibold text-[#111] transition hover:bg-[#f1f1ed]"
+function ActionLink({ href, children, variant = "white" }: { href: string | null; children: ReactNode; variant?: "white" | "neon" | "outline" }) {
+  if (!href) return null;
+  const className = variant === "neon"
+    ? "inline-flex min-h-12 items-center justify-center rounded-full bg-[#39FF88] px-6 text-sm font-semibold text-black transition hover:bg-[#72ffa9] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#39FF88]"
     : variant === "outline"
-      ? "inline-flex min-h-12 items-center justify-center rounded-full border border-current px-6 text-sm font-semibold transition hover:bg-white hover:text-[#111]"
-      : "inline-flex min-h-12 items-center justify-center rounded-full bg-[#111] px-6 text-sm font-semibold text-white transition hover:bg-[#063D24]";
+      ? "inline-flex min-h-12 items-center justify-center rounded-full border border-white/55 px-6 text-sm font-semibold text-white transition hover:border-[#39FF88] hover:text-[#39FF88] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#39FF88]"
+      : "inline-flex min-h-12 items-center justify-center rounded-full bg-white px-6 text-sm font-semibold text-black transition hover:bg-[#39FF88] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#39FF88]";
 
-  if (/^https?:\/\//i.test(href)) {
-    return <a href={href} target="_blank" rel="noopener noreferrer" className={className}>{children}</a>;
-  }
+  if (/^https?:\/\//i.test(href)) return <a href={href} target="_blank" rel="noopener noreferrer" className={className}>{children}</a>;
   return <Link href={href} className={className}>{children}</Link>;
 }
 
 function CampaignMedia({ item, className, priority = false }: { item: CmsBanner; className: string; priority?: boolean }) {
   if (item.media_type === "video") {
-    return (
-      <video
-        className={className}
-        src={item.desktop_media_url}
-        poster={item.poster_url || undefined}
-        controls
-        muted
-        playsInline
-        preload="metadata"
-      />
-    );
+    return <video className={className} src={item.desktop_media_url} poster={item.poster_url || undefined} controls muted playsInline preload="metadata" />;
   }
-
   return (
     <ResponsivePicture
       desktopSrc={item.desktop_media_url}
@@ -55,111 +43,120 @@ function CampaignMedia({ item, className, priority = false }: { item: CmsBanner;
   );
 }
 
+function heroHref(value: string | undefined, fallback: string) {
+  return value?.trim() ? validJerseyHref(value) : fallback;
+}
+
 function JerseyHero({ hero }: { hero: PageHeroContent | undefined }) {
   const desktopImage = hero?.image_url || "/brand/debroder/social-preview.png";
   const mobileImage = hero?.mobile_image_url || desktopImage;
-  const primaryLabel = hero?.primary_cta_label || "Belanja Jersey";
-  const primaryUrl = safeJerseyHref(hero?.primary_cta_url, "/jersey/shop");
-  const secondaryLabel = hero?.secondary_cta_label || "Buat Jersey Custom";
-  const secondaryUrl = safeJerseyHref(hero?.secondary_cta_url, "/jersey/configurator");
+  const primaryUrl = heroHref(hero?.primary_cta_url, "/jersey/shop");
+  const secondaryUrl = heroHref(hero?.secondary_cta_url, "/jersey/configurator");
 
   return (
-    <section className="bg-white">
-      <div className="relative overflow-hidden bg-[#111] sm:min-h-[520px] lg:min-h-[620px]">
-        <div className="aspect-[4/5] sm:absolute sm:inset-0 sm:aspect-auto">
-          <ResponsivePicture
-            desktopSrc={desktopImage}
-            mobileSrc={mobileImage}
-            alt={hero?.image_alt || hero?.title || "DEBRODER Jersey campaign"}
-            className="h-full w-full"
-            priority
-            desktopObjectPosition={hero?.object_position}
-            mobileObjectPosition={hero?.mobile_object_position || hero?.object_position}
-            objectFit={hero?.object_fit || "cover"}
-            desktopZoom={hero?.focal_zoom}
-            mobileZoom={hero?.mobile_focal_zoom}
-          />
-          <div className="absolute inset-0 hidden bg-gradient-to-r from-black/70 via-black/20 to-transparent sm:block" />
-        </div>
-        <div className="relative bg-white px-5 py-8 text-[#111] sm:flex sm:min-h-[520px] sm:items-end sm:bg-transparent sm:px-10 sm:pb-12 sm:text-white lg:min-h-[620px] lg:px-16 lg:pb-16">
-          <div className="max-w-2xl">
-            <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#063D24] sm:text-white/75">{hero?.label || "DEBRODER JERSEY"}</p>
-            <h1 className="mt-3 font-heading text-[clamp(3rem,12vw,4.5rem)] font-extrabold uppercase leading-[0.92] tracking-[-0.035em] sm:text-[clamp(4.5rem,8vw,7rem)]">
-              {hero?.title || "Built for the Team"}
-            </h1>
-            <p className="mt-4 max-w-xl text-base leading-7 text-black/65 sm:text-lg sm:text-white/85">
-              {hero?.subtitle || "Jersey untuk bertanding, membangun identitas, dan mewakili tim Anda."}
-            </p>
-            <div className="mt-6 flex flex-col gap-3 sm:flex-row">
-              <ActionLink href={primaryUrl} variant="hero">{primaryLabel}</ActionLink>
-              <ActionLink href={secondaryUrl} variant="outline">{secondaryLabel}</ActionLink>
-            </div>
-          </div>
+    <section className="keep-section-bg bg-[#050505] text-white">
+      <div className="h-[clamp(380px,115vw,560px)] overflow-hidden bg-[#101010] md:h-[clamp(480px,62vw,760px)]">
+        <ResponsivePicture
+          desktopSrc={desktopImage}
+          mobileSrc={mobileImage}
+          alt={hero?.image_alt || hero?.title || "DEBRODER Jersey campaign"}
+          className="h-full w-full"
+          priority
+          desktopObjectPosition={hero?.object_position}
+          mobileObjectPosition={hero?.mobile_object_position || hero?.object_position}
+          objectFit={hero?.object_fit || "cover"}
+          desktopZoom={hero?.focal_zoom}
+          mobileZoom={hero?.mobile_focal_zoom}
+        />
+      </div>
+      <div className="jersey-shell py-[clamp(36px,4vw,64px)] text-center">
+        <p className="jersey-neon text-xs font-semibold uppercase tracking-[0.2em]">{hero?.label || "DEBRODER JERSEY"}</p>
+        <h1 className="mx-auto mt-4 max-w-5xl font-heading text-[clamp(2.8rem,7vw,7rem)] font-extrabold uppercase leading-[.9] tracking-[-0.04em]">{hero?.title || "Built for the Team"}</h1>
+        <p className="mx-auto mt-5 max-w-2xl text-base leading-7 text-white/70 sm:text-lg">{hero?.subtitle || "Jersey untuk bertanding, membangun identitas, dan mewakili tim Anda."}</p>
+        <div className="mt-7 flex flex-col justify-center gap-3 sm:flex-row">
+          <ActionLink href={primaryUrl}>{hero?.primary_cta_label || "Belanja Jersey"}</ActionLink>
+          <ActionLink href={secondaryUrl} variant="outline">{hero?.secondary_cta_label || "Buat Jersey Custom"}</ActionLink>
         </div>
       </div>
     </section>
   );
 }
 
-function SplitCampaigns({ items }: { items: CmsBanner[] }) {
+function CenteredEditorial({ item }: { item: CmsBanner }) {
+  const href = jerseyItemHref(item, item.cta_url, "/jersey/shop");
   return (
-    <section className="bg-white py-14 sm:py-16 lg:py-20">
-      <div className="section-shell grid gap-4 md:grid-cols-2">
-        {items.slice(0, 2).map((item) => (
-          <article key={item.id || item.section_key} className="group">
-            <div className="aspect-[4/5] overflow-hidden bg-[#efefec]">
-              <CampaignMedia item={item} className="h-full w-full transition duration-500 group-hover:scale-[1.015]" />
+    <section className="jersey-section keep-section-bg border-y border-white/10 bg-[#050505] text-center text-white">
+      <div className="jersey-shell mx-auto max-w-5xl">
+        {item.eyebrow ? <p className="jersey-neon text-xs font-semibold uppercase tracking-[0.18em]">{item.eyebrow}</p> : null}
+        <h2 className="mt-3 font-heading text-[clamp(2.5rem,6vw,6rem)] font-extrabold uppercase leading-[.92] tracking-[-0.035em]">{item.title}</h2>
+        {item.subtitle ? <p className="mx-auto mt-5 max-w-2xl text-base leading-7 text-white/68 sm:text-lg">{item.subtitle}</p> : null}
+        {item.cta_label && href ? <div className="mt-7"><ActionLink href={href}>{item.cta_label}</ActionLink></div> : null}
+      </div>
+    </section>
+  );
+}
+
+function SplitCampaign({ items, label }: { items: CmsBanner[]; label: string }) {
+  if (!items.length) return null;
+  return (
+    <section aria-label={label} className="jersey-section keep-section-bg bg-[#050505] text-white">
+      <div className="jersey-shell grid gap-[var(--jersey-split-gap)] md:grid-cols-2">
+        {items.slice(0, 2).map((item) => {
+          const href = jerseyItemHref(item, item.cta_url, "/jersey/shop");
+          const overlay = Math.min(.82, Math.max(.18, Number(item.overlay_strength ?? .48)));
+          const content = (
+            <div className="group relative aspect-[4/5] overflow-hidden bg-[#101010]">
+              <CampaignMedia item={item} className="h-full w-full transition-transform duration-500 group-hover:scale-[1.012]" />
+              <div aria-hidden="true" className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent" style={{ "--tw-gradient-from": `rgba(0,0,0,${overlay})` } as CSSProperties} />
+              <div className="absolute inset-x-0 bottom-0 p-5 sm:p-7">
+                {item.eyebrow ? <p className="jersey-neon text-[11px] font-semibold uppercase tracking-[0.18em]">{item.eyebrow}</p> : null}
+                <h2 className="mt-2 font-heading text-[clamp(2rem,4vw,4.5rem)] font-bold uppercase leading-[.92] tracking-[-0.03em]">{item.title}</h2>
+                {item.subtitle ? <p className="mt-3 max-w-lg text-sm leading-6 text-white/72 sm:text-base">{item.subtitle}</p> : null}
+                {item.cta_label && href ? <span className="mt-5 inline-flex min-h-10 items-center rounded-full bg-white px-4 text-xs font-semibold text-black">{item.cta_label}</span> : null}
+              </div>
             </div>
-            <div className="pt-5">
-              {item.eyebrow ? <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#063D24]">{item.eyebrow}</p> : null}
-              <h2 className="mt-2 font-heading text-4xl font-bold uppercase tracking-[-0.025em] sm:text-5xl">{item.title}</h2>
-              {item.subtitle ? <p className="mt-3 max-w-xl text-sm leading-6 text-black/60 sm:text-base">{item.subtitle}</p> : null}
-              {item.cta_label ? <div className="mt-5"><ActionLink href={safeJerseyHref(item.cta_url, "/jersey/shop")}>{item.cta_label}</ActionLink></div> : null}
-            </div>
-          </article>
-        ))}
+          );
+          return <article id={item.anchor_id || undefined} className="jersey-anchor" key={item.id || item.section_key}>{href ? <Link href={href} className="block focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#39FF88]">{content}</Link> : content}</article>;
+        })}
       </div>
     </section>
   );
 }
 
 function WideEditorial({ item }: { item: CmsBanner }) {
+  const href = jerseyItemHref(item, item.cta_url, "/jersey/shop");
+  const overlay = Math.min(.82, Math.max(.18, Number(item.overlay_strength ?? .52)));
   return (
-    <section className="keep-section-bg bg-[#f4f3ef] py-14 sm:py-16 lg:py-20">
-      <div className="campaign-shell">
-        <div className="aspect-[4/5] overflow-hidden bg-[#e8e8e3] sm:aspect-[16/7]">
-          <CampaignMedia item={item} className="h-full w-full" />
-        </div>
-        <div className="mx-auto max-w-4xl px-5 pt-8 text-center sm:pt-10">
-          {item.eyebrow ? <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#063D24]">{item.eyebrow}</p> : null}
-          <h2 className="mt-3 font-heading text-4xl font-extrabold uppercase leading-[0.95] tracking-[-0.03em] sm:text-6xl">{item.title}</h2>
-          {item.subtitle ? <p className="mx-auto mt-4 max-w-2xl text-base leading-7 text-black/60">{item.subtitle}</p> : null}
-          {item.cta_label ? <div className="mt-7"><ActionLink href={safeJerseyHref(item.cta_url, "/jersey/shop")}>{item.cta_label}</ActionLink></div> : null}
+    <section className="jersey-section keep-section-bg bg-[#050505] text-white">
+      <div className="jersey-shell relative aspect-[4/5] overflow-hidden bg-[#101010] md:aspect-[16/7]">
+        <CampaignMedia item={item} className="h-full w-full" />
+        <div aria-hidden="true" className="absolute inset-0 bg-gradient-to-r from-black via-black/20 to-transparent" style={{ "--tw-gradient-from": `rgba(0,0,0,${overlay})` } as CSSProperties} />
+        <div className="absolute inset-x-0 bottom-0 max-w-3xl p-5 sm:p-8 lg:p-12">
+          {item.eyebrow ? <p className="jersey-neon text-xs font-semibold uppercase tracking-[0.18em]">{item.eyebrow}</p> : null}
+          <h2 className="mt-3 font-heading text-[clamp(2.5rem,5vw,5.5rem)] font-extrabold uppercase leading-[.92] tracking-[-0.035em]">{item.title}</h2>
+          {item.subtitle ? <p className="mt-4 max-w-2xl text-sm leading-6 text-white/72 sm:text-base sm:leading-7">{item.subtitle}</p> : null}
+          {item.cta_label && href ? <div className="mt-6"><ActionLink href={href}>{item.cta_label}</ActionLink></div> : null}
         </div>
       </div>
     </section>
   );
 }
 
-function EditorialCta({ item, id, dark = false, supportHref }: { item: CmsBanner; id?: string; dark?: boolean; supportHref?: string }) {
-  const primaryFallback = item.section_type === "custom_cta" || item.section_type === "team_package_campaign"
-    ? "/jersey/configurator"
-    : "/jersey/shop";
-  const secondaryHref = safeJerseyHref(item.secondary_cta_url, supportHref || "");
-
+function EditorialCampaign({ item, id, supportHref }: { item: CmsBanner; id?: string; supportHref?: string }) {
+  const fallback = item.section_type === "custom_cta" || item.section_type === "team_package_campaign" ? "/jersey/configurator" : "/jersey/shop";
+  const primary = jerseyItemHref(item, item.cta_url, fallback);
+  const secondary = jerseyItemHref(item, item.secondary_cta_url, supportHref || "");
   return (
-    <section id={id} className={`keep-section-bg scroll-mt-14 py-14 sm:py-16 lg:py-20 ${dark ? "bg-[#111] text-white" : "bg-white text-[#111]"}`}>
-      <div className="section-shell grid gap-8 lg:grid-cols-2 lg:items-center">
-        <div className="aspect-[4/5] overflow-hidden bg-[#e8e8e3] sm:aspect-[16/11] lg:aspect-[4/5]">
-          <CampaignMedia item={item} className="h-full w-full" />
-        </div>
+    <section id={id} className="jersey-anchor jersey-section keep-section-bg border-t border-white/10 bg-[#050505] text-white">
+      <div className="jersey-shell grid gap-8 lg:grid-cols-2 lg:items-center">
+        {item.desktop_media_url ? <div className="aspect-[4/5] overflow-hidden bg-[#101010] sm:aspect-[16/11] lg:aspect-[4/5]"><CampaignMedia item={item} className="h-full w-full" /></div> : null}
         <div className="max-w-2xl lg:px-8">
-          {item.eyebrow ? <p className={`text-xs font-semibold uppercase tracking-[0.18em] ${dark ? "text-white/60" : "text-[#063D24]"}`}>{item.eyebrow}</p> : null}
-          <h2 className="mt-3 font-heading text-4xl font-extrabold uppercase leading-[0.95] tracking-[-0.03em] sm:text-6xl">{item.title}</h2>
-          {item.subtitle ? <p className={`mt-5 text-base leading-7 ${dark ? "text-white/70" : "text-black/60"}`}>{item.subtitle}</p> : null}
+          {item.eyebrow ? <p className="jersey-neon text-xs font-semibold uppercase tracking-[0.18em]">{item.eyebrow}</p> : null}
+          <h2 className="mt-3 font-heading text-[clamp(2.5rem,5vw,5.5rem)] font-extrabold uppercase leading-[.92] tracking-[-0.035em]">{item.title}</h2>
+          {item.subtitle ? <p className="mt-5 text-base leading-7 text-white/68">{item.subtitle}</p> : null}
           <div className="mt-7 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
-            <ActionLink href={safeJerseyHref(item.cta_url, primaryFallback)} variant={dark ? "light" : "dark"}>{item.cta_label || "Mulai Konfigurasi Jersey"}</ActionLink>
-            {item.secondary_cta_label && secondaryHref ? <ActionLink href={secondaryHref} variant="outline">{item.secondary_cta_label}</ActionLink> : null}
+            {item.cta_label ? <ActionLink href={primary} variant="neon">{item.cta_label}</ActionLink> : null}
+            {item.secondary_cta_label ? <ActionLink href={secondary} variant="outline">{item.secondary_cta_label}</ActionLink> : null}
           </div>
         </div>
       </div>
@@ -169,19 +166,18 @@ function EditorialCta({ item, id, dark = false, supportHref }: { item: CmsBanner
 
 function OrderSteps({ item }: { item: CmsBanner }) {
   const steps = jerseySectionItems(item);
+  if (!steps.length) return null;
   return (
-    <section id="cara-order-jersey" className="keep-section-bg bg-[#f4f3ef] py-14 sm:py-16 lg:py-20">
-      <div className="section-shell">
-        <div className="max-w-3xl">
-          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#063D24]">Dari Pilihan ke Produksi</p>
-          <h2 className="mt-3 font-heading text-4xl font-extrabold uppercase tracking-[-0.03em] sm:text-6xl">{item.title || "Cara Order Jersey"}</h2>
-          {item.subtitle ? <p className="mt-4 text-base leading-7 text-black/60">{item.subtitle}</p> : null}
-        </div>
-        <ol className="mt-9 grid border-t border-black/15 sm:grid-cols-2 lg:grid-cols-4">
+    <section id="cara-order-jersey" className="jersey-anchor jersey-section keep-section-bg border-t border-white/10 bg-[#050505] text-white">
+      <div className="jersey-shell">
+        <p className="jersey-neon text-xs font-semibold uppercase tracking-[0.18em]">Dari Pilihan ke Produksi</p>
+        <h2 className="mt-3 font-heading text-[clamp(2.5rem,5vw,5.5rem)] font-extrabold uppercase tracking-[-0.035em]">{item.title || "Cara Order Jersey"}</h2>
+        {item.subtitle ? <p className="mt-4 max-w-2xl text-base leading-7 text-white/65">{item.subtitle}</p> : null}
+        <ol className="mt-[var(--jersey-heading-gap)] grid border-t border-white/12 md:grid-cols-2 lg:grid-cols-4">
           {steps.map((step, index) => (
-            <li key={`${index}-${step}`} className="grid grid-cols-[36px_1fr] gap-3 border-b border-black/15 py-5 sm:px-4 sm:first:pl-0 lg:min-h-36 lg:border-r lg:last:border-r-0">
-              <span className="font-heading text-2xl font-bold text-[#063D24]">{String(index + 1).padStart(2, "0")}</span>
-              <p className="text-sm font-medium leading-6 text-black/70">{step}</p>
+            <li key={`${index}-${step}`} className="grid grid-cols-[40px_1fr] gap-3 border-b border-white/12 py-5 md:px-4 md:first:pl-0 lg:min-h-36 lg:border-r lg:last:border-r-0">
+              <span className="jersey-neon font-heading text-2xl font-bold">{String(index + 1).padStart(2, "0")}</span>
+              <p className="text-sm font-medium leading-6 text-white/68">{step}</p>
             </li>
           ))}
         </ol>
@@ -191,20 +187,17 @@ function OrderSteps({ item }: { item: CmsBanner }) {
 }
 
 function ClosingCampaign({ item }: { item: CmsBanner }) {
+  const primary = jerseyItemHref(item, item.cta_url, "/jersey/shop");
+  const secondary = jerseyItemHref(item, item.secondary_cta_url, "/jersey/configurator");
   return (
-    <section className="keep-section-bg relative min-h-[520px] overflow-hidden bg-[#111] text-white sm:min-h-[620px]">
-      <div className="absolute inset-0">
-        <CampaignMedia item={item} className="h-full w-full" />
-        <div className="absolute inset-0 bg-black/45" />
-      </div>
-      <div className="section-shell relative flex min-h-[520px] items-end py-12 sm:min-h-[620px] sm:py-16">
-        <div className="max-w-3xl">
-          <h2 className="font-heading text-5xl font-extrabold uppercase leading-[0.9] tracking-[-0.035em] sm:text-7xl lg:text-8xl">{item.title}</h2>
-          {item.subtitle ? <p className="mt-5 max-w-2xl text-base leading-7 text-white/75">{item.subtitle}</p> : null}
-          <div className="mt-7 flex flex-col gap-3 sm:flex-row">
-            <ActionLink href={safeJerseyHref(item.cta_url, "/jersey/shop")} variant="light">{item.cta_label || "Belanja Semua Jersey"}</ActionLink>
-            {item.secondary_cta_label ? <ActionLink href={safeJerseyHref(item.secondary_cta_url, "/jersey/configurator")} variant="outline">{item.secondary_cta_label}</ActionLink> : null}
-          </div>
+    <section className="keep-section-bg relative overflow-hidden border-y border-white/10 bg-[#050505] py-[clamp(72px,9vw,144px)] text-center text-white">
+      {item.desktop_media_url ? <div className="absolute inset-0 opacity-20"><CampaignMedia item={item} className="h-full w-full" /><div className="absolute inset-0 bg-black/55" /></div> : null}
+      <div className="jersey-shell relative">
+        <p className="jersey-neon font-heading text-[clamp(3.5rem,10vw,10rem)] font-extrabold uppercase leading-[.82] tracking-[-0.045em]">{item.title || "DEBRODER JERSEY"}</p>
+        {item.subtitle ? <p className="mx-auto mt-7 max-w-2xl text-base leading-7 text-white/68 sm:text-lg">{item.subtitle}</p> : null}
+        <div className="mt-8 flex flex-col justify-center gap-3 sm:flex-row">
+          {item.cta_label ? <ActionLink href={primary}>{item.cta_label}</ActionLink> : null}
+          {item.secondary_cta_label ? <ActionLink href={secondary} variant="outline">{item.secondary_cta_label}</ActionLink> : null}
         </div>
       </div>
     </section>
@@ -217,8 +210,11 @@ function firstByType(items: CmsBanner[], type: string) {
 
 export function JerseyExperience({ content, hero, categories }: { content: PublicContent; hero: PageHeroContent | undefined; categories: ServiceCategory[] }) {
   const sections = resolvedJerseySections(content.jerseySections, hero, categories);
-  const split = sections.filter((item) => item.section_type === "split_campaign");
-  const carousel = sections.filter((item) => item.section_type === "poster_carousel");
+  const carousel01 = jerseyRowsByGroup(sections, "poster_carousel", "carousel-01");
+  const carousel02 = jerseyRowsByGroup(sections, "poster_carousel", "carousel-02");
+  const split01 = jerseyRowsByGroup(sections, "split_campaign", "split-01");
+  const split02 = jerseyRowsByGroup(sections, "split_campaign", "split-02");
+  const centered = firstByType(sections, "centered_editorial_copy");
   const wide = firstByType(sections, "wide_campaign");
   const custom = firstByType(sections, "custom_cta");
   const packageCampaign = firstByType(sections, "team_package_campaign");
@@ -229,11 +225,14 @@ export function JerseyExperience({ content, hero, categories }: { content: Publi
   return (
     <>
       <JerseyHero hero={hero} />
-      <SplitCampaigns items={split} />
-      <JerseyCarousel items={carousel} />
+      <JerseyCarousel id="jersey-carousel-01" eyebrow={carousel01[0]?.eyebrow || "Team / Community"} title={carousel01[0]?.section_heading || "Dibuat untuk Cara Tim Anda Bergerak"} description={carousel01[0]?.section_description} items={carousel01} />
+      {centered ? <CenteredEditorial item={centered} /> : null}
+      <SplitCampaign items={split01} label="Campaign Jersey Football dan Futsal" />
+      <JerseyCarousel id="jersey-carousel-02" eyebrow={carousel02[0]?.eyebrow || "Jersey Looks"} title={carousel02[0]?.section_heading || "Gaya yang Membawa Identitas Tim"} description={carousel02[0]?.section_description} items={carousel02} />
       {wide ? <WideEditorial item={wide} /> : null}
-      {custom ? <EditorialCta item={custom} dark supportHref={supportHref} /> : null}
-      {packageCampaign ? <EditorialCta item={packageCampaign} id="paket-tim" /> : null}
+      <SplitCampaign items={split02} label="Campaign Jersey Komunitas dan Instansi" />
+      {custom ? <EditorialCampaign item={custom} supportHref={supportHref} /> : null}
+      {packageCampaign ? <EditorialCampaign item={packageCampaign} id="paket-tim" /> : null}
       {orderSteps ? <OrderSteps item={orderSteps} /> : null}
       {closing ? <ClosingCampaign item={closing} /> : null}
     </>

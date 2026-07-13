@@ -263,14 +263,21 @@ function SearchModal({ isOpen, onClose }: { isOpen: boolean; onClose: () => void
   );
 }
 
-export function SiteHeader({ positionMode = "sticky" }: { positionMode?: "sticky" | "natural" }) {
+export function SiteHeader({
+  positionMode = "sticky",
+  expandedAtTop = false
+}: {
+  positionMode?: "sticky" | "natural";
+  expandedAtTop?: boolean;
+}) {
   const pathname = usePathname();
   const [isOpen, setIsOpen] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
-  const [expanded, setExpanded] = useState(false);
+  const [expanded, setExpanded] = useState(expandedAtTop);
   const hasLeftTopRef = useRef(false);
 
   useEffect(() => {
+    if (positionMode === "natural" && expandedAtTop) return;
     let frame = 0;
 
     const handleScroll = () => {
@@ -299,13 +306,13 @@ export function SiteHeader({ positionMode = "sticky" }: { positionMode?: "sticky
       window.removeEventListener("scroll", handleScroll);
       if (frame) window.cancelAnimationFrame(frame);
     };
-  }, []);
+  }, [expandedAtTop, positionMode]);
 
   useEffect(() => {
     setIsOpen(false);
-    setExpanded(false);
+    setExpanded(expandedAtTop);
     hasLeftTopRef.current = false;
-  }, [pathname]);
+  }, [expandedAtTop, pathname]);
 
   useEffect(() => {
     if (!isOpen) return;

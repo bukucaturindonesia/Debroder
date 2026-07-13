@@ -453,12 +453,19 @@ export type CmsBanner = CmsWorkflowFields & {
     | "wide_campaign"
     | "split_campaign"
     | "poster_carousel"
+    | "centered_editorial_copy"
     | "custom_cta"
     | "team_package_campaign"
     | "order_steps"
     | "closing_campaign"
     | string;
   section_key?: string;
+  section_group?: string;
+  section_heading?: string;
+  section_description?: string;
+  anchor_id?: string;
+  overlay_strength?: number | null;
+  theme_variant?: string;
   secondary_cta_label?: string;
   secondary_cta_url?: string;
   image_alt?: string;

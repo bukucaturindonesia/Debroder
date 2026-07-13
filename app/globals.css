@@ -369,6 +369,96 @@ button,
   display: none;
 }
 
+/* Owner-approved `/jersey` theme. Scoped so no category or global token changes. */
+.jersey-theme {
+  --jersey-page-gutter: clamp(24px, 3.25vw, 64px);
+  --jersey-section-gap: clamp(56px, 6vw, 104px);
+  --jersey-heading-gap: clamp(20px, 2vw, 32px);
+  --jersey-card-gap: clamp(10px, 1vw, 16px);
+  --jersey-split-gap: clamp(8px, .8vw, 14px);
+  --jersey-compact-gap: clamp(12px, 1.25vw, 20px);
+  --jersey-header-height: 56px;
+  color-scheme: dark;
+  background: #050505;
+}
+
+.jersey-theme section,
+.jersey-theme .section-canvas {
+  background-color: #050505;
+}
+
+.jersey-shell {
+  width: calc(100% - var(--jersey-page-gutter) - var(--jersey-page-gutter));
+  margin-inline: auto;
+}
+
+.jersey-section {
+  padding-block: var(--jersey-section-gap);
+}
+
+.jersey-neon {
+  color: #39ff88;
+  text-shadow:
+    0 0 4px rgba(57, 255, 136, .75),
+    0 0 10px rgba(57, 255, 136, .45),
+    0 0 18px rgba(57, 255, 136, .20);
+}
+
+.jersey-neon-active,
+.jersey-neon:hover,
+.jersey-neon:focus-visible {
+  text-shadow:
+    0 0 5px rgba(57, 255, 136, .95),
+    0 0 12px rgba(57, 255, 136, .62),
+    0 0 22px rgba(57, 255, 136, .30);
+}
+
+.jersey-carousel-rail {
+  gap: var(--jersey-card-gap);
+  padding-inline: var(--jersey-page-gutter);
+  scroll-padding-inline: var(--jersey-page-gutter);
+}
+
+.jersey-carousel-card {
+  flex: 0 0 calc((100vw - var(--jersey-page-gutter) - var(--jersey-page-gutter) - 36px) / 3.2);
+}
+
+.jersey-anchor {
+  scroll-margin-top: calc(var(--jersey-header-height) + 12px);
+}
+
+@media (max-width: 767px) {
+  .jersey-theme {
+    --jersey-page-gutter: 16px;
+    --jersey-header-height: 104px;
+  }
+
+  .jersey-carousel-card {
+    flex-basis: calc((100vw - var(--jersey-page-gutter) - var(--jersey-page-gutter) - 4px) / 1.27);
+  }
+}
+
+@media (min-width: 768px) and (max-width: 1023px) {
+  .jersey-theme {
+    --jersey-page-gutter: clamp(20px, 3vw, 40px);
+  }
+
+  .jersey-carousel-card {
+    flex-basis: calc((100vw - var(--jersey-page-gutter) - var(--jersey-page-gutter) - 20px) / 2.2);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .jersey-theme *,
+  .jersey-theme *::before,
+  .jersey-theme *::after {
+    scroll-behavior: auto !important;
+    transition-duration: .01ms !important;
+    animation-duration: .01ms !important;
+    animation-iteration-count: 1 !important;
+  }
+}
+
 .native-carousel,
 .home-bleed-rail,
 .trending-grid {

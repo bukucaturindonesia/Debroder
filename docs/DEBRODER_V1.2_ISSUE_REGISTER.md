@@ -18,7 +18,7 @@
 
 - Severity: Gate
 - Status: OPEN
-- Detail: Jersey experience code, local migration, tests, build, and local responsive browser verification pass. Migration `20260713143000_commerce_jersey_experience.sql` has not been applied. After owner-approved migration, publish real DEBRODER desktop/mobile campaign photography and focal points through `/admin/commerce/jersey`, then repeat authenticated production QA. The supplied source archive contains local brand artwork but no Jersey campaign photography.
+- Detail: The owner-approved Jersey addendum is implemented and local typecheck, lint, 87-test suite, production build, internal CTA checks, and browser verification at 1600/1440/1280/1024/768/430/390/360 px pass. Migrations `20260713143000_commerce_jersey_experience.sql` and `20260713223000_jersey_owner_approved_experience_addendum.sql` have not been applied. After owner approval, apply both migrations in order, publish real DEBRODER desktop/mobile campaign photography and focal points through `/admin/commerce/jersey`, then repeat authenticated production QA. The supplied source archive contains local brand artwork but no Jersey campaign photography.
 
 ## Closed in Phase 12
 

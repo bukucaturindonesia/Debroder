@@ -12,7 +12,7 @@ import {
   saveCmsDraft,
   scheduleCmsPublish
 } from "@/lib/cms-workflow";
-import { JERSEY_ORDER_STEPS, JERSEY_SECTION_TYPES, safeJerseyHref } from "@/lib/jersey-experience";
+import { JERSEY_ORDER_STEPS, JERSEY_SECTION_TYPES, validJerseyHref } from "@/lib/jersey-experience";
 import { createSupabaseClient } from "@/lib/supabase";
 import type { CmsBanner } from "@/lib/types";
 
@@ -36,6 +36,12 @@ const emptySection: CmsBanner = {
   experience_key: "jersey",
   section_type: "split_campaign",
   section_key: "",
+  section_group: "split-01",
+  section_heading: "",
+  section_description: "",
+  anchor_id: "",
+  overlay_strength: .42,
+  theme_variant: "dark",
   image_alt: "",
   object_position: "center center",
   mobile_object_position: "center center",
@@ -54,6 +60,7 @@ const emptySection: CmsBanner = {
 const typeLabels: Record<string, string> = {
   split_campaign: "Split Campaign Poster",
   poster_carousel: "Team / Style Carousel",
+  centered_editorial_copy: "Centered Editorial Copy",
   wide_campaign: "Wide Editorial Campaign",
   custom_cta: "Custom Jersey CTA",
   team_package_campaign: "Paket Tim Campaign",
@@ -62,7 +69,7 @@ const typeLabels: Record<string, string> = {
 };
 
 function validTarget(value?: string | null) {
-  return !value?.trim() || safeJerseyHref(value, "__invalid__") !== "__invalid__";
+  return !value?.trim() || validJerseyHref(value) !== null;
 }
 
 export function JerseyExperienceAdmin() {
@@ -129,8 +136,13 @@ export function JerseyExperienceAdmin() {
       setMessage("Nama internal, section key, dan headline wajib diisi.");
       return;
     }
-    if (form.section_type !== "order_steps" && !form.desktop_media_url.trim()) {
+    const mediaRequired = form.section_type !== "order_steps" && form.section_type !== "centered_editorial_copy";
+    if (mediaRequired && !form.desktop_media_url.trim()) {
       setMessage("Media desktop wajib diisi untuk campaign visual.");
+      return;
+    }
+    if (["poster_carousel", "split_campaign"].includes(form.section_type || "") && !form.section_group?.trim()) {
+      setMessage("Carousel dan split campaign wajib memiliki section group.");
       return;
     }
     if (!validTarget(form.cta_url) || !validTarget(form.secondary_cta_url)) {
@@ -153,6 +165,12 @@ export function JerseyExperienceAdmin() {
       secondary_cta_url: form.secondary_cta_url?.trim() || "",
       text_position: form.text_position || "left", experience_key: "jersey",
       section_type: form.section_type, section_key: form.section_key?.trim() || "",
+      section_group: form.section_group?.trim() || "",
+      section_heading: form.section_heading?.trim() || "",
+      section_description: form.section_description?.trim() || "",
+      anchor_id: form.anchor_id?.trim() || "",
+      overlay_strength: Math.min(1, Math.max(0, Number(form.overlay_strength ?? .42))),
+      theme_variant: form.theme_variant?.trim() || "dark",
       image_alt: form.image_alt?.trim() || form.title.trim(),
       object_position: form.object_position || "center center",
       mobile_object_position: form.mobile_object_position || "center center",
@@ -226,14 +244,18 @@ export function JerseyExperienceAdmin() {
           <div className="mt-5 grid gap-4">
             <Field label="Tipe section"><select value={form.section_type} onChange={(event) => update("section_type", event.target.value)}>{JERSEY_SECTION_TYPES.map((type) => <option key={type} value={type}>{typeLabels[type]}</option>)}</select></Field>
             <div className="grid gap-4 sm:grid-cols-2"><Field label="Nama internal"><input value={form.name} onChange={(event) => update("name", event.target.value)} /></Field><Field label="Section key"><input value={form.section_key || ""} onChange={(event) => update("section_key", event.target.value)} placeholder="football" /></Field></div>
+            <div className="grid gap-4 sm:grid-cols-2"><Field label="Section group"><select value={form.section_group || ""} onChange={(event) => update("section_group", event.target.value)}><option value="">Tidak dikelompokkan</option><option value="carousel-01">Carousel 01</option><option value="split-01">Split 01</option><option value="carousel-02">Carousel 02</option><option value="split-02">Split 02</option></select></Field><Field label="Anchor ID"><input value={form.anchor_id || ""} onChange={(event) => update("anchor_id", event.target.value)} placeholder="paket-tim" /></Field></div>
+            <Field label="Judul section / carousel"><input value={form.section_heading || ""} onChange={(event) => update("section_heading", event.target.value)} placeholder="Dibuat untuk Cara Tim Anda Bergerak" /></Field>
+            <Field label="Deskripsi section"><textarea rows={2} value={form.section_description || ""} onChange={(event) => update("section_description", event.target.value)} /></Field>
             <div className="grid gap-4 sm:grid-cols-2"><Field label="Tipe media"><select value={form.media_type} onChange={(event) => update("media_type", event.target.value as CmsBanner["media_type"])}><option value="image">Image</option><option value="video">Video</option></select></Field><Field label="Sort order"><input type="number" value={form.sort_order} onChange={(event) => update("sort_order", Number(event.target.value))} /></Field></div>
-            {form.section_type !== "order_steps" ? <>
+            {form.section_type !== "order_steps" && form.section_type !== "centered_editorial_copy" ? <>
               <Field label="Media desktop dari Media Library"><select value={form.desktop_media_url} onChange={(event) => update("desktop_media_url", event.target.value)}><option value="">Pilih media...</option>{compatibleMedia.map((asset) => <option key={asset.id} value={asset.public_url}>{asset.name}</option>)}</select></Field>
               <Field label="URL media desktop"><input value={form.desktop_media_url} onChange={(event) => update("desktop_media_url", event.target.value)} placeholder="/brand/... atau https://..." /></Field>
               <Field label="Media mobile dari Media Library"><select value={form.mobile_media_url || ""} onChange={(event) => update("mobile_media_url", event.target.value)}><option value="">Gunakan desktop</option>{compatibleMedia.map((asset) => <option key={asset.id} value={asset.public_url}>{asset.name}</option>)}</select></Field>
               <Field label="URL media mobile"><input value={form.mobile_media_url || ""} onChange={(event) => update("mobile_media_url", event.target.value)} /></Field>
               <Field label="Alt text"><input value={form.image_alt || ""} onChange={(event) => update("image_alt", event.target.value)} /></Field>
               <div className="grid gap-4 sm:grid-cols-2"><Field label="Focal desktop"><input value={form.object_position || ""} onChange={(event) => update("object_position", event.target.value)} placeholder="50% 50%" /></Field><Field label="Focal mobile"><input value={form.mobile_object_position || ""} onChange={(event) => update("mobile_object_position", event.target.value)} placeholder="50% 50%" /></Field></div>
+              <div className="grid gap-4 sm:grid-cols-2"><Field label="Overlay strength (0–1)"><input type="number" min="0" max="1" step="0.05" value={form.overlay_strength ?? .42} onChange={(event) => update("overlay_strength", Number(event.target.value))} /></Field><Field label="Theme variant"><select value={form.theme_variant || "dark"} onChange={(event) => update("theme_variant", event.target.value)}><option value="dark">Dark Jersey</option></select></Field></div>
             </> : null}
             <Field label="Eyebrow"><input value={form.eyebrow} onChange={(event) => update("eyebrow", event.target.value)} /></Field>
             <Field label="Headline"><input value={form.title} onChange={(event) => update("title", event.target.value)} /></Field>
