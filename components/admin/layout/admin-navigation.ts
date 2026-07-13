@@ -139,6 +139,12 @@ function pathAllowedByRole(role: AdminRole, pathname: string) {
 
 export function roleCanAccessPath(role: AdminRole, pathname: string) {
   if (pathname === "/admin" || pathname === "/admin/dashboard") return hasRole(role, FULL_ADMIN_ROLES);
+  if (
+    pathname === "/admin/orders/archive" ||
+    /^\/admin\/orders\/[^/]+$/.test(pathname)
+  ) {
+    return hasRole(role, ORDER_READ_ROLES);
+  }
   if (pathname === "/admin/notifications/templates" || pathname.startsWith("/admin/notifications/templates/")) {
     return hasRole(role, FULL_ADMIN_ROLES);
   }

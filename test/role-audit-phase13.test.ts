@@ -12,6 +12,7 @@ import {
 import { isWorkItemRole, isWorkItemViewerRole } from "@/lib/work-items";
 import { isNotificationRole } from "@/lib/notifications";
 import { isPaymentRole, isPaymentVerifier } from "@/lib/payments";
+import { roleCanAccessPath } from "@/components/admin/layout/admin-navigation";
 
 const migration = [
   "20260713090000_v1_2_phase_13_role_catalog_and_rls_alignment.sql",
@@ -134,5 +135,14 @@ describe("Phase 13 backend and UI contract", () => {
     expect(workItemDetailUi).toContain("canTransition");
     expect(navigation).toContain('href: "/admin/repeat-orders"');
     expect(navigation).not.toContain("phase-15");
+  });
+
+  it("allows order readers to open order detail and archive routes", () => {
+    const orderId = "2fa6c85e-99c8-4ba0-b0de-b55e52522352";
+
+    expect(roleCanAccessPath("super_admin", `/admin/orders/${orderId}`)).toBe(true);
+    expect(roleCanAccessPath("finance", `/admin/orders/${orderId}`)).toBe(true);
+    expect(roleCanAccessPath("super_admin", "/admin/orders/archive")).toBe(true);
+    expect(roleCanAccessPath("designer", `/admin/orders/${orderId}`)).toBe(false);
   });
 });
