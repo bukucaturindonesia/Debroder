@@ -1,0 +1,1660 @@
+DEBRODER PRODUCT, ORDERING, PRODUCTION & INVENTORY BLUEPRINT SUITE
+VERSI v1.0–v1.3 — FROZEN
+===============================================================
+
+Dokumen ini adalah keputusan final owner untuk fondasi pengembangan sistem DEBRODER.
+Semua versi di bawah telah dikunci dan tidak boleh diubah sembarangan.
+
+STATUS FINAL
+------------
+v1.0 — Product Foundation & Multi-Variant Cart — LOCKED
+v1.1 — Bulk & Custom Ordering — LOCKED
+v1.2 — Order-to-Production — LOCKED
+v1.3 — Inventory, Procurement & Production Planning — LOCKED
+
+ATURAN PENGEMBANGAN
+-------------------
+1. Implementasi wajib berurutan: v1.0 → v1.1 → v1.2 → v1.3.
+2. Jangan meminta Codex mengerjakan seluruh versi sekaligus.
+3. Setiap versi harus:
+   - selesai,
+   - diuji,
+   - lolos TypeScript,
+   - build Next.js bersih,
+   - tidak merusak fitur lama,
+   - baru kemudian lanjut ke versi berikutnya.
+4. Fitur yang ditandai OUT OF SCOPE atau DEFERRED tidak boleh dikerjakan lebih awal.
+5. Perubahan fondasi setelah dokumen ini dikunci harus masuk versi baru dan memerlukan persetujuan owner.
+6. Jangan menghapus data lama tanpa migrasi yang aman.
+7. Jangan mengubah struktur kategori utama, PIM, CMS, landing page, atau fitur lain di luar scope versi yang sedang dikerjakan.
+8. Selalu gunakan NEXT_PUBLIC_SITE_URL untuk link publik, share, canonical, metadata, dan WhatsApp.
+9. Semua perubahan database harus disertai:
+   - migration SQL,
+   - constraint,
+   - index,
+   - RLS bila diperlukan,
+   - rollback note,
+   - dan verifikasi data lama.
+10. Setiap tahap harus ditutup dengan laporan:
+   - file yang diubah,
+   - migration yang dijalankan,
+   - hasil build,
+   - hasil test,
+   - risiko tersisa.
+
+================================================================
+v1.0 — PRODUCT FOUNDATION & MULTI-VARIANT CART
+STATUS: LOCKED
+================================================================
+
+TUJUAN
+------
+Membangun fondasi produk, warna, ukuran, stok, galeri, pemilihan banyak kombinasi, dan keranjang.
+
+ALUR INTI
+---------
+Produk → Varian Warna → Ukuran → Stok → Foto → Pilihan Pelanggan → Keranjang
+
+1. STRUKTUR PRODUK
+------------------
+1. Satu produk utama dapat memiliki banyak varian warna.
+2. Warna tidak boleh dibuat sebagai produk terpisah.
+3. Setiap warna memiliki:
+   - nama warna,
+   - slug warna,
+   - kode HEX,
+   - SKU varian,
+   - urutan,
+   - status,
+   - penyesuaian harga opsional,
+   - empat slot foto,
+   - daftar ukuran,
+   - stok per ukuran.
+4. Setiap kombinasi produk + warna + ukuran adalah unit stok yang unik.
+5. Jersey tidak menggunakan struktur umum ini dan tetap memakai Jersey Configurator.
+
+2. STANDAR FOTO PRODUK
+----------------------
+Setiap warna memiliki maksimal empat slot:
+1. Depan
+2. Belakang
+3. Detail
+4. Lifestyle atau samping
+
+Aturan:
+- Rasio wajib 4:5.
+- Master 2000 × 2500 px.
+- Komposisi produk terpusat.
+- Minimal satu foto utama sebelum publish.
+- Foto warna lain tidak boleh tercampur.
+- Slot kosong tidak boleh memunculkan broken image.
+- Role front menjadi thumbnail utama.
+- Bila role front kosong, gunakan foto pertama.
+- Semua gambar produk harus foto nyata/orisinal atau stok nyata yang relevan, bukan AI, kecuali owner meminta khusus.
+
+3. VARIAN DEFAULT
+-----------------
+1. Hanya satu warna yang boleh menjadi default.
+2. Bila admin tidak menetapkan default, gunakan warna aktif pertama berdasarkan sort_order.
+3. Ukuran tidak boleh dipilih otomatis.
+4. Tombol tambah harus disabled sampai warna, ukuran, dan quantity valid.
+
+4. MASTER UKURAN
+----------------
+Gunakan master ukuran terpusat, bukan teks bebas.
+
+Contoh:
+- S
+- M
+- L
+- XL
+- XXL
+- 3XL
+- All Size
+
+Master ukuran memiliki:
+- id
+- nama
+- slug
+- sort_order
+- status aktif
+- price_adjustment opsional
+
+Tujuan:
+- mencegah duplikasi XL, X-Large, Extra Large, xl,
+- menjaga filter dan laporan tetap konsisten.
+
+5. SKU
+------
+Gunakan tiga level:
+- Product SKU: KCC24
+- Variant SKU: KCC24-BLK
+- Sellable SKU: KCC24-BLK-M
+
+Sellable SKU wajib unik.
+Database harus menolak SKU duplikat.
+
+6. STOK
+-------
+1. Stok disimpan per kombinasi warna dan ukuran.
+2. Ukuran habis tetap terlihat tetapi disabled.
+3. Warna dengan semua ukuran habis diberi label Stok Habis.
+4. Quantity harus integer:
+   - minimum 1,
+   - maksimum stock_available.
+5. Tolak:
+   - nol,
+   - negatif,
+   - desimal,
+   - huruf,
+   - jumlah melebihi stok.
+6. Jika kombinasi sama ditambahkan lagi:
+   - jumlah digabung,
+   - tetapi total tidak boleh melebihi stok.
+7. v1.0 tidak melakukan reservasi stok permanen saat masuk keranjang.
+8. Stok diperiksa ulang:
+   - saat add to cart,
+   - saat halaman keranjang dibuka,
+   - sebelum checkout atau WhatsApp.
+
+7. HARGA
+--------
+1. Gunakan base_price pada produk.
+2. Boleh ada price_adjustment:
+   - per warna,
+   - per ukuran.
+3. Formula unit price:
+   base_price + variant_adjustment + size_adjustment.
+4. Harga grosir bertingkat tidak masuk v1.0.
+5. Kalkulator layanan tidak masuk v1.0.
+
+8. HALAMAN DETAIL PRODUK
+------------------------
+DESKTOP:
+- Galeri di kiri.
+- Panel produk di kanan.
+- Galeri dua kolom.
+- Panel kanan boleh sticky selama tidak menabrak footer.
+- Swatch warna jelas.
+- Ukuran jelas.
+- Quantity selector.
+- Stok dan harga berubah sesuai pilihan.
+
+MOBILE:
+- Foto swipe horizontal.
+- Ada indikator posisi foto.
+- Informasi produk di bawah galeri.
+- Swatch mudah disentuh.
+- Ukuran mudah disentuh.
+- CTA mudah dijangkau.
+- Tidak memakai rounded besar, border tebal, atau shadow berat.
+- Gaya minimal, editorial, premium, Nike-inspired.
+
+9. MULTI-VARIANT ORDERING
+-------------------------
+Pelanggan dapat memilih beberapa kombinasi dalam satu halaman.
+
+Contoh:
+- Hitam / M / 5 pcs
+- Hitam / L / 3 pcs
+- Putih / XL / 4 pcs
+
+Alur:
+1. Pilih warna.
+2. Pilih ukuran.
+3. Isi quantity.
+4. Klik “Tambahkan ke Pilihan”.
+5. Tambah kombinasi lain.
+6. Lihat daftar “Pilihan Anda”.
+7. Klik “Tambah Semua ke Keranjang”.
+
+Aturan:
+- Kombinasi identik tidak boleh menjadi dua baris.
+- Jika ditambahkan lagi, quantity digabung.
+- Pelanggan dapat edit quantity.
+- Pelanggan dapat menghapus baris.
+- Total item selalu terlihat.
+
+10. KERANJANG
+-------------
+Setiap baris minimal menyimpan:
+- product_id
+- product_variant_id
+- product_variant_size_id
+- nama_produk
+- product_slug
+- warna
+- color_slug
+- hex_code
+- ukuran
+- sku
+- quantity
+- base_price
+- variant_price_adjustment
+- size_price_adjustment
+- unit_price
+- thumbnail
+- stock_snapshot
+- added_at
+
+Keranjang wajib:
+- tambah quantity,
+- kurangi quantity,
+- edit quantity,
+- hapus,
+- merge kombinasi identik,
+- hitung subtotal,
+- simpan di localStorage,
+- bertahan setelah refresh,
+- bertahan saat pindah halaman.
+
+Gunakan key:
+debroder_cart_v1
+
+Format:
+{
+  "version": 1,
+  "items": []
+}
+
+11. VALIDASI HARGA DAN STOK TERBARU
+-----------------------------------
+Jangan memperbarui data keranjang secara diam-diam.
+
+Jika harga berubah, tampilkan:
+“Harga produk telah berubah dari RpX menjadi RpY.”
+
+Jika stok berkurang, tampilkan:
+“Stok Hitam ukuran M hanya tersisa X pcs.”
+
+Pengguna harus mengetahui perubahan sebelum melanjutkan.
+
+12. URL PRODUK
+--------------
+Gunakan satu URL produk:
+ /produk/kaos-cotton-combed-24s
+
+Warna aktif boleh disimpan lewat query:
+ /produk/kaos-cotton-combed-24s?color=hitam
+
+Manfaat:
+- pilihan warna bisa dibagikan,
+- refresh mempertahankan warna,
+- tidak membuat halaman SEO terpisah per warna.
+
+13. ADMIN PIM
+-------------
+Alur final:
+1. Buat produk dasar di PIM / Produk.
+2. Simpan produk.
+3. Buka PIM V2.
+4. Tambah varian warna.
+5. Isi HEX.
+6. Isi SKU.
+7. Upload foto per warna.
+8. Pilih ukuran.
+9. Isi stok.
+10. Atur urutan warna.
+11. Pilih warna default.
+12. Validasi.
+13. Publish.
+
+PIM Manager lama dianggap legacy dan tidak digunakan untuk alur baru.
+
+14. STATUS DATA
+---------------
+Produk:
+- draft
+- active
+- archived
+
+Varian:
+- active
+- inactive
+- out_of_stock
+
+Aturan:
+- archived tidak tampil publik,
+- data lama tetap ada,
+- riwayat order tidak rusak.
+
+15. VALIDASI PUBLISH
+--------------------
+Produk tidak boleh dipublish tanpa:
+- nama produk,
+- slug unik,
+- kategori utama,
+- harga dasar,
+- minimal satu warna,
+- minimal satu ukuran,
+- minimal satu sellable SKU,
+- foto utama,
+- status stok,
+- SKU unik.
+
+16. STRUKTUR DATABASE MINIMUM
+-----------------------------
+Tabel:
+- products
+- product_categories
+- product_variants
+- product_variant_images
+- product_sizes
+- product_variant_sizes
+
+Relasi:
+products
+  └── product_variants
+        ├── product_variant_images
+        └── product_variant_sizes
+              └── product_sizes
+
+Field minimum products:
+- id
+- name
+- slug
+- product_category_id
+- base_price
+- description
+- status
+- created_at
+- updated_at
+
+Field minimum product_variants:
+- id
+- product_id
+- name
+- slug
+- hex_code
+- sku
+- sort_order
+- is_default
+- status
+- price_adjustment
+- created_at
+- updated_at
+
+Field minimum product_variant_images:
+- id
+- variant_id
+- image_url
+- image_role
+- sort_order
+- alt_text
+- created_at
+
+Field minimum product_sizes:
+- id
+- name
+- slug
+- sort_order
+- status
+- price_adjustment
+
+Field minimum product_variant_sizes:
+- id
+- variant_id
+- size_id
+- sku
+- stock_quantity
+- price_adjustment
+- status
+- created_at
+- updated_at
+
+17. OUT OF SCOPE v1.0
+---------------------
+Jangan dikerjakan:
+- harga grosir bertingkat,
+- bulk order matrix,
+- minimum order layanan,
+- upload desain,
+- kalkulator sablon/bordir,
+- request quotation,
+- akun pelanggan,
+- pembayaran,
+- invoice,
+- job order produksi,
+- reservasi stok berbasis pembayaran,
+- bahan baku,
+- BOM,
+- supplier,
+- procurement,
+- jadwal produksi,
+- QC produksi,
+- ERP finance.
+
+18. URUTAN IMPLEMENTASI v1.0
+----------------------------
+Tahap 1 — Database
+Tahap 2 — Admin PIM V2
+Tahap 3 — Halaman detail produk
+Tahap 4 — Multi-variant selection
+Tahap 5 — Keranjang
+Tahap 6 — WhatsApp payload dasar
+Tahap 7 — Testing dan build
+
+================================================================
+v1.1 — BULK & CUSTOM ORDERING
+STATUS: LOCKED
+================================================================
+
+TUJUAN
+------
+Menambahkan kemampuan grosir, pemesanan massal, layanan custom, upload desain, dan permintaan penawaran.
+
+ALUR INTI
+---------
+Pilih banyak varian → Hitung harga grosir → Tambah layanan → Upload desain → Minta penawaran atau masuk keranjang
+
+1. HARGA GROSIR BERTINGKAT
+--------------------------
+Admin dapat mengatur price tier per produk.
+
+Contoh:
+- 1–11 pcs: Rp45.000
+- 12–23 pcs: Rp42.000
+- 24–49 pcs: Rp39.000
+- 50+ pcs: harga khusus / minta penawaran
+
+Aturan:
+1. Perhitungan tier berdasarkan total quantity produk yang sama.
+2. Campuran warna dan ukuran tetap dihitung bersama.
+3. Tier tidak berdasarkan satu baris varian saja.
+4. Sistem menampilkan tier aktif.
+5. Sistem menampilkan jumlah tambahan untuk tier berikutnya.
+6. Harga khusus dapat berstatus “Hubungi admin”.
+
+2. BULK ORDER MATRIX
+--------------------
+Sediakan mode pemesanan cepat berbentuk matriks.
+
+Contoh:
+           S   M   L   XL
+Hitam      0   5   3   0
+Putih      2   0   4   0
+Navy       0   3   0   2
+
+Aturan:
+- hanya menampilkan kombinasi aktif,
+- kombinasi stok habis disabled,
+- quantity divalidasi,
+- dapat berpindah antara mode normal dan bulk,
+- hasil akhirnya tetap memakai struktur cart v1.0.
+
+3. MINIMUM ORDER
+----------------
+Admin dapat mengatur:
+- minimum per produk,
+- minimum untuk layanan,
+- minimum tier grosir,
+- minimum quantity per jenis custom.
+
+Pesan harus jelas:
+“Tambahkan X pcs lagi untuk memenuhi minimum order.”
+
+4. LAYANAN TAMBAHAN
+-------------------
+Layanan:
+- Sablon DTF
+- Bordir komputer
+- Cetak sublim
+- Tambah logo
+- Tambah nama
+- Tambah nomor
+- Packaging khusus
+
+Layanan dapat memiliki:
+- status aktif,
+- minimum quantity,
+- basis harga,
+- estimasi,
+- membutuhkan konfirmasi admin.
+
+5. KALKULATOR LAYANAN
+---------------------
+Biaya dapat dipengaruhi:
+- quantity,
+- ukuran desain,
+- jumlah sisi,
+- posisi,
+- jumlah warna bordir,
+- tingkat kerumitan,
+- jenis bahan,
+- finishing.
+
+Jika belum bisa dihitung otomatis:
+status = “Menunggu konfirmasi admin”.
+
+Harga pasti dan estimasi tidak boleh dicampur.
+
+6. LAYANAN PER BARIS
+--------------------
+Layanan dapat diterapkan:
+- ke seluruh kombinasi,
+- ke baris tertentu,
+- ke sebagian quantity.
+
+Contoh:
+Hitam / M / 10 pcs
+- 5 pcs sablon
+- 5 pcs bordir
+
+Jumlah layanan tidak boleh melebihi quantity baris.
+
+7. UPLOAD DESAIN
+----------------
+Pelanggan dapat upload:
+- PNG
+- JPG
+- PDF
+- SVG
+- AI
+- EPS
+- ZIP
+
+Aturan:
+- batas ukuran file ditentukan admin,
+- file dihubungkan ke item atau layanan,
+- file umum order boleh ada,
+- file wajib divalidasi,
+- file private tidak boleh public tanpa signed URL,
+- metadata file disimpan.
+
+8. CATATAN
+----------
+v1.1 menambahkan:
+- catatan per kombinasi,
+- catatan per layanan,
+- catatan umum order.
+
+Contoh:
+Hitam / M / 5 pcs — logo dada kiri
+Putih / XL / 4 pcs — tanpa sablon
+
+9. RINGKASAN HARGA
+------------------
+Pisahkan:
+- harga produk,
+- diskon grosir,
+- biaya layanan pasti,
+- biaya layanan estimasi,
+- biaya tambahan,
+- subtotal,
+- estimasi total,
+- item menunggu konfirmasi.
+
+10. REQUEST QUOTATION
+---------------------
+Tersedia dua jalur:
+- Tambah ke Keranjang
+- Minta Penawaran
+
+Minta penawaran digunakan jika:
+- harga khusus,
+- layanan kompleks,
+- file perlu dicek,
+- jumlah besar,
+- harga belum final.
+
+Payload quotation menyimpan:
+- produk,
+- warna,
+- ukuran,
+- quantity,
+- tier,
+- layanan,
+- desain,
+- catatan,
+- estimasi,
+- kontak pelanggan.
+
+11. SIMPAN KONFIGURASI
+----------------------
+Konfigurasi dapat:
+- autosave,
+- dilanjutkan kemudian,
+- diduplikasi,
+- dibagikan lewat link,
+- dikirim WhatsApp tanpa kehilangan detail.
+
+12. VALIDASI SEBELUM SUBMIT
+---------------------------
+Periksa:
+- stok,
+- harga,
+- status varian,
+- minimum order,
+- jumlah layanan,
+- file wajib,
+- perubahan produk,
+- tier harga,
+- kombinasi tidak tersedia.
+
+13. OUT OF SCOPE v1.1
+---------------------
+Belum termasuk:
+- akun bisnis lengkap,
+- versi penawaran formal,
+- approval desain,
+- pembayaran,
+- invoice,
+- produksi,
+- QC,
+- gudang bahan,
+- supplier,
+- BOM.
+
+14. URUTAN IMPLEMENTASI v1.1
+----------------------------
+1. Price tiers
+2. Minimum order
+3. Bulk matrix
+4. Service schema
+5. Service calculator
+6. Upload file
+7. Notes per line
+8. Quotation draft
+9. Configuration persistence
+10. Validation and test
+
+================================================================
+v1.2 — ORDER-TO-PRODUCTION
+STATUS: LOCKED
+================================================================
+
+TUJUAN
+------
+Mengelola perjalanan pesanan dari quotation sampai barang selesai, dikirim, atau diambil.
+
+ALUR INTI
+---------
+Quotation → Approval desain → Pembayaran → Job order → Produksi → QC → Pengiriman
+
+1. AKUN PELANGGAN
+-----------------
+Checkout guest tetap boleh.
+Akun memberi:
+- riwayat order,
+- riwayat quotation,
+- desain tersimpan,
+- alamat,
+- kontak,
+- repeat order,
+- draft order.
+
+Profil bisnis dapat menyimpan:
+- nama perusahaan,
+- NPWP opsional,
+- billing address,
+- shipping address,
+- PIC,
+- PO number,
+- anggota tim.
+
+2. QUOTATION FORMAL
+-------------------
+Status:
+- draft
+- submitted
+- under_review
+- pricing
+- sent
+- revision_requested
+- approved
+- rejected
+- expired
+- converted_to_order
+
+Nomor:
+QTN-DEB-YYYY-####
+
+3. VERSIONING QUOTATION
+-----------------------
+Quotation tidak boleh ditimpa.
+Setiap revisi menghasilkan versi baru.
+Simpan:
+- jumlah,
+- harga,
+- layanan,
+- desain,
+- catatan,
+- user,
+- timestamp.
+
+Hanya versi terbaru yang dapat disetujui.
+
+4. APPROVAL MOCKUP
+------------------
+Admin upload proof:
+- depan,
+- belakang,
+- posisi logo,
+- warna,
+- ukuran desain,
+- catatan produksi.
+
+Aksi pelanggan:
+- Setujui desain
+- Minta revisi
+- Tambah catatan
+
+Status:
+- not_started
+- in_progress
+- awaiting_approval
+- revision_requested
+- approved
+
+Produksi tidak boleh mulai sebelum approval wajib selesai.
+
+5. APPROVAL PER BAGIAN
+----------------------
+Dukungan approval terpisah:
+- depan,
+- belakang,
+- bordir dada,
+- nama,
+- nomor,
+- bagian lain.
+
+Revisi satu bagian tidak membatalkan approval bagian lain.
+
+6. PEMBAYARAN BERTAHAP
+----------------------
+Skema:
+- full payment,
+- DP,
+- pelunasan,
+- termin B2B.
+
+Status:
+- unpaid
+- pending_verification
+- partially_paid
+- paid
+- failed
+- partially_refunded
+- refunded
+
+Admin dapat menetapkan minimum DP sebelum produksi.
+
+7. DOKUMEN
+----------
+Dokumen:
+- quotation
+- order
+- invoice
+- receipt
+- delivery note
+- order summary
+
+Contoh nomor:
+QTN-DEB-YYYY-####
+ORD-DEB-YYYY-####
+INV-DEB-YYYY-####
+JOB-DEB-YYYY-####
+
+8. JOB ORDER
+------------
+Job order berisi:
+- order number,
+- customer,
+- product,
+- variant,
+- size,
+- quantity,
+- service,
+- position,
+- production file,
+- deadline,
+- note,
+- assignee,
+- priority.
+
+9. STATUS PRODUKSI
+------------------
+Internal:
+- waiting_material
+- preparation
+- waiting_design
+- printing
+- embroidery
+- sublimation
+- sewing
+- quality_control
+- packaging
+- ready_to_ship
+- completed
+
+Customer view:
+- confirmed
+- design_preparation
+- in_production
+- quality_control
+- ready
+- shipped
+- completed
+
+10. WORK ITEM
+-------------
+Satu order dapat dibagi menjadi beberapa work item.
+
+Contoh:
+- 30 pcs DTF
+- 20 pcs bordir
+- 10 pcs tanpa layanan
+
+Setiap work item memiliki:
+- operator,
+- deadline,
+- status,
+- file,
+- note.
+
+11. QUALITY CONTROL
+-------------------
+Checklist:
+- quantity,
+- color,
+- size,
+- design position,
+- print quality,
+- embroidery quality,
+- defect,
+- packaging.
+
+QC dapat menyimpan:
+- pass/fail,
+- foto,
+- note,
+- inspector,
+- timestamp.
+
+Gagal QC dikembalikan ke proses terkait.
+
+12. SHIPPING DAN PICKUP
+-----------------------
+Metode:
+- pickup store,
+- local courier,
+- national expedition,
+- special delivery.
+
+Store:
+- Pettarani
+- Tello
+- Landak
+- Parepare
+
+Data:
+- carrier,
+- tracking number,
+- shipping fee,
+- ship date,
+- ETA,
+- package photo,
+- recipient.
+
+13. NOTIFIKASI
+--------------
+Trigger:
+- quotation ready,
+- revision needed,
+- mockup approval,
+- payment received,
+- production started,
+- QC,
+- ready,
+- shipped,
+- pickup ready.
+
+Channel:
+- dashboard,
+- email,
+- WhatsApp.
+
+Tidak boleh mengirim notifikasi duplikat untuk event sama.
+
+14. REPEAT ORDER
+----------------
+Copy:
+- produk,
+- varian,
+- ukuran,
+- quantity,
+- layanan,
+- desain,
+- posisi,
+- catatan.
+
+Harga dan stok harus dicek ulang.
+
+15. DATA INDIVIDUAL
+-------------------
+Untuk jersey/seragam:
+- nama,
+- nomor,
+- ukuran,
+- warna,
+- quantity.
+
+Input:
+- manual,
+- paste table,
+- upload Excel.
+
+Validasi:
+- duplikasi,
+- ukuran invalid,
+- data kosong,
+- jumlah tidak cocok.
+
+16. PURCHASE ORDER PELANGGAN
+----------------------------
+B2B dapat menyimpan:
+- PO number,
+- PO file,
+- requester,
+- approver,
+- cost center,
+- invoice instruction,
+- term.
+
+PO pelanggan adalah dokumen pendukung, bukan pengganti order internal.
+
+17. AUDIT LOG
+-------------
+Catat:
+- perubahan quantity,
+- perubahan harga,
+- approval desain,
+- verifikasi pembayaran,
+- perubahan status,
+- update file,
+- user,
+- waktu,
+- before/after.
+
+18. ROLE
+--------
+- Super Admin
+- Sales/Admin Order
+- Designer
+- Production Admin
+- Operator
+- Finance
+- Quality Control
+- Store Staff
+
+Setiap role hanya melihat data yang diperlukan.
+
+19. OUT OF SCOPE v1.2
+---------------------
+Belum termasuk:
+- accounting ledger,
+- payroll,
+- absensi,
+- supplier portal,
+- bahan baku,
+- BOM,
+- procurement,
+- mesin terintegrasi,
+- native app.
+
+20. URUTAN IMPLEMENTASI v1.2
+----------------------------
+1. Formal quotation
+2. Quotation versioning
+3. Mockup approval
+4. Order conversion
+5. Payment tracking
+6. Document numbering
+7. Job order
+8. Work item
+9. Production status
+10. QC
+11. Shipping/pickup
+12. Notification
+13. Role and audit
+14. Repeat order
+
+================================================================
+v1.3 — INVENTORY, PROCUREMENT & PRODUCTION PLANNING
+STATUS: LOCKED
+================================================================
+
+TUJUAN
+------
+Menghubungkan order dengan kebutuhan bahan, stok gudang, supplier, pembelian, pemakaian, jadwal produksi, waste, dan biaya.
+
+ALUR INTI
+---------
+Order → Hitung kebutuhan → Cek stok → Procurement/Transfer → Alokasi → Produksi → Pemakaian → Waste → Biaya aktual
+
+1. MASTER BAHAN
+---------------
+Contoh:
+- kaos polos,
+- kain,
+- benang,
+- tinta,
+- film,
+- powder,
+- kertas sublim,
+- label,
+- packaging,
+- kardus.
+
+Field:
+- id
+- material_code
+- name
+- category
+- unit
+- main_supplier
+- last_purchase_price
+- average_price
+- minimum_stock
+- reorder_point
+- storage_location
+- status
+- image optional
+
+Nomor:
+MAT-DEB-####
+
+2. VARIAN BAHAN
+---------------
+Bahan dapat memiliki:
+- warna,
+- ukuran,
+- lebar,
+- tipe,
+- batch,
+- kode supplier.
+
+Stok disimpan per material variant.
+
+3. MULTI-LOCATION
+-----------------
+Lokasi:
+- gudang pusat,
+- Pettarani,
+- Tello,
+- Landak,
+- Parepare,
+- produksi,
+- QC,
+- in transit.
+
+Pisahkan:
+- physical stock,
+- available stock,
+- reserved stock,
+- allocated stock,
+- damaged stock,
+- in_transit stock.
+
+Available = physical - reserved - allocated - damaged
+
+4. RESERVASI DAN ALOKASI
+------------------------
+Tahapan:
+1. order dibuat,
+2. reservasi sementara,
+3. syarat pembayaran terpenuhi,
+4. alokasi,
+5. issue ke produksi,
+6. konsumsi,
+7. batal = release.
+
+Reservasi memiliki expiration.
+
+5. BILL OF MATERIALS
+--------------------
+BOM berisi kebutuhan standar per produk/layanan.
+
+Dapat dipengaruhi:
+- produk,
+- ukuran,
+- warna,
+- layanan,
+- posisi,
+- ukuran desain,
+- quantity.
+
+BOM adalah estimasi.
+Pemakaian aktual dicatat terpisah.
+
+6. MATERIAL REQUIREMENT
+-----------------------
+Saat job order dibuat:
+- hitung kebutuhan,
+- tambah waste allowance,
+- bandingkan stok,
+- hasilkan shortage.
+
+Status:
+- sufficient
+- partially_available
+- purchase_required
+- transfer_required
+
+7. SAFETY STOCK
+---------------
+Admin mengatur:
+- minimum stock,
+- safety stock,
+- reorder point,
+- suggested order quantity.
+
+Alert mempertimbangkan order yang akan datang.
+
+8. PURCHASE REQUEST
+-------------------
+Status:
+- draft
+- pending_approval
+- approved
+- rejected
+- converted_to_po
+- completed
+
+Field:
+- material,
+- variant,
+- required quantity,
+- available quantity,
+- reason,
+- related orders,
+- required date,
+- requester,
+- approver.
+
+Nomor:
+PR-DEB-YYYY-####
+
+9. PURCHASE ORDER
+-----------------
+Berisi:
+- supplier,
+- material lines,
+- quantity,
+- price,
+- tax,
+- freight,
+- payment term,
+- order date,
+- ETA,
+- destination,
+- note.
+
+Nomor:
+PO-DEB-YYYY-####
+
+10. SUPPLIER
+------------
+Data:
+- name,
+- contact,
+- WhatsApp,
+- email,
+- address,
+- supplied materials,
+- MOQ,
+- lead time,
+- payment term,
+- price history,
+- delivery performance,
+- status.
+
+11. GOODS RECEIPT
+-----------------
+Catat:
+- PO,
+- ordered quantity,
+- received quantity,
+- shortage,
+- excess,
+- damaged,
+- photo,
+- delivery note,
+- batch,
+- date.
+
+Status:
+- not_received
+- partially_received
+- fully_received
+- partially_rejected
+- completed
+
+Stok bertambah hanya setelah penerimaan diverifikasi.
+
+12. BATCH DAN LOT
+-----------------
+Simpan:
+- batch number,
+- supplier,
+- received date,
+- quantity,
+- price,
+- expiry,
+- shade,
+- quality note.
+
+Jika shade penting, satu order sebaiknya memakai batch sama.
+
+13. STOCK TRANSFER
+------------------
+Alur:
+1. request,
+2. approve,
+3. prepare,
+4. dispatch,
+5. in transit,
+6. receive,
+7. discrepancy handling.
+
+Nomor:
+TRF-DEB-YYYY-####
+
+14. STOCK OPNAME
+----------------
+Alur:
+- create session,
+- snapshot,
+- physical count,
+- compare,
+- reason,
+- approval,
+- adjustment.
+
+Reason:
+- damaged,
+- wrong input,
+- unrecorded usage,
+- loss,
+- wrong location,
+- pending receipt,
+- supplier return,
+- production return.
+
+Adjustment history tidak boleh dihapus.
+
+15. MATERIAL ISSUE
+------------------
+Pengeluaran bahan ke job order harus memakai dokumen.
+
+Nomor:
+ISS-DEB-YYYY-####
+
+Simpan:
+- planned,
+- issued,
+- used,
+- returned,
+- waste.
+
+16. ACTUAL USAGE DAN WASTE
+--------------------------
+Operator mencatat:
+- actual usage,
+- remaining,
+- damaged,
+- reject,
+- reason.
+
+Data dipakai untuk:
+- koreksi BOM,
+- actual costing,
+- waste analysis.
+
+17. PRODUCTION SCHEDULING
+-------------------------
+Pertimbangkan:
+- deadline,
+- material availability,
+- design approval,
+- payment,
+- operator capacity,
+- machine capacity,
+- process duration,
+- priority.
+
+Tidak boleh ready-production jika syarat belum lengkap.
+
+18. WORK CENTER
+---------------
+Contoh:
+- DTF printing
+- Heat press
+- Embroidery
+- Sublimation
+- Cutting
+- Sewing
+- Finishing
+- QC
+- Packaging
+
+Field:
+- capacity,
+- work hours,
+- machine,
+- operator,
+- setup time,
+- process time,
+- maintenance,
+- status.
+
+19. OPERATOR ASSIGNMENT
+-----------------------
+Operator melihat:
+- task,
+- deadline,
+- quantity,
+- file,
+- instruction,
+- status.
+
+Operator tidak melihat:
+- sales price,
+- customer financial data,
+- margin.
+
+20. WORK ITEM STATUS
+--------------------
+- unscheduled
+- waiting_material
+- ready
+- in_progress
+- paused
+- awaiting_inspection
+- completed
+- failed
+- rework_required
+
+Pause reason wajib.
+
+21. REWORK DAN REJECT
+---------------------
+Simpan:
+- reject quantity,
+- defect type,
+- cause stage,
+- operator,
+- wasted material,
+- repairable,
+- reproduce,
+- scrap.
+
+Rework tetap terhubung ke job order asli.
+
+22. MATERIAL RETURN
+-------------------
+Bahan sisa dapat kembali ke gudang setelah inspeksi.
+Bahan rusak tidak boleh kembali sebagai available stock.
+
+23. COSTING
+-----------
+Estimasi:
+- BOM,
+- material price,
+- labor,
+- machine,
+- packaging,
+- waste estimate.
+
+Aktual:
+- actual material,
+- waste,
+- rework,
+- work duration,
+- supplier cost,
+- extra cost.
+
+Bandingkan estimated vs actual.
+
+24. MARGIN
+----------
+Role tertentu dapat melihat:
+- sales value,
+- discount,
+- material cost,
+- production service cost,
+- packaging,
+- freight subsidy,
+- rework cost,
+- gross margin,
+- margin percentage.
+
+Hanya:
+- owner,
+- super admin,
+- finance tertentu.
+
+25. DASHBOARD OPERASIONAL
+-------------------------
+Tampilkan:
+- shortage,
+- low stock,
+- overdue PO,
+- production today,
+- full capacity,
+- overdue work,
+- waiting QC,
+- high waste,
+- inventory value,
+- slow moving stock.
+
+Filter:
+- location,
+- period,
+- category.
+
+26. NOTIFIKASI INTERNAL
+-----------------------
+Trigger:
+- low stock,
+- shortage,
+- PR approval,
+- supplier late,
+- goods received,
+- transfer pending,
+- production late,
+- excessive waste,
+- machine unavailable,
+- job ready.
+
+Notifikasi berdasarkan role.
+
+27. ROLE v1.3
+-------------
+- Warehouse Admin
+- Warehouse Staff
+- Procurement
+- Procurement Approver
+- Production Planner
+- Production Supervisor
+- Operator
+- Inventory Auditor
+- Owner
+
+28. AUDIT
+---------
+Catat:
+- stock changes,
+- material issue,
+- stock adjustment,
+- BOM changes,
+- purchase price,
+- PO,
+- receipt,
+- transfer,
+- waste,
+- schedule changes.
+
+Simpan:
+- user,
+- time,
+- before,
+- after,
+- reason,
+- related document.
+
+29. OUT OF SCOPE v1.3
+---------------------
+Belum termasuk:
+- general ledger,
+- balance sheet,
+- full P&L accounting,
+- payroll,
+- attendance,
+- supplier portal,
+- machine direct integration,
+- AI demand forecast,
+- route optimization,
+- franchise,
+- marketplace,
+- native operator app.
+
+30. URUTAN IMPLEMENTASI v1.3
+----------------------------
+1. Material master
+2. Material variants
+3. Stock locations
+4. Stock balances
+5. Reservation/allocation
+6. BOM
+7. Requirement calculation
+8. Purchase request
+9. Purchase order
+10. Goods receipt
+11. Material issue
+12. Actual usage/waste
+13. Transfer
+14. Stock opname
+15. Scheduling
+16. Work centers
+17. Costing
+18. Margin
+19. Dashboard
+20. Audit
+
+================================================================
+INSTRUKSI WAJIB UNTUK CODEX
+================================================================
+
+1. Jangan mengerjakan v1.1 sebelum v1.0 selesai dan diuji.
+2. Jangan mengerjakan v1.2 sebelum v1.1 selesai dan diuji.
+3. Jangan mengerjakan v1.3 sebelum v1.2 selesai dan diuji.
+4. Jangan mengubah landing page, CMS landing, hero, navbar, footer, store, kategori, atau fitur lain di luar scope.
+5. Jangan menghapus tabel lama tanpa migration.
+6. Jangan membuat duplicate source of truth.
+7. Product category wajib tetap memakai product_category_id.
+8. Public category route tetap berdasarkan product_categories.slug.
+9. PIM lama dianggap legacy; PIM V2 menjadi pengelola varian.
+10. Semua tabel baru harus punya:
+    - primary key,
+    - foreign key,
+    - index,
+    - unique constraint,
+    - timestamps,
+    - status bila dibutuhkan.
+11. Semua upload harus memakai Supabase Storage secara aman.
+12. File private memakai signed URL.
+13. Semua form harus memiliki validation client dan server.
+14. Semua mutation harus menangani error dengan jelas.
+15. Jangan menyembunyikan error.
+16. Jangan meninggalkan TypeScript any tanpa alasan kuat.
+17. Jangan meninggalkan build error.
+18. Jangan hardcode domain.
+19. Jangan hardcode daftar warna atau ukuran jika sudah ada master data.
+20. Jangan mencampur stok jual v1.0 dengan stok bahan v1.3.
+21. Jangan mengurangi stok permanen hanya karena item masuk cart.
+22. Jangan menghitung harga custom sebagai final jika masih estimasi.
+23. Jangan memulai produksi sebelum:
+    - desain disetujui,
+    - pembayaran memenuhi syarat,
+    - bahan tersedia,
+    - file produksi lengkap.
+24. Jangan mengubah audit log.
+25. Jangan tampilkan margin ke operator atau pelanggan.
+
+================================================================
+CHECKLIST SEBELUM SETIAP VERSI DINYATAKAN SELESAI
+================================================================
+
+DATABASE
+- Migration sukses
+- Constraint aktif
+- Index aktif
+- Data lama aman
+- Tidak ada orphan records
+- RLS sesuai role
+
+ADMIN
+- CRUD bekerja
+- Validation bekerja
+- Error state jelas
+- Empty state jelas
+- Loading state jelas
+- Tidak ada broken image
+
+PUBLIC
+- Desktop aman
+- Mobile aman
+- Accessibility dasar
+- SEO tidak rusak
+- URL benar
+- Data terbaru tampil
+
+CART / ORDER
+- Merge benar
+- Quantity benar
+- Price benar
+- Stock benar
+- Refresh aman
+- Payload WhatsApp lengkap
+
+BUILD
+- npm run lint
+- npm run typecheck atau tsc
+- npm run build
+- Tidak ada error
+- Tidak ada warning kritis
+
+TEST CASE MINIMUM
+- satu warna
+- banyak warna
+- satu ukuran
+- banyak ukuran
+- foto tidak lengkap
+- stok habis
+- harga berubah
+- stok berubah
+- SKU duplikat
+- refresh
+- data lama
+- mobile
+- user tanpa login
+- admin role terbatas
+
+================================================================
+KEPUTUSAN FINAL
+================================================================
+
+Nama dokumen:
+DEBRODER Product, Ordering, Production & Inventory Blueprint Suite v1.0–v1.3 — FROZEN
+
+Semua versi v1.0 sampai v1.3 telah dikunci.
+
+Perubahan besar setelah dokumen ini:
+- tidak boleh langsung mengubah fondasi,
+- harus dibuat sebagai versi baru,
+- harus disetujui owner,
+- harus dilengkapi migration plan,
+- harus diuji agar tidak merusak versi sebelumnya.
+
+END OF DOCUMENT
