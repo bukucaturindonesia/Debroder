@@ -604,14 +604,16 @@ export function CategoryDetailPage({
 
 export function PublicShell({
   content,
-  children
+  children,
+  headerMode = "sticky"
 }: {
   content: PublicContent;
   children: ReactNode;
+  headerMode?: "sticky" | "natural";
 }) {
   return (
     <main className="public-site min-h-screen bg-brand-offWhite text-brand-charcoal">
-      <SiteHeader />
+      <SiteHeader positionMode={headerMode} />
       <PageMotion />
       {children}
       <PublicFooter content={content} />

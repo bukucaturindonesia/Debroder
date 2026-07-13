@@ -330,6 +330,10 @@ export type PageHeroContent = CmsWorkflowFields & {
   mobile_focal_y?: number | null;
   mobile_focal_zoom?: number | null;
   mobile_target_ratio?: string;
+  primary_cta_label?: string;
+  primary_cta_url?: string;
+  secondary_cta_label?: string;
+  secondary_cta_url?: string;
   status_aktif: boolean;
   created_at?: string;
   updated_at?: string;
@@ -444,6 +448,29 @@ export type CmsBanner = CmsWorkflowFields & {
   cta_label: string;
   cta_url: string;
   text_position?: "left" | "center" | "right";
+  experience_key?: "landing" | "jersey" | string;
+  section_type?:
+    | "wide_campaign"
+    | "split_campaign"
+    | "poster_carousel"
+    | "custom_cta"
+    | "team_package_campaign"
+    | "order_steps"
+    | "closing_campaign"
+    | string;
+  section_key?: string;
+  secondary_cta_label?: string;
+  secondary_cta_url?: string;
+  image_alt?: string;
+  object_position?: string;
+  mobile_object_position?: string;
+  focal_x?: number | null;
+  focal_y?: number | null;
+  focal_zoom?: number | null;
+  mobile_focal_x?: number | null;
+  mobile_focal_y?: number | null;
+  mobile_focal_zoom?: number | null;
+  metadata?: Record<string, unknown>;
   is_active: boolean;
   sort_order: number;
   created_at?: string;
@@ -664,6 +691,7 @@ export type PublicContent = {
   landingSettings: LandingPageSettings;
   landingSections: LandingSection[];
   campaignBanners: CmsBanner[];
+  jerseySections: CmsBanner[];
   stores: Store[];
   orderSteps: OrderStep[];
   trustAbout: TrustAboutContent;

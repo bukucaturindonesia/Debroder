@@ -1050,6 +1050,7 @@ export const fallbackContent: PublicContent = {
   },
   landingSections: LANDING_SECTION_DEFAULTS.map((section) => ({ ...section, metadata: {} })),
   campaignBanners: [],
+  jerseySections: [],
   stores: fallbackStores,
   orderSteps: fallbackOrderSteps,
   trustAbout: fallbackTrustAbout,

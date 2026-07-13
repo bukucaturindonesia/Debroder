@@ -1,5 +1,39 @@
 # Current Phase Handoff
 
+## Current requested scope — Jersey Experience
+
+**Status: IMPLEMENTED, PARTIALLY VERIFIED**
+
+Implemented locally:
+
+- frozen eight-section editorial `/jersey` experience;
+- shared global header plus compact Jersey identity and sticky contextual navigation;
+- PIM-backed `/jersey/shop` catalog transition;
+- official `/jersey/configurator` integration using the existing configurator;
+- safe CTA route validation and canonical `/produk/[slug]` product detail flow;
+- responsive native carousel and mobile/desktop campaign composition;
+- existing CMS extension for Jersey hero and campaign presentation content;
+- `/admin/commerce/jersey` workflow editor with draft, publish, schedule, archive, and restore;
+- additive migration `20260713143000_commerce_jersey_experience.sql`.
+
+Verification completed:
+
+- TypeScript: PASS;
+- lint: PASS with 0 errors and 23 existing warnings outside this implementation;
+- targeted Jersey test: PASS, 4 tests;
+- full suite: PASS, 15 files / 86 tests;
+- production build: PASS;
+- HTTP route smoke: PASS for public Jersey routes, admin CMS route, and sitemap;
+- browser at 1440, 1280, 768, 390, and 360 px: PASS for eight sections, no page overflow, sticky nav, carousel rail overflow, loaded image integrity, console errors, and page errors;
+- click flow: PASS through shop, canonical product detail, and Configurator.
+
+Pending deployment gates:
+
+- migration has not been run and remote schema/data were not changed;
+- authenticated production CMS workflow was not exercised because the supplied source has no environment credentials;
+- real DEBRODER Jersey campaign photography must be selected and published in CMS; the source archive only provides local brand artwork for safe fallback rendering;
+- owner should repeat responsive visual QA with final production media and focal points after CMS publication.
+
 ## Checkpoint
 
 **Phase 14 — Repeat Order v1.2: COMPLETE, TECHNICALLY VERIFIED, READY TO DEPLOY**

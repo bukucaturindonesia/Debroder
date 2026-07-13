@@ -648,6 +648,10 @@ const tableConfigs: TableConfig[] = [
         type: "text",
         placeholder: "Judul halaman"
       },
+      { name: "primary_cta_label", label: "CTA utama", type: "text", placeholder: "Belanja Jersey" },
+      { name: "primary_cta_url", label: "Target CTA utama", type: "text", placeholder: "/jersey/shop" },
+      { name: "secondary_cta_label", label: "CTA kedua", type: "text", placeholder: "Buat Jersey Custom" },
+      { name: "secondary_cta_url", label: "Target CTA kedua", type: "text", placeholder: "/jersey/configurator" },
       {
         name: "object_position",
         label: "Desktop Object Position",

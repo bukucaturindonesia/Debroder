@@ -49,6 +49,7 @@ export const adminNavigationGroups: readonly AdminNavigationGroup[] = [
     roles: FULL_ADMIN_ROLES,
     items: [
       { label: "CMS / Landing Page", href: "/admin/homepage-sections", roles: FULL_ADMIN_ROLES },
+      { label: "CMS / Jersey", href: "/admin/commerce/jersey", roles: FULL_ADMIN_ROLES },
       { label: "Page Hero", href: "/admin/page-hero", roles: FULL_ADMIN_ROLES },
       { label: "Media Library", href: "/admin/media", roles: FULL_ADMIN_ROLES },
       { label: "Gambar Website", href: "/admin/site-media", roles: FULL_ADMIN_ROLES },

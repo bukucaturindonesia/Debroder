@@ -5,7 +5,6 @@ import { PageHero, PublicShell } from "@/components/PublicPage";
 import { SafeImage } from "@/components/SafeImage";
 import { fallbackCategories, fallbackImages } from "@/lib/fallback-data";
 import { getPublicContent } from "@/lib/public-data";
-import { whatsappHref } from "@/lib/url";
 
 function slugify(value: string) {
   return value.toLowerCase().normalize("NFKD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
@@ -32,7 +31,6 @@ export default async function JerseyDetailPage({ params }: { params: Promise<{ s
   if (!category) notFound();
   const jerseyCategory = category!;
 
-  const orderUrl = whatsappHref(content.contact.whatsapp_apparel, `Halo DE BRODER, saya ingin bertanya tentang ${jerseyCategory.nama_kategori}.`);
   const gallery = Array.from(new Set([jerseyCategory.gambar_url, ...(jerseyCategory.gallery_urls || [])].filter(Boolean)));
 
   return (
@@ -45,10 +43,10 @@ export default async function JerseyDetailPage({ params }: { params: Promise<{ s
         objectPosition={jerseyCategory.object_position}
         objectFit={jerseyCategory.object_fit}
         imageZoom={jerseyCategory.focal_zoom}
-        ctaText="Konsultasi Jersey"
-        ctaHref={orderUrl}
-        secondaryCtaText="Kembali ke Katalog"
-        secondaryCtaHref="/jersey"
+        ctaText="Mulai Konfigurasi Jersey"
+        ctaHref="#configurator"
+        secondaryCtaText="Belanja Jersey"
+        secondaryCtaHref="/jersey/shop"
         breadcrumbs={[{ label: "Beranda", href: "/" }, { label: "Jersey", href: "/jersey" }, { label: jerseyCategory.nama_kategori }]}
       />
 

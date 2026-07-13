@@ -1119,7 +1119,7 @@ async function readCampaignBanners(): Promise<CmsBanner[]> {
   const { data, error } = await supabase
     .from("cms_banners")
     .select(
-      "id,name,media_type,desktop_media_url,mobile_media_url,poster_url,eyebrow,title,subtitle,cta_label,cta_url,text_position,is_active,sort_order,status,publish_at,published_at,archived_at,updated_by,created_at,updated_at"
+      "id,name,media_type,desktop_media_url,mobile_media_url,poster_url,eyebrow,title,subtitle,cta_label,cta_url,text_position,experience_key,section_type,section_key,secondary_cta_label,secondary_cta_url,image_alt,object_position,mobile_object_position,focal_x,focal_y,focal_zoom,mobile_focal_x,mobile_focal_y,mobile_focal_zoom,metadata,is_active,sort_order,status,publish_at,published_at,archived_at,updated_by,created_at,updated_at"
     )
     .eq("is_active", true)
     .or(publicCmsStatusFilter(now))
@@ -1273,6 +1273,12 @@ export async function getPublicContent(): Promise<PublicContent> {
     mobile_media_url: resolveMediaUrl(banner.mobile_media_url, siteMedia.bannerMobile),
     poster_url: banner.poster_url ? resolveMediaUrl(banner.poster_url, siteMedia.bannerDesktop) : banner.poster_url
   }));
+  const landingCampaignBanners = resolvedCampaignBanners.filter(
+    (banner) => !banner.experience_key || banner.experience_key === "landing"
+  );
+  const jerseySections = resolvedCampaignBanners.filter(
+    (banner) => banner.experience_key === "jersey"
+  );
 
   return {
     hero: cleanHeroes[0] || {
@@ -1298,7 +1304,8 @@ export async function getPublicContent(): Promise<PublicContent> {
     homepageSections: resolvedHomepageSections,
     landingSettings,
     landingSections,
-    campaignBanners: resolvedCampaignBanners,
+    campaignBanners: landingCampaignBanners,
+    jerseySections,
     stores: resolvedStores,
     orderSteps: publicOrderSteps(orderSteps),
     trustAbout: resolvedTrustAbout,

@@ -263,7 +263,7 @@ function SearchModal({ isOpen, onClose }: { isOpen: boolean; onClose: () => void
   );
 }
 
-export function SiteHeader() {
+export function SiteHeader({ positionMode = "sticky" }: { positionMode?: "sticky" | "natural" }) {
   const pathname = usePathname();
   const [isOpen, setIsOpen] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
@@ -317,7 +317,7 @@ export function SiteHeader() {
   }, [isOpen]);
 
   return (
-    <header className="sticky top-0 z-[100] bg-white text-[#111]">
+    <header className={`${positionMode === "sticky" ? "sticky top-0" : "relative"} z-[100] bg-white text-[#111]`}>
       <div className={`hidden overflow-hidden bg-[#f5f5f5] transition-[max-height,opacity] duration-200 ease-out lg:block ${expanded ? "visible max-h-8 opacity-100" : "invisible max-h-0 opacity-0 pointer-events-none"}`} aria-hidden={!expanded}>
         <div className="section-shell flex h-8 items-center justify-between gap-4 text-[12px] font-medium text-black/65">
           <p className="truncate">DEBRODER Apparel & Printing</p>

@@ -8,6 +8,7 @@ Last updated: 13 July 2026
 - Phase 12 — Notification Management v1.2: COMPLETE AND DEPLOYED
 - Phase 13 — Role & Audit v1.2: COMPLETE AND DEPLOYED
 - Phase 14 — Repeat Order v1.2: COMPLETE, TECHNICALLY VERIFIED, READY TO DEPLOY
+- Commerce Jersey Experience: IMPLEMENTED, PARTIALLY VERIFIED
 - Phase 15: NOT STARTED
 
 ## Database state
@@ -18,6 +19,21 @@ Last updated: 13 July 2026
 - The migration was not reopened, edited, recreated, or reapplied.
 - No database reset, data deletion, table/function/trigger/RLS deletion, or migration-history cleanup occurred.
 - No new Phase 14 migration was necessary.
+- Jersey CMS extension migration is present locally and has **not** been applied:
+  - `20260713143000_commerce_jersey_experience.sql`
+- No database reset, destructive SQL, or migration command was run for the Jersey work.
+
+## Commerce Jersey experience state
+
+- `/jersey` is an editorial mini landing and no longer embeds the full product catalog.
+- Frozen order is implemented: Hero, Split Posters, Team / Style Carousel, Wide Editorial, Custom CTA, Paket Tim, Cara Order, and Closing Campaign.
+- Global navbar remains shared; the Jersey identity bar and sticky contextual navigation are scoped to the Jersey experience.
+- `/jersey/shop` is the PIM-backed catalog transition and product cards retain canonical `/produk/[slug]` detail routes.
+- `/jersey/configurator` is the official Custom CTA target and reuses the existing `JerseyConfigurator` domain logic.
+- CMS presentation data extends the existing `page_heroes` and `cms_banners` sources; no parallel Jersey product store was introduced.
+- Admin entry point `/admin/commerce/jersey` supports draft, publish, schedule, archive, restore, desktop/mobile media, copy, CTA, focal positioning, visibility, and sort order.
+- CTA targets are restricted to existing public Jersey, catalog, product, help, and WhatsApp support routes.
+- The supplied archive contains brand artwork but no local Jersey campaign photography. Until the pending migration is applied and real DEBRODER media is published through CMS, public fallback presentation uses existing brand assets.
 
 ## Phase 14 state
 
@@ -42,13 +58,16 @@ Last updated: 13 July 2026
 - Phase 13 role/audit test remains green after its phase-boundary assertion was updated for the now-authorized Phase 14 route.
 - Six missing Phase 13 route files from the uploaded deploy archive were restored from the verified Phase 13 checkpoint to prevent regression.
 
-## Quality state
+## Quality state — Jersey checkpoint
 
 - Typecheck: PASS
-- Lint: PASS, 0 errors / 24 pre-existing warnings
+- Lint: PASS, 0 errors / 23 warnings outside the Jersey implementation
 - Phase 14 tests: PASS, 9 tests
-- Full tests: PASS, 14 files / 82 tests
-- Build: PASS, 83 generated entries/routes
+- Jersey tests: PASS, 4 tests
+- Full tests: PASS, 15 files / 86 tests
+- Build: PASS, 86 generated pages; Jersey public/admin routes included
+- Browser: PASS at 1440, 1280, 768, 390, and 360 px for page-level overflow, sticky navigation, carousel overflow, broken loaded images, page errors, and console errors
+- Commerce click flow: PASS for `/jersey` → `/jersey/shop` → `/produk/custom-jersey` and Custom CTA → `/jersey/configurator`
 - Database transactional smoke test: PASS and ROLLBACK
 - Smoke records remaining: 0
 
@@ -58,4 +77,4 @@ No project-level `AGENTS.md` was present in the supplied source. No instruction 
 
 ## Frozen boundary
 
-The frozen landing architecture and Phase 12/13 database foundations were not modified. Phase 15 must not begin without explicit owner approval.
+The Frozen Commerce Experience and Landing Page section order were followed; no blueprint file was changed. Phase 12/13 foundations, order, payment, checkout, and Panel Admin transaction domains were not rebuilt. Phase 15 must not begin without explicit owner approval.

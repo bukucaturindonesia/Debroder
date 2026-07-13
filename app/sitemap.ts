@@ -2,7 +2,7 @@ import type { MetadataRoute } from "next";
 import { getPublicContent } from "@/lib/public-data";
 import { absoluteUrl } from "@/lib/site";
 
-const routes = ["", "/koleksi", "/keranjang", "/kaos-polos", "/jersey", "/jaket-hoodie", "/kemeja", "/headwear", "/sablon-dtf", "/maklon-dtf", "/cetak-sublim", "/store", "/cara-order"];
+const routes = ["", "/koleksi", "/keranjang", "/kaos-polos", "/jersey", "/jersey/shop", "/jersey/configurator", "/jaket-hoodie", "/kemeja", "/headwear", "/sablon-dtf", "/maklon-dtf", "/cetak-sublim", "/store", "/cara-order"];
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const now = new Date();

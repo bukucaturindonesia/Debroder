@@ -234,6 +234,10 @@ create table if not exists public.page_heroes (
   object_fit text not null default 'cover' check (object_fit in ('cover', 'contain')),
   focal_x numeric,
   focal_y numeric,
+  primary_cta_label text not null default '',
+  primary_cta_url text not null default '',
+  secondary_cta_label text not null default '',
+  secondary_cta_url text not null default '',
   status_aktif boolean not null default true,
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now()
@@ -384,6 +388,21 @@ create table if not exists public.cms_banners (
   cta_label text not null default '',
   cta_url text not null default '',
   text_position text not null default 'left' check (text_position in ('left', 'center', 'right')),
+  experience_key text not null default 'landing' check (experience_key ~ '^[a-z0-9-]+$'),
+  section_type text not null default 'wide_campaign' check (section_type in ('wide_campaign', 'split_campaign', 'poster_carousel', 'custom_cta', 'team_package_campaign', 'order_steps', 'closing_campaign')),
+  section_key text not null default '',
+  secondary_cta_label text not null default '',
+  secondary_cta_url text not null default '',
+  image_alt text not null default '',
+  object_position text not null default 'center center',
+  mobile_object_position text not null default 'center center',
+  focal_x numeric,
+  focal_y numeric,
+  focal_zoom numeric not null default 1,
+  mobile_focal_x numeric,
+  mobile_focal_y numeric,
+  mobile_focal_zoom numeric not null default 1,
+  metadata jsonb not null default '{}'::jsonb,
   is_active boolean not null default true,
   sort_order integer not null default 0,
   created_at timestamptz not null default now(),
@@ -513,7 +532,22 @@ alter table if exists public.landing_sections
   add column if not exists text_position text not null default 'left';
 
 alter table if exists public.cms_banners
-  add column if not exists text_position text not null default 'left';
+  add column if not exists text_position text not null default 'left',
+  add column if not exists experience_key text not null default 'landing',
+  add column if not exists section_type text not null default 'wide_campaign',
+  add column if not exists section_key text not null default '',
+  add column if not exists secondary_cta_label text not null default '',
+  add column if not exists secondary_cta_url text not null default '',
+  add column if not exists image_alt text not null default '',
+  add column if not exists object_position text not null default 'center center',
+  add column if not exists mobile_object_position text not null default 'center center',
+  add column if not exists focal_x numeric,
+  add column if not exists focal_y numeric,
+  add column if not exists focal_zoom numeric not null default 1,
+  add column if not exists mobile_focal_x numeric,
+  add column if not exists mobile_focal_y numeric,
+  add column if not exists mobile_focal_zoom numeric not null default 1,
+  add column if not exists metadata jsonb not null default '{}'::jsonb;
 
 alter table if exists public.homepage_section_items
   add column if not exists custom_label text not null default '',
@@ -582,6 +616,9 @@ create index if not exists landing_sections_order_idx
 
 create index if not exists cms_banners_order_idx
   on public.cms_banners (is_active, sort_order);
+
+create index if not exists cms_banners_experience_order_idx
+  on public.cms_banners (experience_key, section_type, is_active, sort_order);
 
 create index if not exists products_category_idx
   on public.products (product_category_id);
@@ -683,7 +720,11 @@ alter table if exists public.page_heroes
   add column if not exists mobile_focal_x numeric,
   add column if not exists mobile_focal_y numeric,
   add column if not exists mobile_focal_zoom numeric not null default 1,
-  add column if not exists mobile_target_ratio text not null default '4:5';
+  add column if not exists mobile_target_ratio text not null default '4:5',
+  add column if not exists primary_cta_label text not null default '',
+  add column if not exists primary_cta_url text not null default '',
+  add column if not exists secondary_cta_label text not null default '',
+  add column if not exists secondary_cta_url text not null default '';
 
 alter table if exists public.instagram_banners
   add column if not exists mobile_image_url text,

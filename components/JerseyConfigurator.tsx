@@ -200,7 +200,7 @@ export function JerseyConfigurator({ config, jerseyName, jerseySlug, imageUrl, i
   }
 
   return (
-    <section data-reveal className="bg-brand-offWhite py-10 sm:py-12">
+    <section id="configurator" data-reveal className="scroll-mt-14 bg-brand-offWhite py-10 sm:py-12">
       <div className="section-shell">
         <div className="mb-7 max-w-3xl">
           <p className="text-xs font-semibold uppercase tracking-[0.18em] text-brand-charcoal/45">Jersey Configurator</p>

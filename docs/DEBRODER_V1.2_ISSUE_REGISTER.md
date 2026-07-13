@@ -14,6 +14,12 @@
 - Status: DEFERRED BY PHASE 12 SCOPE
 - Detail: Email, WhatsApp, SMS, and push templates may exist, but provider delivery remains `not_configured` until credentials and provider workers are explicitly approved.
 
+### V12-017 — Activate Jersey CMS schema and production media
+
+- Severity: Gate
+- Status: OPEN
+- Detail: Jersey experience code, local migration, tests, build, and local responsive browser verification pass. Migration `20260713143000_commerce_jersey_experience.sql` has not been applied. After owner-approved migration, publish real DEBRODER desktop/mobile campaign photography and focal points through `/admin/commerce/jersey`, then repeat authenticated production QA. The supplied source archive contains local brand artwork but no Jersey campaign photography.
+
 ## Closed in Phase 12
 
 - V12-010 — Local dependency-based quality gates were previously blocked. Dependencies were installed for verification; typecheck, lint, test, and build now run successfully.
