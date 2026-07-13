@@ -219,19 +219,18 @@ export function PaymentTrackingManager() {
       return;
     }
 
-    if (proofFile && proofFile.size > 10 * 1024 * 1024) {
-      setMessage("Ukuran bukti pembayaran maksimal 10 MB.");
+    if (proofFile && proofFile.size > 5 * 1024 * 1024) {
+      setMessage("Ukuran bukti pembayaran maksimal 5 MB.");
       return;
     }
 
     const allowedTypes = [
       "image/png",
       "image/jpeg",
-      "image/webp",
       "application/pdf"
     ];
     if (proofFile && !allowedTypes.includes(proofFile.type)) {
-      setMessage("Bukti pembayaran harus berupa PNG, JPG, WEBP, atau PDF.");
+      setMessage("Bukti pembayaran harus berupa PNG, JPG, atau PDF.");
       return;
     }
 
@@ -728,14 +727,14 @@ export function PaymentTrackingManager() {
                 Bukti pembayaran
                 <input
                   type="file"
-                  accept=".png,.jpg,.jpeg,.webp,.pdf,image/png,image/jpeg,image/webp,application/pdf"
+                  accept=".png,.jpg,.jpeg,.pdf,image/png,image/jpeg,application/pdf"
                   onChange={(event) =>
                     setProofFile(event.target.files?.[0] || null)
                   }
                   className="mt-2 block w-full rounded-lg border border-brand-softGray bg-white p-3 text-sm"
                 />
                 <span className="mt-2 block text-xs font-normal text-brand-charcoal/55">
-                  PNG, JPG, WEBP, atau PDF. Maksimal 10 MB.
+                  PNG, JPG, atau PDF. Maksimal 5 MB.
                 </span>
               </label>
             ) : null}

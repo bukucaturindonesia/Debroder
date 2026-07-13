@@ -9,6 +9,7 @@ import { AdminErrorState, AdminLoadingState } from "@/components/admin/ui/AdminF
 import { PaymentTrackingManager } from "@/components/admin/PaymentTrackingManager";
 import { RepeatOrderDialog } from "@/components/admin/RepeatOrderDialog";
 import { CustomerOrderHistory } from "@/components/admin/CustomerOrderHistory";
+import { CommerceOrderOperations } from "@/components/admin/CommerceOrderOperations";
 
 type Order = {
   id: string;
@@ -27,6 +28,7 @@ type Order = {
   currency: string;
   converted_at: string | null;
   archived_at: string | null;
+  checkout_source: string | null;
 };
 
 type Item = {
@@ -78,7 +80,7 @@ export function OrderDetailAdmin() {
     const [orderResult, itemResult] = await Promise.all([
       supabase
         .from("orders")
-        .select("id,order_number,quotation_id,customer_name,company_name,customer_phone,customer_email,shipping_address,delivery_method,customer_notes,admin_notes,status,total_amount,currency,converted_at,archived_at")
+        .select("id,order_number,quotation_id,customer_name,company_name,customer_phone,customer_email,shipping_address,delivery_method,customer_notes,admin_notes,status,total_amount,currency,converted_at,archived_at,checkout_source")
         .eq("id", orderId)
         .maybeSingle(),
       supabase
@@ -271,6 +273,8 @@ export function OrderDetailAdmin() {
             ))}
           </div>
         </section>
+
+        {order.checkout_source === "public_checkout" ? <CommerceOrderOperations orderId={order.id} onChanged={loadData} /> : null}
 
         <CustomerOrderHistory orderId={order.id} />
       </div>

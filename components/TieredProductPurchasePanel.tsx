@@ -399,6 +399,7 @@ export function TieredProductPurchasePanel({
         selectedVariant?.variant_name || selectedVariant?.color_name,
       variantSku: selectedSku || undefined,
       stockLabel,
+      stockAvailable: selectedVariantSize?.stock,
       variantSnapshot: {
         variant_id: selectedVariant?.id,
         variant_name: selectedVariant?.variant_name,
@@ -433,7 +434,7 @@ export function TieredProductPurchasePanel({
   function buySelectedNow() {
     if (!addSelectedToCart()) return;
     cart.closeCart();
-    router.push("/keranjang");
+    router.push("/checkout");
   }
 
   return (

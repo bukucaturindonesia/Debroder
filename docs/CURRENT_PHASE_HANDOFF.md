@@ -1,135 +1,139 @@
-# Current Phase Handoff
+# Current Phase Handoff — Commerce Foundation V1 P0
 
-## Current requested scope — Jersey Experience
+Date: 14 July 2026
+Status: **IMPLEMENTED, VERIFIED** (source + remote database foundation); application **NOT DEPLOYED**
 
-**Status: IMPLEMENTED, PARTIALLY VERIFIED**
+## 1. Arsitektur yang ditemukan
 
-Implemented locally:
+DEBRODER sudah memiliki CMS, PIM, universal product detail, root cart provider, order/order item, payment tracking, private payment proofs, quotation, Jersey Configurator, production, fulfillment, Panel Admin, roles, permissions, RLS, dan audit log. Gap utama adalah cart publik berhenti di WhatsApp dan `/checkout` belum ada. Implementasi P0 menyambungkan domain-domain tersebut tanpa membuat sistem kedua.
 
-- final owner-approved `/jersey` sequence: contextual header, Hero, Carousel 01, centered editorial copy, Split 01, Carousel 02, Wide Banner, Split 02, Custom CTA, Cara Order, and Closing Campaign;
-- scoped near-black editorial theme with neon green accents and a dark footer, without changing the shared DEBRODER theme on other routes;
-- simplified image-led editorial cards containing only one title and the `Jelajahi` CTA pill;
-- shared global header that is fully visible on desktop first load and scrolls out naturally, plus a single sticky Jersey identity/contextual bar;
-- hover/focus-only contextual underline with no permanent active underline or contextual border;
-- legacy Paket Tim removed from public composition, fallback, navigation, and approved anchors without deleting shared CMS data;
-- borderless seven-step Cara Order grid and divider-free dark Jersey footer;
-- reserved-ratio route loading state and recoverable route error state;
-- PIM-backed `/jersey/shop` commerce shell with a white/black contextual navbar and no stacked global navbar;
-- URL-backed search, subcategory, color, size, availability, price, and sort state derived only from actual PIM data;
-- compact sticky Show/Hide Filters + Sort By toolbar, 240 px desktop sidebar, focus-managed mobile drawer with Escape/focus trap, and Reset/Terapkan actions;
-- three product cards per row on desktop in both sidebar states, two cards on mobile, stable 4:5 media, fine-pointer second-image hover, and proportional grid resizing;
-- PIM product status, price, color count, canonical `/produk/[slug]` links, Load More, and loading/empty/retry states;
-- universal Jersey product detail styling on `/produk/[slug]`, with custom-only products sent to the official Configurator and Ready Stock products retaining variant/size/quantity/Add to Cart plus same-cart Buy Now;
-- official `/jersey/configurator` integration using the existing configurator;
-- strict CTA route/anchor validation and canonical `/produk/[slug]` product detail flow;
-- two responsive native-scroll carousel groups with 3.2 visible cards on desktop, 2.2 on tablet, and about 1.27 on mobile, plus accessible arrows and disabled states;
-- existing CMS extension for Jersey hero and campaign presentation content;
-- `/admin/commerce/jersey` workflow editor with draft, publish, schedule, archive, restore, campaign grouping, anchor, heading, overlay, and theme fields;
-- additive migrations `20260713143000_commerce_jersey_experience.sql` and `20260713223000_jersey_owner_approved_experience_addendum.sql`.
+## 2. Bagian yang digunakan kembali
 
-Verification completed:
+- PIM `products` → `product_variants` → `product_variant_sizes` dan price tiers.
+- `/jersey/shop`, `/produk/[slug]`, `TieredProductPurchasePanel`, dan `CartProvider`.
+- `orders`, `order_items`, nomor order, status/payment history, dan Admin Order Management.
+- `order_payments`, `payment_submission_links`, Admin payment verification/rejection, signed URL, dan bucket `payment-proofs`.
+- Existing Configurator, quotation, job order, production, QC, fulfillment, role/permission, dan audit foundations.
 
-- TypeScript: PASS;
-- lint: PASS with 0 errors and 23 existing warnings outside this implementation;
-- targeted Jersey tests: PASS, 13 tests;
-- full suite: PASS, 16 files / 95 tests;
-- production build: PASS;
-- HTTP route smoke: PASS for `/jersey`, `/jersey/shop`, a filtered/sorted shop URL, `/produk/custom-jersey`, `/jersey/configurator`, `/keranjang`, and the fallback product image;
-- browser at 1600, 1440, 1280, 1024, 768, 430, 390, and 360 px: PASS for the final ten-section sequence, no page overflow, black theme continuity, zero section/footer borders, sticky nav, carousel ratios/arrow states, seven order steps, loaded image integrity, console errors, and page errors;
-- underline initial/hover/move/focus behavior: PASS; no permanent Home underline;
-- Paket Tim removal: PASS for public DOM, navigation, fallback copy, and anchor;
-- global/contextual header scroll behavior: PASS at desktop; mobile contextual menu renders as a two-row identity plus native horizontal menu;
-- rendered internal CTA and approved anchor check: PASS; no broken route found;
-- browser regression smoke for `/`, `/jersey/shop`, `/jersey/configurator`, and `/kaos-polos`: PASS;
-- click flow: PASS through shop, canonical product detail, and Configurator.
+## 3. Bagian yang diperbaiki
 
-Verification limits found in this run:
+- Cart/Buy Now sekarang memakai navigasi internal menuju `/checkout`.
+- Cart menggabungkan variant-size yang sama, menyimpan stock availability, dan membatasi quantity client-side; server tetap menjadi otoritas.
+- Payment public dibatasi ke transfer bank serta JPG/JPEG/PNG/PDF maksimal 5 MB.
+- Payment link default menjadi 24 jam / tiga submission agar retry dan upload ulang tetap pada order yang sama.
+- Sequence tables commerce dikunci dengan RLS dan direct client grants dicabut.
 
-- browser runner was unavailable; Playwright existed but Chromium was absent and its download was blocked, so the new shop/detail UI has not been visually or console-verified at the required viewport matrix;
-- `/checkout` returns 404;
-- public cart checkout remains WhatsApp-based and does not create an official order, although an existing single-product `create_public_order` RPC and Order Management tables/UI are present elsewhere in the repository;
-- end-to-end checkout → order → payment → Admin verification is therefore NO-GO, not passed;
-- no database migration or remote mutation was run.
+## 4. Bagian baru yang benar-benar diperlukan
 
-Pending deployment gates:
+- Guest checkout page/API.
+- Private-token order confirmation/API.
+- Commerce operations section pada detail order Admin yang sudah ada.
+- `stock_reservations` dan `order_shipping_quotes` sebagai lapisan koreksi minimal pada domain existing.
+- Atomic checkout, verification, quote, approval, reservation, expiry, and stock-consumption RPCs.
+- Satu contract test P0 dan forward correction migrations untuk dua error runtime yang ditemukan smoke test.
 
-- neither Jersey migration has been run and remote schema/data were not changed;
-- authenticated production CMS workflow was not exercised because the supplied source has no environment credentials;
-- loading and error components passed source contract, typecheck, and build verification; a deliberate production runtime fault was not injected;
-- real DEBRODER Jersey campaign photography must be selected and published in CMS; the source archive only provides local brand artwork for safe fallback rendering;
-- owner should repeat responsive visual QA with final production media and focal points after CMS publication;
-- deployment and authenticated CMS publication remain outside this local implementation checkpoint.
-- implement or approve one official server-side cart checkout using the existing order tables/RPC domain, including multi-item repricing, stock validation, idempotency, payment-on-the-same-order, and Admin visibility; do not create a second order system;
-- repeat browser QA for `/jersey/shop` and Jersey `/produk/[slug]` at 1600/1440/1280/1024/768/430/390/360 px once a browser-enabled environment is available.
+## 5. File yang berubah
 
-## Checkpoint
+Lihat `git status --short` untuk seluruh file tracked dan baru. Kelompok utama:
 
-**Phase 14 — Repeat Order v1.2: COMPLETE, TECHNICALLY VERIFIED, READY TO DEPLOY**
+- Public flow: `app/checkout`, `app/order-confirmation`, `app/api/checkout`, `app/api/public/orders`, `app/cart`, `components/checkout`.
+- Reuse/extension: `components/CartProvider.tsx`, `components/TieredProductPurchasePanel.tsx`, `components/admin/OrderDetailAdmin.tsx`, payment components/routes.
+- Admin: `components/admin/CommerceOrderOperations.tsx`.
+- Domain/test: `lib/commerce-checkout.ts`, `test/commerce-foundation-p0.test.ts`.
+- Database: seven `20260714*commerce_foundation*` migrations.
+- Governance: this handoff, master state, and issue register.
 
-- Phase 12 Notification Management: COMPLETE AND DEPLOYED; no Phase 14 changes.
-- Phase 13 Role & Audit: COMPLETE AND DEPLOYED; role/audit integration retained.
-- Phase 15: NOT STARTED.
+## 6. Route yang berubah
 
-## Completed in Phase 14
+- Added: `/checkout`, `/api/checkout`, `/order-confirmation/[token]`, `/api/public/orders/[token]`, `/cart` alias.
+- Extended: `/keranjang`, `/produk/[slug]` Buy Now behavior, `/payment/[token]`, `/api/public/payments/[token]`, `/admin/orders/[id]`.
+- Preserved: `/jersey`, `/jersey/shop`, `/jersey/configurator`, universal product detail, existing Admin/payment/fulfillment routes.
 
-- TypeScript types and server validation
-- repeat-order query/service layer
-- authenticated API routes
-- role and permission enforcement
-- eligible source-order selection
-- current price-tier, variant, size, and stock checks
-- safe item/service/design-reference copy
-- confirmation dialog and idempotent creation
-- repeat-order workspace
-- order-detail and customer-history integration
-- quotation-origin integration
-- append-only history and audit visibility
-- loading, empty, success, retry, and error states
-- Phase 14 contract tests and full regression suite
+## 7. Database/migration
 
-## Database handoff
+Seven forward migrations are applied remotely. The primary migration is additive. Runtime smoke exposed an ambiguous PL/pgSQL variable, an unqualified pgcrypto `digest`, and a notification render null that blocked fulfillment history; each was fixed by a new forward migration rather than editing applied history. A normalization migration makes the variable correction safe across the evaluated environment. No reset/drop/data deletion occurred.
 
-Existing remote migration retained and not replayed:
+## 8. RLS dan permission
 
-- `20260712071131 phase14_repeat_order`
+New tables have RLS and authenticated staff read policies based on `order.read`. Customer checkout, total approval, and payment submission RPCs are service-role-only behind token-validating server routes. Admin verification/quote/extension RPCs require authenticated access plus existing `order.edit` or staff-role checks. Sensitive sequence tables are not directly accessible to clients.
 
-No Phase 14 migration was created locally or applied in this run.
+## 9. Cart dan checkout
 
-Remote database checks:
+Published ready-stock variant-size items flow through guest checkout without login. Customer enters name, WhatsApp, optional email/note, and only the fields required by pickup/shipping. Server recalculates price/tier and validates product, variant, SKU, quantity, and stock. Idempotency prevents duplicate orders; cart is cleared only after success and remains intact on failure.
 
-- RPC `create_repeat_order_quotation`: available
-- source relation and history foreign keys: PASS
-- unique idempotency constraints/indexes: PASS
-- RLS/history append-only trigger: PASS
-- role permission compatibility: PASS
-- transactional double-call smoke test: PASS and ROLLBACK
-- smoke records remaining: 0
+## 10. Order dan payment
 
-## Official flow note
+Order and item snapshots are written atomically before payment and appear in the existing Admin order table. Public order access requires a high-entropy token. Payment upload stays on the same order and only sets pending verification. Existing Admin approval/rejection/DP/settlement/adjustment/refund foundations remain active.
 
-The remote foundation creates a new draft quotation linked to the source order. Product prices and stock are revalidated, services remain pending when required, and the quotation then uses the existing approval/conversion lifecycle to become a new official order. The old order is never modified, and WhatsApp is not the main transaction flow.
+## 11. Stock/reservation
 
-## Quality gates
+Pickup verification reserves 12 hours. Shipping verification does not reserve; Admin quotes shipping, customer approves total, then an atomic 24-hour reservation is created. Row locks, one reservation per order item, duplicate variant rejection, active-reservation subtraction, and expiry release prevent oversell and negative stock. Full verified payment consumes PIM stock.
 
-- `npm run typecheck`: PASS
-- `npm run lint`: PASS — 0 errors, 24 pre-existing warnings
-- Phase 14 tests: PASS — 9 tests
-- Full tests: PASS — 14 files, 82 tests
-- Production build: PASS — 83 generated entries/routes
-- `git diff --check`: PASS
+## 12. Panel Admin
 
-Sandbox build note: Google Fonts were mocked temporarily because external Google Fonts DNS was unavailable. Standalone typecheck and lint passed first. Temporary build-only Next settings were restored and are not part of production source.
+No new dashboard was created. Existing `/admin/orders/[id]` now exposes sender-number/code WhatsApp verification, versioned shipping quote, status/amount/reservation summary, reason-required reservation extension, Ready Stock fulfillment creation, and atomic pay-at-store pickup completion. Existing payment, job order, fulfillment, history, and repeat-order controls remain adjacent.
 
-## Verification entry points
+## 13. Test yang dijalankan
 
-- `/admin/repeat-orders`
-- `/admin/orders/[id]`
-- `/admin/orders/quotations/[id]`
-- `/admin/audit-log`
-- `/admin/notifications`
+- `tsc --noEmit`: PASS.
+- `eslint .`: PASS, 0 errors / 23 pre-existing warnings.
+- `vitest run`: PASS, 17 files / 100 tests.
+- `next build`: PASS.
+- `git diff --check`: PASS.
+- SQL compilation/rollback checks: PASS.
+- Remote transaction smoke with rollback: PASS.
+- Function ACL, RLS, bucket, cron, and no-residue queries: PASS.
 
-## Hard stop
+## 14. Build status
 
-**Phase 15: NOT STARTED.**
+**VERIFIED**. Production build generated all new public/API/Admin entry points successfully.
 
-Do not replay `phase14_repeat_order`, reset the database, alter Phase 12 notification foundations, or start Phase 15 without a new explicit owner instruction.
+## 15. Fitur yang berhasil diverifikasi
+
+- Idempotent multi-item order foundation and server price/stock validation.
+- Manual WhatsApp one-time code verification and attempt/expiry controls.
+- Pickup 12-hour reservation and pay-at-store state.
+- Shipping quote → customer approval → 24-hour reservation.
+- Oversell rejection, non-negative stock, expiry, and release.
+- Ready Stock fulfillment without fake production Work Items, paid-before-handover guard, and atomic pay-at-store pickup completion.
+- Private proof bucket settings, size/MIME limit, server-only sensitive RPCs, and RLS on new/sequence tables.
+- No smoke data remained after rollback.
+
+## 16. Fitur yang hanya implemented
+
+- Responsive browser interaction of the new checkout/order-confirmation/Admin forms.
+- Real customer payment upload against a production order.
+- Real Admin approval/rejection and pickup completion through browser.
+- End-to-end flow using a real remotely published Jersey Ready Stock item.
+
+These are implemented but need deployed application/browser credentials and real operational data.
+
+## 17. Blocker
+
+- Application deployment was not requested/performed.
+- Remote has no suitable published Jersey Ready Stock variant for a non-rollback production E2E order.
+- `MASTER PROMPT DEBRODER` was not found in the supplied repository/workspace.
+
+No blocker prevented source implementation or rollback-based database verification.
+
+## 18. Risiko tersisa
+
+- Operational manual WhatsApp verification depends on Admin discipline when matching sender number and code; no WhatsApp API/provider was invented.
+- No automated notification/provider was added; existing provider configuration remains separate.
+- Supabase advisor retains older repository-wide security/performance findings not introduced by P0. New commerce RPC ACLs were explicitly verified.
+- Real UI/browser regression and production media/product setup remain deployment gates.
+
+## 19. Langkah berikutnya
+
+1. Deploy the application branch containing these source changes.
+2. Publish one real Jersey Ready Stock product/variant/SKU/stock through existing PIM.
+3. Run authenticated browser E2E for pickup, shipping, payment approval/rejection/retry, fulfillment, and customer token isolation.
+4. Monitor the five-minute expiry cron and Admin audit log during the first controlled orders.
+5. Address older advisor findings in a separately scoped security hardening pass; do not mix them with v1.3.
+
+## 20. Status akhir
+
+**IMPLEMENTED, VERIFIED** for the reusable P0 commerce foundation and remote transactional smoke.
+**PARTIALLY VERIFIED** for the full operational browser journey.
+**NOT DEPLOYED** for application code.
+Phase 15 / v1.3 remains **NOT STARTED**.

@@ -18,7 +18,16 @@ type OrderRow = {
 
 const STATUS: Record<string, string> = {
   baru: "Pesanan Baru",
+  pending_confirmation: "Menunggu Verifikasi WhatsApp",
+  awaiting_shipping_quote: "Menunggu Ongkir",
+  awaiting_customer_approval: "Menunggu Persetujuan Total",
+  awaiting_payment: "Menunggu Pembayaran",
   confirmed: "Pesanan Dikonfirmasi",
+  processing: "Sedang Diproses",
+  ready_for_pickup: "Siap Diambil",
+  shipped: "Dikirim",
+  picked_up: "Sudah Diambil",
+  expired: "Kedaluwarsa",
   cancelled: "Pesanan Dibatalkan",
   completed: "Pesanan Selesai"
 };
@@ -77,7 +86,7 @@ export function OrderListAdmin() {
         <AdminPageHeader
           eyebrow="DEBRODER v1.2 · Phase 4"
           title="Pesanan"
-          description="Pesanan resmi yang dibuat dari penawaran dan mockup yang telah disetujui."
+          description="Pesanan resmi dari guest checkout, penawaran yang disetujui, dan repeat order."
           actions={
             <Link
               href="/admin/orders/archive"
@@ -135,7 +144,7 @@ export function OrderListAdmin() {
         ) : (
           <AdminEmptyState
             title="Belum ada pesanan"
-            description="Pesanan akan muncul setelah penawaran dan mockup yang disetujui dikonversi."
+            description="Pesanan akan muncul setelah guest checkout berhasil atau penawaran disetujui dan dikonversi."
           />
         )}
       </div>

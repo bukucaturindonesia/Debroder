@@ -66,11 +66,12 @@ export function PublicPaymentForm({ token }: { token: string }) {
           <form onSubmit={submit} className="mt-5 grid gap-4">
             <Field label="Nominal"><input name="amount" type="number" min="1" required /></Field>
             <Field label="Tanggal pembayaran"><input name="paidAt" type="datetime-local" required /></Field>
-            <Field label="Metode"><select name="method" defaultValue="bank_transfer"><option value="bank_transfer">Transfer Bank</option><option value="qris">QRIS</option><option value="ewallet">Dompet Digital</option><option value="cash">Tunai</option><option value="other">Lainnya</option></select></Field>
-            <Field label="Bank / kanal"><input name="channelName" /></Field>
+            <input name="method" type="hidden" value="bank_transfer" />
+            <Field label="Nama pengirim"><input name="senderName" maxLength={150} required /></Field>
+            <Field label="Bank pengirim"><input name="channelName" required /></Field>
             <Field label="Nomor referensi"><input name="referenceNumber" /></Field>
             <Field label="Catatan"><textarea name="customerNotes" rows={3} /></Field>
-            <Field label="Bukti pembayaran (PNG, JPG, WEBP, PDF; maks. 10 MB)"><input name="proof" type="file" accept="image/png,image/jpeg,image/webp,application/pdf" required /></Field>
+            <Field label="Bukti pembayaran (PNG, JPG, PDF; maks. 5 MB)"><input name="proof" type="file" accept="image/png,image/jpeg,application/pdf" required /></Field>
             {error ? <p className="border border-red-200 bg-red-50 p-3 text-sm text-red-700">{error}</p> : null}
             <button disabled={sending} className="min-h-12 bg-brand-green px-5 font-semibold text-white disabled:opacity-50">{sending ? "Mengirim..." : "Kirim untuk Verifikasi"}</button>
           </form>
@@ -83,4 +84,3 @@ export function PublicPaymentForm({ token }: { token: string }) {
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
   return <label className="grid gap-2 text-sm font-semibold [&_input]:min-h-11 [&_input]:rounded-lg [&_input]:border [&_input]:border-brand-softGray [&_input]:px-3 [&_select]:min-h-11 [&_select]:rounded-lg [&_select]:border [&_select]:border-brand-softGray [&_select]:px-3 [&_textarea]:rounded-lg [&_textarea]:border [&_textarea]:border-brand-softGray [&_textarea]:p-3">{label}{children}</label>;
 }
-

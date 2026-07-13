@@ -2,8 +2,8 @@ import { randomUUID } from "node:crypto";
 import { hashPaymentToken } from "@/lib/payments";
 import { getAdminSupabaseClient } from "@/lib/supabase/client";
 
-const ALLOWED_TYPES = new Set(["image/png", "image/jpeg", "image/webp", "application/pdf"]);
-const MAX_BYTES = 10 * 1024 * 1024;
+const ALLOWED_TYPES = new Set(["image/png", "image/jpeg", "application/pdf"]);
+const MAX_BYTES = 5 * 1024 * 1024;
 type Context = { params: Promise<{ token: string }> };
 
 async function resolveLink(token: string) {
@@ -48,6 +48,7 @@ export async function POST(request: Request, context: Context) {
     const paidAt = String(form.get("paidAt") ?? "");
     const method = String(form.get("method") ?? "");
     const channelName = String(form.get("channelName") ?? "").trim();
+    const senderName = String(form.get("senderName") ?? "").trim();
     const referenceNumber = String(form.get("referenceNumber") ?? "").trim();
     const customerNotes = String(form.get("customerNotes") ?? "").trim();
     const idempotencyKey = String(form.get("idempotencyKey") ?? "").trim();
@@ -55,8 +56,9 @@ export async function POST(request: Request, context: Context) {
     if (!Number.isSafeInteger(amount) || amount <= 0) return Response.json({ error: "Nominal pembayaran tidak valid." }, { status: 400 });
     if (!paidAt || Number.isNaN(new Date(paidAt).getTime())) return Response.json({ error: "Tanggal pembayaran tidak valid." }, { status: 400 });
     if (!/^[a-zA-Z0-9_-]{16,100}$/.test(idempotencyKey)) return Response.json({ error: "Kunci pengiriman tidak valid." }, { status: 400 });
+    if (method !== "bank_transfer" || senderName.length < 2 || senderName.length > 150) return Response.json({ error: "Nama pengirim dan metode transfer bank wajib diisi." }, { status: 400 });
     if (!(proof instanceof File) || proof.size <= 0 || proof.size > MAX_BYTES || !ALLOWED_TYPES.has(proof.type)) {
-      return Response.json({ error: "Bukti wajib PNG, JPG, WEBP, atau PDF maksimal 10 MB." }, { status: 400 });
+      return Response.json({ error: "Bukti wajib PNG, JPG, atau PDF maksimal 5 MB." }, { status: 400 });
     }
     const extension = proof.name.split(".").pop()?.toLowerCase().replace(/[^a-z0-9]/g, "") || "file";
     const path = `public/${resolved.link.order_id}/${randomUUID()}.${extension}`;
@@ -69,7 +71,7 @@ export async function POST(request: Request, context: Context) {
       p_token_hash: hashPaymentToken(token), p_idempotency_key: idempotencyKey,
       p_amount: amount, p_paid_at: new Date(paidAt).toISOString(), p_method: method,
       p_channel_name: channelName || null, p_reference_number: referenceNumber || null,
-      p_customer_notes: customerNotes || null, p_proof_bucket: uploaded.bucket,
+      p_customer_notes: [`Nama pengirim: ${senderName}`, customerNotes].filter(Boolean).join("\n"), p_proof_bucket: uploaded.bucket,
       p_proof_path: uploaded.path, p_proof_file_name: proof.name,
       p_proof_mime_type: proof.type, p_proof_size_bytes: proof.size
     });
@@ -84,4 +86,3 @@ export async function POST(request: Request, context: Context) {
     return Response.json({ error: error instanceof Error ? error.message : "Pembayaran gagal dikirim." }, { status: 400 });
   }
 }
-

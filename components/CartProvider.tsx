@@ -5,9 +5,7 @@ import { createContext, type ReactNode, useContext, useEffect, useMemo, useState
 import { BrandIcon } from "@/components/BrandIcon";
 import { SafeImage } from "@/components/SafeImage";
 import { fallbackImages, pageHeroImageFallbacks } from "@/lib/fallback-data";
-import { contactLinks } from "@/lib/contact";
-import { absoluteUrl } from "@/lib/site";
-import { formatRupiah, whatsappLinkWithMessage } from "@/lib/url";
+import { formatRupiah } from "@/lib/url";
 
 export type CartProductInput = {
   id?: string;
@@ -28,6 +26,7 @@ export type CartProductInput = {
   variantName?: string;
   variantSku?: string;
   stockLabel?: string;
+  stockAvailable?: number;
   variantSnapshot?: Record<string, unknown>;
 };
 
@@ -40,7 +39,7 @@ type CartServiceSelection = {
 
 type CartItemRole = "primary" | "additional";
 
-type CartItem = CartProductInput & {
+export type CartItem = CartProductInput & {
   cartId: string;
   role: CartItemRole;
   quantity: number;
@@ -52,6 +51,7 @@ type CartItem = CartProductInput & {
   variantName?: string;
   variantSku?: string;
   stockLabel?: string;
+  stockAvailable?: number;
   variantSnapshot?: Record<string, unknown>;
   notes: string;
   services: CartServiceSelection[];
@@ -61,6 +61,7 @@ type CartContextValue = {
   items: CartItem[];
   itemCount: number;
   isOpen: boolean;
+  isLoaded: boolean;
   addItem: (product: CartProductInput, role?: CartItemRole) => void;
   updateItem: (cartId: string, updates: Partial<CartItem>) => void;
   removeItem: (cartId: string) => void;
@@ -207,6 +208,13 @@ function normalizeNumber(value: number, fallback = 1) {
   return Number.isFinite(value) && value > 0 ? Math.floor(value) : fallback;
 }
 
+function clampToStock(quantity: number, stockAvailable?: number) {
+  const normalized = normalizeNumber(quantity);
+  return typeof stockAvailable === "number" && Number.isFinite(stockAvailable)
+    ? Math.min(normalized, Math.max(1, Math.floor(stockAvailable)))
+    : normalized;
+}
+
 function createCartId(product: CartProductInput) {
   return `${product.id || product.href || product.name}-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
 }
@@ -233,69 +241,6 @@ function recordValue(value: unknown): Record<string, unknown> | null {
 function nameFromRecord(value: unknown) {
   const record = recordValue(value);
   return typeof record?.name === "string" ? record.name : "";
-}
-
-function priceFromRecord(value: unknown, key = "price_adjustment") {
-  const record = recordValue(value);
-  return parsePrice(record?.[key] as string | number | null | undefined);
-}
-
-function jerseySnapshotLines(snapshot?: Record<string, unknown>) {
-  if (!snapshot || snapshot.configurator_type !== "jersey") return [];
-  const teamInfo = recordValue(snapshot.team_information);
-  const priceBreakdown = recordValue(snapshot.price_breakdown);
-  const addons = Array.isArray(snapshot.addons) ? snapshot.addons : [];
-  const requiredServices = Array.isArray(snapshot.required_services) ? snapshot.required_services : [];
-  const lines = ["", "Konfigurasi jersey:"];
-  const packageName = nameFromRecord(snapshot.package);
-  const materialName = nameFromRecord(snapshot.material);
-  const collarName = nameFromRecord(snapshot.collar);
-  if (packageName) lines.push(`Paket: ${packageName}`);
-  if (materialName) {
-    const adjustment = priceFromRecord(snapshot.material);
-    lines.push(`Bahan: ${materialName}${adjustment ? ` (${formatRupiah(adjustment)})` : " (+0)"}`);
-  }
-  if (collarName) {
-    const adjustment = priceFromRecord(snapshot.collar);
-    lines.push(`Kerah: ${collarName}${adjustment ? ` (${formatRupiah(adjustment)})` : " (+0)"}`);
-  }
-  if (typeof snapshot.size === "string") lines.push(`Ukuran: ${snapshot.size}`);
-  if (addons.length) {
-    lines.push("Addon:");
-    addons.forEach((addon) => {
-      const addonName = nameFromRecord(addon);
-      const addonPrice = priceFromRecord(addon);
-      if (addonName) lines.push(`- ${addonName}${addonPrice ? ` (${formatRupiah(addonPrice)} / pcs)` : ""}`);
-    });
-  }
-  if (requiredServices.length) {
-    lines.push("Layanan wajib:");
-    requiredServices.forEach((service) => {
-      const record = recordValue(service);
-      const serviceName = typeof record?.service_name === "string" ? record.service_name : nameFromRecord(service);
-      if (serviceName) lines.push(`- ${serviceName}`);
-    });
-  }
-  if (priceBreakdown) {
-    const unitPrice = parsePrice(priceBreakdown.unitPrice as string | number | null | undefined);
-    const total = parsePrice(priceBreakdown.total as string | number | null | undefined);
-    if (unitPrice) lines.push(`Harga / pcs: ${formatRupiah(unitPrice)}`);
-    if (total) lines.push(`Estimasi total jersey: ${formatRupiah(total)}`);
-  }
-  if (teamInfo) {
-    const teamName = typeof teamInfo.teamName === "string" ? teamInfo.teamName.trim() : "";
-    const designReference = typeof teamInfo.designReference === "string" ? teamInfo.designReference.trim() : "";
-    const designFileName = typeof teamInfo.designFileName === "string" ? teamInfo.designFileName.trim() : "";
-    const playerData = typeof teamInfo.playerData === "string" ? teamInfo.playerData.trim() : "";
-    const notes = typeof teamInfo.notes === "string" ? teamInfo.notes.trim() : "";
-    if (teamName || designReference || designFileName || playerData || notes) lines.push("", "Data tim dan desain:");
-    if (teamName) lines.push(`Nama tim: ${teamName}`);
-    if (designReference) lines.push(`Referensi desain: ${designReference}`);
-    if (designFileName) lines.push(`File desain: ${designFileName}`);
-    if (playerData) lines.push(`Data pemain:\n${playerData}`);
-    if (notes) lines.push(`Catatan jersey: ${notes}`);
-  }
-  return lines;
 }
 
 function isJerseyConfiguredItem(item: Pick<CartItem, "variantSnapshot">) {
@@ -394,6 +339,10 @@ function ensureRoles(items: CartItem[]) {
       variantName: item.variantName || undefined,
       variantSku: item.variantSku || undefined,
       stockLabel: item.stockLabel || undefined,
+      stockAvailable:
+        typeof item.stockAvailable === "number"
+          ? Math.max(0, Math.floor(item.stockAvailable))
+          : undefined,
       variantSnapshot: item.variantSnapshot || undefined,
       notes: item.notes || "",
       services: normalizeServices(item.services, quantity)
@@ -426,88 +375,6 @@ function updateService(item: CartItem, serviceId: string, updates: Partial<CartS
       ? { ...service, ...updates, quantity: normalizeNumber(Number(updates.quantity ?? service.quantity), item.quantity) }
       : service
   );
-}
-
-function buildItemMessage(item: CartItem) {
-  const lines = [`Produk: ${item.name}`];
-  if (item.category) lines.push(`Kategori: ${item.category}`);
-  if (item.priceLabel) lines.push(`Harga produk: ${item.priceLabel}`);
-  if (item.variantName) lines.push(`Varian: ${item.variantName}`);
-  if (item.variantSku) lines.push(`SKU: ${item.variantSku}`);
-  lines.push(`Jumlah: ${item.quantity} pcs`);
-  if (item.color.trim()) lines.push(`Warna: ${item.color.trim()}`);
-  if (item.size.trim()) lines.push(`Ukuran: ${item.size.trim()}`);
-  if (item.stockLabel) lines.push(`Info stok: ${item.stockLabel}`);
-  lines.push(...jerseySnapshotLines(item.variantSnapshot));
-  if (item.notes.trim()) lines.push(`Catatan produk: ${item.notes.trim()}`);
-  const productSubtotal = itemProductSubtotal(item);
-  if (productSubtotal > 0) lines.push(`Subtotal produk: ${formatRupiah(productSubtotal)}`);
-  if (item.href) lines.push(`Link produk: ${absoluteUrl(item.href)}`);
-
-  const services = selectedServices(item);
-  if (services.length) {
-    lines.push("");
-    lines.push("Pilihan produksi:");
-    services.forEach(({ service, selection }) => {
-      lines.push(`- ${service.name}`);
-      lines.push(`  Jumlah pengerjaan: ${selection.quantity} pcs`);
-      if (selection.position.trim()) lines.push(`  Posisi: ${selection.position.trim()}`);
-      if (selection.notes.trim()) lines.push(`  Catatan: ${selection.notes.trim()}`);
-      lines.push(`  Harga normal: ${formatRupiah(service.pricePerPcs)} / pcs`);
-      lines.push(`  Subtotal produksi: ${formatRupiah(service.pricePerPcs * selection.quantity)}`);
-    });
-  }
-
-  return lines;
-}
-
-function buildMessage(items: CartItem[]) {
-  const normalized = ensureRoles(items);
-  const primary = normalized.filter((item) => item.role === "primary");
-  const additional = normalized.filter((item) => item.role === "additional");
-  const totals = cartTotals(normalized);
-  const lines = [
-    totals.hasServices
-      ? "Halo DEBRODER, saya ingin pesan dan mendapatkan harga terbaik:"
-      : "Halo DEBRODER, saya ingin pesan produk:"
-  ];
-
-  if (primary.length) {
-    lines.push("");
-    lines.push("PESANAN UTAMA");
-    primary.forEach((item, index) => {
-      if (index > 0) lines.push("");
-      lines.push(`${index + 1}. ${item.name}`);
-      lines.push(...buildItemMessage(item).slice(1));
-    });
-  }
-
-  if (additional.length) {
-    lines.push("");
-    lines.push("ITEM TAMBAHAN");
-    additional.forEach((item, index) => {
-      if (index > 0) lines.push("");
-      lines.push(`${index + 1}. ${item.name}`);
-      lines.push(...buildItemMessage(item).slice(1));
-    });
-  }
-
-  lines.push("");
-  lines.push("ESTIMASI NORMAL");
-  lines.push(`Subtotal produk: ${safeCurrency(totals.productSubtotal)}`);
-  if (totals.serviceSubtotal > 0) lines.push(`Subtotal pilihan produksi: ${formatRupiah(totals.serviceSubtotal)}`);
-  lines.push(`${totals.hasServices ? "Estimasi normal" : "Total"}: ${safeCurrency(totals.normalTotal)}`);
-
-  if (totals.hasServices) {
-    lines.push("");
-    lines.push("Saya ingin mendapatkan harga terbaik untuk pesanan ini.");
-  }
-
-  lines.push("");
-  lines.push("Nama:");
-  lines.push("Kebutuhan deadline:");
-  lines.push("Catatan tambahan:");
-  return lines.join("\n");
 }
 
 function CartIcon() {
@@ -676,7 +543,7 @@ function FullCartItem({ item }: { item: CartItem }) {
     <article className="rounded-[28px] bg-white/50 p-4 sm:p-6">
       <CartProductHeader item={item} />
       <JerseyConfigSummary item={item} />
-      {!isJersey ? <ProductDetails item={item} /> : null}
+      {!isJersey && !item.variantSizeId ? <ProductDetails item={item} /> : null}
       {!isJersey ? <ProductionChoices item={item} /> : null}
     </article>
   );
@@ -685,7 +552,6 @@ function FullCartItem({ item }: { item: CartItem }) {
 function CartSummary({ compact = false }: { compact?: boolean }) {
   const cart = useCart();
   const totals = cartTotals(cart.items);
-  const checkoutHref = cart.items.length ? whatsappLinkWithMessage(contactLinks.whatsapp, buildMessage(cart.items)) : "#";
 
   return (
     <aside className={`rounded-[28px] bg-white/50 ${compact ? "p-4" : "p-5 sm:p-6"}`}>
@@ -715,10 +581,10 @@ function CartSummary({ compact = false }: { compact?: boolean }) {
           Jika hanya pesan produk tanpa pilihan produksi, biaya mengikuti harga produk yang tertera.
         </div>
       )}
-      <a href={checkoutHref} target={cart.items.length ? "_blank" : undefined} rel={cart.items.length ? "noopener noreferrer" : undefined} className={`mt-5 inline-flex min-h-12 w-full items-center justify-center rounded-full px-5 text-center text-sm font-semibold ${cart.items.length ? "bg-[#063d24] text-white" : "pointer-events-none bg-black/10 text-black/35"}`}>
-        {totals.hasServices ? "Pesan dan Dapatkan Harga Terbaik Kami" : "Pesan Produk via WhatsApp"}
-      </a>
-      {!compact ? <p className="mt-4 text-center text-[11px] leading-5 text-black/45">Order akhir tetap lewat WhatsApp. Tidak perlu login.</p> : null}
+      <Link href={cart.items.length ? "/checkout" : "#"} className={`mt-5 inline-flex min-h-12 w-full items-center justify-center rounded-full px-5 text-center text-sm font-semibold ${cart.items.length ? "bg-[#063d24] text-white" : "pointer-events-none bg-black/10 text-black/35"}`}>
+        {totals.hasServices ? "Tinjau Sebelum Checkout" : "Lanjut ke Checkout"}
+      </Link>
+      {!compact ? <p className="mt-4 text-center text-[11px] leading-5 text-black/45">Guest checkout tersedia. Order dibuat di sistem sebelum pembayaran.</p> : null}
     </aside>
   );
 }
@@ -785,7 +651,7 @@ function FullCartLayout() {
               <section className="grid gap-4">
                 <div>
                   <p className="text-xs font-bold uppercase tracking-[0.14em] text-black/45">Item Tambahan</p>
-                  <p className="mt-1 text-sm leading-6 text-black/55">Item ini ikut dikirim ke WhatsApp, tapi Pesanan Utama tetap menjadi fokus order.</p>
+                  <p className="mt-1 text-sm leading-6 text-black/55">Item tambahan tetap tercatat pada order yang sama.</p>
                 </div>
                 {additionalItems.map((item) => <FullCartItem key={item.cartId} item={item} />)}
               </section>
@@ -806,7 +672,6 @@ function MiniCartContent() {
   const primary = cart.items.find((item) => item.role === "primary");
   const additionalCount = cart.items.filter((item) => item.role === "additional").length;
   const totals = cartTotals(cart.items);
-  const checkoutHref = cart.items.length ? whatsappLinkWithMessage(contactLinks.whatsapp, buildMessage(cart.items)) : "#";
 
   if (!primary) return <EmptyCart />;
 
@@ -834,9 +699,9 @@ function MiniCartContent() {
           </div>
         </div>
         <Link href="/keranjang" onClick={cart.closeCart} className="mt-5 inline-flex min-h-11 w-full items-center justify-center rounded-full border border-black/10 px-5 text-sm font-semibold transition hover:border-black">Lihat Keranjang</Link>
-        <a href={checkoutHref} target="_blank" rel="noopener noreferrer" className="mt-3 inline-flex min-h-11 w-full items-center justify-center rounded-full bg-[#063d24] px-5 text-center text-sm font-semibold text-white">
-          {totals.hasServices ? "Dapatkan Harga Terbaik" : "Pesan via WhatsApp"}
-        </a>
+        <Link href="/checkout" onClick={cart.closeCart} className="mt-3 inline-flex min-h-11 w-full items-center justify-center rounded-full bg-[#063d24] px-5 text-center text-sm font-semibold text-white">
+          {totals.hasServices ? "Tinjau Sebelum Checkout" : "Checkout"}
+        </Link>
       </section>
     </div>
   );
@@ -907,8 +772,34 @@ export function CartProvider({ children }: { children: ReactNode }) {
     items,
     itemCount: items.reduce((total, item) => total + item.quantity, 0),
     isOpen,
+    isLoaded,
     addItem: (product, requestedRole) => {
       setItems((current) => {
+        const duplicateIndex = current.findIndex((item) =>
+          product.variantSizeId
+            ? item.variantSizeId === product.variantSizeId
+            : item.id === product.id &&
+              item.defaultColor === product.defaultColor &&
+              item.defaultSize === product.defaultSize
+        );
+        if (duplicateIndex >= 0) {
+          return ensureRoles(current.map((item, index) =>
+            index === duplicateIndex
+              ? {
+                  ...item,
+                  quantity: clampToStock(
+                    item.quantity + normalizeNumber(Number(product.defaultQuantity || 1)),
+                    product.stockAvailable ?? item.stockAvailable
+                  ),
+                  stockAvailable: product.stockAvailable ?? item.stockAvailable,
+                  stockLabel: product.stockLabel ?? item.stockLabel,
+                  priceLabel: product.priceLabel ?? item.priceLabel,
+                  priceValue: product.priceValue ?? item.priceValue,
+                  variantSnapshot: product.variantSnapshot ?? item.variantSnapshot
+                }
+              : item
+          ));
+        }
         const hasPrimary = current.some((item) => item.role === "primary");
         const role = requestedRole || (hasPrimary ? "additional" : "primary");
         return ensureRoles([
@@ -917,7 +808,10 @@ export function CartProvider({ children }: { children: ReactNode }) {
             ...product,
             cartId: createCartId(product),
             role,
-            quantity: normalizeNumber(Number(product.defaultQuantity || 1)),
+            quantity: clampToStock(
+              Number(product.defaultQuantity || 1),
+              product.stockAvailable
+            ),
             color: product.defaultColor || "",
             colorHex: product.defaultColorHex || "",
             size: product.defaultSize || "",
@@ -926,6 +820,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
             variantName: product.variantName,
             variantSku: product.variantSku,
             stockLabel: product.stockLabel,
+            stockAvailable: product.stockAvailable,
             variantSnapshot: product.variantSnapshot,
             notes: "",
             services: []
@@ -937,7 +832,10 @@ export function CartProvider({ children }: { children: ReactNode }) {
     updateItem: (cartId, updates) => {
       setItems((current) => ensureRoles(current.map((item) => {
         if (item.cartId !== cartId) return item;
-        const nextQuantity = normalizeNumber(Number(updates.quantity ?? item.quantity));
+        const nextQuantity = clampToStock(
+          Number(updates.quantity ?? item.quantity),
+          updates.stockAvailable ?? item.stockAvailable
+        );
         return {
           ...item,
           ...updates,
@@ -952,7 +850,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
     clearCart: () => setItems([]),
     openCart: () => setIsOpen(true),
     closeCart: () => setIsOpen(false)
-  }), [isOpen, items]);
+  }), [isLoaded, isOpen, items]);
 
   return (
     <CartContext.Provider value={value}>
