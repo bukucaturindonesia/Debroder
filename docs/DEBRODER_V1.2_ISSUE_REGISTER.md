@@ -74,12 +74,6 @@
 - Status: OPEN / PARTIALLY VERIFIED
 - Detail: Semantic Collection toggle, Escape/outside close behavior, dynamic PIM color facets, shareable collection filters, monochrome public interactions, protected Jersey variant, TypeScript, 124 tests, lint with zero errors, production build, and HTTP destination smoke pass. A browser binary is unavailable in this workspace; after deployment, verify pointer hover, keyboard Tab/Enter/Space/Escape, outside click, mobile accordion/touch, focus visibility, no sticky pressed state, console/hydration, and overflow at 1600/1440/1280/1024/768/430/390/360 px. Reconfirm Jersey visual parity during that browser pass.
 
-### V12-026 — Browser verification for side cart tier transitions
-
-- Severity: Commerce QA gate
-- Status: OPEN / PARTIALLY VERIFIED
-- Detail: The stale side-cart unit-price root cause is fixed in the existing cart provider. Deterministic tests verify 10→11, 11→12, 12→13, 13→15, 15→11, 23→24, 24→23, item subtotal, variant adjustment, and localStorage serialization; TypeScript, 136 tests, lint with zero errors, and production build pass. After deployment, click the same transitions in the side drawer and confirm the cart page, checkout summary, refresh/rehydration, and server-repriced order summary against a real PIM product. Legacy localStorage items created before the complete tier snapshot should be removed and re-added once for this verification.
-
 ## Closed in Phase 12
 
 - V12-010 — Local dependency-based quality gates were previously blocked. Dependencies were installed for verification; typecheck, lint, test, and build now run successfully.
@@ -90,4 +84,3 @@
 ## Closed in Commerce Foundation V1 P0
 
 - V12-018 — Official public checkout/order creation gap. Resolved by reusing the root cart, PIM, existing order/order-item domain, payment domain, and Admin order detail; `/checkout`, server-side repricing/stock validation, idempotency, private order tokens, reservations, manual shipping quote, and same-order payment flow are implemented. Remote rollback smoke passed and left zero records. Operational browser E2E moved to V12-020.
-- Side cart stale tier price — Resolved by persisting the complete pricing snapshot and repricing through the existing cart normalization path on quantity update, merge, and rehydration. Product-detail pricing and checkout authority were preserved.
