@@ -5,7 +5,6 @@ import { usePathname } from "next/navigation";
 import { createContext, type ReactNode, useContext, useEffect, useMemo, useState } from "react";
 import { BrandIcon } from "@/components/BrandIcon";
 import { SafeImage } from "@/components/SafeImage";
-import { calculateCartTierPrice } from "@/lib/cart-tier-pricing";
 import { fallbackImages, pageHeroImageFallbacks } from "@/lib/fallback-data";
 import { formatRupiah } from "@/lib/url";
 
@@ -232,27 +231,6 @@ function itemUnitPrice(item: Pick<CartItem, "priceValue" | "priceLabel">) {
   return Number(item.priceValue || 0) || parsePrice(item.priceLabel);
 }
 
-function repriceCartItem(item: CartItem): CartItem {
-  const tierPrice = calculateCartTierPrice(item.variantSnapshot, item.quantity);
-  if (!tierPrice) return item;
-
-  return {
-    ...item,
-    priceLabel: tierPrice.quoteRequired
-      ? "Minta penawaran"
-      : formatRupiah(tierPrice.unitPrice),
-    priceValue: tierPrice.quoteRequired ? undefined : tierPrice.unitPrice,
-    variantSnapshot: {
-      ...item.variantSnapshot,
-      selected_quantity: item.quantity,
-      applied_tier: tierPrice.activeTier,
-      quote_required: tierPrice.quoteRequired,
-      unit_price: tierPrice.quoteRequired ? null : tierPrice.unitPrice,
-      subtotal: tierPrice.quoteRequired ? null : tierPrice.subtotal
-    }
-  };
-}
-
 function serviceById(serviceId: string) {
   return serviceOptions.find((service) => service.id === serviceId) || null;
 }
@@ -351,7 +329,7 @@ function ensureRoles(items: CartItem[]) {
     const quantity = normalizeNumber(Number(item.quantity || 1));
     const role: CartItemRole = !hasPrimary && (item.role === "primary" || index === 0) ? "primary" : "additional";
     if (role === "primary") hasPrimary = true;
-    return repriceCartItem({
+    return {
       ...item,
       role,
       quantity,
@@ -370,7 +348,7 @@ function ensureRoles(items: CartItem[]) {
       variantSnapshot: item.variantSnapshot || undefined,
       notes: item.notes || "",
       services: normalizeServices(item.services, quantity)
-    });
+    };
   });
 }
 
