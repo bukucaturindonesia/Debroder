@@ -129,3 +129,10 @@ The FROZEN commerce/landing blueprints and official Owner Decisions remain autho
 - Shareable `/koleksi` query destinations render matching products through the existing PIM/product detail/cart architecture; no duplicate listing or product source was introduced.
 - Non-Jersey public interaction feedback is monochrome. Jersey header, contextual navigation, filters, Configurator, commerce identity, and green interaction output are explicitly preserved.
 - TypeScript, lint with zero errors, 124 tests, production build, route smoke, collection filter smoke, and protected Jersey route smoke pass. Status: **IMPLEMENTED, PARTIALLY VERIFIED** pending real browser keyboard/touch/viewport/console validation.
+
+## Side cart tier-pricing state — 2026-07-14
+
+- Side cart quantity updates now recompute the active PIM tier, effective unit price, item subtotal, and shared cart total from the newest quantity.
+- Add-to-cart persists all active tiers plus base/variant adjustment in the existing variant snapshot; add/merge, plus/minus updates, cart page, localStorage rehydration, and checkout use the same cart state.
+- Product-detail tier rules/UI and authoritative server-side checkout repricing are unchanged. No database or migration change was required.
+- TypeScript, 136 tests, lint with zero errors, and production build pass. Status: **IMPLEMENTED, PARTIALLY VERIFIED** pending deployed browser-click verification.

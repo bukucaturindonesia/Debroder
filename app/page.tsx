@@ -9,11 +9,12 @@ import { ScrollButtons } from "@/components/ScrollButtons";
 import { SiteHeader } from "@/components/SiteHeader";
 import { fallbackImages, getProductImage, getStoreImage } from "@/lib/fallback-data";
 import { getProductCardImages } from "@/lib/product-gallery";
+import { productCardMetadata, productCardPrice } from "@/lib/product-card";
 import { buildPublicNavigationFacets } from "@/lib/public-navigation";
 import { getPublicContent } from "@/lib/public-data";
 import { absoluteUrl, siteConfig } from "@/lib/site";
 import type { HomepageSection, HomepageSectionItem, LandingSection, Product, Service, Store } from "@/lib/types";
-import { formatRupiah, whatsappLinkWithMessage } from "@/lib/url";
+import { whatsappLinkWithMessage } from "@/lib/url";
 
 const benefits = [
   { icon: "clock", title: "Produksi Cepat", detail: "Alur kerja terukur" },
@@ -45,7 +46,7 @@ type ProductItem = Visual & {
   id?: string;
   hoverImage?: string | null;
   name: string;
-  category: string;
+  metadata: string;
   price: string;
   href: string;
   fit: string;
@@ -74,12 +75,12 @@ function hasEditorialText(...values: Array<string | null | undefined>) {
 
 function productItem(product: Product): ProductItem {
   const href = `/produk/${product.slug || product.nama.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "")}`;
-  const price = formatRupiah(product.price ?? product.harga ?? product.base_price) || "Hubungi kami";
+  const price = productCardPrice(product);
   const cardImages = getProductCardImages(product);
   return {
     id: product.id || product.slug || product.nama,
     name: product.nama,
-    category: product.kategori,
+    metadata: productCardMetadata(product),
     price,
     href,
     image: cardImages.primary,
@@ -264,9 +265,9 @@ function ProductCard({ item, className = "" }: { item: ProductItem; className?: 
           sizes="(min-width: 1536px) 30vw, (min-width: 1024px) 31vw, (min-width: 640px) 44vw, 78vw"
         />
         <div className="pt-3">
-          <h3 className="product-title line-clamp-2 text-[15px] leading-snug text-[#111] sm:text-[17px]">{item.name}</h3>
-          <p className="mt-1 text-sm leading-5 text-black/58">{item.category}</p>
-          <p className="product-price mt-2 text-base leading-6 text-[#111] sm:text-lg">{item.price}</p>
+          {item.metadata ? <p className="text-[11px] font-medium leading-4 tracking-[0.01em] text-black/55 sm:text-xs">{item.metadata}</p> : null}
+          <h3 className={`${item.metadata ? "mt-1.5" : ""} product-title line-clamp-2 text-[15px] font-semibold leading-[1.3] tracking-[-0.01em] text-[#111] sm:text-[17px]`}>{item.name}</h3>
+          {item.price ? <p className="product-price mt-2 text-base font-semibold leading-6 text-[#111] sm:text-lg">{item.price}</p> : null}
         </div>
       </Link>
     </article>

@@ -411,6 +411,16 @@ export function TieredProductPurchasePanel({
         stock: selectedVariantSize?.stock,
         base_product_price: baseProductPrice,
         variant_adjustment: variantAdjustment,
+        pricing_tiers: tiers.map((tier) => ({
+          id: tier.id,
+          product_id: tier.product_id,
+          min_quantity: tier.min_quantity,
+          max_quantity: tier.max_quantity,
+          unit_price: tier.unit_price,
+          quote_required: tier.quote_required,
+          status: tier.status,
+          sort_order: tier.sort_order
+        })),
         selected_quantity: quantity,
         applied_tier: activeTier
           ? {

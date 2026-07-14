@@ -167,7 +167,13 @@ export interface BulkPricingSummary {
 }
 
 export function getActivePriceTiers(product: Product): ProductPriceTier[] {
-  return (product.priceTiers ?? [])
+  return getActivePriceTiersFromList(product.priceTiers ?? []);
+}
+
+export function getActivePriceTiersFromList(
+  tiers: ProductPriceTier[]
+): ProductPriceTier[] {
+  return tiers
     .filter((tier) => tier.status === "active")
     .sort((a, b) => a.minQuantity - b.minQuantity || a.sortOrder - b.sortOrder);
 }
@@ -186,9 +192,16 @@ export function resolveProductPriceTier(
   product: Product,
   totalQuantity: number
 ): ProductPriceTier | null {
-  const tiers = getActivePriceTiers(product);
+  return resolvePriceTier(product.priceTiers ?? [], totalQuantity);
+}
+
+export function resolvePriceTier(
+  tiers: ProductPriceTier[],
+  totalQuantity: number
+): ProductPriceTier | null {
+  const activeTiers = getActivePriceTiersFromList(tiers);
   return (
-    tiers.find(
+    activeTiers.find(
       (tier) =>
         totalQuantity >= tier.minQuantity &&
         (tier.maxQuantity === null || totalQuantity <= tier.maxQuantity)
