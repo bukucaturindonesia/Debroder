@@ -1,3 +1,4 @@
+import Image from "next/image";
 import Link from "next/link";
 import type { ReactNode } from "react";
 import { BrandIcon } from "@/components/BrandIcon";
@@ -19,6 +20,9 @@ const helpLinks = [
   { label: "Store", href: "/store" },
   { label: "Koleksi", href: "/koleksi" }
 ];
+
+const brandDescription =
+  "Apparel dan percetakan asal Makassar sejak 2016. Spesialis sablon kaos, custom jersey, maklon DTF, cetak sublim, dan kebutuhan kaos polos untuk perusahaan, instansi, serta event di Indonesia Timur.";
 
 function FooterLinks({ children, dark }: { children: ReactNode; dark: boolean }) {
   return <div className={`mt-5 grid gap-4 text-[15px] ${dark ? "text-white/58" : "text-black/58"}`}>{children}</div>;
@@ -44,6 +48,26 @@ function MobileAccordion({ title, children, dark }: { title: string; children: R
         <FooterLinks dark={dark}>{children}</FooterLinks>
       </div>
     </details>
+  );
+}
+
+function FooterBrand({ dark }: { dark: boolean }) {
+  return (
+    <div className="min-w-0">
+      <div className={`w-full max-w-36 md:max-w-40 lg:max-w-44 ${dark ? "" : "bg-[#111] p-2.5"}`}>
+        <Image
+          src="/brand/debroder/logo-debroder-white.png"
+          alt="DEBRODER"
+          width={2048}
+          height={2020}
+          className="h-auto w-full object-contain"
+          sizes="(min-width: 1024px) 176px, (min-width: 768px) 160px, 144px"
+        />
+      </div>
+      <p className={`mt-4 max-w-[19rem] text-sm leading-6 ${dark ? "text-white/58" : "text-black/58"}`}>
+        {brandDescription}
+      </p>
+    </div>
   );
 }
 
@@ -74,6 +98,8 @@ export function PublicFooter({ content, variant = "default" }: { content: Public
     <footer className={dark ? "bg-[#050505] text-white" : "border-t border-black/10 bg-white text-[#111]"}>
       <div className="section-shell py-14 sm:py-16 lg:py-20">
         <div className="hidden grid-cols-[1fr_1fr_1.2fr_.7fr] gap-12 md:grid lg:gap-20">
+          <FooterBrand dark={dark} />
+
           <DesktopColumn title="Belanja" dark={dark}>
             {shopLinks.map((item) => <Link key={item.href} href={item.href} className={`transition ${dark ? "hover:text-white" : "hover:text-[#111]"}`}>{item.label}</Link>)}
           </DesktopColumn>
@@ -89,16 +115,12 @@ export function PublicFooter({ content, variant = "default" }: { content: Public
               <Link key={`${item.label}-${item.href}`} href={item.href} className={`transition ${dark ? "hover:text-white" : "hover:text-[#111]"}`}>{item.label}</Link>
             ))}
           </DesktopColumn>
-
-          <div className="md:text-right">
-            <p className={`inline-flex items-center gap-2 text-[15px] ${dark ? "text-white/58" : "text-black/58"}`}>
-              <span aria-hidden="true">◎</span>
-              Indonesia
-            </p>
-          </div>
         </div>
 
         <div className="md:hidden">
+          <div className="mb-8">
+            <FooterBrand dark={dark} />
+          </div>
           <MobileAccordion title="Belanja" dark={dark}>
             {shopLinks.map((item) => <Link key={item.href} href={item.href} className={`transition ${dark ? "hover:text-white" : "hover:text-[#111]"}`}>{item.label}</Link>)}
           </MobileAccordion>
@@ -112,12 +134,11 @@ export function PublicFooter({ content, variant = "default" }: { content: Public
               <Link key={`${item.label}-${item.href}`} href={item.href} className={`transition ${dark ? "hover:text-white" : "hover:text-[#111]"}`}>{item.label}</Link>
             ))}
           </MobileAccordion>
-          <p className={`mt-6 inline-flex items-center gap-2 text-[15px] ${dark ? "text-white/58" : "text-black/58"}`}><span aria-hidden="true">◎</span>Indonesia</p>
         </div>
 
         <div className={`mt-16 flex flex-col gap-6 text-sm lg:mt-20 lg:flex-row lg:items-center lg:justify-between ${dark ? "text-white/55" : "text-black/55"}`}>
           <div className="flex flex-wrap gap-x-6 gap-y-3">
-            <p>{content.contact.copyright_text || "© 2026 DEBRODER. All rights reserved."}</p>
+            <p>© 2026 DEBRODER. All rights reserved.</p>
             <Link href="/cara-order" className={`transition ${dark ? "hover:text-white" : "hover:text-[#111]"}`}>Syarat & Ketentuan</Link>
             <Link href="/cara-order" className={`transition ${dark ? "hover:text-white" : "hover:text-[#111]"}`}>Kebijakan Privasi</Link>
           </div>
