@@ -1,6 +1,5 @@
 import { paymentErrorResponse, requirePaymentActor } from "@/lib/payment-auth";
 import { isPaymentVerifier } from "@/lib/payments";
-import { getAdminSupabaseClient } from "@/lib/supabase/client";
 
 export async function POST(request: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
@@ -8,8 +7,7 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
     if (!isPaymentVerifier(actor.role)) return Response.json({ error: "Role tidak dapat mengubah kebijakan pembayaran." }, { status: 403 });
     const { id } = await params;
     const body = (await request.json()) as { type?: unknown; percentage?: unknown; amount?: unknown; reason?: unknown };
-    const client = getAdminSupabaseClient(); if (!client) throw new Error("Supabase admin belum dikonfigurasi.");
-    const { data, error } = await client.rpc("set_order_payment_requirement", {
+    const { data, error } = await actor.client.rpc("set_order_payment_requirement", {
       p_order_id: id, p_requirement_type: body.type,
       p_percentage: body.percentage == null ? null : Number(body.percentage),
       p_amount: body.amount == null ? null : Math.round(Number(body.amount)),
@@ -19,4 +17,3 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
     return Response.json({ order: data });
   } catch (error) { return paymentErrorResponse(error); }
 }
-

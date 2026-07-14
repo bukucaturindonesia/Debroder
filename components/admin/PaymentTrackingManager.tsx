@@ -177,6 +177,27 @@ export function PaymentTrackingManager() {
   const archivedRows = rows.filter((row) => Boolean(row.archived_at));
   const canVerify = VERIFY_ROLES.includes(role);
   const isSuperAdmin = SUPER_ROLES.includes(role);
+  const pendingRows = activeRows.filter((row) => row.status === "pending");
+
+  async function paymentAction(
+    paymentId: string,
+    body: Record<string, unknown>
+  ) {
+    const supabase = createSupabaseClient();
+    const { data } = await supabase?.auth.getSession() ?? { data: { session: null } };
+    const accessToken = data.session?.access_token;
+    if (!accessToken) throw new Error("Sesi Admin tidak aktif. Silakan login ulang.");
+    const response = await fetch(`/api/admin/payments/${paymentId}/verification`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${accessToken}`
+      },
+      body: JSON.stringify(body)
+    });
+    const payload = await response.json() as { error?: string };
+    if (!response.ok) throw new Error(payload.error || "Aksi pembayaran gagal.");
+  }
 
   function openCreate() {
     setEditing(null);
@@ -323,18 +344,21 @@ export function PaymentTrackingManager() {
 
   async function verify(row: PaymentRow) {
     if (!canVerify || workingId) return;
-    const supabase = createSupabaseClient();
-    if (!supabase) return;
-
     setWorkingId(row.id);
-    const { error } = await supabase.rpc("verify_order_payment", {
-      p_payment_id: row.id,
-      p_admin_notes: row.admin_notes || null
-    });
+    setMessage("");
+    let error: unknown = null;
+    try {
+      await paymentAction(row.id, {
+        action: "verify",
+        adminNotes: row.admin_notes || null
+      });
+    } catch (reason) {
+      error = reason;
+    }
     setWorkingId(null);
 
     if (error) {
-      setMessage("Pembayaran belum berhasil diverifikasi.");
+      setMessage(error instanceof Error ? error.message : "Pembayaran belum berhasil diverifikasi.");
       return;
     }
 
@@ -344,18 +368,21 @@ export function PaymentTrackingManager() {
 
   async function reject() {
     if (!rejectTarget || !rejectReason.trim() || workingId) return;
-    const supabase = createSupabaseClient();
-    if (!supabase) return;
-
     setWorkingId(rejectTarget.id);
-    const { error } = await supabase.rpc("reject_order_payment", {
-      p_payment_id: rejectTarget.id,
-      p_reason: rejectReason.trim()
-    });
+    setMessage("");
+    let error: unknown = null;
+    try {
+      await paymentAction(rejectTarget.id, {
+        action: "reject",
+        reason: rejectReason.trim()
+      });
+    } catch (reason) {
+      error = reason;
+    }
     setWorkingId(null);
 
     if (error) {
-      setMessage("Pembayaran belum berhasil ditolak.");
+      setMessage(error instanceof Error ? error.message : "Pembayaran belum berhasil ditolak.");
       return;
     }
 
@@ -531,22 +558,17 @@ export function PaymentTrackingManager() {
                 />
               </section>
 
-              <PaymentCompletionPanel
-                orderId={orderId}
-                summary={summary}
-                payments={rows.map((row) => ({
-                  id: row.id,
-                  payment_number: row.payment_number,
-                  amount: row.amount,
-                  status: row.status
-                }))}
-                role={role}
-                onChanged={loadData}
-              />
-
               {message ? (
                 <div className="mt-5 border border-brand-softGray bg-white p-4 text-sm font-semibold">
                   {message}
+                </div>
+              ) : null}
+
+              {pendingRows.length > 1 ? (
+                <div className="mt-5 border border-amber-300 bg-amber-50 p-4 text-sm leading-6 text-amber-950">
+                  <strong>{pendingRows.length} bukti pembayaran menunggu verifikasi.</strong>{" "}
+                  Periksa bukti yang benar, verifikasi satu pembayaran yang valid, lalu tolak
+                  pengiriman duplikat agar total tidak tercatat berlebih.
                 </div>
               ) : null}
 
@@ -659,6 +681,19 @@ export function PaymentTrackingManager() {
                   ) : null}
                 </div>
               )}
+
+              <PaymentCompletionPanel
+                orderId={orderId}
+                summary={summary}
+                payments={rows.map((row) => ({
+                  id: row.id,
+                  payment_number: row.payment_number,
+                  amount: row.amount,
+                  status: row.status
+                }))}
+                role={role}
+                onChanged={loadData}
+              />
             </div>
           </section>
         </div>

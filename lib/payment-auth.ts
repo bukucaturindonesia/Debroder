@@ -1,27 +1,37 @@
-import type { User } from "@supabase/supabase-js";
+import { createClient, type SupabaseClient, type User } from "@supabase/supabase-js";
 import { getAdminSupabaseClient } from "@/lib/supabase/client";
+import { getPublicSupabaseEnv } from "@/lib/env";
 import { isPaymentRole } from "@/lib/payments";
 
-export type PaymentActor = { user: User; role: string };
+export type PaymentActor = { user: User; role: string; client: SupabaseClient };
 
 export async function requirePaymentActor(request: Request): Promise<PaymentActor> {
   const authorization = request.headers.get("authorization") ?? "";
   const token = authorization.startsWith("Bearer ") ? authorization.slice(7).trim() : "";
   if (!token) throw new PaymentAuthError(401, "Sesi admin diperlukan.");
 
-  const client = getAdminSupabaseClient();
-  if (!client) throw new PaymentAuthError(503, "Supabase admin belum dikonfigurasi.");
-  const { data, error } = await client.auth.getUser(token);
+  const adminClient = getAdminSupabaseClient();
+  const env = getPublicSupabaseEnv();
+  if (!adminClient || !env) throw new PaymentAuthError(503, "Supabase admin belum dikonfigurasi.");
+  const { data, error } = await adminClient.auth.getUser(token);
   if (error || !data.user) throw new PaymentAuthError(401, "Sesi admin tidak valid.");
 
-  const { data: profile, error: profileError } = await client
+  const { data: profile, error: profileError } = await adminClient
     .from("profiles")
     .select("role")
     .eq("id", data.user.id)
     .maybeSingle();
   const role = typeof profile?.role === "string" ? profile.role.toLowerCase() : "";
   if (profileError || !isPaymentRole(role)) throw new PaymentAuthError(403, "Akses pembayaran ditolak.");
-  return { user: data.user, role };
+  const client = createClient(env.url, env.anonKey, {
+    auth: {
+      persistSession: false,
+      autoRefreshToken: false,
+      detectSessionInUrl: false
+    },
+    global: { headers: { Authorization: `Bearer ${token}` } }
+  });
+  return { user: data.user, role, client };
 }
 
 export class PaymentAuthError extends Error {
@@ -39,4 +49,3 @@ export function paymentErrorResponse(error: unknown): Response {
     { status: 500 }
   );
 }
-
