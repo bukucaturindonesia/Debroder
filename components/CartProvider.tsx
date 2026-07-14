@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { createContext, type ReactNode, useContext, useEffect, useMemo, useState } from "react";
 import { BrandIcon } from "@/components/BrandIcon";
 import { SafeImage } from "@/components/SafeImage";
@@ -68,6 +69,7 @@ type CartContextValue = {
   clearCart: () => void;
   openCart: () => void;
   closeCart: () => void;
+  preserveJerseyInteractions: boolean;
 };
 
 type ServiceOption = {
@@ -447,7 +449,7 @@ function ProductDetails({ item }: { item: CartItem }) {
                 aria-label={`Pilih warna ${color.name}`}
                 aria-pressed={selected}
                 onClick={() => cart.updateItem(item.cartId, { color: color.name, colorHex: color.hex })}
-                className={`grid h-8 w-8 place-items-center rounded-full transition ${selected ? "ring-2 ring-[#063d24] ring-offset-2 ring-offset-[#F7F7F4]" : "ring-1 ring-black/10 hover:ring-black/25"}`}
+                className={`grid h-8 w-8 place-items-center rounded-full transition ${selected ? cart.preserveJerseyInteractions ? "ring-2 ring-[#063d24] ring-offset-2 ring-offset-[#F7F7F4]" : "ring-2 ring-black ring-offset-2 ring-offset-[#F7F7F4]" : "ring-1 ring-black/10 hover:ring-black/25"}`}
               >
                 <span className="h-6 w-6 rounded-full border border-black/10" style={{ backgroundColor: color.hex }} />
               </button>
@@ -478,7 +480,7 @@ function ProductDetails({ item }: { item: CartItem }) {
 
       <label className="grid gap-2 text-xs font-semibold uppercase tracking-[0.12em] text-black/40">
         Catatan produk
-        <textarea value={item.notes} onChange={(event) => cart.updateItem(item.cartId, { notes: event.target.value })} placeholder="Contoh: mix ukuran, deadline, atau permintaan warna khusus." rows={3} className="rounded-[18px] border-0 bg-white/70 p-4 text-sm font-normal normal-case leading-6 tracking-normal text-black outline-none ring-1 ring-black/10 transition focus:ring-[#063d24]/35" />
+        <textarea value={item.notes} onChange={(event) => cart.updateItem(item.cartId, { notes: event.target.value })} placeholder="Contoh: mix ukuran, deadline, atau permintaan warna khusus." rows={3} className={`rounded-[18px] border-0 bg-white/70 p-4 text-sm font-normal normal-case leading-6 tracking-normal text-black outline-none ring-1 ring-black/10 transition ${cart.preserveJerseyInteractions ? "focus:ring-[#063d24]/35" : "focus:ring-black/40"}`} />
       </label>
     </div>
   );
@@ -486,6 +488,8 @@ function ProductDetails({ item }: { item: CartItem }) {
 
 function ProductionChoices({ item }: { item: CartItem }) {
   const cart = useCart();
+  const selectedRing = cart.preserveJerseyInteractions ? "ring-[#063d24]/25" : "ring-black/25";
+  const accent = cart.preserveJerseyInteractions ? "#063d24" : "#111111";
   const totalProductionQty = item.services.reduce((total, service) => total + service.quantity, 0);
 
   return (
@@ -502,10 +506,10 @@ function ProductionChoices({ item }: { item: CartItem }) {
           const selected = item.services.find((entry) => entry.id === service.id);
           const selectedQty = selected?.quantity || item.quantity;
           return (
-            <article key={`${item.cartId}-${service.id}`} className={`rounded-[22px] bg-white/50 p-4 transition ${selected ? "ring-1 ring-[#063d24]/25" : "ring-1 ring-black/5 hover:ring-black/15"}`}>
+            <article key={`${item.cartId}-${service.id}`} className={`rounded-[22px] bg-white/50 p-4 transition ${selected ? `ring-1 ${selectedRing}` : "ring-1 ring-black/5 hover:ring-black/15"}`}>
               <div className="flex items-start justify-between gap-4">
                 <label className="flex min-w-0 cursor-pointer gap-3">
-                  <input type="checkbox" checked={Boolean(selected)} onChange={() => cart.updateItem(item.cartId, { services: toggleService(item, service) })} className="mt-1 h-4 w-4 accent-[#063d24]" />
+                  <input type="checkbox" checked={Boolean(selected)} onChange={() => cart.updateItem(item.cartId, { services: toggleService(item, service) })} className="mt-1 h-4 w-4" style={{ accentColor: accent }} />
                   <span className="min-w-0">
                     <span className="block text-sm font-semibold leading-5">{service.name}</span>
                     <span className="mt-1 block text-xs leading-5 text-black/55">Harga normal {formatRupiah(service.pricePerPcs)} / pcs · {service.description}</span>
@@ -517,15 +521,15 @@ function ProductionChoices({ item }: { item: CartItem }) {
                 <div className="mt-4 grid gap-3 rounded-[18px] bg-white/50 p-3 sm:grid-cols-[160px_1fr]">
                   <label className="grid gap-2 text-xs font-semibold uppercase tracking-[0.12em] text-black/45">
                     Jumlah pcs
-                    <input value={selected.quantity} onChange={(event) => cart.updateItem(item.cartId, { services: updateService(item, service.id, { quantity: normalizeNumber(Number(event.target.value || 1), item.quantity) }) })} className="min-h-10 rounded-lg border border-black/10 bg-white px-3 text-sm font-semibold normal-case tracking-normal text-black outline-none focus:border-[#063d24]" inputMode="numeric" />
+                    <input value={selected.quantity} onChange={(event) => cart.updateItem(item.cartId, { services: updateService(item, service.id, { quantity: normalizeNumber(Number(event.target.value || 1), item.quantity) }) })} className={`min-h-10 rounded-lg border border-black/10 bg-white px-3 text-sm font-semibold normal-case tracking-normal text-black outline-none ${cart.preserveJerseyInteractions ? "focus:border-[#063d24]" : "focus:border-black"}`} inputMode="numeric" />
                   </label>
                   <label className="grid gap-2 text-xs font-semibold uppercase tracking-[0.12em] text-black/45">
                     Posisi / detail
-                    <input value={selected.position} onChange={(event) => cart.updateItem(item.cartId, { services: updateService(item, service.id, { position: event.target.value }) })} placeholder="Contoh: dada kiri / belakang besar" className="min-h-10 rounded-lg border border-black/10 bg-white px-3 text-sm font-normal normal-case tracking-normal text-black outline-none focus:border-[#063d24]" />
+                    <input value={selected.position} onChange={(event) => cart.updateItem(item.cartId, { services: updateService(item, service.id, { position: event.target.value }) })} placeholder="Contoh: dada kiri / belakang besar" className={`min-h-10 rounded-lg border border-black/10 bg-white px-3 text-sm font-normal normal-case tracking-normal text-black outline-none ${cart.preserveJerseyInteractions ? "focus:border-[#063d24]" : "focus:border-black"}`} />
                   </label>
                   <label className="grid gap-2 text-xs font-semibold uppercase tracking-[0.12em] text-black/45 sm:col-span-2">
                     Catatan produksi
-                    <input value={selected.notes} onChange={(event) => cart.updateItem(item.cartId, { services: updateService(item, service.id, { notes: event.target.value }) })} placeholder="Contoh: logo perusahaan warna putih" className="min-h-10 rounded-lg border border-black/10 bg-white px-3 text-sm font-normal normal-case tracking-normal text-black outline-none focus:border-[#063d24]" />
+                    <input value={selected.notes} onChange={(event) => cart.updateItem(item.cartId, { services: updateService(item, service.id, { notes: event.target.value }) })} placeholder="Contoh: logo perusahaan warna putih" className={`min-h-10 rounded-lg border border-black/10 bg-white px-3 text-sm font-normal normal-case tracking-normal text-black outline-none ${cart.preserveJerseyInteractions ? "focus:border-[#063d24]" : "focus:border-black"}`} />
                   </label>
                 </div>
               ) : null}
@@ -581,7 +585,7 @@ function CartSummary({ compact = false }: { compact?: boolean }) {
           Jika hanya pesan produk tanpa pilihan produksi, biaya mengikuti harga produk yang tertera.
         </div>
       )}
-      <Link href={cart.items.length ? "/checkout" : "#"} className={`mt-5 inline-flex min-h-12 w-full items-center justify-center rounded-full px-5 text-center text-sm font-semibold ${cart.items.length ? "bg-[#063d24] text-white" : "pointer-events-none bg-black/10 text-black/35"}`}>
+      <Link href={cart.items.length ? "/checkout" : "#"} className={`mt-5 inline-flex min-h-12 w-full items-center justify-center rounded-full px-5 text-center text-sm font-semibold ${cart.items.length ? cart.preserveJerseyInteractions ? "bg-[#063d24] text-white" : "bg-black text-white hover:bg-black/75" : "pointer-events-none bg-black/10 text-black/35"}`}>
         {totals.hasServices ? "Tinjau Sebelum Checkout" : "Lanjut ke Checkout"}
       </Link>
       {!compact ? <p className="mt-4 text-center text-[11px] leading-5 text-black/45">Guest checkout tersedia. Order dibuat di sistem sebelum pembayaran.</p> : null}
@@ -590,13 +594,14 @@ function CartSummary({ compact = false }: { compact?: boolean }) {
 }
 
 function EmptyCart({ fullPage = false }: { fullPage?: boolean }) {
+  const cart = useCart();
   return (
     <div className={`grid place-items-center rounded-[28px] bg-white/50 p-8 text-center ${fullPage ? "min-h-[420px]" : "min-h-[280px]"}`}>
       <div>
         <div className="mx-auto grid h-14 w-14 place-items-center rounded-full bg-[#f5f5ef]"><CartIcon /></div>
         <p className="mt-5 text-lg font-semibold">Keranjang masih kosong</p>
         <p className="mx-auto mt-2 max-w-sm text-sm leading-6 text-black/55">Tambahkan produk dulu. Produk pertama akan menjadi Pesanan Utama.</p>
-        <Link href="/koleksi" className="mt-5 inline-flex min-h-11 items-center justify-center rounded-full bg-[#063d24] px-6 text-sm font-semibold text-white">Lihat Koleksi</Link>
+        <Link href="/koleksi" className={`mt-5 inline-flex min-h-11 items-center justify-center rounded-full px-6 text-sm font-semibold text-white ${cart.preserveJerseyInteractions ? "bg-[#063d24]" : "bg-black hover:bg-black/75"}`}>Lihat Koleksi</Link>
       </div>
     </div>
   );
@@ -699,7 +704,7 @@ function MiniCartContent() {
           </div>
         </div>
         <Link href="/keranjang" onClick={cart.closeCart} className="mt-5 inline-flex min-h-11 w-full items-center justify-center rounded-full border border-black/10 px-5 text-sm font-semibold transition hover:border-black">Lihat Keranjang</Link>
-        <Link href="/checkout" onClick={cart.closeCart} className="mt-3 inline-flex min-h-11 w-full items-center justify-center rounded-full bg-[#063d24] px-5 text-center text-sm font-semibold text-white">
+        <Link href="/checkout" onClick={cart.closeCart} className={`mt-3 inline-flex min-h-11 w-full items-center justify-center rounded-full px-5 text-center text-sm font-semibold text-white ${cart.preserveJerseyInteractions ? "bg-[#063d24]" : "bg-black hover:bg-black/75"}`}>
           {totals.hasServices ? "Tinjau Sebelum Checkout" : "Checkout"}
         </Link>
       </section>
@@ -730,6 +735,7 @@ function CartDrawer() {
 }
 
 export function CartProvider({ children }: { children: ReactNode }) {
+  const pathname = usePathname();
   const [items, setItems] = useState<CartItem[]>([]);
   const [isOpen, setIsOpen] = useState(false);
   const [isLoaded, setIsLoaded] = useState(false);
@@ -849,8 +855,9 @@ export function CartProvider({ children }: { children: ReactNode }) {
     },
     clearCart: () => setItems([]),
     openCart: () => setIsOpen(true),
-    closeCart: () => setIsOpen(false)
-  }), [isLoaded, isOpen, items]);
+    closeCart: () => setIsOpen(false),
+    preserveJerseyInteractions: pathname.startsWith("/jersey")
+  }), [isLoaded, isOpen, items, pathname]);
 
   return (
     <CartContext.Provider value={value}>
@@ -867,11 +874,11 @@ export function useCart() {
 }
 
 export function CartNavButton() {
-  const { itemCount, openCart } = useCart();
+  const { itemCount, openCart, preserveJerseyInteractions } = useCart();
   return (
     <button type="button" className="relative grid h-10 w-10 place-items-center rounded-full transition hover:bg-[#f5f5ef]" aria-label={`Buka keranjang, ${itemCount} item`} onClick={openCart}>
       <CartIcon />
-      {itemCount > 0 ? <span className="absolute -right-0.5 -top-0.5 grid h-5 min-w-5 place-items-center rounded-full bg-[#063d24] px-1 text-[10px] font-bold text-white">{itemCount}</span> : null}
+      {itemCount > 0 ? <span className={`absolute -right-0.5 -top-0.5 grid h-5 min-w-5 place-items-center rounded-full px-1 text-[10px] font-bold text-white ${preserveJerseyInteractions ? "bg-[#063d24]" : "bg-black"}`}>{itemCount}</span> : null}
     </button>
   );
 }

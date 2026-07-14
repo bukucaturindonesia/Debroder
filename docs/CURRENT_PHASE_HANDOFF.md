@@ -187,3 +187,18 @@ Status: **IMPLEMENTED, PARTIALLY VERIFIED**.
 - Homepage headings and product cards now use one scoped type hierarchy; each homepage product card is one accessible detail link with clearer product name, metadata, and price rhythm.
 - Verification: `git diff --check` PASS; TypeScript PASS; targeted lint PASS; full lint 0 errors / 22 existing warnings outside this scope; full tests 19 files / 119 tests PASS; production build PASS; local HTTP smoke returned 200 for `/`, `/kaos-polos`, `/track-order`, and `/checkout`.
 - Browser viewport, runtime console, hydration, and visual overflow inspection remain **PARTIALLY VERIFIED** because the Playwright package is present but its Chromium binary is not available in this workspace.
+
+## 2026-07-14 — Global navigation and monochrome interaction revision
+
+Status: **IMPLEMENTED, PARTIALLY VERIFIED**.
+
+- `Koleksi` is now a semantic button on the global non-Jersey header. It toggles one controlled mega dropdown, exposes `aria-expanded`/`aria-controls`, closes on Escape/outside interaction, and never redirects from the trigger.
+- Only the global `Koleksi` trigger renders a downward chevron. Kaos Polos and Jaket & Hoodie retain their existing hover/focus mega-menu behavior without arrows; Headwear remains a direct link.
+- Collection colors are derived synchronously from already-fetched active PIM products and active variants, normalized through canonical aliases, deduplicated, and reduced to small navigation facets before crossing the client boundary.
+- `/koleksi` now consumes shareable `color`, `status`, `label`, and `sort` query parameters and renders matching real products using the existing universal product detail and cart components.
+- Global public hover/focus/selected/CTA treatments were revised to black/white. Product swatches, content imagery, Admin status semantics, and protected Jersey green remain unchanged.
+- Jersey protection uses the existing shared header with an explicit preserved-output variant. `/jersey` retains the legacy header menu geometry, green interactions, arrows, and hardcoded legacy menu content. `/jersey/shop`, Jersey contextual components, filters, Configurator, and Jersey routes were not edited.
+- Cart interaction color is route-aware: it becomes monochrome globally while preserving the prior green treatment under `/jersey/*`.
+- Verification: `git diff --check` PASS; TypeScript PASS; targeted navigation/commerce tests 30/30 PASS; full tests 20 files / 124 tests PASS; lint 0 errors / 22 existing warnings; production build PASS.
+- HTTP smoke returned 200 for `/`, `/koleksi`, `/kaos-polos`, `/jaket-hoodie`, `/headwear`, `/keranjang`, `/checkout`, `/track-order`, one universal product detail, `/jersey`, `/jersey/shop`, and `/jersey/configurator`.
+- Local PIM fallback exposed only `/koleksi?color=black`, `navy`, and `white`; each returned 200 and rendered the filtered result state. Browser interaction/viewport/console verification remains pending because no Chromium binary is available.

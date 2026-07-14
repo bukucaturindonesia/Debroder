@@ -113,7 +113,7 @@ export function ProductRecommendationDrawer({
                             addItem(recommendationCartItem(item, sourceProduct), "additional");
                             setIsOpen(false);
                           }}
-                          className="inline-flex min-h-10 items-center justify-center rounded-full bg-[#063d24] px-3 text-xs font-semibold text-white transition hover:bg-[#0f5a36]"
+                          className="inline-flex min-h-10 items-center justify-center rounded-full bg-black px-3 text-xs font-semibold text-white transition hover:bg-black/75"
                         >
                           Tambah
                         </button>

@@ -122,3 +122,10 @@ The FROZEN commerce/landing blueprints and official Owner Decisions remain autho
 - Homepage hierarchy is more product-first and restrained; navigation exposes guest tracking, mobile links are grouped, hero actions have a clear priority, and homepage product cards use a single accessible detail target.
 - No content source, section order, real imagery, CMS/PIM, product data, commerce, Admin, Supabase, migration, RLS, or database behavior changed.
 - TypeScript, targeted lint, full lint with zero errors, 119 tests, production build, and HTTP smoke pass. Status: **IMPLEMENTED, PARTIALLY VERIFIED** pending deployment/browser matrix, console, hydration, and visual overflow inspection.
+
+## Global public navigation state — 2026-07-14
+
+- Global non-Jersey navigation uses a controlled, accessible `Koleksi` menu trigger and PIM-derived navigation facets. Collection color/status/curated links appear only when corresponding active public products exist.
+- Shareable `/koleksi` query destinations render matching products through the existing PIM/product detail/cart architecture; no duplicate listing or product source was introduced.
+- Non-Jersey public interaction feedback is monochrome. Jersey header, contextual navigation, filters, Configurator, commerce identity, and green interaction output are explicitly preserved.
+- TypeScript, lint with zero errors, 124 tests, production build, route smoke, collection filter smoke, and protected Jersey route smoke pass. Status: **IMPLEMENTED, PARTIALLY VERIFIED** pending real browser keyboard/touch/viewport/console validation.

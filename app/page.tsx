@@ -9,6 +9,7 @@ import { ScrollButtons } from "@/components/ScrollButtons";
 import { SiteHeader } from "@/components/SiteHeader";
 import { fallbackImages, getProductImage, getStoreImage } from "@/lib/fallback-data";
 import { getProductCardImages } from "@/lib/product-gallery";
+import { buildPublicNavigationFacets } from "@/lib/public-navigation";
 import { getPublicContent } from "@/lib/public-data";
 import { absoluteUrl, siteConfig } from "@/lib/site";
 import type { HomepageSection, HomepageSectionItem, LandingSection, Product, Service, Store } from "@/lib/types";
@@ -382,7 +383,7 @@ function StoreCard({ store, index }: { store: Store; index: number }) {
       <p className="mt-3 min-h-[48px] text-sm leading-6 text-black/55">{store.alamat}</p>
       {store.jam_operasional ? <p className="mt-3 text-xs font-medium text-black/45">{store.jam_operasional}</p> : null}
       <div className="mt-6 grid grid-cols-2 gap-2">
-        <a href={whatsappHref} target="_blank" rel="noopener noreferrer" className="inline-flex min-h-11 items-center justify-center rounded-full bg-[#063d24] px-3 text-sm font-semibold text-white transition hover:bg-[#0f5a36]">WhatsApp</a>
+        <a href={whatsappHref} target="_blank" rel="noopener noreferrer" className="inline-flex min-h-11 items-center justify-center rounded-full bg-black px-3 text-sm font-semibold text-white transition hover:bg-black/75">WhatsApp</a>
         <a href={store.maps_link} target="_blank" rel="noopener noreferrer" className="premium-ghost-button inline-flex min-h-11 items-center justify-center rounded-full border px-3 text-sm font-semibold text-[#111] transition">Lihat Lokasi</a>
       </div>
     </article>
@@ -428,7 +429,7 @@ export default async function Home() {
 
   return (
     <main className="public-site min-h-screen bg-white text-[#111]">
-      <SiteHeader />
+      <SiteHeader navigationFacets={buildPublicNavigationFacets(content.products, content.productCategories)} />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(schema).replace(/</g, "\\u003c") }} />
 
       <LandingSectionSlot setting={landingSection("hero")}>

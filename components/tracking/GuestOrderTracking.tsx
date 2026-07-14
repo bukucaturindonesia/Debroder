@@ -128,7 +128,7 @@ export function GuestOrderTracking({
             <button
               type="submit"
               disabled={loading}
-              className="min-h-12 self-end rounded-full bg-[#063d24] px-7 text-sm font-semibold text-white disabled:opacity-50"
+              className="min-h-12 self-end rounded-full bg-black px-7 text-sm font-semibold text-white hover:bg-black/75 disabled:opacity-50"
             >
               {loading ? "Memeriksa..." : "Lacak Order"}
             </button>

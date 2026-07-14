@@ -467,7 +467,7 @@ export function TieredProductPurchasePanel({
                 onClick={() => setSelectedColor(option.name)}
                 className={`grid h-9 w-9 place-items-center rounded-full transition ${
                   selected
-                    ? `ring-2 ${monochrome ? "ring-black" : "ring-brand-green"} ring-offset-2 ring-offset-[#F7F7F4]`
+                    ? "ring-2 ring-black ring-offset-2 ring-offset-[#F7F7F4]"
                     : "ring-1 ring-black/10 hover:ring-black/30"
                 }`}
               >
@@ -582,7 +582,7 @@ export function TieredProductPurchasePanel({
                 ? "bg-amber-50 text-amber-900"
                 : monochrome
                   ? "bg-black/[0.06] text-black"
-                  : "bg-[#e9f4ee] text-[#063d24]"
+                  : "bg-black/[0.06] text-black"
           }`}
         >
           <div className="flex flex-wrap items-start justify-between gap-4">
@@ -616,7 +616,7 @@ export function TieredProductPurchasePanel({
             type="button"
             disabled={unavailable || belowMinimum || pricingLoading}
             onClick={addSelectedToCart}
-            className={`inline-flex min-h-12 items-center justify-center rounded-full px-6 text-sm font-semibold transition disabled:cursor-not-allowed disabled:bg-black/20 ${monochrome ? "bg-black text-white hover:bg-black/75" : "bg-brand-green text-white hover:bg-brand-charcoal"}`}
+            className="inline-flex min-h-12 items-center justify-center rounded-full bg-black px-6 text-sm font-semibold text-white transition hover:bg-black/75 disabled:cursor-not-allowed disabled:bg-black/20"
           >
             {unavailable
               ? "Varian Tidak Tersedia"

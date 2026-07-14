@@ -73,7 +73,7 @@ export function PublicPaymentForm({ token }: { token: string }) {
             <Field label="Catatan"><textarea name="customerNotes" rows={3} /></Field>
             <Field label="Bukti pembayaran (PNG, JPG, PDF; maks. 5 MB)"><input name="proof" type="file" accept="image/png,image/jpeg,application/pdf" required /></Field>
             {error ? <p className="border border-red-200 bg-red-50 p-3 text-sm text-red-700">{error}</p> : null}
-            <button disabled={sending} className="min-h-12 bg-brand-green px-5 font-semibold text-white disabled:opacity-50">{sending ? "Mengirim..." : "Kirim untuk Verifikasi"}</button>
+            <button disabled={sending} className="min-h-12 bg-black px-5 font-semibold text-white hover:bg-black/75 disabled:opacity-50">{sending ? "Mengirim..." : "Kirim untuk Verifikasi"}</button>
           </form>
         )}
       </section>

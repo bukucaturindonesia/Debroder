@@ -350,7 +350,7 @@ export function ProductCatalog({
         <select aria-label="Urutkan produk" value={sort} onChange={(event) => setSort(event.target.value as SortValue)} className={controlClass}><option value="order">Urutan pilihan</option><option value="newest">Terbaru</option><option value="best-selling">Best selling</option><option value="price-low">Harga terendah</option><option value="price-high">Harga tertinggi</option></select>
       </div>
 
-      <div className={`${isCategoryCatalog ? "mt-1" : "mt-3"} flex items-center justify-between gap-4`}><p className={`${isCategoryCatalog ? "text-xs" : "text-sm"} font-medium text-brand-charcoal/60`}>{isCategoryCatalog && visible.length ? `${displayedProducts.length} dari ` : ""}{visible.length} produk ditemukan</p><button type="button" onClick={resetFilters} className={`${isCategoryCatalog ? "text-xs text-brand-charcoal/60" : "text-sm"} font-semibold underline-offset-4 hover:underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-brand-green`}>Reset filter</button></div>
+      <div className={`${isCategoryCatalog ? "mt-1" : "mt-3"} flex items-center justify-between gap-4`}><p className={`${isCategoryCatalog ? "text-xs" : "text-sm"} font-medium text-brand-charcoal/60`}>{isCategoryCatalog && visible.length ? `${displayedProducts.length} dari ` : ""}{visible.length} produk ditemukan</p><button type="button" onClick={resetFilters} className={`${isCategoryCatalog ? "text-xs text-brand-charcoal/60" : "text-sm"} font-semibold underline-offset-4 hover:text-black hover:underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-black`}>Reset filter</button></div>
 
       {visible.length ? <div className={`${isCategoryCatalog ? "mt-4 gap-x-3 gap-y-8 sm:gap-x-5 lg:gap-x-6 lg:gap-y-10" : "mt-6 gap-x-2 gap-y-7"} grid grid-cols-2 lg:grid-cols-4`}>
         {displayedProducts.map((product) => {
@@ -365,7 +365,7 @@ export function ProductCatalog({
           const availability = productAvailability(product);
           if (isCategoryCatalog) {
             return <article key={product.id || product.slug || product.nama} className="min-w-0">
-              <Link href={detailHref} aria-label={`Buka detail ${product.nama}`} className="group block min-w-0 rounded-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-brand-green">
+              <Link href={detailHref} aria-label={`Buka detail ${product.nama}`} className="group block min-w-0 rounded-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-black">
                 <div className="relative">
                   <ProductImageSwap
                     primarySrc={cardImages.primary}
@@ -429,16 +429,16 @@ export function ProductCatalog({
                   {stockText ? <span>{stockText}</span> : null}
                 </div> : null}
               </div>
-              <div className="mt-4 grid grid-cols-2 gap-2"><Link href={detailHref} className="premium-ghost-button cta inline-flex min-h-10 items-center justify-center border px-3 text-xs transition">Detail</Link><AddToCartButton product={{ id: product.id || product.slug || product.nama, name: product.nama, category: product.kategori, priceLabel: productPrice(product), priceValue: priceOf(product), href: detailHref, imageUrl: getProductImage(product), imageAlt: product.image_alt || product.nama }} className="cta inline-flex min-h-10 items-center justify-center rounded-full bg-brand-green px-3 text-xs text-white transition hover:bg-brand-charcoal">Tambah</AddToCartButton></div>
+              <div className="mt-4 grid grid-cols-2 gap-2"><Link href={detailHref} className="premium-ghost-button cta inline-flex min-h-10 items-center justify-center border px-3 text-xs transition">Detail</Link><AddToCartButton product={{ id: product.id || product.slug || product.nama, name: product.nama, category: product.kategori, priceLabel: productPrice(product), priceValue: priceOf(product), href: detailHref, imageUrl: getProductImage(product), imageAlt: product.image_alt || product.nama }} className="cta inline-flex min-h-10 items-center justify-center rounded-full bg-black px-3 text-xs text-white transition hover:bg-black/75">Tambah</AddToCartButton></div>
             </article>;
         })}
-      </div> : <div className={`${isCategoryCatalog ? "px-4 py-10" : "p-8"} mt-6 text-center`}><p className="font-semibold">Produk tidak ditemukan</p><p className="mt-2 text-sm text-brand-charcoal/60">Coba kata kunci atau kombinasi filter lain.</p>{isCategoryCatalog ? <button type="button" onClick={resetFilters} className="mt-5 inline-flex min-h-10 items-center justify-center rounded-full border border-brand-charcoal/20 px-5 text-sm font-semibold hover:border-brand-green hover:text-brand-green">Reset Filter</button> : null}</div>}
+      </div> : <div className={`${isCategoryCatalog ? "px-4 py-10" : "p-8"} mt-6 text-center`}><p className="font-semibold">Produk tidak ditemukan</p><p className="mt-2 text-sm text-brand-charcoal/60">Coba kata kunci atau kombinasi filter lain.</p>{isCategoryCatalog ? <button type="button" onClick={resetFilters} className="mt-5 inline-flex min-h-10 items-center justify-center rounded-full border border-black/20 px-5 text-sm font-semibold hover:border-black hover:bg-black hover:text-white">Reset Filter</button> : null}</div>}
 
       {isCategoryCatalog && isLoadingMore ? <div aria-label="Memuat produk tambahan" aria-live="polite" className="mt-8 grid grid-cols-2 gap-x-3 gap-y-8 sm:gap-x-5 lg:grid-cols-4 lg:gap-x-6">
         {Array.from({ length: columns }, (_, index) => <div key={index} className="animate-pulse"><div className="aspect-[4/5] w-full bg-brand-charcoal/5" /><div className="mt-3 h-3 w-2/3 bg-brand-charcoal/5" /><div className="mt-3 h-5 w-full bg-brand-charcoal/5" /><div className="mt-2 h-10 w-full bg-brand-charcoal/5" /><div className="mt-2 h-5 w-1/2 bg-brand-charcoal/5" /></div>)}
       </div> : null}
 
-      {isCategoryCatalog && !isLoadingMore && visibleCount < visible.length ? <div className="mt-10 flex justify-center"><button type="button" onClick={loadMore} className="inline-flex min-h-11 items-center justify-center rounded-full border border-brand-charcoal/20 px-6 text-sm font-semibold text-brand-charcoal transition hover:border-brand-green hover:text-brand-green focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-brand-green">Lihat Lebih Banyak</button></div> : null}
+      {isCategoryCatalog && !isLoadingMore && visibleCount < visible.length ? <div className="mt-10 flex justify-center"><button type="button" onClick={loadMore} className="inline-flex min-h-11 items-center justify-center rounded-full border border-black/20 px-6 text-sm font-semibold text-black transition hover:border-black hover:bg-black hover:text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-black">Lihat Lebih Banyak</button></div> : null}
     </div>
   );
 }

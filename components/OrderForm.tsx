@@ -164,7 +164,7 @@ export function OrderForm({ products, initialProduct }: { products: Product[]; i
           <h2 className="text-xl font-semibold">Bayar / Upload Bukti Bayar</h2>
           <p className="mt-2 text-sm leading-6 text-brand-charcoal/60">Pembayaran masih manual. Transfer sesuai arahan tim, lalu upload bukti agar admin dapat memverifikasi.</p>
           <label className="mt-5 grid gap-2 text-sm font-semibold">Bukti transfer<input type="file" accept="image/jpeg,image/png,image/webp" onChange={(event) => setProofFile(event.target.files?.[0] || null)} className="min-h-11 rounded-lg border border-brand-softGray p-3 font-normal" /></label>
-          <button disabled={uploadingProof || !proofFile} className="mt-5 min-h-11 w-full bg-brand-green px-6 text-sm font-semibold text-white disabled:opacity-50">{uploadingProof ? "Mengupload..." : "Upload Bukti Bayar"}</button>
+          <button disabled={uploadingProof || !proofFile} className="mt-5 min-h-11 w-full bg-black px-6 text-sm font-semibold text-white hover:bg-black/75 disabled:opacity-50">{uploadingProof ? "Mengupload..." : "Upload Bukti Bayar"}</button>
         </form>
       </div>
     );
