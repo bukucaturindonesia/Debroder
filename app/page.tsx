@@ -151,9 +151,9 @@ function cardPlacement(item: HomepageSectionItem): ProductItem | null {
 function SectionHeading({ title, action, description, textPosition = "left" }: { title: string; action?: ReactNode; description?: string; textPosition?: "left" | "center" | "right" }) {
   return (
     <div className="flex items-end justify-between gap-4">
-      <div className={textPosition === "center" ? "flex-1 text-center" : textPosition === "right" ? "ml-auto text-right" : ""}>
-        <h2 className="landing-section-title text-[#111]">{title}</h2>
-        {description ? <p className="mt-2 max-w-2xl text-sm leading-6 text-black/55 sm:text-base">{description}</p> : null}
+      <div className={`min-w-0 ${textPosition === "center" ? "flex-1 text-center" : textPosition === "right" ? "ml-auto text-right" : ""}`}>
+        <h2 className="home-section-title text-[#111]">{title}</h2>
+        {description ? <p className="mt-2 max-w-2xl text-base leading-6 text-black/60">{description}</p> : null}
       </div>
       {action ? <div className="shrink-0">{action}</div> : null}
     </div>
@@ -250,24 +250,24 @@ function CategoryEditorialCard({ item }: { item: EditorialItem }) {
 
 function ProductCard({ item, className = "" }: { item: ProductItem; className?: string }) {
   return (
-    <article className={`group min-w-0 ${className}`}>
-      <Link href={item.href} className="block">
-      <ProductImageSwap
-        primarySrc={item.image}
-        hoverSrc={item.hoverImage}
-        fallbackSrc={item.fallbackImage}
-        alt={item.imageAlt}
-        imageClassName={(item.objectFit || item.fit) === "contain" ? "object-contain p-3" : "object-cover"}
-        objectFit={item.objectFit || (item.fit === "contain" ? "contain" : "cover")}
-        objectPosition={item.objectPosition || "center center"}
-        sizes="(min-width: 1536px) 30vw, (min-width: 1024px) 31vw, (min-width: 640px) 44vw, 78vw"
-      />
+    <article className={`min-w-0 ${className}`}>
+      <Link href={item.href} aria-label={`Buka detail ${item.name}`} className="group block rounded-sm">
+        <ProductImageSwap
+          primarySrc={item.image}
+          hoverSrc={item.hoverImage}
+          fallbackSrc={item.fallbackImage}
+          alt={item.imageAlt}
+          imageClassName={(item.objectFit || item.fit) === "contain" ? "object-contain p-3" : "object-cover"}
+          objectFit={item.objectFit || (item.fit === "contain" ? "contain" : "cover")}
+          objectPosition={item.objectPosition || "center center"}
+          sizes="(min-width: 1536px) 30vw, (min-width: 1024px) 31vw, (min-width: 640px) 44vw, 78vw"
+        />
+        <div className="pt-3">
+          <h3 className="product-title line-clamp-2 text-[15px] leading-snug text-[#111] sm:text-[17px]">{item.name}</h3>
+          <p className="mt-1 text-sm leading-5 text-black/58">{item.category}</p>
+          <p className="product-price mt-2 text-base leading-6 text-[#111] sm:text-lg">{item.price}</p>
+        </div>
       </Link>
-      <div className="pt-3">
-        <Link href={item.href}><h3 className="line-clamp-2 text-[15px] font-semibold leading-snug text-[#111] sm:text-base">{item.name}</h3></Link>
-        <p className="mt-1 text-sm text-black/50 sm:text-[15px]">{item.category}</p>
-        <p className="mt-2 text-[15px] font-semibold text-[#111] sm:text-base">{item.price}</p>
-      </div>
     </article>
   );
 }
@@ -347,7 +347,7 @@ function ManagedHomepageSection({ section, setting, fallbackProducts = [] }: { s
           textPosition={setting?.text_position}
           action={
             <div className="flex items-center gap-4">
-              {configuredCta || <Link href="/koleksi" className="hidden text-sm font-semibold hover:underline sm:block">Shop</Link>}
+              {configuredCta || <Link href="/koleksi" className="hidden text-sm font-medium hover:underline sm:block">Lihat Semua Produk</Link>}
               <ScrollButtons containerId={carouselId} />
             </div>
           }
@@ -555,7 +555,7 @@ export default async function Home() {
           <div className="section-shell grid gap-10 lg:grid-cols-[1.05fr_.95fr] lg:items-center lg:gap-20">
             <div className={content.trustAbout.text_position === "center" ? "text-center" : content.trustAbout.text_position === "right" ? "text-right" : ""}>
               <p className="text-sm font-medium text-black/55">Tentang DEBRODER</p>
-              <h2 className="section-title mt-4 max-w-2xl">{landingSection("about")?.title || "Built to Create"}</h2>
+              <h2 className="home-page-title mt-4 max-w-2xl">{landingSection("about")?.title || "Built to Create"}</h2>
               <p className="mt-6 max-w-2xl whitespace-pre-line text-base leading-8 text-black/62">{content.trustAbout.about_body}</p>
               {content.trustAbout.cta_label && content.trustAbout.cta_url ? <Link href={content.trustAbout.cta_url} className="mt-7 inline-flex min-h-11 items-center rounded-full bg-[#111] px-6 text-sm font-semibold text-white transition hover:bg-black/75">{content.trustAbout.cta_label}</Link> : null}
             </div>

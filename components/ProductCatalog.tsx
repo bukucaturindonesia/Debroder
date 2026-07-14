@@ -380,15 +380,15 @@ export function ProductCatalog({
                     zoom={focal?.zoom ?? product.focal_zoom}
                     sizes="(min-width: 1024px) 25vw, 50vw"
                   />
-                  {labels.length ? <div className="pointer-events-none absolute left-2 top-2 flex max-w-[calc(100%-1rem)] flex-wrap gap-1">{labels.map((item) => <span key={item} className="bg-white/95 px-2 py-1 text-[9px] font-bold uppercase tracking-[0.04em] text-brand-charcoal shadow-sm sm:text-[10px]">{item}</span>)}</div> : null}
+                  {labels.length ? <div className="pointer-events-none absolute left-2 top-2 flex max-w-[calc(100%-1rem)] flex-wrap gap-1">{labels.map((item) => <span key={item} className="bg-white/95 px-2 py-1 text-[11px] font-semibold uppercase text-brand-charcoal shadow-sm">{item}</span>)}</div> : null}
                 </div>
                 <div className="mt-3 flex min-w-0 flex-col">
-                  <p className="line-clamp-2 min-h-8 text-[10px] font-medium leading-4 text-brand-charcoal/60 sm:min-h-5 sm:text-xs">{[meta, availability].filter(Boolean).join(" · ") || "\u00a0"}</p>
-                  <h3 className="mt-1.5 line-clamp-3 min-h-[3.45rem] text-[14px] font-semibold leading-[1.3] tracking-[-0.01em] text-brand-charcoal/90 sm:line-clamp-2 sm:min-h-[2.75rem] sm:text-[17px]">{product.nama}</h3>
-                  <p className="mt-1.5 line-clamp-3 min-h-[3.75rem] text-[11px] font-normal leading-5 text-brand-charcoal/60 sm:line-clamp-2 sm:min-h-12 sm:text-sm sm:leading-6">{detail || "\u00a0"}</p>
+                  <p className="line-clamp-2 min-h-8 text-xs font-medium leading-4 text-brand-charcoal/60 sm:min-h-5">{[meta, availability].filter(Boolean).join(" · ") || "\u00a0"}</p>
+                  <h3 className="mt-1.5 line-clamp-3 min-h-[3.65rem] text-[15px] font-semibold leading-[1.3] tracking-[-0.01em] text-brand-charcoal/90 sm:line-clamp-2 sm:min-h-[2.75rem] sm:text-[17px]">{product.nama}</h3>
+                  <p className="mt-1.5 line-clamp-3 min-h-[3.75rem] text-xs font-normal leading-5 text-brand-charcoal/60 sm:line-clamp-2 sm:min-h-12 sm:text-sm sm:leading-6">{detail || "\u00a0"}</p>
                   <div className="mt-2 min-h-10">
-                    <p className="text-[15px] font-bold leading-5 text-brand-charcoal sm:text-[18px]">{catalogPrice(product)}</p>
-                    {product.compare_price ? <p className="mt-0.5 text-[10px] text-brand-charcoal/40 line-through sm:text-xs">{formatRupiah(product.compare_price)}</p> : null}
+                    <p className="text-base font-bold leading-6 text-brand-charcoal sm:text-[18px]">{catalogPrice(product)}</p>
+                    {product.compare_price ? <p className="mt-0.5 text-xs text-brand-charcoal/45 line-through">{formatRupiah(product.compare_price)}</p> : null}
                   </div>
                 </div>
               </Link>
@@ -415,7 +415,7 @@ export function ProductCatalog({
                 {productColors(product).length ? <div className="flex items-center gap-1.5">
                   {productColors(product).slice(0, 8).map((color) => <span key={color} title={color} className="h-3.5 w-3.5 rounded-full border border-black/10 shadow-[inset_0_0_0_1px_rgba(255,255,255,0.45)]" style={{ backgroundColor: colorHex(color) }} />)}
                 </div> : null}
-                {productMetaLine(product) ? <p className="text-[11px] font-medium tracking-[0.01em] text-brand-charcoal/55 sm:text-xs">{productMetaLine(product)}</p> : null}
+                {productMetaLine(product) ? <p className="text-xs font-medium text-brand-charcoal/60">{productMetaLine(product)}</p> : null}
                 <Link href={detailHref} className="block"><h3 className="product-title line-clamp-2 text-[15px] leading-[1.22] tracking-[-0.01em] text-brand-charcoal sm:text-[17px]">{product.nama}</h3></Link>
                 {productModel(product) ? <p className="text-xs leading-5 text-brand-charcoal/50 sm:text-[13px]">{productModel(product)}</p> : null}
                 {productDetail(product) ? <p className="line-clamp-2 min-h-[2.5rem] text-xs leading-5 text-brand-charcoal/60 sm:text-sm sm:leading-6">{productDetail(product)}</p> : null}

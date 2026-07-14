@@ -115,3 +115,10 @@ The FROZEN commerce/landing blueprints and official Owner Decisions remain autho
 - Category-specific differences are configuration and data only: CMS hero key/copy/CTA/focal media, PIM products, matched type options, and closing copy.
 - Commerce Foundation and universal product detail remain unchanged. No new database source, checkout, or category transaction flow exists.
 - TypeScript, lint with zero errors, 119 tests, production build, and 200 HTTP smoke for all three category routes pass. Status: **IMPLEMENTED, PARTIALLY VERIFIED** pending deployed browser viewport and real PIM commerce smoke verification.
+
+## Public UI foundation state — 2026-07-14
+
+- A human-perspective visual audit was implemented only for global public typography, header/navigation, homepage hero and headings, and product-card presentation.
+- Homepage hierarchy is more product-first and restrained; navigation exposes guest tracking, mobile links are grouped, hero actions have a clear priority, and homepage product cards use a single accessible detail target.
+- No content source, section order, real imagery, CMS/PIM, product data, commerce, Admin, Supabase, migration, RLS, or database behavior changed.
+- TypeScript, targeted lint, full lint with zero errors, 119 tests, production build, and HTTP smoke pass. Status: **IMPLEMENTED, PARTIALLY VERIFIED** pending deployment/browser matrix, console, hydration, and visual overflow inspection.

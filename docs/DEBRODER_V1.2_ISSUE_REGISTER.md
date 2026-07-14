@@ -62,6 +62,12 @@
 - Status: OPEN
 - Detail: Repository/workspace search did not find `MASTER PROMPT DEBRODER`. Commerce work used `AGENTS.md`, available FROZEN blueprints, master state, current handoff, issue register, and official Commerce Owner Decisions V1. Add the missing official source to repository governance if it is still required for future phases.
 
+### V12-024 — Browser matrix for public premium UI foundation
+
+- Severity: UI verification gate
+- Status: OPEN / PARTIALLY VERIFIED
+- Detail: Scoped public typography, header/navigation, homepage hero/headings, and product-card presentation pass TypeScript, targeted and full lint with zero errors, 119 tests, production build, and local HTTP route smoke. The workspace has the Playwright package but no Chromium binary, so repeat visual, keyboard, console, hydration, reduced-motion, and horizontal-overflow checks at 360, 390, 430, 768, 1024, 1280, 1440, and 1600 px after deployment.
+
 ## Closed in Phase 12
 
 - V12-010 — Local dependency-based quality gates were previously blocked. Dependencies were installed for verification; typecheck, lint, test, and build now run successfully.

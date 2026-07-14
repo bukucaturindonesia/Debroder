@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { ResponsivePicture } from "@/components/ResponsivePicture";
 import { fallbackImages } from "@/lib/fallback-data";
@@ -31,6 +32,17 @@ function PlayPauseIcon({ paused }: { paused: boolean }) {
     <svg viewBox="0 0 24 24" className="h-4 w-4" fill="currentColor" aria-hidden="true">
       <path d="M7 5h3v14H7zM14 5h3v14h-3z" />
     </svg>
+  );
+}
+
+function HeroAction({ href, active, secondary = false, children }: { href: string; active: boolean; secondary?: boolean; children: string }) {
+  const className = `cta inline-flex min-h-11 items-center justify-center rounded-full border px-5 py-3 text-sm font-medium transition duration-200 ${secondary ? "border-white/55 bg-black/25 text-white hover:bg-white hover:text-[#111]" : "border-white bg-white text-[#111] hover:bg-[#e9e9e9]"}`;
+  const external = /^(https?:|mailto:|tel:)/.test(href);
+
+  return external ? (
+    <a href={href} className={className} tabIndex={active ? 0 : -1} target="_blank" rel="noopener noreferrer">{children}</a>
+  ) : (
+    <Link href={href} className={className} tabIndex={active ? 0 : -1}>{children}</Link>
   );
 }
 
@@ -86,14 +98,15 @@ export function HeroSlider({ heroes }: { heroes: HeroBanner[] }) {
   return (
     <section
       id="beranda"
-      className="hero-section relative h-[calc(100svh-64px)] min-h-[560px] w-full overflow-hidden bg-[#04160f] md:h-[calc(100svh-78px)] md:min-h-[600px]"
+      className="hero-section relative h-[72svh] min-h-[440px] max-h-[620px] w-full overflow-hidden bg-[#04160f] md:h-[72svh] md:min-h-[520px] md:max-h-[720px]"
       aria-roledescription="carousel"
       aria-label="Koleksi utama DEBRODER"
+      role="region"
       onTouchStart={(event) => setTouchStart(event.touches[0].clientX)}
       onTouchEnd={(event) => handleTouchEnd(event.changedTouches[0].clientX)}
     >
       <div
-        className="flex h-full w-full transition-transform duration-700 ease-in-out"
+        className={`flex h-full w-full transition-transform ease-in-out ${reducedMotion ? "duration-0" : "duration-500"}`}
         style={{ transform: `translate3d(-${activeIndex * 100}%, 0, 0)` }}
       >
       {slides.map((slide, index) => {
@@ -115,7 +128,7 @@ export function HeroSlider({ heroes }: { heroes: HeroBanner[] }) {
         return (
           <article
             key={`${slide.id || index}-${headline || slide.image_url || "hero"}`}
-            className="relative h-full w-full shrink-0"
+            className={`relative h-full w-full shrink-0 ${active ? "" : "pointer-events-none"}`}
             aria-hidden={!active}
           >
             <div className="absolute inset-0">
@@ -143,7 +156,7 @@ export function HeroSlider({ heroes }: { heroes: HeroBanner[] }) {
 
             <div className="absolute inset-0 bg-[linear-gradient(0deg,rgba(0,0,0,.44)_0%,rgba(0,0,0,.12)_48%,rgba(0,0,0,.08)_100%)]" />
             {hasCopy ? (
-              <div className="absolute inset-x-0 bottom-[10%] z-10 sm:bottom-[11%] lg:bottom-[12%]">
+              <div className="absolute inset-x-0 bottom-[16%] z-10 sm:bottom-[14%] lg:bottom-[13%]">
                 <div className="section-shell">
                   <div className="hero-content mx-auto max-w-[1120px] text-white">
                     {badge ? (
@@ -153,31 +166,27 @@ export function HeroSlider({ heroes }: { heroes: HeroBanner[] }) {
                     ) : null}
                     {headline ? (
                       index === 0 ? (
-                        <h1 className="hero-title mt-2 max-w-[min(92vw,1080px)] whitespace-pre-line text-center text-[clamp(2.625rem,12vw,3.25rem)] sm:text-[4rem] lg:text-[clamp(4rem,6vw,5.5rem)]">
+                        <h1 className="home-hero-title mt-2 max-w-[min(92vw,960px)] whitespace-pre-line text-center">
                           {headline}
                         </h1>
                       ) : (
-                        <h2 className="hero-title mt-2 max-w-[min(92vw,1080px)] whitespace-pre-line text-center text-[clamp(2.625rem,12vw,3.25rem)] sm:text-[4rem] lg:text-[clamp(4rem,6vw,5.5rem)]">
+                        <h2 className="home-hero-title mt-2 max-w-[min(92vw,960px)] whitespace-pre-line text-center">
                           {headline}
                         </h2>
                       )
                     ) : null}
                     {subtitle ? (
-                      <p className="hero-subtitle mt-3 max-w-[680px] whitespace-pre-line text-[17px] leading-[1.4] text-white/85 sm:text-xl sm:leading-[1.42]">
+                      <p className="hero-subtitle mt-3 max-w-[640px] whitespace-pre-line text-base leading-6 text-white/85 sm:text-lg sm:leading-7">
                         {subtitle}
                       </p>
                     ) : null}
                     {primaryText || secondaryText ? (
                       <div className="hero-actions mt-5 flex flex-wrap justify-center gap-2">
                         {primaryText ? (
-                          <a href={primaryHref} className="cta inline-flex min-h-11 items-center justify-center rounded-full bg-white px-5 py-3 text-sm text-[#111] transition duration-200 hover:bg-[#e9e9e9]">
-                            {primaryText}
-                          </a>
+                          <HeroAction href={primaryHref} active={active}>{primaryText}</HeroAction>
                         ) : null}
                         {secondaryText ? (
-                          <a href={secondaryHref} className="cta inline-flex min-h-11 items-center justify-center rounded-full bg-white px-5 py-3 text-sm text-[#111] transition duration-200 hover:bg-[#e9e9e9]">
-                            {secondaryText}
-                          </a>
+                          <HeroAction href={secondaryHref} active={active} secondary>{secondaryText}</HeroAction>
                         ) : null}
                       </div>
                     ) : null}
@@ -191,14 +200,14 @@ export function HeroSlider({ heroes }: { heroes: HeroBanner[] }) {
       </div>
 
       {total > 1 ? (
-        <div className="absolute bottom-5 right-5 z-30 flex items-center gap-2 text-white sm:bottom-10 sm:right-10 lg:right-12">
-          <button type="button" onClick={() => setPaused((current) => !current)} aria-label={paused ? "Putar slider" : "Jeda slider"} className="grid h-10 w-10 place-items-center rounded-full border border-white/25 bg-black/28 backdrop-blur-md transition hover:bg-white hover:text-[#111]">
+        <div className="absolute bottom-4 right-4 z-30 flex items-center gap-2 text-white sm:bottom-8 sm:right-8 lg:right-12">
+          <button type="button" onClick={() => setPaused((current) => !current)} aria-label={paused ? "Putar slider" : "Jeda slider"} className="grid h-11 w-11 place-items-center rounded-full border border-white/30 bg-black/35 backdrop-blur-md transition hover:bg-white hover:text-[#111]">
             <PlayPauseIcon paused={paused} />
           </button>
-          <button type="button" onClick={goPrev} aria-label="Slide sebelumnya" className="grid h-10 w-10 place-items-center rounded-full border border-white/25 bg-black/28 backdrop-blur-md transition hover:bg-white hover:text-[#111]">
+          <button type="button" onClick={goPrev} aria-label="Slide sebelumnya" className="grid h-11 w-11 place-items-center rounded-full border border-white/30 bg-black/35 backdrop-blur-md transition hover:bg-white hover:text-[#111]">
             <ArrowIcon direction="left" />
           </button>
-          <button type="button" onClick={goNext} aria-label="Slide berikutnya" className="grid h-10 w-10 place-items-center rounded-full border border-white/25 bg-black/28 backdrop-blur-md transition hover:bg-white hover:text-[#111]">
+          <button type="button" onClick={goNext} aria-label="Slide berikutnya" className="grid h-11 w-11 place-items-center rounded-full border border-white/30 bg-black/35 backdrop-blur-md transition hover:bg-white hover:text-[#111]">
             <ArrowIcon direction="right" />
           </button>
           <div className="ml-1 hidden items-center gap-2 sm:flex" aria-label={`Slide ${activeIndex + 1} dari ${total}`}>
@@ -208,8 +217,8 @@ export function HeroSlider({ heroes }: { heroes: HeroBanner[] }) {
                 type="button"
                 aria-label={`Buka slide ${index + 1}`}
                 onClick={() => setActiveIndex(index)}
-                className={`h-1.5 rounded-full transition-[width,background-color] duration-200 ${index === activeIndex ? "w-7 bg-white" : "w-1.5 bg-white/50 hover:bg-white/80"}`}
-              />
+                className="group grid h-11 w-8 place-items-center"
+              ><span className={`h-1.5 rounded-full transition-[width,background-color] duration-200 ${index === activeIndex ? "w-7 bg-white" : "w-1.5 bg-white/50 group-hover:bg-white/80"}`} /></button>
             ))}
           </div>
         </div>

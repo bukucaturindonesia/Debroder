@@ -175,3 +175,15 @@ Status: **IMPLEMENTED, PARTIALLY VERIFIED**.
 - The prior standalone `KaosCatalog` implementation was replaced only after the reusable component was connected; no category-specific cart, checkout, product query, detail route, or transaction code was added.
 - No database, migration, RLS, cart, checkout, order, payment, stock, reservation, fulfillment, shipping, or pickup code changed in this reuse pass.
 - Verification: TypeScript PASS; targeted lint PASS; full lint 0 errors / 22 existing warnings; full tests 19 files / 119 tests PASS; production build PASS with identical 985 B route bundles for all three categories; local HTTP smoke returned 200 for all three routes. The local fallback catalog has Kaos products but no Jaket/Headwear products, so those two correctly rendered the safe empty state and real variant/cart browser smoke remains a deployed-PIM verification gate.
+
+## 2026-07-14 — Public premium UI foundation audit
+
+Status: **IMPLEMENTED, PARTIALLY VERIFIED**.
+
+- Scope was limited to public global typography, header/navigation, homepage hero, homepage section headings, and product-card typography/presentation.
+- Existing CMS/PIM ownership, section order, product data, product images/focal points, routes, checkout, order, payment, tracking, Admin behavior, Supabase, and database logic were preserved.
+- The hero has a controlled viewport height, restrained responsive type scale, primary/secondary CTA hierarchy, client-side internal links, reduced-motion handling, inactive-slide focus isolation, and 44 px carousel controls.
+- The header has clearer desktop density, grouped mobile shopping/help navigation, guest tracking discovery, duplicate Jersey search removal, and preserved search/cart priority on small screens.
+- Homepage headings and product cards now use one scoped type hierarchy; each homepage product card is one accessible detail link with clearer product name, metadata, and price rhythm.
+- Verification: `git diff --check` PASS; TypeScript PASS; targeted lint PASS; full lint 0 errors / 22 existing warnings outside this scope; full tests 19 files / 119 tests PASS; production build PASS; local HTTP smoke returned 200 for `/`, `/kaos-polos`, `/track-order`, and `/checkout`.
+- Browser viewport, runtime console, hydration, and visual overflow inspection remain **PARTIALLY VERIFIED** because the Playwright package is present but its Chromium binary is not available in this workspace.

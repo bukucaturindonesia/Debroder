@@ -12,7 +12,8 @@ import { whatsappLinkWithMessage } from "@/lib/url";
 
 const topbarItems = [
   { label: "Store", href: "/store" },
-  { label: "Cara Order", href: "/cara-order" }
+  { label: "Cara Order", href: "/cara-order" },
+  { label: "Lacak Pesanan", href: "/track-order" }
 ];
 
 const navItems = [
@@ -23,8 +24,6 @@ const navItems = [
   { label: "Sablon DTF", href: "/sablon-dtf" },
   { label: "Jersey", href: "/jersey" }
 ];
-
-const mobileNavItems = [...navItems, ...topbarItems];
 
 type MegaMenuLink = {
   label: string;
@@ -129,11 +128,11 @@ const searchItems = [
   { title: "Kemeja", href: "/kemeja", description: "Kemeja custom untuk kantor, komunitas, dan seragam.", keywords: ["kemeja", "pdh", "pdl", "seragam"] },
   { title: "Headwear", href: "/headwear", description: "Topi dan headwear untuk kebutuhan apparel custom.", keywords: ["headwear", "topi", "cap", "hat"] },
   { title: "Sablon DTF", href: "/sablon-dtf", description: "Sablon custom untuk brand, event, dan komunitas.", keywords: ["sablon", "dtf", "custom"] },
-  { title: "Jersey", href: "/jersey", description: "Custom jersey untuk tim, komunitas, dan instansi.", keywords: ["jersey", "tim", "olahraga"] },
   { title: "Maklon DTF", href: "/maklon-dtf", description: "Partner produksi DTF untuk brand apparel.", keywords: ["maklon", "dtf", "produksi"] },
   { title: "Cetak Sublim", href: "/cetak-sublim", description: "Cetak sublim untuk jersey dan apparel custom.", keywords: ["sublim", "cetak"] },
   { title: "Store DEBRODER", href: "/store", description: "Pettarani, Tello, Landak, dan Parepare.", keywords: ["lokasi", "alamat", "store"] },
   { title: "Cara Order", href: "/cara-order", description: "Panduan pemesanan DEBRODER.", keywords: ["cara", "order", "pesan"] },
+  { title: "Lacak Pesanan", href: "/track-order", description: "Periksa status order tanpa perlu login.", keywords: ["lacak", "tracking", "status", "order", "pesanan"] },
   { title: "Keranjang Belanja", href: "/keranjang", description: "Cek pesanan utama, layanan tambahan, estimasi normal, dan kirim ke WhatsApp.", keywords: ["keranjang", "cart", "pesanan", "whatsapp"] }
 ];
 
@@ -324,7 +323,7 @@ export function SiteHeader({
   }, [isOpen]);
 
   return (
-    <header className={`${positionMode === "sticky" ? "sticky top-0" : "relative"} z-[100] bg-white text-[#111]`}>
+    <header className={`${positionMode === "sticky" ? "sticky top-0" : "relative"} z-[100] border-b border-black/10 bg-white text-[#111]`}>
       <div className={`hidden overflow-hidden bg-[#f5f5f5] transition-[max-height,opacity] duration-200 ease-out lg:block ${expanded ? "visible max-h-8 opacity-100" : "invisible max-h-0 opacity-0 pointer-events-none"}`} aria-hidden={!expanded}>
         <div className="section-shell flex h-8 items-center justify-between gap-4 text-[12px] font-medium text-black/65">
           <p className="truncate">DEBRODER Apparel & Printing</p>
@@ -342,14 +341,14 @@ export function SiteHeader({
           <Logo variant="primary-dark" size="sm" className="transition duration-200 hover:opacity-70" />
         </Link>
 
-        <div className="hidden h-full items-center justify-center gap-4 lg:flex xl:gap-6">
+        <div className="hidden h-full items-center justify-center gap-3 lg:flex xl:gap-5">
           {navItems.map((item) => {
             const active = pathname === item.href;
             const megaMenu = navMegaMenus[item.label as keyof typeof navMegaMenus];
             if (megaMenu) {
               return (
                 <div key={item.href} className="group/nav relative flex h-full items-center">
-                  <Link href={item.href} className={`nav-link relative flex h-full items-center gap-1.5 whitespace-nowrap text-[15px] font-medium transition duration-200 hover:text-[#0f5a36] ${active ? "text-[#0f5a36]" : "text-[#111]"}`}>
+                  <Link href={item.href} className={`nav-link relative flex h-full items-center gap-1.5 whitespace-nowrap text-sm font-medium transition duration-200 hover:text-[#0f5a36] xl:text-[15px] ${active ? "text-[#0f5a36]" : "text-[#111]"}`}>
                     {item.label}
                     <ChevronDownIcon />
                     <span className={`absolute inset-x-0 bottom-0 h-0.5 origin-center bg-[#0f5a36] transition-transform duration-200 ${active ? "scale-x-100" : "scale-x-0"}`} />
@@ -359,7 +358,7 @@ export function SiteHeader({
               );
             }
             return (
-              <Link key={item.href} href={item.href} className={`nav-link relative flex h-full items-center whitespace-nowrap text-[15px] font-medium transition duration-200 hover:text-[#0f5a36] ${active ? "text-[#0f5a36]" : "text-[#111]"}`}>
+              <Link key={item.href} href={item.href} className={`nav-link relative flex h-full items-center whitespace-nowrap text-sm font-medium transition duration-200 hover:text-[#0f5a36] xl:text-[15px] ${active ? "text-[#0f5a36]" : "text-[#111]"}`}>
                 {item.label}
                 <span className={`absolute inset-x-0 bottom-0 h-0.5 origin-center bg-[#0f5a36] transition-transform duration-200 ${active ? "scale-x-100" : "scale-x-0"}`} />
               </Link>
@@ -368,14 +367,14 @@ export function SiteHeader({
         </div>
 
         <div className="flex shrink-0 items-center gap-1 sm:gap-2">
-          <button type="button" className="hidden h-10 w-[150px] items-center gap-3 rounded-full bg-[#f5f5f5] px-4 text-left text-sm text-black/55 transition hover:text-black xl:flex" aria-label="Cari produk" onClick={() => setIsSearchOpen(true)}>
+          <button type="button" className="hidden h-10 w-32 items-center gap-3 rounded-full bg-[#f5f5f5] px-4 text-left text-sm font-medium text-black/55 transition hover:text-black xl:flex" aria-label="Cari produk" onClick={() => setIsSearchOpen(true)}>
             <SearchIcon />
             <span>Cari</span>
           </button>
           <button type="button" className="grid h-10 w-10 place-items-center rounded-full transition hover:bg-[#f5f5f5] xl:hidden" aria-label="Cari" onClick={() => setIsSearchOpen(true)}>
             <SearchIcon />
           </button>
-          <a href={whatsappUrl} className="grid h-10 w-10 place-items-center rounded-full transition hover:bg-[#f5f5f5]" aria-label="Hubungi WhatsApp DEBRODER" target="_blank" rel="noopener noreferrer">
+          <a href={whatsappUrl} className="hidden h-10 w-10 place-items-center rounded-full transition hover:bg-[#f5f5f5] sm:grid" aria-label="Hubungi WhatsApp DEBRODER" target="_blank" rel="noopener noreferrer">
             <ChatIcon />
           </a>
           <CartNavButton />
@@ -394,11 +393,20 @@ export function SiteHeader({
 
       <div className={`absolute inset-x-0 top-full h-[calc(100dvh-4rem)] bg-white transition-transform duration-300 ease-out md:h-[calc(100dvh-78px)] lg:hidden ${isOpen ? "visible translate-x-0" : "invisible translate-x-full"}`}>
         <div className="section-shell flex h-full flex-col overflow-y-auto py-6">
-          {mobileNavItems.map((item) => (
-            <Link key={item.href} href={item.href} className={`flex min-h-16 items-center justify-between text-[28px] font-semibold leading-tight transition hover:pl-1 ${pathname === item.href ? "text-[#0f5a36]" : "text-[#111]"}`}>
+          <p className="mb-2 text-xs font-semibold uppercase tracking-[0.12em] text-black/45">Belanja</p>
+          {navItems.map((item) => (
+            <Link key={item.href} href={item.href} className={`flex min-h-14 items-center justify-between text-2xl font-semibold leading-tight transition hover:pl-1 ${pathname === item.href ? "text-[#0f5a36]" : "text-[#111]"}`}>
               <span>{item.label}</span><span className="text-2xl font-normal" aria-hidden="true">›</span>
             </Link>
           ))}
+          <div className="mt-5 border-t border-black/10 pt-5">
+            <p className="mb-2 text-xs font-semibold uppercase tracking-[0.12em] text-black/45">Bantuan</p>
+            {topbarItems.map((item) => (
+              <Link key={item.href} href={item.href} className={`flex min-h-12 items-center justify-between text-base font-medium transition hover:text-[#0f5a36] ${pathname === item.href ? "text-[#0f5a36]" : "text-[#111]"}`}>
+                <span>{item.label}</span><span aria-hidden="true">›</span>
+              </Link>
+            ))}
+          </div>
           <a href={whatsappUrl} className="mt-6 inline-flex min-h-12 items-center justify-center rounded-full bg-[#063d24] px-5 text-base font-semibold text-white" target="_blank" rel="noopener noreferrer">
             Konsultasi via WhatsApp
           </a>
