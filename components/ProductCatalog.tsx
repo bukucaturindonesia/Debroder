@@ -12,7 +12,6 @@ import {
   uniqueCatalogProducts
 } from "@/lib/product-catalog";
 import { getProductCardImages } from "@/lib/product-gallery";
-import { productCardColors, productCardMetadata, productCardPrice } from "@/lib/product-card";
 import { matchesProductType, type ProductTypeOption } from "@/lib/product-taxonomy";
 import type { Product } from "@/lib/types";
 import { formatRupiah } from "@/lib/url";
@@ -28,6 +27,121 @@ function slugify(value: string) {
 function priceOf(product: Product) {
   const value = product.price ?? product.harga ?? product.base_price;
   return typeof value === "number" ? value : Number(String(value || "").replace(/[^\d]/g, "")) || 0;
+}
+
+function productPrice(product: Product) {
+  return formatRupiah(product.price ?? product.harga ?? product.base_price ?? product.price_label) || "Hubungi kami";
+}
+
+function hasPriceVariation(product: Product) {
+  if (product.pricing_mode === "variant_based") return true;
+  return (product.variants || []).some((variant) =>
+    Number(variant.price_adjustment || 0) !== 0
+    || (variant.sizes || []).some((size) => Number(size.price_adjustment || 0) !== 0)
+  );
+}
+
+function catalogPrice(product: Product) {
+  const price = productPrice(product);
+  return hasPriceVariation(product) && price !== "Hubungi kami" ? `Mulai ${price}` : price;
+}
+
+function productDetail(product: Product, preferPublicDescription = false) {
+  return product.short_detail || (preferPublicDescription ? product.public_description : "") || product.description || product.deskripsi || "";
+}
+
+function productChips(product: Product) {
+  return [
+    ...(product.color_tags || []),
+    ...(product.size_tags || []),
+    ...(product.material_tags || [])
+  ].filter(Boolean).slice(0, 3);
+}
+
+function productColors(product: Product) {
+  const variantColors = (product.variants || [])
+    .map((variant) => variant.color_name || variant.variant_name)
+    .filter(Boolean) as string[];
+  return variantColors.length ? Array.from(new Set(variantColors)) : (product.color_tags || []);
+}
+
+function colorHex(value: string) {
+  const key = normalizeFilterValue(value);
+  const map: Record<string, string> = {
+    hitam: "#111111",
+    black: "#111111",
+    putih: "#f7f7f7",
+    white: "#f7f7f7",
+    navy: "#1f2a44",
+    biru: "#1d4ed8",
+    blue: "#1d4ed8",
+    merah: "#dc2626",
+    red: "#dc2626",
+    maroon: "#6f1d1b",
+    kuning: "#f59e0b",
+    yellow: "#f59e0b",
+    mustard: "#d97706",
+    abu: "#9ca3af",
+    "abu-muda": "#d1d5db",
+    "abu-tua": "#6b7280",
+    gray: "#9ca3af",
+    grey: "#9ca3af",
+    cream: "#eadfca",
+    beige: "#d6c4a5",
+    hijau: "#166534",
+    "hijau-forest": "#063d24",
+    forest: "#063d24",
+    "forest-green": "#063d24",
+    army: "#4b5320",
+    orange: "#f97316"
+  };
+  return map[key] || "#d1d5db";
+}
+
+function productMetaLine(product: Product, expanded = false) {
+  if (!expanded) {
+    const items = [
+      productColors(product).length ? `${productColors(product).length} Warna` : "",
+      product.size_tags?.[0] || "",
+      product.material_tags?.[0] || ""
+    ].filter(Boolean);
+    return items.slice(0, 3).join(" · ");
+  }
+
+  const variantSizes = (product.variants || []).flatMap((variant) =>
+    (variant.sizes || []).filter((size) => size.is_active !== false).map((size) => size.size_name)
+  );
+  const sizes = Array.from(new Set(variantSizes.length ? variantSizes : (product.size_tags || [])));
+  const sizeRange = sizes.length > 1 ? `${sizes[0]}–${sizes[sizes.length - 1]}` : (sizes[0] || "");
+  const items = [
+    productColors(product).length ? `${productColors(product).length} Warna` : "",
+    sizeRange,
+    ...(product.material_tags || []).slice(0, 2)
+  ].filter(Boolean);
+  return items.slice(0, 4).join(" · ");
+}
+
+function productAvailability(product: Product) {
+  const variantStock = (product.variants || []).reduce((total, variant) =>
+    total + (variant.sizes || []).filter((size) => size.is_active !== false).reduce((sum, size) => sum + Number(size.stock || 0), 0), 0
+  );
+  const hasReadyStock = Number(product.stock || 0) > 0 || variantStock > 0;
+  const hasCustom = Boolean(
+    product.uses_configurator
+    || product.product_type === "configurable_product"
+    || product.product_type === "production_service"
+    || product.pricing_mode === "configurator_based"
+    || product.pricing_mode === "custom_quote"
+  );
+
+  if (hasReadyStock && hasCustom) return "Ready Stock + Custom";
+  if (hasReadyStock) return "Ready Stock";
+  if (hasCustom) return "Custom Available";
+  return "";
+}
+
+function productModel(product: Product) {
+  return [product.kategori, product.subcategory].filter(Boolean).join(" · ");
 }
 
 function searchText(product: Product) {
@@ -58,7 +172,7 @@ function matchesColor(product: Product, selectedColor: string) {
     white: ["white", "putih"]
   };
   const accepted = aliases[selectedColor] || [selectedColor];
-  return productCardColors(product).some((item) => accepted.includes(normalizeFilterValue(item)));
+  return productColors(product).some((item) => accepted.includes(normalizeFilterValue(item)));
 }
 
 function labelValue(value: string): LabelValue {
@@ -128,7 +242,7 @@ export function ProductCatalog({
   const isCategoryCatalog = catalogStyle === "category";
 
   const categories = useMemo(() => Array.from(new Set(products.map((product) => product.kategori).filter(Boolean))).sort(), [products]);
-  const colors = useMemo(() => Array.from(new Map(products.flatMap((product) => productCardColors(product)).filter(Boolean).map((item) => [normalizeFilterValue(item), item])).entries()).sort((a, b) => a[1].localeCompare(b[1], "id")), [products]);
+  const colors = useMemo(() => Array.from(new Map(products.flatMap((product) => productColors(product)).filter(Boolean).map((item) => [normalizeFilterValue(item), item])).entries()).sort((a, b) => a[1].localeCompare(b[1], "id")), [products]);
   const availableProductTypeOptions = useMemo(
     () => productTypeOptions.filter((option) => products.some((product) => matchesProductType(product, option.value, productTypeOptions))),
     [productTypeOptions, products]
@@ -243,9 +357,12 @@ export function ProductCatalog({
           const focal = product.focal_points?.catalog;
           const labels = Array.from(new Set([isCategoryCatalog && product.badge, product.label_new && "New", product.label_promo && "Promo", product.label_best_seller && "Best Seller"].filter(Boolean))) as string[];
           const detailHref = `/produk/${product.slug || slugify(product.nama)}`;
+          const chips = productChips(product);
+          const stockText = typeof product.stock === "number" ? (product.stock > 0 ? `Stok ${product.stock}` : "Pre-order") : "";
           const cardImages = getProductCardImages(product);
-          const meta = productCardMetadata(product);
-          const priceLabel = productCardPrice(product);
+          const meta = productMetaLine(product, isCategoryCatalog);
+          const detail = productDetail(product, isCategoryCatalog);
+          const availability = productAvailability(product);
           if (isCategoryCatalog) {
             return <article key={product.id || product.slug || product.nama} className="min-w-0">
               <Link href={detailHref} aria-label={`Buka detail ${product.nama}`} className="group block min-w-0 rounded-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-black">
@@ -265,13 +382,14 @@ export function ProductCatalog({
                   />
                   {labels.length ? <div className="pointer-events-none absolute left-2 top-2 flex max-w-[calc(100%-1rem)] flex-wrap gap-1">{labels.map((item) => <span key={item} className="bg-white/95 px-2 py-1 text-[11px] font-semibold uppercase text-brand-charcoal shadow-sm">{item}</span>)}</div> : null}
                 </div>
-                <div className="mt-3 min-w-0">
-                  {meta ? <p className="text-[11px] font-medium leading-4 tracking-[0.01em] text-brand-charcoal/55 sm:text-xs">{meta}</p> : null}
-                  <h3 className={`${meta ? "mt-1.5" : ""} line-clamp-2 text-[15px] font-semibold leading-[1.3] tracking-[-0.01em] text-brand-charcoal/90 sm:text-[17px]`}>{product.nama}</h3>
-                  {priceLabel ? <div className="mt-2">
-                    <p className="text-base font-bold leading-6 text-brand-charcoal sm:text-[18px]">{priceLabel}</p>
+                <div className="mt-3 flex min-w-0 flex-col">
+                  <p className="line-clamp-2 min-h-8 text-xs font-medium leading-4 text-brand-charcoal/60 sm:min-h-5">{[meta, availability].filter(Boolean).join(" · ") || "\u00a0"}</p>
+                  <h3 className="mt-1.5 line-clamp-3 min-h-[3.65rem] text-[15px] font-semibold leading-[1.3] tracking-[-0.01em] text-brand-charcoal/90 sm:line-clamp-2 sm:min-h-[2.75rem] sm:text-[17px]">{product.nama}</h3>
+                  <p className="mt-1.5 line-clamp-3 min-h-[3.75rem] text-xs font-normal leading-5 text-brand-charcoal/60 sm:line-clamp-2 sm:min-h-12 sm:text-sm sm:leading-6">{detail || "\u00a0"}</p>
+                  <div className="mt-2 min-h-10">
+                    <p className="text-base font-bold leading-6 text-brand-charcoal sm:text-[18px]">{catalogPrice(product)}</p>
                     {product.compare_price ? <p className="mt-0.5 text-xs text-brand-charcoal/45 line-through">{formatRupiah(product.compare_price)}</p> : null}
-                  </div> : null}
+                  </div>
                 </div>
               </Link>
             </article>;
@@ -293,15 +411,25 @@ export function ProductCatalog({
               />
               {labels.length ? <div className="pointer-events-none absolute left-2 top-2 flex flex-wrap gap-1">{labels.map((item) => <span key={String(item)} className="rounded-full bg-white/95 px-2 py-1 text-[10px] font-semibold shadow-sm">{item}</span>)}</div> : null}
               </Link>
-              <div className="mt-3 min-w-0">
-                {meta ? <p className="text-[11px] font-medium leading-4 tracking-[0.01em] text-brand-charcoal/55 sm:text-xs">{meta}</p> : null}
-                <Link href={detailHref} className={`${meta ? "mt-1.5" : ""} block`}><h3 className="product-title line-clamp-2 text-[15px] font-semibold leading-[1.3] tracking-[-0.01em] text-brand-charcoal sm:text-[17px]">{product.nama}</h3></Link>
-                {priceLabel ? <div className="mt-2">
-                  <p className="product-price text-[15px] font-semibold text-brand-charcoal sm:text-[17px]">{priceLabel}</p>
-                  {product.compare_price ? <p className="mt-0.5 text-xs text-brand-charcoal/40 line-through">{formatRupiah(product.compare_price)}</p> : null}
+              <div className="mt-3 space-y-2">
+                {productColors(product).length ? <div className="flex items-center gap-1.5">
+                  {productColors(product).slice(0, 8).map((color) => <span key={color} title={color} className="h-3.5 w-3.5 rounded-full border border-black/10 shadow-[inset_0_0_0_1px_rgba(255,255,255,0.45)]" style={{ backgroundColor: colorHex(color) }} />)}
+                </div> : null}
+                {productMetaLine(product) ? <p className="text-xs font-medium text-brand-charcoal/60">{productMetaLine(product)}</p> : null}
+                <Link href={detailHref} className="block"><h3 className="product-title line-clamp-2 text-[15px] leading-[1.22] tracking-[-0.01em] text-brand-charcoal sm:text-[17px]">{product.nama}</h3></Link>
+                {productModel(product) ? <p className="text-xs leading-5 text-brand-charcoal/50 sm:text-[13px]">{productModel(product)}</p> : null}
+                {productDetail(product) ? <p className="line-clamp-2 min-h-[2.5rem] text-xs leading-5 text-brand-charcoal/60 sm:text-sm sm:leading-6">{productDetail(product)}</p> : null}
+                <div className="space-y-0.5">
+                  <p className="product-price text-[15px] text-brand-charcoal sm:text-[17px]">{productPrice(product)}</p>
+                  {product.compare_price ? <p className="text-xs text-brand-charcoal/40 line-through">{formatRupiah(product.compare_price)}</p> : null}
+                </div>
+                {stockText || product.brand || chips.length ? <div className="flex flex-wrap gap-x-3 gap-y-1 text-[11px] font-medium text-brand-charcoal/55">
+                  {product.brand ? <span>{product.brand}</span> : null}
+                  {chips.filter((chip) => !productColors(product).includes(chip)).map((chip) => <span key={chip}>{chip}</span>)}
+                  {stockText ? <span>{stockText}</span> : null}
                 </div> : null}
               </div>
-              <div className="mt-3 grid grid-cols-2 gap-2"><Link href={detailHref} className="premium-ghost-button cta inline-flex min-h-10 items-center justify-center border px-3 text-xs transition">Detail</Link><AddToCartButton product={{ id: product.id || product.slug || product.nama, name: product.nama, category: product.kategori, priceLabel, priceValue: priceOf(product), href: detailHref, imageUrl: getProductImage(product), imageAlt: product.image_alt || product.nama }} className="cta inline-flex min-h-10 items-center justify-center rounded-full bg-black px-3 text-xs text-white transition hover:bg-black/75">Tambah</AddToCartButton></div>
+              <div className="mt-4 grid grid-cols-2 gap-2"><Link href={detailHref} className="premium-ghost-button cta inline-flex min-h-10 items-center justify-center border px-3 text-xs transition">Detail</Link><AddToCartButton product={{ id: product.id || product.slug || product.nama, name: product.nama, category: product.kategori, priceLabel: productPrice(product), priceValue: priceOf(product), href: detailHref, imageUrl: getProductImage(product), imageAlt: product.image_alt || product.nama }} className="cta inline-flex min-h-10 items-center justify-center rounded-full bg-black px-3 text-xs text-white transition hover:bg-black/75">Tambah</AddToCartButton></div>
             </article>;
         })}
       </div> : <div className={`${isCategoryCatalog ? "px-4 py-10" : "p-8"} mt-6 text-center`}><p className="font-semibold">Produk tidak ditemukan</p><p className="mt-2 text-sm text-brand-charcoal/60">Coba kata kunci atau kombinasi filter lain.</p>{isCategoryCatalog ? <button type="button" onClick={resetFilters} className="mt-5 inline-flex min-h-10 items-center justify-center rounded-full border border-black/20 px-5 text-sm font-semibold hover:border-black hover:bg-black hover:text-white">Reset Filter</button> : null}</div>}
