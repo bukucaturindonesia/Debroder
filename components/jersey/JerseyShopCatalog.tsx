@@ -9,16 +9,14 @@ import {
   EMPTY_JERSEY_FILTERS,
   filterJerseyProducts,
   jerseyFilterOptions,
-  jerseyProductColors,
-  jerseyProductPrice,
   jerseyProductStatus,
   type FilterOption,
   type JerseyProductFilters,
   type JerseySort
 } from "@/lib/jersey-commerce";
 import { getProductCardImages } from "@/lib/product-gallery";
+import { productCardMetadata, productCardPrice } from "@/lib/product-card";
 import type { Product } from "@/lib/types";
-import { formatRupiah } from "@/lib/url";
 
 const filterKeys = [
   "q",
@@ -207,9 +205,9 @@ function ProductCard({ product }: { product: Product }) {
   const images = getProductCardImages(product);
   const focal = product.focal_points?.catalog;
   const href = `/produk/${product.slug || slugify(product.nama)}`;
-  const price = formatRupiah(jerseyProductPrice(product)) || "Hubungi kami";
+  const metadata = productCardMetadata(product);
+  const price = productCardPrice(product);
   const status = jerseyProductStatus(product);
-  const colors = jerseyProductColors(product);
 
   return (
     <article className="group min-w-0 text-black">
@@ -236,25 +234,22 @@ function ProductCard({ product }: { product: Product }) {
         />
       </Link>
       <div className="pt-3 sm:pt-4">
-        <div className="flex min-h-5 flex-wrap items-center gap-x-2 gap-y-1 text-[10px] font-bold uppercase tracking-[0.08em] text-black/55 sm:text-xs">
-          {status ? <span>{status}</span> : null}
-          {product.label_new && status !== "New" ? <span>New</span> : null}
-        </div>
+        {metadata ? <p className="text-[11px] font-medium leading-4 tracking-[0.01em] text-black/55 sm:text-xs">{metadata}</p> : null}
         <Link
           href={href}
-          className="mt-1 block outline-none focus-visible:underline focus-visible:decoration-2 focus-visible:underline-offset-4"
+          className={`${metadata ? "mt-1.5" : ""} block outline-none focus-visible:underline focus-visible:decoration-2 focus-visible:underline-offset-4`}
         >
-          <h2 className="line-clamp-2 text-[clamp(0.9rem,1.25vw,1.08rem)] font-bold leading-[1.25] tracking-[-0.01em]">
+          <h2 className="line-clamp-2 text-[clamp(0.95rem,1.25vw,1.08rem)] font-semibold leading-[1.3] tracking-[-0.01em]">
             {product.nama}
           </h2>
         </Link>
-        <p className="mt-1 text-[clamp(0.82rem,1.05vw,0.98rem)] font-semibold">
+        {price ? <p className="mt-2 text-[clamp(0.9rem,1.05vw,1.05rem)] font-semibold leading-6">
           {price}
-        </p>
-        <div className="mt-1 flex min-h-5 flex-wrap items-center gap-x-2 text-[11px] leading-5 text-black/55 sm:text-xs">
-          {product.subcategory ? <span>{product.subcategory}</span> : null}
-          {colors.length ? <span>{colors.length} warna</span> : null}
-        </div>
+        </p> : null}
+        {status || product.label_new ? <div className="mt-2 flex flex-wrap items-center gap-x-2 gap-y-1 text-[10px] font-semibold uppercase tracking-[0.06em] text-black/50 sm:text-xs">
+          {status ? <span>{status}</span> : null}
+          {product.label_new && status !== "New" ? <span>New</span> : null}
+        </div> : null}
         <Link
           href={href}
           className="mt-3 inline-flex min-h-10 items-center border-b border-black text-xs font-bold uppercase tracking-[0.08em] outline-none transition-opacity hover:opacity-55 focus-visible:ring-2 focus-visible:ring-black focus-visible:ring-offset-2 sm:text-sm"
