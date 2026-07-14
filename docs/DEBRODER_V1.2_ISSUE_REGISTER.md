@@ -2,6 +2,12 @@
 
 ## Open
 
+### V12-024 — Deploy and visually verify Kaos Polos final revision
+
+- Severity: QA gate
+- Status: OPEN / PARTIALLY VERIFIED
+- Detail: `/kaos-polos` hero CTA mapping/position, compact filters, 4/2-column grid, 4:5 cards, responsive 8+4 / 4+2 batching, safe loading/error states, and closing bar are implemented. TypeScript, lint with zero errors, 118 tests, production build, and local HTTP route smoke pass. A browser executable was unavailable in this workspace; after deployment, verify the requested viewport matrix (1600/1440/1280/1024/768/430/390/360), filter/sort/reset/See More interactions, click targets, console/hydration state, horizontal overflow, and Add to Cart/Guest Checkout smoke through the unchanged universal detail flow.
+
 ### V12-023 — Deploy and browser-verify guest order tracking
 
 - Severity: Gate

@@ -150,3 +150,17 @@ No blocker prevented source implementation or rollback-based database verificati
 **PARTIALLY VERIFIED** for the full operational browser journey.
 **NOT DEPLOYED** for application code.
 Phase 15 / v1.3 remains **NOT STARTED**.
+
+---
+
+## 2026-07-14 — Kaos Polos final visual revision
+
+Status: **IMPLEMENTED, PARTIALLY VERIFIED**.
+
+- Scope was isolated to `/kaos-polos`: existing PIM query, universal `/produk/[slug]`, product media/focal points, and Commerce Foundation were reused without database or transaction changes.
+- CMS desktop/mobile hero media, focal settings, copy, and primary/secondary CTA are rendered again; the caption/action group is positioned slightly lower without changing hero proportions.
+- The Kaos catalog uses a compact five-control filter bar, stable 4-column desktop / 2-column tablet-mobile grid, fixed 4:5 media, uniform card hierarchy, one accessible `next/link` card target, actual PIM badges/status signals, and no hardcoded product examples.
+- Display batching is 8 + 4 on desktop and 4 + 2 below 1024 px. Filter/sort/breakpoint changes reset batching; duplicate product identities are suppressed; additional rows use 4:5 skeletons.
+- Route-level loading/error states and a closing Custom Order bar to `/sablon-dtf` were added.
+- Verification: `git diff --check` PASS; TypeScript PASS; targeted catalog tests 3/3 PASS; full tests 19 files / 118 tests PASS; ESLint PASS with 0 errors and 22 existing warnings; production build PASS; local HTTP smoke returned 200 and universal product links. Automated visual browser matrix was unavailable because no browser binary/`agent-browser` executable exists in the workspace.
+- No cart, checkout, order, payment, stock, reservation, fulfillment, RLS, migration, or database code was changed for this revision.

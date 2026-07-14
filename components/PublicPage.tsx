@@ -175,7 +175,8 @@ export function PageHero({
   ctaHref,
   secondaryCtaText,
   secondaryCtaHref,
-  breadcrumbs
+  breadcrumbs,
+  contentPosition = "default"
 }: {
   label?: string | null;
   title?: string | null;
@@ -192,6 +193,7 @@ export function PageHero({
   secondaryCtaText?: string;
   secondaryCtaHref?: string;
   breadcrumbs?: { label: string; href?: string }[];
+  contentPosition?: "default" | "lower";
 }) {
   const cleanLabel = cleanDisplayText(label);
   const cleanTitle = cleanDisplayText(title);
@@ -222,7 +224,7 @@ export function PageHero({
           />
           {hasCopy ? <div className="absolute inset-x-0 bottom-0 hidden h-[52%] bg-gradient-to-t from-black/48 via-black/14 to-transparent sm:block" /> : null}
         </div>
-        {hasCopy ? <div className="hero-content relative mx-auto px-4 py-6 text-center text-brand-charcoal sm:absolute sm:bottom-8 sm:left-1/2 sm:right-auto sm:w-full sm:max-w-[1120px] sm:-translate-x-1/2 sm:p-0 sm:text-white lg:bottom-10">
+        {hasCopy ? <div className={`hero-content relative mx-auto px-4 text-center text-brand-charcoal sm:absolute sm:left-1/2 sm:right-auto sm:w-full sm:max-w-[1120px] sm:-translate-x-1/2 sm:p-0 sm:text-white ${contentPosition === "lower" ? "pb-5 pt-8 sm:bottom-5 lg:bottom-6" : "py-6 sm:bottom-8 lg:bottom-10"}`}>
           {breadcrumbs?.length ? (
             <nav
               aria-label="Breadcrumb"

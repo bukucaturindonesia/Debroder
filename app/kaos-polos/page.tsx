@@ -5,7 +5,6 @@ import { getPageHeroImage } from "@/lib/fallback-data";
 import { productsForCategoryRoute } from "@/lib/product-route-matching";
 import { kaosTypeOptions, productTypeValue } from "@/lib/product-taxonomy";
 import { getPublicContent } from "@/lib/public-data";
-import { whatsappHref } from "@/lib/url";
 
 export const metadata: Metadata = {
   title: "Kaos Polos New State Apparel & Cotton Combed | DE BRODER",
@@ -59,10 +58,11 @@ export default async function KaosPolosPage({ searchParams }: KaosPolosPageProps
         objectFit={pageHero?.object_fit}
         imageZoom={pageHero?.focal_zoom}
         mobileImageZoom={pageHero?.mobile_focal_zoom}
-        ctaText={undefined}
-        ctaHref={undefined}
-        secondaryCtaText={undefined}
-        secondaryCtaHref={undefined}
+        ctaText={pageHero?.primary_cta_label}
+        ctaHref={pageHero?.primary_cta_url}
+        secondaryCtaText={pageHero?.secondary_cta_label}
+        secondaryCtaHref={pageHero?.secondary_cta_url}
+        contentPosition="lower"
         breadcrumbs={[{ label: "Beranda", href: "/" }, { label: "Kaos Polos" }]}
       />
       <KaosCatalog products={products} filters={content.productFilters} initialColor={initialColor} initialLabel={initialLabel} initialSort={initialSort} initialProductType={initialProductType} />
