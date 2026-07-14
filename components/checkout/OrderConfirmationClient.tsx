@@ -104,7 +104,7 @@ export function OrderConfirmationClient({ token }: { token: string }) {
             <p className="mt-2 leading-6 text-black/60">Tautan ini membuka status order tanpa login. Jangan bagikan kepada orang lain.</p>
             {order.trackingTokenExpiresAt ? <p className="mt-2 text-xs text-black/50">Berlaku sampai {formatDate(order.trackingTokenExpiresAt)}.</p> : null}
             <div className="mt-4 flex flex-wrap gap-3">
-              <Link href={trackingPath} className="inline-flex min-h-11 items-center rounded-full bg-[#063d24] px-5 font-semibold text-white">Lacak Order</Link>
+              <Link href={trackingPath} className="inline-flex min-h-11 items-center rounded-full bg-black px-5 font-semibold text-white hover:bg-black/75">Lacak Order</Link>
               <button type="button" onClick={() => void copyTrackingLink()} className="min-h-11 rounded-full border border-black/20 px-5 font-semibold">{trackingCopied ? "Link Tersalin" : "Salin Link"}</button>
             </div>
           </div>
@@ -114,12 +114,12 @@ export function OrderConfirmationClient({ token }: { token: string }) {
               <p className="font-semibold">Verifikasi nomor WhatsApp maksimal 60 menit</p>
               <p className="mt-2 leading-6">Kirim pesan dari nomor WhatsApp yang dipakai saat checkout. Admin mencocokkan nomor pengirim dan kode sekali pakai—nomor order saja tidak cukup.</p>
               {confirmationCode ? <p className="mt-3 text-2xl font-bold tracking-[0.2em]">{confirmationCode}</p> : <p className="mt-3 text-amber-900">Kode tersimpan pada perangkat checkout. Hubungi Admin bila halaman dibuka dari perangkat lain.</p>}
-              <a href={whatsappHref} target="_blank" rel="noopener noreferrer" className="mt-4 inline-flex min-h-11 items-center rounded-full bg-[#063d24] px-5 font-semibold text-white">Verifikasi via WhatsApp</a>
+              <a href={whatsappHref} target="_blank" rel="noopener noreferrer" className="mt-4 inline-flex min-h-11 items-center rounded-full bg-black px-5 font-semibold text-white hover:bg-black/75">Verifikasi via WhatsApp</a>
             </div>
           ) : null}
 
           {order.status === "awaiting_customer_approval" ? (
-            <div className="mt-5 border border-blue-200 bg-blue-50 p-5 text-sm"><p className="font-semibold">Ongkir sudah tersedia</p><p className="mt-2">{order.shippingCourier} · {order.shippingService}{order.shippingEstimate ? ` · ${order.shippingEstimate}` : ""}</p><button disabled={approving} onClick={approveTotal} className="mt-4 min-h-11 rounded-full bg-[#063d24] px-5 font-semibold text-white disabled:opacity-50">{approving ? "Memvalidasi stok..." : `Setujui Total ${formatRupiah(order.total)}`}</button></div>
+            <div className="mt-5 border border-blue-200 bg-blue-50 p-5 text-sm"><p className="font-semibold">Ongkir sudah tersedia</p><p className="mt-2">{order.shippingCourier} · {order.shippingService}{order.shippingEstimate ? ` · ${order.shippingEstimate}` : ""}</p><button disabled={approving} onClick={approveTotal} className="mt-4 min-h-11 rounded-full bg-black px-5 font-semibold text-white hover:bg-black/75 disabled:opacity-50">{approving ? "Memvalidasi stok..." : `Setujui Total ${formatRupiah(order.total)}`}</button></div>
           ) : null}
 
           {order.status === "awaiting_shipping_quote" ? <Info>Admin akan memasukkan kurir, layanan, ongkir, dan estimasi pada order ini. Halaman diperbarui otomatis.</Info> : null}

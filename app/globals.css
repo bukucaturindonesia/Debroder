@@ -102,7 +102,7 @@ body {
 }
 
 .premium-input:focus {
-  border-color: rgba(6, 61, 36, 0.42);
+  border-color: rgba(17, 17, 17, 0.72);
 }
 
 .premium-ghost-button {
@@ -111,8 +111,9 @@ body {
 }
 
 .premium-ghost-button:hover {
-  border-color: rgba(6, 61, 36, 0.45);
-  color: #063d24;
+  background: #111111;
+  border-color: #111111;
+  color: #ffffff;
 }
 
 .public-site {
@@ -261,7 +262,12 @@ button,
   text-transform: uppercase;
 }
 
-.public-site :where(a, button, input, select, textarea):focus-visible {
+.public-site:not(.jersey-theme):not(.jersey-commerce-theme) :where(a, button, input, select, textarea):focus-visible {
+  outline: 2px solid #111111;
+  outline-offset: 3px;
+}
+
+.public-site.jersey-theme > header :where(a, button, input, select, textarea):focus-visible {
   outline: 2px solid #0f5a36;
   outline-offset: 3px;
 }

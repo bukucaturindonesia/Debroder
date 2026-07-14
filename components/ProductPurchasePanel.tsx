@@ -258,7 +258,7 @@ export function ProductPurchasePanel({
                 aria-label={`Pilih warna ${option.name}`}
                 aria-pressed={selected}
                 onClick={() => setSelectedColor(option.name)}
-                className={`grid h-9 w-9 place-items-center rounded-full transition ${selected ? "ring-2 ring-brand-green ring-offset-2 ring-offset-[#F7F7F4]" : "ring-1 ring-black/10 hover:ring-black/30"}`}
+                className={`grid h-9 w-9 place-items-center rounded-full transition ${selected ? "ring-2 ring-black ring-offset-2 ring-offset-[#F7F7F4]" : "ring-1 ring-black/10 hover:ring-black/30"}`}
               >
                 <span className="h-7 w-7 rounded-full border border-black/10" style={{ backgroundColor: option.hex }} />
               </button>
@@ -324,7 +324,7 @@ export function ProductPurchasePanel({
           </div>
         </div>
         <div className="grid gap-3 sm:grid-cols-2">
-          <button type="button" disabled={unavailable} onClick={addSelectedToCart} className="inline-flex min-h-12 items-center justify-center rounded-full bg-brand-green px-6 text-sm font-semibold text-white transition hover:bg-brand-charcoal disabled:cursor-not-allowed disabled:bg-black/20">
+          <button type="button" disabled={unavailable} onClick={addSelectedToCart} className="inline-flex min-h-12 items-center justify-center rounded-full bg-black px-6 text-sm font-semibold text-white transition hover:bg-black/75 disabled:cursor-not-allowed disabled:bg-black/20">
             {unavailable ? "Varian Tidak Tersedia" : "Tambah ke Keranjang"}
           </button>
           {whatsappUrl ? (

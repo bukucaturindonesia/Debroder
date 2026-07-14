@@ -8,6 +8,7 @@ import { CartNavButton } from "@/components/CartProvider";
 import { Logo } from "@/components/Logo";
 import { contactLinks } from "@/lib/contact";
 import { jacketTypeOptions, kaosTypeOptions } from "@/lib/product-taxonomy";
+import type { PublicNavigationFacets } from "@/lib/public-navigation";
 import { whatsappLinkWithMessage } from "@/lib/url";
 
 const topbarItems = [
@@ -36,7 +37,7 @@ type MegaMenuColumn = {
   links: MegaMenuLink[];
 };
 
-const collectionMenu: MegaMenuColumn[] = [
+const legacyCollectionMenu: MegaMenuColumn[] = [
   {
     title: "Koleksi",
     links: [
@@ -79,8 +80,8 @@ const colorLinks = [
   { label: "Gold", value: "gold" }
 ];
 
-const navMegaMenus: Record<string, MegaMenuColumn[]> = {
-  Koleksi: collectionMenu,
+const legacyNavMegaMenus: Record<string, MegaMenuColumn[]> = {
+  Koleksi: legacyCollectionMenu,
   "Kaos Polos": [
     {
       title: "Kaos Polos",
@@ -121,6 +122,69 @@ const navMegaMenus: Record<string, MegaMenuColumn[]> = {
   ]
 };
 
+const emptyNavigationFacets: PublicNavigationFacets = {
+  colors: [],
+  categoryColors: { "kaos-polos": [], "jaket-hoodie": [] },
+  categories: [],
+  availability: { readyStock: false, custom: false, hybrid: false },
+  collections: { new: false, best: false, popular: false, promo: false }
+};
+
+function buildCollectionMenu(facets: PublicNavigationFacets): MegaMenuColumn[] {
+  const curated = [
+    { visible: facets.collections.new, label: "Produk Baru", href: "/koleksi?label=new" },
+    { visible: facets.collections.best, label: "Best Seller", href: "/koleksi?label=best" },
+    { visible: facets.collections.popular, label: "Popular", href: "/koleksi?sort=best-selling" },
+    { visible: facets.collections.promo, label: "Turun Harga", href: "/koleksi?label=promo" }
+  ].filter((item) => item.visible).map(({ label, href }) => ({ label, href }));
+  const availability = [
+    { visible: facets.availability.readyStock, label: "Ready Stock", href: "/koleksi?status=ready-stock" },
+    { visible: facets.availability.custom, label: "Custom", href: "/koleksi?status=custom" },
+    { visible: facets.availability.hybrid, label: "Ready Stock + Custom", href: "/koleksi?status=hybrid" }
+  ].filter((item) => item.visible).map(({ label, href }) => ({ label, href }));
+
+  return [
+    {
+      title: "Koleksi",
+      links: [{ label: "Belanja Semua", href: "/koleksi", highlight: true }, ...curated]
+    },
+    facets.categories.length ? { title: "Belanja Berdasarkan Produk", links: facets.categories } : null,
+    facets.colors.length ? {
+      title: "Belanja Berdasarkan Warna",
+      links: facets.colors.map((color) => ({ label: color.label, href: `/koleksi?color=${color.value}` }))
+    } : null,
+    availability.length ? { title: "Ketersediaan", links: availability } : null
+  ].filter((column): column is MegaMenuColumn => Boolean(column));
+}
+
+function buildCategoryMenu(
+  label: "Kaos Polos" | "Jaket & Hoodie",
+  route: "/kaos-polos" | "/jaket-hoodie",
+  facets: PublicNavigationFacets
+): MegaMenuColumn[] {
+  const routeKey = route.slice(1) as "kaos-polos" | "jaket-hoodie";
+  const typeOptions = routeKey === "kaos-polos" ? kaosTypeOptions : jacketTypeOptions;
+  return [
+    {
+      title: label,
+      links: [
+        { label: "Belanja Semua", href: route, highlight: true },
+        { label: "Produk Baru", href: `${route}?label=new` },
+        { label: "Best Seller", href: `${route}?label=best` },
+        { label: "Promo", href: `${route}?label=promo` }
+      ]
+    },
+    {
+      title: routeKey === "kaos-polos" ? "Tipe Kaos" : "Tipe Jaket",
+      links: typeOptions.map((item) => ({ label: item.label, href: `${route}?type=${item.value}` }))
+    },
+    facets.categoryColors[routeKey].length ? {
+      title: "Belanja Berdasarkan Warna",
+      links: facets.categoryColors[routeKey].map((color) => ({ label: color.label, href: `${route}?color=${color.value}` }))
+    } : null
+  ].filter((column): column is MegaMenuColumn => Boolean(column));
+}
+
 const searchItems = [
   { title: "Kaos Polos", href: "/kaos-polos", description: "Kaos polos, cotton combed, kaos anak, lengan panjang, dan Polo Shirt NSA.", keywords: ["kaos", "baju", "cotton combed", "polo", "polo shirt nsa"] },
   { title: "Jersey", href: "/jersey", description: "Custom jersey untuk tim, komunitas, dan instansi.", keywords: ["jersey", "tim", "olahraga"] },
@@ -157,16 +221,34 @@ function CloseIcon() {
   return <BrandIcon name="close" />;
 }
 
-function MegaDropdown({ columns, expanded }: { columns: MegaMenuColumn[]; expanded: boolean }) {
+function MegaDropdown({
+  columns,
+  expanded,
+  id,
+  open,
+  preserveJerseyOutput = false,
+  onNavigate
+}: {
+  columns: MegaMenuColumn[];
+  expanded: boolean;
+  id?: string;
+  open?: boolean;
+  preserveJerseyOutput?: boolean;
+  onNavigate?: () => void;
+}) {
+  const controlledClass = open
+    ? "visible translate-y-0 opacity-100"
+    : "invisible pointer-events-none translate-y-2 opacity-0";
+  const legacyClass = "invisible translate-y-2 opacity-0 group-hover/nav:visible group-hover/nav:translate-y-0 group-hover/nav:opacity-100 group-focus-within/nav:visible group-focus-within/nav:translate-y-0 group-focus-within/nav:opacity-100";
   return (
-    <div className={`invisible fixed left-1/2 z-[120] w-[min(980px,calc(100vw-32px))] -translate-x-1/2 translate-y-2 pt-3 opacity-0 transition duration-200 group-hover/nav:visible group-hover/nav:translate-y-0 group-hover/nav:opacity-100 group-focus-within/nav:visible group-focus-within/nav:translate-y-0 group-focus-within/nav:opacity-100 ${expanded ? "top-[164px]" : "top-[78px]"}`}>
-      <div className="grid grid-cols-3 gap-10 border border-black/10 bg-white p-9 text-left shadow-[0_18px_50px_rgba(0,0,0,0.12)]">
+    <div id={id} className={`fixed left-1/2 z-[120] -translate-x-1/2 pt-3 transition duration-200 ${preserveJerseyOutput ? "w-[min(980px,calc(100vw-32px))]" : "w-[min(1180px,calc(100vw-32px))]"} ${open === undefined ? legacyClass : controlledClass} ${expanded ? "top-[164px]" : "top-[78px]"}`}>
+      <div className={`grid border border-black/10 bg-white text-left shadow-[0_18px_50px_rgba(0,0,0,0.12)] ${preserveJerseyOutput ? "grid-cols-3 gap-10 p-9" : `gap-8 p-8 ${columns.length >= 4 ? "grid-cols-4" : columns.length === 2 ? "grid-cols-2" : "grid-cols-3"}`}`}>
         {columns.map((column) => (
           <div key={column.title}>
             <p className="text-[15px] font-semibold text-[#111]">{column.title}</p>
             <div className="mt-5 grid gap-4">
               {column.links.map((link) => (
-                <Link key={`${column.title}-${link.label}`} href={link.href} className={`text-[15px] leading-5 transition hover:text-[#0f5a36] ${link.highlight ? "font-semibold text-[#0f5a36]" : "font-medium text-black/58"}`}>
+                <Link key={`${column.title}-${link.label}`} href={link.href} onClick={onNavigate} className={`text-[15px] leading-5 underline-offset-4 transition ${preserveJerseyOutput ? `hover:text-[#0f5a36] ${link.highlight ? "font-semibold text-[#0f5a36]" : "font-medium text-black/58"}` : `${link.highlight ? "font-semibold text-black" : "font-medium text-black/60"} hover:text-black hover:underline focus-visible:text-black focus-visible:underline`}`}>
                   {link.label}
                 </Link>
               ))}
@@ -264,16 +346,30 @@ function SearchModal({ isOpen, onClose }: { isOpen: boolean; onClose: () => void
 
 export function SiteHeader({
   positionMode = "sticky",
-  expandedAtTop = false
+  expandedAtTop = false,
+  navigationFacets = emptyNavigationFacets,
+  preserveJerseyOutput = false
 }: {
   positionMode?: "sticky" | "natural";
   expandedAtTop?: boolean;
+  navigationFacets?: PublicNavigationFacets;
+  preserveJerseyOutput?: boolean;
 }) {
   const pathname = usePathname();
   const [isOpen, setIsOpen] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
+  const [desktopCollectionOpen, setDesktopCollectionOpen] = useState(false);
+  const [mobileCollectionOpen, setMobileCollectionOpen] = useState(false);
   const [expanded, setExpanded] = useState(expandedAtTop);
   const hasLeftTopRef = useRef(false);
+  const headerRef = useRef<HTMLElement>(null);
+  const collectionTriggerRef = useRef<HTMLButtonElement>(null);
+  const mobileMenuTriggerRef = useRef<HTMLButtonElement>(null);
+  const collectionMenu = useMemo(() => buildCollectionMenu(navigationFacets), [navigationFacets]);
+  const currentMegaMenus = useMemo<Record<string, MegaMenuColumn[]>>(() => preserveJerseyOutput ? legacyNavMegaMenus : {
+    "Kaos Polos": buildCategoryMenu("Kaos Polos", "/kaos-polos", navigationFacets),
+    "Jaket & Hoodie": buildCategoryMenu("Jaket & Hoodie", "/jaket-hoodie", navigationFacets)
+  }, [navigationFacets, preserveJerseyOutput]);
 
   useEffect(() => {
     if (positionMode === "natural" && expandedAtTop) return;
@@ -309,27 +405,57 @@ export function SiteHeader({
 
   useEffect(() => {
     setIsOpen(false);
+    setDesktopCollectionOpen(false);
+    setMobileCollectionOpen(false);
     setExpanded(expandedAtTop);
     hasLeftTopRef.current = false;
   }, [expandedAtTop, pathname]);
 
   useEffect(() => {
+    if (preserveJerseyOutput || !desktopCollectionOpen) return;
+    const closeOnOutsideInteraction = (event: MouseEvent | TouchEvent) => {
+      if (!headerRef.current?.contains(event.target as Node)) setDesktopCollectionOpen(false);
+    };
+    const closeOnEscape = (event: globalThis.KeyboardEvent) => {
+      if (preserveJerseyOutput) return;
+      if (event.key !== "Escape") return;
+      setDesktopCollectionOpen(false);
+      collectionTriggerRef.current?.focus();
+    };
+    document.addEventListener("mousedown", closeOnOutsideInteraction);
+    document.addEventListener("touchstart", closeOnOutsideInteraction, { passive: true });
+    window.addEventListener("keydown", closeOnEscape);
+    return () => {
+      document.removeEventListener("mousedown", closeOnOutsideInteraction);
+      document.removeEventListener("touchstart", closeOnOutsideInteraction);
+      window.removeEventListener("keydown", closeOnEscape);
+    };
+  }, [desktopCollectionOpen, preserveJerseyOutput]);
+
+  useEffect(() => {
     if (!isOpen) return;
     const previousOverflow = document.body.style.overflow;
     document.body.style.overflow = "hidden";
+    const closeOnEscape = (event: globalThis.KeyboardEvent) => {
+      if (event.key !== "Escape") return;
+      setIsOpen(false);
+      mobileMenuTriggerRef.current?.focus();
+    };
+    window.addEventListener("keydown", closeOnEscape);
     return () => {
+      window.removeEventListener("keydown", closeOnEscape);
       document.body.style.overflow = previousOverflow;
     };
-  }, [isOpen]);
+  }, [isOpen, preserveJerseyOutput]);
 
   return (
-    <header className={`${positionMode === "sticky" ? "sticky top-0" : "relative"} z-[100] border-b border-black/10 bg-white text-[#111]`}>
+    <header ref={headerRef} className={`${positionMode === "sticky" ? "sticky top-0" : "relative"} z-[100] border-b border-black/10 bg-white text-[#111]`}>
       <div className={`hidden overflow-hidden bg-[#f5f5f5] transition-[max-height,opacity] duration-200 ease-out lg:block ${expanded ? "visible max-h-8 opacity-100" : "invisible max-h-0 opacity-0 pointer-events-none"}`} aria-hidden={!expanded}>
         <div className="section-shell flex h-8 items-center justify-between gap-4 text-[12px] font-medium text-black/65">
           <p className="truncate">DEBRODER Apparel & Printing</p>
           <div className="flex items-center gap-5">
             {topbarItems.map((item) => (
-              <Link key={item.href} href={item.href} className={`transition hover:text-[#0f5a36] ${pathname === item.href ? "text-[#0f5a36]" : ""}`}>
+              <Link key={item.href} href={item.href} aria-current={pathname === item.href ? "page" : undefined} className={`underline-offset-4 transition ${preserveJerseyOutput ? `hover:text-[#0f5a36] ${pathname === item.href ? "text-[#0f5a36]" : ""}` : `${pathname === item.href ? "font-semibold text-black underline" : ""} hover:text-black hover:underline focus-visible:text-black focus-visible:underline`}`}>
                 {item.label}
               </Link>
             ))}
@@ -344,23 +470,51 @@ export function SiteHeader({
         <div className="hidden h-full items-center justify-center gap-3 lg:flex xl:gap-5">
           {navItems.map((item) => {
             const active = pathname === item.href;
-            const megaMenu = navMegaMenus[item.label as keyof typeof navMegaMenus];
+            const megaMenu = currentMegaMenus[item.label as keyof typeof currentMegaMenus];
+            if (!preserveJerseyOutput && item.label === "Koleksi") {
+              return (
+                <div
+                  key={item.href}
+                  className="relative flex h-full items-center"
+                  onMouseEnter={() => setDesktopCollectionOpen(true)}
+                  onMouseLeave={() => setDesktopCollectionOpen(false)}
+                  onBlur={(event) => {
+                    if (!event.currentTarget.contains(event.relatedTarget as Node | null)) setDesktopCollectionOpen(false);
+                  }}
+                >
+                  <button
+                    ref={collectionTriggerRef}
+                    type="button"
+                    aria-expanded={desktopCollectionOpen}
+                    aria-controls="global-collection-menu"
+                    aria-current={active ? "page" : undefined}
+                    onClick={() => setDesktopCollectionOpen((current) => !current)}
+                    className={`nav-link relative flex h-full items-center gap-1.5 whitespace-nowrap text-sm font-medium text-[#111] transition duration-200 hover:bg-black hover:text-white focus-visible:bg-black focus-visible:text-white xl:text-[15px] ${active ? "font-semibold" : ""}`}
+                  >
+                    {item.label}
+                    <span className={`transition-transform duration-200 ${desktopCollectionOpen ? "rotate-180" : ""}`}><ChevronDownIcon /></span>
+                    <span className={`absolute inset-x-0 bottom-0 h-0.5 origin-center bg-black transition-transform duration-200 ${active || desktopCollectionOpen ? "scale-x-100" : "scale-x-0"}`} />
+                  </button>
+                  <MegaDropdown id="global-collection-menu" columns={collectionMenu} expanded={expanded} open={desktopCollectionOpen} onNavigate={() => setDesktopCollectionOpen(false)} />
+                </div>
+              );
+            }
             if (megaMenu) {
               return (
                 <div key={item.href} className="group/nav relative flex h-full items-center">
-                  <Link href={item.href} className={`nav-link relative flex h-full items-center gap-1.5 whitespace-nowrap text-sm font-medium transition duration-200 hover:text-[#0f5a36] xl:text-[15px] ${active ? "text-[#0f5a36]" : "text-[#111]"}`}>
+                  <Link href={item.href} aria-current={active ? "page" : undefined} className={`nav-link relative flex h-full items-center whitespace-nowrap text-sm font-medium transition duration-200 xl:text-[15px] ${preserveJerseyOutput ? `gap-1.5 hover:text-[#0f5a36] ${active ? "text-[#0f5a36]" : "text-[#111]"}` : `text-[#111] hover:bg-black hover:text-white focus-visible:bg-black focus-visible:text-white ${active ? "font-semibold" : ""}`}`}>
                     {item.label}
-                    <ChevronDownIcon />
-                    <span className={`absolute inset-x-0 bottom-0 h-0.5 origin-center bg-[#0f5a36] transition-transform duration-200 ${active ? "scale-x-100" : "scale-x-0"}`} />
+                    {preserveJerseyOutput ? <ChevronDownIcon /> : null}
+                    <span className={`absolute inset-x-0 bottom-0 h-0.5 origin-center transition-transform duration-200 ${preserveJerseyOutput ? "bg-[#0f5a36]" : "bg-black"} ${active ? "scale-x-100" : "scale-x-0"}`} />
                   </Link>
-                  <MegaDropdown columns={megaMenu} expanded={expanded} />
+                  <MegaDropdown columns={megaMenu} expanded={expanded} preserveJerseyOutput={preserveJerseyOutput} />
                 </div>
               );
             }
             return (
-              <Link key={item.href} href={item.href} className={`nav-link relative flex h-full items-center whitespace-nowrap text-sm font-medium transition duration-200 hover:text-[#0f5a36] xl:text-[15px] ${active ? "text-[#0f5a36]" : "text-[#111]"}`}>
+              <Link key={item.href} href={item.href} aria-current={active ? "page" : undefined} className={`nav-link relative flex h-full items-center whitespace-nowrap text-sm font-medium transition duration-200 xl:text-[15px] ${preserveJerseyOutput ? `hover:text-[#0f5a36] ${active ? "text-[#0f5a36]" : "text-[#111]"}` : `text-[#111] hover:bg-black hover:text-white focus-visible:bg-black focus-visible:text-white ${active ? "font-semibold" : ""}`}`}>
                 {item.label}
-                <span className={`absolute inset-x-0 bottom-0 h-0.5 origin-center bg-[#0f5a36] transition-transform duration-200 ${active ? "scale-x-100" : "scale-x-0"}`} />
+                <span className={`absolute inset-x-0 bottom-0 h-0.5 origin-center transition-transform duration-200 ${preserveJerseyOutput ? "bg-[#0f5a36]" : "bg-black"} ${active ? "scale-x-100" : "scale-x-0"}`} />
               </Link>
             );
           })}
@@ -378,7 +532,7 @@ export function SiteHeader({
             <ChatIcon />
           </a>
           <CartNavButton />
-          <button type="button" className="relative grid h-10 w-10 place-items-center rounded-full transition hover:bg-[#f5f5f5] lg:hidden" aria-label={isOpen ? "Tutup menu" : "Buka menu"} aria-expanded={isOpen} onClick={() => setIsOpen((current) => !current)}>
+          <button ref={mobileMenuTriggerRef} type="button" className="relative grid h-10 w-10 place-items-center rounded-full transition hover:bg-[#f5f5f5] lg:hidden" aria-label={isOpen ? "Tutup menu" : "Buka menu"} aria-expanded={isOpen} aria-controls="global-mobile-navigation" onClick={() => setIsOpen((current) => !current)}>
             <BrandIcon name={isOpen ? "close" : "menu"} />
           </button>
         </div>
@@ -391,23 +545,46 @@ export function SiteHeader({
         </div>
       </div>
 
-      <div className={`absolute inset-x-0 top-full h-[calc(100dvh-4rem)] bg-white transition-transform duration-300 ease-out md:h-[calc(100dvh-78px)] lg:hidden ${isOpen ? "visible translate-x-0" : "invisible translate-x-full"}`}>
+      <div id="global-mobile-navigation" aria-hidden={!isOpen} inert={!isOpen} className={`absolute inset-x-0 top-full h-[calc(100dvh-4rem)] bg-white transition-transform duration-300 ease-out md:h-[calc(100dvh-78px)] lg:hidden ${isOpen ? "visible translate-x-0" : "invisible pointer-events-none translate-x-full"}`}>
         <div className="section-shell flex h-full flex-col overflow-y-auto py-6">
           <p className="mb-2 text-xs font-semibold uppercase tracking-[0.12em] text-black/45">Belanja</p>
-          {navItems.map((item) => (
-            <Link key={item.href} href={item.href} className={`flex min-h-14 items-center justify-between text-2xl font-semibold leading-tight transition hover:pl-1 ${pathname === item.href ? "text-[#0f5a36]" : "text-[#111]"}`}>
+          {navItems.map((item) => {
+            const active = pathname === item.href;
+            if (!preserveJerseyOutput && item.label === "Koleksi") {
+              return <div key={item.href} className="border-b border-black/10">
+                <button
+                  type="button"
+                  aria-expanded={mobileCollectionOpen}
+                  aria-controls="mobile-collection-menu"
+                  onClick={() => setMobileCollectionOpen((current) => !current)}
+                  className={`flex min-h-14 w-full items-center justify-between text-left text-2xl font-semibold leading-tight text-[#111] transition active:bg-black active:text-white ${active ? "underline underline-offset-8" : ""}`}
+                >
+                  <span>{item.label}</span>
+                  <span className={`transition-transform duration-200 ${mobileCollectionOpen ? "rotate-180" : ""}`}><ChevronDownIcon /></span>
+                </button>
+                <div id="mobile-collection-menu" className={`${mobileCollectionOpen ? "grid" : "hidden"} gap-5 bg-[#f5f5f5] px-4 py-5`}>
+                  {collectionMenu.map((column) => <div key={column.title}>
+                    <p className="text-xs font-semibold uppercase tracking-[0.1em] text-black/45">{column.title}</p>
+                    <div className="mt-2 grid">
+                      {column.links.map((link) => <Link key={`${column.title}-${link.label}`} href={link.href} onClick={() => setIsOpen(false)} className="flex min-h-11 items-center text-sm font-medium text-black underline-offset-4 active:bg-black active:text-white focus-visible:bg-black focus-visible:text-white">{link.label}</Link>)}
+                    </div>
+                  </div>)}
+                </div>
+              </div>;
+            }
+            return <Link key={item.href} href={item.href} aria-current={active ? "page" : undefined} className={`flex min-h-14 items-center justify-between text-2xl font-semibold leading-tight transition ${preserveJerseyOutput ? `hover:pl-1 ${active ? "text-[#0f5a36]" : "text-[#111]"}` : `text-[#111] active:bg-black active:text-white focus-visible:bg-black focus-visible:text-white ${active ? "underline underline-offset-8" : ""}`}`}>
               <span>{item.label}</span><span className="text-2xl font-normal" aria-hidden="true">›</span>
-            </Link>
-          ))}
+            </Link>;
+          })}
           <div className="mt-5 border-t border-black/10 pt-5">
             <p className="mb-2 text-xs font-semibold uppercase tracking-[0.12em] text-black/45">Bantuan</p>
             {topbarItems.map((item) => (
-              <Link key={item.href} href={item.href} className={`flex min-h-12 items-center justify-between text-base font-medium transition hover:text-[#0f5a36] ${pathname === item.href ? "text-[#0f5a36]" : "text-[#111]"}`}>
+              <Link key={item.href} href={item.href} aria-current={pathname === item.href ? "page" : undefined} className={`flex min-h-12 items-center justify-between text-base font-medium transition ${preserveJerseyOutput ? `hover:text-[#0f5a36] ${pathname === item.href ? "text-[#0f5a36]" : "text-[#111]"}` : `text-[#111] active:bg-black active:text-white focus-visible:bg-black focus-visible:text-white ${pathname === item.href ? "underline underline-offset-8" : ""}`}`}>
                 <span>{item.label}</span><span aria-hidden="true">›</span>
               </Link>
             ))}
           </div>
-          <a href={whatsappUrl} className="mt-6 inline-flex min-h-12 items-center justify-center rounded-full bg-[#063d24] px-5 text-base font-semibold text-white" target="_blank" rel="noopener noreferrer">
+          <a href={whatsappUrl} className={`mt-6 inline-flex min-h-12 items-center justify-center rounded-full px-5 text-base font-semibold text-white ${preserveJerseyOutput ? "bg-[#063d24]" : "bg-black hover:bg-black/75"}`} target="_blank" rel="noopener noreferrer">
             Konsultasi via WhatsApp
           </a>
         </div>

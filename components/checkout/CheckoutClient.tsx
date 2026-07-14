@@ -132,7 +132,7 @@ export function CheckoutClient({ stores }: { stores: StoreOption[] }) {
             <div className="mt-5 flex items-center justify-between"><span>Subtotal</span><strong>{formatRupiah(subtotal)}</strong></div>
             <p className="mt-3 text-xs leading-5 text-black/50">{fulfillment === "shipping" ? "Ongkir ditambahkan Admin pada order yang sama, lalu Anda menyetujui total final." : "Pickup tidak dikenakan ongkir."}</p>
             {error ? <p className="mt-4 border border-red-200 bg-red-50 p-3 text-sm text-red-700">{error}</p> : null}
-            <button type="submit" disabled={submitting || Boolean(unsupportedItems.length)} className="mt-5 min-h-12 w-full rounded-full bg-[#063d24] px-5 font-semibold text-white disabled:cursor-not-allowed disabled:opacity-45">{submitting ? "Membuat order..." : "Buat Order"}</button>
+            <button type="submit" disabled={submitting || Boolean(unsupportedItems.length)} className="mt-5 min-h-12 w-full rounded-full bg-black px-5 font-semibold text-white hover:bg-black/75 disabled:cursor-not-allowed disabled:opacity-45">{submitting ? "Membuat order..." : "Buat Order"}</button>
             <p className="mt-3 text-center text-[11px] leading-5 text-black/45">Order dibuat sebagai unpaid. Double-click dan retry menggunakan kunci idempotensi yang sama.</p>
           </aside>
         </form>
@@ -142,7 +142,7 @@ export function CheckoutClient({ stores }: { stores: StoreOption[] }) {
 }
 
 function CheckoutMessage({ title, action, actionLabel }: { title: string; action?: string; actionLabel?: string }) {
-  return <section className="bg-[#f6f5f0] px-4 py-24"><div className="mx-auto max-w-xl rounded-[28px] bg-white p-8 text-center"><h1 className="text-2xl font-semibold">{title}</h1>{action ? <Link href={action} className="mt-5 inline-flex rounded-full bg-[#063d24] px-5 py-3 font-semibold text-white">{actionLabel}</Link> : null}</div></section>;
+  return <section className="bg-[#f6f5f0] px-4 py-24"><div className="mx-auto max-w-xl rounded-[28px] bg-white p-8 text-center"><h1 className="text-2xl font-semibold">{title}</h1>{action ? <Link href={action} className="mt-5 inline-flex rounded-full bg-black px-5 py-3 font-semibold text-white hover:bg-black/75">{actionLabel}</Link> : null}</div></section>;
 }
 
 function Panel({ title, children }: { title: string; children: React.ReactNode }) { return <section className="rounded-[28px] bg-white p-5 sm:p-6"><h2 className="text-xl font-semibold">{title}</h2><div className="mt-5">{children}</div></section>; }

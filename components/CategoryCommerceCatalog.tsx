@@ -66,7 +66,7 @@ export function CategoryCommerceCatalog({
       <section className="border-y border-brand-charcoal/10 bg-brand-offWhite py-7 sm:py-9">
         <div className="section-shell flex flex-col items-start justify-between gap-5 sm:flex-row sm:items-center">
           <h2 className="max-w-3xl text-2xl font-semibold tracking-[-0.02em] text-brand-charcoal sm:text-3xl">{closingHeadline}</h2>
-          <Link href={closingCtaHref} className="inline-flex min-h-11 shrink-0 items-center justify-center rounded-full bg-brand-charcoal px-6 text-sm font-semibold text-white transition hover:bg-brand-green focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-brand-green">{closingCtaLabel}</Link>
+          <Link href={closingCtaHref} className="inline-flex min-h-11 shrink-0 items-center justify-center rounded-full bg-black px-6 text-sm font-semibold text-white transition hover:bg-black/75 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-black">{closingCtaLabel}</Link>
         </div>
       </section>
     </>
