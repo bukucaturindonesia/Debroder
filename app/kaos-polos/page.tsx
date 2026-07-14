@@ -1,7 +1,5 @@
 import type { Metadata } from "next";
-import { KaosCatalog } from "@/components/KaosCatalog";
-import { PageHero, PublicShell } from "@/components/PublicPage";
-import { getPageHeroImage } from "@/lib/fallback-data";
+import { CategoryCommercePage } from "@/components/CategoryCommercePage";
 import { productsForCategoryRoute } from "@/lib/product-route-matching";
 import { kaosTypeOptions, productTypeValue } from "@/lib/product-taxonomy";
 import { getPublicContent } from "@/lib/public-data";
@@ -38,34 +36,30 @@ function productSort(value?: string | string[]) {
 export default async function KaosPolosPage({ searchParams }: KaosPolosPageProps) {
   const content = await getPublicContent();
   const params = searchParams ? await searchParams : {};
-  const pageHero = content.pageHeroes.find((hero) => hero.page_key === "kaos-polos");
   const products = productsForCategoryRoute(content.products, content.productCategories, "kaos-polos");
   const initialColor = firstParam(params.color) || "all";
   const initialLabel = productLabel(params.label);
   const initialSort = productSort(params.sort);
   const initialProductType = productTypeValue(firstParam(params.type), kaosTypeOptions);
 
-  return (
-    <PublicShell content={content}>
-      <PageHero
-        label={pageHero?.label}
-        title={pageHero?.title}
-        description={pageHero?.subtitle}
-        imageUrl={getPageHeroImage(pageHero)}
-        mobileImageUrl={pageHero?.mobile_image_url}
-        objectPosition={pageHero?.object_position}
-        mobileObjectPosition={pageHero?.mobile_object_position}
-        objectFit={pageHero?.object_fit}
-        imageZoom={pageHero?.focal_zoom}
-        mobileImageZoom={pageHero?.mobile_focal_zoom}
-        ctaText={pageHero?.primary_cta_label}
-        ctaHref={pageHero?.primary_cta_url}
-        secondaryCtaText={pageHero?.secondary_cta_label}
-        secondaryCtaHref={pageHero?.secondary_cta_url}
-        contentPosition="lower"
-        breadcrumbs={[{ label: "Beranda", href: "/" }, { label: "Kaos Polos" }]}
-      />
-      <KaosCatalog products={products} filters={content.productFilters} initialColor={initialColor} initialLabel={initialLabel} initialSort={initialSort} initialProductType={initialProductType} />
-    </PublicShell>
-  );
+  return <CategoryCommercePage
+    content={content}
+    products={products}
+    config={{
+      pageKey: "kaos-polos",
+      breadcrumbLabel: "Kaos Polos",
+      eyebrow: "Kategori Kaos Polos",
+      catalogTitle: "Pilih kaos sesuai kebutuhan",
+      catalogDescription: "Temukan tipe, bahan, warna, dan ukuran dari katalog produk DEBRODER.",
+      closingHeadline: "Punya desain sendiri? Lanjutkan ke layanan custom DEBRODER.",
+      closingCtaLabel: "Custom Order",
+      closingCtaHref: "/sablon-dtf",
+      productTypeOptions: kaosTypeOptions,
+      typeFilterLabel: "Semua tipe kaos"
+    }}
+    initialColor={initialColor}
+    initialLabel={initialLabel}
+    initialSort={initialSort}
+    initialProductType={initialProductType}
+  />;
 }

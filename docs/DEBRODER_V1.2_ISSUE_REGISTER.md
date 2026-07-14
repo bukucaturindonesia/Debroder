@@ -2,6 +2,12 @@
 
 ## Open
 
+### V12-025 — Deploy and browser-verify reusable category commerce layout
+
+- Severity: QA gate
+- Status: OPEN / PARTIALLY VERIFIED
+- Detail: `/kaos-polos`, `/jaket-hoodie`, and `/headwear` now reuse one category commerce layout, compact filter system, linked PIM card, 4/2-column grid, 4:5 media, responsive batching, loading/error state, and closing bar. After deployment, verify all three routes at 1600/1440/1280/1024/768/430/390/360, actual filter availability, See More, console/hydration/overflow, universal detail navigation, variant selection, Add to Cart, and Guest Checkout smoke.
+
 ### V12-024 — Deploy and visually verify Kaos Polos final revision
 
 - Severity: QA gate

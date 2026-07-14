@@ -225,7 +225,7 @@ export function ProductCatalog({
   typeFilterLabel?: string;
   showCategoryFilter?: boolean;
   showGroupFilter?: boolean;
-  catalogStyle?: "default" | "kaos";
+  catalogStyle?: "default" | "category";
 }) {
   const [query, setQuery] = useState("");
   const [color, setColor] = useState(initialColor);
@@ -239,19 +239,24 @@ export function ProductCatalog({
   const [visibleCount, setVisibleCount] = useState(4);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
   const loadMoreTimer = useRef<number | null>(null);
-  const isKaosCatalog = catalogStyle === "kaos";
+  const isCategoryCatalog = catalogStyle === "category";
 
   const categories = useMemo(() => Array.from(new Set(products.map((product) => product.kategori).filter(Boolean))).sort(), [products]);
   const colors = useMemo(() => Array.from(new Map(products.flatMap((product) => productColors(product)).filter(Boolean).map((item) => [normalizeFilterValue(item), item])).entries()).sort((a, b) => a[1].localeCompare(b[1], "id")), [products]);
-  const hasTypeFilter = productTypeOptions.length > 0;
+  const availableProductTypeOptions = useMemo(
+    () => productTypeOptions.filter((option) => products.some((product) => matchesProductType(product, option.value, productTypeOptions))),
+    [productTypeOptions, products]
+  );
+  const hasTypeFilter = availableProductTypeOptions.length > 0;
+  const activeProductType = productType === "all" || availableProductTypeOptions.some((option) => option.value === productType) ? productType : "all";
   const visible = useMemo(() => {
     const needle = query.trim().toLowerCase();
-    const sourceProducts = isKaosCatalog ? uniqueCatalogProducts(products) : products;
+    const sourceProducts = isCategoryCatalog ? uniqueCatalogProducts(products) : products;
     return sourceProducts
       .filter((product) => !needle || searchText(product).includes(needle))
       .filter((product) => matchesGroup(product, group))
       .filter((product) => category === "all" || product.kategori === category)
-      .filter((product) => matchesProductType(product, productType, productTypeOptions))
+      .filter((product) => matchesProductType(product, activeProductType, availableProductTypeOptions))
       .filter((product) => matchesColor(product, color))
       .filter((product) => {
         const amount = priceOf(product);
@@ -271,30 +276,30 @@ export function ProductCatalog({
         if (sort === "price-high") return priceOf(b) - priceOf(a);
         return a.urutan - b.urutan;
       });
-  }, [category, color, group, isKaosCatalog, label, price, productType, productTypeOptions, products, query, sort]);
+  }, [activeProductType, availableProductTypeOptions, category, color, group, isCategoryCatalog, label, price, products, query, sort]);
 
   useEffect(() => {
-    if (!isKaosCatalog) return;
+    if (!isCategoryCatalog) return;
     const desktopQuery = window.matchMedia("(min-width: 1024px)");
     const updateColumns = () => setColumns(catalogColumnsForWidth(desktopQuery.matches ? 1024 : 0));
     updateColumns();
     desktopQuery.addEventListener("change", updateColumns);
     return () => desktopQuery.removeEventListener("change", updateColumns);
-  }, [isKaosCatalog]);
+  }, [isCategoryCatalog]);
 
   useEffect(() => {
-    if (!isKaosCatalog) return;
+    if (!isCategoryCatalog) return;
     if (loadMoreTimer.current !== null) window.clearTimeout(loadMoreTimer.current);
     loadMoreTimer.current = null;
     setIsLoadingMore(false);
     setVisibleCount(initialCatalogBatch(columns));
-  }, [category, color, columns, group, isKaosCatalog, label, price, productType, query, sort]);
+  }, [category, color, columns, group, isCategoryCatalog, label, price, productType, query, sort]);
 
   useEffect(() => () => {
     if (loadMoreTimer.current !== null) window.clearTimeout(loadMoreTimer.current);
   }, []);
 
-  const displayedProducts = isKaosCatalog ? visible.slice(0, visibleCount) : visible;
+  const displayedProducts = isCategoryCatalog ? visible.slice(0, visibleCount) : visible;
 
   function resetFilters() {
     setQuery("");
@@ -308,7 +313,7 @@ export function ProductCatalog({
   }
 
   function loadMore() {
-    if (!isKaosCatalog || isLoadingMore || visibleCount >= visible.length) return;
+    if (!isCategoryCatalog || isLoadingMore || visibleCount >= visible.length) return;
     setIsLoadingMore(true);
     loadMoreTimer.current = window.setTimeout(() => {
       setVisibleCount((current) => nextCatalogBatch(current, columns, visible.length));
@@ -325,10 +330,10 @@ export function ProductCatalog({
         ? "lg:grid-cols-5"
         : "lg:grid-cols-4";
 
-  const filterLayoutClass = isKaosCatalog
-    ? "grid-cols-2 gap-2 py-3 lg:grid-cols-[minmax(220px,2fr)_repeat(4,minmax(132px,1fr))]"
+  const filterLayoutClass = isCategoryCatalog
+    ? `grid-cols-2 gap-2 py-3 ${hasTypeFilter ? "lg:grid-cols-[minmax(220px,2fr)_repeat(4,minmax(132px,1fr))]" : "lg:grid-cols-[minmax(220px,2fr)_repeat(3,minmax(132px,1fr))]"}`
     : `gap-3 py-4 sm:grid-cols-2 ${filterGridClass}`;
-  const controlClass = isKaosCatalog
+  const controlClass = isCategoryCatalog
     ? "premium-input min-h-10 min-w-0 rounded-lg border px-2.5 text-xs font-medium outline-none sm:px-3 sm:text-sm"
     : "premium-input min-h-11 rounded-full border px-4 text-sm font-semibold";
 
@@ -336,29 +341,29 @@ export function ProductCatalog({
     <div>
       {showHeading ? <h2 className="section-title">{title}</h2> : null}
       <div className={`${showHeading ? "mt-5" : ""} grid ${filterLayoutClass}`}>
-        <input aria-label="Cari produk" value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Cari produk, bahan, warna..." className={`${controlClass} ${isKaosCatalog ? "col-span-2 lg:col-span-1" : "outline-none lg:col-span-2"}`} />
+        <input aria-label="Cari produk" value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Cari produk, bahan, warna..." className={`${controlClass} ${isCategoryCatalog ? "col-span-2 lg:col-span-1" : "outline-none lg:col-span-2"}`} />
         {showGroupFilter ? <select aria-label="Filter produk" value={group} onChange={(event) => setGroup(event.target.value as ProductGroup)} className={controlClass}><option value="all">Semua produk</option><option value="jaket-hoodie">Jaket & Hoodie</option><option value="headwear">Headwear</option></select> : null}
         {showCategoryFilter ? <select aria-label="Filter kategori" value={category} onChange={(event) => setCategory(event.target.value)} className={controlClass}><option value="all">Semua kategori</option>{categories.map((item) => <option key={item}>{item}</option>)}</select> : null}
-        {hasTypeFilter ? <select aria-label="Filter tipe produk" value={productType} onChange={(event) => setProductType(event.target.value)} className={controlClass}><option value="all">{typeFilterLabel}</option>{productTypeOptions.map((item) => <option key={item.value} value={item.value}>{item.label}</option>)}</select> : null}
+        {hasTypeFilter ? <select aria-label="Filter tipe produk" value={activeProductType} onChange={(event) => setProductType(event.target.value)} className={controlClass}><option value="all">{typeFilterLabel}</option>{availableProductTypeOptions.map((item) => <option key={item.value} value={item.value}>{item.label}</option>)}</select> : null}
         <select aria-label="Filter warna" value={color} onChange={(event) => setColor(event.target.value)} className={controlClass}><option value="all">Semua warna</option>{colors.map(([slug, name]) => <option key={slug} value={slug}>{name}</option>)}</select>
         <select aria-label="Filter harga dan status" value={`${price}|${label}`} onChange={(event) => { const [nextPrice, nextLabel] = event.target.value.split("|"); setPrice(nextPrice); setLabel(labelValue(nextLabel)); }} className={controlClass}><option value="all|all">Semua harga/status</option><option value="under-50|all">Di bawah Rp50 ribu</option><option value="50-100|all">Rp50–100 ribu</option><option value="over-100|all">Di atas Rp100 ribu</option><option value="all|new">New</option><option value="all|promo">Promo</option><option value="all|best">Best Seller</option></select>
         <select aria-label="Urutkan produk" value={sort} onChange={(event) => setSort(event.target.value as SortValue)} className={controlClass}><option value="order">Urutan pilihan</option><option value="newest">Terbaru</option><option value="best-selling">Best selling</option><option value="price-low">Harga terendah</option><option value="price-high">Harga tertinggi</option></select>
       </div>
 
-      <div className={`${isKaosCatalog ? "mt-1" : "mt-3"} flex items-center justify-between gap-4`}><p className={`${isKaosCatalog ? "text-xs" : "text-sm"} font-medium text-brand-charcoal/60`}>{isKaosCatalog && visible.length ? `${displayedProducts.length} dari ` : ""}{visible.length} produk ditemukan</p><button type="button" onClick={resetFilters} className={`${isKaosCatalog ? "text-xs text-brand-charcoal/60" : "text-sm"} font-semibold underline-offset-4 hover:underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-brand-green`}>Reset filter</button></div>
+      <div className={`${isCategoryCatalog ? "mt-1" : "mt-3"} flex items-center justify-between gap-4`}><p className={`${isCategoryCatalog ? "text-xs" : "text-sm"} font-medium text-brand-charcoal/60`}>{isCategoryCatalog && visible.length ? `${displayedProducts.length} dari ` : ""}{visible.length} produk ditemukan</p><button type="button" onClick={resetFilters} className={`${isCategoryCatalog ? "text-xs text-brand-charcoal/60" : "text-sm"} font-semibold underline-offset-4 hover:underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-brand-green`}>Reset filter</button></div>
 
-      {visible.length ? <div className={`${isKaosCatalog ? "mt-4 gap-x-3 gap-y-8 sm:gap-x-5 lg:gap-x-6 lg:gap-y-10" : "mt-6 gap-x-2 gap-y-7"} grid grid-cols-2 lg:grid-cols-4`}>
+      {visible.length ? <div className={`${isCategoryCatalog ? "mt-4 gap-x-3 gap-y-8 sm:gap-x-5 lg:gap-x-6 lg:gap-y-10" : "mt-6 gap-x-2 gap-y-7"} grid grid-cols-2 lg:grid-cols-4`}>
         {displayedProducts.map((product) => {
           const focal = product.focal_points?.catalog;
-          const labels = Array.from(new Set([isKaosCatalog && product.badge, product.label_new && "New", product.label_promo && "Promo", product.label_best_seller && "Best Seller"].filter(Boolean))) as string[];
+          const labels = Array.from(new Set([isCategoryCatalog && product.badge, product.label_new && "New", product.label_promo && "Promo", product.label_best_seller && "Best Seller"].filter(Boolean))) as string[];
           const detailHref = `/produk/${product.slug || slugify(product.nama)}`;
           const chips = productChips(product);
           const stockText = typeof product.stock === "number" ? (product.stock > 0 ? `Stok ${product.stock}` : "Pre-order") : "";
           const cardImages = getProductCardImages(product);
-          const meta = productMetaLine(product, isKaosCatalog);
-          const detail = productDetail(product, isKaosCatalog);
+          const meta = productMetaLine(product, isCategoryCatalog);
+          const detail = productDetail(product, isCategoryCatalog);
           const availability = productAvailability(product);
-          if (isKaosCatalog) {
+          if (isCategoryCatalog) {
             return <article key={product.id || product.slug || product.nama} className="min-w-0">
               <Link href={detailHref} aria-label={`Buka detail ${product.nama}`} className="group block min-w-0 rounded-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-brand-green">
                 <div className="relative">
@@ -427,13 +432,13 @@ export function ProductCatalog({
               <div className="mt-4 grid grid-cols-2 gap-2"><Link href={detailHref} className="premium-ghost-button cta inline-flex min-h-10 items-center justify-center border px-3 text-xs transition">Detail</Link><AddToCartButton product={{ id: product.id || product.slug || product.nama, name: product.nama, category: product.kategori, priceLabel: productPrice(product), priceValue: priceOf(product), href: detailHref, imageUrl: getProductImage(product), imageAlt: product.image_alt || product.nama }} className="cta inline-flex min-h-10 items-center justify-center rounded-full bg-brand-green px-3 text-xs text-white transition hover:bg-brand-charcoal">Tambah</AddToCartButton></div>
             </article>;
         })}
-      </div> : <div className={`${isKaosCatalog ? "px-4 py-10" : "p-8"} mt-6 text-center`}><p className="font-semibold">Produk tidak ditemukan</p><p className="mt-2 text-sm text-brand-charcoal/60">Coba kata kunci atau kombinasi filter lain.</p>{isKaosCatalog ? <button type="button" onClick={resetFilters} className="mt-5 inline-flex min-h-10 items-center justify-center rounded-full border border-brand-charcoal/20 px-5 text-sm font-semibold hover:border-brand-green hover:text-brand-green">Reset Filter</button> : null}</div>}
+      </div> : <div className={`${isCategoryCatalog ? "px-4 py-10" : "p-8"} mt-6 text-center`}><p className="font-semibold">Produk tidak ditemukan</p><p className="mt-2 text-sm text-brand-charcoal/60">Coba kata kunci atau kombinasi filter lain.</p>{isCategoryCatalog ? <button type="button" onClick={resetFilters} className="mt-5 inline-flex min-h-10 items-center justify-center rounded-full border border-brand-charcoal/20 px-5 text-sm font-semibold hover:border-brand-green hover:text-brand-green">Reset Filter</button> : null}</div>}
 
-      {isKaosCatalog && isLoadingMore ? <div aria-label="Memuat produk tambahan" aria-live="polite" className="mt-8 grid grid-cols-2 gap-x-3 gap-y-8 sm:gap-x-5 lg:grid-cols-4 lg:gap-x-6">
+      {isCategoryCatalog && isLoadingMore ? <div aria-label="Memuat produk tambahan" aria-live="polite" className="mt-8 grid grid-cols-2 gap-x-3 gap-y-8 sm:gap-x-5 lg:grid-cols-4 lg:gap-x-6">
         {Array.from({ length: columns }, (_, index) => <div key={index} className="animate-pulse"><div className="aspect-[4/5] w-full bg-brand-charcoal/5" /><div className="mt-3 h-3 w-2/3 bg-brand-charcoal/5" /><div className="mt-3 h-5 w-full bg-brand-charcoal/5" /><div className="mt-2 h-10 w-full bg-brand-charcoal/5" /><div className="mt-2 h-5 w-1/2 bg-brand-charcoal/5" /></div>)}
       </div> : null}
 
-      {isKaosCatalog && !isLoadingMore && visibleCount < visible.length ? <div className="mt-10 flex justify-center"><button type="button" onClick={loadMore} className="inline-flex min-h-11 items-center justify-center rounded-full border border-brand-charcoal/20 px-6 text-sm font-semibold text-brand-charcoal transition hover:border-brand-green hover:text-brand-green focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-brand-green">Lihat Lebih Banyak</button></div> : null}
+      {isCategoryCatalog && !isLoadingMore && visibleCount < visible.length ? <div className="mt-10 flex justify-center"><button type="button" onClick={loadMore} className="inline-flex min-h-11 items-center justify-center rounded-full border border-brand-charcoal/20 px-6 text-sm font-semibold text-brand-charcoal transition hover:border-brand-green hover:text-brand-green focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-brand-green">Lihat Lebih Banyak</button></div> : null}
     </div>
   );
 }

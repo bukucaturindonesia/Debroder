@@ -108,3 +108,10 @@ The FROZEN commerce/landing blueprints and official Owner Decisions remain autho
 - Existing CMS hero and PIM product source remain authoritative. Universal `/produk/[slug]` and all Commerce Foundation flows remain unchanged.
 - Source now provides compact filters, responsive 4/2-column grid, 4:5 product media, uniform linked cards, 8/4 initial batching by breakpoint, one-row See More increments, loading/error states, and the global closing CTA pattern.
 - TypeScript, lint (0 errors), 118 tests, production build, and HTTP route smoke pass. Browser viewport/console verification remains the deployment QA gate.
+
+## Reusable category commerce state — 2026-07-14
+
+- Kaos Polos, Jaket & Hoodie, and Headwear use one reusable category page/catalog/loading/error architecture.
+- Category-specific differences are configuration and data only: CMS hero key/copy/CTA/focal media, PIM products, matched type options, and closing copy.
+- Commerce Foundation and universal product detail remain unchanged. No new database source, checkout, or category transaction flow exists.
+- TypeScript, lint with zero errors, 119 tests, production build, and 200 HTTP smoke for all three category routes pass. Status: **IMPLEMENTED, PARTIALLY VERIFIED** pending deployed browser viewport and real PIM commerce smoke verification.

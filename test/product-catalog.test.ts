@@ -5,6 +5,7 @@ import {
   nextCatalogBatch,
   uniqueCatalogProducts
 } from "@/lib/product-catalog";
+import { headwearTypeOptions, jacketTypeOptions, matchesProductType } from "@/lib/product-taxonomy";
 import type { Product } from "@/lib/types";
 
 function product(id: string, slug = id): Product {
@@ -38,5 +39,14 @@ describe("product catalog batching", () => {
 
   it("removes duplicate PIM products without changing their order", () => {
     expect(uniqueCatalogProducts([product("a"), product("a"), product("b")]).map((item) => item.id)).toEqual(["a", "b"]);
+  });
+
+  it("matches category type filters only from actual PIM text", () => {
+    const hoodie = { ...product("hoodie"), nama: "Zip Hoodie Fleece", material_tags: ["Fleece 280gsm"] };
+    const cap = { ...product("cap"), nama: "Topi Trucker Cotton Twill", kategori: "Headwear" };
+
+    expect(matchesProductType(hoodie, "zip-hooded", jacketTypeOptions)).toBe(true);
+    expect(matchesProductType(cap, "trucker-cap", headwearTypeOptions)).toBe(true);
+    expect(matchesProductType(cap, "bucket-hat", headwearTypeOptions)).toBe(false);
   });
 });

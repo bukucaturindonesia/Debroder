@@ -28,6 +28,14 @@ export const jacketTypeOptions: ProductTypeOption[] = [
   { label: "Windbreaker", value: "windbreaker", keywords: ["windbreaker", "wind breaker"] }
 ];
 
+export const headwearTypeOptions: ProductTypeOption[] = [
+  { label: "Baseball Cap", value: "baseball-cap", keywords: ["baseball cap", "baseball-cap", "topi baseball"] },
+  { label: "Trucker Cap", value: "trucker-cap", keywords: ["trucker cap", "trucker-cap", "topi trucker"] },
+  { label: "Snapback", value: "snapback", keywords: ["snapback", "snap back"] },
+  { label: "Bucket Hat", value: "bucket-hat", keywords: ["bucket hat", "bucket-hat", "topi bucket"] },
+  { label: "Dad Cap", value: "dad-cap", keywords: ["dad cap", "dad-cap"] }
+];
+
 export function productTypeValue(value: string | undefined, options: ProductTypeOption[]) {
   return options.some((option) => option.value === value) ? value : "all";
 }

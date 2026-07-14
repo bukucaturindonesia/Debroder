@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
-import { PageHero, PublicShell } from "@/components/PublicPage";
-import { ProductCatalog } from "@/components/ProductCatalog";
+import { CategoryCommercePage } from "@/components/CategoryCommercePage";
 import { productsForCategoryRoute } from "@/lib/product-route-matching";
+import { headwearTypeOptions, productTypeValue } from "@/lib/product-taxonomy";
 import { getPublicContent } from "@/lib/public-data";
 
 export const metadata: Metadata = {
@@ -16,41 +16,56 @@ export const metadata: Metadata = {
   }
 };
 
-export default async function HeadwearPage() {
-  const content = await getPublicContent();
-  const pageHero = content.pageHeroes.find((hero) => hero.page_key === "headwear");
-  const products = productsForCategoryRoute(content.products, content.productCategories, "headwear");
+type HeadwearPageProps = {
+  searchParams?: Promise<{
+    color?: string | string[];
+    label?: string | string[];
+    sort?: string | string[];
+    type?: string | string[];
+  }>;
+};
 
-  return (
-    <PublicShell content={content}>
-      <PageHero
-        label={pageHero?.label}
-        title={pageHero?.title}
-        description={pageHero?.subtitle}
-        imageUrl={pageHero?.image_url}
-        mobileImageUrl={pageHero?.mobile_image_url}
-        objectPosition={pageHero?.object_position}
-        mobileObjectPosition={pageHero?.mobile_object_position}
-        objectFit={pageHero?.object_fit}
-        imageZoom={pageHero?.focal_zoom}
-        mobileImageZoom={pageHero?.mobile_focal_zoom}
-        breadcrumbs={[
-          { label: "Beranda", href: "/" },
-          { label: "Headwear" }
-        ]}
-      />
-      <section data-reveal className="bg-brand-offWhite pb-12 pt-8 sm:pb-16 sm:pt-10">
-        <div className="section-shell">
-          <div className="max-w-2xl">
-            <p className="text-xs font-medium tracking-[0.08em] text-brand-charcoal/55">Kategori Headwear</p>
-            <h2 className="landing-section-title mt-2">Pilih headwear sesuai kebutuhan</h2>
-            <p className="mt-3 text-sm leading-6 text-brand-charcoal/65">Pilih tipe topi, warna, bahan, dan kebutuhan bordir atau custom produksi.</p>
-          </div>
-          <div className="mt-6">
-            <ProductCatalog products={products} showCategoryFilter={false} />
-          </div>
-        </div>
-      </section>
-    </PublicShell>
-  );
+function firstParam(value?: string | string[]) {
+  return Array.isArray(value) ? value[0] : value;
+}
+
+function productLabel(value?: string | string[]) {
+  const label = firstParam(value);
+  return label === "new" || label === "promo" || label === "best" ? label : "all";
+}
+
+function productSort(value?: string | string[]) {
+  const sort = firstParam(value);
+  return sort === "newest" || sort === "best-selling" || sort === "price-low" || sort === "price-high" ? sort : "order";
+}
+
+export default async function HeadwearPage({ searchParams }: HeadwearPageProps) {
+  const content = await getPublicContent();
+  const params = searchParams ? await searchParams : {};
+  const products = productsForCategoryRoute(content.products, content.productCategories, "headwear");
+  const initialColor = firstParam(params.color) || "all";
+  const initialLabel = productLabel(params.label);
+  const initialSort = productSort(params.sort);
+  const initialProductType = productTypeValue(firstParam(params.type), headwearTypeOptions);
+
+  return <CategoryCommercePage
+    content={content}
+    products={products}
+    config={{
+      pageKey: "headwear",
+      breadcrumbLabel: "Headwear",
+      eyebrow: "Kategori Headwear",
+      catalogTitle: "Pilih headwear sesuai kebutuhan",
+      catalogDescription: "Temukan model, warna, ukuran, dan bahan dari katalog produk DEBRODER.",
+      closingHeadline: "Butuh headwear custom untuk merchandise, komunitas, atau brand?",
+      closingCtaLabel: "Custom Order",
+      closingCtaHref: "/sablon-dtf",
+      productTypeOptions: headwearTypeOptions,
+      typeFilterLabel: "Semua model headwear"
+    }}
+    initialColor={initialColor}
+    initialLabel={initialLabel}
+    initialSort={initialSort}
+    initialProductType={initialProductType}
+  />;
 }

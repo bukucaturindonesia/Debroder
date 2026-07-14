@@ -164,3 +164,14 @@ Status: **IMPLEMENTED, PARTIALLY VERIFIED**.
 - Route-level loading/error states and a closing Custom Order bar to `/sablon-dtf` were added.
 - Verification: `git diff --check` PASS; TypeScript PASS; targeted catalog tests 3/3 PASS; full tests 19 files / 118 tests PASS; ESLint PASS with 0 errors and 22 existing warnings; production build PASS; local HTTP smoke returned 200 and universal product links. Automated visual browser matrix was unavailable because no browser binary/`agent-browser` executable exists in the workspace.
 - No cart, checkout, order, payment, stock, reservation, fulfillment, RLS, migration, or database code was changed for this revision.
+
+## 2026-07-14 — Reuse category commerce layout
+
+Status: **IMPLEMENTED, PARTIALLY VERIFIED**.
+
+- `/kaos-polos`, `/jaket-hoodie`, and `/headwear` now share `CategoryCommercePage`, `CategoryCommerceCatalog`, `ProductCatalog` category mode, and the same loading/error components.
+- Each route retains its own CMS hero key, copy, CTA, focal media, PIM category mapping, type taxonomy, and closing message. Type options are rendered only when actual category products match the configured taxonomy.
+- All three routes use the same compact filters, 4-column desktop / 2-column tablet-mobile grid, 4:5 media, card hierarchy, universal `/produk/[slug]` link, 8+4 / 4+2 batching, skeleton, empty state, and closing-bar structure.
+- The prior standalone `KaosCatalog` implementation was replaced only after the reusable component was connected; no category-specific cart, checkout, product query, detail route, or transaction code was added.
+- No database, migration, RLS, cart, checkout, order, payment, stock, reservation, fulfillment, shipping, or pickup code changed in this reuse pass.
+- Verification: TypeScript PASS; targeted lint PASS; full lint 0 errors / 22 existing warnings; full tests 19 files / 119 tests PASS; production build PASS with identical 985 B route bundles for all three categories; local HTTP smoke returned 200 for all three routes. The local fallback catalog has Kaos products but no Jaket/Headwear products, so those two correctly rendered the safe empty state and real variant/cart browser smoke remains a deployed-PIM verification gate.
