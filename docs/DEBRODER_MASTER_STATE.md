@@ -5,6 +5,7 @@ Last updated: 14 July 2026
 ## Official implementation checkpoint
 
 - Commerce Foundation V1 — Jersey Ready Stock P0: **IMPLEMENTED, VERIFIED** at source/database foundation level.
+- Guest order tracking without customer login: **IMPLEMENTED, VERIFIED** at source/unit/database level; deployed browser verification remains pending.
 - Application deployment containing the new routes/components: **NOT DEPLOYED** in this checkpoint.
 - Existing Phase 12–14, CMS, PIM, Jersey Configurator, quotation, production, fulfillment, role, permission, and audit foundations remain preserved.
 - Phase 15 / v1.3: **NOT STARTED**.
@@ -28,6 +29,10 @@ Last updated: 14 July 2026
 - `/api/checkout`: server-only checkout/order creation implemented.
 - `/order-confirmation/[token]`: private-token order confirmation/tracking implemented.
 - `/api/public/orders/[token]`: safe order read and total approval implemented.
+- `/track-order`: guest lookup using order number plus matching WhatsApp.
+- `/track-order/[order-number]`: guest detail using order number plus valid tracking token, with WhatsApp fallback.
+- `/api/public/order-tracking`: server-side authorization, safe projection, masking, rate limiting, and suspicious-access audit.
+- `/api/admin/orders/[id]/tracking-link`: permission-protected tracking-token rotation and manual WhatsApp template.
 - `/payment/[token]` and `/api/public/payments/[token]`: existing payment route retained and tightened to V1 transfer rules.
 - `/admin/orders/[id]`: extended with commerce operations; no second Admin order dashboard was created.
 
@@ -43,6 +48,7 @@ Last updated: 14 July 2026
   - `commerce_foundation_v1_p0_ready_stock_fulfillment_bridge`
   - `commerce_foundation_v1_p0_notification_render_resilience`
 - The foundation adds order checkout/token/WhatsApp/fulfillment fields, `stock_reservations`, `order_shipping_quotes`, atomic RPCs, storage restrictions, and the five-minute expiry cron.
+- Applied `guest_order_tracking_security`: reuses `orders.public_access_token_hash`, adds a 90-day token expiry, rotation trigger, expiry index, and focused audit-rate-limit index. Existing four tokenized orders were backfilled; zero tokenized orders remain without expiry.
 - RLS is enabled on the new tables. Anonymous/authenticated clients cannot execute checkout, total approval, or public payment submission RPCs directly; these run only through server routes using the service role.
 - Admin commerce RPCs remain authenticated and enforce existing permission/role checks internally.
 - Payment proofs remain private, signed-URL based, restricted to JPG/JPEG/PNG/PDF, and limited to 5 MB.
@@ -75,13 +81,14 @@ Last updated: 14 July 2026
 
 - TypeScript: **PASS**.
 - Lint: **PASS**, 0 errors / 23 pre-existing warnings outside this P0 implementation.
-- Tests: **PASS**, 17 files / 100 tests.
+- Tests: **PASS**, 18 files / 115 tests, including valid/wrong/expired token, matching/wrong WhatsApp, missing/other order, and rate-limit contracts.
 - Production build: **PASS**, including `/checkout`, `/api/checkout`, `/order-confirmation/[token]`, and `/api/public/orders/[token]`.
 - Migration compilation: **PASS**.
 - Remote transactional smoke: **PASS AND ROLLBACK** for idempotency, pickup verification/reservation, shipping quote/approval/reservation, oversell rejection, expiry, release, and non-negative stock.
 - Ready Stock fulfillment/payment smoke: **PASS AND ROLLBACK** for direct order-item fulfillment, pickup lifecycle, atomic pay-at-store completion, single stock consumption, and completion status.
 - Smoke records remaining: 0 orders, 0 items, 0 reservations, 0 quotes, 0 smoke products, 0 commerce smoke audit rows.
 - RLS/function grants/private bucket/cron checks: **PASS**.
+- Guest tracking migration preflight, remote apply, expiry trigger, audit insert, ACL, and rollback/no-residue smoke: **PASS**.
 
 ## Verification boundary and remaining gates
 

@@ -7,7 +7,7 @@ type PublicOrderRow = {
   delivery_method: string; payment_method: string; subtotal_amount: number; shipping_cost: number | null;
   shipping_courier: string | null; shipping_service: string | null; shipping_estimate: string | null; total_amount: number;
   whatsapp_confirmation_expires_at: string | null; whatsapp_confirmed_at: string | null; reservation_expires_at: string | null;
-  final_total_approved_at: string | null; created_at: string;
+  final_total_approved_at: string | null; public_access_token_expires_at: string | null; created_at: string;
 };
 
 function tokenHash(token: string) {
@@ -34,10 +34,13 @@ export async function GET(_request: Request, context: Context) {
       "id", "order_number", "customer_name", "customer_phone", "status", "payment_status",
       "delivery_method", "payment_method", "subtotal_amount", "shipping_cost", "shipping_courier",
       "shipping_service", "shipping_estimate", "total_amount", "whatsapp_confirmation_expires_at",
-      "whatsapp_confirmed_at", "reservation_expires_at", "final_total_approved_at", "created_at"
+      "whatsapp_confirmed_at", "reservation_expires_at", "final_total_approved_at", "public_access_token_expires_at", "created_at"
     ].join(",")).eq("public_access_token_hash", tokenHash(token)).is("archived_at", null).maybeSingle();
     if (error || !order) return Response.json({ error: "Order tidak ditemukan atau tautan tidak aktif." }, { status: 404 });
     const row = order as unknown as PublicOrderRow;
+    if (row.public_access_token_expires_at && new Date(row.public_access_token_expires_at).getTime() <= Date.now()) {
+      return Response.json({ error: "Tautan order sudah kedaluwarsa. Gunakan nomor WhatsApp atau minta tautan baru." }, { status: 410 });
+    }
 
     const [{ data: items }, { data: reservations }, { data: quote }] = await Promise.all([
       client.from("order_items").select("id,product_name,variant_name,color,size,sku,quantity,unit_price,subtotal").eq("order_id", row.id).is("archived_at", null).order("created_at"),
@@ -64,6 +67,7 @@ export async function GET(_request: Request, context: Context) {
         whatsappConfirmedAt: row.whatsapp_confirmed_at,
         reservationExpiresAt: row.reservation_expires_at,
         finalTotalApprovedAt: row.final_total_approved_at,
+        trackingTokenExpiresAt: row.public_access_token_expires_at,
         createdAt: row.created_at
       },
       items: items ?? [],

@@ -18,7 +18,7 @@ export class Phase13AuthError extends Error {
 
 export async function requirePhase13Actor(
   request: Request,
-  permission?: "access_control.read" | "access_control.manage" | "audit.read"
+  permission?: string
 ): Promise<Phase13Actor> {
   const authorization = request.headers.get("authorization") ?? "";
   const token = authorization.startsWith("Bearer ") ? authorization.slice(7).trim() : "";

@@ -10,6 +10,7 @@ import { PaymentTrackingManager } from "@/components/admin/PaymentTrackingManage
 import { RepeatOrderDialog } from "@/components/admin/RepeatOrderDialog";
 import { CustomerOrderHistory } from "@/components/admin/CustomerOrderHistory";
 import { CommerceOrderOperations } from "@/components/admin/CommerceOrderOperations";
+import { OrderTrackingLinkManager } from "@/components/admin/OrderTrackingLinkManager";
 
 type Order = {
   id: string;
@@ -273,6 +274,8 @@ export function OrderDetailAdmin() {
             ))}
           </div>
         </section>
+
+        <OrderTrackingLinkManager orderId={order.id} />
 
         {order.checkout_source === "public_checkout" ? <CommerceOrderOperations orderId={order.id} onChanged={loadData} /> : null}
 

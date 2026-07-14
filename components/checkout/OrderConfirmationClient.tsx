@@ -11,7 +11,7 @@ type OrderPayload = {
     fulfillmentMethod: string; paymentMethod: string; subtotal: number; shippingCost: number | null;
     shippingCourier: string | null; shippingService: string | null; shippingEstimate: string | null;
     total: number; whatsappConfirmationExpiresAt: string | null; whatsappConfirmedAt: string | null;
-    reservationExpiresAt: string | null; finalTotalApprovedAt: string | null; createdAt: string;
+    reservationExpiresAt: string | null; finalTotalApprovedAt: string | null; trackingTokenExpiresAt: string | null; createdAt: string;
   };
   items: Array<{ id: string; product_name: string; variant_name: string; color: string; size: string; sku: string; quantity: number; unit_price: number; subtotal: number }>;
 };
@@ -35,6 +35,7 @@ export function OrderConfirmationClient({ token }: { token: string }) {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(true);
   const [approving, setApproving] = useState(false);
+  const [trackingCopied, setTrackingCopied] = useState(false);
 
   const load = useCallback(async (quiet = false) => {
     if (!quiet) setLoading(true);
@@ -77,6 +78,16 @@ export function OrderConfirmationClient({ token }: { token: string }) {
     ? `Halo DEBRODER, saya ingin verifikasi order ${order.orderNumber}. Kode konfirmasi: ${confirmationCode}. Nomor WhatsApp saya harus dicocokkan dengan data checkout.`
     : `Halo DEBRODER, saya memerlukan bantuan verifikasi order ${order.orderNumber}.`;
   const whatsappHref = `${contactLinks.whatsapp}?text=${encodeURIComponent(whatsappText)}`;
+  const trackingPath = `/track-order/${encodeURIComponent(order.orderNumber)}?token=${encodeURIComponent(token)}`;
+
+  async function copyTrackingLink() {
+    try {
+      await navigator.clipboard.writeText(`${window.location.origin}${trackingPath}`);
+      setTrackingCopied(true);
+    } catch {
+      setError("Browser tidak mengizinkan salin otomatis. Buka tracking lalu salin alamat halaman.");
+    }
+  }
 
   return (
     <div className="mx-auto max-w-5xl">
@@ -87,6 +98,16 @@ export function OrderConfirmationClient({ token }: { token: string }) {
           <h1 className="mt-2 text-3xl font-semibold">{order.orderNumber}</h1>
           <p className="mt-2 text-sm text-black/55">{order.customerName} · {order.maskedPhone}</p>
           <div className="mt-6 rounded-2xl bg-emerald-50 p-4"><p className="text-xs uppercase tracking-[0.14em] text-emerald-800/65">Status</p><p className="mt-1 font-semibold text-emerald-950">{statusLabels[order.status] ?? order.status}</p></div>
+
+          <div className="mt-5 border border-black/10 bg-[#f8f8f4] p-5 text-sm">
+            <p className="font-semibold">Simpan tautan tracking aman</p>
+            <p className="mt-2 leading-6 text-black/60">Tautan ini membuka status order tanpa login. Jangan bagikan kepada orang lain.</p>
+            {order.trackingTokenExpiresAt ? <p className="mt-2 text-xs text-black/50">Berlaku sampai {formatDate(order.trackingTokenExpiresAt)}.</p> : null}
+            <div className="mt-4 flex flex-wrap gap-3">
+              <Link href={trackingPath} className="inline-flex min-h-11 items-center rounded-full bg-[#063d24] px-5 font-semibold text-white">Lacak Order</Link>
+              <button type="button" onClick={() => void copyTrackingLink()} className="min-h-11 rounded-full border border-black/20 px-5 font-semibold">{trackingCopied ? "Link Tersalin" : "Salin Link"}</button>
+            </div>
+          </div>
 
           {order.status === "pending_confirmation" ? (
             <div className="mt-5 border border-amber-300 bg-amber-50 p-5 text-sm">

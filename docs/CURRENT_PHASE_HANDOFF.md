@@ -3,6 +3,19 @@
 Date: 14 July 2026
 Status: **IMPLEMENTED, VERIFIED** (source + remote database foundation); application **NOT DEPLOYED**
 
+## Guest order tracking increment — 14 July 2026
+
+- Reused the existing checkout/order access token and `orders.public_access_token_hash`; no second order or tracking datastore was created.
+- Added `/track-order`, `/track-order/[order-number]`, `/api/public/order-tracking`, and the Admin token-rotation route.
+- New checkout tokens are derived server-side with HMAC from the idempotency key and a server-only secret, preserving deterministic retry without storing plaintext.
+- Access requires order number plus valid unexpired token, or order number plus normalized matching WhatsApp. Order number alone is rejected.
+- Public responses expose only customer-safe order/item/payment/shipping/fulfillment fields. Phone and address are masked; payment proofs, Admin notes, audit history, and other customer records are excluded.
+- Failed lookups are fingerprinted without storing raw IP, limited to five failures per 15 minutes, and written to the existing append-only audit domain. Rate-limit infrastructure fails closed.
+- Order Confirmation now shows and copies the secure tracking link. Existing Admin order detail can rotate the link and copy/open a manual WhatsApp template; old tokens become invalid immediately.
+- Applied remote migration `guest_order_tracking_security`: 90-day expiry, backfill, expiry trigger/constraint/index, and focused audit lookup index. Anonymous/authenticated direct trigger-function execution is revoked.
+- Verification: TypeScript PASS; lint PASS with 0 errors / 23 pre-existing warnings; 18 files / 115 tests PASS; production build PASS; migration preflight/remote apply/rollback smoke PASS with zero residue.
+- Runtime browser smoke could not start locally because the environment's Node runtime failed at `uv_interface_addresses`. The production build generated both tracking pages and both new API routes; deployed browser verification remains required.
+
 ## 1. Arsitektur yang ditemukan
 
 DEBRODER sudah memiliki CMS, PIM, universal product detail, root cart provider, order/order item, payment tracking, private payment proofs, quotation, Jersey Configurator, production, fulfillment, Panel Admin, roles, permissions, RLS, dan audit log. Gap utama adalah cart publik berhenti di WhatsApp dan `/checkout` belum ada. Implementasi P0 menyambungkan domain-domain tersebut tanpa membuat sistem kedua.

@@ -1,5 +1,7 @@
 import { createHash } from "node:crypto";
 import { parsePublicCheckoutRequest } from "@/lib/commerce-checkout";
+import { deriveCheckoutTrackingToken } from "@/lib/order-tracking";
+import { getAdminSupabaseEnv } from "@/lib/env";
 import { getAdminSupabaseClient } from "@/lib/supabase/client";
 
 function sha256(value: string) {
@@ -12,11 +14,26 @@ export async function POST(request: Request) {
     if (!body) return Response.json({ error: "Data checkout tidak valid." }, { status: 400 });
 
     const client = getAdminSupabaseClient();
-    if (!client) return Response.json({ error: "Layanan checkout belum dikonfigurasi." }, { status: 503 });
+    const adminEnv = getAdminSupabaseEnv();
+    if (!client || !adminEnv) return Response.json({ error: "Layanan checkout belum dikonfigurasi." }, { status: 503 });
+
+    const derivedTrackingToken = deriveCheckoutTrackingToken(body.idempotencyKey, adminEnv.serviceRoleKey);
+    const { data: existingOrder } = await client
+      .from("orders")
+      .select("public_access_token_hash")
+      .eq("public_idempotency_key", body.idempotencyKey)
+      .maybeSingle();
+    const storedHash = typeof existingOrder?.public_access_token_hash === "string" ? existingOrder.public_access_token_hash : "";
+    const trackingToken = !storedHash || storedHash === sha256(derivedTrackingToken)
+      ? derivedTrackingToken
+      : storedHash === sha256(body.accessToken)
+        ? body.accessToken
+        : "";
+    if (!trackingToken) return Response.json({ error: "Token retry checkout tidak cocok." }, { status: 409 });
 
     const { data, error } = await client.rpc("create_public_checkout_order", {
       p_idempotency_key: body.idempotencyKey,
-      p_access_token_hash: sha256(body.accessToken),
+      p_access_token_hash: sha256(trackingToken),
       p_whatsapp_confirmation_hash: sha256(body.confirmationCode),
       p_customer_name: body.customer.name,
       p_customer_phone: body.customer.phone,
@@ -40,7 +57,9 @@ export async function POST(request: Request) {
       orderId: result.order_id,
       orderNumber: result.order_number,
       status: result.status,
-      confirmationUrl: `/order-confirmation/${encodeURIComponent(body.accessToken)}`
+      confirmationUrl: `/order-confirmation/${encodeURIComponent(trackingToken)}`,
+      trackingUrl: `/track-order/${encodeURIComponent(result.order_number)}?token=${encodeURIComponent(trackingToken)}`,
+      trackingToken
     }, { status: 201 });
   } catch (error) {
     const message = error instanceof Error ? error.message : "Checkout gagal diproses.";

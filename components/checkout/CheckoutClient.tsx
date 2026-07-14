@@ -59,11 +59,13 @@ export function CheckoutClient({ stores }: { stores: StoreOption[] }) {
           items: readyItems.map((item) => ({ variantSizeId: item.variantSizeId, quantity: item.quantity, note: item.notes }))
         })
       });
-      const payload = await response.json() as { confirmationUrl?: string; orderNumber?: string; error?: string };
+      const payload = await response.json() as { confirmationUrl?: string; trackingUrl?: string; trackingToken?: string; orderNumber?: string; error?: string };
       if (!response.ok || !payload.confirmationUrl) throw new Error(payload.error || "Order gagal dibuat.");
-      sessionStorage.setItem(`debroder-order-${currentDraft.accessToken}`, JSON.stringify({
+      const trackingToken = payload.trackingToken || currentDraft.accessToken;
+      sessionStorage.setItem(`debroder-order-${trackingToken}`, JSON.stringify({
         confirmationCode: currentDraft.confirmationCode,
-        orderNumber: payload.orderNumber
+        orderNumber: payload.orderNumber,
+        trackingUrl: payload.trackingUrl
       }));
       cart.clearCart();
       router.push(payload.confirmationUrl);

@@ -2,6 +2,12 @@
 
 ## Open
 
+### V12-023 — Deploy and browser-verify guest order tracking
+
+- Severity: Gate
+- Status: OPEN / PARTIALLY VERIFIED
+- Detail: Guest tracking source, server authorization, masking, five-attempt rate limit, audit logging, Admin token rotation/WhatsApp template, 115-test suite, production build, and remote migration/ACL/rollback smoke pass. Local runtime browser smoke is blocked by the workspace Node `uv_interface_addresses` failure. After deploying the updated application, verify a valid token, expired/rotated token, matching/wrong WhatsApp, 429 behavior, mobile layout, copy link, and Admin WhatsApp template against controlled orders.
+
 ### V12-013 — Owner deployment/UI verification
 
 - Severity: Gate

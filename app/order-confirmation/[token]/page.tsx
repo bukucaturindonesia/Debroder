@@ -3,7 +3,8 @@ import { OrderConfirmationClient } from "@/components/checkout/OrderConfirmation
 
 export const metadata: Metadata = {
   title: "Konfirmasi Order | DEBRODER",
-  robots: { index: false, follow: false }
+  robots: { index: false, follow: false },
+  referrer: "no-referrer"
 };
 
 export default async function OrderConfirmationPage({ params }: { params: Promise<{ token: string }> }) {
