@@ -2,14 +2,12 @@ import Link from "next/link";
 import type { ReactNode } from "react";
 import { CampaignBanners } from "@/components/CampaignBanners";
 import { HeroSlider } from "@/components/HeroSlider";
-import { ProductImageSwap } from "@/components/ProductImageSwap";
+import { PublicProductCard } from "@/components/PublicProductCard";
 import { PublicFooter } from "@/components/PublicFooter";
 import { ResponsivePicture } from "@/components/ResponsivePicture";
 import { ScrollButtons } from "@/components/ScrollButtons";
 import { SiteHeader } from "@/components/SiteHeader";
 import { fallbackImages, getProductImage, getStoreImage } from "@/lib/fallback-data";
-import { getProductCardImages } from "@/lib/product-gallery";
-import { productCardMetadata, productCardPrice } from "@/lib/product-card";
 import { buildPublicNavigationFacets } from "@/lib/public-navigation";
 import { getPublicContent } from "@/lib/public-data";
 import { absoluteUrl, siteConfig } from "@/lib/site";
@@ -42,15 +40,7 @@ type EditorialItem = Visual & {
   button: string;
   href: string;
 };
-type ProductItem = Visual & {
-  id?: string;
-  hoverImage?: string | null;
-  name: string;
-  metadata: string;
-  price: string;
-  href: string;
-  fit: string;
-};
+type ProductItem = { product: Product };
 
 
 function isCustomHomepageItem(item: HomepageSectionItem) {
@@ -74,23 +64,7 @@ function hasEditorialText(...values: Array<string | null | undefined>) {
 }
 
 function productItem(product: Product): ProductItem {
-  const href = `/produk/${product.slug || product.nama.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "")}`;
-  const price = productCardPrice(product);
-  const cardImages = getProductCardImages(product);
-  return {
-    id: product.id || product.slug || product.nama,
-    name: product.nama,
-    metadata: productCardMetadata(product),
-    price,
-    href,
-    image: cardImages.primary,
-    hoverImage: cardImages.hover,
-    imageAlt: product.image_alt || product.nama,
-    fallbackImage: fallbackImages.product,
-    objectFit: product.object_fit,
-    objectPosition: product.object_position,
-    fit: product.object_fit || "cover"
-  };
+  return { product };
 }
 
 function serviceHref(service: Service) {
@@ -154,8 +128,8 @@ function SectionHeading({ title, action, description, textPosition = "left" }: {
   return (
     <div className="flex items-end justify-between gap-4">
       <div className={`min-w-0 ${textPosition === "center" ? "flex-1 text-center" : textPosition === "right" ? "ml-auto text-right" : ""}`}>
-        <h2 className="home-section-title text-[#111]">{title}</h2>
-        {description ? <p className="mt-2 max-w-2xl text-base leading-6 text-black/60">{description}</p> : null}
+        <h2 className="home-section-title">{title}</h2>
+        {description ? <p className="public-secondary-copy mt-2 max-w-2xl text-base leading-6">{description}</p> : null}
       </div>
       {action ? <div className="shrink-0">{action}</div> : null}
     </div>
@@ -252,25 +226,11 @@ function CategoryEditorialCard({ item }: { item: EditorialItem }) {
 
 function ProductCard({ item, className = "" }: { item: ProductItem; className?: string }) {
   return (
-    <article className={`min-w-0 ${className}`}>
-      <Link href={item.href} aria-label={`Buka detail ${item.name}`} className="group block rounded-sm">
-        <ProductImageSwap
-          primarySrc={item.image}
-          hoverSrc={item.hoverImage}
-          fallbackSrc={item.fallbackImage}
-          alt={item.imageAlt}
-          imageClassName={(item.objectFit || item.fit) === "contain" ? "object-contain p-3" : "object-cover"}
-          objectFit={item.objectFit || (item.fit === "contain" ? "contain" : "cover")}
-          objectPosition={item.objectPosition || "center center"}
-          sizes="(min-width: 1536px) 30vw, (min-width: 1024px) 31vw, (min-width: 640px) 44vw, 78vw"
-        />
-        <div className="pt-3">
-          {item.metadata ? <p className="text-[11px] font-medium leading-4 tracking-[0.01em] text-black/55 sm:text-xs">{item.metadata}</p> : null}
-          <h3 className={`${item.metadata ? "mt-1.5" : ""} product-title line-clamp-2 text-[15px] font-semibold leading-[1.3] tracking-[-0.01em] text-[#111] sm:text-[17px]`}>{item.name}</h3>
-          {item.price ? <p className="product-price mt-2 text-base font-semibold leading-6 text-[#111] sm:text-lg">{item.price}</p> : null}
-        </div>
-      </Link>
-    </article>
+    <PublicProductCard
+      product={item.product}
+      className={className}
+      imageSizes="(min-width: 1536px) 30vw, (min-width: 1024px) 31vw, (min-width: 640px) 44vw, 78vw"
+    />
   );
 }
 
@@ -299,7 +259,7 @@ function ManagedHomepageSection({ section, setting, fallbackProducts = [] }: { s
               action={configuredCta}
             />
           </div>
-          <div id={carouselId} className="featured-media-grid mt-5 grid grid-cols-1 gap-0 lg:grid-cols-2">
+          <div id={carouselId} className="featured-media-grid mt-4 grid grid-cols-1 gap-0 md:mt-6 lg:grid-cols-2">
             {items.slice(0, 2).map((item, index) => (
               <EditorialCard
                 key={sectionItems[index]?.id || `${item.href}-${index}`}
@@ -321,7 +281,7 @@ function ManagedHomepageSection({ section, setting, fallbackProducts = [] }: { s
             textPosition={setting?.text_position}
             action={configuredCta}
           />
-          <div id={carouselId} className="trending-grid mt-5">
+          <div id={carouselId} className="trending-grid mt-4 md:mt-6">
             {items.slice(0, 3).map((item, index) => (
               <EditorialCard
                 key={sectionItems[index]?.id || `${item.href}-${index}`}
@@ -355,10 +315,10 @@ function ManagedHomepageSection({ section, setting, fallbackProducts = [] }: { s
           }
         />
       </div>
-      <div id={carouselId} className="home-bleed-rail fresh-drop-rail no-scrollbar mt-5 flex snap-x snap-mandatory overflow-x-auto">
+      <div id={carouselId} className="home-bleed-rail fresh-drop-rail no-scrollbar mt-4 flex snap-x snap-mandatory overflow-x-auto md:mt-6">
         {items.map((item, index) => (
           <ProductCard
-            key={section.items[index]?.id || `${item.href}-${index}`}
+            key={section.items[index]?.id || item.product.id || item.product.slug || `${item.product.nama}-${index}`}
             item={item}
             className="fresh-drop-card shrink-0 snap-start"
           />
@@ -506,7 +466,7 @@ export default async function Home() {
               }
             />
           </div>
-          <div id="category-carousel" className="home-bleed-rail category-carousel no-scrollbar mt-5 flex snap-x snap-mandatory overflow-x-auto pb-4">
+          <div id="category-carousel" className="home-bleed-rail category-carousel no-scrollbar mt-4 flex snap-x snap-mandatory overflow-x-auto pb-4 md:mt-6">
             {shopCategoryItems.length ? shopCategoryItems.map((item) => (
               <CategoryEditorialCard key={`${item.href}-${item.title}`} item={item} />
             )) : homeCategories.length ? homeCategories.map((item) => (
@@ -579,7 +539,7 @@ export default async function Home() {
         </section>
       </LandingSectionSlot>
 
-      <PublicFooter content={content} />
+      <PublicFooter content={content} variant="public-dark" />
     </main>
   );
 }

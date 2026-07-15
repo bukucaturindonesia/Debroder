@@ -628,7 +628,10 @@ export function PublicShell({
       {showHeader ? <SiteHeader positionMode={headerMode} expandedAtTop={headerExpandedAtTop} navigationFacets={navigationFacets} preserveJerseyOutput={jerseyEditorial} /> : null}
       <PageMotion />
       {children}
-      <PublicFooter content={content} variant={jerseyEditorial ? "dark" : "default"} />
+      <PublicFooter
+        content={content}
+        variant={jerseyEditorial ? "dark" : jerseyCommerce ? "default" : "public-dark"}
+      />
     </main>
   );
 }

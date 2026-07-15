@@ -242,7 +242,10 @@ function MegaDropdown({
   const legacyClass = "invisible translate-y-2 opacity-0 group-hover/nav:visible group-hover/nav:translate-y-0 group-hover/nav:opacity-100 group-focus-within/nav:visible group-focus-within/nav:translate-y-0 group-focus-within/nav:opacity-100";
   return (
     <div id={id} className={`fixed left-1/2 z-[120] -translate-x-1/2 pt-3 transition duration-200 ${preserveJerseyOutput ? "w-[min(980px,calc(100vw-32px))]" : "w-[min(1180px,calc(100vw-32px))]"} ${open === undefined ? legacyClass : controlledClass} ${expanded ? "top-[164px]" : "top-[78px]"}`}>
-      <div className={`grid border border-black/10 bg-white text-left shadow-[0_18px_50px_rgba(0,0,0,0.12)] ${preserveJerseyOutput ? "grid-cols-3 gap-10 p-9" : `gap-8 p-8 ${columns.length >= 4 ? "grid-cols-4" : columns.length === 2 ? "grid-cols-2" : "grid-cols-3"}`}`}>
+      <div className={preserveJerseyOutput
+        ? "grid border border-black/10 bg-white text-left shadow-[0_18px_50px_rgba(0,0,0,0.12)] grid-cols-3 gap-10 p-9"
+        : `grid gap-8 bg-white p-8 text-left shadow-[0_16px_40px_rgba(0,0,0,0.08)] ${columns.length >= 4 ? "grid-cols-4" : columns.length === 2 ? "grid-cols-2" : "grid-cols-3"}`
+      }>
         {columns.map((column) => (
           <div key={column.title}>
             <p className="text-[15px] font-semibold text-[#111]">{column.title}</p>
@@ -449,7 +452,10 @@ export function SiteHeader({
   }, [isOpen, preserveJerseyOutput]);
 
   return (
-    <header ref={headerRef} className={`${positionMode === "sticky" ? "sticky top-0" : "relative"} z-[100] border-b border-black/10 bg-white text-[#111]`}>
+    <header ref={headerRef} className={preserveJerseyOutput
+      ? `${positionMode === "sticky" ? "sticky top-0" : "relative"} z-[100] border-b border-black/10 bg-white text-[#111]`
+      : `${positionMode === "sticky" ? "sticky top-0" : "relative"} z-[100] bg-white text-[#111]`
+    }>
       <div className={`hidden overflow-hidden bg-[#f5f5f5] transition-[max-height,opacity] duration-200 ease-out lg:block ${expanded ? "visible max-h-8 opacity-100" : "invisible max-h-0 opacity-0 pointer-events-none"}`} aria-hidden={!expanded}>
         <div className="section-shell flex h-8 items-center justify-between gap-4 text-[12px] font-medium text-black/65">
           <p className="truncate">DEBRODER Apparel & Printing</p>
@@ -489,7 +495,7 @@ export function SiteHeader({
                     aria-controls="global-collection-menu"
                     aria-current={active ? "page" : undefined}
                     onClick={() => setDesktopCollectionOpen((current) => !current)}
-                    className={`nav-link relative flex h-full items-center gap-1.5 whitespace-nowrap text-sm font-medium text-[#111] transition duration-200 hover:bg-black hover:text-white focus-visible:bg-black focus-visible:text-white xl:text-[15px] ${active ? "font-semibold" : ""}`}
+                    className={`nav-link relative flex h-full items-center gap-1.5 whitespace-nowrap text-[15px] font-medium text-[#111] transition duration-200 hover:bg-black hover:text-white focus-visible:bg-black focus-visible:text-white ${active ? "font-semibold" : ""}`}
                   >
                     {item.label}
                     <span className={`transition-transform duration-200 ${desktopCollectionOpen ? "rotate-180" : ""}`}><ChevronDownIcon /></span>
