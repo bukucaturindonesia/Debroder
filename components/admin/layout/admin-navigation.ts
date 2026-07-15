@@ -101,6 +101,69 @@ export const adminNavigationGroups: readonly AdminNavigationGroup[] = [
     ]
   }
 ] as const;
+const adminGuestNavigationGroups: readonly AdminNavigationGroup[] = [
+  {
+    label: "DASHBOARD",
+    roles: ADMIN_GUEST_ROLES,
+    items: [{ label: "Dashboard", href: "/admin/dashboard", roles: ADMIN_GUEST_ROLES, exact: true }]
+  },
+  {
+    label: "WEBSITE",
+    roles: ADMIN_GUEST_ROLES,
+    items: [
+      { label: "CMS / Landing Page", href: "/admin/homepage-sections", roles: ADMIN_GUEST_ROLES },
+      { label: "CMS / Jersey", href: "/admin/commerce/jersey", roles: ADMIN_GUEST_ROLES },
+      { label: "Page Hero", href: "/admin/page-hero", roles: ADMIN_GUEST_ROLES },
+      { label: "Media Library", href: "/admin/media", roles: ADMIN_GUEST_ROLES },
+      { label: "Gambar Website", href: "/admin/site-media", roles: ADMIN_GUEST_ROLES },
+      { label: "Banner Instagram", href: "/admin/banner", roles: ADMIN_GUEST_ROLES }
+    ]
+  },
+  {
+    label: "KATALOG",
+    roles: ADMIN_GUEST_ROLES,
+    items: [
+      { label: "Product Manager", href: "/admin/products", roles: ADMIN_GUEST_ROLES },
+      { label: "PIM V2 Dependency", href: "/admin/pim-v2", roles: ADMIN_GUEST_ROLES },
+      { label: "Maintenance PIM", href: "/admin/pim-manager", roles: ADMIN_GUEST_ROLES },
+      { label: "Kategori / Model", href: "/admin/categories", roles: ADMIN_GUEST_ROLES },
+      { label: "Layanan", href: "/admin/services", roles: ADMIN_GUEST_ROLES },
+      { label: "Store / Cabang", href: "/admin/store", roles: ADMIN_GUEST_ROLES }
+    ]
+  },
+  {
+    label: "OPERASIONAL",
+    roles: ADMIN_GUEST_ROLES,
+    items: [{
+      label: "Operasional",
+      roles: ADMIN_GUEST_ROLES,
+      children: [
+        { label: "Pesanan", href: "/admin/orders", roles: ADMIN_GUEST_ROLES, exact: true },
+        { label: "Pembayaran", href: "/admin/payments", roles: ADMIN_GUEST_ROLES },
+        { label: "Repeat Order", href: "/admin/repeat-orders", roles: ADMIN_GUEST_ROLES },
+        { label: "Formal Quotation", href: "/admin/orders/quotations", roles: ADMIN_GUEST_ROLES },
+        { label: "Job Order", href: "/admin/job-orders", roles: ADMIN_GUEST_ROLES },
+        { label: "Work Item", href: "/admin/work-items", roles: ADMIN_GUEST_ROLES },
+        { label: "Status Produksi", href: "/admin/production", roles: ADMIN_GUEST_ROLES },
+        { label: "Quality Control", href: "/admin/quality-control", roles: ADMIN_GUEST_ROLES },
+        { label: "Pengiriman & Pickup", href: "/admin/fulfillments", roles: ADMIN_GUEST_ROLES },
+        { label: "Notifikasi", href: "/admin/notifications", roles: ADMIN_GUEST_ROLES },
+        { label: "Laporan", href: "/admin/reports", roles: ADMIN_GUEST_ROLES }
+      ]
+    }]
+  },
+  {
+    label: "SISTEM",
+    roles: ADMIN_GUEST_ROLES,
+    items: [
+      { label: "Pengaturan", href: "/admin/website-settings", roles: ADMIN_GUEST_ROLES },
+      { label: "Penomoran Dokumen", href: "/admin/document-numbering", roles: ADMIN_GUEST_ROLES },
+      { label: "Role & Permission", href: "/admin/access-control", roles: ADMIN_GUEST_ROLES },
+      { label: "Audit Sistem", href: "/admin/audit-log", roles: ADMIN_GUEST_ROLES }
+    ]
+  }
+] as const;
+
 
 export function hasRole(role: AdminRole | null, allowedRoles: readonly AdminRole[]) {
   return role !== null && allowedRoles.includes(role);
@@ -113,7 +176,8 @@ export function isNavigationActive(pathname: string, link: AdminNavigationLink) 
   return pathname === link.href || pathname.startsWith(`${link.href}/`);
 }
 export function getNavigationGroups(role: AdminRole) {
-  return adminNavigationGroups
+  const groups = role === "admin_guest" ? adminGuestNavigationGroups : adminNavigationGroups;
+  return groups
     .filter((group) => hasRole(role, group.roles))
     .map((group) => ({
       ...group,
@@ -142,7 +206,7 @@ function pathAllowedByRole(role: AdminRole, pathname: string) {
 
 export function roleCanAccessPath(role: AdminRole, pathname: string) {
   if (role === "admin_guest") {
-    return pathname === "/admin" || pathname === "/admin/dashboard" || pathname === "/admin/products";
+    return pathname.startsWith("/admin") && !pathname.startsWith("/admin/login");
   }
   if (pathname === "/admin" || pathname === "/admin/dashboard") return hasRole(role, DASHBOARD_ROLES);
   if (
@@ -172,6 +236,10 @@ export function getRoleHome(role: AdminRole) {
 
 export function getCurrentNavigationLabel(pathname: string) {
   if (pathname === "/admin/access-control") return "Role & Permission";
+  if (pathname === "/admin/payments") return "Pembayaran";
+  if (pathname === "/admin/reports") return "Laporan Operasional";
+  if (pathname === "/admin/pim-v2") return "PIM V2 Dependency";
+  if (pathname === "/admin/pim-manager") return "Maintenance PIM";
   if (pathname === "/admin/audit-log") return "Audit Sistem";
   if (pathname === "/admin/notifications/templates") return "Template Notifikasi";
   if (pathname === "/admin/notifications/history") return "Riwayat Notifikasi";

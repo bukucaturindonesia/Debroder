@@ -17,7 +17,8 @@ import {
   maskPhone,
   sanitizeAdminGuestRecord
 } from "@/lib/admin-data-masking";
-import { roleCanAccessPath } from "@/components/admin/layout/admin-navigation";
+import { getNavigationGroups, roleCanAccessPath } from "@/components/admin/layout/admin-navigation";
+import { isAdminGuestFullViewerPath } from "@/lib/admin-full-viewer";
 import { getProductManagerCapabilities } from "@/lib/product-manager";
 
 const migrationPath =
@@ -28,6 +29,8 @@ const header = readFileSync("components/admin/layout/AdminHeader.tsx", "utf8");
 const login = readFileSync("components/admin/AdminLogin.tsx", "utf8");
 const sessionRoute = readFileSync("app/api/admin/session/route.ts", "utf8");
 const productRoute = readFileSync("app/api/admin/products/route.ts", "utf8");
+const fullViewerRoute = readFileSync("app/api/admin/full-viewer/route.ts", "utf8");
+const fullViewer = readFileSync("components/admin/AdminGuestFullViewer.tsx", "utf8");
 
 const mutationApiFiles = [
   "app/api/admin/access-control/users/[id]/route.ts",
@@ -41,7 +44,8 @@ const mutationApiFiles = [
   "app/api/admin/payments/[id]/verification/route.ts",
   "app/api/admin/payments/adjustments/route.ts",
   "app/api/admin/products/route.ts",
-  "app/api/admin/repeat-orders/route.ts"
+  "app/api/admin/repeat-orders/route.ts",
+  "app/api/admin/pim-v2/custom-services/route.ts"
 ];
 
 describe("DEBRODER final three admin roles", () => {
@@ -55,13 +59,33 @@ describe("DEBRODER final three admin roles", () => {
     expect(isAssignableAdminRole("admin_guest")).toBe(true);
   });
 
-  it("limits Admin Guest navigation to the safe dashboard and Product Manager", () => {
-    expect(roleCanAccessPath("admin_guest", "/admin/dashboard")).toBe(true);
-    expect(roleCanAccessPath("admin_guest", "/admin/products")).toBe(true);
-    expect(roleCanAccessPath("admin_guest", "/admin/access-control")).toBe(false);
-    expect(roleCanAccessPath("admin_guest", "/admin/pim-manager")).toBe(false);
-    expect(roleCanAccessPath("admin_guest", "/admin/orders")).toBe(false);
-    expect(roleCanAccessPath("admin_guest", "/admin/website-settings")).toBe(false);
+  it("allows Admin Guest to open the full panel while keeping login outside the viewer", () => {
+    const paths = [
+      "/admin/dashboard",
+      "/admin/products",
+      "/admin/pim-v2",
+      "/admin/pim-manager",
+      "/admin/orders",
+      "/admin/payments",
+      "/admin/job-orders",
+      "/admin/production",
+      "/admin/fulfillments",
+      "/admin/homepage-sections",
+      "/admin/media",
+      "/admin/access-control",
+      "/admin/audit-log",
+      "/admin/website-settings",
+      "/admin/reports"
+    ];
+    for (const path of paths) expect(roleCanAccessPath("admin_guest", path), path).toBe(true);
+    expect(roleCanAccessPath("admin_guest", "/admin/login")).toBe(false);
+    expect(isAdminGuestFullViewerPath("/admin/access-control")).toBe(true);
+    expect(isAdminGuestFullViewerPath("/admin/products")).toBe(false);
+
+    const labels = JSON.stringify(getNavigationGroups("admin_guest"));
+    for (const label of ["PIM V2 Dependency", "Maintenance PIM", "Pembayaran", "Laporan", "Role & Permission", "Audit Sistem"]) {
+      expect(labels).toContain(label);
+    }
   });
 
   it("makes Product Manager read-only for Admin Guest without reducing Admin or Super Admin", () => {
@@ -129,7 +153,8 @@ describe("DEBRODER final three admin roles", () => {
     expect(sessionRoute).toContain("roleCanAccessPath(actor.role, pathname)");
     expect(sessionRoute).not.toContain("searchParams.get(\"role\")");
     expect(shell).toContain("MODE LIHAT SAJA");
-    expect(shell).toContain("Akun ini hanya dapat melihat. Semua perubahan dinonaktifkan.");
+    expect(shell).toContain("Akun ini dapat melihat seluruh Panel Admin, tetapi tidak dapat melakukan perubahan.");
+    expect(shell).toContain("AdminGuestFullViewer");
     expect(header).toContain("isAdminGuestRole(role) ? null : <AdminNotificationBell />");
     expect(login).toContain("/api/admin/session?path=%2Fadmin%2Fdashboard");
     expect(login).not.toMatch(/password\s*[:=]\s*["'][^"']+["']/i);
@@ -139,10 +164,22 @@ describe("DEBRODER final three admin roles", () => {
     for (const file of mutationApiFiles) {
       const source = readFileSync(file, "utf8");
       const terminalLegacyRoute = source.includes("status: 410");
-      const protectedRoute = /requirePhase13Actor|requirePaymentActor|requireNotificationActor|requireRepeatOrderActor/.test(source);
+      const protectedRoute = /requirePhase13Actor|requirePaymentActor|requireNotificationActor|requireRepeatOrderActor|isAdminRequest/.test(source);
       expect(terminalLegacyRoute || protectedRoute, `${file} must reject or authorize mutations`).toBe(true);
     }
     expect(productRoute).toContain("adminGuestErrorResponse(error)");
+  });
+
+
+  it("serves sanitized full-panel reads through a server-only allowlist", () => {
+    expect(fullViewerRoute).toContain("requirePhase13Actor(request)");
+    expect(fullViewerRoute).toContain("isAdminGuestRole(actor.role)");
+    expect(fullViewerRoute).toContain("actor.adminClient");
+    expect(fullViewerRoute).toContain("resource.columns");
+    expect(fullViewerRoute).toContain("sanitizeAdminGuestRecord");
+    expect(fullViewerRoute).not.toContain("SUPABASE_SERVICE_ROLE_KEY");
+    expect(fullViewer).toContain("READ-ONLY DATA");
+    expect(fullViewer).not.toMatch(/onSubmit=|method=["']post/i);
   });
 
   it("adds fail-closed RLS, RPC, Storage, and role-assignment enforcement", () => {

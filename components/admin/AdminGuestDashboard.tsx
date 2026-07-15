@@ -35,8 +35,8 @@ export function AdminGuestDashboard() {
     <div className="grid gap-6">
       <AdminPageHeader
         eyebrow="ADMIN GUEST"
-        title="Dashboard Read-Only"
-        description="Akun ini hanya dapat melihat struktur Panel Admin dan data operasional yang aman. Data pelanggan sensitif, file privat, Access Control, dan tindakan mutation tidak tersedia."
+        title="Dashboard Full Panel Viewer"
+        description="Akun ini dapat melihat seluruh Panel Admin dalam mode read-only. Data pelanggan sensitif dimasking, file privat tidak dibuka, dan seluruh mutation tetap ditolak."
       />
 
       {error ? <div role="alert" className="border border-red-200 bg-red-50 p-4 text-sm font-semibold text-red-800">{error}</div> : null}
@@ -51,14 +51,15 @@ export function AdminGuestDashboard() {
       </section>
 
       <section className="border border-brand-softGray bg-white p-5 sm:p-6">
-        <p className="text-xs font-semibold uppercase tracking-[0.16em] text-brand-green">Safe Route</p>
-        <h2 className="mt-2 text-2xl font-semibold">Product Manager</h2>
+        <p className="text-xs font-semibold uppercase tracking-[0.16em] text-brand-green">FULL PANEL VIEWER</p>
+        <h2 className="mt-2 text-2xl font-semibold">Seluruh modul tersedia untuk dilihat</h2>
         <p className="mt-2 max-w-2xl text-sm leading-6 text-brand-charcoal/60">
-          Lihat product root, lifecycle, color variant, sellable SKU, stok, dan status validasi tanpa dapat membuat atau mengubah data.
+          Gunakan sidebar untuk membuka Product Manager, PIM, CMS, Order, Payment, Produksi, Fulfillment, Access Control, Audit, Settings, dan laporan dalam tampilan yang sudah disanitasi.
         </p>
-        <Link href="/admin/products" className="mt-5 inline-flex min-h-11 items-center rounded-full bg-brand-charcoal px-5 text-sm font-semibold text-white">
-          Buka Product Manager
-        </Link>
+        <div className="mt-5 flex flex-wrap gap-3">
+          <Link href="/admin/products" className="inline-flex min-h-11 items-center rounded-full bg-brand-charcoal px-5 text-sm font-semibold text-white">Buka Product Manager</Link>
+          <Link href="/admin/orders" className="inline-flex min-h-11 items-center rounded-full border border-brand-softGray px-5 text-sm font-semibold">Lihat Operasional</Link>
+        </div>
       </section>
     </div>
   );

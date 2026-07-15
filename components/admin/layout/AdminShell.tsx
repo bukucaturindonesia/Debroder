@@ -5,6 +5,8 @@ import { useEffect, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { createSupabaseClient } from "@/lib/supabase";
 import { AdminHeader } from "./AdminHeader";
+import { AdminGuestFullViewer } from "@/components/admin/AdminGuestFullViewer";
+import { isAdminGuestFullViewerPath } from "@/lib/admin-full-viewer";
 import { AdminAccessProvider } from "./AdminAccessContext";
 import { AdminSidebar } from "./AdminSidebar";
 import {
@@ -219,7 +221,7 @@ export function AdminShell({ children }: { children: ReactNode }) {
         {role === "admin_guest" ? (
           <div className="admin-shell-read-only-banner" role="status">
             <span className="admin-shell-read-only-badge">MODE LIHAT SAJA</span>
-            <p>Akun ini hanya dapat melihat. Semua perubahan dinonaktifkan.</p>
+            <p>Akun ini dapat melihat seluruh Panel Admin, tetapi tidak dapat melakukan perubahan.</p>
           </div>
         ) : null}
 
@@ -230,7 +232,9 @@ export function AdminShell({ children }: { children: ReactNode }) {
           onSubmitCapture={blockReadOnlySubmit}
           onClickCapture={blockReadOnlyMutation}
         >
-          {children}
+          {role === "admin_guest" && isAdminGuestFullViewerPath(pathname)
+            ? <AdminGuestFullViewer pathname={pathname} />
+            : children}
         </div>
       </div>
     </div>

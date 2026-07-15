@@ -35,7 +35,7 @@ export const ROLE_DESCRIPTIONS: Record<AdminRole, string> = {
   superadmin: "Akses penuh, pengelolaan role, permission, dan hapus permanen.",
   super_admin: "Alias kompatibilitas Super Admin.",
   admin: "Akses operasional existing tanpa pengelolaan akses, permission, dan maintenance owner-only.",
-  admin_guest: "Akun authenticated read-only untuk melihat struktur Panel Admin tanpa mutation atau data sensitif.",
+  admin_guest: "Full Panel Viewer read-only: seluruh modul dapat dilihat melalui data yang disanitasi tanpa mutation atau akses secret.",
   sales_admin: "Quotation, pesanan, pelanggan, dan pencatatan pembayaran.",
   designer: "Mockup, file desain, revisi, dan pengiriman proof.",
   production_admin: "Job Order, Work Item, penugasan, dan status produksi.",
