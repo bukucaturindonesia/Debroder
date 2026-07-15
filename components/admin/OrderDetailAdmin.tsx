@@ -67,11 +67,13 @@ export function OrderDetailAdmin() {
   const [message, setMessage] = useState("");
   const [editOpen, setEditOpen] = useState(false);
   const [archiveOpen, setArchiveOpen] = useState(false);
+  const [cancelOpen, setCancelOpen] = useState(false);
   const [shippingAddress, setShippingAddress] = useState("");
   const [deliveryMethod, setDeliveryMethod] = useState("pickup");
   const [customerNotes, setCustomerNotes] = useState("");
   const [adminNotes, setAdminNotes] = useState("");
   const [archiveReason, setArchiveReason] = useState("");
+  const [cancelReason, setCancelReason] = useState("");
 
   async function loadData() {
     const supabase = createSupabaseClient();
@@ -140,6 +142,29 @@ export function OrderDetailAdmin() {
     await loadData();
   }
 
+  async function cancelOrder() {
+    if (!order || working || !cancelReason.trim()) return;
+    const supabase = createSupabaseClient();
+    if (!supabase) return;
+
+    setWorking(true);
+    const { error } = await supabase.rpc("cancel_order_transactional", {
+      p_order_id: order.id,
+      p_reason: cancelReason.trim()
+    });
+    setWorking(false);
+
+    if (error) {
+      setMessage(error.message || "Pesanan gagal dibatalkan.");
+      return;
+    }
+
+    setCancelOpen(false);
+    setCancelReason("");
+    setMessage("Pesanan dibatalkan dan reservasi aktif dilepas secara atomik.");
+    await loadData();
+  }
+
   async function archiveOrder() {
     if (!order || working) return;
     const supabase = createSupabaseClient();
@@ -153,7 +178,7 @@ export function OrderDetailAdmin() {
     setWorking(false);
 
     if (error) {
-      setMessage("Pesanan gagal dipindahkan ke Gudang Arsip.");
+      setMessage(error.message || "Pesanan gagal dipindahkan ke Gudang Arsip.");
       return;
     }
 
@@ -162,6 +187,17 @@ export function OrderDetailAdmin() {
   }
 
   if (loading) return <AdminLoadingState label="Memuat detail pesanan..." />;
+
+  const terminalStatuses = new Set([
+    "cancelled",
+    "dibatalkan",
+    "completed",
+    "selesai",
+    "expired",
+    "picked_up"
+  ]);
+  const canCancel = !order?.archived_at && !terminalStatuses.has(order?.status || "");
+  const canArchive = !order?.archived_at && terminalStatuses.has(order?.status || "");
 
   if (!order) {
     return (
@@ -219,13 +255,24 @@ export function OrderDetailAdmin() {
               >
                 Edit Pesanan
               </button>
-              <button
-                type="button"
-                onClick={() => setArchiveOpen(true)}
-                className="inline-flex min-h-10 items-center rounded-full border border-amber-300 bg-white px-5 text-sm font-semibold text-amber-800"
-              >
-                Arsipkan
-              </button>
+              {canCancel ? (
+                <button
+                  type="button"
+                  onClick={() => setCancelOpen(true)}
+                  className="inline-flex min-h-10 items-center rounded-full border border-red-300 bg-white px-5 text-sm font-semibold text-red-700"
+                >
+                  Batalkan Pesanan
+                </button>
+              ) : null}
+              {canArchive ? (
+                <button
+                  type="button"
+                  onClick={() => setArchiveOpen(true)}
+                  className="inline-flex min-h-10 items-center rounded-full border border-amber-300 bg-white px-5 text-sm font-semibold text-amber-800"
+                >
+                  Arsipkan
+                </button>
+              ) : null}
             </>
           }
         />
@@ -350,6 +397,43 @@ export function OrderDetailAdmin() {
               </button>
             </div>
           </form>
+        </div>
+      ) : null}
+
+      {cancelOpen ? (
+        <div className="fixed inset-0 z-[100] grid place-items-center bg-black/60 p-4">
+          <section className="w-full max-w-lg bg-white p-6 shadow-2xl">
+            <h2 className="text-2xl font-semibold">Batalkan Pesanan?</h2>
+            <p className="mt-3 text-sm leading-6 text-brand-charcoal/65">
+              Pembatalan bersifat terminal. Reservasi stok aktif dilepas tanpa mengubah stok fisik.
+            </p>
+            <textarea
+              rows={4}
+              required
+              value={cancelReason}
+              onChange={(event) => setCancelReason(event.target.value)}
+              placeholder="Alasan pembatalan wajib diisi"
+              className="mt-5 w-full rounded-lg border border-brand-softGray px-4 py-3"
+            />
+            <div className="mt-6 flex flex-wrap gap-3">
+              <button
+                type="button"
+                onClick={() => void cancelOrder()}
+                disabled={working || !cancelReason.trim()}
+                className="rounded-full bg-red-700 px-6 py-3 text-sm font-semibold text-white disabled:opacity-45"
+              >
+                {working ? "Membatalkan..." : "Batalkan Pesanan"}
+              </button>
+              <button
+                type="button"
+                onClick={() => setCancelOpen(false)}
+                disabled={working}
+                className="rounded-full border border-brand-softGray px-6 py-3 text-sm font-semibold"
+              >
+                Kembali
+              </button>
+            </div>
+          </section>
         </div>
       ) : null}
 

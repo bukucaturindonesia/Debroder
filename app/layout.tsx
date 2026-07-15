@@ -1,23 +1,8 @@
 import type { Metadata } from "next";
 import type { ReactNode } from "react";
-import { Barlow_Condensed, Inter } from "next/font/google";
 import { CartProvider } from "@/components/CartProvider";
 import { siteConfig } from "@/lib/site";
 import "./globals.css";
-
-const fontHeading = Barlow_Condensed({
-  subsets: ["latin"],
-  weight: ["400", "600", "700", "800", "900"],
-  variable: "--font-heading",
-  display: "swap"
-});
-
-const fontBody = Inter({
-  subsets: ["latin"],
-  weight: ["400", "500", "600", "700", "800"],
-  variable: "--font-body",
-  display: "swap"
-});
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteConfig.siteUrl),
@@ -105,7 +90,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="id">
-      <body className={`${fontHeading.variable} ${fontBody.variable}`}>
+      <body>
         <CartProvider>{children}</CartProvider>
       </body>
     </html>
