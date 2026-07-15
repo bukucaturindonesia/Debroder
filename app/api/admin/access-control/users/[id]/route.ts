@@ -1,4 +1,4 @@
-import { isAdminRole, validateRoleAssignment } from "@/lib/access-control";
+import { isAssignableAdminRole, validateRoleAssignment } from "@/lib/access-control";
 import { phase13ErrorResponse, requirePhase13Actor } from "@/lib/phase13-auth";
 
 export async function PATCH(request: Request, context: { params: Promise<{ id: string }> }) {
@@ -7,10 +7,10 @@ export async function PATCH(request: Request, context: { params: Promise<{ id: s
     const { id } = await context.params;
     const body = (await request.json()) as { role?: unknown };
     const errors = validateRoleAssignment(body.role);
-    if (errors.length || !isAdminRole(body.role)) {
+    if (errors.length || !isAssignableAdminRole(body.role)) {
       return Response.json({ error: errors[0] || "Role tidak valid." }, { status: 400 });
     }
-    if (id === actor.user.id && body.role !== "superadmin" && body.role !== "super_admin") {
+    if (id === actor.user.id && body.role !== "superadmin") {
       return Response.json({ error: "Super Admin tidak dapat menurunkan role akun sendiri." }, { status: 409 });
     }
 

@@ -2,6 +2,10 @@ import { createClient, type SupabaseClient, type User } from "@supabase/supabase
 import { getAdminSupabaseClient } from "@/lib/supabase/client";
 import { getPublicSupabaseEnv } from "@/lib/env";
 import {
+  adminGuestErrorResponse,
+  assertAdminRequestMethodAllowed
+} from "@/lib/admin-role-security";
+import {
   canManageNotificationTemplates,
   isNotificationRole,
   isNotificationSuperAdmin
@@ -45,6 +49,7 @@ export async function requireNotificationActor(
     .maybeSingle();
 
   const role = typeof profile?.role === "string" ? profile.role.toLowerCase() : "";
+  assertAdminRequestMethodAllowed(role, request.method);
   if (profileError || !isNotificationRole(role)) {
     throw new NotificationAuthError(403, "Akses notifikasi ditolak.");
   }
@@ -83,6 +88,8 @@ export class NotificationAuthError extends Error {
 }
 
 export function notificationErrorResponse(error: unknown): Response {
+  const guestResponse = adminGuestErrorResponse(error);
+  if (guestResponse) return guestResponse;
   if (error instanceof NotificationAuthError) {
     return Response.json({ error: error.message }, { status: error.status });
   }

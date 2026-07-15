@@ -76,7 +76,7 @@ function titleCase(value: string) {
 
 function productColors(product: Product) {
   const variantColors = (product.variants || [])
-    .filter((variant) => variant.is_active !== false)
+    .filter((variant) => (variant.status || (variant.is_active === false ? "inactive" : "active")) === "active")
     .map((variant) => variant.color_name || variant.variant_name || "")
     .filter(Boolean);
   return variantColors.length ? variantColors : (product.color_tags || []);
@@ -104,8 +104,8 @@ function canonicalColorValue(value: string) {
 function availability(product: Product) {
   const variantStock = (product.variants || []).reduce(
     (total, variant) => total + (variant.sizes || [])
-      .filter((size) => size.is_active !== false)
-      .reduce((sum, size) => sum + Math.max(0, Number(size.stock || 0)), 0),
+      .filter((size) => (size.status || (size.is_active === false ? "inactive" : "active")) === "active")
+      .reduce((sum, size) => sum + Math.max(0, Number(size.stock_quantity ?? size.stock ?? 0)), 0),
     0
   );
   const readyStock = Math.max(0, Number(product.stock || 0)) > 0 || variantStock > 0;
@@ -135,7 +135,7 @@ export function productMatchesNavigationStatus(product: Product, status: string)
 }
 
 export function buildPublicNavigationFacets(products: Product[], categories: ProductCategory[]): PublicNavigationFacets {
-  const publicProducts = products.filter((product) => product.status_aktif !== false);
+  const publicProducts = products.filter((product) => (product.status || (product.status_aktif ? "active" : "archived")) === "active");
   const nonJerseyProducts = publicProducts.filter((product) => !productMatchesRoute(product, "jersey"));
   const productAvailability = nonJerseyProducts.map(availability);
 

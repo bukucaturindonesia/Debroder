@@ -10,15 +10,6 @@ import {
   isSupabaseConfigured
 } from "@/lib/supabase";
 
-function isMissingProfilesTable(errorMessage = "", errorCode?: string) {
-  const normalizedMessage = errorMessage.toLowerCase();
-  return (
-    errorCode === "42P01" ||
-    (normalizedMessage.includes("profiles") &&
-      normalizedMessage.includes("does not exist"))
-  );
-}
-
 function configMessage(status: ReturnType<typeof getSupabaseEnvStatus>) {
   if (status.usesRestEndpoint) {
     return "Supabase belum aktif. Gunakan Project URL, bukan URL /rest/v1.";
@@ -90,27 +81,16 @@ export function AdminLogin() {
       return;
     }
 
-    const { data: profile, error: profileError } = await supabase
-      .from("profiles")
-      .select("role")
-      .eq("id", data.user.id)
-      .maybeSingle();
+    const response = await fetch("/api/admin/session?path=%2Fadmin%2Fdashboard", {
+      cache: "no-store",
+      headers: { authorization: `Bearer ${data.session.access_token}` }
+    });
+    const access = await response.json().catch(() => ({})) as { error?: string };
 
-    if (profileError) {
+    if (!response.ok) {
       await supabase.auth.signOut();
       setIsLoading(false);
-      setError(
-        isMissingProfilesTable(profileError.message, profileError.code)
-          ? "Tabel profiles belum tersedia. Jalankan schema.sql terlebih dahulu."
-          : "Supabase aktif, tetapi database schema belum dijalankan."
-      );
-      return;
-    }
-
-    if (profile?.role !== "superadmin") {
-      await supabase.auth.signOut();
-      setIsLoading(false);
-      setError("Akses ditolak. Akun ini belum memiliki role superadmin.");
+      setError(access.error || "Akses panel admin ditolak.");
       return;
     }
 
@@ -128,9 +108,9 @@ export function AdminLogin() {
         >
           <Logo variant="primary-dark" size="md" />
 
-          <h1 className="mt-8 text-3xl font-black">Login Super Admin</h1>
+          <h1 className="mt-8 text-3xl font-black">Login Panel Admin</h1>
           <p className="mt-3 text-sm leading-6 text-brand-charcoal/70">
-            Login ini hanya untuk pengelola konten website DE BRODER.
+            Masuk sebagai Super Admin, Admin, atau Admin Guest sesuai role pada profil terverifikasi.
           </p>
 
           {!configured ? (

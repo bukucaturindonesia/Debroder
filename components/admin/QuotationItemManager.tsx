@@ -3,7 +3,6 @@
 import { FormEvent, useEffect, useMemo, useState } from "react";
 import { useParams } from "next/navigation";
 import { createSupabaseClient } from "@/lib/supabase";
-import { isAdminRole } from "@/components/admin/layout/admin-navigation";
 
 type ManagedItem = {
   id: string;

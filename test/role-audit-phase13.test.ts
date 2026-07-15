@@ -6,6 +6,7 @@ import {
   getRoleLabel,
   hasPermission,
   isAdminRole,
+  isAssignableAdminRole,
   isSuperAdminRole,
   validateRoleAssignment
 } from "@/lib/access-control";
@@ -40,7 +41,7 @@ const workItemDetailUi = readFileSync(
 );
 
 describe("Phase 13 role catalog and helpers", () => {
-  it("recognizes every official v1.2 specialist role", () => {
+  it("keeps specialist roles recognizable while assigning only the final three panel roles", () => {
     expect(ADMIN_ROLES).toEqual(
       expect.arrayContaining([
         "sales_admin",
@@ -55,7 +56,11 @@ describe("Phase 13 role catalog and helpers", () => {
     expect(isAdminRole("designer")).toBe(true);
     expect(isAdminRole("customer")).toBe(false);
     expect(getRoleLabel("quality_control")).toBe("Quality Control");
-    expect(validateRoleAssignment("operator")).toEqual([]);
+    expect(isAssignableAdminRole("superadmin")).toBe(true);
+    expect(isAssignableAdminRole("admin")).toBe(true);
+    expect(isAssignableAdminRole("admin_guest")).toBe(true);
+    expect(isAssignableAdminRole("operator")).toBe(false);
+    expect(validateRoleAssignment("operator")).toHaveLength(1);
     expect(validateRoleAssignment("unknown")).toHaveLength(1);
   });
 

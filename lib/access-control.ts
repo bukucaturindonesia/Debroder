@@ -3,6 +3,7 @@ export const ADMIN_ROLES = [
   "superadmin",
   "super_admin",
   "admin",
+  "admin_guest",
   "sales_admin",
   "designer",
   "production_admin",
@@ -18,7 +19,8 @@ export const ROLE_LABELS: Record<AdminRole, string> = {
   owner: "Owner",
   superadmin: "Super Admin",
   super_admin: "Super Admin (Legacy)",
-  admin: "Admin Umum",
+  admin: "Admin",
+  admin_guest: "Admin Guest",
   sales_admin: "Sales / Admin Order",
   designer: "Designer",
   production_admin: "Admin Produksi",
@@ -32,7 +34,8 @@ export const ROLE_DESCRIPTIONS: Record<AdminRole, string> = {
   owner: "Akses owner dan pembacaan audit, tanpa hak hapus permanen.",
   superadmin: "Akses penuh, pengelolaan role, permission, dan hapus permanen.",
   super_admin: "Alias kompatibilitas Super Admin.",
-  admin: "Akses operasional umum tanpa pengelolaan akses dan audit sensitif.",
+  admin: "Akses operasional existing tanpa pengelolaan akses, permission, dan maintenance owner-only.",
+  admin_guest: "Full Panel Viewer read-only: seluruh modul dapat dilihat melalui data yang disanitasi tanpa mutation atau akses secret.",
   sales_admin: "Quotation, pesanan, pelanggan, dan pencatatan pembayaran.",
   designer: "Mockup, file desain, revisi, dan pengiriman proof.",
   production_admin: "Job Order, Work Item, penugasan, dan status produksi.",
@@ -41,6 +44,27 @@ export const ROLE_DESCRIPTIONS: Record<AdminRole, string> = {
   quality_control: "Pemeriksaan, bukti, hasil QC, dan rework.",
   store_staff: "Persiapan pengiriman, pickup, resi, dan serah terima."
 };
+
+
+export const ASSIGNABLE_ADMIN_ROLES = [
+  "superadmin",
+  "admin",
+  "admin_guest"
+] as const satisfies readonly AdminRole[];
+
+export type AssignableAdminRole = (typeof ASSIGNABLE_ADMIN_ROLES)[number];
+
+export function isAssignableAdminRole(value: unknown): value is AssignableAdminRole {
+  return typeof value === "string" && ASSIGNABLE_ADMIN_ROLES.includes(value as AssignableAdminRole);
+}
+
+export function isAdminGuestRole(role: string | null | undefined) {
+  return role === "admin_guest";
+}
+
+export function isCanonicalPanelRole(role: string | null | undefined) {
+  return role === "superadmin" || role === "admin" || role === "admin_guest";
+}
 
 export type PermissionDefinition = {
   permission_key: string;
@@ -98,7 +122,7 @@ export function hasPermission(permissions: readonly string[], permission: string
 }
 
 export function validateRoleAssignment(input: unknown) {
-  if (!isAdminRole(input)) return ["Role tidak valid."];
+  if (!isAssignableAdminRole(input)) return ["Role tidak valid. Gunakan Super Admin, Admin, atau Admin Guest."];
   return [];
 }
 

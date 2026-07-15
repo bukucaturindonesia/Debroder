@@ -1,6 +1,10 @@
 import { createClient, type SupabaseClient, type User } from "@supabase/supabase-js";
 import { getAdminSupabaseClient } from "@/lib/supabase/client";
 import { getPublicSupabaseEnv } from "@/lib/env";
+import {
+  adminGuestErrorResponse,
+  assertAdminRequestMethodAllowed
+} from "@/lib/admin-role-security";
 import { canCreateRepeatOrder } from "@/lib/repeat-orders";
 import { isAdminRole } from "@/lib/access-control";
 
@@ -38,6 +42,7 @@ export async function requireRepeatOrderActor(
     .eq("id", data.user.id)
     .maybeSingle();
   const role = typeof profile?.role === "string" ? profile.role.toLowerCase() : "";
+  assertAdminRequestMethodAllowed(role, request.method);
   if (profileError || !isAdminRole(role)) throw new RepeatOrderAuthError(403, "Akses panel admin ditolak.");
 
   const client = createClient(env.url, env.anonKey, {
@@ -65,6 +70,8 @@ export async function requireRepeatOrderActor(
 }
 
 export function repeatOrderErrorResponse(error: unknown): Response {
+  const guestResponse = adminGuestErrorResponse(error);
+  if (guestResponse) return guestResponse;
   if (error instanceof RepeatOrderAuthError) {
     return Response.json({ error: error.message }, { status: error.status });
   }

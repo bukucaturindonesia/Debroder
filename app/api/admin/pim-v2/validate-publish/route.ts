@@ -1,34 +1,11 @@
 import { NextResponse } from "next/server";
-import { parseProductPayload } from "@/lib/product-parser";
-import { validatePublishProduct } from "@/lib/product-validation";
 
-export async function POST(request: Request) {
-  const body: unknown = await request.json();
-  const product = parseBodyProduct(body);
-
-  if (!product) {
-    return NextResponse.json(
-      { error: "Invalid product payload.", issues: [] },
-      { status: 400 }
-    );
-  }
-
-  const issues = validatePublishProduct(product);
-  return NextResponse.json({
-    ok: !issues.some((issue) => issue.severity === "error"),
-    issues
-  });
+export async function POST() {
+  return NextResponse.json(
+    {
+      error: "Validasi Publish PIM V2 sudah dipensiunkan. Gunakan /api/admin/products.",
+      canonical_endpoint: "/api/admin/products"
+    },
+    { status: 410, headers: { "cache-control": "private, no-store" } }
+  );
 }
-
-function parseBodyProduct(value: unknown) {
-  if (!isRecord(value)) {
-    return null;
-  }
-
-  return parseProductPayload(value.product);
-}
-
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return typeof value === "object" && value !== null && !Array.isArray(value);
-}
-

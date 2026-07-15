@@ -1,10 +1,13 @@
 "use client";
 
-import type { ReactNode } from "react";
+import type { MouseEvent, ReactNode, SyntheticEvent } from "react";
 import { useEffect, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { createSupabaseClient } from "@/lib/supabase";
 import { AdminHeader } from "./AdminHeader";
+import { AdminGuestFullViewer } from "@/components/admin/AdminGuestFullViewer";
+import { isAdminGuestFullViewerPath } from "@/lib/admin-full-viewer";
+import { AdminAccessProvider } from "./AdminAccessContext";
 import { AdminSidebar } from "./AdminSidebar";
 import {
   getRoleHome,
@@ -54,22 +57,29 @@ export function AdminShell({ children }: { children: ReactNode }) {
         return;
       }
 
-      const { data: profile, error } = await supabase
-        .from("profiles")
-        .select("role")
-        .eq("id", user.id)
-        .maybeSingle();
+      const token = data.session?.access_token;
+      const response = await fetch(`/api/admin/session?path=${encodeURIComponent(pathname)}`, {
+        cache: "no-store",
+        headers: token ? { authorization: `Bearer ${token}` } : undefined
+      });
+      const session = await response.json().catch(() => ({})) as {
+        role?: unknown;
+        allowed?: boolean;
+        home?: string;
+        error?: string;
+      };
 
       if (!active) return;
 
-      if (error || !profile || !isAdminRole(profile.role)) {
-        setAccessError("Akun ini tidak memiliki akses panel admin.");
+      if (!isAdminRole(session.role)) {
+        setAccessError(session.error || "Akun ini tidak memiliki akses panel admin.");
         setChecking(false);
         return;
       }
 
-      setRole(profile.role);
+      setRole(session.role);
       setChecking(false);
+      if (!session.allowed) router.replace(session.home || getRoleHome(session.role));
     }
 
     void verifyAccess();
@@ -77,7 +87,7 @@ export function AdminShell({ children }: { children: ReactNode }) {
     return () => {
       active = false;
     };
-  }, [isLoginPage, router]);
+  }, [isLoginPage, pathname, router]);
 
   useEffect(() => {
     if (!role || isLoginPage) return;
@@ -101,6 +111,20 @@ export function AdminShell({ children }: { children: ReactNode }) {
     if (supabase) await supabase.auth.signOut();
     router.replace("/admin/login");
     router.refresh();
+  }
+
+  function blockReadOnlySubmit(event: SyntheticEvent<HTMLDivElement>) {
+    if (role !== "admin_guest") return;
+    event.preventDefault();
+    event.stopPropagation();
+  }
+
+  function blockReadOnlyMutation(event: MouseEvent<HTMLDivElement>) {
+    if (role !== "admin_guest") return;
+    const target = event.target as HTMLElement | null;
+    if (!target?.closest('[data-admin-mutation="true"]')) return;
+    event.preventDefault();
+    event.stopPropagation();
   }
 
   if (isLoginPage) return children;
@@ -147,7 +171,8 @@ export function AdminShell({ children }: { children: ReactNode }) {
   const legacyRoute = isLegacyAdminRoute(pathname);
 
   return (
-    <div className="admin-shell-root">
+    <AdminAccessProvider role={role}>
+      <div className="admin-shell-root" data-admin-read-only={role === "admin_guest"}>
       <aside className="admin-shell-desktop-sidebar">
         <AdminSidebar role={role} onLogout={logout} />
       </aside>
@@ -193,14 +218,26 @@ export function AdminShell({ children }: { children: ReactNode }) {
           </div>
         ) : null}
 
+        {role === "admin_guest" ? (
+          <div className="admin-shell-read-only-banner" role="status">
+            <span className="admin-shell-read-only-badge">MODE LIHAT SAJA</span>
+            <p>Akun ini dapat melihat seluruh Panel Admin, tetapi tidak dapat melakukan perubahan.</p>
+          </div>
+        ) : null}
+
         <div
           className={`admin-shell-content ${
             legacyRoute ? "admin-shell-legacy" : "admin-shell-modern"
           }`}
+          onSubmitCapture={blockReadOnlySubmit}
+          onClickCapture={blockReadOnlyMutation}
         >
-          {children}
+          {role === "admin_guest" && isAdminGuestFullViewerPath(pathname)
+            ? <AdminGuestFullViewer pathname={pathname} />
+            : children}
         </div>
       </div>
     </div>
+    </AdminAccessProvider>
   );
 }

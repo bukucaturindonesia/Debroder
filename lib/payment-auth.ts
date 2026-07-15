@@ -1,6 +1,10 @@
 import { createClient, type SupabaseClient, type User } from "@supabase/supabase-js";
 import { getAdminSupabaseClient } from "@/lib/supabase/client";
 import { getPublicSupabaseEnv } from "@/lib/env";
+import {
+  adminGuestErrorResponse,
+  assertAdminRequestMethodAllowed
+} from "@/lib/admin-role-security";
 import { isPaymentRole } from "@/lib/payments";
 
 export type PaymentActor = { user: User; role: string; client: SupabaseClient };
@@ -22,6 +26,7 @@ export async function requirePaymentActor(request: Request): Promise<PaymentActo
     .eq("id", data.user.id)
     .maybeSingle();
   const role = typeof profile?.role === "string" ? profile.role.toLowerCase() : "";
+  assertAdminRequestMethodAllowed(role, request.method);
   if (profileError || !isPaymentRole(role)) throw new PaymentAuthError(403, "Akses pembayaran ditolak.");
   const client = createClient(env.url, env.anonKey, {
     auth: {
@@ -41,6 +46,8 @@ export class PaymentAuthError extends Error {
 }
 
 export function paymentErrorResponse(error: unknown): Response {
+  const guestResponse = adminGuestErrorResponse(error);
+  if (guestResponse) return guestResponse;
   if (error instanceof PaymentAuthError) {
     return Response.json({ error: error.message }, { status: error.status });
   }

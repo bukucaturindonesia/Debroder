@@ -26,23 +26,27 @@ export type AdminNavigationGroup = {
 };
 
 export const FULL_ADMIN_ROLES: readonly AdminRole[] = ["owner", "superadmin", "super_admin", "admin"];
+export const ADMIN_GUEST_ROLES: readonly AdminRole[] = ["admin_guest"];
+export const DASHBOARD_ROLES: readonly AdminRole[] = [...FULL_ADMIN_ROLES, ...ADMIN_GUEST_ROLES];
+export const PRODUCT_MANAGER_VIEW_ROLES: readonly AdminRole[] = [...FULL_ADMIN_ROLES, ...ADMIN_GUEST_ROLES];
 export const QUOTATION_ROLES: readonly AdminRole[] = ["owner", "superadmin", "super_admin", "sales_admin", "admin"];
 export const QUOTATION_VIEW_ROLES: readonly AdminRole[] = [...QUOTATION_ROLES, "designer"];
 export const REPEAT_ORDER_ROLES: readonly AdminRole[] = QUOTATION_ROLES;
-const ALL_STAFF_ROLES: readonly AdminRole[] = ADMIN_ROLES;
+const ALL_STAFF_ROLES: readonly AdminRole[] = ADMIN_ROLES.filter((role) => role !== "admin_guest");
 const ORDER_READ_ROLES: readonly AdminRole[] = ["owner", "superadmin", "super_admin", "admin", "sales_admin", "finance", "production_admin", "store_staff"];
 const QUOTATION_READ_ROLES: readonly AdminRole[] = QUOTATION_VIEW_ROLES;
 const PRODUCTION_ROLES: readonly AdminRole[] = ["owner", "superadmin", "super_admin", "admin", "production_admin", "operator"];
 const QC_ROLES: readonly AdminRole[] = ["owner", "superadmin", "super_admin", "admin", "production_admin", "quality_control"];
 const SHIPPING_ROLES: readonly AdminRole[] = ["owner", "superadmin", "super_admin", "admin", "production_admin", "store_staff"];
-const ACCESS_READ_ROLES: readonly AdminRole[] = ["owner", "superadmin", "super_admin"];
+export const PRODUCT_MAINTENANCE_ROLES: readonly AdminRole[] = ["owner", "superadmin", "super_admin"];
+const ACCESS_READ_ROLES: readonly AdminRole[] = PRODUCT_MAINTENANCE_ROLES;
 const AUDIT_ROLES: readonly AdminRole[] = ["owner", "superadmin", "super_admin"];
 
 export const adminNavigationGroups: readonly AdminNavigationGroup[] = [
   {
     label: "DASHBOARD",
-    roles: FULL_ADMIN_ROLES,
-    items: [{ label: "Dashboard", href: "/admin/dashboard", roles: FULL_ADMIN_ROLES, exact: true }]
+    roles: DASHBOARD_ROLES,
+    items: [{ label: "Dashboard", href: "/admin/dashboard", roles: DASHBOARD_ROLES, exact: true }]
   },
   {
     label: "WEBSITE",
@@ -58,11 +62,10 @@ export const adminNavigationGroups: readonly AdminNavigationGroup[] = [
   },
   {
     label: "KATALOG",
-    roles: FULL_ADMIN_ROLES,
+    roles: PRODUCT_MANAGER_VIEW_ROLES,
     items: [
-      { label: "Produk & PIM", href: "/admin/products", roles: FULL_ADMIN_ROLES },
-      { label: "PIM Manager", href: "/admin/pim-manager", roles: FULL_ADMIN_ROLES },
-      { label: "PIM V2", href: "/admin/pim-v2", roles: FULL_ADMIN_ROLES },
+      { label: "Product Manager", href: "/admin/products", roles: PRODUCT_MANAGER_VIEW_ROLES },
+      { label: "Maintenance PIM", href: "/admin/pim-manager", roles: PRODUCT_MAINTENANCE_ROLES },
       { label: "Kategori / Model", href: "/admin/categories", roles: FULL_ADMIN_ROLES },
       { label: "Layanan", href: "/admin/services", roles: FULL_ADMIN_ROLES },
       { label: "Store / Cabang", href: "/admin/store", roles: FULL_ADMIN_ROLES }
@@ -98,6 +101,69 @@ export const adminNavigationGroups: readonly AdminNavigationGroup[] = [
     ]
   }
 ] as const;
+const adminGuestNavigationGroups: readonly AdminNavigationGroup[] = [
+  {
+    label: "DASHBOARD",
+    roles: ADMIN_GUEST_ROLES,
+    items: [{ label: "Dashboard", href: "/admin/dashboard", roles: ADMIN_GUEST_ROLES, exact: true }]
+  },
+  {
+    label: "WEBSITE",
+    roles: ADMIN_GUEST_ROLES,
+    items: [
+      { label: "CMS / Landing Page", href: "/admin/homepage-sections", roles: ADMIN_GUEST_ROLES },
+      { label: "CMS / Jersey", href: "/admin/commerce/jersey", roles: ADMIN_GUEST_ROLES },
+      { label: "Page Hero", href: "/admin/page-hero", roles: ADMIN_GUEST_ROLES },
+      { label: "Media Library", href: "/admin/media", roles: ADMIN_GUEST_ROLES },
+      { label: "Gambar Website", href: "/admin/site-media", roles: ADMIN_GUEST_ROLES },
+      { label: "Banner Instagram", href: "/admin/banner", roles: ADMIN_GUEST_ROLES }
+    ]
+  },
+  {
+    label: "KATALOG",
+    roles: ADMIN_GUEST_ROLES,
+    items: [
+      { label: "Product Manager", href: "/admin/products", roles: ADMIN_GUEST_ROLES },
+      { label: "PIM V2 Dependency", href: "/admin/pim-v2", roles: ADMIN_GUEST_ROLES },
+      { label: "Maintenance PIM", href: "/admin/pim-manager", roles: ADMIN_GUEST_ROLES },
+      { label: "Kategori / Model", href: "/admin/categories", roles: ADMIN_GUEST_ROLES },
+      { label: "Layanan", href: "/admin/services", roles: ADMIN_GUEST_ROLES },
+      { label: "Store / Cabang", href: "/admin/store", roles: ADMIN_GUEST_ROLES }
+    ]
+  },
+  {
+    label: "OPERASIONAL",
+    roles: ADMIN_GUEST_ROLES,
+    items: [{
+      label: "Operasional",
+      roles: ADMIN_GUEST_ROLES,
+      children: [
+        { label: "Pesanan", href: "/admin/orders", roles: ADMIN_GUEST_ROLES, exact: true },
+        { label: "Pembayaran", href: "/admin/payments", roles: ADMIN_GUEST_ROLES },
+        { label: "Repeat Order", href: "/admin/repeat-orders", roles: ADMIN_GUEST_ROLES },
+        { label: "Formal Quotation", href: "/admin/orders/quotations", roles: ADMIN_GUEST_ROLES },
+        { label: "Job Order", href: "/admin/job-orders", roles: ADMIN_GUEST_ROLES },
+        { label: "Work Item", href: "/admin/work-items", roles: ADMIN_GUEST_ROLES },
+        { label: "Status Produksi", href: "/admin/production", roles: ADMIN_GUEST_ROLES },
+        { label: "Quality Control", href: "/admin/quality-control", roles: ADMIN_GUEST_ROLES },
+        { label: "Pengiriman & Pickup", href: "/admin/fulfillments", roles: ADMIN_GUEST_ROLES },
+        { label: "Notifikasi", href: "/admin/notifications", roles: ADMIN_GUEST_ROLES },
+        { label: "Laporan", href: "/admin/reports", roles: ADMIN_GUEST_ROLES }
+      ]
+    }]
+  },
+  {
+    label: "SISTEM",
+    roles: ADMIN_GUEST_ROLES,
+    items: [
+      { label: "Pengaturan", href: "/admin/website-settings", roles: ADMIN_GUEST_ROLES },
+      { label: "Penomoran Dokumen", href: "/admin/document-numbering", roles: ADMIN_GUEST_ROLES },
+      { label: "Role & Permission", href: "/admin/access-control", roles: ADMIN_GUEST_ROLES },
+      { label: "Audit Sistem", href: "/admin/audit-log", roles: ADMIN_GUEST_ROLES }
+    ]
+  }
+] as const;
+
 
 export function hasRole(role: AdminRole | null, allowedRoles: readonly AdminRole[]) {
   return role !== null && allowedRoles.includes(role);
@@ -110,7 +176,8 @@ export function isNavigationActive(pathname: string, link: AdminNavigationLink) 
   return pathname === link.href || pathname.startsWith(`${link.href}/`);
 }
 export function getNavigationGroups(role: AdminRole) {
-  return adminNavigationGroups
+  const groups = role === "admin_guest" ? adminGuestNavigationGroups : adminNavigationGroups;
+  return groups
     .filter((group) => hasRole(role, group.roles))
     .map((group) => ({
       ...group,
@@ -138,7 +205,10 @@ function pathAllowedByRole(role: AdminRole, pathname: string) {
 }
 
 export function roleCanAccessPath(role: AdminRole, pathname: string) {
-  if (pathname === "/admin" || pathname === "/admin/dashboard") return hasRole(role, FULL_ADMIN_ROLES);
+  if (role === "admin_guest") {
+    return pathname.startsWith("/admin") && !pathname.startsWith("/admin/login");
+  }
+  if (pathname === "/admin" || pathname === "/admin/dashboard") return hasRole(role, DASHBOARD_ROLES);
   if (
     pathname === "/admin/orders/archive" ||
     /^\/admin\/orders\/[^/]+$/.test(pathname)
@@ -149,6 +219,9 @@ export function roleCanAccessPath(role: AdminRole, pathname: string) {
     return hasRole(role, FULL_ADMIN_ROLES);
   }
   if (pathname.startsWith("/admin/notifications")) return true;
+  if (pathname === "/admin/pim-v2" || pathname.startsWith("/admin/pim-v2/")) {
+    return hasRole(role, PRODUCT_MAINTENANCE_ROLES);
+  }
   return pathAllowedByRole(role, pathname);
 }
 
@@ -163,6 +236,10 @@ export function getRoleHome(role: AdminRole) {
 
 export function getCurrentNavigationLabel(pathname: string) {
   if (pathname === "/admin/access-control") return "Role & Permission";
+  if (pathname === "/admin/payments") return "Pembayaran";
+  if (pathname === "/admin/reports") return "Laporan Operasional";
+  if (pathname === "/admin/pim-v2") return "PIM V2 Dependency";
+  if (pathname === "/admin/pim-manager") return "Maintenance PIM";
   if (pathname === "/admin/audit-log") return "Audit Sistem";
   if (pathname === "/admin/notifications/templates") return "Template Notifikasi";
   if (pathname === "/admin/notifications/history") return "Riwayat Notifikasi";
