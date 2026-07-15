@@ -1,6 +1,10 @@
 export type CheckoutFulfillmentMethod = "pickup" | "shipping";
 export type CheckoutPaymentMethod = "bank_transfer" | "pay_at_store";
 
+export const MAX_CHECKOUT_ITEMS = 50;
+export const MAX_CHECKOUT_LINE_QUANTITY = 100;
+export const MAX_CHECKOUT_TOTAL_QUANTITY = 500;
+
 export type PublicCheckoutRequest = {
   idempotencyKey: string;
   accessToken: string;
@@ -54,17 +58,25 @@ export function parsePublicCheckoutRequest(value: unknown): PublicCheckoutReques
   if (paymentMethod !== "bank_transfer" && paymentMethod !== "pay_at_store") return null;
   if (method === "shipping" && (address.length < 10 || paymentMethod !== "bank_transfer")) return null;
   if (method === "pickup" && !/^[0-9a-fA-F-]{36}$/.test(pickupLocationId)) return null;
-  if (value.items.length < 1 || value.items.length > 50) return null;
+  if (value.items.length < 1 || value.items.length > MAX_CHECKOUT_ITEMS) return null;
 
   const items: PublicCheckoutRequest["items"] = [];
   const variantIds = new Set<string>();
+  let totalQuantity = 0;
   for (const item of value.items) {
     if (!isRecord(item)) return null;
     const variantSizeId = text(item.variantSizeId);
     const quantity = Number(item.quantity);
-    if (!/^[0-9a-fA-F-]{36}$/.test(variantSizeId) || !Number.isSafeInteger(quantity) || quantity < 1 || quantity > 10000) return null;
+    if (
+      !/^[0-9a-fA-F-]{36}$/.test(variantSizeId)
+      || !Number.isSafeInteger(quantity)
+      || quantity < 1
+      || quantity > MAX_CHECKOUT_LINE_QUANTITY
+    ) return null;
     if (variantIds.has(variantSizeId)) return null;
     variantIds.add(variantSizeId);
+    totalQuantity += quantity;
+    if (totalQuantity > MAX_CHECKOUT_TOTAL_QUANTITY) return null;
     items.push({ variantSizeId, quantity, note: text(item.note).slice(0, 1000) || undefined });
   }
 

@@ -27,6 +27,7 @@ describe("Commerce Foundation V1 P0", () => {
     const parsed = parsePublicCheckoutRequest(request());
     expect(parsed?.customer.phone).toBe("6281234567890");
     expect(parsed?.items[0]?.quantity).toBe(2);
+    expect(parsePublicCheckoutRequest(request([{ variantSizeId: "33333333-3333-4333-8333-333333333333", quantity: 101 }]))).toBeNull();
   });
 
   it("rejects duplicate variants and shipping without a complete address", () => {
