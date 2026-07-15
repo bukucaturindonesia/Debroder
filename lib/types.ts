@@ -39,6 +39,7 @@ export type CmsWorkflowFields = {
 
 export type Product = {
   id?: string;
+  name?: string;
   nama: string;
   kategori: string;
   deskripsi: string;
@@ -102,6 +103,7 @@ export type Product = {
   variants?: ProductVariant[];
   size_guide?: ProductSizeGuide | null;
   urutan: number;
+  status?: "draft" | "active" | "archived";
   status_aktif: boolean;
   created_at?: string;
   updated_at?: string;
@@ -558,6 +560,10 @@ export type ProductSizeGuide = {
 export type ProductVariant = {
   id?: string;
   product_id: string;
+  name?: string;
+  slug?: string;
+  hex_code?: string;
+  status?: "active" | "inactive" | "out_of_stock";
   variant_name?: string;
   color_name?: string;
   color_hex?: string;
@@ -582,6 +588,9 @@ export type ProductVariantSize = {
   size_name: string;
   sku?: string | null;
   stock: number;
+  stock_quantity?: number | null;
+  size_id?: string | null;
+  status?: "active" | "inactive" | "out_of_stock";
   price_adjustment?: number | string;
   is_active: boolean;
   sort_order: number;

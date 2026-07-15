@@ -58,14 +58,20 @@ export function validatePublishProduct(product: Product): ValidationIssue[] {
       );
     }
 
-    if (variantSkus.has(variant.sku)) {
-      issues.push(error(`variant.${variant.id}.sku`, "SKU varian duplikat."));
+    const variantSku = variant.sku.trim();
+    if (variantSku) {
+      if (variantSkus.has(variantSku)) {
+        issues.push(error(`variant.${variant.id}.sku`, "SKU induk varian duplikat."));
+      }
+      variantSkus.add(variantSku);
     }
-    variantSkus.add(variant.sku);
 
-    if (variant.status === "active" && !getVariantThumbnail(variant)) {
+    const hasFrontImage = variant.images.some(
+      (image) => image.imageRole === "front" && image.imageUrl.trim().length > 0
+    );
+    if (variant.status === "active" && (!hasFrontImage || !getVariantThumbnail(variant))) {
       issues.push(
-        error(`variant.${variant.id}.images`, "Warna aktif wajib memiliki foto utama.")
+        error(`variant.${variant.id}.images`, "Warna aktif wajib memiliki gambar front.")
       );
     }
 
@@ -76,12 +82,18 @@ export function validatePublishProduct(product: Product): ValidationIssue[] {
     }
 
     for (const variantSize of variant.sizes) {
-      if (sellableSkus.has(variantSize.sku)) {
+      if (!variantSize.sku.trim()) {
+        issues.push(error(`variant_size.${variantSize.id}.sku`, "Sellable SKU wajib diisi."));
+      }
+      if (!variantSize.sizeId) {
+        issues.push(error(`variant_size.${variantSize.id}.size_id`, "Ukuran wajib memakai size master."));
+      }
+      if (variantSize.sku && sellableSkus.has(variantSize.sku)) {
         issues.push(
           error(`variant_size.${variantSize.id}.sku`, "Sellable SKU duplikat.")
         );
       }
-      sellableSkus.add(variantSize.sku);
+      if (variantSize.sku) sellableSkus.add(variantSize.sku);
 
       if (!Number.isInteger(variantSize.stockQuantity) || variantSize.stockQuantity < 0) {
         issues.push(

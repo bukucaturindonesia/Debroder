@@ -35,7 +35,8 @@ const QUOTATION_READ_ROLES: readonly AdminRole[] = QUOTATION_VIEW_ROLES;
 const PRODUCTION_ROLES: readonly AdminRole[] = ["owner", "superadmin", "super_admin", "admin", "production_admin", "operator"];
 const QC_ROLES: readonly AdminRole[] = ["owner", "superadmin", "super_admin", "admin", "production_admin", "quality_control"];
 const SHIPPING_ROLES: readonly AdminRole[] = ["owner", "superadmin", "super_admin", "admin", "production_admin", "store_staff"];
-const ACCESS_READ_ROLES: readonly AdminRole[] = ["owner", "superadmin", "super_admin"];
+export const PRODUCT_MAINTENANCE_ROLES: readonly AdminRole[] = ["owner", "superadmin", "super_admin"];
+const ACCESS_READ_ROLES: readonly AdminRole[] = PRODUCT_MAINTENANCE_ROLES;
 const AUDIT_ROLES: readonly AdminRole[] = ["owner", "superadmin", "super_admin"];
 
 export const adminNavigationGroups: readonly AdminNavigationGroup[] = [
@@ -60,9 +61,8 @@ export const adminNavigationGroups: readonly AdminNavigationGroup[] = [
     label: "KATALOG",
     roles: FULL_ADMIN_ROLES,
     items: [
-      { label: "Produk & PIM", href: "/admin/products", roles: FULL_ADMIN_ROLES },
-      { label: "PIM Manager", href: "/admin/pim-manager", roles: FULL_ADMIN_ROLES },
-      { label: "PIM V2", href: "/admin/pim-v2", roles: FULL_ADMIN_ROLES },
+      { label: "Product Manager", href: "/admin/products", roles: FULL_ADMIN_ROLES },
+      { label: "Maintenance PIM", href: "/admin/pim-manager", roles: PRODUCT_MAINTENANCE_ROLES },
       { label: "Kategori / Model", href: "/admin/categories", roles: FULL_ADMIN_ROLES },
       { label: "Layanan", href: "/admin/services", roles: FULL_ADMIN_ROLES },
       { label: "Store / Cabang", href: "/admin/store", roles: FULL_ADMIN_ROLES }
@@ -149,6 +149,9 @@ export function roleCanAccessPath(role: AdminRole, pathname: string) {
     return hasRole(role, FULL_ADMIN_ROLES);
   }
   if (pathname.startsWith("/admin/notifications")) return true;
+  if (pathname === "/admin/pim-v2" || pathname.startsWith("/admin/pim-v2/")) {
+    return hasRole(role, PRODUCT_MAINTENANCE_ROLES);
+  }
   return pathAllowedByRole(role, pathname);
 }
 

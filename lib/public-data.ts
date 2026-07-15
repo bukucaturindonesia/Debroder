@@ -553,7 +553,7 @@ async function readProducts(): Promise<Product[]> {
   const { data, error } = await supabase
     .from("products")
     .select("*")
-    .eq("status_aktif", true)
+    .eq("status", "active")
     .order("urutan", { ascending: true });
 
   if (error || !data?.length) return fallbackContent.products;
@@ -568,7 +568,7 @@ async function readProducts(): Promise<Product[]> {
       .from("product_variants")
       .select("*")
       .in("product_id", productIds)
-      .eq("is_active", true)
+      .eq("status", "active")
       .order("sort_order", { ascending: true });
 
     const variants = (variantsData || []) as NonNullable<Product["variants"]>;
@@ -580,7 +580,7 @@ async function readProducts(): Promise<Product[]> {
             .from("product_variant_sizes")
             .select("*")
             .in("variant_id", variantIds)
-            .eq("is_active", true)
+            .eq("status", "active")
             .order("sort_order", { ascending: true })
         : Promise.resolve({ data: [] }),
       variantIds.length

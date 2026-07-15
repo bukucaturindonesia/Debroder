@@ -351,7 +351,7 @@ function formatMoney(value?: number | string | null) {
 }
 
 export function PimV2Admin() {
-  const [activeTab, setActiveTab] = useState<TabKey>("products");
+  const [activeTab, setActiveTab] = useState<TabKey>("variants");
   const [status, setStatus] = useState<StatusMessage | null>({ type: "info", text: "Memuat data PIM V2..." });
   const [loading, setLoading] = useState(true);
 
@@ -810,7 +810,6 @@ export function PimV2Admin() {
   }
 
   const tabs: Array<{ key: TabKey; label: string; description: string }> = [
-    { key: "products", label: "Produk V2", description: "Tentukan product type, pricing mode, subkategori, SKU, dan minimum order." },
     { key: "variants", label: "Varian", description: "Kelola varian warna, ukuran, stok, SKU, dan gambar varian." },
     { key: "masters", label: "Master Data", description: "Kelola subkategori, warna, ukuran, dan layanan produksi." },
     { key: "jersey", label: "Jersey Master", description: "Kelola paket, bahan, kerah, addon, dan minimum order jersey." },
@@ -827,7 +826,7 @@ export function PimV2Admin() {
             <SmallLabel>PIM V2 ENTERPRISE</SmallLabel>
             <h2 className="mt-2 text-2xl font-semibold tracking-[-0.02em]">Admin Master Data Produk</h2>
             <p className="mt-2 max-w-3xl text-sm leading-6 text-brand-charcoal/60">
-              Stage 2 membuat panel admin untuk mengelola struktur PIM V2: produk standar, varian warna/ukuran, size guide, layanan produksi, dan master jersey. Produk lama tetap jalan.
+              Dependency sementara untuk varian warna/ukuran, sellable SKU, stok, variant images, size guide, layanan produksi, dan master jersey. Product root serta lifecycle dikelola di Product Manager.
             </p>
           </div>
           <button type="button" onClick={loadData} className="inline-flex min-h-11 items-center justify-center rounded-full bg-brand-charcoal px-5 text-sm font-semibold text-white">

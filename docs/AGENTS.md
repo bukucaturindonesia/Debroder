@@ -583,3 +583,352 @@ Laporan akhir harus menyebutkan:
 
 Tidak boleh menyembunyikan error, test gagal, migration pending, atau
 pekerjaan yang belum diverifikasi.
+
+# OWNER-MANAGED GITHUB & VERCEL — FROZEN RULE
+
+Aturan ini berlaku untuk seluruh pekerjaan repository DEBRODER.
+
+## 1. BATAS AKSES CODEX
+
+Codex dianggap TIDAK memiliki akses operasional yang dapat diandalkan ke:
+
+- akun GitHub owner;
+- repository remote GitHub;
+- branch remote;
+- pull request;
+- merge;
+- akun/team/project Vercel;
+- environment variables Vercel;
+- Preview deployment;
+- Production deployment;
+- build logs dan runtime logs Vercel.
+
+Walaupun connector atau tool terlihat tersedia, jangan menganggap akses tersebut
+lengkap, benar, atau mewakili akun/project DEBRODER milik owner.
+
+## 2. TINDAKAN OWNER
+
+Tindakan berikut hanya dilakukan manual oleh owner:
+
+- membuat branch;
+- commit;
+- push;
+- membuat pull request;
+- merge ke main;
+- menghubungkan repository ke Vercel;
+- mengatur environment variables;
+- deploy Preview;
+- deploy Production;
+- rollback deployment;
+- membaca Vercel build/runtime logs;
+- verifikasi domain live.
+
+Codex tidak boleh mencoba melakukan tindakan tersebut kecuali owner secara
+eksplisit meminta dan aksesnya telah terbukti tersedia pada sesi yang sama.
+
+## 3. TANGGUNG JAWAB CODEX
+
+Codex hanya bertanggung jawab untuk:
+
+- audit repository;
+- implementasi source code;
+- migration;
+- test;
+- TypeScript;
+- lint;
+- production build lokal;
+- static contract check;
+- regression test;
+- diff check pada file yang berubah;
+- dokumentasi hasil;
+- menyiapkan source dalam kondisi commit-ready.
+
+## 4. OUTPUT WAJIB
+
+Setelah pekerjaan selesai, Codex hanya melaporkan:
+
+- file yang berubah;
+- migration baru;
+- perilaku yang diterapkan;
+- hasil test;
+- hasil TypeScript;
+- hasil lint;
+- hasil build;
+- risiko tersisa;
+- status source;
+- tindakan owner yang masih diperlukan.
+
+Format status:
+
+SOURCE: READY / BLOCKED
+LOCAL GATES: PASS / FAIL / PENDING
+REMOTE DATABASE: APPLIED / NOT APPLIED / NOT VERIFIED
+GITHUB: OWNER-MANAGED
+VERCEL: OWNER-MANAGED
+DEPLOYMENT: OWNER-MANAGED
+IMPLEMENTATION NEXT PHASE: NOT STARTED
+
+## 5. LARANGAN
+
+Codex dilarang:
+
+- mengulang percobaan akses GitHub/Vercel;
+- mencari project ID atau deployment ID secara terus-menerus;
+- membuat deployment sebagai blocker audit repository;
+- mengklaim commit, push, merge, atau deploy berhasil tanpa bukti owner;
+- memberi instruksi deployment panjang kecuali diminta owner;
+- memulai fase berikutnya tanpa GO owner;
+- mengulang pekerjaan yang sudah selesai hanya karena connector tidak tersedia.
+
+## 6. HANDOFF
+
+Ketika source dan local gates selesai, Codex harus berhenti dengan status:
+
+SOURCE READY FOR OWNER HANDOFF
+
+Owner kemudian menangani sendiri:
+
+GitHub → branch/commit/push/merge
+Vercel → Preview/Production deployment
+Browser → UAT dan live verification
+
+Codex melanjutkan hanya setelah owner memberikan hasil atau GO berikutnya.
+
+# GITHUB & VERCEL HANDOFF RESPONSIBILITY — FROZEN
+
+Aturan ini berlaku untuk seluruh pekerjaan repository DEBRODER.
+
+## 1. PEMBAGIAN TANGGUNG JAWAB
+
+GitHub dan Vercel adalah OWNER-MANAGED untuk tindakan remote.
+
+Owner melakukan secara manual:
+
+- membuat branch;
+- commit;
+- push;
+- membuat pull request;
+- merge ke main;
+- menghubungkan project Vercel;
+- mengatur environment variables;
+- deploy Preview;
+- deploy Production;
+- rollback deployment;
+- membuka dashboard dan runtime logs.
+
+Codex tidak boleh melakukan atau mengklaim tindakan remote tersebut tanpa
+permintaan eksplisit dan akses yang terbukti tersedia.
+
+Namun Codex tetap bertanggung jawab memastikan source:
+
+- aman untuk Git;
+- commit-ready;
+- push-ready;
+- pull-request-ready;
+- build-ready;
+- Vercel-ready;
+- tidak memiliki blocker yang dapat dideteksi dari repository lokal.
+
+## 2. KEWAJIBAN CODEX SEBELUM OWNER HANDOFF
+
+Sebelum menyatakan pekerjaan selesai, Codex wajib menjalankan pemeriksaan berikut.
+
+### A. Git readiness
+
+1. Periksa seluruh file yang berubah.
+2. Pastikan tidak ada file penting yang terhapus tanpa sengaja.
+3. Pastikan tidak ada folder hasil extract atau folder repository ganda.
+4. Pastikan tidak ada:
+   - secret;
+   - API key;
+   - service-role key;
+   - token;
+   - `.env`;
+   - credential;
+   - file sementara;
+   - build artifact;
+   - dependency directory;
+   yang ikut masuk ke commit.
+
+5. Periksa `.gitignore`.
+6. Jalankan changed-files `git diff --check`.
+7. Periksa konflik marker:
+   - `<<<<<<<`
+   - `=======`
+   - `>>>>>>>`
+
+8. Pastikan migration baru mempunyai nama dan urutan timestamp yang benar.
+9. Jangan mengubah migration yang sudah applied.
+10. Pastikan branch-neutral:
+    source tidak boleh bergantung pada nama branch lokal.
+
+### B. Dependency readiness
+
+1. Jalankan install menggunakan lockfile:
+   `pnpm install --frozen-lockfile`
+
+2. Pastikan:
+   - `package.json` valid;
+   - `pnpm-lock.yaml` konsisten;
+   - dependency baru tercatat;
+   - tidak ada package lokal atau path absolut;
+   - tidak ada dependency yang hanya tersedia pada mesin developer.
+
+3. Jangan mengubah lockfile tanpa kebutuhan nyata.
+
+### C. Application gates
+
+Wajib menjalankan:
+
+1. TypeScript:
+   `pnpm exec tsc --noEmit`
+
+2. Lint:
+   lint harus 0 error.
+   Warning baseline dicatat, bukan disembunyikan.
+
+3. Targeted tests untuk perubahan aktif.
+
+4. Full test suite.
+
+5. Production build:
+   `pnpm build`
+
+6. Build harus menggunakan kondisi yang mendekati Vercel:
+   - clean install;
+   - tanpa dev server;
+   - tanpa dependency global tersembunyi;
+   - tanpa akses file di luar repository;
+   - tanpa ketergantungan jaringan yang tidak wajib;
+   - tidak mengandalkan cache lokal.
+
+### D. Vercel compatibility preflight
+
+Codex wajib memeriksa dari source:
+
+1. Framework dan build command sesuai Next.js.
+2. Install command kompatibel dengan pnpm dan lockfile.
+3. Node.js version kompatibel.
+4. Tidak ada absolute Windows path.
+5. Nama file dan import case-sensitive.
+6. Tidak ada import yang hanya bekerja di Windows.
+7. Tidak ada penggunaan API Node pada Edge Runtime yang tidak kompatibel.
+8. Tidak ada secret pada `NEXT_PUBLIC_*`.
+9. Environment variables yang diperlukan didokumentasikan berdasarkan nama.
+10. Server-only variables tidak digunakan pada Client Component.
+11. Route Handler dan Server Action tidak mengakses browser globals.
+12. Build tidak bergantung pada Google Fonts atau remote asset fetch yang rapuh.
+13. Static generation tidak mencoba mengakses data wajib yang hanya tersedia
+    saat runtime tanpa fallback yang benar.
+14. Supabase client browser dan service-role client dipisahkan.
+15. Service-role key tidak pernah masuk bundle client.
+16. `next.config` valid untuk Vercel.
+17. Image remote patterns/domain sesuai kebutuhan.
+18. Middleware dan route matcher tidak memblokir asset atau Admin secara salah.
+
+### E. Environment contract
+
+Codex wajib menghasilkan daftar environment variable:
+
+- nama;
+- wajib atau opsional;
+- Preview atau Production;
+- server-only atau public;
+- fungsi variabel;
+- perilaku jika tidak tersedia.
+
+Codex tidak boleh membaca, meminta, atau menampilkan nilai secret.
+
+### F. Database compatibility
+
+1. Migration baru menggunakan file baru.
+2. Migration preflight PASS.
+3. RLS dan ACL tidak merusak public/admin flow.
+4. Source baru kompatibel dengan schema remote yang sudah applied.
+5. Tidak ada query terhadap kolom yang belum dimigrasikan.
+6. Generated types atau mapper diperbarui bila schema berubah.
+7. Rollback atau recovery path dijelaskan.
+
+## 3. DEFINISI HASIL
+
+Codex hanya boleh menyatakan:
+
+SOURCE READY FOR OWNER HANDOFF
+
+apabila:
+
+- install PASS;
+- TypeScript PASS;
+- lint 0 error;
+- targeted tests PASS;
+- full tests PASS;
+- production build PASS;
+- changed-files diff PASS;
+- secret scan PASS;
+- migration contract PASS;
+- Vercel compatibility preflight PASS;
+- environment contract lengkap.
+
+Jika salah satu gagal, statusnya:
+
+SOURCE NOT READY FOR OWNER HANDOFF
+
+Codex wajib:
+
+1. menjelaskan blocker;
+2. memperbaiki blocker yang masih dalam scope;
+3. menjalankan ulang gate relevan;
+4. tidak menyuruh owner push/deploy sebelum source siap.
+
+## 4. BATAS VERIFIKASI REMOTE
+
+Codex tidak boleh mengklaim:
+
+- push berhasil;
+- PR berhasil;
+- merge berhasil;
+- Preview berhasil;
+- Production berhasil;
+- runtime Vercel sehat;
+
+kecuali ada bukti remote yang dapat diakses pada sesi tersebut.
+
+Jika akses remote tidak tersedia, Codex harus menulis:
+
+GITHUB REMOTE: OWNER VERIFICATION REQUIRED
+VERCEL REMOTE: OWNER VERIFICATION REQUIRED
+
+Ini bukan blocker source apabila seluruh local/preflight gate PASS.
+
+## 5. HANDOFF KE OWNER
+
+Output akhir wajib:
+
+SOURCE STATUS:
+GIT READINESS:
+INSTALL:
+TYPESCRIPT:
+LINT:
+TARGETED TESTS:
+FULL TESTS:
+PRODUCTION BUILD:
+CHANGED-FILES DIFF:
+SECRET SCAN:
+MIGRATION:
+VERCEL PREFLIGHT:
+REQUIRED ENVIRONMENT VARIABLES:
+FILES CHANGED:
+RISKS:
+OWNER ACTION:
+NEXT PHASE:
+
+Owner kemudian hanya perlu:
+
+1. memasukkan file ke branch;
+2. commit;
+3. push;
+4. melihat hasil Vercel;
+5. mengirim hasil jika terdapat error.
+
+Codex wajib menangani error source/build yang dikirim owner tanpa mengulang
+audit dari awal.
