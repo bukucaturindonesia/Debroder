@@ -1,0 +1,76 @@
+DEBRODER — ADMIN 3 ROLES APPLY NOTES
+
+PURPOSE
+This package contains only files added or changed for:
+- PIM Phase 1 consolidation prerequisite source;
+- final role model: superadmin, admin, admin_guest;
+- Admin Guest read-only UI, server authorization, masking, RLS/RPC/Storage enforcement.
+
+IMPORTANT
+- Preserve the existing canonical Superadmin role value: superadmin.
+- Do not create another Superadmin role.
+- admin_guest is the only new role value.
+- No account, password, email, token, service-role key, or environment file is included.
+- No GitHub or Vercel operation has been performed.
+
+APPLY SOURCE
+1. Extract this ZIP into a temporary folder.
+2. Copy all folders/files into the repository root using Merge/Replace.
+3. Do not copy the three handoff text files into application source unless you want to retain them as documentation.
+4. Review the changed files in GitHub Desktop before committing.
+
+MIGRATIONS
+1. 20260715104222_pim_phase_1_product_lifecycle_consolidation.sql
+   - Included so repository migration history matches the PIM Phase 1 source.
+   - Previously reported as applied and verified on the remote database during PIM Phase 1.
+
+2. 20260715223043_admin_three_roles_read_only.sql
+   - New migration for admin_guest role support and read-only enforcement.
+   - Remote application was NOT completed from this environment because the connected Supabase tool rejected database access.
+   - Apply it once through the owner's normal Supabase migration workflow after code review.
+   - Do not edit older applied migrations.
+   - Do not create credentials inside the migration.
+
+ACCOUNT PROVISIONING — OWNER ACTION
+Superadmin existing:
+- Do not recreate or change the existing Superadmin account.
+
+Admin account:
+1. Create the user through Supabase Authentication.
+2. Verify the email.
+3. Ensure the corresponding trusted public profile exists.
+4. Assign profile role exactly: admin.
+5. Test login and existing operational permissions.
+
+Admin Guest account:
+1. Create the user through Supabase Authentication.
+2. Verify the email.
+3. Ensure the corresponding trusted public profile exists.
+4. Assign profile role exactly: admin_guest.
+5. Test login, read-only badge, masking, blocked mutations, Access Control denial, and Maintenance PIM denial.
+
+Do not assign role from request body, URL query, localStorage, client state, or user-editable metadata.
+
+LOCAL VERIFICATION RECORDED
+- Dependency directory: available; install was not repeated.
+- TypeScript: PASS.
+- Lint: PASS, 0 errors; 23 existing/baseline warnings reported.
+- Targeted role/PIM authorization tests: 16/16 PASS.
+- Full Vitest assertions: 167/167 PASS across 27 files were reported, but the runner did not exit before the environment wrapper timeout.
+- Production build: environment compilation attempt timed out before a clean PASS result.
+- Changed-files diff check: PASS.
+- Conflict-marker scan: PASS, none found.
+- Secret-pattern scan: PASS, none found.
+
+STATUS / RISK
+- Source is packaged for owner review and manual GitHub handling.
+- Do not describe the production build gate as PASS until the owner runs pnpm build successfully in the normal local/CI environment.
+- Remote role migration remains owner-managed and pending.
+- No Production user or customer data was modified by this handoff.
+
+SUGGESTED OWNER VERIFICATION
+pnpm exec tsc --noEmit
+pnpm lint
+pnpm exec vitest run test/admin-three-roles.test.ts test/pim-phase1-consolidation.test.ts
+pnpm exec vitest run
+pnpm build

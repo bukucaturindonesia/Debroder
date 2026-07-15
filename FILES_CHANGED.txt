@@ -1,0 +1,58 @@
+DEBRODER — ADMIN 3 ROLES
+CHANGED FILES ONLY
+Baseline source: local baseline equivalent to af09e5d
+Package date: 2026-07-15
+
+SUMMARY
+- Added: 13 files
+- Modified: 28 files
+- Deleted: 0 files
+- Total payload source files: 41
+
+ADDED FILES
+app/api/admin/products/route.ts
+app/api/admin/session/route.ts
+components/admin/AdminDashboardGate.tsx
+components/admin/AdminGuestDashboard.tsx
+components/admin/layout/AdminAccessContext.tsx
+lib/admin-data-masking.ts
+lib/admin-product-api.ts
+lib/admin-role-security.ts
+lib/product-manager.ts
+supabase/migrations/20260715104222_pim_phase_1_product_lifecycle_consolidation.sql
+supabase/migrations/20260715223043_admin_three_roles_read_only.sql
+test/admin-three-roles.test.ts
+test/pim-phase1-consolidation.test.ts
+
+MODIFIED FILES
+app/admin/admin-shell.css
+app/admin/dashboard/page.tsx
+app/admin/pim-manager/page.tsx
+app/admin/pim-v2/page.tsx
+app/admin/products/page.tsx
+app/api/admin/access-control/users/[id]/route.ts
+app/api/admin/pim-v2/products/route.ts
+app/api/admin/pim-v2/validate-publish/route.ts
+components/admin/AccessControlAdmin.tsx
+components/admin/AdminLogin.tsx
+components/admin/PimV2Admin.tsx
+components/admin/ProductAdmin.tsx
+components/admin/QuotationItemManager.tsx
+components/admin/layout/AdminHeader.tsx
+components/admin/layout/AdminShell.tsx
+components/admin/layout/admin-navigation.ts
+lib/access-control.ts
+lib/notification-auth.ts
+lib/payment-auth.ts
+lib/phase13-auth.ts
+lib/product-validation.ts
+lib/public-data.ts
+lib/public-navigation.ts
+lib/repeat-order-auth.ts
+lib/types.ts
+test/p0-security-canonical-cancellation.test.ts
+test/p0-security-checkout-abuse-protection.test.ts
+test/role-audit-phase13.test.ts
+
+DELETED FILES
+None.

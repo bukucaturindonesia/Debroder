@@ -4,6 +4,7 @@ import { AdminNotificationBell } from "@/components/admin/AdminNotificationBell"
 import { AdminBreadcrumb } from "./AdminBreadcrumb";
 import type { AdminRole } from "./admin-navigation";
 import { getCurrentNavigationLabel, ROLE_LABELS } from "./admin-navigation";
+import { isAdminGuestRole } from "@/lib/access-control";
 import { usePathname } from "next/navigation";
 
 export function AdminHeader({
@@ -38,7 +39,12 @@ export function AdminHeader({
         </div>
 
         <div className="flex shrink-0 items-center gap-2">
-          <AdminNotificationBell />
+          {isAdminGuestRole(role) ? null : <AdminNotificationBell />}
+          {isAdminGuestRole(role) ? (
+            <span className="hidden rounded-full border border-amber-300 bg-amber-50 px-3 py-2 text-xs font-semibold text-amber-900 sm:inline-flex">
+              MODE LIHAT SAJA
+            </span>
+          ) : null}
           <span className="hidden rounded-full border border-brand-softGray bg-brand-offWhite px-3 py-2 text-xs font-semibold text-brand-charcoal/70 sm:inline-flex">
             {ROLE_LABELS[role]}
           </span>

@@ -1,6 +1,10 @@
 import { createClient, type SupabaseClient, type User } from "@supabase/supabase-js";
 import { getAdminSupabaseClient } from "@/lib/supabase/client";
 import { getPublicSupabaseEnv } from "@/lib/env";
+import {
+  adminGuestErrorResponse,
+  assertAdminRequestMethodAllowed
+} from "@/lib/admin-role-security";
 import { isAdminRole } from "@/lib/access-control";
 
 export type Phase13Actor = {
@@ -37,6 +41,7 @@ export async function requirePhase13Actor(
     .eq("id", data.user.id)
     .maybeSingle();
   const role = typeof profile?.role === "string" ? profile.role.toLowerCase() : "";
+  assertAdminRequestMethodAllowed(role, request.method);
   if (profileError || !isAdminRole(role)) throw new Phase13AuthError(403, "Akses panel admin ditolak.");
 
   const client = createClient(env.url, env.anonKey, {
@@ -57,6 +62,8 @@ export async function requirePhase13Actor(
 }
 
 export function phase13ErrorResponse(error: unknown): Response {
+  const guestResponse = adminGuestErrorResponse(error);
+  if (guestResponse) return guestResponse;
   if (error instanceof Phase13AuthError) {
     return Response.json({ error: error.message }, { status: error.status });
   }

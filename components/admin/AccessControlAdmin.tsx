@@ -5,7 +5,7 @@ import { AdminPageHeader } from "@/components/admin/layout/AdminPageHeader";
 import { AdminAlert, AdminEmptyState, AdminLoadingState } from "@/components/admin/ui/AdminFeedback";
 import { phase13ApiFetch } from "@/lib/admin-phase13-api";
 import {
-  ADMIN_ROLES,
+  ASSIGNABLE_ADMIN_ROLES,
   ROLE_DESCRIPTIONS,
   ROLE_LABELS,
   getRoleLabel,
@@ -157,7 +157,8 @@ export function AccessControlAdmin() {
                           className="min-h-11 min-w-56 border border-brand-softGray bg-white px-3 disabled:opacity-60"
                         >
                           {draftRole === "viewer" ? <option value="viewer" disabled>Viewer / belum staf</option> : null}
-                          {ADMIN_ROLES.map((role) => <option key={role} value={role}>{ROLE_LABELS[role]}</option>)}
+                          {!ASSIGNABLE_ADMIN_ROLES.includes(draftRole as (typeof ASSIGNABLE_ADMIN_ROLES)[number]) && draftRole !== "viewer" ? <option value={draftRole} disabled>{getRoleLabel(draftRole)} · legacy</option> : null}
+                          {ASSIGNABLE_ADMIN_ROLES.map((role) => <option key={role} value={role}>{ROLE_LABELS[role]}</option>)}
                         </select>
                         <p className="mt-2 max-w-sm text-xs leading-5 text-brand-charcoal/55">{isAdminRole(draftRole) ? ROLE_DESCRIPTIONS[draftRole] : "Akun belum memiliki role operasional v1.2."}</p>
                       </td>
@@ -192,11 +193,11 @@ export function AccessControlAdmin() {
             <summary className="cursor-pointer p-5 font-semibold capitalize">{module} · {permissions.length} permission</summary>
             <div className="overflow-x-auto border-t border-brand-softGray">
               <table className="min-w-[980px] border-collapse text-xs">
-                <thead><tr className="bg-brand-offWhite"><th className="sticky left-0 bg-brand-offWhite px-4 py-3 text-left">Permission</th>{ADMIN_ROLES.map((role) => <th key={role} className="px-3 py-3 text-center">{ROLE_LABELS[role]}</th>)}</tr></thead>
+                <thead><tr className="bg-brand-offWhite"><th className="sticky left-0 bg-brand-offWhite px-4 py-3 text-left">Permission</th>{ASSIGNABLE_ADMIN_ROLES.map((role) => <th key={role} className="px-3 py-3 text-center">{ROLE_LABELS[role]}</th>)}</tr></thead>
                 <tbody>{permissions.map((permission) => (
                   <tr key={permission.permission_key} className="border-t border-brand-softGray">
                     <td className="sticky left-0 bg-white px-4 py-3"><p className="font-semibold">{permission.label}</p><p className="mt-1 font-mono text-[11px] text-brand-charcoal/45">{permission.permission_key}</p></td>
-                    {ADMIN_ROLES.map((role) => <td key={role} className="px-3 py-3 text-center"><span aria-label={matrix.get(role)?.has(permission.permission_key) ? "Diizinkan" : "Tidak diizinkan"}>{matrix.get(role)?.has(permission.permission_key) ? "✓" : "—"}</span></td>)}
+                    {ASSIGNABLE_ADMIN_ROLES.map((role) => <td key={role} className="px-3 py-3 text-center"><span aria-label={matrix.get(role)?.has(permission.permission_key) ? "Diizinkan" : "Tidak diizinkan"}>{matrix.get(role)?.has(permission.permission_key) ? "✓" : "—"}</span></td>)}
                   </tr>
                 ))}</tbody>
               </table>

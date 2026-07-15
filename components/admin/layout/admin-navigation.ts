@@ -26,23 +26,27 @@ export type AdminNavigationGroup = {
 };
 
 export const FULL_ADMIN_ROLES: readonly AdminRole[] = ["owner", "superadmin", "super_admin", "admin"];
+export const ADMIN_GUEST_ROLES: readonly AdminRole[] = ["admin_guest"];
+export const DASHBOARD_ROLES: readonly AdminRole[] = [...FULL_ADMIN_ROLES, ...ADMIN_GUEST_ROLES];
+export const PRODUCT_MANAGER_VIEW_ROLES: readonly AdminRole[] = [...FULL_ADMIN_ROLES, ...ADMIN_GUEST_ROLES];
 export const QUOTATION_ROLES: readonly AdminRole[] = ["owner", "superadmin", "super_admin", "sales_admin", "admin"];
 export const QUOTATION_VIEW_ROLES: readonly AdminRole[] = [...QUOTATION_ROLES, "designer"];
 export const REPEAT_ORDER_ROLES: readonly AdminRole[] = QUOTATION_ROLES;
-const ALL_STAFF_ROLES: readonly AdminRole[] = ADMIN_ROLES;
+const ALL_STAFF_ROLES: readonly AdminRole[] = ADMIN_ROLES.filter((role) => role !== "admin_guest");
 const ORDER_READ_ROLES: readonly AdminRole[] = ["owner", "superadmin", "super_admin", "admin", "sales_admin", "finance", "production_admin", "store_staff"];
 const QUOTATION_READ_ROLES: readonly AdminRole[] = QUOTATION_VIEW_ROLES;
 const PRODUCTION_ROLES: readonly AdminRole[] = ["owner", "superadmin", "super_admin", "admin", "production_admin", "operator"];
 const QC_ROLES: readonly AdminRole[] = ["owner", "superadmin", "super_admin", "admin", "production_admin", "quality_control"];
 const SHIPPING_ROLES: readonly AdminRole[] = ["owner", "superadmin", "super_admin", "admin", "production_admin", "store_staff"];
-const ACCESS_READ_ROLES: readonly AdminRole[] = ["owner", "superadmin", "super_admin"];
+export const PRODUCT_MAINTENANCE_ROLES: readonly AdminRole[] = ["owner", "superadmin", "super_admin"];
+const ACCESS_READ_ROLES: readonly AdminRole[] = PRODUCT_MAINTENANCE_ROLES;
 const AUDIT_ROLES: readonly AdminRole[] = ["owner", "superadmin", "super_admin"];
 
 export const adminNavigationGroups: readonly AdminNavigationGroup[] = [
   {
     label: "DASHBOARD",
-    roles: FULL_ADMIN_ROLES,
-    items: [{ label: "Dashboard", href: "/admin/dashboard", roles: FULL_ADMIN_ROLES, exact: true }]
+    roles: DASHBOARD_ROLES,
+    items: [{ label: "Dashboard", href: "/admin/dashboard", roles: DASHBOARD_ROLES, exact: true }]
   },
   {
     label: "WEBSITE",
@@ -58,11 +62,10 @@ export const adminNavigationGroups: readonly AdminNavigationGroup[] = [
   },
   {
     label: "KATALOG",
-    roles: FULL_ADMIN_ROLES,
+    roles: PRODUCT_MANAGER_VIEW_ROLES,
     items: [
-      { label: "Produk & PIM", href: "/admin/products", roles: FULL_ADMIN_ROLES },
-      { label: "PIM Manager", href: "/admin/pim-manager", roles: FULL_ADMIN_ROLES },
-      { label: "PIM V2", href: "/admin/pim-v2", roles: FULL_ADMIN_ROLES },
+      { label: "Product Manager", href: "/admin/products", roles: PRODUCT_MANAGER_VIEW_ROLES },
+      { label: "Maintenance PIM", href: "/admin/pim-manager", roles: PRODUCT_MAINTENANCE_ROLES },
       { label: "Kategori / Model", href: "/admin/categories", roles: FULL_ADMIN_ROLES },
       { label: "Layanan", href: "/admin/services", roles: FULL_ADMIN_ROLES },
       { label: "Store / Cabang", href: "/admin/store", roles: FULL_ADMIN_ROLES }
@@ -138,7 +141,10 @@ function pathAllowedByRole(role: AdminRole, pathname: string) {
 }
 
 export function roleCanAccessPath(role: AdminRole, pathname: string) {
-  if (pathname === "/admin" || pathname === "/admin/dashboard") return hasRole(role, FULL_ADMIN_ROLES);
+  if (role === "admin_guest") {
+    return pathname === "/admin" || pathname === "/admin/dashboard" || pathname === "/admin/products";
+  }
+  if (pathname === "/admin" || pathname === "/admin/dashboard") return hasRole(role, DASHBOARD_ROLES);
   if (
     pathname === "/admin/orders/archive" ||
     /^\/admin\/orders\/[^/]+$/.test(pathname)
@@ -149,6 +155,9 @@ export function roleCanAccessPath(role: AdminRole, pathname: string) {
     return hasRole(role, FULL_ADMIN_ROLES);
   }
   if (pathname.startsWith("/admin/notifications")) return true;
+  if (pathname === "/admin/pim-v2" || pathname.startsWith("/admin/pim-v2/")) {
+    return hasRole(role, PRODUCT_MAINTENANCE_ROLES);
+  }
   return pathAllowedByRole(role, pathname);
 }
 
