@@ -30,6 +30,11 @@ import type { AdminRole } from "@/lib/access-control";
 import type { ValidationIssue } from "@/lib/types";
 import { adminGuestErrorResponse } from "@/lib/admin-role-security";
 import { deleteVariantImageRow } from "@/lib/product-manager-service";
+import {
+  saveVariantMatrixAtomic,
+  VariantMatrixServerError
+} from "@/lib/variant-matrix-server";
+import type { VariantMatrixSaveInput } from "@/lib/variant-matrix";
 
 export const dynamic = "force-dynamic";
 
@@ -40,6 +45,7 @@ type ProductAction =
   | "save_sellable"
   | "save_image"
   | "remove_image"
+  | "save_matrix"
   | "validate_publish"
   | "publish"
   | "archive";
@@ -52,6 +58,7 @@ type ActionBody = {
   sellable?: unknown;
   image?: unknown;
   imageId?: string;
+  matrix?: unknown;
 };
 
 const PRODUCT_FIELDS = [
@@ -185,6 +192,17 @@ export async function POST(request: Request) {
       if (!imageId) throw new ProductApiError(400, "Gambar variant wajib dipilih.");
       const result = await removeVariantImage(actor.adminClient, imageId);
       return noStoreJson({ ok: true, productId: result.productId, variantId: result.variantId, message: "Slot gambar dikosongkan. File asli di Media Library tetap aman." });
+    }
+
+    if (body.action === "save_matrix") {
+      requireDependencyRole(actor.role);
+      const result = await saveVariantMatrixAtomic(actor.adminClient, body.matrix as VariantMatrixSaveInput);
+      return noStoreJson({
+        ok: true,
+        productId: result.productId,
+        matrixSummary: result.summary,
+        message: `${result.summary.affected} kombinasi Variant Matrix berhasil disimpan tanpa hard delete.`
+      });
     }
 
     const productId = cleanId(body.productId);
@@ -920,6 +938,9 @@ class ProductApiError extends Error {
 function productErrorResponse(error: unknown) {
   const guestResponse = adminGuestErrorResponse(error);
   if (guestResponse) return guestResponse;
+  if (error instanceof VariantMatrixServerError) {
+    return noStoreJson({ error: error.message, issues: error.issues }, error.status);
+  }
   if (error instanceof ProductApiError || error instanceof Phase13AuthError) {
     return noStoreJson({ error: error.message }, error.status);
   }

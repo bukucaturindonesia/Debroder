@@ -4,6 +4,7 @@
 import Link from "next/link";
 import { FormEvent, useEffect, useMemo, useState } from "react";
 import { AdminPageHeader } from "@/components/admin/layout/AdminPageHeader";
+import { VariantMatrixEditor } from "@/components/admin/VariantMatrixEditor";
 import {
   loadProductManager,
   runProductManagerAction,
@@ -26,6 +27,7 @@ import {
   type SellableSkuInput,
   type VariantImageInput
 } from "@/lib/product-manager";
+import type { VariantMatrixSaveInput } from "@/lib/variant-matrix";
 import { PRODUCT_IMAGE_SLOTS } from "@/lib/product-gallery";
 import { formatRupiah } from "@/lib/url";
 
@@ -193,6 +195,7 @@ export function ProductAdminPanel() {
     sellable?: SellableSkuInput;
     image?: VariantImageInput;
     imageId?: string;
+    matrix?: VariantMatrixSaveInput;
   }) {
     if (working) return;
     setWorking(true);
@@ -233,9 +236,9 @@ export function ProductAdminPanel() {
   return (
     <div className="grid gap-6">
       <AdminPageHeader
-        eyebrow="PIM PHASE 2"
+        eyebrow="PIM PHASE 3"
         title="Unified Product Manager"
-        description="Selesaikan product root, warna, ukuran, sellable SKU, harga, stok, empat image role, validation, dan lifecycle pada satu route canonical."
+        description="Unified Product Manager dengan Variant Matrix untuk kombinasi warna × ukuran, SKU deterministik, bulk harga/stok, dry-run, dan save server-side."
         actions={
           <div className="flex flex-wrap gap-2">
             {payload?.capabilities.canCreateDraft ? (
@@ -408,6 +411,15 @@ export function ProductAdminPanel() {
               {!selected.variants.some((variant) => variant.sellable.length) ? <EmptyState title="Belum ada sellable SKU" detail="Pilih color variant dan size master untuk membuat SKU pertama." /> : null}
             </div>
           </section>
+
+          <VariantMatrixEditor
+            product={selected}
+            payload={payload}
+            readOnly={readOnly}
+            canManage={canManageDependencies}
+            working={working}
+            onSave={(matrix) => runAction({ action: "save_matrix", productId: selected.id, matrix })}
+          />
 
           <section id="gambar" className="scroll-mt-24 bg-white p-5 sm:p-7">
             <SectionHeader index="05" title="Gambar" description="Kelola maksimal empat role per warna. Preview dikunci 4:5; front wajib sebelum Publish. File Media Library tidak dihapus ketika slot dikosongkan." status={selected.workflow.find((step) => step.key === "images")?.status} />

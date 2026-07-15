@@ -13,6 +13,7 @@ import type {
   VariantImageInput
 } from "@/lib/product-manager";
 import type { ValidationIssue } from "@/lib/types";
+import type { VariantMatrixSaveInput, VariantMatrixSummary } from "@/lib/variant-matrix";
 
 export type ProductManagerCategory = {
   id: string;
@@ -134,6 +135,7 @@ export type ProductManagerAction =
   | "save_sellable"
   | "save_image"
   | "remove_image"
+  | "save_matrix"
   | "validate_publish"
   | "publish"
   | "archive";
@@ -174,6 +176,7 @@ export function runProductManagerAction(input: {
   sellable?: SellableSkuInput;
   image?: VariantImageInput;
   imageId?: string;
+  matrix?: VariantMatrixSaveInput;
 }) {
   return requestJson<{
     ok: boolean;
@@ -183,5 +186,6 @@ export function runProductManagerAction(input: {
     imageId?: string;
     issues?: ValidationIssue[];
     message?: string;
+    matrixSummary?: VariantMatrixSummary;
   }>({ method: "POST", body: JSON.stringify(input) });
 }
