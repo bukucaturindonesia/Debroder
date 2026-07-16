@@ -54,6 +54,17 @@ const panels = {
       { label: "CMS banner", table: "cms_banners", columns: ["id", "experience_key", "title", "subtitle", "status", "is_active", "sort_order", "updated_at"], orderBy: "sort_order", ascending: true }
     ]
   },
+  custom: {
+    eyebrow: "WEBSITE / CUSTOM",
+    title: "CMS Custom Commerce",
+    description: "Kategori, mapping produk, Paket Instan, dan konfigurasi Custom ditampilkan read-only. Publish, mapping, pricing, dan mutation dinonaktifkan.",
+    resources: [
+      { label: "Kategori Custom", table: "custom_categories", columns: ["id", "name", "slug", "entry_type", "target_route", "supports_quick_custom", "supports_full_custom", "price_display_mode", "minimum_order_display", "lead_time_display", "source_product_category_id", "status", "is_active", "sort_order", "updated_at"], orderBy: "sort_order", ascending: true },
+      { label: "Mapping produk", table: "custom_category_products", columns: ["id", "custom_category_id", "product_id", "is_default", "is_active", "sort_order", "updated_at"], orderBy: "sort_order", ascending: true },
+      { label: "Paket Instan", table: "custom_presets", columns: ["id", "custom_category_id", "name", "slug", "default_product_id", "price_display_mode", "minimum_order_display", "lead_time_display", "status", "is_active", "sort_order", "updated_at"], orderBy: "sort_order", ascending: true },
+      { label: "Kompatibilitas layanan", table: "custom_service_compatibilities", columns: ["id", "service_id", "custom_category_id", "product_id", "placement_id", "print_size_id", "is_active", "updated_at"], orderBy: "updated_at" }
+    ]
+  },
   media: {
     eyebrow: "MEDIA",
     title: "Media Library",
@@ -196,6 +207,7 @@ export function getAdminViewerPanel(pathname: string): AdminViewerPanelSpec {
   if (pathname.startsWith("/admin/quality-control")) return panels.qc;
   if (pathname.startsWith("/admin/fulfillments")) return panels.fulfillment;
   if (pathname.startsWith("/admin/notifications")) return panels.notifications;
+  if (pathname.startsWith("/admin/custom-commerce")) return panels.custom;
   if (pathname.startsWith("/admin/media") || pathname.startsWith("/admin/site-media")) return panels.media;
   if (pathname.startsWith("/admin/website-settings") || pathname.startsWith("/admin/document-numbering")) return panels.settings;
   if (pathname.startsWith("/admin/categories") || pathname.startsWith("/admin/services") || pathname.startsWith("/admin/store") || pathname.startsWith("/admin/product-filters")) return panels.catalog;
