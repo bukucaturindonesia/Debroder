@@ -25,6 +25,7 @@ type TrackingPayload = {
     pickupStatus: string | null;
     fulfillmentStatus: string | null;
     nextStep: string;
+    pricingStatus?: string;
   };
   items: Array<{
     id: string;
@@ -36,6 +37,8 @@ type TrackingPayload = {
     quantity: number;
     unit_price: number;
     subtotal: number;
+    custom_project_id?: string | null;
+    pricing_status?: string;
   }>;
   shippingQuote: {
     version: number;
@@ -189,6 +192,7 @@ function TrackingDetail({ data }: { data: TrackingPayload }) {
                 <div>
                   <h3 className="font-semibold">{item.product_name}</h3>
                   <p className="mt-1 text-black/55">{[item.variant_name || item.color, item.size, item.sku, `${item.quantity} pcs`].filter(Boolean).join(" · ")}</p>
+                  {item.custom_project_id ? <p className="mt-1 text-xs font-semibold text-[#063d24]">Custom Project · {item.pricing_status === "final" ? "Harga final" : "Review harga"}</p> : null}
                 </div>
                 <strong className="shrink-0">{formatRupiah(Number(item.subtotal))}</strong>
               </article>

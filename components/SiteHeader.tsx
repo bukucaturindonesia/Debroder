@@ -26,6 +26,12 @@ const navItems = [
   { label: "Jersey", href: "/jersey" }
 ];
 
+const publicNavItems = [
+  ...navItems.slice(0, -1),
+  { label: "Custom", href: "/custom" },
+  navItems[navItems.length - 1]
+];
+
 type MegaMenuLink = {
   label: string;
   href: string;
@@ -401,6 +407,7 @@ export function SiteHeader({
     "Kaos Polos": buildCategoryMenu("Kaos Polos", "/kaos-polos", navigationFacets),
     "Jaket & Hoodie": buildCategoryMenu("Jaket & Hoodie", "/jaket-hoodie", navigationFacets)
   }, [navigationFacets, preserveJerseyOutput]);
+  const currentNavItems = preserveJerseyOutput ? navItems : publicNavItems;
 
   useEffect(() => {
     if (positionMode === "natural" && expandedAtTop) return;
@@ -502,8 +509,8 @@ export function SiteHeader({
         </Link>
 
         <div className="hidden h-full items-center justify-center gap-3 lg:flex xl:gap-5">
-          {navItems.map((item) => {
-            const active = pathname === item.href;
+          {currentNavItems.map((item) => {
+            const active = pathname === item.href || (item.href === "/custom" && pathname.startsWith("/custom/"));
             const megaMenu = currentMegaMenus[item.label as keyof typeof currentMegaMenus];
             if (!preserveJerseyOutput && item.label === "Koleksi") {
               return (
@@ -594,8 +601,8 @@ export function SiteHeader({
       <div id="global-mobile-navigation" aria-hidden={!isOpen} inert={!isOpen} className={`absolute inset-x-0 top-full h-[calc(100dvh-4rem)] bg-white transition-transform duration-300 ease-out md:h-[calc(100dvh-78px)] lg:hidden ${isOpen ? "visible translate-x-0" : "invisible pointer-events-none translate-x-full"}`}>
         <div className="section-shell flex h-full flex-col overflow-y-auto py-6">
           <p className="mb-2 text-xs font-semibold uppercase tracking-[0.12em] text-black/45">Belanja</p>
-          {navItems.map((item) => {
-            const active = pathname === item.href;
+          {currentNavItems.map((item) => {
+            const active = pathname === item.href || (item.href === "/custom" && pathname.startsWith("/custom/"));
             if (!preserveJerseyOutput && item.label === "Koleksi") {
               return <div key={item.href} className="border-b border-black/10">
                 <button

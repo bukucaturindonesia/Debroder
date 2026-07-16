@@ -16,6 +16,7 @@ import {
 } from "@/lib/jersey-commerce";
 import { productMatchesRoute } from "@/lib/product-route-matching";
 import { getPublicContent } from "@/lib/public-data";
+import { getCustomDestinationForProduct } from "@/lib/custom-commerce/data";
 import type { Product, ProductSizeGuide } from "@/lib/types";
 import { formatRupiah, whatsappLinkWithMessage } from "@/lib/url";
 
@@ -155,6 +156,7 @@ export default async function ProductDetailPage({ params }: PageProps) {
         .filter((item) => !productMatchesRoute(item, "jersey"))
         .filter((item) => item.kategori === product.kategori)
         .slice(0, 4);
+  const customDestination = !isJersey && product.id ? await getCustomDestinationForProduct(product.id) : null;
 
   return (
     <PublicShell
@@ -278,6 +280,12 @@ export default async function ProductDetailPage({ params }: PageProps) {
                     className="mt-3 inline-flex min-h-11 items-center text-sm font-semibold text-black underline decoration-1 underline-offset-4 outline-none focus-visible:ring-2 focus-visible:ring-black focus-visible:ring-offset-2"
                   >
                     Atau buat Jersey Custom
+                  </Link>
+                ) : null}
+
+                {customDestination ? (
+                  <Link href={customDestination} className="mt-4 inline-flex min-h-11 items-center rounded-full border border-black px-5 text-sm font-semibold transition hover:bg-black hover:text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-black">
+                    Custom produk ini
                   </Link>
                 ) : null}
 

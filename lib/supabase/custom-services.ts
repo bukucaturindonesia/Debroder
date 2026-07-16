@@ -42,14 +42,14 @@ const SERVICE_SELECT = `
 `;
 
 export async function listCustomServices(
-  options: { includeInactive?: boolean } = {}
+  options: { includeInactive?: boolean; allowFallback?: boolean } = {}
 ): Promise<CustomService[]> {
   const client = options.includeInactive
     ? getAdminSupabaseClient() ?? getPublicSupabaseClient()
     : getPublicSupabaseClient();
 
   if (!client) {
-    return defaultCustomServices;
+    return options.allowFallback === false ? [] : defaultCustomServices;
   }
 
   let query = client.from("custom_services").select(SERVICE_SELECT).order("sort_order");

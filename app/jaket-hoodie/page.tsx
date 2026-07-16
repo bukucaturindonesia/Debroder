@@ -3,6 +3,7 @@ import { CategoryCommercePage } from "@/components/CategoryCommercePage";
 import { productsForCategoryRoute } from "@/lib/product-route-matching";
 import { jacketTypeOptions, productTypeValue } from "@/lib/product-taxonomy";
 import { getPublicContent } from "@/lib/public-data";
+import { getCustomDestinationForSourceCategory } from "@/lib/custom-commerce/data";
 
 export const metadata: Metadata = {
   title: "Jaket & Hoodie | DE BRODER",
@@ -43,6 +44,7 @@ export default async function JaketHoodiePage({ searchParams }: JaketHoodiePageP
   const content = await getPublicContent();
   const params = searchParams ? await searchParams : {};
   const products = productsForCategoryRoute(content.products, content.productCategories, "jaket-hoodie");
+  const customDestination = await getCustomDestinationForSourceCategory(content.productCategories.find((category) => category.slug === "jaket-hoodie")?.id);
   const initialColor = firstParam(params.color) || "all";
   const initialLabel = productLabel(params.label);
   const initialSort = productSort(params.sort);
@@ -59,7 +61,7 @@ export default async function JaketHoodiePage({ searchParams }: JaketHoodiePageP
       catalogDescription: "Temukan tipe, bahan, warna, dan ukuran dari katalog produk DEBRODER.",
       closingHeadline: "Butuh jaket atau hoodie custom untuk tim dan brand Anda?",
       closingCtaLabel: "Custom Order",
-      closingCtaHref: "/sablon-dtf",
+      closingCtaHref: customDestination || "/custom",
       productTypeOptions: jacketTypeOptions,
       typeFilterLabel: "Semua tipe jaket"
     }}

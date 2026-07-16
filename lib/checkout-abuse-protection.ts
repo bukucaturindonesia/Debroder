@@ -96,7 +96,10 @@ export function canonicalCheckoutPayload(body: PublicCheckoutRequest) {
         variantSizeId: item.variantSizeId,
         quantity: item.quantity,
         note: item.note ?? null
-      }))
+      })),
+    customProjects: [...body.customProjects]
+      .sort((left, right) => left.project.id.localeCompare(right.project.id))
+      .map((entry) => entry.project)
   });
 }
 

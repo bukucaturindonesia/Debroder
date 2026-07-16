@@ -33,6 +33,7 @@ type TrackingOrderRow = {
   public_access_token_hash: string | null;
   public_access_token_expires_at: string | null;
   created_at: string;
+  pricing_status?: string;
 };
 
 export async function POST(request: Request) {
@@ -71,7 +72,7 @@ export async function POST(request: Request) {
       "id", "order_number", "customer_phone", "status", "payment_status", "delivery_method",
       "shipping_address", "subtotal_amount", "shipping_cost", "shipping_courier", "shipping_service",
       "shipping_estimate", "total_amount", "payment_effective_total", "payment_balance",
-      "public_access_token_hash", "public_access_token_expires_at", "created_at"
+      "public_access_token_hash", "public_access_token_expires_at", "pricing_status", "created_at"
     ].join(","))
     .eq("order_number", orderNumber)
     .is("archived_at", null)
@@ -90,7 +91,7 @@ export async function POST(request: Request) {
 
   const [itemsResult, quoteResult, fulfillmentResult] = await Promise.all([
     client.from("order_items")
-      .select("id,product_name,variant_name,color,size,sku,quantity,unit_price,subtotal")
+      .select("id,product_name,variant_name,color,size,sku,quantity,unit_price,subtotal,custom_project_id,pricing_status")
       .eq("order_id", order.id).is("archived_at", null).order("created_at"),
     client.from("order_shipping_quotes")
       .select("version,courier,service,cost,estimate,total_snapshot,status,created_at")
@@ -133,7 +134,8 @@ export async function POST(request: Request) {
         paymentStatus: order.payment_status,
         fulfillmentMethod: order.delivery_method,
         trackingNumber
-      })
+      }),
+      pricingStatus: order.pricing_status ?? "final"
     },
     items: itemsResult.data ?? [],
     shippingQuote: quoteResult.data ? {

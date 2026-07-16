@@ -7,6 +7,9 @@ import {
   type CheckoutAbuseDecision
 } from "@/lib/checkout-abuse-protection";
 import { deriveCheckoutTrackingToken } from "@/lib/order-tracking";
+import { listCustomCategoryCatalogsByIds } from "@/lib/custom-commerce/data";
+import { priceCustomProject } from "@/lib/custom-commerce/pricing";
+import type { CustomProjectSnapshot } from "@/lib/custom-commerce/types";
 import { getAdminSupabaseEnv } from "@/lib/env";
 import { getAdminSupabaseClient } from "@/lib/supabase/client";
 
@@ -87,7 +90,26 @@ export async function POST(request: Request) {
       return jsonResponse({ code: "CHECKOUT_IDEMPOTENCY_CONFLICT", error: "Kunci checkout tidak cocok dengan order sebelumnya." }, 409);
     }
 
-    const { data, error } = await client.rpc("create_public_checkout_order", {
+    const pricedProjects: CustomProjectSnapshot[] = [];
+    for (const entry of body.customProjects) {
+      const categoryIds = Array.from(new Set(entry.project.items.map((item) => item.categoryId)));
+      const catalogs = await listCustomCategoryCatalogsByIds(categoryIds);
+      if (catalogs.length !== categoryIds.length) {
+        return jsonResponse({ code: "CHECKOUT_ITEM_UNAVAILABLE", error: "Sebagian katalog custom sudah berubah. Muat ulang konfigurasi." }, 409);
+      }
+      const pricing = priceCustomProject(entry.project, catalogs);
+      if (pricing.issues.length) {
+        return jsonResponse({ code: "CHECKOUT_CUSTOM_INVALID", error: pricing.issues[0] }, 409);
+      }
+      const uploadsValid = await validateProjectUploads(client, entry.project);
+      if (!uploadsValid) {
+        return jsonResponse({ code: "CHECKOUT_UPLOAD_INVALID", error: "Referensi file custom tidak valid atau sudah dihapus." }, 409);
+      }
+      pricedProjects.push({ ...entry.project, pricing });
+    }
+
+    const rpcName = pricedProjects.length ? "create_public_custom_checkout_order" : "create_public_checkout_order";
+    const rpcPayload = {
       p_idempotency_key: body.idempotencyKey,
       p_access_token_hash: sha256(trackingToken),
       p_whatsapp_confirmation_hash: sha256(body.confirmationCode),
@@ -103,8 +125,10 @@ export async function POST(request: Request) {
         variant_size_id: item.variantSizeId,
         quantity: item.quantity,
         note: item.note ?? ""
-      }))
-    });
+      })),
+      ...(pricedProjects.length ? { p_custom_projects: pricedProjects } : {})
+    };
+    const { data, error } = await client.rpc(rpcName, rpcPayload);
 
     if (error) {
       console.error("Checkout domain RPC rejected", { code: error.code });
@@ -154,4 +178,20 @@ function checkoutDomainError(message: string) {
     return jsonResponse({ code: "CHECKOUT_INVALID_REQUEST", error: "Data checkout tidak valid." }, 400);
   }
   return jsonResponse({ code: "CHECKOUT_UNAVAILABLE", error: "Order belum dapat dibuat." }, 503);
+}
+
+async function validateProjectUploads(client: NonNullable<ReturnType<typeof getAdminSupabaseClient>>, project: { sessionToken: string; items: Array<{ uploads: Array<{ id: string; storage_path: string }> }> }) {
+  const uploads = project.items.flatMap((item) => item.uploads);
+  if (!uploads.length) return true;
+  const ids = Array.from(new Set(uploads.map((upload) => upload.id)));
+  if (ids.length !== uploads.length) return false;
+  const { data, error } = await client
+    .from("customer_uploads")
+    .select("id,storage_path,status,session_token")
+    .in("id", ids)
+    .eq("session_token", project.sessionToken)
+    .in("status", ["uploaded", "linked"]);
+  if (error || !data || data.length !== ids.length) return false;
+  const byId = new Map(data.map((row) => [String(row.id), row]));
+  return uploads.every((upload) => String(byId.get(upload.id)?.storage_path ?? "") === upload.storage_path);
 }

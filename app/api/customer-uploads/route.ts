@@ -150,9 +150,10 @@ export async function DELETE(request: Request) {
 
   const { data: upload, error: lookupError } = await client
     .from("customer_uploads")
-    .select("id, storage_path")
+    .select("id, storage_path, status")
     .eq("session_token", sessionToken)
     .eq("storage_path", storagePath)
+    .eq("status", "uploaded")
     .maybeSingle();
 
   if (lookupError || !upload) {
