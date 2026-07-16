@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import { Suspense } from "react";
 import { JerseyCommerceNav } from "@/components/jersey/JerseyCommerceNav";
 import { ProductGallery } from "@/components/ProductGallery";
+import { PublicProductCard } from "@/components/PublicProductCard";
 import { TieredProductPurchasePanel } from "@/components/TieredProductPurchasePanel";
 import { ProductVariantGalleryProvider } from "@/components/ProductVariantGalleryContext";
 import { PublicShell } from "@/components/PublicPage";
@@ -146,6 +147,14 @@ export default async function ProductDetailPage({ params }: PageProps) {
   const hasReadyStock = jerseyHasReadyStock(product);
   const hasCustomAvailability = jerseyHasCustomAvailability(product);
   const showPurchasePanel = !isJersey || hasReadyStock || !hasCustomAvailability;
+  const relatedProducts = isJersey
+    ? []
+    : content.products
+        .filter((item) => item.status_aktif !== false)
+        .filter((item) => (item.id || item.slug || item.nama) !== (product.id || product.slug || product.nama))
+        .filter((item) => !productMatchesRoute(item, "jersey"))
+        .filter((item) => item.kategori === product.kategori)
+        .slice(0, 4);
 
   return (
     <PublicShell
@@ -158,7 +167,7 @@ export default async function ProductDetailPage({ params }: PageProps) {
           <JerseyCommerceNav />
         </Suspense>
       ) : null}
-      <main className={`${isJersey ? "bg-white" : "bg-brand-offWhite"} py-8 sm:py-12`}>
+      <main className={isJersey ? "bg-white py-8 sm:py-12" : "bg-white py-8 sm:py-12 lg:py-16"}>
         <div className="section-shell">
           <nav
             aria-label="Breadcrumb"
@@ -184,26 +193,26 @@ export default async function ProductDetailPage({ params }: PageProps) {
                 focal={focal}
               />
 
-              <div className={`self-start p-5 sm:p-7 lg:sticky lg:top-24 ${isJersey ? "border-t border-black/10 bg-white" : "rounded-[32px] bg-white/40"}`}>
-                <p className="text-xs font-semibold uppercase tracking-[.16em] text-brand-charcoal/50">
+              <div className={isJersey ? "self-start p-5 sm:p-7 lg:sticky lg:top-24 border-t border-black/10 bg-white" : "self-start lg:sticky lg:top-24"}>
+                <p className={isJersey ? "text-xs font-semibold uppercase tracking-[.16em] text-brand-charcoal/50" : "public-muted-copy text-[13px] leading-[1.45]"}>
                   {product.kategori}
                   {product.subcategory
                     ? ` · ${product.subcategory}`
                     : ""}
                 </p>
 
-                <h1 className="mt-3 max-w-xl text-[30px] font-semibold leading-[1.12] tracking-[-0.015em] sm:text-[40px]">
+                <h1 className={isJersey ? "mt-3 max-w-xl text-[30px] font-semibold leading-[1.12] tracking-[-0.015em] sm:text-[40px]" : "mt-2 max-w-xl text-2xl font-semibold leading-[1.15] tracking-[-0.02em] lg:text-[28px]"}>
                   {product.nama}
                 </h1>
 
                 {product.short_detail ? (
-                  <p className="mt-4 max-w-xl text-base leading-7 text-brand-charcoal/60 sm:text-lg">
+                  <p className={isJersey ? "mt-4 max-w-xl text-base leading-7 text-brand-charcoal/60 sm:text-lg" : "public-secondary-copy mt-4 max-w-xl text-[15px] leading-6 md:text-base"}>
                     {product.short_detail}
                   </p>
                 ) : null}
 
                 <div className="mt-5 flex flex-wrap items-baseline gap-3">
-                  <p className="text-xl font-semibold sm:text-2xl">
+                  <p className={isJersey ? "text-xl font-semibold sm:text-2xl" : "text-[17px] font-semibold leading-6 md:text-lg"}>
                     {priceLabel}
                   </p>
                   <span className="text-sm text-brand-charcoal/50">
@@ -216,7 +225,7 @@ export default async function ProductDetailPage({ params }: PageProps) {
                   ) : null}
                 </div>
 
-                <p className="mt-2 text-sm leading-6 text-brand-charcoal/55">
+                <p className={isJersey ? "mt-2 text-sm leading-6 text-brand-charcoal/55" : "public-muted-copy mt-2 text-sm leading-6"}>
                   Harga akhir berubah otomatis mengikuti jumlah pesanan.
                 </p>
 
@@ -272,9 +281,9 @@ export default async function ProductDetailPage({ params }: PageProps) {
                   </Link>
                 ) : null}
 
-                <div className={`mt-8 p-4 ${isJersey ? "border-t border-black/10 bg-white" : "rounded-[24px] bg-white/50"}`}>
+                <div className={isJersey ? "mt-8 p-4 border-t border-black/10 bg-white" : "public-divider mt-8 border-t py-6"}>
                   <h2 className="text-base font-semibold">Deskripsi</h2>
-                  <p className="mt-3 whitespace-pre-line text-sm leading-7 text-brand-charcoal/60">
+                  <p className={isJersey ? "mt-3 whitespace-pre-line text-sm leading-7 text-brand-charcoal/60" : "public-secondary-copy mt-3 whitespace-pre-line text-[15px] leading-6 md:text-base"}>
                     {product.description ||
                       product.deskripsi ||
                       "Informasi lengkap produk dapat dikonsultasikan melalui WhatsApp."}
@@ -282,7 +291,7 @@ export default async function ProductDetailPage({ params }: PageProps) {
                 </div>
 
                 {product.specifications?.length ? (
-                  <div className={`mt-4 p-4 ${isJersey ? "border-t border-black/10 bg-white" : "rounded-[24px] bg-white/50"}`}>
+                  <div className={isJersey ? "mt-4 p-4 border-t border-black/10 bg-white" : "public-divider border-t py-6"}>
                     <h2 className="text-base font-semibold">
                       Spesifikasi
                     </h2>
@@ -313,6 +322,23 @@ export default async function ProductDetailPage({ params }: PageProps) {
           </ProductVariantGalleryProvider>
         </div>
       </main>
+      {!isJersey && relatedProducts.length ? (
+        <section className="bg-white py-12 md:py-16 lg:py-20" aria-labelledby="related-products-title">
+          <div className="section-shell">
+            <h2 id="related-products-title" className="public-section-title">
+              Rekomendasi
+            </h2>
+            <div className="mt-4 grid grid-cols-2 gap-x-4 gap-y-8 md:mt-6 lg:grid-cols-4 lg:gap-x-6 lg:gap-y-10">
+              {relatedProducts.map((item) => (
+                <PublicProductCard
+                  key={item.id || item.slug || item.nama}
+                  product={item}
+                />
+              ))}
+            </div>
+          </div>
+        </section>
+      ) : null}
     </PublicShell>
   );
 }

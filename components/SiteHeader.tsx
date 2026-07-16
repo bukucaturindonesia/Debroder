@@ -217,6 +217,34 @@ function ChevronDownIcon() {
   return <BrandIcon name="chevronDown" className="h-3.5 w-3.5" />;
 }
 
+function PublicNavIndicator({
+  label,
+  active,
+  open = false,
+  showChevron = false
+}: {
+  label: string;
+  active: boolean;
+  open?: boolean;
+  showChevron?: boolean;
+}) {
+  const selected = active || open;
+
+  return (
+    <span className={`inline-flex items-center gap-1.5 rounded-lg px-3 py-2 transition duration-200 group-hover/navitem:bg-black group-hover/navitem:text-white group-focus-visible/navitem:bg-black group-focus-visible/navitem:text-white ${selected ? "bg-black text-white" : ""}`}>
+      <span className="relative">
+        {label}
+        <span className={`absolute inset-x-0 -bottom-2 h-0.5 origin-center bg-current transition-transform duration-200 group-hover/navitem:scale-x-100 group-focus-visible/navitem:scale-x-100 ${selected ? "scale-x-100" : "scale-x-0"}`} />
+      </span>
+      {showChevron ? (
+        <span className={`transition-transform duration-200 ${open ? "rotate-180" : ""}`}>
+          <ChevronDownIcon />
+        </span>
+      ) : null}
+    </span>
+  );
+}
+
 function CloseIcon() {
   return <BrandIcon name="close" />;
 }
@@ -242,7 +270,10 @@ function MegaDropdown({
   const legacyClass = "invisible translate-y-2 opacity-0 group-hover/nav:visible group-hover/nav:translate-y-0 group-hover/nav:opacity-100 group-focus-within/nav:visible group-focus-within/nav:translate-y-0 group-focus-within/nav:opacity-100";
   return (
     <div id={id} className={`fixed left-1/2 z-[120] -translate-x-1/2 pt-3 transition duration-200 ${preserveJerseyOutput ? "w-[min(980px,calc(100vw-32px))]" : "w-[min(1180px,calc(100vw-32px))]"} ${open === undefined ? legacyClass : controlledClass} ${expanded ? "top-[164px]" : "top-[78px]"}`}>
-      <div className={`grid border border-black/10 bg-white text-left shadow-[0_18px_50px_rgba(0,0,0,0.12)] ${preserveJerseyOutput ? "grid-cols-3 gap-10 p-9" : `gap-8 p-8 ${columns.length >= 4 ? "grid-cols-4" : columns.length === 2 ? "grid-cols-2" : "grid-cols-3"}`}`}>
+      <div className={preserveJerseyOutput
+        ? "grid border border-black/10 bg-white text-left shadow-[0_18px_50px_rgba(0,0,0,0.12)] grid-cols-3 gap-10 p-9"
+        : `grid gap-8 bg-white p-8 text-left shadow-[0_16px_40px_rgba(0,0,0,0.08)] ${columns.length >= 4 ? "grid-cols-4" : columns.length === 2 ? "grid-cols-2" : "grid-cols-3"}`
+      }>
         {columns.map((column) => (
           <div key={column.title}>
             <p className="text-[15px] font-semibold text-[#111]">{column.title}</p>
@@ -449,7 +480,10 @@ export function SiteHeader({
   }, [isOpen, preserveJerseyOutput]);
 
   return (
-    <header ref={headerRef} className={`${positionMode === "sticky" ? "sticky top-0" : "relative"} z-[100] border-b border-black/10 bg-white text-[#111]`}>
+    <header ref={headerRef} className={preserveJerseyOutput
+      ? `${positionMode === "sticky" ? "sticky top-0" : "relative"} z-[100] border-b border-black/10 bg-white text-[#111]`
+      : `${positionMode === "sticky" ? "sticky top-0" : "relative"} z-[100] bg-white text-[#111]`
+    }>
       <div className={`hidden overflow-hidden bg-[#f5f5f5] transition-[max-height,opacity] duration-200 ease-out lg:block ${expanded ? "visible max-h-8 opacity-100" : "invisible max-h-0 opacity-0 pointer-events-none"}`} aria-hidden={!expanded}>
         <div className="section-shell flex h-8 items-center justify-between gap-4 text-[12px] font-medium text-black/65">
           <p className="truncate">DEBRODER Apparel & Printing</p>
@@ -489,11 +523,9 @@ export function SiteHeader({
                     aria-controls="global-collection-menu"
                     aria-current={active ? "page" : undefined}
                     onClick={() => setDesktopCollectionOpen((current) => !current)}
-                    className={`nav-link relative flex h-full items-center gap-1.5 whitespace-nowrap text-sm font-medium text-[#111] transition duration-200 hover:bg-black hover:text-white focus-visible:bg-black focus-visible:text-white xl:text-[15px] ${active ? "font-semibold" : ""}`}
+                    className={`nav-link group/navitem relative flex h-full items-center whitespace-nowrap text-[15px] font-medium text-[#111] ${active ? "font-semibold" : ""}`}
                   >
-                    {item.label}
-                    <span className={`transition-transform duration-200 ${desktopCollectionOpen ? "rotate-180" : ""}`}><ChevronDownIcon /></span>
-                    <span className={`absolute inset-x-0 bottom-0 h-0.5 origin-center bg-black transition-transform duration-200 ${active || desktopCollectionOpen ? "scale-x-100" : "scale-x-0"}`} />
+                    <PublicNavIndicator label={item.label} active={active} open={desktopCollectionOpen} showChevron />
                   </button>
                   <MegaDropdown id="global-collection-menu" columns={collectionMenu} expanded={expanded} open={desktopCollectionOpen} onNavigate={() => setDesktopCollectionOpen(false)} />
                 </div>
@@ -502,19 +534,33 @@ export function SiteHeader({
             if (megaMenu) {
               return (
                 <div key={item.href} className="group/nav relative flex h-full items-center">
-                  <Link href={item.href} aria-current={active ? "page" : undefined} className={`nav-link relative flex h-full items-center whitespace-nowrap text-sm font-medium transition duration-200 xl:text-[15px] ${preserveJerseyOutput ? `gap-1.5 hover:text-[#0f5a36] ${active ? "text-[#0f5a36]" : "text-[#111]"}` : `text-[#111] hover:bg-black hover:text-white focus-visible:bg-black focus-visible:text-white ${active ? "font-semibold" : ""}`}`}>
-                    {item.label}
-                    {preserveJerseyOutput ? <ChevronDownIcon /> : null}
-                    <span className={`absolute inset-x-0 bottom-0 h-0.5 origin-center transition-transform duration-200 ${preserveJerseyOutput ? "bg-[#0f5a36]" : "bg-black"} ${active ? "scale-x-100" : "scale-x-0"}`} />
+                  <Link href={item.href} aria-current={active ? "page" : undefined} className={preserveJerseyOutput
+                    ? `nav-link relative flex h-full items-center whitespace-nowrap text-sm font-medium transition duration-200 xl:text-[15px] gap-1.5 hover:text-[#0f5a36] ${active ? "text-[#0f5a36]" : "text-[#111]"}`
+                    : `nav-link group/navitem relative flex h-full items-center whitespace-nowrap text-sm font-medium text-[#111] xl:text-[15px] ${active ? "font-semibold" : ""}`
+                  }>
+                    {preserveJerseyOutput ? (
+                      <>
+                        {item.label}
+                        <ChevronDownIcon />
+                        <span className={`absolute inset-x-0 bottom-0 h-0.5 origin-center transition-transform duration-200 bg-[#0f5a36] ${active ? "scale-x-100" : "scale-x-0"}`} />
+                      </>
+                    ) : <PublicNavIndicator label={item.label} active={active} />}
                   </Link>
                   <MegaDropdown columns={megaMenu} expanded={expanded} preserveJerseyOutput={preserveJerseyOutput} />
                 </div>
               );
             }
             return (
-              <Link key={item.href} href={item.href} aria-current={active ? "page" : undefined} className={`nav-link relative flex h-full items-center whitespace-nowrap text-sm font-medium transition duration-200 xl:text-[15px] ${preserveJerseyOutput ? `hover:text-[#0f5a36] ${active ? "text-[#0f5a36]" : "text-[#111]"}` : `text-[#111] hover:bg-black hover:text-white focus-visible:bg-black focus-visible:text-white ${active ? "font-semibold" : ""}`}`}>
-                {item.label}
-                <span className={`absolute inset-x-0 bottom-0 h-0.5 origin-center transition-transform duration-200 ${preserveJerseyOutput ? "bg-[#0f5a36]" : "bg-black"} ${active ? "scale-x-100" : "scale-x-0"}`} />
+              <Link key={item.href} href={item.href} aria-current={active ? "page" : undefined} className={preserveJerseyOutput
+                ? `nav-link relative flex h-full items-center whitespace-nowrap text-sm font-medium transition duration-200 xl:text-[15px] hover:text-[#0f5a36] ${active ? "text-[#0f5a36]" : "text-[#111]"}`
+                : `nav-link group/navitem relative flex h-full items-center whitespace-nowrap text-sm font-medium text-[#111] xl:text-[15px] ${active ? "font-semibold" : ""}`
+              }>
+                {preserveJerseyOutput ? (
+                  <>
+                    {item.label}
+                    <span className={`absolute inset-x-0 bottom-0 h-0.5 origin-center transition-transform duration-200 bg-[#0f5a36] ${active ? "scale-x-100" : "scale-x-0"}`} />
+                  </>
+                ) : <PublicNavIndicator label={item.label} active={active} />}
               </Link>
             );
           })}

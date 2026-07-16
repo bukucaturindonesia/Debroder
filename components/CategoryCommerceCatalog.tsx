@@ -39,16 +39,14 @@ export function CategoryCommerceCatalog({
 }) {
   return (
     <>
-      <section data-reveal className="bg-brand-offWhite pb-12 pt-5 sm:pb-16 sm:pt-7">
+      <section data-reveal className="bg-brand-offWhite py-12 md:py-16 lg:py-20">
         <div className="section-shell">
-          <div className="flex items-end justify-between gap-6">
-            <div>
-              <p className="text-[11px] font-medium tracking-[0.08em] text-brand-charcoal/55">{eyebrow}</p>
-              <h2 className="mt-1 text-2xl font-semibold tracking-[-0.02em] text-brand-charcoal sm:text-3xl">{title}</h2>
-            </div>
-            <p className="hidden max-w-lg text-right text-sm leading-6 text-brand-charcoal/55 md:block">{description}</p>
+          <div className="max-w-2xl">
+            <p className="public-eyebrow">{eyebrow}</p>
+            <h2 className="public-section-title mt-2">{title}</h2>
+            <p className="public-secondary-copy mt-4 text-sm leading-6">{description}</p>
           </div>
-          <div className="mt-2">
+          <div className="mt-4 md:mt-6">
             <ProductCatalog
               products={products}
               showCategoryFilter={false}
@@ -59,14 +57,15 @@ export function CategoryCommerceCatalog({
               productTypeOptions={productTypeOptions}
               typeFilterLabel={typeFilterLabel}
               catalogStyle="category"
+              syncUrlState
             />
           </div>
         </div>
       </section>
-      <section className="border-y border-brand-charcoal/10 bg-brand-offWhite py-7 sm:py-9">
-        <div className="section-shell flex flex-col items-start justify-between gap-5 sm:flex-row sm:items-center">
-          <h2 className="max-w-3xl text-2xl font-semibold tracking-[-0.02em] text-brand-charcoal sm:text-3xl">{closingHeadline}</h2>
-          <Link href={closingCtaHref} className="inline-flex min-h-11 shrink-0 items-center justify-center rounded-full bg-black px-6 text-sm font-semibold text-white transition hover:bg-black/75 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-black">{closingCtaLabel}</Link>
+      <section className="public-divider border-y bg-brand-offWhite py-12 md:py-16">
+        <div className="section-shell flex flex-col items-start justify-between gap-6 sm:flex-row sm:items-center">
+          <h2 className="public-editorial-title max-w-3xl">{closingHeadline}</h2>
+          <Link href={closingCtaHref} className="inline-flex min-h-11 shrink-0 items-center justify-center rounded-full bg-black px-6 text-sm font-semibold text-white transition hover:bg-black/80 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-black">{closingCtaLabel}</Link>
         </div>
       </section>
     </>
