@@ -41,12 +41,10 @@ export function CategoryCommerceCatalog({
     <>
       <section data-reveal className="bg-brand-offWhite py-12 md:py-16 lg:py-20">
         <div className="section-shell">
-          <div className="flex items-end justify-between gap-6">
-            <div>
-              <p className="public-eyebrow">{eyebrow}</p>
-              <h2 className="public-section-title mt-2">{title}</h2>
-            </div>
-            <p className="public-secondary-copy hidden max-w-lg text-right text-sm leading-6 md:block">{description}</p>
+          <div className="max-w-2xl">
+            <p className="public-eyebrow">{eyebrow}</p>
+            <h2 className="public-section-title mt-2">{title}</h2>
+            <p className="public-secondary-copy mt-4 text-sm leading-6">{description}</p>
           </div>
           <div className="mt-4 md:mt-6">
             <ProductCatalog
@@ -59,6 +57,7 @@ export function CategoryCommerceCatalog({
               productTypeOptions={productTypeOptions}
               typeFilterLabel={typeFilterLabel}
               catalogStyle="category"
+              syncUrlState
             />
           </div>
         </div>

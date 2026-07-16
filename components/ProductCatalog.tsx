@@ -9,6 +9,7 @@ import {
   uniqueCatalogProducts
 } from "@/lib/product-catalog";
 import { productCardColors } from "@/lib/product-card";
+import { productMatchesNavigationStatus } from "@/lib/public-navigation";
 import { matchesProductType, type ProductTypeOption } from "@/lib/product-taxonomy";
 import type { Product } from "@/lib/types";
 
@@ -101,10 +102,14 @@ export function ProductCatalog({
   initialLabel = "all",
   initialSort = "order",
   initialProductType = "all",
+  initialStatus = "all",
   productTypeOptions = [],
   typeFilterLabel = "Semua tipe",
   showCategoryFilter = true,
   showGroupFilter = false,
+  showStatusFilter = false,
+  syncUrlState = false,
+  showCardActions,
   catalogStyle = "default"
 }: {
   products: Product[];
@@ -115,10 +120,14 @@ export function ProductCatalog({
   initialLabel?: LabelValue;
   initialSort?: SortValue;
   initialProductType?: string;
+  initialStatus?: string;
   productTypeOptions?: ProductTypeOption[];
   typeFilterLabel?: string;
   showCategoryFilter?: boolean;
   showGroupFilter?: boolean;
+  showStatusFilter?: boolean;
+  syncUrlState?: boolean;
+  showCardActions?: boolean;
   catalogStyle?: "default" | "category";
 }) {
   const [query, setQuery] = useState("");
@@ -127,6 +136,7 @@ export function ProductCatalog({
   const [category, setCategory] = useState("all");
   const [productType, setProductType] = useState(initialProductType);
   const [price, setPrice] = useState("all");
+  const [status, setStatus] = useState(initialStatus);
   const [label, setLabel] = useState<LabelValue>(initialLabel);
   const [sort, setSort] = useState<SortValue>(initialSort);
   const [columns, setColumns] = useState(2);
@@ -136,8 +146,9 @@ export function ProductCatalog({
   const loadMoreTimer = useRef<number | null>(null);
   const filterTriggerRef = useRef<HTMLButtonElement>(null);
   const filterPanelRef = useRef<HTMLDivElement>(null);
-  const filterSearchRef = useRef<HTMLInputElement>(null);
+  const filterCloseRef = useRef<HTMLButtonElement>(null);
   const isCategoryCatalog = catalogStyle === "category";
+  const shouldShowCardActions = showCardActions ?? !isCategoryCatalog;
 
   const categories = useMemo(
     () => Array.from(new Set(products.map((product) => product.kategori).filter(Boolean))).sort(),
@@ -170,6 +181,9 @@ export function ProductCatalog({
     availableProductTypeOptions.some((option) => option.value === productType)
       ? productType
       : "all";
+  const activeStatus = ["all", "ready-stock", "custom", "hybrid"].includes(status)
+    ? status
+    : "all";
 
   const visible = useMemo(() => {
     const needle = query.trim().toLowerCase();
@@ -185,6 +199,7 @@ export function ProductCatalog({
         matchesProductType(product, activeProductType, availableProductTypeOptions)
       )
       .filter((product) => matchesColor(product, color))
+      .filter((product) => productMatchesNavigationStatus(product, activeStatus))
       .filter((product) => {
         const amount = priceOf(product);
         if (price === "under-50") return amount < 50000;
@@ -210,7 +225,7 @@ export function ProductCatalog({
         if (sort === "price-high") return priceOf(b) - priceOf(a);
         return a.urutan - b.urutan;
       });
-  }, [activeProductType, availableProductTypeOptions, category, color, group, isCategoryCatalog, label, price, products, query, sort]);
+  }, [activeProductType, activeStatus, availableProductTypeOptions, category, color, group, isCategoryCatalog, label, price, products, query, sort]);
 
   useEffect(() => {
     if (!isCategoryCatalog) return;
@@ -228,7 +243,31 @@ export function ProductCatalog({
     loadMoreTimer.current = null;
     setIsLoadingMore(false);
     setVisibleCount(initialCatalogBatch(columns));
-  }, [category, color, columns, group, isCategoryCatalog, label, price, productType, query, sort]);
+  }, [activeStatus, category, color, columns, group, isCategoryCatalog, label, price, productType, query, sort]);
+
+  useEffect(() => {
+    if (!syncUrlState) return;
+    const url = new URL(window.location.href);
+    const values: Record<string, string> = {
+      type: activeProductType,
+      color,
+      status: activeStatus,
+      label,
+      sort
+    };
+
+    Object.entries(values).forEach(([key, value]) => {
+      const defaultValue = key === "sort" ? "order" : "all";
+      if (!value || value === defaultValue) url.searchParams.delete(key);
+      else url.searchParams.set(key, value);
+    });
+
+    window.history.replaceState(
+      window.history.state,
+      "",
+      `${url.pathname}${url.search}${url.hash}`
+    );
+  }, [activeProductType, activeStatus, color, label, sort, syncUrlState]);
 
   useEffect(
     () => () => {
@@ -241,7 +280,7 @@ export function ProductCatalog({
     if (!filtersOpen) return;
     const previousOverflow = document.body.style.overflow;
     document.body.style.overflow = "hidden";
-    const focusTimer = window.setTimeout(() => filterSearchRef.current?.focus(), 20);
+    const focusTimer = window.setTimeout(() => filterCloseRef.current?.focus(), 20);
 
     const handleKeyDown = (event: globalThis.KeyboardEvent) => {
       if (event.key === "Escape") {
@@ -252,7 +291,7 @@ export function ProductCatalog({
       if (event.key !== "Tab" || !filterPanelRef.current) return;
       const focusable = Array.from(
         filterPanelRef.current.querySelectorAll<HTMLElement>(
-          "button:not([disabled]), input:not([disabled]), select:not([disabled])"
+          "a[href], button:not([disabled]), input:not([disabled]), select:not([disabled])"
         )
       );
       const first = focusable[0];
@@ -285,6 +324,7 @@ export function ProductCatalog({
     activeProductType !== "all" ? activeProductType : "",
     color !== "all" ? color : "",
     price !== "all" ? price : "",
+    activeStatus !== "all" ? activeStatus : "",
     label !== "all" ? label : ""
   ].filter(Boolean).length;
 
@@ -295,6 +335,7 @@ export function ProductCatalog({
     setCategory("all");
     setProductType("all");
     setPrice("all");
+    setStatus("all");
     setLabel("all");
     setSort("order");
   }
@@ -302,6 +343,11 @@ export function ProductCatalog({
   function closeFilters() {
     setFiltersOpen(false);
     window.requestAnimationFrame(() => filterTriggerRef.current?.focus());
+  }
+
+  function openFilters(trigger: HTMLButtonElement) {
+    filterTriggerRef.current = trigger;
+    setFiltersOpen(true);
   }
 
   function loadMore() {
@@ -318,24 +364,14 @@ export function ProductCatalog({
 
   const controlClass =
     "public-control min-h-11 min-w-0 rounded-lg border px-3 text-sm font-medium outline-none";
-  const desktopControlClass = `${controlClass} flex-1 basis-36`;
-
-  const filterControls = (mobile = false) => (
+  const filterControls = () => (
     <>
-      <input
-        ref={mobile ? filterSearchRef : undefined}
-        aria-label="Cari produk"
-        value={query}
-        onChange={(event) => setQuery(event.target.value)}
-        placeholder="Cari produk, bahan, warna..."
-        className={`${controlClass} ${mobile ? "w-full" : "min-w-60 flex-[2_1_240px]"}`}
-      />
       {showGroupFilter ? (
         <select
           aria-label="Filter produk"
           value={group}
           onChange={(event) => setGroup(event.target.value as ProductGroup)}
-          className={mobile ? `${controlClass} w-full` : desktopControlClass}
+          className={`${controlClass} w-full`}
         >
           <option value="all">Semua produk</option>
           <option value="jaket-hoodie">Jaket & Hoodie</option>
@@ -347,7 +383,7 @@ export function ProductCatalog({
           aria-label="Filter kategori"
           value={category}
           onChange={(event) => setCategory(event.target.value)}
-          className={mobile ? `${controlClass} w-full` : desktopControlClass}
+          className={`${controlClass} w-full`}
         >
           <option value="all">Semua kategori</option>
           {categories.map((item) => (
@@ -360,7 +396,7 @@ export function ProductCatalog({
           aria-label="Filter tipe produk"
           value={activeProductType}
           onChange={(event) => setProductType(event.target.value)}
-          className={mobile ? `${controlClass} w-full` : desktopControlClass}
+          className={`${controlClass} w-full`}
         >
           <option value="all">{typeFilterLabel}</option>
           {availableProductTypeOptions.map((item) => (
@@ -374,7 +410,7 @@ export function ProductCatalog({
         aria-label="Filter warna"
         value={color}
         onChange={(event) => setColor(event.target.value)}
-        className={mobile ? `${controlClass} w-full` : desktopControlClass}
+        className={`${controlClass} w-full`}
       >
         <option value="all">Semua warna</option>
         {colors.map(([slug, name]) => (
@@ -391,7 +427,7 @@ export function ProductCatalog({
           setPrice(nextPrice);
           setLabel(labelValue(nextLabel));
         }}
-        className={mobile ? `${controlClass} w-full` : desktopControlClass}
+        className={`${controlClass} w-full`}
       >
         <option value="all|all">Semua harga/status</option>
         <option value="under-50|all">Di bawah Rp50 ribu</option>
@@ -401,6 +437,19 @@ export function ProductCatalog({
         <option value="all|promo">Promo</option>
         <option value="all|best">Best Seller</option>
       </select>
+      {showStatusFilter ? (
+        <select
+          aria-label="Filter ketersediaan"
+          value={activeStatus}
+          onChange={(event) => setStatus(event.target.value)}
+          className={`${controlClass} w-full`}
+        >
+          <option value="all">Semua ketersediaan</option>
+          <option value="ready-stock">Ready Stock</option>
+          <option value="custom">Custom Order</option>
+          <option value="hybrid">Ready Stock & Custom</option>
+        </select>
+      ) : null}
     </>
   );
 
@@ -408,18 +457,33 @@ export function ProductCatalog({
     <div>
       {showHeading ? <h2 className="public-section-title">{title}</h2> : null}
 
-      <div className={showHeading ? "mt-6" : ""}>
-        <div className="hidden items-end justify-between gap-8 lg:flex">
-          <div className="flex min-w-0 flex-1 flex-wrap items-end gap-2">
-            {filterControls()}
+      <div className={`${showHeading ? "mt-6 " : ""}public-divider border-y bg-white py-4`}>
+        <div className="hidden items-center justify-between gap-8 lg:flex">
+          <div className="flex min-w-0 flex-1 items-center gap-2">
+            <input
+              aria-label="Cari produk"
+              value={query}
+              onChange={(event) => setQuery(event.target.value)}
+              placeholder="Cari produk, bahan, warna..."
+              className={`${controlClass} w-[min(24rem,34vw)]`}
+            />
+            <button
+              type="button"
+              aria-expanded={filtersOpen}
+              aria-controls="public-catalog-filters"
+              onClick={(event) => openFilters(event.currentTarget)}
+              className="public-secondary-action inline-flex min-h-11 items-center justify-center rounded-lg border px-4 text-sm font-semibold"
+            >
+              Filter{activeFilterCount ? ` (${activeFilterCount})` : ""}
+            </button>
           </div>
-          <div className="flex shrink-0 items-end gap-4">
-            <p className="public-muted-copy whitespace-nowrap pb-3 text-sm" aria-live="polite">
+          <div className="flex shrink-0 items-center gap-4">
+            <p className="public-muted-copy whitespace-nowrap text-sm" aria-live="polite">
               {isCategoryCatalog && visible.length ? `${displayedProducts.length} dari ` : ""}
               {visible.length} produk
             </p>
-            <label className="grid gap-2 text-sm font-semibold">
-              <span>Urutkan</span>
+            <label>
+              <span className="sr-only">Urutkan produk</span>
               <select
                 aria-label="Urutkan produk"
                 value={sort}
@@ -437,14 +501,20 @@ export function ProductCatalog({
         </div>
 
         <div className="lg:hidden">
-          <div className="grid grid-cols-2 gap-2">
+          <input
+            aria-label="Cari produk"
+            value={query}
+            onChange={(event) => setQuery(event.target.value)}
+            placeholder="Cari produk, bahan, warna..."
+            className={`${controlClass} w-full`}
+          />
+          <div className="mt-2 grid grid-cols-2 gap-2">
             <button
-              ref={filterTriggerRef}
               type="button"
               aria-expanded={filtersOpen}
               aria-controls="public-catalog-filters"
-              onClick={() => setFiltersOpen(true)}
-              className="public-secondary-action inline-flex min-h-11 items-center justify-center border px-4 text-sm font-semibold"
+              onClick={(event) => openFilters(event.currentTarget)}
+              className="public-secondary-action inline-flex min-h-11 items-center justify-center rounded-lg border px-4 text-sm font-semibold"
             >
               Filter{activeFilterCount ? ` (${activeFilterCount})` : ""}
             </button>
@@ -464,7 +534,7 @@ export function ProductCatalog({
               </select>
             </label>
           </div>
-          <div className="mt-4 flex items-center justify-between gap-4">
+          <div className="mt-2 flex items-center justify-between gap-4">
             <p className="public-muted-copy text-sm" aria-live="polite">
               {isCategoryCatalog && visible.length ? `${displayedProducts.length} dari ` : ""}
               {visible.length} produk
@@ -488,7 +558,7 @@ export function ProductCatalog({
             <PublicProductCard
               key={product.id || product.slug || product.nama}
               product={product}
-              showActions={!isCategoryCatalog}
+              showActions={shouldShowCardActions}
               imageSizes="(min-width: 1024px) 25vw, 50vw"
             />
           ))}
@@ -544,7 +614,7 @@ export function ProductCatalog({
             type="button"
             aria-label="Tutup filter"
             onClick={closeFilters}
-            className="fixed inset-0 z-[160] bg-black/48 lg:hidden"
+            className="fixed inset-0 z-[160] bg-black/48"
           />
           <div
             ref={filterPanelRef}
@@ -552,7 +622,7 @@ export function ProductCatalog({
             role="dialog"
             aria-modal="true"
             aria-labelledby="public-catalog-filter-title"
-            className="fixed inset-x-0 bottom-0 z-[170] flex max-h-[88dvh] flex-col bg-white lg:hidden"
+            className="fixed inset-x-0 bottom-0 z-[170] flex max-h-[88dvh] flex-col bg-white lg:inset-y-0 lg:left-auto lg:max-h-none lg:w-[420px]"
           >
             <div className="public-divider flex items-center justify-between border-b px-4 py-4">
               <div>
@@ -564,6 +634,7 @@ export function ProductCatalog({
                 </p>
               </div>
               <button
+                ref={filterCloseRef}
                 type="button"
                 onClick={closeFilters}
                 aria-label="Tutup filter"
@@ -572,8 +643,8 @@ export function ProductCatalog({
                 ×
               </button>
             </div>
-            <div className="grid flex-1 gap-4 overflow-y-auto px-4 py-6">
-              {filterControls(true)}
+            <div className="grid flex-1 content-start gap-4 overflow-y-auto px-4 py-6">
+              {filterControls()}
             </div>
             <div className="public-divider grid grid-cols-2 gap-2 border-t bg-white p-4">
               <button

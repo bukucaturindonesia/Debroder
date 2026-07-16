@@ -726,7 +726,7 @@ button,
 }
 
 .home-bleed-rail {
-  gap: 12px;
+  gap: 16px;
   padding-inline: 20px;
   scroll-padding-inline: 0;
   overscroll-behavior-inline: contain;
@@ -852,13 +852,13 @@ button,
 
 /* Each section owns only its top spacing to prevent doubled whitespace. */
 .public-site {
-  --home-gap-featured: 40px;
+  --home-gap-featured: 48px;
   --home-gap-trending: 48px;
-  --home-gap-campaign: 56px;
-  --home-gap-commerce: 56px;
-  --home-gap-support: 64px;
-  --home-gap-about: 64px;
-  --home-end-space: 64px;
+  --home-gap-campaign: 48px;
+  --home-gap-commerce: 48px;
+  --home-gap-support: 48px;
+  --home-gap-about: 48px;
+  --home-end-space: 48px;
 }
 
 .public-site .home-section {
@@ -952,13 +952,13 @@ button,
   }
 
   .public-site {
-    --home-gap-featured: 48px;
-    --home-gap-trending: 56px;
+    --home-gap-featured: 64px;
+    --home-gap-trending: 64px;
     --home-gap-campaign: 64px;
     --home-gap-commerce: 64px;
-    --home-gap-support: 72px;
-    --home-gap-about: 72px;
-    --home-end-space: 72px;
+    --home-gap-support: 64px;
+    --home-gap-about: 64px;
+    --home-end-space: 64px;
   }
 }
 
@@ -995,9 +995,9 @@ button,
   }
 
   .public-site {
-    --home-gap-featured: 56px;
-    --home-gap-trending: 72px;
-    --home-gap-campaign: 72px;
+    --home-gap-featured: 80px;
+    --home-gap-trending: 80px;
+    --home-gap-campaign: 80px;
     --home-gap-commerce: 80px;
     --home-gap-support: 80px;
     --home-gap-about: 80px;

@@ -218,7 +218,7 @@ function CategoryEditorialCard({ item }: { item: EditorialItem }) {
             mobileObjectPosition={item.objectPosition}
           />
         </div>
-        <h3 className="mt-3 text-base font-medium tracking-[-0.01em] text-[#111] sm:text-lg">{title}</h3>
+        <h3 className="mt-4 text-base font-medium tracking-[-0.01em] text-[#111] sm:text-lg">{title}</h3>
       </Link>
     </article>
   );
@@ -461,7 +461,7 @@ export default async function Home() {
                       {landingSection("services-products")!.cta_label}
                     </Link>
                   ) : null}
-                  <ScrollButtons containerId="category-carousel" />
+                  <ScrollButtons containerId="category-carousel" largeTargets />
                 </div>
               }
             />
