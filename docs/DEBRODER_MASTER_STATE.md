@@ -146,3 +146,13 @@ The FROZEN commerce/landing blueprints and official Owner Decisions remain autho
 - Additive migration `20260716143000_pim_phase_4_bulk_import_atomic.sql` is local only and has not been applied remotely. Production atomicity is therefore **REMOTE DATABASE VERIFICATION REQUIRED** and **OWNER DATABASE ACTION REQUIRED**.
 - Order, checkout, reservation, inventory ledger, Commerce Security P0, Jersey, Public UI, CMS, manual Product Manager, and Variant Matrix contracts remain frozen and unchanged.
 - Browser verification is **STATIC AUDIT ONLY** until the owner applies the migration and runs the controlled Preview checklist. Phase 5 is not started.
+
+## PIM Phase 5 Bulk Edit & Actions state — 2026-07-17
+
+- PIM Phase 5 Bulk Edit & Actions is **IMPLEMENTED** at source level as an additive subroute of the existing Unified Product Manager.
+- Server-paginated Product Root, Color Variant, and Sellable SKU targets support explicit selection across pages and all-matching selection with exclusions. Limits are 250/500/1,000 targets respectively.
+- Dry run is write-free and returns server-authoritative summary plus before/after rows. Final commit is restricted to Owner/Super Admin, binds actor/role/current-state to an expiring preview, revalidates the complete batch, and invokes one idempotent transaction RPC.
+- Supported mutations are category/status/base-price for Product Root, status/price-adjustment for Color Variant, and `stock_quantity`/existing `stock` compatibility projection for Sellable SKU. Fractional percentage results, negative values, invalid Publish dependencies, unsafe variant deactivation, stale data, and Jersey category/output changes block the batch.
+- SKU, slug, name, product key, master color/size, media, and permanent delete are not actions. Tags and variant archive are **NOT APPLICABLE** because the frozen canonical baseline provides neither a tag source nor variant archive lifecycle.
+- Additive migration `20260717093000_pim_phase_5_bulk_edit_atomic.sql` is local only and has not been applied remotely. Production transaction, RLS/grant, rollback, idempotency, concurrency, and audit behavior remain **REMOTE DATABASE VERIFICATION REQUIRED** and **OWNER DATABASE ACTION REQUIRED**.
+- Jersey, Public UI, CMS, order, checkout, payment, reservation, inventory ledger, production, fulfillment, Phase 1–4 manual flows, SKU, and slug contracts remain frozen and unchanged. Browser status is **STATIC AUDIT ONLY** pending owner Preview verification.

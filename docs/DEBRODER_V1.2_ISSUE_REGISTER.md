@@ -2,6 +2,12 @@
 
 ## Open
 
+### V12-028 — Apply and verify PIM Phase 5 Bulk Edit transaction
+
+- Severity: Gate
+- Status: OPEN / SOURCE IMPLEMENTED
+- Detail: Bulk Edit & Actions source implements server-paginated selection, all-matching exclusions, write-free dry run, before/after preview, Admin Guest preview-only behavior, strict action/limit guards, preview expiry/current-state binding, and an additive atomic/idempotent/audited RPC migration. Migration `20260717093000_pim_phase_5_bulk_edit_atomic.sql` has not been applied remotely. Owner must apply pending Phase 4 first, review/apply Phase 5, then verify service-role-only ACL/RLS, batch rollback/no-partial-write, idempotent replay, concurrent-change rejection, Publish/variant/Jersey guards, audit history, and unchanged manual Product Manager/Variant Matrix/order/checkout/reservation behavior through a controlled Preview deployment.
+
 ### V12-027 — Apply and verify PIM Phase 4 Bulk Import transaction
 
 - Severity: Gate

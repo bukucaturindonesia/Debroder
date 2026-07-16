@@ -169,6 +169,21 @@ Status: **IMPLEMENTED** at source level; **OWNER DATABASE ACTION REQUIRED**.
 
 ---
 
+## 2026-07-17 — PIM Phase 5 Bulk Edit & Actions
+
+Status: **IMPLEMENTED** at source level; **OWNER DATABASE ACTION REQUIRED**.
+
+- Added `/admin/products/bulk-edit` inside the existing Unified Product Manager. The UI uses server pagination, explicit selection across pages, all-matching filters with exclusions, a sticky toolbar, required dry run, before/after preview, confirmation, and recent batch history.
+- Product Root actions: category change outside protected Jersey output, Draft/Active/Archived lifecycle transition, and base-price adjustment. Color Variant actions: Active/Inactive and price adjustment. Sellable SKU actions: stock set/increase/decrease through canonical `stock_quantity` plus existing compatibility `stock`.
+- Batch limits are 250 Product Roots, 500 Color Variants, 1,000 Sellable SKUs, and 1,000 total mutations. Percentage results that are fractional Rupiah are blocked without undocumented rounding.
+- Admin Guest remains PREVIEW ONLY. Final commit accepts only Owner/Super Admin dependency roles, verifies an actor/role/expiry-bound preview, recalculates current server state, detects concurrency, and calls one service-role-only atomic/idempotent RPC.
+- Added migration `20260717093000_pim_phase_5_bulk_edit_atomic.sql` for minimal batch metadata, strict action allowlist, row locks/current-state comparison, lifecycle/category/publish/price/stock validation, all-or-nothing mutation, and mandatory audit insertion.
+- Migration was not applied remotely. Apply Phase 4 first if pending, then Phase 5, and run controlled rollback/idempotency/concurrency/audit/grant checks before enabling real final actions.
+- Tags and variant archive are **NOT APPLICABLE** on this canonical baseline. SKU, slug, name, master data, media, permanent delete, Jersey, commerce, and existing manual PIM business flows were not changed.
+- Browser verification: **STATIC AUDIT ONLY**. GitHub, Vercel, and Supabase remote remain owner-managed.
+
+---
+
 ## 2026-07-14 — Kaos Polos final visual revision
 
 Status: **IMPLEMENTED, PARTIALLY VERIFIED**.
