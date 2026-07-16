@@ -4,17 +4,14 @@ import { CampaignBanners } from "@/components/CampaignBanners";
 import { HeroSlider } from "@/components/HeroSlider";
 import { PublicProductCard } from "@/components/PublicProductCard";
 import { PublicFooter } from "@/components/PublicFooter";
-import { PublicInstagramBanner } from "@/components/PublicInstagramBanner";
-import { PublicSectionFrame } from "@/components/PublicSectionFrame";
-import { PublicStoreLocator } from "@/components/PublicStoreLocator";
 import { ResponsivePicture } from "@/components/ResponsivePicture";
 import { ScrollButtons } from "@/components/ScrollButtons";
 import { SiteHeader } from "@/components/SiteHeader";
-import { fallbackImages, getProductImage } from "@/lib/fallback-data";
+import { fallbackImages, getProductImage, getStoreImage } from "@/lib/fallback-data";
 import { buildPublicNavigationFacets } from "@/lib/public-navigation";
 import { getPublicContent } from "@/lib/public-data";
 import { absoluteUrl, siteConfig } from "@/lib/site";
-import type { HomepageSection, HomepageSectionItem, LandingSection, Product, Service } from "@/lib/types";
+import type { HomepageSection, HomepageSectionItem, LandingSection, Product, Service, Store } from "@/lib/types";
 import { whatsappLinkWithMessage } from "@/lib/url";
 
 const benefits = [
@@ -64,26 +61,6 @@ function cleanCmsText(value?: string | null) {
 
 function hasEditorialText(...values: Array<string | null | undefined>) {
   return values.some((value) => Boolean(cleanCmsText(value)));
-}
-
-function normalizeAboutParagraphs(value?: string | null) {
-  const blocks = (value || "")
-    .split(/\n\s*\n/)
-    .map((block) => block.split(/\n+/).map((line) => line.trim()).filter(Boolean).join(", "))
-    .filter(Boolean);
-
-  if (blocks.length >= 3) {
-    return [`${blocks[0]} ${blocks.slice(1, -1).join(", ")}`, blocks[blocks.length - 1]];
-  }
-
-  if (blocks.length === 1) {
-    const sentences = blocks[0].match(/[^.!?]+[.!?]+|[^.!?]+$/g)?.map((sentence) => sentence.trim()).filter(Boolean) || [];
-    if (sentences.length > 1) {
-      return [sentences.slice(0, -1).join(" "), sentences[sentences.length - 1]];
-    }
-  }
-
-  return blocks;
 }
 
 function productItem(product: Product): ProductItem {
@@ -274,14 +251,14 @@ function ManagedHomepageSection({ section, setting, fallbackProducts = [] }: { s
     if (isFeatured) {
       return (
         <section id={section.slug} className="home-section home-featured section-space bg-white">
-          <PublicSectionFrame variant="wide">
+          <div className="section-shell">
             <SectionHeading
               title={section.title}
               description={setting?.subtitle}
               textPosition={setting?.text_position}
               action={configuredCta}
             />
-          </PublicSectionFrame>
+          </div>
           <div id={carouselId} className="featured-media-grid mt-4 grid grid-cols-1 gap-0 md:mt-6 lg:grid-cols-2">
             {items.slice(0, 2).map((item, index) => (
               <EditorialCard
@@ -297,7 +274,7 @@ function ManagedHomepageSection({ section, setting, fallbackProducts = [] }: { s
 
     return (
       <section id={section.slug} className="home-section home-trending section-space bg-white">
-        <PublicSectionFrame variant="near-wide" className="trending-shell">
+        <div className="section-shell trending-shell">
           <SectionHeading
             title={section.title}
             description={setting?.subtitle}
@@ -314,7 +291,7 @@ function ManagedHomepageSection({ section, setting, fallbackProducts = [] }: { s
               />
             ))}
           </div>
-        </PublicSectionFrame>
+        </div>
       </section>
     );
   }
@@ -325,7 +302,7 @@ function ManagedHomepageSection({ section, setting, fallbackProducts = [] }: { s
 
   return (
     <section id={section.slug} className="home-section home-fresh-drop section-space bg-white">
-      <PublicSectionFrame variant="near-wide">
+      <div className="section-shell">
         <SectionHeading
           title={section.title}
           description={setting?.subtitle}
@@ -337,17 +314,40 @@ function ManagedHomepageSection({ section, setting, fallbackProducts = [] }: { s
             </div>
           }
         />
-        <div id={carouselId} className="home-bleed-rail public-frame-rail fresh-drop-rail no-scrollbar mt-4 flex snap-x snap-mandatory overflow-x-auto md:mt-6">
-          {items.map((item, index) => (
-            <ProductCard
-              key={section.items[index]?.id || item.product.id || item.product.slug || `${item.product.nama}-${index}`}
-              item={item}
-              className="fresh-drop-card shrink-0 snap-start"
-            />
-          ))}
-        </div>
-      </PublicSectionFrame>
+      </div>
+      <div id={carouselId} className="home-bleed-rail fresh-drop-rail no-scrollbar mt-4 flex snap-x snap-mandatory overflow-x-auto md:mt-6">
+        {items.map((item, index) => (
+          <ProductCard
+            key={section.items[index]?.id || item.product.id || item.product.slug || `${item.product.nama}-${index}`}
+            item={item}
+            className="fresh-drop-card shrink-0 snap-start"
+          />
+        ))}
+      </div>
     </section>
+  );
+}
+
+function StoreCard({ store, index }: { store: Store; index: number }) {
+  const name = store.nama_store.replace(/^STORE\s+/i, "");
+  const whatsappHref = whatsappLinkWithMessage(store.whatsapp_link || store.whatsapp, `Halo DEBRODER, saya ingin bertanya tentang Store ${name}.`);
+
+  return (
+    <article className="min-w-[82vw] shrink-0 snap-start bg-transparent py-4 sm:min-w-[360px] lg:min-w-0">
+      <div className="flex items-start justify-between gap-3">
+        <span className="text-xs font-semibold uppercase tracking-[0.18em] text-[#0f5a36]">Store {String(index + 1).padStart(2, "0")}</span>
+        <svg viewBox="0 0 24 24" className="h-5 w-5 text-[#0f5a36]" fill="none" stroke="currentColor" strokeWidth="1.7" aria-hidden="true">
+          <path d="M12 21s6-5.2 6-11a6 6 0 1 0-12 0c0 5.8 6 11 6 11Z" /><circle cx="12" cy="10" r="2" />
+        </svg>
+      </div>
+      <h3 className="mt-8 text-xl font-semibold tracking-normal text-[#111] sm:text-2xl">{name}</h3>
+      <p className="mt-3 min-h-[48px] text-sm leading-6 text-black/55">{store.alamat}</p>
+      {store.jam_operasional ? <p className="mt-3 text-xs font-medium text-black/45">{store.jam_operasional}</p> : null}
+      <div className="mt-6 grid grid-cols-2 gap-2">
+        <a href={whatsappHref} target="_blank" rel="noopener noreferrer" className="inline-flex min-h-11 items-center justify-center rounded-full bg-black px-3 text-sm font-semibold text-white transition hover:bg-black/75">WhatsApp</a>
+        <a href={store.maps_link} target="_blank" rel="noopener noreferrer" className="premium-ghost-button inline-flex min-h-11 items-center justify-center rounded-full border px-3 text-sm font-semibold text-[#111] transition">Lihat Lokasi</a>
+      </div>
+    </article>
   );
 }
 
@@ -380,7 +380,6 @@ export default async function Home() {
     .filter((product) => product.status_aktif !== false)
     .sort((a, b) => Number(Boolean(b.fresh_drop)) - Number(Boolean(a.fresh_drop)) || a.urutan - b.urutan)
     .slice(0, 8);
-  const aboutParagraphs = normalizeAboutParagraphs(content.trustAbout.about_body);
   const schema = {
     "@context": "https://schema.org",
     "@graph": [
@@ -450,7 +449,7 @@ export default async function Home() {
 
       <LandingSectionSlot setting={landingSection("services-products")}>
         <section id="shop-category" className="home-section home-categories section-space bg-white">
-          <PublicSectionFrame variant="inset">
+          <div className="section-shell">
             <SectionHeading
               title={landingSection("services-products")?.title || "Shop by Category"}
               description={landingSection("services-products")?.subtitle}
@@ -466,77 +465,61 @@ export default async function Home() {
                 </div>
               }
             />
-            <div id="category-carousel" tabIndex={0} aria-label="Daftar kategori DEBRODER" className="home-bleed-rail public-frame-rail category-carousel premium-scrollbar mt-4 flex snap-x snap-mandatory overflow-x-auto pb-6 md:mt-6">
-              {shopCategoryItems.length ? shopCategoryItems.map((item) => (
-                <CategoryEditorialCard key={`${item.href}-${item.title}`} item={item} />
-              )) : homeCategories.length ? homeCategories.map((item) => (
-                <CategoryEditorialCard
-                  key={item.name}
-                  item={{
-                    ...item,
-                    label: "",
-                    title: item.name,
-                    button: "",
-                    href: item.href
-                  }}
-                />
-              )) : <p className="px-5 py-8 text-sm text-black/55">Belum ada kategori.</p>}
-            </div>
-          </PublicSectionFrame>
+          </div>
+          <div id="category-carousel" className="home-bleed-rail category-carousel no-scrollbar mt-4 flex snap-x snap-mandatory overflow-x-auto pb-4 md:mt-6">
+            {shopCategoryItems.length ? shopCategoryItems.map((item) => (
+              <CategoryEditorialCard key={`${item.href}-${item.title}`} item={item} />
+            )) : homeCategories.length ? homeCategories.map((item) => (
+              <CategoryEditorialCard
+                key={item.name}
+                item={{
+                  ...item,
+                  label: "",
+                  title: item.name,
+                  button: "",
+                  href: item.href
+                }}
+              />
+            )) : <p className="px-5 py-8 text-sm text-black/55">Belum ada kategori.</p>}
+          </div>
         </section>
       </LandingSectionSlot>
 
-      {content.instagramBanner?.id ? (
-        <section id="instagram" className="home-section home-instagram section-space bg-white" aria-label="Instagram DEBRODER">
-          <PublicSectionFrame variant="near-wide">
-            <PublicInstagramBanner banner={content.instagramBanner} />
-          </PublicSectionFrame>
-        </section>
-      ) : null}
-
       <LandingSectionSlot setting={landingSection("stores")}>
-        <>
-          <section id="store" className="home-section home-store section-space bg-white">
-            <PublicSectionFrame variant="inset">
-              <SectionHeading
-                title={landingSection("stores")?.title || "Store DEBRODER"}
-                description={landingSection("stores")?.subtitle || "Konsultasikan bahan, teknik cetak, dan estimasi produksi langsung bersama tim kami."}
-                textPosition={landingSection("stores")?.text_position}
-                action={<Link href={landingSection("stores")?.cta_url || "/store"} className="hidden text-sm font-semibold hover:underline sm:block">{landingSection("stores")?.cta_label || "Semua store"}</Link>}
-              />
-              <div className="mt-4 md:mt-6">
-                <PublicStoreLocator stores={stores} />
-              </div>
-            </PublicSectionFrame>
-          </section>
+        <section id="store" className="home-section home-store section-space bg-white">
+          <div className="section-shell">
+            <SectionHeading
+              title={landingSection("stores")?.title || "Store DEBRODER"}
+              description={landingSection("stores")?.subtitle || "Konsultasikan bahan, teknik cetak, dan estimasi produksi langsung bersama tim kami."}
+              textPosition={landingSection("stores")?.text_position}
+              action={<Link href={landingSection("stores")?.cta_url || "/store"} className="hidden text-sm font-semibold hover:underline sm:block">{landingSection("stores")?.cta_label || "Semua store"}</Link>}
+            />
+            <div className="no-scrollbar mt-6 flex snap-x snap-mandatory gap-6 overflow-x-auto lg:grid lg:grid-cols-4 lg:overflow-visible">
+              {stores.map((store, index) => <StoreCard key={store.nama_store} store={store} index={index} />)}
+            </div>
 
-          <section className="home-section home-order section-space bg-white" aria-labelledby="cara-order-heading">
-            <PublicSectionFrame variant="inset">
-              <div className="public-divider flex flex-col gap-6 border-y py-6 sm:flex-row sm:items-center sm:justify-between md:py-8">
-                <div>
-                  <p className="text-sm font-medium text-black/55">Belum yakin harus mulai dari mana?</p>
-                  <h3 id="cara-order-heading" className="mt-2 text-2xl font-semibold tracking-[-0.02em] sm:text-3xl">Pesan apparel custom dengan alur yang jelas.</h3>
-                </div>
-                <div className="flex flex-wrap gap-2">
-                  <Link href="/cara-order" className="inline-flex min-h-11 items-center justify-center rounded-full bg-[#111] px-6 text-sm font-semibold text-white transition hover:bg-black/75">Cara Order</Link>
-                  <a href={whatsappHref} target="_blank" rel="noopener noreferrer" className="inline-flex min-h-11 items-center justify-center rounded-full border border-black/20 px-6 text-sm font-semibold text-[#111] transition hover:border-black">Konsultasi WhatsApp</a>
-                </div>
+            <div className="mt-12 flex flex-col gap-6 border-t border-black/10 pt-8 sm:flex-row sm:items-center sm:justify-between">
+              <div>
+                <p className="text-sm font-medium text-black/55">Belum yakin harus mulai dari mana?</p>
+                <h3 className="mt-1 text-2xl font-semibold tracking-[-0.02em] sm:text-3xl">Pesan apparel custom dengan alur yang jelas.</h3>
               </div>
-            </PublicSectionFrame>
-          </section>
-        </>
+              <div className="flex flex-wrap gap-2">
+                <Link href="/cara-order" className="inline-flex min-h-11 items-center justify-center rounded-full bg-[#111] px-6 text-sm font-semibold text-white transition hover:bg-black/75">Cara Order</Link>
+                <a href={whatsappHref} target="_blank" rel="noopener noreferrer" className="inline-flex min-h-11 items-center justify-center rounded-full border border-black/20 px-6 text-sm font-semibold text-[#111] transition hover:border-black">Konsultasi WhatsApp</a>
+              </div>
+            </div>
+          </div>
+        </section>
       </LandingSectionSlot>
 
       <LandingSectionSlot setting={landingSection("about")}>
         <section id="tentang" className="home-section home-about section-space bg-white">
-          <PublicSectionFrame variant="near-wide" className="grid gap-6 md:gap-8 lg:grid-cols-2 lg:items-center lg:gap-10">
+          <div className="section-shell grid gap-10 lg:grid-cols-[1.05fr_.95fr] lg:items-center lg:gap-20">
             <div className={content.trustAbout.text_position === "center" ? "text-center" : content.trustAbout.text_position === "right" ? "text-right" : ""}>
-              <p className="public-eyebrow">Tentang Kami</p>
-              <h2 className="home-page-title mt-2 max-w-2xl">TENTANG DEBRODER</h2>
-              <div className="mt-4 max-w-2xl space-y-4 text-base leading-8 text-black/62">
-                {aboutParagraphs.map((paragraph) => <p key={paragraph}>{paragraph}</p>)}
-              </div>
-              {content.trustAbout.cta_label && content.trustAbout.cta_url ? <Link href={content.trustAbout.cta_url} className="mt-6 inline-flex min-h-11 items-center rounded-full bg-[#111] px-6 text-sm font-semibold text-white transition hover:bg-black/75">{content.trustAbout.cta_label}</Link> : null}
+              <p className="text-sm font-medium text-black/55">Tentang DEBRODER</p>
+              <h2 className="home-page-title mt-4 max-w-2xl">{landingSection("about")?.title || "Built to Create"}</h2>
+              <p className="mt-6 max-w-2xl whitespace-pre-line text-base leading-8 text-black/62">{content.trustAbout.about_body}</p>
+              {content.trustAbout.cta_label && content.trustAbout.cta_url ? <Link href={content.trustAbout.cta_url} className="mt-7 inline-flex min-h-11 items-center rounded-full bg-[#111] px-6 text-sm font-semibold text-white transition hover:bg-black/75">{content.trustAbout.cta_label}</Link> : null}
             </div>
             {content.trustAbout.video_url ? (
               <video src={content.trustAbout.video_url} autoPlay muted loop playsInline className="aspect-[4/3] w-full object-cover" />
@@ -552,7 +535,7 @@ export default async function Home() {
                 ))}
               </div>
             )}
-          </PublicSectionFrame>
+          </div>
         </section>
       </LandingSectionSlot>
 
