@@ -3,6 +3,7 @@ import { CategoryCommercePage } from "@/components/CategoryCommercePage";
 import { productsForCategoryRoute } from "@/lib/product-route-matching";
 import { headwearTypeOptions, productTypeValue } from "@/lib/product-taxonomy";
 import { getPublicContent } from "@/lib/public-data";
+import { getCustomDestinationForSourceCategory } from "@/lib/custom-commerce/data";
 
 export const metadata: Metadata = {
   title: "Headwear | DE BRODER",
@@ -43,6 +44,7 @@ export default async function HeadwearPage({ searchParams }: HeadwearPageProps) 
   const content = await getPublicContent();
   const params = searchParams ? await searchParams : {};
   const products = productsForCategoryRoute(content.products, content.productCategories, "headwear");
+  const customDestination = await getCustomDestinationForSourceCategory(content.productCategories.find((category) => category.slug === "headwear")?.id);
   const initialColor = firstParam(params.color) || "all";
   const initialLabel = productLabel(params.label);
   const initialSort = productSort(params.sort);
@@ -59,7 +61,7 @@ export default async function HeadwearPage({ searchParams }: HeadwearPageProps) 
       catalogDescription: "Temukan model, warna, ukuran, dan bahan dari katalog produk DEBRODER.",
       closingHeadline: "Butuh headwear custom untuk merchandise, komunitas, atau brand?",
       closingCtaLabel: "Custom Order",
-      closingCtaHref: "/sablon-dtf",
+      closingCtaHref: customDestination || "/custom",
       productTypeOptions: headwearTypeOptions,
       typeFilterLabel: "Semua model headwear"
     }}

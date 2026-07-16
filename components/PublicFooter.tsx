@@ -14,6 +14,8 @@ const shopLinks = [
   { label: "Cetak Sublim", href: "/cetak-sublim" }
 ];
 
+const publicShopLinks = [...shopLinks, { label: "Custom", href: "/custom" }];
+
 const helpLinks = [
   { label: "Cara Order", href: "/cara-order" },
   { label: "Keranjang", href: "/keranjang" },
@@ -83,6 +85,7 @@ export function PublicFooter({ content, variant = "default" }: { content: Public
     content.contact.whatsapp_link || content.contact.whatsapp_utama,
     "Halo DEBRODER, saya ingin bertanya tentang layanan DEBRODER."
   );
+  const currentShopLinks = publicDark ? publicShopLinks : shopLinks;
 
   const companyLinks = [
     { label: "Tentang DEBRODER", href: "/#tentang" },
@@ -104,7 +107,7 @@ export function PublicFooter({ content, variant = "default" }: { content: Public
           <FooterBrand dark={dark} publicDark={publicDark} />
 
           <DesktopColumn title="Belanja" dark={dark} publicDark={publicDark}>
-            {shopLinks.map((item) => <Link key={item.href} href={item.href} className={`transition ${dark ? "hover:text-white" : "hover:text-[#111]"}`}>{item.label}</Link>)}
+            {currentShopLinks.map((item) => <Link key={item.href} href={item.href} className={`transition ${dark ? "hover:text-white" : "hover:text-[#111]"}`}>{item.label}</Link>)}
           </DesktopColumn>
 
           <DesktopColumn title="Bantuan" dark={dark} publicDark={publicDark}>
@@ -125,7 +128,7 @@ export function PublicFooter({ content, variant = "default" }: { content: Public
             <FooterBrand dark={dark} publicDark={publicDark} />
           </div>
           <MobileAccordion title="Belanja" dark={dark} publicDark={publicDark}>
-            {shopLinks.map((item) => <Link key={item.href} href={item.href} className={`transition ${dark ? "hover:text-white" : "hover:text-[#111]"}`}>{item.label}</Link>)}
+            {currentShopLinks.map((item) => <Link key={item.href} href={item.href} className={`transition ${dark ? "hover:text-white" : "hover:text-[#111]"}`}>{item.label}</Link>)}
           </MobileAccordion>
           <MobileAccordion title="Bantuan" dark={dark} publicDark={publicDark}>
             {helpLinks.map((item) => <Link key={item.href} href={item.href} className={`transition ${dark ? "hover:text-white" : "hover:text-[#111]"}`}>{item.label}</Link>)}

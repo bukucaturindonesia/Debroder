@@ -1,12 +1,13 @@
 import type { MetadataRoute } from "next";
 import { getPublicContent } from "@/lib/public-data";
 import { absoluteUrl } from "@/lib/site";
+import { listCustomCategories } from "@/lib/custom-commerce/data";
 
-const routes = ["", "/koleksi", "/keranjang", "/kaos-polos", "/jersey", "/jersey/shop", "/jersey/configurator", "/jaket-hoodie", "/kemeja", "/headwear", "/sablon-dtf", "/maklon-dtf", "/cetak-sublim", "/store", "/cara-order"];
+const routes = ["", "/koleksi", "/keranjang", "/custom", "/kaos-polos", "/jersey", "/jersey/shop", "/jersey/configurator", "/jaket-hoodie", "/kemeja", "/headwear", "/sablon-dtf", "/maklon-dtf", "/cetak-sublim", "/store", "/cara-order"];
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const now = new Date();
-  const content = await getPublicContent();
+  const [content, customCategories] = await Promise.all([getPublicContent(), listCustomCategories()]);
   const base: MetadataRoute.Sitemap = routes.map((route) => ({
     url: absoluteUrl(route),
     lastModified: now,
@@ -25,5 +26,11 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     changeFrequency: "monthly",
     priority: 0.7
   }));
-  return [...base, ...products, ...jerseyCategories];
+  const customRoutes: MetadataRoute.Sitemap = customCategories.filter((category) => category.entryType === "project_builder").map((category) => ({
+    url: absoluteUrl(`/custom/${category.slug}`),
+    lastModified: category.updatedAt ? new Date(category.updatedAt) : now,
+    changeFrequency: "monthly",
+    priority: 0.8
+  }));
+  return [...base, ...products, ...jerseyCategories, ...customRoutes];
 }

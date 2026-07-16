@@ -3,8 +3,9 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { type FormEvent, useMemo, useRef, useState } from "react";
-import { useCart } from "@/components/CartProvider";
+import { isCustomProjectCartItem, useCart } from "@/components/CartProvider";
 import { formatRupiah } from "@/lib/url";
+import { removeCustomDraft } from "@/lib/custom-commerce/draft-storage";
 
 type StoreOption = { id: string; name: string; address: string; hours: string };
 type CheckoutDraft = { idempotencyKey: string; accessToken: string; confirmationCode: string };
@@ -25,13 +26,15 @@ export function CheckoutClient({ stores }: { stores: StoreOption[] }) {
   const [fulfillment, setFulfillment] = useState<"pickup" | "shipping">(stores.length ? "pickup" : "shipping");
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
-  const readyItems = useMemo(() => cart.items.filter((item) => item.variantSizeId && item.services.length === 0 && Number(item.priceValue) >= 0), [cart.items]);
-  const unsupportedItems = cart.items.filter((item) => !item.variantSizeId || item.services.length > 0);
-  const subtotal = readyItems.reduce((sum, item) => sum + Number(item.priceValue || 0) * item.quantity, 0);
+  const readyItems = useMemo(() => cart.items.filter((item) => !isCustomProjectCartItem(item) && item.variantSizeId && item.services.length === 0 && Number(item.priceValue) >= 0), [cart.items]);
+  const customItems = useMemo(() => cart.items.filter(isCustomProjectCartItem), [cart.items]);
+  const unsupportedItems = cart.items.filter((item) => !isCustomProjectCartItem(item) && (!item.variantSizeId || item.services.length > 0));
+  const subtotal = readyItems.reduce((sum, item) => sum + Number(item.priceValue || 0) * item.quantity, 0)
+    + customItems.reduce((sum, item) => sum + Number(item.customProject?.pricing.finalTotal || 0), 0);
 
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    if (submitting || readyItems.length !== cart.items.length || readyItems.length === 0) return;
+    if (submitting || unsupportedItems.length || readyItems.length + customItems.length === 0) return;
     setSubmitting(true);
     setError("");
     const form = new FormData(event.currentTarget);
@@ -56,7 +59,8 @@ export function CheckoutClient({ stores }: { stores: StoreOption[] }) {
             pickupLocationId: fulfillment === "pickup" ? form.get("pickupLocationId") : undefined,
             paymentMethod: fulfillment === "pickup" ? form.get("paymentMethod") : "bank_transfer"
           },
-          items: readyItems.map((item) => ({ variantSizeId: item.variantSizeId, quantity: item.quantity, note: item.notes }))
+          items: readyItems.map((item) => ({ variantSizeId: item.variantSizeId, quantity: item.quantity, note: item.notes })),
+          customProjects: customItems.map((item) => ({ project: item.customProject }))
         })
       });
       const payload = await response.json() as { confirmationUrl?: string; trackingUrl?: string; trackingToken?: string; orderNumber?: string; error?: string };
@@ -67,6 +71,7 @@ export function CheckoutClient({ stores }: { stores: StoreOption[] }) {
         orderNumber: payload.orderNumber,
         trackingUrl: payload.trackingUrl
       }));
+      customItems.forEach((item) => item.customProject ? removeCustomDraft(item.customProject.id) : undefined);
       cart.clearCart();
       router.push(payload.confirmationUrl);
     } catch (reason) {
@@ -77,19 +82,19 @@ export function CheckoutClient({ stores }: { stores: StoreOption[] }) {
   }
 
   if (!cart.isLoaded) return <CheckoutMessage title="Memuat keranjang..." />;
-  if (!cart.items.length) return <CheckoutMessage title="Keranjang masih kosong." action="/jersey/shop" actionLabel="Belanja Jersey" />;
+  if (!cart.items.length) return <CheckoutMessage title="Keranjang masih kosong." action="/koleksi" actionLabel="Lihat Koleksi" />;
 
   return (
     <section className="bg-[#f6f5f0] px-4 py-10 sm:py-16">
       <div className="mx-auto max-w-6xl">
         <p className="text-xs font-semibold uppercase tracking-[0.18em] text-black/45">Guest Checkout</p>
         <h1 className="mt-3 text-3xl font-semibold sm:text-5xl">Selesaikan order dengan cepat</h1>
-        <p className="mt-3 max-w-2xl text-sm leading-7 text-black/60">Tidak perlu login. Harga, varian, dan stok divalidasi ulang oleh server saat order dibuat.</p>
+        <p className="mt-3 max-w-2xl text-sm leading-7 text-black/60">Tidak perlu login. Produk ready stock, konfigurasi custom, minimum, compatibility, dan harga divalidasi ulang oleh server saat order dibuat.</p>
 
         {unsupportedItems.length ? (
           <div className="mt-7 border border-amber-300 bg-amber-50 p-5 text-sm text-amber-950">
-            <p className="font-semibold">Ada item custom/layanan yang belum dapat masuk checkout ready stock.</p>
-            <p className="mt-1">Hapus item tersebut dari keranjang atau lanjutkan melalui Jersey Configurator agar fondasi quotation yang sudah ada tetap digunakan.</p>
+            <p className="font-semibold">Ada item legacy/Jersey custom yang belum aman untuk checkout gabungan.</p>
+            <p className="mt-1">Custom Project non-Jersey didukung. Item Jersey custom tetap mengikuti alur Configurator existing agar business logic Jersey tidak berubah.</p>
             <div className="mt-3 flex gap-3"><Link className="font-semibold underline" href="/keranjang">Edit keranjang</Link><Link className="font-semibold underline" href="/jersey/configurator">Buka Configurator</Link></div>
           </div>
         ) : null}
@@ -128,7 +133,7 @@ export function CheckoutClient({ stores }: { stores: StoreOption[] }) {
                 <div><p className="font-semibold">{item.name}</p><p className="mt-1 text-black/55">{item.variantName || item.color} · {item.size} · {item.variantSku || item.sku} × {item.quantity}</p></div>
                 <p className="shrink-0 font-semibold">{formatRupiah(Number(item.priceValue || 0) * item.quantity)}</p>
               </div>
-            ))}</div>
+            ))}{customItems.map((item) => <div key={item.cartId} className="flex justify-between gap-4 border-b border-black/10 pb-4 text-sm"><div><p className="font-semibold">{item.name}</p><p className="mt-1 text-black/55">{item.customProject?.items.length} Product Group · {item.customProject?.pricing.totalQuantity} pcs · {item.customProject?.pricing.status === "final" ? "Final" : item.customProject?.pricing.status === "estimated" ? "Estimasi" : "Review"}</p></div><p className="shrink-0 font-semibold">{item.customProject?.pricing.finalTotal ? formatRupiah(item.customProject.pricing.finalTotal) : "Review admin"}</p></div>)}</div>
             <div className="mt-5 flex items-center justify-between"><span>Subtotal</span><strong>{formatRupiah(subtotal)}</strong></div>
             <p className="mt-3 text-xs leading-5 text-black/50">{fulfillment === "shipping" ? "Ongkir ditambahkan Admin pada order yang sama, lalu Anda menyetujui total final." : "Pickup tidak dikenakan ongkir."}</p>
             {error ? <p className="mt-4 border border-red-200 bg-red-50 p-3 text-sm text-red-700">{error}</p> : null}

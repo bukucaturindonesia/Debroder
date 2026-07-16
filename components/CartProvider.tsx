@@ -6,6 +6,7 @@ import { createContext, type ReactNode, useContext, useEffect, useMemo, useState
 import { BrandIcon } from "@/components/BrandIcon";
 import { SafeImage } from "@/components/SafeImage";
 import { calculateCartTierPrice } from "@/lib/cart-tier-pricing";
+import type { CustomProjectSnapshot } from "@/lib/custom-commerce/types";
 import { fallbackImages, pageHeroImageFallbacks } from "@/lib/fallback-data";
 import { formatRupiah } from "@/lib/url";
 
@@ -30,6 +31,7 @@ export type CartProductInput = {
   stockLabel?: string;
   stockAvailable?: number;
   variantSnapshot?: Record<string, unknown>;
+  customProject?: CustomProjectSnapshot;
 };
 
 type CartServiceSelection = {
@@ -68,6 +70,7 @@ type CartContextValue = {
   updateItem: (cartId: string, updates: Partial<CartItem>) => void;
   removeItem: (cartId: string) => void;
   clearCart: () => void;
+  addCustomProject: (project: CustomProjectSnapshot) => void;
   openCart: () => void;
   closeCart: () => void;
   preserveJerseyInteractions: boolean;
@@ -90,8 +93,8 @@ type SearchSuggestion = {
   imageUrl: string;
 };
 
-const storageKey = "debroder-cart-v3";
-const legacyStorageKeys = ["debroder-cart-v2", "debroder-cart-v1"];
+const storageKey = "debroder-cart-v4";
+const legacyStorageKeys = ["debroder-cart-v3", "debroder-cart-v2", "debroder-cart-v1"];
 const CartContext = createContext<CartContextValue | null>(null);
 
 const serviceOptions: ServiceOption[] = [
@@ -271,6 +274,31 @@ function isJerseyConfiguredItem(item: Pick<CartItem, "variantSnapshot">) {
   return item.variantSnapshot?.configurator_type === "jersey";
 }
 
+export function isCustomProjectCartItem(item: Pick<CartItem, "customProject">) {
+  return Boolean(item.customProject?.id && item.customProject.version === 1);
+}
+
+function CustomProjectSummary({ item }: { item: CartItem }) {
+  const project = item.customProject;
+  if (!project) return null;
+  const productGroups = project.items.length;
+  const quantity = project.pricing.totalQuantity;
+  const designs = project.items.reduce((sum, projectItem) => sum + projectItem.designPackages.length, 0);
+  const services = project.items.reduce((sum, projectItem) => sum + projectItem.designPackages.reduce((serviceSum, designPackage) => serviceSum + designPackage.services.length, 0), 0);
+  return (
+    <div className="mt-5 rounded-[22px] bg-[#f5f5ef] p-4 text-sm leading-6 text-black/70">
+      <p className="text-xs font-bold uppercase tracking-[0.14em] text-black/55">Custom Project</p>
+      <div className="mt-3 grid gap-1 text-xs sm:text-sm">
+        <p><span className="font-semibold">Produk:</span> {productGroups} grup · {quantity} pcs</p>
+        <p><span className="font-semibold">Paket desain:</span> {designs} · {services} layanan</p>
+        <p><span className="font-semibold">Status harga:</span> {project.pricing.status === "final" ? "Final" : project.pricing.status === "estimated" ? "Estimasi" : "Perlu penawaran"}</p>
+        <p><span className="font-semibold">Lead time:</span> {Array.from(new Set(project.items.map((projectItem) => projectItem.leadTime))).join(", ")}</p>
+      </div>
+      <Link href={`/custom/${project.categorySlug}?draft=${encodeURIComponent(project.id)}`} className="mt-3 inline-flex font-semibold underline underline-offset-4">Edit konfigurasi</Link>
+    </div>
+  );
+}
+
 function JerseyConfigSummary({ item }: { item: CartItem }) {
   if (!isJerseyConfiguredItem(item)) return null;
   const snapshot = item.variantSnapshot || {};
@@ -351,7 +379,7 @@ function ensureRoles(items: CartItem[]) {
     const quantity = normalizeNumber(Number(item.quantity || 1));
     const role: CartItemRole = !hasPrimary && (item.role === "primary" || index === 0) ? "primary" : "additional";
     if (role === "primary") hasPrimary = true;
-    return repriceCartItem({
+    const normalized = {
       ...item,
       role,
       quantity,
@@ -369,8 +397,9 @@ function ensureRoles(items: CartItem[]) {
           : undefined,
       variantSnapshot: item.variantSnapshot || undefined,
       notes: item.notes || "",
-      services: normalizeServices(item.services, quantity)
-    });
+      services: isCustomProjectCartItem(item) ? [] : normalizeServices(item.services, quantity)
+    };
+    return isCustomProjectCartItem(normalized) ? normalized : repriceCartItem(normalized);
   });
 }
 
@@ -442,10 +471,10 @@ function CartProductHeader({ item, compact = false }: { item: CartItem; compact?
           <button type="button" className="text-xs font-semibold text-red-700 underline-offset-4 hover:underline" onClick={() => cart.removeItem(item.cartId)}>Hapus</button>
         </div>
         <div className="mt-4 flex flex-wrap items-center justify-between gap-3">
-          <QuantityControl value={item.quantity} ariaLabel={`jumlah ${item.name}`} onChange={(quantity) => cart.updateItem(item.cartId, { quantity })} />
+          {isCustomProjectCartItem(item) ? <p className="rounded-full bg-[#f5f5ef] px-3 py-2 text-xs font-semibold">{item.customProject?.pricing.totalQuantity ?? 0} pcs terkonfigurasi</p> : <QuantityControl value={item.quantity} ariaLabel={`jumlah ${item.name}`} onChange={(quantity) => cart.updateItem(item.cartId, { quantity })} />}
           <div className="text-right text-sm">
-            <p className="text-black/50">{unitPrice > 0 ? `${formatRupiah(unitPrice)} / pcs` : "Harga dikonfirmasi"}</p>
-            <p className="mt-1 font-semibold">Subtotal {safeCurrency(subtotal)}</p>
+            <p className="text-black/50">{isCustomProjectCartItem(item) ? "Total proyek" : unitPrice > 0 ? `${formatRupiah(unitPrice)} / pcs` : "Harga dikonfirmasi"}</p>
+            <p className="mt-1 font-semibold">{safeCurrency(subtotal)}</p>
           </div>
         </div>
       </div>
@@ -565,12 +594,14 @@ function ProductionChoices({ item }: { item: CartItem }) {
 
 function FullCartItem({ item }: { item: CartItem }) {
   const isJersey = isJerseyConfiguredItem(item);
+  const isCustomProject = isCustomProjectCartItem(item);
   return (
     <article className="rounded-[28px] bg-white/50 p-4 sm:p-6">
       <CartProductHeader item={item} />
+      <CustomProjectSummary item={item} />
       <JerseyConfigSummary item={item} />
-      {!isJersey && !item.variantSizeId ? <ProductDetails item={item} /> : null}
-      {!isJersey ? <ProductionChoices item={item} /> : null}
+      {!isJersey && !isCustomProject && !item.variantSizeId ? <ProductDetails item={item} /> : null}
+      {!isJersey && !isCustomProject ? <ProductionChoices item={item} /> : null}
     </article>
   );
 }
@@ -876,6 +907,38 @@ export function CartProvider({ children }: { children: ReactNode }) {
       setItems((current) => ensureRoles(current.filter((item) => item.cartId !== cartId)));
     },
     clearCart: () => setItems([]),
+    addCustomProject: (project) => {
+      setItems((current) => {
+        const cartId = `custom-project:${project.id}`;
+        const priceValue = project.pricing.status === "final" ? project.pricing.finalTotal ?? undefined : undefined;
+        const priceLabel = project.pricing.status === "final"
+          ? formatRupiah(project.pricing.finalTotal)
+          : project.pricing.status === "estimated"
+            ? "Estimasi"
+            : "Minta penawaran";
+        const existing = current.find((item) => item.cartId === cartId);
+        const next: CartItem = {
+          id: project.id,
+          name: `Custom Project · ${project.categoryName}`,
+          category: "Custom",
+          priceLabel,
+          priceValue,
+          href: `/custom/${project.categorySlug}`,
+          imageUrl: existing?.imageUrl,
+          imageAlt: project.categoryName,
+          cartId,
+          role: existing?.role ?? (current.some((item) => item.role === "primary") ? "additional" : "primary"),
+          quantity: 1,
+          color: "",
+          size: "",
+          notes: project.note,
+          services: [],
+          customProject: project
+        };
+        return ensureRoles(existing ? current.map((item) => item.cartId === cartId ? next : item) : [...current, next]);
+      });
+      setIsOpen(true);
+    },
     openCart: () => setIsOpen(true),
     closeCart: () => setIsOpen(false),
     preserveJerseyInteractions: pathname.startsWith("/jersey")

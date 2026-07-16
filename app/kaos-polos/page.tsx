@@ -3,6 +3,7 @@ import { CategoryCommercePage } from "@/components/CategoryCommercePage";
 import { productsForCategoryRoute } from "@/lib/product-route-matching";
 import { kaosTypeOptions, productTypeValue } from "@/lib/product-taxonomy";
 import { getPublicContent } from "@/lib/public-data";
+import { getCustomDestinationForSourceCategory } from "@/lib/custom-commerce/data";
 
 export const metadata: Metadata = {
   title: "Kaos Polos New State Apparel & Cotton Combed | DE BRODER",
@@ -37,6 +38,7 @@ export default async function KaosPolosPage({ searchParams }: KaosPolosPageProps
   const content = await getPublicContent();
   const params = searchParams ? await searchParams : {};
   const products = productsForCategoryRoute(content.products, content.productCategories, "kaos-polos");
+  const customDestination = await getCustomDestinationForSourceCategory(content.productCategories.find((category) => category.slug === "kaos-polos")?.id);
   const initialColor = firstParam(params.color) || "all";
   const initialLabel = productLabel(params.label);
   const initialSort = productSort(params.sort);
@@ -53,7 +55,7 @@ export default async function KaosPolosPage({ searchParams }: KaosPolosPageProps
       catalogDescription: "Temukan tipe, bahan, warna, dan ukuran dari katalog produk DEBRODER.",
       closingHeadline: "Punya desain sendiri? Lanjutkan ke layanan custom DEBRODER.",
       closingCtaLabel: "Custom Order",
-      closingCtaHref: "/sablon-dtf",
+      closingCtaHref: customDestination || "/custom",
       productTypeOptions: kaosTypeOptions,
       typeFilterLabel: "Semua tipe kaos"
     }}

@@ -11,9 +11,9 @@ type OrderPayload = {
     fulfillmentMethod: string; paymentMethod: string; subtotal: number; shippingCost: number | null;
     shippingCourier: string | null; shippingService: string | null; shippingEstimate: string | null;
     total: number; whatsappConfirmationExpiresAt: string | null; whatsappConfirmedAt: string | null;
-    reservationExpiresAt: string | null; finalTotalApprovedAt: string | null; trackingTokenExpiresAt: string | null; createdAt: string;
+    reservationExpiresAt: string | null; finalTotalApprovedAt: string | null; trackingTokenExpiresAt: string | null; createdAt: string; pricingStatus?: string;
   };
-  items: Array<{ id: string; product_name: string; variant_name: string; color: string; size: string; sku: string; quantity: number; unit_price: number; subtotal: number }>;
+  items: Array<{ id: string; product_name: string; variant_name: string; color: string; size: string; sku: string; quantity: number; unit_price: number; subtotal: number; custom_project_id?: string | null; pricing_status?: string }>;
 };
 
 const statusLabels: Record<string, string> = {
@@ -26,7 +26,8 @@ const statusLabels: Record<string, string> = {
   shipped: "Dikirim",
   completed: "Selesai",
   expired: "Kedaluwarsa",
-  cancelled: "Dibatalkan"
+  cancelled: "Dibatalkan",
+  under_review: "Custom Project sedang direview"
 };
 
 export function OrderConfirmationClient({ token }: { token: string }) {
@@ -123,6 +124,7 @@ export function OrderConfirmationClient({ token }: { token: string }) {
           ) : null}
 
           {order.status === "awaiting_shipping_quote" ? <Info>Admin akan memasukkan kurir, layanan, ongkir, dan estimasi pada order ini. Halaman diperbarui otomatis.</Info> : null}
+          {order.status === "under_review" ? <Info>Custom Project sudah tercatat pada order ini. Admin akan memeriksa desain, layanan, lead time, dan harga sebelum pembayaran diminta.</Info> : null}
           {order.status === "awaiting_payment" ? <Info>Stok sudah direservasi. Admin akan mengirim tautan pembayaran privat untuk transfer manual dan upload bukti.</Info> : null}
           {order.status === "processing" && order.paymentMethod === "pay_at_store" ? <Info>Stok pickup sudah direservasi. Tunggu status siap diambil, lalu bayar di toko dengan menunjukkan nomor order dan nomor WhatsApp.</Info> : null}
           {order.reservationExpiresAt ? <p className="mt-4 text-xs text-black/50">Reservasi aktif sampai {formatDate(order.reservationExpiresAt)}.</p> : null}
@@ -131,9 +133,9 @@ export function OrderConfirmationClient({ token }: { token: string }) {
 
         <aside className="h-fit rounded-[28px] bg-white p-6">
           <h2 className="text-xl font-semibold">Ringkasan</h2>
-          <div className="mt-5 grid gap-4">{data.items.map((item) => <div key={item.id} className="border-b border-black/10 pb-4 text-sm"><div className="flex justify-between gap-3"><strong>{item.product_name}</strong><strong>{formatRupiah(Number(item.subtotal))}</strong></div><p className="mt-1 text-black/55">{item.variant_name || item.color} · {item.size} · {item.sku} × {item.quantity}</p></div>)}</div>
+          <div className="mt-5 grid gap-4">{data.items.map((item) => <div key={item.id} className="border-b border-black/10 pb-4 text-sm"><div className="flex justify-between gap-3"><strong>{item.product_name}</strong><strong>{formatRupiah(Number(item.subtotal))}</strong></div><p className="mt-1 text-black/55">{item.variant_name || item.color} · {item.size} · {item.sku} × {item.quantity}</p>{item.custom_project_id ? <p className="mt-1 text-xs font-semibold text-[#063d24]">Custom Project · {item.pricing_status === "final" ? "Harga final" : "Review harga"}</p> : null}</div>)}</div>
           <dl className="mt-5 grid gap-3 text-sm"><div className="flex justify-between"><dt>Subtotal</dt><dd>{formatRupiah(order.subtotal)}</dd></div><div className="flex justify-between"><dt>Ongkir</dt><dd>{order.shippingCost === null ? "Menunggu Admin" : formatRupiah(order.shippingCost)}</dd></div><div className="flex justify-between border-t border-black/10 pt-3 text-base font-semibold"><dt>Total</dt><dd>{formatRupiah(order.total)}</dd></div></dl>
-          <Link href="/jersey/shop" className="mt-6 inline-flex text-sm font-semibold underline">Kembali ke Jersey Shop</Link>
+          <Link href={data.items.some((item) => item.custom_project_id) ? "/custom" : "/koleksi"} className="mt-6 inline-flex text-sm font-semibold underline">Kembali belanja</Link>
         </aside>
       </div>
     </div>

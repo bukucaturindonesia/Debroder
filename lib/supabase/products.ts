@@ -87,11 +87,13 @@ const PRODUCT_SELECT = `
   )
 `;
 
-export async function listProducts(): Promise<Product[]> {
+export async function listProducts(
+  options: { allowFallback?: boolean } = {}
+): Promise<Product[]> {
   const client = getPublicSupabaseClient();
 
   if (!client) {
-    return sampleProducts;
+    return options.allowFallback === false ? [] : sampleProducts;
   }
 
   const { data, error } = await client
@@ -107,11 +109,16 @@ export async function listProducts(): Promise<Product[]> {
   return asRecordArray(data).map(mapProductRow);
 }
 
-export async function getProductBySlug(slug: string): Promise<Product | null> {
+export async function getProductBySlug(
+  slug: string,
+  options: { allowFallback?: boolean } = {}
+): Promise<Product | null> {
   const client = getPublicSupabaseClient();
 
   if (!client) {
-    return sampleProducts.find((product) => product.slug === slug) ?? null;
+    return options.allowFallback === false
+      ? null
+      : sampleProducts.find((product) => product.slug === slug) ?? null;
   }
 
   const { data, error } = await client

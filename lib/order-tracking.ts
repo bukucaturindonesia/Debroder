@@ -98,6 +98,7 @@ export function customerOrderStatusLabel(status: string) {
     awaiting_shipping_quote: "Ongkir sedang diperiksa",
     awaiting_customer_approval: "Menunggu persetujuan total",
     awaiting_payment: "Menunggu pembayaran",
+    under_review: "Custom Project sedang direview",
     confirmed: "Pesanan dikonfirmasi",
     processing: "Sedang diproses",
     in_progress: "Sedang diproses",
@@ -147,6 +148,7 @@ export function trackingNextStep(input: {
   if (input.status === "pending_confirmation") return "Verifikasi nomor WhatsApp melalui petunjuk pada konfirmasi order.";
   if (input.status === "awaiting_shipping_quote") return "Tunggu Admin menetapkan kurir dan ongkir.";
   if (input.status === "awaiting_customer_approval") return "Buka tautan konfirmasi order dan setujui total akhir setelah memeriksa ongkir.";
+  if (input.status === "under_review") return "Tunggu Admin memeriksa desain, layanan, lead time, dan harga Custom Project pada order yang sama.";
   if (["unpaid", "belum_bayar", "rejected", "ditolak"].includes(input.paymentStatus)) return "Selesaikan atau unggah ulang pembayaran pada tautan pembayaran order yang sama.";
   if (["pending_verification", "menunggu_verifikasi"].includes(input.paymentStatus)) return "Tunggu Admin memeriksa bukti pembayaran Anda.";
   if (input.status === "ready_for_pickup" || input.status === "siap_diambil") return "Datang ke lokasi pickup dengan membawa nomor order dan nomor WhatsApp yang digunakan saat checkout.";

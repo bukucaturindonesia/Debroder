@@ -5,7 +5,7 @@ import { getPublicContent } from "@/lib/public-data";
 
 export const metadata: Metadata = {
   title: "Guest Checkout | DEBRODER",
-  description: "Checkout cepat dan aman untuk produk ready stock DEBRODER.",
+  description: "Checkout cepat dan aman untuk produk ready stock dan Custom Project DEBRODER.",
   robots: { index: false, follow: false }
 };
 
