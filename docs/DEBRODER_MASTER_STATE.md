@@ -136,3 +136,13 @@ The FROZEN commerce/landing blueprints and official Owner Decisions remain autho
 - Add-to-cart persists all active tiers plus base/variant adjustment in the existing variant snapshot; add/merge, plus/minus updates, cart page, localStorage rehydration, and checkout use the same cart state.
 - Product-detail tier rules/UI and authoritative server-side checkout repricing are unchanged. No database or migration change was required.
 - TypeScript, 136 tests, lint with zero errors, and production build pass. Status: **IMPLEMENTED, PARTIALLY VERIFIED** pending deployed browser-click verification.
+
+## PIM Phase 4 Bulk Import state — 2026-07-16
+
+- PIM Phase 4 Bulk Import Excel/CSV is **IMPLEMENTED** at source level as an additive subroute of the existing Unified Product Manager.
+- The canonical PIM remains `products` → `product_variants` → `product_variant_sizes`, with Category, Color Master, and Size Master references loaded from existing tables. No second product or stock source was introduced.
+- Phase 4 is create-only and Draft-only. Dry run is write-free; final commit revalidates the actor, file checksum, normalized payload, active masters, slug/SKU uniqueness, price, stock, and idempotency inside one service-role-only transaction RPC.
+- Admin Guest is preview-only. Final import remains limited to the existing dependency-management roles and is denied server-side for all other roles.
+- Additive migration `20260716143000_pim_phase_4_bulk_import_atomic.sql` is local only and has not been applied remotely. Production atomicity is therefore **REMOTE DATABASE VERIFICATION REQUIRED** and **OWNER DATABASE ACTION REQUIRED**.
+- Order, checkout, reservation, inventory ledger, Commerce Security P0, Jersey, Public UI, CMS, manual Product Manager, and Variant Matrix contracts remain frozen and unchanged.
+- Browser verification is **STATIC AUDIT ONLY** until the owner applies the migration and runs the controlled Preview checklist. Phase 5 is not started.

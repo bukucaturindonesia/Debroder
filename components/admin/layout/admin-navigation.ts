@@ -235,6 +235,7 @@ export function getRoleHome(role: AdminRole) {
 }
 
 export function getCurrentNavigationLabel(pathname: string) {
+  if (pathname === "/admin/products/bulk-import") return "Bulk Import Produk";
   if (pathname === "/admin/access-control") return "Role & Permission";
   if (pathname === "/admin/payments") return "Pembayaran";
   if (pathname === "/admin/reports") return "Laporan Operasional";

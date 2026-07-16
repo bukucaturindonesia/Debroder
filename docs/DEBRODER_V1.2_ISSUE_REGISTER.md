@@ -2,6 +2,12 @@
 
 ## Open
 
+### V12-027 — Apply and verify PIM Phase 4 Bulk Import transaction
+
+- Severity: Gate
+- Status: OPEN / SOURCE IMPLEMENTED
+- Detail: Bulk Import XLSX/CSV source, templates, dry run, row errors, create-only Draft behavior, permission guard, and additive atomic/idempotency migration are implemented. Migration `20260716143000_pim_phase_4_bulk_import_atomic.sql` has not been applied remotely. Owner must review/apply it, then verify service-role-only ACL/RLS, all-or-nothing rollback, retry/double-submit replay, Draft output, and unchanged manual Product Manager/Variant Matrix/order/checkout/reservation behavior through a controlled Preview deployment.
+
 ### V12-025 — Deploy and browser-verify reusable category commerce layout
 
 - Severity: QA gate

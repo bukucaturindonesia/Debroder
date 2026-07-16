@@ -153,6 +153,22 @@ Phase 15 / v1.3 remains **NOT STARTED**.
 
 ---
 
+## 2026-07-16 — PIM Phase 4 Bulk Import Excel/CSV
+
+Status: **IMPLEMENTED** at source level; **OWNER DATABASE ACTION REQUIRED**.
+
+- Added `/admin/products/bulk-import` inside the existing Unified Product Manager plus authenticated downloads for official XLSX/CSV templates and current Category, Color, and Size references.
+- Accepted input is `.xlsx` or UTF-8 CSV, capped centrally at 5 MiB, 2,000 rows, and 250 product roots. Formula, merged cells, macros/active content, invalid MIME/extension, unsafe headers, invalid numbers, duplicates, inconsistent roots, and invalid/inactive master references block import.
+- Dry run performs no write and returns summary, paginated preview, row-level error codes, fixes, and a downloadable CSV error report. Admin Guest is explicitly PREVIEW ONLY.
+- Final import is create-only and Draft-only. It reuploads/revalidates the same file, verifies actor-bound expiry/checksum/payload claims, and calls one additive service-role-only transaction RPC with advisory-lock idempotency.
+- Canonical writes remain in `products`, `product_variants`, and `product_variant_sizes`; stock writes `stock_quantity` and the existing compatibility projection `stock`. No order, checkout, reservation, inventory ledger, Jersey, Public UI, CMS, or manual PIM flow changed.
+- Added dependency `exceljs@4.4.0` for server-side XLSX parsing/generation. The single dependency command populated the package metadata but exited under the local ignored-build policy for existing `esbuild`, `sharp`, and `unrs-resolver`; it was not retried.
+- Added migration `20260716143000_pim_phase_4_bulk_import_atomic.sql`. It creates minimal batch/idempotency metadata and the atomic RPC, enables RLS, revokes PUBLIC/anon/authenticated access, and grants table/RPC access only to `service_role`.
+- The migration was not applied remotely. Owner must review/apply it before final-import testing. Transaction rollback, real grants/RLS, and production idempotency remain **REMOTE DATABASE VERIFICATION REQUIRED**.
+- Browser status: **STATIC AUDIT ONLY**. Phase 5, bulk edit, export, scheduled import, and API integration were not started.
+
+---
+
 ## 2026-07-14 — Kaos Polos final visual revision
 
 Status: **IMPLEMENTED, PARTIALLY VERIFIED**.

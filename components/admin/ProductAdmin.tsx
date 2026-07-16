@@ -241,6 +241,9 @@ export function ProductAdminPanel() {
         description="Unified Product Manager dengan Variant Matrix untuk kombinasi warna × ukuran, SKU deterministik, bulk harga/stok, dry-run, dan save server-side."
         actions={
           <div className="flex flex-wrap gap-2">
+            <Link href="/admin/products/bulk-import" className="rounded-full border border-brand-softGray bg-white px-5 py-3 text-sm font-semibold text-brand-charcoal">
+              Bulk Import Produk
+            </Link>
             {payload?.capabilities.canCreateDraft ? (
               <button data-admin-mutation="true" type="button" onClick={newDraft} className="rounded-full bg-brand-charcoal px-5 py-3 text-sm font-semibold text-white">
                 Produk Draft Baru
