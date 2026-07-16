@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
-import { PageHero, PublicShell, StoreGrid } from "@/components/PublicPage";
+import { PageHero, PublicShell } from "@/components/PublicPage";
+import { PublicSectionFrame } from "@/components/PublicSectionFrame";
+import { PublicStoreLocator } from "@/components/PublicStoreLocator";
 import { getPublicContent } from "@/lib/public-data";
 
 export const metadata: Metadata = {
@@ -34,9 +36,9 @@ export default async function StorePage() {
         ]}
       />
       <section className="bg-brand-offWhite py-10 sm:py-12">
-        <div className="section-shell">
-          <StoreGrid stores={content.stores} />
-        </div>
+        <PublicSectionFrame variant="inset">
+          <PublicStoreLocator stores={content.stores} />
+        </PublicSectionFrame>
       </section>
     </PublicShell>
   );
