@@ -23,7 +23,7 @@ export async function POST(request: Request) {
     }
 
     const pricing = priceCustomProject(project, catalogs);
-    return response({ pricing }, pricing.issues.length ? 409 : 200);
+    return response({ pricing, ...(pricing.issues.length ? { error: pricing.issues[0] } : {}) }, pricing.issues.length ? 409 : 200);
   } catch (error) {
     if (error instanceof CheckoutBodyError) {
       return response({ code: error.code, error: error.status === 413 ? "Ukuran konfigurasi terlalu besar." : "Konfigurasi custom tidak valid." }, error.status);

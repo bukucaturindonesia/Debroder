@@ -112,7 +112,7 @@ export async function getCustomCategoryCatalog(slug: string): Promise<CustomCate
   const products = orderedProductIds
     .map((id) => productsById.get(id))
     .filter((product): product is PimProduct => Boolean(product))
-    .filter(hasActiveVariantSize);
+    .filter(hasValidPimProduct);
   const compatibility = asRecords(compatibilityResult.data).map(mapCompatibility);
   const compatibleServiceIds = new Set(compatibility.map((rule) => rule.serviceId));
   const validProductIds = new Set(products.map((product) => product.id));
@@ -153,8 +153,7 @@ export async function getCustomDestinationForProduct(productId: string): Promise
     const joined = firstRecord(data.custom_categories);
     if (!joined) return null;
     const entryType = string(joined.entry_type);
-    const targetRoute = safeLocalRoute(joined.target_route);
-    if (entryType === "jersey_configurator") return targetRoute;
+    if (entryType === "jersey_configurator") return JERSEY_CONFIGURATOR_ROUTE;
     const categorySlug = string(joined.slug);
     return categorySlug ? `/custom/${categorySlug}?product=${encodeURIComponent(productId)}` : null;
   }
@@ -183,7 +182,7 @@ export async function getCustomDestinationForSourceCategory(productCategoryId: s
     .maybeSingle();
   if (!error && isRecord(data)) {
     return data.entry_type === "jersey_configurator"
-      ? safeLocalRoute(data.target_route)
+      ? JERSEY_CONFIGURATOR_ROUTE
       : string(data.slug) ? `/custom/${string(data.slug)}` : null;
   }
   if (error && !isMissingCustomSchema(error.code)) return null;
@@ -206,7 +205,7 @@ async function getFallbackCustomCategoryCatalog(slug: string): Promise<CustomCat
   if (!category) return null;
   if (category.entryType === "jersey_configurator") return emptyCategoryCatalog(category);
 
-  const products = fallback.products.filter((product) => product.category?.id === category.sourceProductCategoryId && hasActiveVariantSize(product));
+  const products = fallback.products.filter((product) => product.category?.id === category.sourceProductCategoryId && hasValidPimProduct(product));
   const categoryServiceSlugs = fallback.legacyServices
     .filter((service) => serviceMatchesCategory(service, category.slug))
     .map((service) => string(service.slug))
@@ -335,6 +334,10 @@ function hasActiveVariantSize(product: PimProduct) {
   return product.variants.some((variant) => variant.status === "active" && variant.sizes.some((size) => size.status === "active" && size.size.status === "active"));
 }
 
+function hasValidPimProduct(product: PimProduct) {
+  return Number.isFinite(product.basePrice) && product.basePrice > 0 && hasActiveVariantSize(product);
+}
+
 function productImage(product: PimProduct | undefined) {
   if (!product) return null;
   const variant = product.variants.find((candidate) => candidate.isDefault) ?? product.variants[0];
@@ -361,11 +364,12 @@ function normalizeToken(value: unknown) {
 }
 
 function mapCategory(row: Record<string, unknown>): CustomCategory {
+  const entryType = row.entry_type === "jersey_configurator" ? "jersey_configurator" : "project_builder";
   return {
     id: string(row.id), name: string(row.name), slug: string(row.slug),
     shortDescription: nullableString(row.short_description), imageUrl: nullableString(row.image_url), imageAlt: nullableString(row.image_alt),
-    entryType: row.entry_type === "jersey_configurator" ? "jersey_configurator" : "project_builder",
-    targetRoute: safeLocalRoute(row.target_route), supportsQuickCustom: boolean(row.supports_quick_custom), supportsFullCustom: boolean(row.supports_full_custom),
+    entryType,
+    targetRoute: entryType === "jersey_configurator" ? JERSEY_CONFIGURATOR_ROUTE : null, supportsQuickCustom: boolean(row.supports_quick_custom), supportsFullCustom: boolean(row.supports_full_custom),
     priceDisplayMode: priceMode(row.price_display_mode), minimumOrderDisplay: string(row.minimum_order_display), leadTimeDisplay: string(row.lead_time_display),
     sourceProductCategoryId: nullableString(row.source_product_category_id), seoTitle: nullableString(row.seo_title), seoDescription: nullableString(row.seo_description),
     sortOrder: number(row.sort_order), updatedAt: nullableString(row.updated_at)
@@ -405,7 +409,6 @@ function isValidCategory(category: CustomCategory) {
 }
 
 function isMissingCustomSchema(code: string | undefined) { return code === "42P01" || code === "PGRST205"; }
-function safeLocalRoute(value: unknown) { const candidate = string(value); return /^\/[a-z0-9/_?=&.-]*$/i.test(candidate) && !candidate.startsWith("//") ? candidate : null; }
 function priceMode(value: unknown) { return value === "estimated" || value === "quotation" ? value : "final"; }
 function nullablePriceMode(value: unknown) { return value === "final" || value === "estimated" || value === "quotation" ? value : null; }
 function asRecords(value: unknown): Record<string, unknown>[] { return Array.isArray(value) ? value.filter(isRecord) : []; }
