@@ -90,4 +90,38 @@ describe("Custom Commerce", () => {
     expect(sql).toContain("grant execute on function public.create_public_custom_checkout_order");
     expect(sql).not.toMatch(/insert into public\.custom_(categories|presets|placements|print_sizes|personalization_rules)/i);
   });
+
+  it("bootstraps the public Custom Hub from existing CMS/PIM data without fixed business arrays", () => {
+    const source = readFileSync("lib/custom-commerce/data.ts", "utf8");
+    expect(source).toContain('from("service_categories")');
+    expect(source).toContain('listProducts({ allowFallback: false })');
+    expect(source).toContain('has_custom_catalog_configuration');
+    expect(source).toContain('listFallbackCustomCategories');
+    expect(source).not.toMatch(/const\s+(categories|products|services)\s*=\s*\[\s*["']/i);
+  });
+
+  it("adds an owner-managed Custom CMS without seeding category names, products, services, or prices", () => {
+    const sql = readFileSync("supabase/migrations/20260717173000_custom_commerce_cms_alignment.sql", "utf8");
+    const admin = readFileSync("components/admin/CustomCommerceAdmin.tsx", "utf8");
+    const navigation = readFileSync("components/admin/layout/admin-navigation.ts", "utf8");
+
+    expect(sql).toContain("sync_custom_catalog_drafts_from_pim");
+    expect(sql).toContain("has_custom_catalog_configuration");
+    expect(sql).toContain("custom_categories_source_product_category_uidx");
+    expect(sql).toContain("'superadmin'");
+    expect(sql).toContain("'admin'");
+    expect(sql).not.toMatch(/insert into public\.custom_categories\s*\([^)]*\)\s*values/i);
+    expect(sql).not.toMatch(/insert into public\.custom_(presets|placements|print_sizes|personalization_rules)\b/i);
+
+    expect(admin).toContain("Sinkronkan Draft dari PIM");
+    expect(admin).toContain('from("custom_categories")');
+    expect(admin).toContain('from("custom_category_products")');
+    expect(admin).toContain('from("custom_presets")');
+    expect(admin).toContain('from("custom_service_compatibilities")');
+    expect(admin).toContain("Layanan default");
+    expect(admin).toContain("service_ids");
+    expect(admin).toContain("personalisasi default");
+    expect(navigation).toContain('/admin/custom-commerce');
+  });
+
 });

@@ -54,6 +54,7 @@ export const adminNavigationGroups: readonly AdminNavigationGroup[] = [
     items: [
       { label: "CMS / Landing Page", href: "/admin/homepage-sections", roles: FULL_ADMIN_ROLES },
       { label: "CMS / Jersey", href: "/admin/commerce/jersey", roles: FULL_ADMIN_ROLES },
+      { label: "CMS / Custom", href: "/admin/custom-commerce", roles: FULL_ADMIN_ROLES },
       { label: "Page Hero", href: "/admin/page-hero", roles: FULL_ADMIN_ROLES },
       { label: "Media Library", href: "/admin/media", roles: FULL_ADMIN_ROLES },
       { label: "Gambar Website", href: "/admin/site-media", roles: FULL_ADMIN_ROLES },
@@ -113,6 +114,7 @@ const adminGuestNavigationGroups: readonly AdminNavigationGroup[] = [
     items: [
       { label: "CMS / Landing Page", href: "/admin/homepage-sections", roles: ADMIN_GUEST_ROLES },
       { label: "CMS / Jersey", href: "/admin/commerce/jersey", roles: ADMIN_GUEST_ROLES },
+      { label: "CMS / Custom", href: "/admin/custom-commerce", roles: ADMIN_GUEST_ROLES },
       { label: "Page Hero", href: "/admin/page-hero", roles: ADMIN_GUEST_ROLES },
       { label: "Media Library", href: "/admin/media", roles: ADMIN_GUEST_ROLES },
       { label: "Gambar Website", href: "/admin/site-media", roles: ADMIN_GUEST_ROLES },
@@ -237,6 +239,7 @@ export function getRoleHome(role: AdminRole) {
 export function getCurrentNavigationLabel(pathname: string) {
   if (pathname === "/admin/products/bulk-edit") return "Bulk Edit & Actions";
   if (pathname === "/admin/products/bulk-import") return "Bulk Import Produk";
+  if (pathname === "/admin/custom-commerce") return "CMS / Custom";
   if (pathname === "/admin/access-control") return "Role & Permission";
   if (pathname === "/admin/payments") return "Pembayaran";
   if (pathname === "/admin/reports") return "Laporan Operasional";
@@ -271,6 +274,7 @@ export function getCurrentNavigationLabel(pathname: string) {
 export type AdminBreadcrumbItem = { label: string; href?: string };
 export function getAdminBreadcrumbs(pathname: string): AdminBreadcrumbItem[] {
   if (pathname === "/admin/dashboard" || pathname === "/admin") return [{ label: "Dashboard" }];
+  if (pathname === "/admin/custom-commerce") return [{ label: "Website" }, { label: "CMS / Custom" }];
   if (pathname === "/admin/access-control") return [{ label: "Sistem" }, { label: "Role & Permission" }];
   if (pathname === "/admin/audit-log") return [{ label: "Sistem" }, { label: "Audit Sistem" }];
   if (pathname === "/admin/repeat-orders") return [{ label: "Order", href: "/admin/orders" }, { label: "Repeat Order" }];
@@ -286,5 +290,5 @@ export function getAdminBreadcrumbs(pathname: string): AdminBreadcrumbItem[] {
 }
 
 export function isLegacyAdminRoute(pathname: string) {
-  return !(pathname.startsWith("/admin/orders") || pathname.startsWith("/admin/document-numbering") || pathname.startsWith("/admin/job-orders") || pathname.startsWith("/admin/work-items") || pathname.startsWith("/admin/production") || pathname.startsWith("/admin/quality-control") || pathname.startsWith("/admin/fulfillments") || pathname.startsWith("/admin/notifications") || pathname.startsWith("/admin/access-control") || pathname.startsWith("/admin/audit-log") || pathname.startsWith("/admin/repeat-orders"));
+  return !(pathname.startsWith("/admin/orders") || pathname.startsWith("/admin/document-numbering") || pathname.startsWith("/admin/job-orders") || pathname.startsWith("/admin/work-items") || pathname.startsWith("/admin/production") || pathname.startsWith("/admin/quality-control") || pathname.startsWith("/admin/fulfillments") || pathname.startsWith("/admin/notifications") || pathname.startsWith("/admin/access-control") || pathname.startsWith("/admin/audit-log") || pathname.startsWith("/admin/repeat-orders") || pathname.startsWith("/admin/custom-commerce"));
 }
