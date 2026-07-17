@@ -154,6 +154,8 @@ export function GuestOrderTracking({
 
 function TrackingDetail({ data }: { data: TrackingPayload }) {
   const { order } = data;
+  const pricingIsFinal = (order.pricingStatus ?? "final") === "final";
+  const productBaseSubtotal = data.items.reduce((sum, item) => sum + Number(item.subtotal || 0), 0);
   return (
     <div className="mt-8 grid gap-6 lg:grid-cols-[1.1fr_0.9fr]">
       <div className="grid gap-6">
@@ -171,7 +173,7 @@ function TrackingDetail({ data }: { data: TrackingPayload }) {
             <Info label="Status pembayaran" value={order.paymentStatusLabel} />
             <Info label="Metode fulfillment" value={order.fulfillmentMethod === "pickup" ? "Pickup Toko" : "Kurir Eksternal"} />
             <Info label="Sudah dibayar" value={formatRupiah(order.amountPaid)} />
-            <Info label="Sisa pembayaran" value={formatRupiah(order.remainingBalance)} />
+            <Info label="Sisa pembayaran" value={pricingIsFinal ? formatRupiah(order.remainingBalance) : "Belum berlaku sampai harga final"} />
             {order.courier ? <Info label="Kurir" value={order.courier} /> : null}
             {order.trackingNumber ? <Info label="Nomor resi" value={order.trackingNumber} /> : null}
             {order.pickupStatus ? <Info label="Status pickup" value={readable(order.pickupStatus)} /> : null}
@@ -204,11 +206,11 @@ function TrackingDetail({ data }: { data: TrackingPayload }) {
       <aside className="h-fit rounded-[28px] bg-white p-6 lg:sticky lg:top-24">
         <h2 className="text-xl font-semibold">Ringkasan pembayaran</h2>
         <dl className="mt-5 grid gap-3 text-sm">
-          <Money label="Subtotal" value={order.subtotal} />
+          <Money label={pricingIsFinal ? "Subtotal" : "Subtotal produk PIM"} value={pricingIsFinal ? order.subtotal : productBaseSubtotal} />
           <Money label="Ongkir" value={order.shippingCost} empty="Belum ditetapkan" />
-          <Money label="Total" value={order.total} strong />
+          <Money label={pricingIsFinal ? "Total" : "Total terkunci"} value={pricingIsFinal ? order.total : null} empty="Menunggu penetapan harga" strong />
           <Money label="Sudah dibayar" value={order.amountPaid} />
-          <Money label="Sisa" value={order.remainingBalance} strong />
+          <Money label="Sisa" value={pricingIsFinal ? order.remainingBalance : null} empty="Belum berlaku" strong />
         </dl>
 
         {data.shippingQuote ? (

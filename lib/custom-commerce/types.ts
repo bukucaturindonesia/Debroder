@@ -180,6 +180,18 @@ export type CustomPricingLine = {
   kind: "product" | "service" | "placement" | "print_size" | "personalization";
   allocationId?: string;
   designPackageId?: string;
+  productId?: string;
+  variantId?: string;
+  variantSizeId?: string;
+  sku?: string;
+  serviceId?: string;
+  serviceSlug?: string;
+  serviceName?: string;
+  pricingRuleId?: string;
+  placementId?: string;
+  placementName?: string;
+  printSizeId?: string;
+  printSizeName?: string;
 };
 
 export type CustomProjectPricing = {

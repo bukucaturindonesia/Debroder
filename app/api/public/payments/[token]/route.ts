@@ -22,9 +22,12 @@ export async function GET(_request: Request, context: Context) {
     const resolved = await resolveLink(token);
     if (!resolved) return Response.json({ error: "Tautan pembayaran tidak aktif atau sudah kedaluwarsa." }, { status: 404 });
     const { data: order, error } = await resolved.client.from("orders")
-      .select("order_number,total_amount,payment_effective_total,payment_balance,payment_required_amount,payment_requirement_met,currency")
+      .select("order_number,total_amount,payment_effective_total,payment_balance,payment_required_amount,payment_requirement_met,currency,pricing_status")
       .eq("id", resolved.link.order_id).is("archived_at", null).maybeSingle();
     if (error || !order) return Response.json({ error: "Pesanan tidak tersedia." }, { status: 404 });
+    if (order.pricing_status !== "final" || Number(order.total_amount) <= 0) {
+      return Response.json({ code: "PAYMENT_PRICING_NOT_FINAL", error: "Pembayaran belum tersedia sampai harga order ditetapkan final." }, { status: 409 });
+    }
     return Response.json({
       orderNumber: order.order_number, currency: order.currency,
       totalAmount: Number(order.total_amount), effectivePaid: Number(order.payment_effective_total),
@@ -43,6 +46,15 @@ export async function POST(request: Request, context: Context) {
     const { token } = await context.params;
     const resolved = await resolveLink(token);
     if (!resolved) return Response.json({ error: "Tautan pembayaran tidak aktif atau sudah kedaluwarsa." }, { status: 404 });
+    const { data: payableOrder, error: payableOrderError } = await resolved.client.from("orders")
+      .select("pricing_status,total_amount")
+      .eq("id", resolved.link.order_id)
+      .is("archived_at", null)
+      .maybeSingle();
+    if (payableOrderError || !payableOrder) return Response.json({ error: "Pesanan tidak tersedia." }, { status: 404 });
+    if (payableOrder.pricing_status !== "final" || Number(payableOrder.total_amount) <= 0) {
+      return Response.json({ code: "PAYMENT_PRICING_NOT_FINAL", error: "Pembayaran diblokir sampai harga order ditetapkan final." }, { status: 409 });
+    }
     const form = await request.formData();
     const amount = Math.round(Number(form.get("amount")));
     const paidAt = String(form.get("paidAt") ?? "");

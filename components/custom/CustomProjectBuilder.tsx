@@ -111,7 +111,7 @@ export function CustomProjectBuilder({ catalogs, initialCategoryId, preselectedP
       if (!response.ok || !payload.pricing) throw new Error(payload.error || "Harga belum dapat divalidasi.");
       setPricing(payload.pricing);
       setPricingState("idle");
-      setMessage("Harga dan konfigurasi sudah divalidasi server.");
+      setMessage(payload.pricing.status === "quotation_required" ? "Konfigurasi tervalidasi server dan menunggu penawaran Admin." : "Harga dan konfigurasi sudah divalidasi server.");
       setDirty(false);
     } catch (error) {
       setPricingState("error");
@@ -250,7 +250,14 @@ function DesignPackageEditor({ catalog, item, designPackage, sessionToken, mutat
 
   function addService() {
     if (!serviceId || usedServiceIds.has(serviceId)) return;
-    updatePackage((current) => ({ ...current, services: [...current.services, createDesignService(serviceId)] }));
+    mutate((project) => updateProjectItem(project, item.id, (target) => {
+      const autoAssign = target.designPackages.length === 1;
+      return {
+        ...target,
+        designPackages: target.designPackages.map((candidate) => candidate.id === designPackage.id ? { ...candidate, services: [...candidate.services, createDesignService(serviceId)] } : candidate),
+        allocations: autoAssign ? target.allocations.map((allocation) => allocation.designPackageId === null ? { ...allocation, designPackageId: designPackage.id } : allocation) : target.allocations
+      };
+    }));
     setServiceId("");
   }
 
@@ -266,9 +273,12 @@ function DesignPackageEditor({ catalog, item, designPackage, sessionToken, mutat
     })));
   }
 
+  const assignedQuantity = item.allocations.filter((allocation) => allocation.designPackageId === designPackage.id).reduce((sum, allocation) => sum + allocation.quantity, 0);
+
   return <article className="rounded-[24px] bg-[#f5f5ef] p-4 sm:p-5">
     <div className="flex flex-wrap items-center justify-between gap-3"><input aria-label="Nama Paket Desain" value={designPackage.name} maxLength={120} onChange={(event) => updatePackage((current) => ({ ...current, name: event.target.value }))} className="min-h-10 rounded-xl border border-black/15 bg-white px-3 font-semibold" /><div className="flex gap-3"><button type="button" onClick={duplicate} className="text-xs font-semibold underline">Duplikasi</button><button type="button" disabled={item.designPackages.length === 1} onClick={() => mutate((project) => updateProjectItem(project, item.id, (target) => ({ ...target, designPackages: target.designPackages.filter((candidate) => candidate.id !== designPackage.id), allocations: target.allocations.map((allocation) => allocation.designPackageId === designPackage.id ? { ...allocation, designPackageId: null } : allocation) })))} className="text-xs font-semibold text-red-700 underline disabled:opacity-30">Hapus</button></div></div>
     <div className="mt-4 grid gap-3">{designPackage.services.map((selection) => <ServiceEditor key={selection.id} catalog={catalog} item={item} selection={selection} sessionToken={sessionToken} attachUpload={(upload) => mutate((project) => updateProjectItem(project, item.id, (target) => target.uploads.some((candidate) => candidate.id === upload.id) ? target : { ...target, uploads: [...target.uploads, upload] }))} updatePackage={updatePackage} />)}</div>
+    {designPackage.services.length ? <p className={`mt-3 text-xs font-semibold ${assignedQuantity ? "text-[#063d24]" : "text-red-700"}`}>{assignedQuantity ? `Layanan paket ini dialokasikan ke ${assignedQuantity} pcs.` : "Layanan sudah dipilih, tetapi paket belum dialokasikan. Selesaikan pada tahap Alokasi."}</p> : null}
     <div className="mt-4 grid gap-3 sm:grid-cols-[1fr_auto]"><select value={serviceId} onChange={(event) => setServiceId(event.target.value)} className="min-h-11 rounded-xl border border-black/15 bg-white px-3 text-sm"><option value="">Tambah layanan</option>{compatibleServices.filter((service) => !usedServiceIds.has(service.id)).map((service) => <option key={service.id} value={service.id}>{service.name}</option>)}</select><button type="button" disabled={!serviceId} onClick={addService} className="min-h-11 rounded-full border border-black/15 px-4 text-xs font-semibold disabled:opacity-35">Tambah</button></div>
   </article>;
 }

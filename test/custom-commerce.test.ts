@@ -2,7 +2,7 @@ import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 import { priceCustomProject } from "@/lib/custom-commerce/pricing";
 import type { CustomCategoryCatalog, CustomProject } from "@/lib/custom-commerce/types";
-import { parseCustomProject } from "@/lib/custom-commerce/validation";
+import { parseCustomCheckoutProjects, parseCustomProject } from "@/lib/custom-commerce/validation";
 
 const ids = {
   category: "10000000-0000-4000-8000-000000000001",
@@ -81,6 +81,60 @@ describe("Custom Commerce", () => {
     expect(priceCustomProject(personalized, [rules]).issues[0]).toMatch(/harus berjumlah 2/);
   });
 
+  it("fails closed when the canonical PIM base price is missing", () => {
+    const missingPrice = catalog();
+    missingPrice.products[0].basePrice = 0;
+    const pricing = priceCustomProject(project(), [missingPrice]);
+    expect(pricing.finalTotal).toBeNull();
+    expect(pricing.issues).toContain("Harga dasar PIM untuk Produk Uji belum valid. Produk tidak dapat diproses.");
+  });
+
+  it("keeps the base product quantity matrix canonical and server calculated", () => {
+    for (const [quantity, expected] of [[1, 45000], [2, 90000], [10, 450000]] as const) {
+      const value = project();
+      value.items[0].allocations[0].quantity = quantity;
+      value.items[0].allocations[0].designPackageId = null;
+      value.items[0].designPackages[0].services = [];
+      const products = catalog();
+      products.products[0].basePrice = 45000;
+      products.products[0].variants[0].priceAdjustment = 0;
+      products.products[0].variants[0].sizes[0].priceAdjustment = 0;
+      products.products[0].variants[0].sizes[0].size.priceAdjustment = 0;
+      const pricing = priceCustomProject(value, [products]);
+      expect(pricing.finalTotal).toBe(expected);
+      expect(pricing.issues).toEqual([]);
+    }
+  });
+
+  it("rejects a selected service that is not assigned to any allocation", () => {
+    const value = project();
+    value.items[0].allocations[0].designPackageId = null;
+    const pricing = priceCustomProject(value, [catalog()]);
+    expect(pricing.issues[0]).toMatch(/layanan terpilih tetapi belum dialokasikan/);
+    expect(pricing.finalTotal).toBeNull();
+  });
+
+  it("requires a deterministic active tier or an explicit manual quotation", () => {
+    const tiered = catalog();
+    tiered.services[0].pricingType = "tiered";
+    tiered.services[0].pricingRules = [];
+    expect(priceCustomProject(project(), [tiered]).issues[0]).toMatch(/Pricing rule Layanan Uji tidak tersedia/);
+
+    const manual = catalog();
+    manual.services[0].pricingType = "manual_quote";
+    manual.services[0].basePrice = 0;
+    const pricing = priceCustomProject(project(), [manual]);
+    expect(pricing.status).toBe("quotation_required");
+    expect(pricing.issues).toEqual([]);
+    expect(pricing.lines.find((line) => line.kind === "service")).toMatchObject({ serviceId: ids.service, serviceSlug: "layanan-uji", subtotal: null });
+  });
+
+  it("drops every browser-provided pricing value from the checkout contract", () => {
+    const parsed = parseCustomCheckoutProjects([{ project: project(), pricing: { finalTotal: 1 }, clientPricing: { finalTotal: 1 } }]);
+    expect(parsed).toEqual([{ project: project() }]);
+    expect(parsed?.[0].clientPricing).toBeUndefined();
+  });
+
   it("keeps the migration data-driven, RLS protected, atomic, and service-role only", () => {
     const sql = readFileSync("supabase/migrations/20260717160000_custom_commerce_foundation.sql", "utf8");
     expect(sql).toContain("create table if not exists public.custom_categories");
@@ -91,10 +145,33 @@ describe("Custom Commerce", () => {
     expect(sql).not.toMatch(/insert into public\.custom_(categories|presets|placements|print_sizes|personalization_rules)/i);
   });
 
+  it("blocks payment inserts until canonical Custom pricing is final", () => {
+    const sql = readFileSync("supabase/migrations/20260718113000_custom_pricing_payment_final_guard.sql", "utf8");
+    expect(sql).toContain("coalesce(order_pricing_status, 'final') <> 'final'");
+    expect(sql).toContain("before insert on public.order_payments");
+    expect(sql).toContain("coalesce(order_total, 0) <= 0");
+    expect(sql).not.toMatch(/update\s+public\.orders/i);
+    expect(sql).not.toMatch(/delete\s+from/i);
+  });
+
+  it("reads Custom services from the immutable order snapshot without presenting pending totals as zero", () => {
+    const admin = readFileSync("components/admin/OrderDetailAdmin.tsx", "utf8");
+    const confirmation = readFileSync("components/checkout/OrderConfirmationClient.tsx", "utf8");
+    const tracking = readFileSync("components/tracking/GuestOrderTracking.tsx", "utf8");
+    expect(admin).toContain("custom_project_snapshot");
+    expect(admin).toContain("Layanan dipilih pada snapshot");
+    expect(admin).toContain("Belum dialokasikan—tidak ikut harga");
+    expect(admin).toContain("Pembayaran diblokir sampai harga final");
+    expect(confirmation).toContain("Menunggu penetapan harga");
+    expect(tracking).toContain("Menunggu penetapan harga");
+  });
+
   it("bootstraps the public Custom Hub from existing CMS/PIM data without fixed business arrays", () => {
     const source = readFileSync("lib/custom-commerce/data.ts", "utf8");
     expect(source).toContain('from("service_categories")');
     expect(source).toContain('listProducts({ allowFallback: false })');
+    expect(source).toContain('product.basePrice > 0');
+    expect(source).toContain('JERSEY_CONFIGURATOR_ROUTE');
     expect(source).toContain('has_custom_catalog_configuration');
     expect(source).toContain('listFallbackCustomCategories');
     expect(source).not.toMatch(/const\s+(categories|products|services)\s*=\s*\[\s*["']/i);

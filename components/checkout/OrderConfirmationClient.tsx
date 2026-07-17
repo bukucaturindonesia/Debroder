@@ -75,6 +75,8 @@ export function OrderConfirmationClient({ token }: { token: string }) {
   if (error && !data) return <Shell><p className="text-red-700">{error}</p></Shell>;
   if (!data) return null;
   const { order } = data;
+  const pricingIsFinal = (order.pricingStatus ?? "final") === "final";
+  const productBaseSubtotal = data.items.reduce((sum, item) => sum + Number(item.subtotal || 0), 0);
   const whatsappText = confirmationCode
     ? `Halo DEBRODER, saya ingin verifikasi order ${order.orderNumber}. Kode konfirmasi: ${confirmationCode}. Nomor WhatsApp saya harus dicocokkan dengan data checkout.`
     : `Halo DEBRODER, saya memerlukan bantuan verifikasi order ${order.orderNumber}.`;
@@ -134,7 +136,7 @@ export function OrderConfirmationClient({ token }: { token: string }) {
         <aside className="h-fit rounded-[28px] bg-white p-6">
           <h2 className="text-xl font-semibold">Ringkasan</h2>
           <div className="mt-5 grid gap-4">{data.items.map((item) => <div key={item.id} className="border-b border-black/10 pb-4 text-sm"><div className="flex justify-between gap-3"><strong>{item.product_name}</strong><strong>{formatRupiah(Number(item.subtotal))}</strong></div><p className="mt-1 text-black/55">{item.variant_name || item.color} · {item.size} · {item.sku} × {item.quantity}</p>{item.custom_project_id ? <p className="mt-1 text-xs font-semibold text-[#063d24]">Custom Project · {item.pricing_status === "final" ? "Harga final" : "Review harga"}</p> : null}</div>)}</div>
-          <dl className="mt-5 grid gap-3 text-sm"><div className="flex justify-between"><dt>Subtotal</dt><dd>{formatRupiah(order.subtotal)}</dd></div><div className="flex justify-between"><dt>Ongkir</dt><dd>{order.shippingCost === null ? "Menunggu Admin" : formatRupiah(order.shippingCost)}</dd></div><div className="flex justify-between border-t border-black/10 pt-3 text-base font-semibold"><dt>Total</dt><dd>{formatRupiah(order.total)}</dd></div></dl>
+          <dl className="mt-5 grid gap-3 text-sm"><div className="flex justify-between"><dt>{pricingIsFinal ? "Subtotal" : "Subtotal produk PIM"}</dt><dd>{formatRupiah(pricingIsFinal ? order.subtotal : productBaseSubtotal)}</dd></div><div className="flex justify-between"><dt>Ongkir</dt><dd>{order.shippingCost === null ? "Menunggu Admin" : formatRupiah(order.shippingCost)}</dd></div><div className="flex justify-between border-t border-black/10 pt-3 text-base font-semibold"><dt>{pricingIsFinal ? "Total" : "Total terkunci"}</dt><dd>{pricingIsFinal ? formatRupiah(order.total) : "Menunggu penetapan harga"}</dd></div></dl>
           <Link href={data.items.some((item) => item.custom_project_id) ? "/custom" : "/koleksi"} className="mt-6 inline-flex text-sm font-semibold underline">Kembali belanja</Link>
         </aside>
       </div>
