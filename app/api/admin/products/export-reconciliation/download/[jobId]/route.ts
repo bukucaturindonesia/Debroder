@@ -3,6 +3,7 @@ import type { AdminRole } from "@/lib/access-control";
 import { PRODUCT_MANAGER_ROLES } from "@/lib/product-manager";
 import { loadOwnedPimPhase6File, PimPhase6ServerError } from "@/lib/pim-phase6-server";
 import { Phase13AuthError, requirePhase13Actor } from "@/lib/phase13-auth";
+import { actorAuditLabel, createPimAuditIdentity, recordPimAuditEvent } from "@/lib/pim-audit-server";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
@@ -14,6 +15,24 @@ export async function GET(request: Request, context: { params: Promise<{ jobId: 
     const { jobId } = await context.params;
     if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(jobId)) throw new PimPhase6ServerError(404, "File export tidak ditemukan.", "EXPORT_JOB_NOT_FOUND");
     const file = await loadOwnedPimPhase6File(actor.adminClient, actor.user.id, jobId);
+    const identity = createPimAuditIdentity(request, `phase6-download:${jobId}`);
+    const report = file.jobKind === "reconciliation_report";
+    await recordPimAuditEvent(actor.adminClient, {
+      eventCode: report ? "RECONCILIATION_REPORT_DOWNLOADED" : "EXPORT_DOWNLOADED",
+      status: "COMPLETED",
+      actorId: actor.user.id,
+      actorRole: actor.role,
+      actorLabel: actorAuditLabel(actor.user),
+      requestId: identity.requestId,
+      operationId: jobId,
+      idempotencyKey: identity.idempotencyKey,
+      entityType: "pim_export_jobs",
+      entityId: jobId,
+      entityLabel: report ? "Laporan reconciliation" : "Product export",
+      batchId: jobId,
+      summary: report ? "Laporan reconciliation diunduh" : "Export diunduh",
+      metadata: { jobKind: file.jobKind, fileSize: file.fileSize, fileSha256: file.sha256 }
+    });
     return new Response(Buffer.from(file.bytes), {
       status: 200,
       headers: {

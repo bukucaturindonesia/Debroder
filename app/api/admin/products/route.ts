@@ -35,6 +35,17 @@ import {
   VariantMatrixServerError
 } from "@/lib/variant-matrix-server";
 import type { VariantMatrixSaveInput } from "@/lib/variant-matrix";
+import {
+  PIM_AUDIT_EVENT_REGISTRY,
+  diffPimAuditFields,
+  type PimAuditEventCode,
+  type PimAuditStatus
+} from "@/lib/pim-audit";
+import {
+  actorAuditLabel,
+  createPimAuditIdentity,
+  recordPimAuditEvent
+} from "@/lib/pim-audit-server";
 
 export const dynamic = "force-dynamic";
 
@@ -144,6 +155,7 @@ export async function POST(request: Request) {
   try {
     const actor = await requireProductActor(request);
     const body = await readBody(request);
+    const auditIdentity = createPimAuditIdentity(request, String(body.action || "invalid"));
 
     if (!body.action) throw new ProductApiError(400, "Aksi Product Manager tidak valid.");
 
@@ -152,7 +164,10 @@ export async function POST(request: Request) {
       if (!input) throw new ProductApiError(400, "Data produk tidak valid.");
       const rootIssues = validateProductRootDraft(input);
       if (rootIssues.length) return validationResponse(rootIssues);
+      const before = input.id ? await loadAuditRow(actor.adminClient, "products", input.id, PRODUCT_AUDIT_FIELDS) : null;
       const productId = await saveProductRoot(actor.adminClient, actor.role, input);
+      const after = await loadAuditRow(actor.adminClient, "products", productId, PRODUCT_AUDIT_FIELDS);
+      await auditProductMutation({ actor, identity: auditIdentity, eventCode: input.id ? productEvent(before, after) : "PRODUCT_CREATED", entityType: "products", entityId: productId, entityLabel: String(after?.name || input.name), productId, before, after, fields: PRODUCT_AUDIT_FIELDS });
       return noStoreJson({ ok: true, productId, message: "Draft produk tersimpan." });
     }
 
@@ -162,7 +177,10 @@ export async function POST(request: Request) {
       if (!input) throw new ProductApiError(400, "Data color variant tidak valid.");
       const issues = validateProductVariantDraft(input);
       if (issues.length) return validationResponse(issues);
+      const before = input.id ? await loadAuditRow(actor.adminClient, "product_variants", input.id, VARIANT_AUDIT_FIELDS) : null;
       const result = await saveProductVariant(actor.adminClient, input);
+      const after = await loadAuditRow(actor.adminClient, "product_variants", result.id, VARIANT_AUDIT_FIELDS);
+      await auditProductMutation({ actor, identity: auditIdentity, eventCode: input.id ? variantEvent(before, after) : "VARIANT_CREATED", entityType: "product_variants", entityId: result.id, entityLabel: String(after?.name || input.name), productId: input.productId, variantId: result.id, sku: textValue(after?.sku), before, after, fields: VARIANT_AUDIT_FIELDS });
       return noStoreJson({ ok: true, productId: input.productId, variantId: result.id, message: "Color variant tersimpan." });
     }
 
@@ -172,7 +190,10 @@ export async function POST(request: Request) {
       if (!input) throw new ProductApiError(400, "Data sellable SKU tidak valid.");
       const issues = validateSellableSkuDraft(input);
       if (issues.length) return validationResponse(issues);
+      const before = input.id ? await loadAuditRow(actor.adminClient, "product_variant_sizes", input.id, SELLABLE_AUDIT_FIELDS) : null;
       const result = await saveSellableSku(actor.adminClient, input);
+      const after = await loadAuditRow(actor.adminClient, "product_variant_sizes", result.id, SELLABLE_AUDIT_FIELDS);
+      await auditProductMutation({ actor, identity: auditIdentity, eventCode: input.id ? variantEvent(before, after) : "VARIANT_CREATED", entityType: "product_variant_sizes", entityId: result.id, entityLabel: input.sku, productId: result.productId, variantId: input.variantId, sku: input.sku, before, after, fields: SELLABLE_AUDIT_FIELDS });
       return noStoreJson({ ok: true, productId: result.productId, variantId: input.variantId, sellableId: result.id, message: "Sellable SKU tersimpan." });
     }
 
@@ -183,6 +204,7 @@ export async function POST(request: Request) {
       const issues = validateVariantImageDraft(input);
       if (issues.length) return validationResponse(issues);
       const result = await saveVariantImage(actor.adminClient, input);
+      await auditProductMutation({ actor, identity: auditIdentity, eventCode: "PRODUCT_COLOR_UPDATED", entityType: "product_variant_images", entityId: result.id, entityLabel: `${input.imageRole} image`, productId: result.productId, variantId: input.variantId, metadata: { changedFields: ["image_role"] } });
       return noStoreJson({ ok: true, productId: result.productId, variantId: input.variantId, imageId: result.id, message: `Gambar ${input.imageRole} tersimpan pada rasio 4:5.` });
     }
 
@@ -191,12 +213,14 @@ export async function POST(request: Request) {
       const imageId = cleanId(body.imageId);
       if (!imageId) throw new ProductApiError(400, "Gambar variant wajib dipilih.");
       const result = await removeVariantImage(actor.adminClient, imageId);
+      await auditProductMutation({ actor, identity: auditIdentity, eventCode: "PRODUCT_COLOR_UPDATED", entityType: "product_variant_images", entityId: imageId, entityLabel: "Image slot dikosongkan", productId: result.productId, variantId: result.variantId, metadata: { changedFields: ["image_role"] } });
       return noStoreJson({ ok: true, productId: result.productId, variantId: result.variantId, message: "Slot gambar dikosongkan. File asli di Media Library tetap aman." });
     }
 
     if (body.action === "save_matrix") {
       requireDependencyRole(actor.role);
       const result = await saveVariantMatrixAtomic(actor.adminClient, body.matrix as VariantMatrixSaveInput);
+      await auditProductMutation({ actor, identity: auditIdentity, eventCode: "VARIANT_MATRIX_UPDATED", entityType: "products", entityId: result.productId, entityLabel: "Variant Matrix", productId: result.productId, metadata: { targetCount: result.summary.affected, successCount: result.summary.affected, changedFields: ["variant_matrix"] } });
       return noStoreJson({
         ok: true,
         productId: result.productId,
@@ -210,6 +234,8 @@ export async function POST(request: Request) {
 
     if (body.action === "duplicate") {
       const duplicateId = await duplicateProduct(actor.adminClient, actor.role, productId);
+      const after = await loadAuditRow(actor.adminClient, "products", duplicateId, PRODUCT_AUDIT_FIELDS);
+      await auditProductMutation({ actor, identity: auditIdentity, eventCode: "PRODUCT_DUPLICATED", entityType: "products", entityId: duplicateId, entityLabel: String(after?.name || "Salinan produk"), productId: duplicateId, after, fields: PRODUCT_AUDIT_FIELDS, metadata: { changedFields: ["source_product_id"] } });
       return noStoreJson({ ok: true, productId: duplicateId, message: "Produk diduplikasi sebagai Draft." });
     }
 
@@ -220,9 +246,13 @@ export async function POST(request: Request) {
       const issues = validateProductPublishSnapshot(snapshot);
       const blockers = issues.filter((issue) => issue.severity === "error");
       if (body.action === "validate_publish" || blockers.length) {
+        if (body.action === "publish" && blockers.length) {
+          await auditProductMutation({ actor, identity: auditIdentity, eventCode: "PRODUCT_PUBLISH_FAILED", status: "FAILED", entityType: "products", entityId: productId, productId, entityLabel: snapshot.name || "Produk", failureCode: "PUBLISH_VALIDATION_FAILED", metadata: { errorCount: blockers.length } });
+        }
         return noStoreJson({ ok: blockers.length === 0, productId, issues }, blockers.length ? 422 : 200);
       }
 
+      const before = await loadAuditRow(actor.adminClient, "products", productId, PRODUCT_AUDIT_FIELDS);
       const { data, error } = await actor.adminClient
         .from("products")
         .update({ status: "active", updated_at: new Date().toISOString() })
@@ -234,10 +264,13 @@ export async function POST(request: Request) {
         console.error("Product publish failed", { code: error?.code });
         throw new ProductApiError(409, "Produk tidak dapat dipublish. Muat ulang dan periksa status terbaru.");
       }
+      const after = await loadAuditRow(actor.adminClient, "products", productId, PRODUCT_AUDIT_FIELDS);
+      await auditProductMutation({ actor, identity: auditIdentity, eventCode: "PRODUCT_PUBLISHED", entityType: "products", entityId: productId, entityLabel: String(after?.name || "Produk"), productId, before, after, fields: PRODUCT_AUDIT_FIELDS });
       return noStoreJson({ ok: true, productId, issues: [], message: "Produk berhasil dipublish." });
     }
 
     if (body.action === "archive") {
+      const before = await loadAuditRow(actor.adminClient, "products", productId, PRODUCT_AUDIT_FIELDS);
       const { data, error } = await actor.adminClient
         .from("products")
         .update({ status: "archived", updated_at: new Date().toISOString() })
@@ -249,6 +282,8 @@ export async function POST(request: Request) {
         console.error("Product archive failed", { code: error?.code });
         throw new ProductApiError(409, "Hanya produk Active yang dapat diarsipkan.");
       }
+      const after = await loadAuditRow(actor.adminClient, "products", productId, PRODUCT_AUDIT_FIELDS);
+      await auditProductMutation({ actor, identity: auditIdentity, eventCode: "PRODUCT_ARCHIVED", entityType: "products", entityId: productId, entityLabel: String(after?.name || "Produk"), productId, before, after, fields: PRODUCT_AUDIT_FIELDS });
       return noStoreJson({ ok: true, productId, message: "Produk diarsipkan tanpa menghapus data." });
     }
 
@@ -896,6 +931,89 @@ function asRecord(value: unknown): Record<string, unknown> {
 
 function asRecordArray(value: unknown): Record<string, unknown>[] {
   return Array.isArray(value) ? value.filter((item) => typeof item === "object" && item !== null) as Record<string, unknown>[] : [];
+}
+
+const PRODUCT_AUDIT_FIELDS = ["name", "slug", "product_category_id", "product_subcategory_id", "base_price", "sku", "status", "product_type", "pricing_mode", "minimum_order_qty"] as const;
+const VARIANT_AUDIT_FIELDS = ["name", "slug", "sku", "price_adjustment", "status", "is_active", "sort_order"] as const;
+const SELLABLE_AUDIT_FIELDS = ["size_id", "size_name", "sku", "stock_quantity", "price_adjustment", "status", "is_active", "sort_order"] as const;
+
+async function loadAuditRow(client: SupabaseClient, table: string, id: string, fields: readonly string[]) {
+  const { data, error } = await client.from(table).select(["id", ...fields].join(",")).eq("id", id).maybeSingle();
+  if (error || !data) return null;
+  return asRecord(data);
+}
+
+async function auditProductMutation(input: {
+  actor: Awaited<ReturnType<typeof requireProductActor>>;
+  identity: ReturnType<typeof createPimAuditIdentity>;
+  eventCode: PimAuditEventCode;
+  status?: PimAuditStatus;
+  entityType: string;
+  entityId?: string | null;
+  entityLabel?: string | null;
+  productId?: string | null;
+  variantId?: string | null;
+  sku?: string | null;
+  before?: Record<string, unknown> | null;
+  after?: Record<string, unknown> | null;
+  fields?: readonly string[];
+  failureCode?: string | null;
+  metadata?: Record<string, unknown>;
+}) {
+  const status = input.status || "COMPLETED";
+  const changes = diffPimAuditFields(input.before || null, input.after || null, input.fields || []);
+  await recordPimAuditEvent(input.actor.adminClient, {
+    eventCode: input.eventCode,
+    status,
+    actorId: input.actor.user.id,
+    actorRole: input.actor.role,
+    actorLabel: actorAuditLabel(input.actor.user),
+    requestId: input.identity.requestId,
+    operationId: input.identity.operationId,
+    idempotencyKey: input.identity.idempotencyKey,
+    entityType: input.entityType,
+    entityId: input.entityId,
+    entityLabel: input.entityLabel,
+    productId: input.productId,
+    variantId: input.variantId,
+    sku: input.sku,
+    summary: PIM_AUDIT_EVENT_REGISTRY[input.eventCode].label,
+    failureCode: input.failureCode,
+    changes,
+    metadata: { ...input.metadata, changedFields: changes.map((change) => change.field) },
+    entities: [{
+      entityType: input.entityType,
+      entityId: input.entityId || null,
+      entityLabel: input.entityLabel,
+      productId: input.productId,
+      variantId: input.variantId,
+      sku: input.sku,
+      resultStatus: status,
+      failureCode: input.failureCode
+    }]
+  });
+}
+
+function variantEvent(before: Record<string, unknown> | null, after: Record<string, unknown> | null): PimAuditEventCode {
+  if (!before) return "VARIANT_CREATED";
+  if (before.sku !== after?.sku) return "VARIANT_SKU_CHANGED";
+  if (before.stock_quantity !== after?.stock_quantity) return "VARIANT_STOCK_CHANGED";
+  if (before.price_adjustment !== after?.price_adjustment) return "VARIANT_PRICE_CHANGED";
+  if (before.size_id !== after?.size_id) return "VARIANT_SIZE_CHANGED";
+  if (before.name !== after?.name || before.slug !== after?.slug) return "VARIANT_COLOR_CHANGED";
+  if (before.status !== after?.status || before.is_active !== after?.is_active) return "VARIANT_STATUS_CHANGED";
+  return "VARIANT_UPDATED";
+}
+
+function productEvent(before: Record<string, unknown> | null, after: Record<string, unknown> | null): PimAuditEventCode {
+  if (!before) return "PRODUCT_CREATED";
+  if (before.product_category_id !== after?.product_category_id) return "PRODUCT_CATEGORY_CHANGED";
+  if (before.status !== after?.status) return "PRODUCT_STATUS_CHANGED";
+  return "PRODUCT_UPDATED";
+}
+
+function textValue(value: unknown) {
+  return typeof value === "string" && value ? value : null;
 }
 
 async function readBody(request: Request): Promise<ActionBody> {
