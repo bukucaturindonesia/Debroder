@@ -10,6 +10,7 @@ import {
 } from "@/lib/pim-bulk-edit-server";
 import { PRODUCT_MANAGER_ROLES } from "@/lib/product-manager";
 import { Phase13AuthError, requirePhase13Actor } from "@/lib/phase13-auth";
+import { actorAuditLabel, createPimAuditIdentity, recordPimAuditEvent } from "@/lib/pim-audit-server";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
@@ -44,6 +45,23 @@ export async function POST(request: Request) {
       const preview = await validatePimBulkEdit({ client: actor.adminClient, actorId: actor.user.id, role: actor.role, selection: body.selection, action: body.action });
       const { transactionState, ...safePreview } = preview;
       void transactionState;
+      const identity = createPimAuditIdentity(request, `bulk-edit-preview:${preview.previewHash}`);
+      await recordPimAuditEvent(actor.adminClient, {
+        eventCode: "BULK_EDIT_PREVIEWED",
+        status: preview.status === "blocked" ? "FAILED" : "COMPLETED",
+        actorId: actor.user.id,
+        actorRole: actor.role,
+        actorLabel: actorAuditLabel(actor.user),
+        requestId: identity.requestId,
+        operationId: identity.operationId,
+        idempotencyKey: identity.idempotencyKey,
+        entityType: "pim_bulk_edit_preview",
+        entityLabel: preview.actionLabel,
+        summary: "Preview Bulk Edit dijalankan",
+        failureCode: preview.status === "blocked" ? "BULK_EDIT_VALIDATION_FAILED" : null,
+        metadata: { actionType: preview.action.type, selectionMode: preview.selection.mode, targetType: preview.selection.targetType, targetCount: preview.summary.targetCount, errorCount: preview.summary.blockingErrors, warningCount: preview.summary.warnings, changedFields: [preview.action.type] },
+        entities: preview.rows.map((row) => ({ entityType: preview.selection.targetType, entityId: row.id, entityLabel: row.label, resultStatus: row.validationStatus === "error" ? "FAILED" : "COMPLETED" }))
+      });
       return noStoreJson(safePreview, preview.status === "blocked" ? 422 : 200);
     }
     const previewToken = typeof body.previewToken === "string" ? body.previewToken : "";

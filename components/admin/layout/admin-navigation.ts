@@ -65,7 +65,8 @@ export const adminNavigationGroups: readonly AdminNavigationGroup[] = [
     label: "KATALOG",
     roles: PRODUCT_MANAGER_VIEW_ROLES,
     items: [
-      { label: "Product Manager", href: "/admin/products", roles: PRODUCT_MANAGER_VIEW_ROLES },
+      { label: "Product Manager", href: "/admin/products", roles: PRODUCT_MANAGER_VIEW_ROLES, exact: true },
+      { label: "Audit & Riwayat Aktivitas", href: "/admin/products/audit-history", roles: PRODUCT_MANAGER_VIEW_ROLES },
       { label: "Export & Reconciliation", href: "/admin/products/export-reconciliation", roles: PRODUCT_MANAGER_VIEW_ROLES },
       { label: "Maintenance PIM", href: "/admin/pim-manager", roles: PRODUCT_MAINTENANCE_ROLES },
       { label: "Kategori / Model", href: "/admin/categories", roles: FULL_ADMIN_ROLES },
@@ -126,7 +127,8 @@ const adminGuestNavigationGroups: readonly AdminNavigationGroup[] = [
     label: "KATALOG",
     roles: ADMIN_GUEST_ROLES,
     items: [
-      { label: "Product Manager", href: "/admin/products", roles: ADMIN_GUEST_ROLES },
+      { label: "Product Manager", href: "/admin/products", roles: ADMIN_GUEST_ROLES, exact: true },
+      { label: "Audit & Riwayat Aktivitas", href: "/admin/products/audit-history", roles: ADMIN_GUEST_ROLES },
       { label: "Export & Reconciliation", href: "/admin/products/export-reconciliation", roles: ADMIN_GUEST_ROLES },
       { label: "PIM V2 Dependency", href: "/admin/pim-v2", roles: ADMIN_GUEST_ROLES },
       { label: "Maintenance PIM", href: "/admin/pim-manager", roles: ADMIN_GUEST_ROLES },

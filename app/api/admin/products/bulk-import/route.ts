@@ -14,6 +14,7 @@ import {
   validatePimBulkImport
 } from "@/lib/pim-bulk-import-server";
 import { Phase13AuthError, requirePhase13Actor } from "@/lib/phase13-auth";
+import { actorAuditLabel, createPimAuditIdentity, recordPimAuditEvent } from "@/lib/pim-audit-server";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
@@ -68,6 +69,22 @@ export async function POST(request: Request) {
 
     if (action === "preview") {
       const preview = await validatePimBulkImport({ client: actor.adminClient, actorId: actor.user.id, file: fileInput });
+      const identity = createPimAuditIdentity(request, `bulk-import-preview:${preview.fileChecksum}`);
+      await recordPimAuditEvent(actor.adminClient, {
+        eventCode: "BULK_IMPORT_PREVIEWED",
+        status: preview.status === "blocked" ? "FAILED" : "COMPLETED",
+        actorId: actor.user.id,
+        actorRole: actor.role,
+        actorLabel: actorAuditLabel(actor.user),
+        requestId: identity.requestId,
+        operationId: identity.operationId,
+        idempotencyKey: identity.idempotencyKey,
+        entityType: "pim_bulk_import_preview",
+        entityLabel: preview.fileName,
+        summary: "Dry run Bulk Import dijalankan",
+        failureCode: preview.status === "blocked" ? "IMPORT_VALIDATION_FAILED" : null,
+        metadata: { fileChecksum: preview.fileChecksum, payloadHash: preview.payloadHash, rowCount: preview.summary.totalRows, errorCount: preview.summary.errors, warningCount: preview.summary.warnings, importMode: preview.importMode }
+      });
       return noStoreJson(preview, preview.status === "blocked" ? 422 : 200);
     }
 

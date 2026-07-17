@@ -178,6 +178,7 @@ export function runProductManagerAction(input: {
   imageId?: string;
   matrix?: VariantMatrixSaveInput;
 }) {
+  const requestId = crypto.randomUUID();
   return requestJson<{
     ok: boolean;
     productId?: string;
@@ -187,5 +188,9 @@ export function runProductManagerAction(input: {
     issues?: ValidationIssue[];
     message?: string;
     matrixSummary?: VariantMatrixSummary;
-  }>({ method: "POST", body: JSON.stringify(input) });
+  }>({
+    method: "POST",
+    body: JSON.stringify(input),
+    headers: { "x-request-id": requestId, "x-operation-id": crypto.randomUUID() }
+  });
 }

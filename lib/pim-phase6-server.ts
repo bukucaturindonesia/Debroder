@@ -330,7 +330,7 @@ export async function cleanupExpiredPimPhase6Files(client: SupabaseClient) {
 
 export async function loadOwnedPimPhase6File(client: SupabaseClient, actorId: string, jobId: string) {
   await cleanupExpiredPimPhase6Files(client);
-  const result = await client.from("pim_export_jobs").select("id,actor_id,status,file_bucket,file_path,file_name,file_mime,file_size,file_sha256,expires_at").eq("id", jobId).eq("actor_id", actorId).maybeSingle();
+  const result = await client.from("pim_export_jobs").select("id,actor_id,job_kind,status,file_bucket,file_path,file_name,file_mime,file_size,file_sha256,expires_at").eq("id", jobId).eq("actor_id", actorId).maybeSingle();
   if (result.error || !result.data) throw new PimPhase6ServerError(404, "File export tidak ditemukan.", "EXPORT_JOB_NOT_FOUND");
   if (String(result.data.status) === "EXPIRED" || new Date(String(result.data.expires_at)).getTime() <= Date.now()) throw new PimPhase6ServerError(410, "File export sudah kedaluwarsa.", "EXPORT_JOB_EXPIRED");
   if (String(result.data.status) !== "COMPLETED" || !result.data.file_bucket || !result.data.file_path) throw new PimPhase6ServerError(409, "File export belum tersedia.", "EXPORT_FILE_MISSING");
@@ -339,7 +339,7 @@ export async function loadOwnedPimPhase6File(client: SupabaseClient, actorId: st
   const bytes = new Uint8Array(await download.data.arrayBuffer());
   const actualHash = createHash("sha256").update(bytes).digest("hex");
   if (actualHash !== String(result.data.file_sha256 || "")) throw new PimPhase6ServerError(409, "Integritas file export gagal diverifikasi.", "EXPORT_INTEGRITY_FAILED");
-  return { bytes, fileName: safePhase6FileName(String(result.data.file_name)), mimeType: String(result.data.file_mime), fileSize: Number(result.data.file_size || bytes.byteLength), sha256: actualHash };
+  return { bytes, fileName: safePhase6FileName(String(result.data.file_name)), mimeType: String(result.data.file_mime), fileSize: Number(result.data.file_size || bytes.byteLength), sha256: actualHash, jobKind: String(result.data.job_kind || "product_export") };
 }
 
 export function phase6ScopeLabel(scope: PimPhase6Scope) {

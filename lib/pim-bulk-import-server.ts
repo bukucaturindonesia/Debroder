@@ -1,4 +1,4 @@
-import { createHmac, timingSafeEqual } from "node:crypto";
+import { createHmac, randomUUID, timingSafeEqual } from "node:crypto";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import {
   PIM_BULK_IMPORT_LIMITS,
@@ -11,6 +11,7 @@ import {
   type PimBulkImportResolvedRow,
   type PimBulkImportRow
 } from "@/lib/pim-bulk-import";
+import { linkPimAuditEntities, recordPimAuditEvent } from "@/lib/pim-audit-server";
 
 export type PimBulkImportFileInput = {
   fileName: string;
@@ -150,7 +151,11 @@ export async function commitPimBulkImport(input: {
   file: PimBulkImportFileInput;
   previewToken: string;
 }) {
-  if (!isPimBulkImportWriteRole(input.role)) throw new PimBulkImportServerError(403, "Role ini hanya dapat melakukan preview Bulk Import.", "PERMISSION_DENIED");
+  if (!isPimBulkImportWriteRole(input.role)) {
+    const operationId = randomUUID();
+    await recordPimAuditEvent(input.client, { eventCode: "BULK_IMPORT_DENIED", status: "DENIED", actorId: input.actorId, actorRole: input.role, requestId: operationId, operationId, idempotencyKey: `bulk-import-denied:${operationId}`, entityType: "pim_bulk_import_batch", summary: "Bulk Import ditolak", failureCode: "PERMISSION_DENIED", metadata: { reasonCode: "PERMISSION_DENIED" } });
+    throw new PimBulkImportServerError(403, "Role ini hanya dapat melakukan preview Bulk Import.", "PERMISSION_DENIED");
+  }
   const previewClaims = verifyPimBulkPreviewToken(input.previewToken, input.actorId);
   const preview = await validatePimBulkImport({ client: input.client, actorId: input.actorId, file: input.file });
   if (preview.fileChecksum !== previewClaims.fileChecksum) throw new PimBulkImportServerError(409, "Checksum file berubah sejak dry run.", "FILE_CHECKSUM_MISMATCH");
@@ -175,7 +180,27 @@ export async function commitPimBulkImport(input: {
   });
   if (error) {
     console.error("PIM bulk import RPC failed", { code: error.code });
+    const operationId = randomUUID();
+    await recordPimAuditEvent(input.client, { eventCode: "BULK_IMPORT_ROLLED_BACK", status: "ROLLED_BACK", actorId: input.actorId, actorRole: input.role, requestId: idempotencyKey, operationId, idempotencyKey: `${idempotencyKey}:rollback`, entityType: "pim_bulk_import_batch", summary: "Bulk Import di-rollback", failureCode: "TRANSACTION_ROLLED_BACK", metadata: { fileChecksum: preview.fileChecksum, payloadHash: preview.payloadHash, rowCount: preview.summary.totalRows, importMode: preview.importMode } });
     throw new PimBulkImportServerError(409, "Import dibatalkan dan seluruh transaction di-rollback.", "TRANSACTION_ROLLED_BACK");
+  }
+  const slugs = [...new Set(plan.map((product) => product.slug))];
+  const products = slugs.length
+    ? await input.client.from("products").select("id,name,slug").in("slug", slugs)
+    : { data: [], error: null };
+  if (!products.error) {
+    await linkPimAuditEntities({
+      client: input.client,
+      eventCode: "BULK_IMPORT_COMPLETED",
+      idempotencyKey,
+      entities: records(products.data).map((product) => ({
+        entityType: "products",
+        entityId: String(product.id),
+        entityLabel: String(product.name || product.slug || "Produk"),
+        productId: String(product.id),
+        resultStatus: "COMPLETED"
+      }))
+    });
   }
   return data;
 }

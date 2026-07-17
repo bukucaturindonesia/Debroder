@@ -1,4 +1,4 @@
-import { createHmac, timingSafeEqual } from "node:crypto";
+import { createHmac, randomUUID, timingSafeEqual } from "node:crypto";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import {
   PIM_BULK_EDIT_LIMITS,
@@ -19,6 +19,7 @@ import {
   type PimBulkTargetType
 } from "@/lib/pim-bulk-edit";
 import { validateProductPublishSnapshot, type ProductPublishSnapshot } from "@/lib/product-manager";
+import { linkPimAuditEntities, recordPimAuditEvent } from "@/lib/pim-audit-server";
 
 export type PimBulkListResult = {
   targetType: PimBulkTargetType;
@@ -204,7 +205,11 @@ export async function commitPimBulkEdit(input: {
   action: unknown;
   previewToken: string;
 }) {
-  if (!isPimBulkCommitRole(input.role)) throw new PimBulkEditServerError(403, "Role ini hanya dapat menjalankan preview.", "PERMISSION_DENIED_BULK_COMMIT");
+  if (!isPimBulkCommitRole(input.role)) {
+    const operationId = randomUUID();
+    await recordPimAuditEvent(input.client, { eventCode: "BULK_EDIT_DENIED", status: "DENIED", actorId: input.actorId, actorRole: input.role, requestId: operationId, operationId, idempotencyKey: `bulk-edit-denied:${operationId}`, entityType: "pim_bulk_action_batch", summary: "Bulk Edit ditolak", failureCode: "PERMISSION_DENIED_BULK_COMMIT", metadata: { reasonCode: "PERMISSION_DENIED_BULK_COMMIT" } });
+    throw new PimBulkEditServerError(403, "Role ini hanya dapat menjalankan preview.", "PERMISSION_DENIED_BULK_COMMIT");
+  }
   const claims = verifyPreviewToken(input.previewToken, input.actorId, input.role);
   const preview = await validatePimBulkEdit(input);
   if (preview.previewHash !== claims.previewHash) throw new PimBulkEditServerError(409, "DATA CHANGED — RUN PREVIEW AGAIN", "PREVIEW_HASH_MISMATCH");
@@ -222,8 +227,28 @@ export async function commitPimBulkEdit(input: {
   if (error) {
     console.error("PIM bulk edit RPC failed", { code: error.code });
     const code = rpcIssueCode(error.message || "");
+    const operationId = randomUUID();
+    await recordPimAuditEvent(input.client, { eventCode: "BULK_EDIT_ROLLED_BACK", status: "ROLLED_BACK", actorId: input.actorId, actorRole: input.role, requestId: idempotencyKey, operationId, idempotencyKey: `${idempotencyKey}:rollback`, entityType: "pim_bulk_action_batch", summary: "Bulk Edit di-rollback", failureCode: code, metadata: { actionType: preview.action.type, selectionMode: preview.selection.mode, targetType: preview.selection.targetType, targetCount: preview.summary.targetCount } });
     throw new PimBulkEditServerError(409, code === "CONCURRENT_MODIFICATION" ? "DATA CHANGED — RUN PREVIEW AGAIN" : "Bulk Edit gagal dan seluruh transaction di-rollback.", code);
   }
+  const auditedTargets = await loadRowsByIds(input.client, preview.selection.targetType, preview.targetIds);
+  await linkPimAuditEntities({
+    client: input.client,
+    eventCode: "BULK_EDIT_COMPLETED",
+    idempotencyKey,
+    entities: preview.targetIds.map((id) => {
+      const row = auditedTargets.find((candidate) => candidate.id === id);
+      return {
+        entityType: preview.selection.targetType === "product" ? "products" : preview.selection.targetType === "variant" ? "product_variants" : "product_variant_sizes",
+        entityId: id,
+        entityLabel: row?.label || null,
+        productId: row?.productId || (preview.selection.targetType === "product" ? id : null),
+        variantId: preview.selection.targetType === "variant" ? id : null,
+        sku: row?.sku || null,
+        resultStatus: "COMPLETED" as const
+      };
+    })
+  });
   return data;
 }
 
