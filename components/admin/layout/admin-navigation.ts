@@ -66,6 +66,7 @@ export const adminNavigationGroups: readonly AdminNavigationGroup[] = [
     roles: PRODUCT_MANAGER_VIEW_ROLES,
     items: [
       { label: "Product Manager", href: "/admin/products", roles: PRODUCT_MANAGER_VIEW_ROLES },
+      { label: "Export & Reconciliation", href: "/admin/products/export-reconciliation", roles: PRODUCT_MANAGER_VIEW_ROLES },
       { label: "Maintenance PIM", href: "/admin/pim-manager", roles: PRODUCT_MAINTENANCE_ROLES },
       { label: "Kategori / Model", href: "/admin/categories", roles: FULL_ADMIN_ROLES },
       { label: "Layanan", href: "/admin/services", roles: FULL_ADMIN_ROLES },
@@ -126,6 +127,7 @@ const adminGuestNavigationGroups: readonly AdminNavigationGroup[] = [
     roles: ADMIN_GUEST_ROLES,
     items: [
       { label: "Product Manager", href: "/admin/products", roles: ADMIN_GUEST_ROLES },
+      { label: "Export & Reconciliation", href: "/admin/products/export-reconciliation", roles: ADMIN_GUEST_ROLES },
       { label: "PIM V2 Dependency", href: "/admin/pim-v2", roles: ADMIN_GUEST_ROLES },
       { label: "Maintenance PIM", href: "/admin/pim-manager", roles: ADMIN_GUEST_ROLES },
       { label: "Kategori / Model", href: "/admin/categories", roles: ADMIN_GUEST_ROLES },
@@ -237,6 +239,7 @@ export function getRoleHome(role: AdminRole) {
 }
 
 export function getCurrentNavigationLabel(pathname: string) {
+  if (pathname === "/admin/products/export-reconciliation") return "Export & Reconciliation";
   if (pathname === "/admin/products/bulk-edit") return "Bulk Edit & Actions";
   if (pathname === "/admin/products/bulk-import") return "Bulk Import Produk";
   if (pathname === "/admin/custom-commerce") return "CMS / Custom";
