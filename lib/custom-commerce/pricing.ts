@@ -83,10 +83,14 @@ export function priceCustomProject(
       lines.push({
         key: `product:${item.id}:${allocation.id}`,
         label: `${product.name} · ${resolved.variant.name} · ${resolved.variantSize.size.name}`,
+        displayLabel: `${product.name} · ${resolved.variant.name} · ${resolved.variantSize.size.name}`,
         quantity: allocation.quantity,
         unitPrice,
         subtotal: productSubtotal,
         kind: "product",
+        componentType: "product_base",
+        sourceRuleId: activeTier?.id ?? `pim-variant-size:${resolved.variantSize.id}`,
+        calculationBasis: "pim_tier",
         allocationId: allocation.id,
         productId: product.id,
         variantId: resolved.variant.id,
@@ -170,6 +174,7 @@ function priceDesignPackage(
   let estimatedMaxTotal = 0;
   let status: CustomPriceStatus = "final";
   const selectedServices: CustomService[] = [];
+  const semanticComponents = new Set<string>();
 
   for (const selection of designPackage.services) {
     const service = catalog.services.find((candidate) => candidate.id === selection.serviceId && candidate.status === "active");
@@ -182,16 +187,32 @@ function priceDesignPackage(
     if (service.requiresUpload && !selection.uploadIds.some((id) => itemUploadIds.includes(id))) issues.push(`File untuk ${service.name} wajib diunggah.`);
     if (quantity < service.minimumQuantity || (service.maximumQuantity !== null && quantity > service.maximumQuantity)) issues.push(`Jumlah ${service.name} tidak memenuhi batas layanan.`);
 
+    const placement = selection.placementId ? catalog.placements.find((candidate) => candidate.id === selection.placementId) : null;
+    const printSize = selection.printSizeId ? catalog.printSizes.find((candidate) => candidate.id === selection.printSizeId) : null;
+    if (selection.placementId && !placement) issues.push(`Placement ${service.name} tidak valid.`);
+    if (selection.printSizeId && !printSize) issues.push(`Ukuran cetak ${service.name} tidak valid.`);
+    const printSizeDeterminesPrice = Boolean(printSize && printSize.priceAdjustment > 0);
+    const semanticKey = `${service.id}:${printSizeDeterminesPrice ? `print-size:${printSize?.id}` : "method"}:${placement?.id ?? "no-placement"}`;
+    if (semanticComponents.has(semanticKey)) {
+      issues.push(`Komponen harga ${service.name}${printSize ? ` ${printSize.name}` : ""}${placement ? ` ${placement.name}` : ""} terpilih lebih dari sekali.`);
+      continue;
+    }
+    semanticComponents.add(semanticKey);
+
     const tieredRule = service.pricingType === "tiered" ? activeServiceTier(service, quantity) : null;
     if (service.pricingType === "tiered" && !tieredRule) {
       issues.push(`Pricing rule ${service.name} tidak tersedia untuk ${quantity} pcs.`);
       lines.push({
         key: `service:${designPackage.id}:${selection.id}`,
         label: `${designPackage.name} · ${service.name}`,
+        displayLabel: `${designPackage.name} · ${service.name}`,
         quantity,
         unitPrice: null,
         subtotal: null,
         kind: "service",
+        componentType: "method_fee",
+        sourceRuleId: `service:${service.id}`,
+        calculationBasis: "quotation",
         serviceId: service.id,
         serviceSlug: service.slug,
         serviceName: service.name
@@ -202,7 +223,7 @@ function priceDesignPackage(
       issues.push(`Rentang estimasi ${service.name} belum dikonfigurasi dengan valid.`);
       continue;
     }
-    if ((service.pricingType === "fixed_per_item" || service.pricingType === "fixed_per_order") && (!Number.isFinite(service.basePrice) || service.basePrice <= 0) && !service.requiresReview) {
+    if (!printSizeDeterminesPrice && (service.pricingType === "fixed_per_item" || service.pricingType === "fixed_per_order") && (!Number.isFinite(service.basePrice) || service.basePrice <= 0) && !service.requiresReview) {
       issues.push(`Harga layanan ${service.name} belum dikonfigurasi dengan valid.`);
       continue;
     }
@@ -212,48 +233,51 @@ function priceDesignPackage(
       issues.push(`Pricing rule ${service.name} tidak memiliki harga atau status quotation.`);
       continue;
     }
-    const placement = selection.placementId ? catalog.placements.find((candidate) => candidate.id === selection.placementId) : null;
-    const printSize = selection.printSizeId ? catalog.printSizes.find((candidate) => candidate.id === selection.printSizeId) : null;
-    if (selection.placementId && !placement) issues.push(`Placement ${service.name} tidak valid.`);
-    if (selection.printSizeId && !printSize) issues.push(`Ukuran cetak ${service.name} tidak valid.`);
     const serviceFinal = (price.unit_price ?? 0) * price.quantity + (price.flat_price ?? 0);
     const estimateMin = (price.estimated_min_price ?? 0) * price.quantity;
     const estimateMax = (price.estimated_max_price ?? price.estimated_min_price ?? 0) * price.quantity;
-    if (price.quote_required && service.pricingType !== "estimated") status = "quotation_required";
-    else if (service.pricingType === "estimated") status = combineStatus(status, "estimated");
-    finalTotal += serviceFinal;
-    estimatedMinTotal += service.pricingType === "estimated" ? estimateMin : serviceFinal;
-    estimatedMaxTotal += service.pricingType === "estimated" ? estimateMax : serviceFinal;
-    lines.push({
-      key: `service:${designPackage.id}:${selection.id}`,
-      label: `${designPackage.name} · ${service.name}`,
-      quantity,
-      unitPrice: price.unit_price,
-      subtotal: service.pricingType === "estimated" ? estimateMin : price.quote_required ? null : serviceFinal,
-      kind: "service",
-      serviceId: service.id,
-      serviceSlug: service.slug,
-      serviceName: service.name,
-      pricingRuleId: tieredRule?.id,
-      placementId: placement?.id,
-      placementName: placement?.name,
-      printSizeId: printSize?.id,
-      printSizeName: printSize?.name
-    });
+    if (!printSizeDeterminesPrice && price.quote_required && service.pricingType !== "estimated") status = "quotation_required";
+    else if (!printSizeDeterminesPrice && service.pricingType === "estimated") status = combineStatus(status, "estimated");
+    if (!printSizeDeterminesPrice) {
+      finalTotal += serviceFinal;
+      estimatedMinTotal += service.pricingType === "estimated" ? estimateMin : serviceFinal;
+      estimatedMaxTotal += service.pricingType === "estimated" ? estimateMax : serviceFinal;
+      lines.push({
+        key: `service:${designPackage.id}:${selection.id}`,
+        label: `${designPackage.name} · ${service.name}`,
+        displayLabel: `${designPackage.name} · ${service.name}`,
+        quantity,
+        unitPrice: price.unit_price,
+        subtotal: service.pricingType === "estimated" ? estimateMin : price.quote_required ? null : serviceFinal,
+        kind: "service",
+        componentType: "method_fee",
+        sourceRuleId: tieredRule?.id ?? `service:${service.id}`,
+        calculationBasis: price.quote_required ? "quotation" : service.pricingType === "fixed_per_order" ? "per_order" : service.pricingType === "estimated" ? "estimated" : "per_item",
+        serviceId: service.id,
+        serviceSlug: service.slug,
+        serviceName: service.name,
+        pricingRuleId: tieredRule?.id,
+        placementId: placement?.id,
+        placementName: placement?.name,
+        printSizeId: printSize?.id,
+        printSizeName: printSize?.name
+      });
+    }
 
     if (placement?.priceAdjustment) {
       const subtotal = placement.priceAdjustment * quantity;
       finalTotal += subtotal;
       estimatedMinTotal += subtotal;
       estimatedMaxTotal += subtotal;
-      lines.push({ key: `placement:${selection.id}`, label: placement.name, quantity, unitPrice: placement.priceAdjustment, subtotal, kind: "placement", serviceId: service.id, placementId: placement.id, placementName: placement.name });
+      lines.push({ key: `placement:${selection.id}`, label: placement.name, displayLabel: placement.name, quantity, unitPrice: placement.priceAdjustment, subtotal, kind: "placement", componentType: "placement", sourceRuleId: `placement:${placement.id}`, calculationBasis: "per_item", serviceId: service.id, placementId: placement.id, placementName: placement.name });
     }
     if (printSize?.priceAdjustment) {
       const subtotal = printSize.priceAdjustment * quantity;
       finalTotal += subtotal;
       estimatedMinTotal += subtotal;
       estimatedMaxTotal += subtotal;
-      lines.push({ key: `print-size:${selection.id}`, label: printSize.name, quantity, unitPrice: printSize.priceAdjustment, subtotal, kind: "print_size", serviceId: service.id, printSizeId: printSize.id, printSizeName: printSize.name });
+      const displayLabel = `${service.name} ${printSize.name}${placement ? ` — ${placement.name}` : ""}`;
+      lines.push({ key: `print-size:${selection.id}`, label: displayLabel, displayLabel, quantity, unitPrice: printSize.priceAdjustment, subtotal, kind: "print_size", componentType: "print_size", sourceRuleId: `print-size:${printSize.id}`, calculationBasis: "per_item", serviceId: service.id, serviceSlug: service.slug, serviceName: service.name, placementId: placement?.id, placementName: placement?.name, printSizeId: printSize.id, printSizeName: printSize.name });
     }
   }
 
@@ -290,10 +314,14 @@ function pricePersonalization(rule: CustomCategoryCatalog["personalizationRules"
     line: {
       key: `personalization:${itemId}:${rule.id}`,
       label: rule.name,
+      displayLabel: rule.name,
       quantity,
       unitPrice,
       subtotal: status === "final" ? final : status === "estimated" ? estimatedMin : null,
-      kind: "personalization" as const
+      kind: "personalization" as const,
+      componentType: "personalization" as const,
+      sourceRuleId: `personalization:${rule.id}`,
+      calculationBasis: status === "quotation_required" ? "quotation" as const : status === "estimated" ? "estimated" as const : rule.pricingType === "fixed_per_order" ? "per_order" as const : "per_item" as const
     }
   };
 }

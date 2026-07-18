@@ -211,7 +211,11 @@ function parseUpload(value: unknown): CustomerUploadRef | null {
     storage_path: text(value.storage_path, 500),
     mime_type: text(value.mime_type, 120),
     file_size: fileSize,
-    status
+    status,
+    design_version: integer(value.design_version, 1, 10000) ?? 1,
+    design_stage: value.design_stage === "revised_upload" || value.design_stage === "approved_design" || value.design_stage === "final_production_file" || value.design_stage === "revision_requested" ? value.design_stage : "customer_upload",
+    replaces_upload_id: value.replaces_upload_id === null || value.replaces_upload_id === undefined ? null : uuid(value.replaces_upload_id),
+    version_note: text(value.version_note, 500) || null
   };
 }
 

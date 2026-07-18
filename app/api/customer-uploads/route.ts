@@ -40,6 +40,9 @@ export async function POST(request: Request) {
   const formData = await request.formData();
   const file = formData.get("file");
   const sessionToken = asCleanToken(formData.get("session_token"));
+  const designStage = formData.get("design_stage") === "revised_upload" ? "revised_upload" : "customer_upload";
+  const replacesUploadId = asUuid(formData.get("replaces_upload_id"));
+  const versionNote = typeof formData.get("version_note") === "string" ? String(formData.get("version_note")).trim().slice(0, 500) : "";
 
   if (!(file instanceof File) || !sessionToken) {
     return NextResponse.json(
@@ -86,41 +89,49 @@ export async function POST(request: Request) {
     );
   }
 
-  const { data, error } = await client
-    .from("customer_uploads")
-    .insert({
-      session_token: sessionToken,
-      bucket_id: BUCKET_ID,
-      storage_path: storagePath,
-      original_filename: file.name,
-      sanitized_filename: sanitizedFilename,
-      mime_type: file.type,
-      extension,
-      size_bytes: file.size,
-      status: "uploaded"
-    })
-    .select("id, storage_path, original_filename, mime_type, size_bytes, status")
-    .single();
+  const { data, error } = await client.rpc("register_customer_design_upload_v1", {
+    p_session_token: sessionToken,
+    p_bucket_id: BUCKET_ID,
+    p_storage_path: storagePath,
+    p_original_filename: file.name,
+    p_sanitized_filename: sanitizedFilename,
+    p_mime_type: file.type,
+    p_extension: extension,
+    p_size_bytes: file.size,
+    p_design_stage: designStage,
+    p_replaces_upload_id: replacesUploadId,
+    p_version_note: versionNote || null
+  });
 
   if (error || !data) {
+    await client.storage.from(BUCKET_ID).remove([storagePath]);
     return NextResponse.json(
       { error: error?.message ?? "Metadata upload gagal disimpan." },
       { status: 500 }
     );
   }
 
+  const row = Array.isArray(data) ? data[0] : data;
+  if (!row) {
+    await client.storage.from(BUCKET_ID).remove([storagePath]);
+    return NextResponse.json({ error: "Metadata upload gagal disimpan." }, { status: 500 });
+  }
   const { data: signedData } = await client.storage
     .from(BUCKET_ID)
     .createSignedUrl(storagePath, 15 * 60);
 
   const upload: CustomerUploadRef = {
-    id: String(data.id),
-    file_name: String(data.original_filename),
-    storage_path: String(data.storage_path),
-    mime_type: String(data.mime_type),
-    file_size: Number(data.size_bytes),
+    id: String(row.id),
+    file_name: String(row.original_filename),
+    storage_path: String(row.storage_path),
+    mime_type: String(row.mime_type),
+    file_size: Number(row.size_bytes),
     signed_url: signedData?.signedUrl,
-    status: data.status === "linked" || data.status === "deleted" ? data.status : "uploaded"
+    status: row.status === "linked" || row.status === "deleted" ? row.status : "uploaded",
+    design_version: Number(row.design_version || 1),
+    design_stage: row.design_stage === "revised_upload" ? "revised_upload" : "customer_upload",
+    replaces_upload_id: row.replaces_upload_id ? String(row.replaces_upload_id) : null,
+    version_note: row.version_note ? String(row.version_note) : null
   };
 
   return NextResponse.json({ upload });
@@ -190,6 +201,10 @@ function asCleanToken(value: unknown): string | null {
 
   const token = value.replace(/[^a-zA-Z0-9_-]/g, "");
   return token.length >= 8 ? token : null;
+}
+
+function asUuid(value: unknown): string | null {
+  return typeof value === "string" && /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(value) ? value : null;
 }
 
 function sanitizeFilename(name: string): string {

@@ -53,7 +53,11 @@ function stripSignedUrls(project: CustomProject): CustomProject {
         storage_path: upload.storage_path,
         mime_type: upload.mime_type,
         file_size: upload.file_size,
-        status: upload.status
+        status: upload.status,
+        design_version: upload.design_version,
+        design_stage: upload.design_stage,
+        replaces_upload_id: upload.replaces_upload_id,
+        version_note: upload.version_note
       }))
     }))
   };

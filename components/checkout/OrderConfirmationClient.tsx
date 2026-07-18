@@ -12,8 +12,10 @@ type OrderPayload = {
     shippingCourier: string | null; shippingService: string | null; shippingEstimate: string | null;
     total: number; whatsappConfirmationExpiresAt: string | null; whatsappConfirmedAt: string | null;
     reservationExpiresAt: string | null; finalTotalApprovedAt: string | null; trackingTokenExpiresAt: string | null; createdAt: string; pricingStatus?: string;
+    customQuoteStatus?: string | null; customQuoteVersion?: number | null; customQuoteLockedAt?: string | null;
   };
   items: Array<{ id: string; product_name: string; variant_name: string; color: string; size: string; sku: string; quantity: number; unit_price: number; subtotal: number; custom_project_id?: string | null; pricing_status?: string }>;
+  customQuote?: { version_number: number; status: string; quoted_total: number; pricing_components: unknown; design_version_snapshot: unknown; valid_until: string; sent_at: string; locked_at: string | null } | null;
 };
 
 const statusLabels: Record<string, string> = {
@@ -37,6 +39,8 @@ export function OrderConfirmationClient({ token }: { token: string }) {
   const [loading, setLoading] = useState(true);
   const [approving, setApproving] = useState(false);
   const [trackingCopied, setTrackingCopied] = useState(false);
+  const [acknowledged, setAcknowledged] = useState(false);
+  const [revisionReason, setRevisionReason] = useState("");
 
   const load = useCallback(async (quiet = false) => {
     if (!quiet) setLoading(true);
@@ -68,6 +72,23 @@ export function OrderConfirmationClient({ token }: { token: string }) {
       if (!response.ok) throw new Error(payload.error || "Total gagal disetujui.");
       await load(true);
     } catch (reason) { setError(reason instanceof Error ? reason.message : "Total gagal disetujui."); }
+    finally { setApproving(false); }
+  }
+
+  async function decideCustomQuote(action: "approve_custom_quote" | "request_custom_revision") {
+    if (approving) return;
+    if (action === "approve_custom_quote" && !acknowledged) { setError("Konfirmasi persetujuan wajib dicentang."); return; }
+    if (action === "request_custom_revision" && revisionReason.trim().length < 5) { setError("Tuliskan alasan revisi minimal 5 karakter."); return; }
+    setApproving(true); setError("");
+    try {
+      const response = await fetch(`/api/public/orders/${encodeURIComponent(token)}`, {
+        method: "POST", headers: { "content-type": "application/json" },
+        body: JSON.stringify({ action, acknowledgement: acknowledged ? "Saya menyetujui versi, desain, rincian, dan total penawaran aktif." : "", reason: revisionReason.trim() })
+      });
+      const payload = await response.json() as { error?: string };
+      if (!response.ok) throw new Error(payload.error || "Keputusan penawaran gagal disimpan.");
+      setRevisionReason(""); await load(true);
+    } catch (reason) { setError(reason instanceof Error ? reason.message : "Keputusan penawaran gagal disimpan."); }
     finally { setApproving(false); }
   }
 
@@ -122,7 +143,18 @@ export function OrderConfirmationClient({ token }: { token: string }) {
           ) : null}
 
           {order.status === "awaiting_customer_approval" ? (
-            <div className="mt-5 border border-blue-200 bg-blue-50 p-5 text-sm"><p className="font-semibold">Ongkir sudah tersedia</p><p className="mt-2">{order.shippingCourier} · {order.shippingService}{order.shippingEstimate ? ` · ${order.shippingEstimate}` : ""}</p><button disabled={approving} onClick={approveTotal} className="mt-4 min-h-11 rounded-full bg-black px-5 font-semibold text-white hover:bg-black/75 disabled:opacity-50">{approving ? "Memvalidasi stok..." : `Setujui Total ${formatRupiah(order.total)}`}</button></div>
+            data.customQuote ? (
+              <div className="mt-5 border border-blue-200 bg-blue-50 p-5 text-sm">
+                <p className="font-semibold">Penawaran Custom v{data.customQuote.version_number}</p>
+                <p className="mt-2 leading-6">Periksa produk, varian, jumlah, desain, layanan, dan total aktif. Berlaku sampai {formatDate(data.customQuote.valid_until)}.</p>
+                <div className="mt-4 flex items-center justify-between border-y border-blue-200 py-3"><span>Total penawaran</span><strong>{formatRupiah(Number(data.customQuote.quoted_total))}</strong></div>
+                <label className="mt-4 flex items-start gap-3 leading-6"><input type="checkbox" checked={acknowledged} onChange={(event) => setAcknowledged(event.target.checked)} className="mt-1 h-4 w-4"/><span>Saya menyetujui versi penawaran, desain, rincian, dan total aktif ini.</span></label>
+                <button type="button" disabled={approving || !acknowledged} onClick={() => void decideCustomQuote("approve_custom_quote")} className="mt-4 min-h-11 rounded-full bg-black px-5 font-semibold text-white hover:bg-black/75 disabled:opacity-50">{approving ? "Menyimpan keputusan..." : "Setujui Penawaran"}</button>
+                <div className="mt-5 border-t border-blue-200 pt-4"><label className="font-semibold">Minta revisi<textarea value={revisionReason} onChange={(event) => setRevisionReason(event.target.value)} rows={3} className="mt-2 w-full border border-blue-200 bg-white p-3 font-normal" placeholder="Jelaskan bagian yang perlu direvisi"/></label><button type="button" disabled={approving || revisionReason.trim().length < 5} onClick={() => void decideCustomQuote("request_custom_revision")} className="mt-3 min-h-11 rounded-full border border-black/30 px-5 font-semibold disabled:opacity-50">Minta Revisi</button></div>
+              </div>
+            ) : (
+              <div className="mt-5 border border-blue-200 bg-blue-50 p-5 text-sm"><p className="font-semibold">Ongkir sudah tersedia</p><p className="mt-2">{order.shippingCourier} · {order.shippingService}{order.shippingEstimate ? ` · ${order.shippingEstimate}` : ""}</p><button type="button" disabled={approving} onClick={approveTotal} className="mt-4 min-h-11 rounded-full bg-black px-5 font-semibold text-white hover:bg-black/75 disabled:opacity-50">{approving ? "Memvalidasi stok..." : `Setujui Total ${formatRupiah(order.total)}`}</button></div>
+            )
           ) : null}
 
           {order.status === "awaiting_shipping_quote" ? <Info>Admin akan memasukkan kurir, layanan, ongkir, dan estimasi pada order ini. Halaman diperbarui otomatis.</Info> : null}

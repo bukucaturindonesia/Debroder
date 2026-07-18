@@ -73,7 +73,28 @@ export function CustomProjectBuilder({ catalogs, initialCategoryId, preselectedP
     setProject((current) => ({ ...updater(current), updatedAt: new Date().toISOString() }));
     setDirty(true);
     setPricing(null);
+    setPricingState("idle");
     setMessage("");
+  }
+
+  function goToStep(target: number) {
+    if (target <= step) {
+      setStep(target);
+      setMessage("");
+      return;
+    }
+    for (let index = 0; index < target; index += 1) {
+      const issue = validateBuilderStep(project, catalogs, index);
+      if (issue) {
+        setStep(index);
+        setPricingState("error");
+        setMessage(issue);
+        return;
+      }
+    }
+    setPricingState("idle");
+    setMessage("");
+    setStep(target);
   }
 
   function choosePreset(preset: CustomPreset) {
@@ -103,6 +124,15 @@ export function CustomProjectBuilder({ catalogs, initialCategoryId, preselectedP
   }
 
   async function reprice() {
+    for (let index = 0; index < steps.length - 1; index += 1) {
+      const issue = validateBuilderStep(project, catalogs, index);
+      if (issue) {
+        setStep(index);
+        setPricingState("error");
+        setMessage(issue);
+        return;
+      }
+    }
     setPricingState("loading");
     setMessage("");
     try {
@@ -126,6 +156,7 @@ export function CustomProjectBuilder({ catalogs, initialCategoryId, preselectedP
     writeCustomDraft(project);
     setDirty(false);
     setMessage("Custom Project masuk ke keranjang.");
+    cart.openCart();
   }
 
   async function discardDraft() {
@@ -161,7 +192,7 @@ export function CustomProjectBuilder({ catalogs, initialCategoryId, preselectedP
         ) : null}
 
         <ol className="mt-8 grid grid-cols-2 gap-2 sm:grid-cols-5" aria-label="Tahapan Custom Project">
-          {steps.map((label, index) => <li key={label}><button type="button" onClick={() => setStep(index)} aria-current={step === index ? "step" : undefined} className={`min-h-11 w-full rounded-full px-3 text-xs font-semibold ${step === index ? "bg-black text-white" : "bg-[#f5f5ef] text-black/60"}`}>{index + 1}. {label}</button></li>)}
+          {steps.map((label, index) => <li key={label}><button type="button" onClick={() => goToStep(index)} aria-current={step === index ? "step" : undefined} className={`min-h-11 w-full rounded-full px-3 text-xs font-semibold ${step === index ? "bg-black text-white" : "bg-[#f5f5ef] text-black/60"}`}>{index + 1}. {label}</button></li>)}
         </ol>
 
         <div className="mt-8">
@@ -169,13 +200,13 @@ export function CustomProjectBuilder({ catalogs, initialCategoryId, preselectedP
           {step === 1 ? <AllocationsStep catalogs={catalogs} project={project} mutate={mutate} /> : null}
           {step === 2 ? <DesignStep catalogs={catalogs} project={project} mutate={mutate} /> : null}
           {step === 3 ? <AssignmentStep catalogs={catalogs} project={project} mutate={mutate} /> : null}
-          {step === 4 ? <ReviewStep project={project} pricing={pricing} totalQuantity={totalQuantity} pricingState={pricingState} onReprice={reprice} onAddToCart={addToCart} /> : null}
+          {step === 4 ? <ReviewStep catalogs={catalogs} project={project} pricing={pricing} totalQuantity={totalQuantity} pricingState={pricingState} onReprice={reprice} onAddToCart={addToCart} /> : null}
         </div>
 
         {message ? <p role="status" className={`mt-6 rounded-2xl p-4 text-sm ${pricingState === "error" ? "bg-red-50 text-red-800" : "bg-[#e9f4ee] text-[#063d24]"}`}>{message}</p> : null}
         <div className="mt-8 flex items-center justify-between gap-4 border-t border-black/10 pt-6">
-          <button type="button" disabled={step === 0} onClick={() => setStep((current) => Math.max(0, current - 1))} className="min-h-11 rounded-full border border-black/15 px-5 text-sm font-semibold disabled:opacity-35">Kembali</button>
-          <button type="button" disabled={step === steps.length - 1} onClick={() => setStep((current) => Math.min(steps.length - 1, current + 1))} className="min-h-11 rounded-full bg-black px-5 text-sm font-semibold text-white disabled:opacity-35">Lanjut</button>
+          <button type="button" disabled={step === 0} onClick={() => goToStep(Math.max(0, step - 1))} className="min-h-11 rounded-full border border-black/15 px-5 text-sm font-semibold disabled:opacity-35">Kembali</button>
+          <button type="button" disabled={step === steps.length - 1} onClick={() => goToStep(Math.min(steps.length - 1, step + 1))} className="min-h-11 rounded-full bg-black px-5 text-sm font-semibold text-white disabled:opacity-35">Lanjut</button>
         </div>
       </div>
     </section>
@@ -345,16 +376,48 @@ function PersonalizationEditor({ item, catalog, mutate }: { item: CustomProjectI
   </div>;
 }
 
-function ReviewStep({ project, pricing, totalQuantity, pricingState, onReprice, onAddToCart }: { project: CustomProject; pricing: CustomProjectPricing | null; totalQuantity: number; pricingState: "idle" | "loading" | "error"; onReprice: () => void; onAddToCart: () => void }) {
+function ReviewStep({ catalogs, project, pricing, totalQuantity, pricingState, onReprice, onAddToCart }: { catalogs: CustomCategoryCatalog[]; project: CustomProject; pricing: CustomProjectPricing | null; totalQuantity: number; pricingState: "idle" | "loading" | "error"; onReprice: () => void; onAddToCart: () => void }) {
   return <div><StepHeading title="Ringkasan" detail="Server memeriksa ulang produk, varian, minimum, layanan, compatibility, upload, personalisasi, dan harga." />
-    <div className="mt-5 grid gap-5 lg:grid-cols-[1fr_360px]"><div className="grid gap-4">{project.items.map((item) => <article key={item.id} className="rounded-[24px] bg-[#f5f5ef] p-5"><div className="flex items-start justify-between gap-4"><div><p className="text-xs font-semibold uppercase tracking-[0.12em] text-black/45">{item.categoryName}</p><h3 className="mt-1 text-lg font-semibold">{item.productName}</h3></div><span className="font-semibold">{item.allocations.reduce((sum, allocation) => sum + allocation.quantity, 0)} pcs</span></div><div className="mt-4 grid gap-2 text-sm text-black/60">{item.allocations.map((allocation) => <p key={allocation.id}>{allocation.variantName} · {allocation.sizeName} · {allocation.quantity} pcs · {item.designPackages.find((designPackage) => designPackage.id === allocation.designPackageId)?.name || "Tanpa layanan"}</p>)}</div></article>)}</div>
+    <div className="mt-5 grid gap-5 lg:grid-cols-[1fr_360px]"><div className="grid gap-4">{project.items.map((item) => { const catalog = catalogs.find((candidate) => candidate.category.id === item.categoryId); return <article key={item.id} className="rounded-[24px] bg-[#f5f5ef] p-5"><div className="flex items-start justify-between gap-4"><div><p className="text-xs font-semibold uppercase tracking-[0.12em] text-black/45">{item.categoryName}</p><h3 className="mt-1 text-lg font-semibold">{item.productName}</h3></div><span className="font-semibold">{item.allocations.reduce((sum, allocation) => sum + allocation.quantity, 0)} pcs</span></div><div className="mt-4 grid gap-2 text-sm text-black/60">{item.allocations.map((allocation) => <p key={allocation.id}>{allocation.variantName} · {allocation.sizeName} · {allocation.quantity} pcs · {item.designPackages.find((designPackage) => designPackage.id === allocation.designPackageId)?.name || "Tanpa layanan"}</p>)}</div>{item.designPackages.map((designPackage) => designPackage.services.length ? <div key={designPackage.id} className="mt-4 border-t border-black/10 pt-3"><p className="text-xs font-semibold uppercase tracking-[0.1em] text-black/45">{designPackage.name}</p>{designPackage.services.map((selection) => { const service = catalog?.services.find((candidate) => candidate.id === selection.serviceId); const placement = catalog?.placements.find((candidate) => candidate.id === selection.placementId); const printSize = catalog?.printSizes.find((candidate) => candidate.id === selection.printSizeId); return <p key={selection.id} className="mt-2 text-sm text-black/65">{service?.name || "Layanan"}{printSize ? ` · ${printSize.name}` : ""}{placement ? ` · ${placement.name}` : ""}{selection.uploadIds.length ? ` · ${selection.uploadIds.length} file` : ""}</p>; })}</div> : null)}{item.personalization.ruleId ? <p className="mt-4 text-sm text-black/65">Personalisasi: {item.personalization.mode === "same_for_all" ? item.personalization.sharedValue : `${item.personalization.entries.length} data individual`}</p> : null}{item.note ? <p className="mt-2 text-sm text-black/65">Catatan: {item.note}</p> : null}</article>; })}</div>
       <aside className="h-fit rounded-[24px] border border-black/10 p-5 lg:sticky lg:top-28"><h3 className="text-xl font-semibold">Total proyek</h3><p className="mt-2 text-sm text-black/55">{project.items.length} Product Group · {totalQuantity} pcs</p>
         {pricing ? <div className="mt-5"><p className="text-xs font-semibold uppercase tracking-[0.12em] text-black/45">{pricing.status === "final" ? "Harga final" : pricing.status === "estimated" ? "Estimasi" : "Perlu penawaran"}</p><p className="mt-2 text-2xl font-bold">{pricing.status === "final" ? formatRupiah(pricing.finalTotal) : pricing.status === "estimated" ? `${formatRupiah(pricing.estimatedMinTotal)} – ${formatRupiah(pricing.estimatedMaxTotal)}` : "Diperiksa admin"}</p><div className="mt-4 max-h-56 overflow-y-auto border-t border-black/10 pt-3 text-xs text-black/60">{pricing.lines.map((line) => <div key={line.key} className="flex justify-between gap-3 py-1"><span>{line.label} × {line.quantity}</span><span>{line.subtotal === null ? "Review" : formatRupiah(line.subtotal)}</span></div>)}</div></div> : <p className="mt-5 rounded-2xl bg-[#f5f5ef] p-4 text-sm leading-6 text-black/60">Validasi harga server wajib dilakukan sebelum proyek masuk keranjang.</p>}
         <button type="button" disabled={pricingState === "loading"} onClick={onReprice} className="mt-5 min-h-12 w-full rounded-full border border-black/15 px-4 text-sm font-semibold disabled:opacity-40">{pricingState === "loading" ? "Memvalidasi..." : pricing ? "Validasi ulang" : "Validasi harga"}</button>
-        <button type="button" disabled={!pricing || Boolean(pricing.issues.length)} onClick={onAddToCart} className="mt-3 min-h-12 w-full rounded-full bg-black px-4 text-sm font-semibold text-white disabled:opacity-35">Tambah Custom Project ke Cart</button>
+        <button type="button" disabled={!pricing || Boolean(pricing.issues.length)} onClick={onAddToCart} className="mt-3 min-h-12 w-full rounded-full bg-black px-4 text-sm font-semibold text-white disabled:opacity-35">Gunakan Konfigurasi Ini & Lanjut ke Keranjang</button>
       </aside>
     </div>
   </div>;
+}
+
+function validateBuilderStep(project: CustomProject, catalogs: CustomCategoryCatalog[], step: number) {
+  if (step === 0 && !project.items.length) return "Tambahkan minimal satu produk PIM sebelum melanjutkan.";
+  if (step === 1 && project.items.some((item) => !item.allocations.length || item.allocations.some((allocation) => allocation.quantity < 1))) return "Lengkapi varian dan jumlah pada setiap Product Group.";
+  if (step === 2) {
+    for (const item of project.items) {
+      const catalog = catalogs.find((candidate) => candidate.category.id === item.categoryId);
+      if (!catalog) return `Katalog ${item.categoryName} tidak lagi tersedia.`;
+      for (const designPackage of item.designPackages) {
+        for (const selection of designPackage.services) {
+          const service = catalog.services.find((candidate) => candidate.id === selection.serviceId);
+          if (!service) return `Layanan pada ${designPackage.name} tidak lagi tersedia.`;
+          const rules = catalog.compatibility.filter((rule) => rule.serviceId === service.id && (!rule.productId || rule.productId === item.productId));
+          if (rules.some((rule) => rule.placementId) && !selection.placementId) return `Pilih placement untuk ${service.name}.`;
+          if (rules.some((rule) => rule.printSizeId) && !selection.printSizeId) return `Pilih ukuran cetak untuk ${service.name}.`;
+          if (service.requiresNotes && !selection.note.trim()) return `Isi catatan untuk ${service.name}.`;
+          if (service.requiresUpload && !selection.uploadIds.length) return `Unggah file desain untuk ${service.name}.`;
+        }
+      }
+    }
+  }
+  if (step === 3) {
+    for (const item of project.items) {
+      const usedPackages = new Set(item.allocations.map((allocation) => allocation.designPackageId).filter(Boolean));
+      if (item.designPackages.some((designPackage) => designPackage.services.length && !usedPackages.has(designPackage.id))) return `Alokasikan semua Paket Desain pada ${item.productName}.`;
+      if (item.personalization.ruleId && item.personalization.mode === "same_for_all" && !item.personalization.sharedValue.trim()) return `Lengkapi personalisasi ${item.productName}.`;
+      const quantity = item.allocations.reduce((sum, allocation) => sum + allocation.quantity, 0);
+      if (item.personalization.ruleId && item.personalization.mode === "per_item" && (item.personalization.entries.length !== quantity || item.personalization.entries.some((entry) => !entry.trim()))) return `Lengkapi ${quantity} data personalisasi untuk ${item.productName}.`;
+    }
+  }
+  return null;
 }
 
 function ModeButton({ active, title, detail, onClick, disabled }: { active: boolean; title: string; detail: string; onClick: () => void; disabled?: boolean }) {

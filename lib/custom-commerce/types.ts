@@ -174,10 +174,14 @@ export type CustomProject = {
 export type CustomPricingLine = {
   key: string;
   label: string;
+  displayLabel: string;
   quantity: number;
   unitPrice: number | null;
   subtotal: number | null;
   kind: "product" | "service" | "placement" | "print_size" | "personalization";
+  componentType: "product_base" | "method_fee" | "print_size" | "placement" | "personalization";
+  sourceRuleId: string;
+  calculationBasis: "pim_tier" | "per_item" | "per_order" | "estimated" | "quotation";
   allocationId?: string;
   designPackageId?: string;
   productId?: string;

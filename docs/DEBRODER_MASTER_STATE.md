@@ -156,3 +156,11 @@ The FROZEN commerce/landing blueprints and official Owner Decisions remain autho
 - SKU, slug, name, product key, master color/size, media, and permanent delete are not actions. Tags and variant archive are **NOT APPLICABLE** because the frozen canonical baseline provides neither a tag source nor variant archive lifecycle.
 - Additive migration `20260717093000_pim_phase_5_bulk_edit_atomic.sql` is local only and has not been applied remotely. Production transaction, RLS/grant, rollback, idempotency, concurrency, and audit behavior remain **REMOTE DATABASE VERIFICATION REQUIRED** and **OWNER DATABASE ACTION REQUIRED**.
 - Jersey, Public UI, CMS, order, checkout, payment, reservation, inventory ledger, production, fulfillment, Phase 1–4 manual flows, SKU, and slug contracts remain frozen and unchanged. Browser status is **STATIC AUDIT ONLY** pending owner Preview verification.
+
+## Custom Order end-to-end revision — 2026-07-18
+
+- Custom Hub keeps its CMS/PIM ownership and protected Jersey routing. The non-Jersey builder now uses canonical pricing components and prevents a method fee from duplicating print-size pricing.
+- Custom shipping has an additive structured Indonesian address contract and immutable order snapshot. The repository intentionally contains no invented region seed; owner-approved region data is required before Preview shipping verification.
+- Custom order review, immutable quotation versions, customer approval evidence, locked totals, automatic-payment gating, design versions, 12-stage Admin focus, final fulfillment verification, and restrained tracking refresh are implemented at source level.
+- Local migration `20260718180000_custom_order_end_to_end_revision.sql` is pending owner application. No remote database, GitHub, Vercel, Jersey, PIM, or frozen Phase 7 action was performed.
+- Status: **IMPLEMENTED, STATIC AUDIT ONLY / LOCAL ENVIRONMENT BLOCKED** because dependency installation failed before source gates could run.
