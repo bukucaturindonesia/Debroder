@@ -39,6 +39,7 @@ type OrderRow = {
   status: string;
   delivery_method: string;
   shipping_address: string;
+  custom_project_snapshot: unknown;
 };
 
 type ProfileRow = {
@@ -58,6 +59,16 @@ type EditForm = {
   notes: string;
   reason: string;
 };
+
+const FINAL_CHECKS = [
+  ["order_number", "Nomor order"], ["customer", "Nama pelanggan"], ["phone", "Nomor telepon"],
+  ["product", "Produk"], ["variant", "Varian"], ["color", "Warna"], ["size", "Ukuran"],
+  ["quantity", "Quantity"], ["method", "Metode Custom"], ["design", "Desain aktif"],
+  ["placement", "Placement"], ["print_size", "Ukuran cetak"], ["personalization", "Personalisasi"],
+  ["qc", "Hasil QC"], ["package_content", "Isi paket"], ["package_count", "Jumlah paket"],
+  ["recipient_address", "Alamat penerima"], ["postal_code", "Kode pos"],
+  ["fulfillment_method", "Metode fulfillment"], ["package_condition", "Kondisi kemasan"]
+] as const;
 
 function toLocalInput(value: string | null) {
   if (!value) return "";
@@ -106,6 +117,8 @@ export function FulfillmentDetailAdmin() {
   const [uploadFile, setUploadFile] = useState<File | null>(null);
   const [uploadType, setUploadType] = useState<FulfillmentFileType>("photo");
   const [deleteConfirmation, setDeleteConfirmation] = useState("");
+  const [finalChecklist, setFinalChecklist] = useState<Record<string, boolean>>({});
+  const [finalNote, setFinalNote] = useState("");
 
   const canManage = isFulfillmentRole(role);
   const canDelete = isFulfillmentSuperAdmin(role);
@@ -123,7 +136,7 @@ export function FulfillmentDetailAdmin() {
     const userId = sessionResult.data.session?.user.id;
     const recordResult = await supabase
       .from("fulfillments")
-      .select("id,fulfillment_number,order_id,job_order_id,method,status,receiver_name,receiver_phone,destination,courier,tracking_number,package_count,scheduled_at,packing_at,ready_at,shipped_at,delivered_at,picked_up_at,problem_at,cancelled_at,cancel_reason,notes,idempotency_key,created_by,updated_by,created_at,updated_at,archived_at,archived_by,archive_reason")
+      .select("id,fulfillment_number,order_id,job_order_id,method,status,receiver_name,receiver_phone,destination,courier,tracking_number,package_count,scheduled_at,packing_at,ready_at,shipped_at,delivered_at,picked_up_at,problem_at,cancelled_at,cancel_reason,notes,idempotency_key,created_by,updated_by,created_at,updated_at,archived_at,archived_by,archive_reason,final_verification_checklist,final_verified_at,final_verified_by,final_verification_note")
       .eq("id", fulfillmentId)
       .maybeSingle();
 
@@ -166,7 +179,7 @@ export function FulfillmentDetailAdmin() {
         : Promise.resolve({ data: [], error: null }),
       supabase
         .from("orders")
-        .select("id,order_number,customer_name,company_name,customer_phone,status,delivery_method,shipping_address")
+        .select("id,order_number,customer_name,company_name,customer_phone,status,delivery_method,shipping_address,custom_project_snapshot")
         .eq("id", row.order_id)
         .maybeSingle(),
       supabase.from("profiles").select("id,email,role")
@@ -187,6 +200,8 @@ export function FulfillmentDetailAdmin() {
     setWorkItems((workResult.data || []) as WorkItemRow[]);
     setOrder((orderResult.data || null) as OrderRow | null);
     setProfiles((profileListResult.data || []) as ProfileRow[]);
+    setFinalChecklist(isBooleanRecord(row.final_verification_checklist) ? row.final_verification_checklist : {});
+    setFinalNote(row.final_verification_note || "");
     setEditForm({
       receiver_name: row.receiver_name || "",
       receiver_phone: row.receiver_phone || "",
@@ -242,6 +257,26 @@ export function FulfillmentDetailAdmin() {
     }
     setEditOpen(false);
     setNotice({ type: "success", text: "Detail penyerahan berhasil diperbarui dan revisi disimpan." });
+    await loadData();
+  }
+
+  async function completeFinalVerification() {
+    if (!record || !canManage || working || record.status !== "packing" || FINAL_CHECKS.some(([key]) => !finalChecklist[key])) return;
+    const supabase = createSupabaseClient();
+    if (!supabase) return;
+    setWorking(true); setNotice(null);
+    const result = await supabase.rpc("complete_custom_fulfillment_final_verification", {
+      p_fulfillment_id: record.id,
+      p_checklist: finalChecklist,
+      p_note: finalNote.trim() || null,
+      p_expected_updated_at: record.updated_at
+    });
+    setWorking(false);
+    if (result.error) {
+      setNotice({ type: "error", text: /admin lain/i.test(result.error.message) ? "Data ini telah diperbarui oleh admin lain. Muat ulang kondisi terbaru." : result.error.message || "Pengecekan akhir gagal disimpan." });
+      return;
+    }
+    setNotice({ type: "success", text: "Pengecekan akhir tersimpan. Pengiriman / pickup sekarang dapat dilanjutkan." });
     await loadData();
   }
 
@@ -420,7 +455,8 @@ export function FulfillmentDetailAdmin() {
     );
   }
 
-  const transitions = getFulfillmentTransitions(record.method, record.status);
+  const isCustomOrder = Array.isArray(order?.custom_project_snapshot) && order.custom_project_snapshot.length > 0;
+  const transitions = getFulfillmentTransitions(record.method, record.status).filter((target) => !(isCustomOrder && record.status === "packing" && !record.final_verified_at && ["ready_to_ship", "ready_for_pickup"].includes(target)));
   const filesCanBeRemoved = !record.archived_at
     ? !["delivered", "picked_up", "cancelled"].includes(record.status)
     : canDelete && ["preparing", "cancelled"].includes(record.status);
@@ -515,6 +551,15 @@ export function FulfillmentDetailAdmin() {
                 </button>
               ))}
             </div>
+          </section>
+        ) : null}
+
+        {isCustomOrder && (record.status === "packing" || record.final_verified_at) ? (
+          <section id="final-verification" className="scroll-mt-24 border border-brand-softGray bg-white p-5 sm:p-7">
+            <div className="flex flex-wrap items-start justify-between gap-4"><div><p className="text-xs font-semibold uppercase tracking-[0.12em] text-brand-charcoal/45">Custom Order</p><h2 className="mt-2 text-xl font-semibold">Pengecekan Akhir</h2><p className="mt-2 max-w-3xl text-sm leading-6 text-brand-charcoal/60">Bandingkan order pelanggan, hasil QC, isi paket, dan data penerima. Pengiriman terkunci sampai semua item dikonfirmasi server.</p></div>{record.final_verified_at ? <span className="rounded-full bg-emerald-50 px-3 py-1 text-xs font-semibold text-brand-green">Selesai {formatFulfillmentDate(record.final_verified_at)}</span> : <span className="rounded-full bg-amber-50 px-3 py-1 text-xs font-semibold text-amber-800">Wajib diselesaikan</span>}</div>
+            <div className="mt-5 grid gap-2 sm:grid-cols-2 lg:grid-cols-3">{FINAL_CHECKS.map(([key, label]) => <label key={key} className="flex min-h-11 items-center gap-3 border border-brand-softGray px-3 text-sm font-semibold"><input type="checkbox" checked={Boolean(finalChecklist[key])} disabled={Boolean(record.final_verified_at) || !canManage} onChange={(event) => setFinalChecklist((current) => ({ ...current, [key]: event.target.checked }))} />{label}</label>)}</div>
+            <label className="mt-5 grid gap-2 text-sm font-semibold">Catatan pengecekan akhir<textarea rows={3} value={finalNote} disabled={Boolean(record.final_verified_at) || !canManage} onChange={(event) => setFinalNote(event.target.value)} className="rounded-lg border border-brand-softGray px-4 py-3" /></label>
+            {!record.final_verified_at ? <button type="button" onClick={() => void completeFinalVerification()} disabled={working || !canManage || FINAL_CHECKS.some(([key]) => !finalChecklist[key])} className="mt-5 min-h-11 rounded-full bg-brand-green px-5 text-sm font-semibold text-white disabled:opacity-45">{working ? "Menyimpan..." : "Konfirmasi Sesuai & Lanjut Kirim"}</button> : <p className="mt-5 text-sm text-brand-charcoal/60">Checklist tersimpan read-only. Perubahan detail paket/penerima pada tahap packing akan membatalkan verifikasi dan mewajibkan pemeriksaan ulang.</p>}
           </section>
         ) : null}
 
@@ -776,4 +821,9 @@ function InputField({
       <input required={required} value={value} onChange={(event) => onChange(event.target.value)} className="mt-2 min-h-11 w-full rounded-lg border border-brand-softGray px-4" />
     </label>
   );
+}
+
+function isBooleanRecord(value: unknown): value is Record<string, boolean> {
+  return typeof value === "object" && value !== null && !Array.isArray(value)
+    && Object.values(value as Record<string, unknown>).every((entry) => typeof entry === "boolean");
 }

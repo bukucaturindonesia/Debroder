@@ -244,3 +244,28 @@ Status: **IMPLEMENTED, PARTIALLY VERIFIED**.
 - Cart page and checkout remain on the shared provider state. Server-side checkout repricing and validation remain authoritative and unchanged.
 - Verification: TypeScript PASS; targeted tier tests 17/17 PASS; full tests 21 files / 136 tests PASS; lint 0 errors / 22 existing warnings; production build PASS. Requested transitions 10→11, 11→12, 12→13, 13→15, 15→11, 23→24, and 24→23 pass in deterministic pricing tests, including JSON/localStorage serialization.
 - Browser-click verification remains pending because this workspace has no Chromium binary. Newly added cart items persist the complete tier snapshot; legacy persisted items that predate this snapshot remain unchanged until re-added, rather than being destructively rewritten from incomplete data.
+
+## 2026-07-18 — Custom Order end-to-end revision
+
+Status: **IMPLEMENTED, STATIC AUDIT ONLY / LOCAL ENVIRONMENT BLOCKED**.
+
+- Scope aktif: Public Custom non-Jersey, Custom checkout/order approval, payment gate, Admin Custom workspace, design version metadata, structured shipping address, final fulfillment verification, and customer tracking refresh.
+- Diperiksa: governance FROZEN, Custom Hub/builder/cart/checkout/order snapshot, quotation baseline, automatic payment, Phase 7 compatibility, Job Order/production/QC/fulfillment, notification routing, and guest tracking.
+- Diubah: canonical pricing semantics/double-charge prevention; builder validation/review; structured address endpoint/UI/snapshot; immutable Custom quote versions and approval proof; locked-total payment gate; 12-stage Admin focus; upload version metadata; final-verification guard; tracking polling/focus recovery.
+- Belum selesai: owner-approved village/kelurahan/postal dataset, local migration runtime, browser viewport/business-flow verification, deployed Preview regression, and all dependency-based local gates.
+- Routes: `/custom`, Custom builder/cart/checkout confirmation, `/api/custom/reprice`, `/api/checkout`, `/api/public/indonesia-regions`, `/api/public/orders/[token]`, `/api/public/order-tracking`, `/api/customer-uploads`, Admin order detail, and fulfillment detail.
+- Migration local: `20260718180000_custom_order_end_to_end_revision.sql`, followed by `20260718181000_indonesia_regions_province_regency_district_seed.sql`.
+- Migration remote/applied: NONE. Migration pending: YES — owner Preview only.
+- TypeScript/lint/targeted tests/full tests/build: NOT RUN — dependency install failed with runner ENOENT for `/root/.local`; no retry performed under Master Override.
+- Deployment: NONE. GitHub/Vercel remain owner-managed.
+- Risks: region hierarchy remains incomplete below district/kecamatan; SQL runtime and browser behavior require owner Preview; static source does not prove remote schema compatibility.
+- Next: owner copies the changed-files-only package, applies both local migrations in order in controlled Preview, loads approved village/kelurahan/postal data, runs gates/build, and executes Custom lifecycle regression including preserved `ORD-DEB-2026-0013` and `PAY-DEB-2026-0011`.
+- GO/NO-GO: **NO-GO FOR PRODUCTION MERGE; SOURCE READY FOR OWNER PREVIEW VERIFICATION**.
+
+## Region seed refinement — 2026-07-18
+
+- Added canonical idempotent migration `20260718181000_indonesia_regions_province_regency_district_seed.sql` from the owner-supplied region archive.
+- Static coverage audit: 38 provinces, 514 regencies/cities, 7,285 districts/kecamatan, 0 duplicate codes, 0 malformed codes, and 0 orphan parent references.
+- Apply order in controlled Preview: `20260718180000_custom_order_end_to_end_revision.sql`, then `20260718181000_indonesia_regions_province_regency_district_seed.sql`.
+- Remote/applied: NONE. Village/kelurahan and postal-code data remain pending; full Custom shipping must not be declared verified yet.
+- Dependency-based gates remain NOT RUN due the previously recorded environment failure; the install command was not retried.

@@ -126,7 +126,10 @@ export async function POST(request: Request) {
         quantity: item.quantity,
         note: item.note ?? ""
       })),
-      ...(pricedProjects.length ? { p_custom_projects: pricedProjects } : {})
+      ...(pricedProjects.length ? {
+        p_custom_projects: pricedProjects,
+        p_shipping_address_snapshot: body.fulfillment.addressSnapshot ?? null
+      } : {})
     };
     const { data, error } = await client.rpc(rpcName, rpcPayload);
 

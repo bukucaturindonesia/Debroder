@@ -1,5 +1,6 @@
 import type { CustomCheckoutProject } from "@/lib/custom-commerce/types";
 import { parseCustomCheckoutProjects } from "@/lib/custom-commerce/validation";
+import { parseStructuredIndonesiaAddress, type StructuredIndonesiaAddressInput } from "@/lib/indonesia-address";
 
 export type CheckoutFulfillmentMethod = "pickup" | "shipping";
 export type CheckoutPaymentMethod = "bank_transfer" | "pay_at_store";
@@ -21,6 +22,7 @@ export type PublicCheckoutRequest = {
   fulfillment: {
     method: CheckoutFulfillmentMethod;
     address?: string;
+    addressSnapshot?: StructuredIndonesiaAddressInput;
     pickupLocationId?: string;
     paymentMethod: CheckoutPaymentMethod;
   };
@@ -52,6 +54,8 @@ export function parsePublicCheckoutRequest(value: unknown): PublicCheckoutReques
   const address = text(value.fulfillment.address);
   const pickupLocationId = text(value.fulfillment.pickupLocationId);
   const paymentMethod = value.fulfillment.paymentMethod;
+  const customProjects = parseCustomCheckoutProjects(value.customProjects ?? []);
+  const addressSnapshot = parseStructuredIndonesiaAddress(value.fulfillment.addressSnapshot);
 
   if (!/^[a-zA-Z0-9_-]{16,100}$/.test(idempotencyKey)) return null;
   if (!/^[a-zA-Z0-9_-]{32,160}$/.test(accessToken)) return null;
@@ -60,11 +64,13 @@ export function parsePublicCheckoutRequest(value: unknown): PublicCheckoutReques
   if (email && !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) return null;
   if (method !== "pickup" && method !== "shipping") return null;
   if (paymentMethod !== "bank_transfer" && paymentMethod !== "pay_at_store") return null;
-  if (method === "shipping" && (address.length < 10 || paymentMethod !== "bank_transfer")) return null;
+  if (!customProjects) return null;
+  if (method === "shipping" && paymentMethod !== "bank_transfer") return null;
+  if (method === "shipping" && customProjects.length > 0 && !addressSnapshot) return null;
+  if (method === "shipping" && customProjects.length === 0 && address.length < 10) return null;
   if (method === "pickup" && !/^[0-9a-fA-F-]{36}$/.test(pickupLocationId)) return null;
   if (value.items.length > MAX_CHECKOUT_ITEMS) return null;
-  const customProjects = parseCustomCheckoutProjects(value.customProjects ?? []);
-  if (!customProjects || (value.items.length < 1 && customProjects.length < 1)) return null;
+  if (value.items.length < 1 && customProjects.length < 1) return null;
 
   const items: PublicCheckoutRequest["items"] = [];
   const variantIds = new Set<string>();
@@ -93,7 +99,8 @@ export function parsePublicCheckoutRequest(value: unknown): PublicCheckoutReques
     customer: { name, phone, email: email || undefined, notes: notes.slice(0, 2000) || undefined },
     fulfillment: {
       method,
-      address: method === "shipping" ? address : undefined,
+      address: method === "shipping" && customProjects.length === 0 ? address : undefined,
+      addressSnapshot: method === "shipping" && customProjects.length > 0 ? addressSnapshot ?? undefined : undefined,
       pickupLocationId: method === "pickup" ? pickupLocationId : undefined,
       paymentMethod
     },

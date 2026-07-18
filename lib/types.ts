@@ -859,6 +859,10 @@ export type CustomerUploadRef = {
   file_size: number;
   signed_url?: string;
   status: "uploaded" | "linked" | "deleted";
+  design_version?: number;
+  design_stage?: "customer_upload" | "revision_requested" | "revised_upload" | "approved_design" | "final_production_file";
+  replaces_upload_id?: string | null;
+  version_note?: string | null;
 };
 
 export type ServiceAllocation = {

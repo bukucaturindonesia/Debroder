@@ -64,9 +64,32 @@ describe("Custom Commerce", () => {
   it("prices every actual variant, service, placement, and print-size combination", () => {
     const pricing = priceCustomProject(project(), [catalog()], "2026-07-17T01:00:00.000Z");
     expect(pricing.status).toBe("final");
-    expect(pricing.finalTotal).toBe(39000);
+    expect(pricing.finalTotal).toBe(29000);
     expect(pricing.totalQuantity).toBe(2);
     expect(pricing.issues).toEqual([]);
+  });
+
+  it("charges DTF print size once and keeps placement as a separate valid surcharge", () => {
+    const value = project();
+    value.items[0].allocations[0].quantity = 3;
+    const data = catalog();
+    data.products[0].basePrice = 45000;
+    data.products[0].variants[0].priceAdjustment = 0;
+    data.products[0].variants[0].sizes[0].priceAdjustment = 0;
+    data.products[0].variants[0].sizes[0].size.priceAdjustment = 0;
+    data.services[0].name = "Sablon DTF";
+    data.services[0].basePrice = 15000;
+    data.placements[0].name = "Belakang";
+    data.placements[0].priceAdjustment = 10000;
+    data.printSizes[0].name = "A4";
+    data.printSizes[0].priceAdjustment = 15000;
+
+    const pricing = priceCustomProject(value, [data]);
+    expect(pricing.status).toBe("final");
+    expect(pricing.finalTotal).toBe(210000);
+    expect(pricing.lines.filter((line) => line.componentType === "method_fee")).toHaveLength(0);
+    expect(pricing.lines.find((line) => line.componentType === "print_size")).toMatchObject({ unitPrice: 15000, quantity: 3, subtotal: 45000, calculationBasis: "per_item" });
+    expect(pricing.lines.find((line) => line.componentType === "placement")).toMatchObject({ unitPrice: 10000, quantity: 3, subtotal: 30000 });
   });
 
   it("rejects duplicate allocation identities and unbalanced personalization input", () => {
