@@ -160,7 +160,7 @@ The FROZEN commerce/landing blueprints and official Owner Decisions remain autho
 ## Custom Order end-to-end revision — 2026-07-18
 
 - Custom Hub keeps its CMS/PIM ownership and protected Jersey routing. The non-Jersey builder now uses canonical pricing components and prevents a method fee from duplicating print-size pricing.
-- Custom shipping has an additive structured Indonesian address contract and immutable order snapshot. The owner-supplied province/regency/district catalog is now represented by a separate canonical seed migration; village/kelurahan and postal data remain required before Preview shipping verification.
+- Custom shipping has an additive structured Indonesian address contract and immutable order snapshot. Owner-supplied canonical seed migrations now cover province, regency/city, district, village/kelurahan/desa adat, and postal-code data; remote runtime and Preview shipping verification remain required.
 - Custom order review, immutable quotation versions, customer approval evidence, locked totals, automatic-payment gating, design versions, 12-stage Admin focus, final fulfillment verification, and restrained tracking refresh are implemented at source level.
 - Local migration `20260718180000_custom_order_end_to_end_revision.sql` is pending owner application. No remote database, GitHub, Vercel, Jersey, PIM, or frozen Phase 7 action was performed.
 - Status: **IMPLEMENTED, STATIC AUDIT ONLY / LOCAL ENVIRONMENT BLOCKED** because dependency installation failed before source gates could run.
@@ -170,5 +170,16 @@ The FROZEN commerce/landing blueprints and official Owner Decisions remain autho
 - Owner-supplied `kode-wilayah-indonesia-2025-dengan-kecamatan.zip` was structurally audited and converted into canonical migration `20260718181000_indonesia_regions_province_regency_district_seed.sql`.
 - Coverage is 38 provinces, 514 regencies/cities (416 kabupaten and 98 kota), and 7,285 districts/kecamatan, with no duplicate code, malformed code, blank name, or orphan parent found by static audit.
 - The migration upserts only into `public.indonesia_regions`, preserves existing RLS/grants, performs no deletion/deactivation, and must run after `20260718180000_custom_order_end_to_end_revision.sql`.
-- Villages/kelurahan and postal codes were not present in the supplied dataset. Custom shipping hierarchy therefore remains incomplete until owner-approved village and postal data is added.
+- Village/kelurahan/desa-adat and postal-code data is supplied separately by `20260718182000_indonesia_regions_village_postal_seed.sql`. It adds 83,762 canonical village-level rows and 10,632 distinct five-digit postal codes without changing the existing security boundary.
 - No remote database, GitHub, Vercel, Jersey, PIM, or frozen Phase 7 action was performed.
+
+### Custom Checkout structured-address hotfix — 2026-07-18
+
+- Active route is `/checkout` through `app/checkout/page.tsx`.
+- Root cause: canonical `components/checkout/CheckoutClient.tsx` remained legacy while structured address lived in duplicate `CheckoutClientV2.tsx` behind a `tsconfig` path override.
+- Structured Custom shipping is consolidated into the canonical component; the duplicate and alias are removed.
+- Pickup keeps contact data and does not require a shipping address. Switching fulfillment does not clear structured address state.
+- Server hierarchy/postal validation and immutable `order_address_snapshots` remain canonical; `20260718182500_custom_checkout_address_snapshot_method.sql` adds the explicit shipping-method marker.
+- Admin fulfillment reads and displays the same immutable snapshot.
+- Status: **IMPLEMENTED / STATIC AUDIT ONLY; BROWSER AND REMOTE DATABASE VERIFICATION REQUIRED**.
+

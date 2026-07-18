@@ -48,6 +48,29 @@ type ProfileRow = {
   role: string | null;
 };
 
+type AddressSnapshotRow = {
+  recipient_name: string;
+  recipient_phone: string;
+  province_id: string;
+  province_name: string;
+  regency_id: string;
+  regency_name: string;
+  district_id: string;
+  district_name: string;
+  village_id: string;
+  village_name: string;
+  postal_code: string;
+  address_detail: string;
+  house_number: string | null;
+  rt: string | null;
+  rw: string | null;
+  landmark: string | null;
+  courier_note: string | null;
+  formatted_address: string;
+  fulfillment_method?: string;
+  created_at: string;
+};
+
 type EditForm = {
   receiver_name: string;
   receiver_phone: string;
@@ -92,6 +115,7 @@ export function FulfillmentDetailAdmin() {
   const [revisions, setRevisions] = useState<FulfillmentRevisionRow[]>([]);
   const [workItems, setWorkItems] = useState<WorkItemRow[]>([]);
   const [order, setOrder] = useState<OrderRow | null>(null);
+  const [addressSnapshot, setAddressSnapshot] = useState<AddressSnapshotRow | null>(null);
   const [profiles, setProfiles] = useState<ProfileRow[]>([]);
   const [role, setRole] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
@@ -147,7 +171,7 @@ export function FulfillmentDetailAdmin() {
     }
 
     const row = recordResult.data as FulfillmentRow;
-    const [profileResult, itemResult, fileResult, historyResult, revisionResult, workResult, orderResult, profileListResult] = await Promise.all([
+    const [profileResult, itemResult, fileResult, historyResult, revisionResult, workResult, orderResult, profileListResult, addressSnapshotResult] = await Promise.all([
       userId
         ? supabase.from("profiles").select("role").eq("id", userId).maybeSingle()
         : Promise.resolve({ data: null, error: null }),
@@ -182,11 +206,20 @@ export function FulfillmentDetailAdmin() {
         .select("id,order_number,customer_name,company_name,customer_phone,status,delivery_method,shipping_address,custom_project_snapshot")
         .eq("id", row.order_id)
         .maybeSingle(),
-      supabase.from("profiles").select("id,email,role")
+      supabase.from("profiles").select("id,email,role"),
+      row.method === "shipping"
+        ? supabase
+            .from("order_address_snapshots")
+            .select("*")
+            .eq("order_id", row.order_id)
+            .order("version", { ascending: false })
+            .limit(1)
+            .maybeSingle()
+        : Promise.resolve({ data: null, error: null })
     ]);
 
     setLoading(false);
-    const firstError = itemResult.error || fileResult.error || historyResult.error || revisionResult.error || workResult.error || orderResult.error;
+    const firstError = itemResult.error || fileResult.error || historyResult.error || revisionResult.error || workResult.error || orderResult.error || addressSnapshotResult.error;
     if (firstError) {
       setNotice({ type: "error", text: `Detail penyerahan belum dapat dimuat lengkap: ${firstError.message}` });
     }
@@ -199,6 +232,7 @@ export function FulfillmentDetailAdmin() {
     setRevisions((revisionResult.data || []) as FulfillmentRevisionRow[]);
     setWorkItems((workResult.data || []) as WorkItemRow[]);
     setOrder((orderResult.data || null) as OrderRow | null);
+    setAddressSnapshot((addressSnapshotResult.data || null) as AddressSnapshotRow | null);
     setProfiles((profileListResult.data || []) as ProfileRow[]);
     setFinalChecklist(isBooleanRecord(row.final_verification_checklist) ? row.final_verification_checklist : {});
     setFinalNote(row.final_verification_note || "");
@@ -529,6 +563,37 @@ export function FulfillmentDetailAdmin() {
           <div className="sm:col-span-2 lg:col-span-3"><Data label="Tujuan / Lokasi Pickup" value={record.destination || (record.method === "pickup" ? "Ambil di toko" : "-")} /></div>
           <div className="sm:col-span-2 lg:col-span-3"><Data label="Catatan" value={record.notes || "-"} /></div>
         </section>
+
+        {isCustomOrder && record.method === "shipping" ? (
+          addressSnapshot ? (
+            <section className="border border-brand-softGray bg-white p-5 sm:p-7">
+              <div className="flex flex-wrap items-start justify-between gap-4">
+                <div>
+                  <p className="text-xs font-semibold uppercase tracking-[0.12em] text-brand-charcoal/45">Snapshot immutable</p>
+                  <h2 className="mt-2 text-xl font-semibold">Alamat Pengiriman Custom</h2>
+                </div>
+                <span className="rounded-full bg-emerald-50 px-3 py-1 text-xs font-semibold text-brand-green">{addressSnapshot.fulfillment_method === "shipping" ? "Kurir Eksternal" : FULFILLMENT_METHOD_LABELS[record.method]}</span>
+              </div>
+              <div className="mt-5 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+                <Data label="Nama Penerima" value={addressSnapshot.recipient_name} />
+                <Data label="Nomor Penerima" value={addressSnapshot.recipient_phone} />
+                <Data label="Kode Pos" value={addressSnapshot.postal_code} />
+                <Data label="Provinsi" value={addressSnapshot.province_name + " · " + addressSnapshot.province_id} />
+                <Data label="Kabupaten / Kota" value={addressSnapshot.regency_name + " · " + addressSnapshot.regency_id} />
+                <Data label="Kecamatan" value={addressSnapshot.district_name + " · " + addressSnapshot.district_id} />
+                <Data label="Kelurahan / Desa" value={addressSnapshot.village_name + " · " + addressSnapshot.village_id} />
+                <Data label="Nomor Rumah / Gedung" value={addressSnapshot.house_number || "-"} />
+                <Data label="RT / RW" value={[addressSnapshot.rt ? "RT " + addressSnapshot.rt : "", addressSnapshot.rw ? "RW " + addressSnapshot.rw : ""].filter(Boolean).join(" / ") || "-"} />
+                <div className="sm:col-span-2 lg:col-span-3"><Data label="Alamat Lengkap" value={addressSnapshot.formatted_address} /></div>
+                <Data label="Patokan" value={addressSnapshot.landmark || "-"} />
+                <Data label="Catatan Kurir" value={addressSnapshot.courier_note || "-"} />
+                <Data label="Disimpan" value={formatFulfillmentDate(addressSnapshot.created_at)} />
+              </div>
+            </section>
+          ) : (
+            <AdminAlert type="warning">Snapshot alamat terstruktur belum tersedia untuk Custom shipping ini. Jangan lanjutkan pengecekan akhir sebelum data alamat tervalidasi.</AdminAlert>
+          )
+        ) : null}
 
         {!record.archived_at && transitions.length > 0 ? (
           <section className="border border-brand-softGray bg-white p-5 sm:p-7">
