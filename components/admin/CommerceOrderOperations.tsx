@@ -56,7 +56,15 @@ export function CommerceOrderOperations({ orderId, onChanged }: { orderId: strin
       if (error) throw new Error(error.message);
       const result = data as { whatsapp_confirmed_at?: string | null; whatsapp_confirmation_attempts?: number } | null;
       if (!result?.whatsapp_confirmed_at) setMessage(`Kode tidak cocok. Percobaan ${result?.whatsapp_confirmation_attempts ?? "-"}/5 tercatat.`);
-      else setMessage("WhatsApp terverifikasi dan status/reservasi diperbarui atomik.");
+      else {
+        const { data: sessionData } = await client.auth.getSession();
+        const response = await fetch(`/api/admin/orders/${orderId}/payment-links`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json", Authorization: `Bearer ${sessionData.session?.access_token ?? ""}` },
+          body: JSON.stringify({ action: "ensure" })
+        });
+        setMessage(response.ok ? "WhatsApp terverifikasi. Tautan pembayaran otomatis sudah aktif pada tracking pelanggan." : "WhatsApp terverifikasi. Pembayaran menunggu harga final terkunci.");
+      }
       await Promise.all([load(), onChanged()]);
     } catch (error) { setMessage(error instanceof Error ? error.message : "Verifikasi gagal."); }
     finally { setBusy(false); }

@@ -26,6 +26,7 @@ type TrackingPayload = {
     fulfillmentStatus: string | null;
     nextStep: string;
     pricingStatus?: string;
+    paymentUrl?: string | null;
   };
   items: Array<{
     id: string;
@@ -184,6 +185,7 @@ function TrackingDetail({ data }: { data: TrackingPayload }) {
             <p className="text-xs font-semibold uppercase tracking-[0.14em] text-black/45">Langkah berikutnya</p>
             <p className="mt-2 text-sm leading-6">{order.nextStep}</p>
           </div>
+          {order.paymentUrl ? <Link href={order.paymentUrl} className="mt-5 inline-flex min-h-12 items-center rounded-full bg-black px-6 text-sm font-semibold text-white hover:bg-black/75">Bayar Pesanan</Link> : null}
         </section>
 
         <section className="rounded-[28px] bg-white p-6 sm:p-8">

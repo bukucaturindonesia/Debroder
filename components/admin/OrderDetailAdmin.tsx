@@ -11,6 +11,7 @@ import { RepeatOrderDialog } from "@/components/admin/RepeatOrderDialog";
 import { CustomerOrderHistory } from "@/components/admin/CustomerOrderHistory";
 import { CommerceOrderOperations } from "@/components/admin/CommerceOrderOperations";
 import { OrderTrackingLinkManager } from "@/components/admin/OrderTrackingLinkManager";
+import { OrderOperationalWorkspace } from "@/components/admin/OrderOperationalWorkspace";
 
 type Order = {
   id: string;
@@ -31,11 +32,13 @@ type Order = {
   total_amount: number;
   payment_required_amount: number | null;
   payment_effective_total: number;
+  payment_production_eligible: boolean;
   payment_balance: number;
   currency: string;
   converted_at: string | null;
   archived_at: string | null;
   checkout_source: string | null;
+  whatsapp_confirmed_at: string | null;
 };
 
 type Item = {
@@ -106,6 +109,9 @@ export function OrderDetailAdmin() {
 
   const [order, setOrder] = useState<Order | null>(null);
   const [items, setItems] = useState<Item[]>([]);
+  const [jobOrder, setJobOrder] = useState<{ id: string; status: string; updated_at: string | null } | null>(null);
+  const [qualityControl, setQualityControl] = useState<{ id: string; status: string; result: string | null; updated_at: string | null } | null>(null);
+  const [fulfillment, setFulfillment] = useState<{ id: string; status: string; updated_at: string | null } | null>(null);
   const [loading, setLoading] = useState(true);
   const [working, setWorking] = useState(false);
   const [message, setMessage] = useState("");
@@ -118,16 +124,38 @@ export function OrderDetailAdmin() {
   const [adminNotes, setAdminNotes] = useState("");
   const [archiveReason, setArchiveReason] = useState("");
   const [cancelReason, setCancelReason] = useState("");
+  const [pendingNavigation, setPendingNavigation] = useState<string | null>(null);
+  const hasUnsavedChanges = Boolean(order && editOpen && (
+    shippingAddress !== (order.shipping_address || "") ||
+    deliveryMethod !== (order.delivery_method || "pickup") ||
+    customerNotes !== (order.customer_notes || "") ||
+    adminNotes !== (order.admin_notes || "")
+  ));
+
+  useEffect(() => {
+    if (!hasUnsavedChanges) return;
+    const beforeUnload = (event: BeforeUnloadEvent) => { event.preventDefault(); event.returnValue = ""; };
+    const interceptLink = (event: MouseEvent) => {
+      const anchor = (event.target as Element | null)?.closest("a[href]") as HTMLAnchorElement | null;
+      if (!anchor || anchor.target === "_blank") return;
+      event.preventDefault();
+      event.stopPropagation();
+      setPendingNavigation(anchor.href);
+    };
+    window.addEventListener("beforeunload", beforeUnload);
+    document.addEventListener("click", interceptLink, true);
+    return () => { window.removeEventListener("beforeunload", beforeUnload); document.removeEventListener("click", interceptLink, true); };
+  }, [hasUnsavedChanges]);
 
   async function loadData() {
     const supabase = createSupabaseClient();
     if (!supabase || !orderId) return;
     setLoading(true);
 
-    const [orderResult, itemResult] = await Promise.all([
+    const [orderResult, itemResult, jobResult, fulfillmentResult] = await Promise.all([
       supabase
         .from("orders")
-        .select("id,order_number,quotation_id,customer_name,company_name,customer_phone,customer_email,shipping_address,delivery_method,customer_notes,admin_notes,status,pricing_status,custom_project_snapshot,subtotal_amount,total_amount,payment_required_amount,payment_effective_total,payment_balance,currency,converted_at,archived_at,checkout_source")
+        .select("id,order_number,quotation_id,customer_name,company_name,customer_phone,customer_email,shipping_address,delivery_method,customer_notes,admin_notes,status,pricing_status,custom_project_snapshot,subtotal_amount,total_amount,payment_required_amount,payment_effective_total,payment_balance,payment_production_eligible,currency,converted_at,archived_at,checkout_source,whatsapp_confirmed_at")
         .eq("id", orderId)
         .maybeSingle(),
       supabase
@@ -135,7 +163,9 @@ export function OrderDetailAdmin() {
         .select("id,product_name,variant_name,color,size,sku,quantity,unit_price,subtotal,notes,config_snapshot,required_services,estimated_total,pricing_status,custom_project_id,custom_project_item_id")
         .eq("order_id", orderId)
         .is("archived_at", null)
-        .order("created_at", { ascending: true })
+        .order("created_at", { ascending: true }),
+      supabase.from("job_orders").select("id,status,updated_at").eq("order_id", orderId).is("archived_at", null).order("created_at", { ascending: false }).limit(1).maybeSingle(),
+      supabase.from("fulfillments").select("id,status,updated_at").eq("order_id", orderId).is("archived_at", null).neq("status", "cancelled").order("created_at", { ascending: false }).limit(1).maybeSingle()
     ]);
 
     setLoading(false);
@@ -148,6 +178,13 @@ export function OrderDetailAdmin() {
     const row = orderResult.data as Order;
     setOrder(row);
     setItems((itemResult.data || []) as Item[]);
+    const nextJob = jobResult.data as { id: string; status: string; updated_at: string | null } | null;
+    setJobOrder(nextJob);
+    setFulfillment(fulfillmentResult.data as { id: string; status: string; updated_at: string | null } | null);
+    if (nextJob?.id) {
+      const qcResult = await supabase.from("qc_records").select("id,status,result,updated_at").eq("job_order_id", nextJob.id).is("archived_at", null).order("created_at", { ascending: false }).limit(1).maybeSingle();
+      setQualityControl(qcResult.data as { id: string; status: string; result: string | null; updated_at: string | null } | null);
+    } else setQualityControl(null);
     setShippingAddress(row.shipping_address || "");
     setDeliveryMethod(row.delivery_method || "pickup");
     setCustomerNotes(row.customer_notes || "");
@@ -159,11 +196,10 @@ export function OrderDetailAdmin() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [orderId]);
 
-  async function saveEdit(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    if (!order || working || order.status !== "baru") return;
+  async function persistEdit() {
+    if (!order || working || order.status !== "baru") return false;
     const supabase = createSupabaseClient();
-    if (!supabase) return;
+    if (!supabase) return false;
 
     setWorking(true);
     const { error } = await supabase.rpc("update_order_delivery_details", {
@@ -178,12 +214,24 @@ export function OrderDetailAdmin() {
 
     if (error) {
       setMessage("Perubahan pesanan gagal disimpan.");
-      return;
+      return false;
     }
 
     setEditOpen(false);
     setMessage("Perubahan pesanan berhasil disimpan.");
     await loadData();
+    return true;
+  }
+
+  async function saveEdit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    await persistEdit();
+  }
+
+  async function saveAndNavigate() {
+    const target = pendingNavigation;
+    if (!target) return;
+    if (await persistEdit()) window.location.assign(target);
   }
 
   async function cancelOrder() {
@@ -331,7 +379,9 @@ export function OrderDetailAdmin() {
           </div>
         ) : null}
 
-        <section className="grid gap-5 border border-brand-softGray bg-white p-5 sm:grid-cols-2 sm:p-7">
+        <OrderOperationalWorkspace order={order} jobOrder={jobOrder} qualityControl={qualityControl} fulfillment={fulfillment} />
+
+        <section id="order-data" className="grid scroll-mt-24 gap-5 border border-brand-softGray bg-white p-5 sm:grid-cols-2 sm:p-7">
           <Data label="Status" value={order.status === "baru" ? "Pesanan Baru" : order.status} />
           <Data label="Status Harga" value={pricingStatusLabel(order.pricing_status)} />
           <Data label="Total Terkunci" value={pricingIsFinal ? money(order.total_amount) : "Menunggu penetapan harga"} />
@@ -377,7 +427,7 @@ export function OrderDetailAdmin() {
         </section>
 
         {customProjects.length ? (
-          <section className="border border-brand-softGray bg-white p-5 sm:p-7">
+          <section id="custom-pricing" className="scroll-mt-24 border border-brand-softGray bg-white p-5 sm:p-7">
             <h2 className="text-2xl font-semibold">Breakdown Custom Canonical</h2>
             <p className="mt-2 text-sm text-brand-charcoal/60">Layanan, placement, ukuran cetak, personalisasi, upload, dan harga dibaca dari snapshot order—bukan dari data PIM/CMS terbaru.</p>
             <div className="mt-6 grid gap-5">
@@ -406,9 +456,9 @@ export function OrderDetailAdmin() {
 
         <OrderTrackingLinkManager orderId={order.id} />
 
-        {order.checkout_source === "public_checkout" ? <CommerceOrderOperations orderId={order.id} onChanged={loadData} /> : null}
+        <div id="commerce" className="scroll-mt-24">{order.checkout_source === "public_checkout" ? <CommerceOrderOperations orderId={order.id} onChanged={loadData} /> : null}</div>
 
-        <CustomerOrderHistory orderId={order.id} />
+        <div id="order-history" className="scroll-mt-24"><CustomerOrderHistory orderId={order.id} /></div>
       </div>
 
       {editOpen ? (
@@ -481,6 +531,8 @@ export function OrderDetailAdmin() {
           </form>
         </div>
       ) : null}
+
+      {pendingNavigation ? <div className="fixed inset-0 z-[120] grid place-items-center bg-black/60 p-4"><section className="w-full max-w-lg bg-white p-6 shadow-2xl"><h2 className="text-2xl font-semibold">Perubahan belum disimpan</h2><p className="mt-3 text-sm leading-6 text-brand-charcoal/65">Simpan perubahan sebelum membuka tujuan lain, buang draft lokal, atau tetap lanjut mengedit.</p><div className="mt-6 grid gap-2 sm:grid-cols-3"><button type="button" disabled={working} onClick={() => void saveAndNavigate()} className="min-h-11 rounded-full bg-brand-green px-4 text-sm font-semibold text-white disabled:opacity-45">Simpan dan Buka</button><button type="button" onClick={() => { const target=pendingNavigation; setEditOpen(false); setPendingNavigation(null); if(target) window.location.assign(target); }} className="min-h-11 rounded-full border border-red-200 px-4 text-sm font-semibold text-red-700">Buang dan Buka</button><button type="button" onClick={() => setPendingNavigation(null)} className="min-h-11 rounded-full border border-brand-softGray px-4 text-sm font-semibold">Tetap di Sini</button></div></section></div> : null}
 
       {cancelOpen ? (
         <div className="fixed inset-0 z-[100] grid place-items-center bg-black/60 p-4">

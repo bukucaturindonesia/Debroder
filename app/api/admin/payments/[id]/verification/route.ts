@@ -27,6 +27,7 @@ export async function POST(request: Request, context: Context) {
         p_admin_notes:
           typeof body.adminNotes === "string" ? body.adminNotes : null
       });
+      if (error?.message.includes("Pending payment not found")) return Response.json({ error: "Pembayaran ini telah ditangani oleh admin lain." }, { status: 409 });
       if (error) throw new Error(error.message);
       return Response.json({ payment: data });
     }
@@ -43,6 +44,7 @@ export async function POST(request: Request, context: Context) {
         p_payment_id: id,
         p_reason: reason
       });
+      if (error?.message.includes("Pending payment not found")) return Response.json({ error: "Pembayaran ini telah ditangani oleh admin lain." }, { status: 409 });
       if (error) throw new Error(error.message);
       return Response.json({ payment: data });
     }

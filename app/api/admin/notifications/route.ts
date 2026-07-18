@@ -31,7 +31,7 @@ export async function GET(request: Request) {
     let query = actor.client
       .from("notifications")
       .select(
-        "id,event_id,recipient_id,channel,title,body,related_path,status,sent_at,read_at,archived_at,archived_by,archive_reason,status_before_archive,error_message,created_at"
+        "id,event_id,recipient_id,channel,title,body,related_path,status,sent_at,read_at,archived_at,archived_by,archive_reason,status_before_archive,error_message,seen_at,acknowledged_at,action_required,resolved_at,priority,action_type,created_at"
       )
       .order("created_at", { ascending: false })
       .limit(limit);
@@ -43,7 +43,7 @@ export async function GET(request: Request) {
     if (statusValue && STATUSES.has(statusValue)) query = query.eq("status", statusValue);
     if (search) query = query.or(`title.ilike.%${search}%,body.ilike.%${search}%`);
 
-    const [rowsResult, activeCountResult, unreadCountResult, archiveCountResult] = await Promise.all([
+    const [rowsResult, activeCountResult, unreadCountResult, actionCountResult, archiveCountResult] = await Promise.all([
       query,
       actor.client
         .from("notifications")
@@ -57,6 +57,12 @@ export async function GET(request: Request) {
       actor.client
         .from("notifications")
         .select("id", { count: "exact", head: true })
+        .is("archived_at", null)
+        .eq("action_required", true)
+        .is("resolved_at", null),
+      actor.client
+        .from("notifications")
+        .select("id", { count: "exact", head: true })
         .not("archived_at", "is", null)
     ]);
 
@@ -64,6 +70,7 @@ export async function GET(request: Request) {
       rowsResult.error ||
       activeCountResult.error ||
       unreadCountResult.error ||
+      actionCountResult.error ||
       archiveCountResult.error;
     if (firstError) throw new Error(firstError.message);
 
@@ -72,6 +79,7 @@ export async function GET(request: Request) {
       counts: {
         active: activeCountResult.count ?? 0,
         unread: unreadCountResult.count ?? 0,
+        actionRequired: actionCountResult.count ?? 0,
         archive: archiveCountResult.count ?? 0
       },
       role: actor.role

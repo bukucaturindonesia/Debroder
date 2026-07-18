@@ -4,6 +4,8 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { notificationApiFetch } from "@/lib/admin-notification-api";
+import { createSupabaseClient } from "@/lib/supabase";
+import { resolveNotificationTarget } from "@/lib/notification-routing";
 import {
   formatNotificationRelativeDate,
   type NotificationRow
@@ -11,7 +13,7 @@ import {
 
 type InboxResponse = {
   notifications: NotificationRow[];
-  counts: { active: number; unread: number; archive: number };
+  counts: { active: number; unread: number; actionRequired: number; archive: number };
 };
 
 export function AdminNotificationBell() {
@@ -22,6 +24,7 @@ export function AdminNotificationBell() {
   const [notifications, setNotifications] = useState<NotificationRow[]>([]);
   const [unread, setUnread] = useState(0);
   const [error, setError] = useState("");
+  const [popup, setPopup] = useState<NotificationRow | null>(null);
 
   const load = useCallback(async (silent = false) => {
     if (!silent) setLoading(true);
@@ -54,6 +57,30 @@ export function AdminNotificationBell() {
   }, [load]);
 
   useEffect(() => {
+    const client = createSupabaseClient();
+    if (!client) return;
+    let active = true;
+    let channel: ReturnType<typeof client.channel> | null = null;
+    void client.auth.getSession().then(({ data }) => {
+      const userId = data.session?.user.id;
+      if (!active || !userId) return;
+      channel = client.channel(`admin-notifications-${userId}`)
+        .on("postgres_changes", { event: "INSERT", schema: "public", table: "notifications", filter: `recipient_id=eq.${userId}` }, (event) => {
+          const row = event.new as NotificationRow;
+          setPopup(row);
+          void load(true);
+        })
+        .on("postgres_changes", { event: "UPDATE", schema: "public", table: "notifications", filter: `recipient_id=eq.${userId}` }, (event) => {
+          const row = event.new as NotificationRow;
+          setPopup((current) => current?.id === row.id && row.resolved_at ? null : current);
+          void load(true);
+        })
+        .subscribe();
+    });
+    return () => { active = false; if (channel) void client.removeChannel(channel); };
+  }, [load]);
+
+  useEffect(() => {
     if (!open) return;
     const closeOnOutside = (event: MouseEvent) => {
       if (!containerRef.current?.contains(event.target as Node)) setOpen(false);
@@ -71,18 +98,27 @@ export function AdminNotificationBell() {
 
   async function openNotification(notification: NotificationRow) {
     setOpen(false);
-    if (!notification.read_at && !notification.archived_at) {
+    if (!notification.archived_at) {
       try {
         await notificationApiFetch(`/api/admin/notifications/${notification.id}`, {
           method: "PATCH",
-          body: JSON.stringify({ action: "read" })
+          body: JSON.stringify({ action: notification.action_required ? "acknowledge" : "read" })
         });
         window.dispatchEvent(new Event("debroder:notifications-changed"));
       } catch {
         // Navigasi tetap dilanjutkan; status baca dapat diperbarui dari halaman detail.
       }
     }
-    router.push(`/admin/notifications/${notification.id}`);
+    setPopup(null);
+    router.push(resolveNotificationTarget(notification));
+  }
+
+  async function postponePopup() {
+    const current = popup;
+    setPopup(null);
+    if (!current) return;
+    try { await notificationApiFetch(`/api/admin/notifications/${current.id}`, { method: "PATCH", body: JSON.stringify({ action: "seen" }) }); }
+    catch { /* Popup dismissal must never interrupt the current admin task. */ }
   }
 
   return (
@@ -161,6 +197,13 @@ export function AdminNotificationBell() {
             )}
           </div>
         </div>
+      ) : null}
+      {popup ? (
+        <aside role="status" aria-live="polite" className="fixed right-4 top-20 z-[90] w-[min(92vw,410px)] border border-brand-softGray bg-white p-5 shadow-2xl">
+          <div className="flex items-start justify-between gap-4"><div><p className="text-xs font-semibold uppercase tracking-[0.14em] text-brand-green">{popup.priority === "critical" ? "Prioritas Kritis" : "Perlu Tindakan"}</p><h2 className="mt-2 font-semibold">{popup.title}</h2></div><button type="button" onClick={() => void postponePopup()} className="grid h-9 w-9 place-items-center rounded-full border border-brand-softGray" aria-label="Tutup popup notifikasi">×</button></div>
+          <p className="mt-3 text-sm leading-6 text-brand-charcoal/65">{popup.body}</p>
+          <div className="mt-5 flex flex-wrap gap-2"><button type="button" onClick={() => void openNotification(popup)} className="min-h-10 rounded-full bg-brand-green px-4 text-sm font-semibold text-white">Periksa Sekarang</button><button type="button" onClick={() => void postponePopup()} className="min-h-10 rounded-full border border-brand-softGray px-4 text-sm font-semibold">Nanti</button></div>
+        </aside>
       ) : null}
     </div>
   );

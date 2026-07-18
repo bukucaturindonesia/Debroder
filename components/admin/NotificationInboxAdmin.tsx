@@ -5,6 +5,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { AdminPageHeader } from "@/components/admin/layout/AdminPageHeader";
 import { AdminAlert, AdminEmptyState, AdminLoadingState } from "@/components/admin/ui/AdminFeedback";
 import { notificationApiFetch } from "@/lib/admin-notification-api";
+import { resolveNotificationTarget } from "@/lib/notification-routing";
 import {
   NOTIFICATION_CHANNEL_LABELS,
   NOTIFICATION_STATUS_LABELS,
@@ -19,7 +20,7 @@ import {
 type Scope = "active" | "archive";
 type InboxResponse = {
   notifications: NotificationRow[];
-  counts: { active: number; unread: number; archive: number };
+  counts: { active: number; unread: number; actionRequired: number; archive: number };
   role: string;
 };
 
@@ -33,7 +34,8 @@ const STATUS_CLASSES = {
 export function NotificationInboxAdmin({ initialScope = "active" }: { initialScope?: Scope }) {
   const [scope, setScope] = useState<Scope>(initialScope);
   const [rows, setRows] = useState<NotificationRow[]>([]);
-  const [counts, setCounts] = useState({ active: 0, unread: 0, archive: 0 });
+  const [counts, setCounts] = useState({ active: 0, unread: 0, actionRequired: 0, archive: 0 });
+  const [category, setCategory] = useState<"all" | "action" | "payment" | "order" | "production" | "system">("all");
   const [role, setRole] = useState("");
   const [search, setSearch] = useState("");
   const [channel, setChannel] = useState<"all" | NotificationChannel>("all");
@@ -80,6 +82,15 @@ export function NotificationInboxAdmin({ initialScope = "active" }: { initialSco
     const values = Object.keys(NOTIFICATION_STATUS_LABELS) as NotificationStatus[];
     return scope === "archive" ? values.filter((value) => value === "archived") : values.filter((value) => value !== "archived");
   }, [scope]);
+  const visibleRows = useMemo(() => rows.filter((row) => {
+    const text = `${row.title} ${row.body} ${row.related_path ?? ""}`.toLowerCase();
+    if (category === "all") return true;
+    if (category === "action") return row.action_required && !row.resolved_at;
+    if (category === "payment") return /payment|pembayaran/.test(text);
+    if (category === "order") return /order|pesanan|quotation|penawaran/.test(text);
+    if (category === "production") return /job-order|production|produksi|quality|qc|fulfillment|pengiriman|pickup/.test(text);
+    return !/payment|pembayaran|order|pesanan|quotation|produksi|quality|qc|fulfillment/.test(text);
+  }), [category, rows]);
 
   async function runAction(row: NotificationRow, action: "read" | "archive" | "restore") {
     setWorkingId(row.id);
@@ -170,6 +181,10 @@ export function NotificationInboxAdmin({ initialScope = "active" }: { initialSco
         <SummaryCard label="Gudang Arsip" value={counts.archive} active={scope === "archive"} onClick={() => { setScope("archive"); setUnreadOnly(false); setStatus("all"); }} />
       </section>
 
+      <div className="flex flex-wrap gap-2" role="tablist" aria-label="Kategori notifikasi">
+        {([['all','Semua'],['action',`Perlu Tindakan · ${counts.actionRequired}`],['payment','Pembayaran'],['order','Pesanan'],['production','Produksi'],['system','Sistem']] as const).map(([value,label]) => <button key={value} type="button" role="tab" aria-selected={category===value} onClick={()=>setCategory(value)} className={`min-h-10 rounded-full px-4 text-xs font-semibold ${category===value?'bg-brand-charcoal text-white':'border border-brand-softGray bg-white'}`}>{label}</button>)}
+      </div>
+
       <section className="border border-brand-softGray bg-white p-4 sm:p-5">
         <div className="grid gap-3 lg:grid-cols-[minmax(220px,1fr)_180px_180px_auto]">
           <input
@@ -206,12 +221,12 @@ export function NotificationInboxAdmin({ initialScope = "active" }: { initialSco
 
       {loading ? (
         <AdminLoadingState label="Memuat kotak masuk notifikasi..." />
-      ) : rows.length === 0 ? (
+      ) : visibleRows.length === 0 ? (
         <AdminEmptyState title={scope === "archive" ? "Gudang Arsip kosong" : "Tidak ada notifikasi"} description="Filter saat ini tidak menemukan data yang sesuai." />
       ) : (
         <section className="overflow-hidden border border-brand-softGray bg-white">
           <div className="divide-y divide-brand-softGray">
-            {rows.map((row) => {
+            {visibleRows.map((row) => {
               const tone = getNotificationStatusTone(row.status);
               const working = workingId === row.id;
               return (
@@ -227,6 +242,7 @@ export function NotificationInboxAdmin({ initialScope = "active" }: { initialSco
                         <span className="inline-flex rounded-full border border-brand-softGray bg-brand-offWhite px-2.5 py-1 text-[11px] font-semibold text-brand-charcoal/65">
                           {NOTIFICATION_CHANNEL_LABELS[row.channel]}
                         </span>
+                        {row.action_required && !row.resolved_at ? <span className="inline-flex rounded-full border border-amber-300 bg-amber-50 px-2.5 py-1 text-[11px] font-semibold text-amber-900">Perlu Tindakan</span> : row.resolved_at ? <span className="inline-flex rounded-full border border-emerald-200 bg-emerald-50 px-2.5 py-1 text-[11px] font-semibold text-emerald-800">Selesai</span> : null}
                       </div>
                       <p className="mt-2 max-w-3xl text-sm leading-6 text-brand-charcoal/70">{row.body}</p>
                       <div className="mt-3 flex flex-wrap gap-x-4 gap-y-1 text-xs text-brand-charcoal/50">
@@ -239,6 +255,7 @@ export function NotificationInboxAdmin({ initialScope = "active" }: { initialSco
                       <Link href={`/admin/notifications/${row.id}`} className="inline-flex min-h-10 items-center rounded-full border border-brand-softGray px-4 text-xs font-semibold hover:border-brand-charcoal">
                         Detail
                       </Link>
+                      {row.action_required && !row.resolved_at ? <Link href={resolveNotificationTarget(row)} className="inline-flex min-h-10 items-center rounded-full bg-brand-green px-4 text-xs font-semibold text-white">Periksa Sekarang</Link> : null}
                       {!row.read_at && !row.archived_at ? (
                         <button type="button" disabled={working} onClick={() => void runAction(row, "read")} className="min-h-10 rounded-full border border-brand-softGray px-4 text-xs font-semibold disabled:opacity-45">
                           Tandai Dibaca

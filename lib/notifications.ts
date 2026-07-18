@@ -46,6 +46,12 @@ export type NotificationRow = {
   archive_reason: string | null;
   status_before_archive: Exclude<NotificationStatus, "archived"> | null;
   error_message: string | null;
+  seen_at: string | null;
+  acknowledged_at: string | null;
+  action_required: boolean;
+  resolved_at: string | null;
+  priority: "low" | "normal" | "high" | "critical";
+  action_type: string | null;
   created_at: string;
 };
 

@@ -173,6 +173,10 @@ export function PaymentTrackingManager() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [orderId]);
 
+  useEffect(() => {
+    if (window.location.hash === "#payment") setOpen(true);
+  }, []);
+
   const activeRows = rows.filter((row) => !row.archived_at);
   const archivedRows = rows.filter((row) => Boolean(row.archived_at));
   const canVerify = VERIFY_ROLES.includes(role);
@@ -494,7 +498,7 @@ export function PaymentTrackingManager() {
   }
 
   return (
-    <>
+    <div id="payment" className="contents scroll-mt-24">
       <button
         type="button"
         onClick={() => {
@@ -910,7 +914,7 @@ export function PaymentTrackingManager() {
           </div>
         </Modal>
       ) : null}
-    </>
+    </div>
   );
 }
 
@@ -1009,7 +1013,7 @@ function PaymentCard({
                 disabled={working}
                 className="rounded-full border border-red-200 px-4 py-2 text-sm font-semibold text-red-700 disabled:opacity-45"
               >
-                Tolak
+                Tolak / Minta Bukti Ulang
               </button>
             </>
           ) : null}

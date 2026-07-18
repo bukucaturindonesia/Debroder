@@ -1,6 +1,5 @@
-import { getSiteUrl } from "@/lib/env";
+import { ensureAutomaticPaymentLink, type AutomaticPaymentOrder } from "@/lib/automatic-payment-link";
 import { paymentErrorResponse, requirePaymentActor } from "@/lib/payment-auth";
-import { createPaymentToken } from "@/lib/payments";
 import { getAdminSupabaseClient } from "@/lib/supabase/client";
 
 type Context = { params: Promise<{ id: string }> };
@@ -23,21 +22,19 @@ export async function POST(request: Request, context: Context) {
   try {
     const actor = await requirePaymentActor(request);
     const { id } = await context.params;
-    const body = (await request.json()) as { expiresInHours?: unknown; maxUses?: unknown };
-    const expiresInHours = Math.min(720, Math.max(1, Number(body.expiresInHours ?? 72)));
-    const maxUses = Math.min(20, Math.max(1, Math.round(Number(body.maxUses ?? 1))));
+    const body = await request.json().catch(() => ({})) as { action?: unknown; reason?: unknown };
+    const action = typeof body.action === "string" ? body.action : "ensure";
+    const reason = typeof body.reason === "string" ? body.reason.trim() : "";
+    if (!new Set(["ensure", "reissue"]).has(action)) return Response.json({ error: "Aksi tautan tidak valid." }, { status: 400 });
     const client = getAdminSupabaseClient();
     if (!client) throw new Error("Supabase admin belum dikonfigurasi.");
-    const { data: order } = await client.from("orders").select("id").eq("id", id).is("archived_at", null).maybeSingle();
+    const { data: order } = await client.from("orders").select("id,order_number,status,payment_status,pricing_status,total_amount,whatsapp_confirmed_at,archived_at").eq("id", id).is("archived_at", null).maybeSingle();
     if (!order) return Response.json({ error: "Pesanan aktif tidak ditemukan." }, { status: 404 });
-    const value = createPaymentToken();
-    const { data, error } = await client.from("payment_submission_links").insert({
-      order_id: id, token_hash: value.hash,
-      expires_at: new Date(Date.now() + expiresInHours * 3600000).toISOString(),
-      max_uses: maxUses, created_by: actor.user.id
-    }).select("id,expires_at,max_uses").single();
-    if (error) throw new Error(error.message);
-    return Response.json({ link: data, publicUrl: `${getSiteUrl()}/payment/${value.token}` }, { status: 201 });
+    const result = await ensureAutomaticPaymentLink(client, order as AutomaticPaymentOrder, {
+      rotate: action === "reissue", actorId: actor.user.id, reason
+    });
+    if (result.blocker) return Response.json({ error: result.blocker }, { status: 409 });
+    return Response.json({ link: result.link, publicUrl: result.publicUrl }, { status: action === "reissue" ? 201 : 200 });
   } catch (error) { return paymentErrorResponse(error); }
 }
 

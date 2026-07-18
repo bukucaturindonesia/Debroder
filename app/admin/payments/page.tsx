@@ -1,5 +1,5 @@
-import { PaymentTrackingManager } from "@/components/admin/PaymentTrackingManager";
+import { PaymentInboxAdmin } from "@/components/admin/PaymentInboxAdmin";
 
 export default function AdminPaymentsPage() {
-  return <PaymentTrackingManager />;
+  return <PaymentInboxAdmin />;
 }

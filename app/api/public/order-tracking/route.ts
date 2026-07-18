@@ -10,6 +10,7 @@ import {
   TRACKING_RATE_LIMIT_MINUTES,
   trackingNextStep
 } from "@/lib/order-tracking";
+import { ensureAutomaticPaymentLink, type AutomaticPaymentOrder } from "@/lib/automatic-payment-link";
 import { getAdminSupabaseClient } from "@/lib/supabase/client";
 
 export const dynamic = "force-dynamic";
@@ -32,6 +33,7 @@ type TrackingOrderRow = {
   payment_balance: number;
   public_access_token_hash: string | null;
   public_access_token_expires_at: string | null;
+  whatsapp_confirmed_at: string | null;
   created_at: string;
   pricing_status?: string;
 };
@@ -72,7 +74,8 @@ export async function POST(request: Request) {
       "id", "order_number", "customer_phone", "status", "payment_status", "delivery_method",
       "shipping_address", "subtotal_amount", "shipping_cost", "shipping_courier", "shipping_service",
       "shipping_estimate", "total_amount", "payment_effective_total", "payment_balance",
-      "public_access_token_hash", "public_access_token_expires_at", "pricing_status", "created_at"
+      "public_access_token_hash", "public_access_token_expires_at", "pricing_status", "created_at",
+      "whatsapp_confirmed_at"
     ].join(","))
     .eq("order_number", orderNumber)
     .is("archived_at", null)
@@ -88,6 +91,8 @@ export async function POST(request: Request) {
     return safeResponse({ error: expired ? "Tautan tracking telah kedaluwarsa. Gunakan nomor WhatsApp atau minta tautan baru." : "Data tracking tidak cocok atau pesanan tidak tersedia." }, expired ? 410 : 404);
   }
   if (!order) return safeResponse({ error: "Data tracking tidak cocok atau pesanan tidak tersedia." }, 404);
+
+  const paymentLink = await ensureAutomaticPaymentLink(client, order as AutomaticPaymentOrder).catch(() => null);
 
   const [itemsResult, quoteResult, fulfillmentResult] = await Promise.all([
     client.from("order_items")
@@ -135,7 +140,8 @@ export async function POST(request: Request) {
         fulfillmentMethod: order.delivery_method,
         trackingNumber
       }),
-      pricingStatus: order.pricing_status ?? "final"
+      pricingStatus: order.pricing_status ?? "final",
+      paymentUrl: paymentLink?.publicUrl ?? null
     },
     items: itemsResult.data ?? [],
     shippingQuote: quoteResult.data ? {
