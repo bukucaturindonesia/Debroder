@@ -8,11 +8,12 @@ export const EMPTY_STRUCTURED_ADDRESS: StructuredIndonesiaAddressInput = {
   postalCode: "", addressDetail: "", houseNumber: "", rt: "", rw: "", landmark: "", courierNote: ""
 };
 
-export function StructuredIndonesiaAddress({ value, confirmed, onChange, onConfirmedChange }: {
+export function StructuredIndonesiaAddress({ value, confirmed, onChange, onConfirmedChange, onFormattedAddressChange }: {
   value: StructuredIndonesiaAddressInput;
   confirmed: boolean;
   onChange: (value: StructuredIndonesiaAddressInput) => void;
   onConfirmedChange: (value: boolean) => void;
+  onFormattedAddressChange?: (value: string) => void;
 }) {
   const [provinces, setProvinces] = useState<IndonesiaRegionOption[]>([]);
   const [regencies, setRegencies] = useState<IndonesiaRegionOption[]>([]);
@@ -42,6 +43,8 @@ export function StructuredIndonesiaAddress({ value, confirmed, onChange, onConfi
     value.landmark ? "Patokan: " + value.landmark : ""
   ].filter(Boolean).join(", "), [districts, provinces, regencies, value, villages]);
 
+  useEffect(() => { onFormattedAddressChange?.(summary); }, [onFormattedAddressChange, summary]);
+
   const setField = (field: keyof StructuredIndonesiaAddressInput, next: string) => {
     onConfirmedChange(false);
     onChange({ ...value, [field]: next });
@@ -64,7 +67,7 @@ export function StructuredIndonesiaAddress({ value, confirmed, onChange, onConfi
       <Field label="Patokan"><input value={value.landmark} onChange={(event) => setField("landmark", event.target.value)} maxLength={300} /></Field>
       <Field label="Catatan kurir"><input value={value.courierNote} onChange={(event) => setField("courierNote", event.target.value)} maxLength={500} /></Field>
     </div>
-    {error ? <p role="alert" className="border border-amber-300 bg-amber-50 p-3 text-sm text-amber-900">{error} Pengiriman Custom belum dapat dipilih sampai data wilayah resmi tersedia.</p> : null}
+    {error ? <p role="alert" className="border border-amber-300 bg-amber-50 p-3 text-sm text-amber-900">{error} Pengiriman belum dapat dipilih sampai data wilayah resmi tersedia.</p> : null}
     <div className="rounded-2xl bg-[#f6f5f0] p-4 text-sm"><p className="font-semibold">Konfirmasi alamat</p><p className="mt-2 leading-6 text-black/60">{summary || "Lengkapi wilayah dan rincian alamat."}</p>{confirmed ? <button type="button" onClick={() => onConfirmedChange(false)} className="mt-3 min-h-11 rounded-full border border-black/20 bg-white px-4 font-semibold">Ubah Alamat</button> : <label className="mt-3 flex min-h-11 items-center gap-3 font-semibold"><input type="checkbox" checked={confirmed} disabled={!complete} onChange={(event) => onConfirmedChange(event.target.checked)} /> Gunakan Alamat Ini</label>}</div>
   </div>;
 }
