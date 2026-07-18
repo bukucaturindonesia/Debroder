@@ -2,6 +2,7 @@
 
 import { FormEvent, useCallback, useEffect, useMemo, useState } from "react";
 import { createSupabaseClient } from "@/lib/supabase";
+import { formatAdminOrderDateTime } from "@/lib/admin-order-detail";
 
 type Summary = {
   payment_requirement_type: string; payment_required_percentage: number;
@@ -15,7 +16,7 @@ type Activity = { id:string;action:string;note:string|null;actor_id:string|null;
 
 const VERIFY = ["owner","superadmin","super_admin","admin"];
 function money(v:number|null|undefined){return new Intl.NumberFormat("id-ID",{style:"currency",currency:"IDR",maximumFractionDigits:0}).format(Number(v||0));}
-function dt(v:string){return new Intl.DateTimeFormat("id-ID",{dateStyle:"medium",timeStyle:"short"}).format(new Date(v));}
+function dt(v:string){return formatAdminOrderDateTime(v,{fallback:"-"});}
 
 export function PaymentCompletionPanel({ orderId, summary, payments, role, onChanged }:{orderId:string;summary:Summary;payments:Payment[];role:string;onChanged:()=>Promise<void>}) {
   const [links,setLinks]=useState<LinkRow[]>([]); const [adjustments,setAdjustments]=useState<Adjustment[]>([]); const [activity,setActivity]=useState<Activity[]>([]);

@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { repeatOrderApiFetch } from "@/lib/admin-repeat-order-api";
+import { formatAdminOrderDate, formatAdminOrderDateTime } from "@/lib/admin-order-detail";
 import type { RepeatOrderHistoryRow, RepeatOrderSource } from "@/lib/repeat-orders";
 
 function money(value: number, currency: string) {
@@ -70,7 +71,7 @@ export function CustomerOrderHistory({ orderId }: { orderId: string }) {
               <div>
                 <p className="font-semibold">{order.order_number}</p>
                 <p className="mt-1 text-xs text-brand-charcoal/55">
-                  {order.status} · {new Intl.DateTimeFormat("id-ID", { dateStyle: "medium" }).format(new Date(order.created_at))}
+                  {order.status} · {formatAdminOrderDate(order.created_at)}
                 </p>
                 <p className="mt-1 text-sm font-semibold">{money(order.total_amount, order.currency)}</p>
               </div>
@@ -97,7 +98,7 @@ export function CustomerOrderHistory({ orderId }: { orderId: string }) {
               <div key={entry.id} className="border border-brand-softGray bg-brand-offWhite p-4 text-sm">
                 <p>{entry.repeat_reason || "Tanpa alasan tambahan"}</p>
                 <p className="mt-2 text-xs text-brand-charcoal/55">
-                  {new Intl.DateTimeFormat("id-ID", { dateStyle: "medium", timeStyle: "short" }).format(new Date(entry.created_at))}
+                  {formatAdminOrderDateTime(entry.created_at)}
                 </p>
                 <Link
                   href={`/admin/orders/quotations/${entry.new_quotation_id}`}

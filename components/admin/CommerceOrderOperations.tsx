@@ -3,6 +3,7 @@
 import { type FormEvent, useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import { createSupabaseClient } from "@/lib/supabase";
+import { formatAdminOrderDateTime } from "@/lib/admin-order-detail";
 
 type CommerceOrder = {
   id: string; status: string; delivery_method: string; payment_method: string | null;
@@ -13,7 +14,7 @@ type CommerceOrder = {
 };
 
 function money(value: number | null) { return new Intl.NumberFormat("id-ID", { style: "currency", currency: "IDR", maximumFractionDigits: 0 }).format(Number(value || 0)); }
-function dateTime(value: string | null) { return value ? new Intl.DateTimeFormat("id-ID", { dateStyle: "medium", timeStyle: "short", timeZone: "Asia/Makassar" }).format(new Date(value)) : "-"; }
+function dateTime(value: string | null) { return formatAdminOrderDateTime(value, { fallback: "-", timeZone: "Asia/Makassar" }); }
 
 export function CommerceOrderOperations({ orderId, onChanged }: { orderId: string; onChanged: () => Promise<void> }) {
   const [order, setOrder] = useState<CommerceOrder | null>(null);

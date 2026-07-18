@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { formatAdminOrderDateTime } from "@/lib/admin-order-detail";
 
 type DomainRef = { id: string; status: string; updated_at: string | null } | null;
 
@@ -79,4 +80,4 @@ function resolveOperationalState(order: Props["order"], job: DomainRef, qc: Prop
 
 function result(index: number, stage: string, blocker: string, nextLabel: string, nextHref: string, correctionHref: string | null) { return { index, stage, blocker, nextLabel, nextHref, correctionHref }; }
 function StatusLine({ label, value, tone }: { label: string; value: string; tone: "ok" | "warning" | "normal" }) { return <div className={`border p-3 ${tone === "warning" ? "border-amber-300 bg-amber-50" : tone === "ok" ? "border-emerald-200 bg-emerald-50" : "border-brand-softGray"}`}><span className="text-xs text-brand-charcoal/50">{label}</span><p className="mt-1 font-semibold">{value}</p></div>; }
-function DomainCard({ label, value, updatedAt }: { label: string; value: string; updatedAt: string | null | undefined }) { return <div className="border border-brand-softGray p-4"><p className="text-xs font-semibold uppercase tracking-[0.1em] text-brand-charcoal/45">{label}</p><p className="mt-2 font-semibold">{value}</p>{updatedAt ? <p className="mt-1 text-xs text-brand-charcoal/50">Diperbarui {new Intl.DateTimeFormat("id-ID", { dateStyle: "medium", timeStyle: "short", timeZone: "Asia/Makassar" }).format(new Date(updatedAt))}</p> : null}</div>; }
+function DomainCard({ label, value, updatedAt }: { label: string; value: string; updatedAt: string | null | undefined }) { return <div className="border border-brand-softGray p-4"><p className="text-xs font-semibold uppercase tracking-[0.1em] text-brand-charcoal/45">{label}</p><p className="mt-2 font-semibold">{value}</p>{updatedAt ? <p className="mt-1 text-xs text-brand-charcoal/50">Diperbarui {formatAdminOrderDateTime(updatedAt, { timeZone: "Asia/Makassar" })}</p> : null}</div>; }

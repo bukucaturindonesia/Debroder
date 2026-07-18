@@ -3,6 +3,7 @@
 import { FormEvent, useEffect, useMemo, useState } from "react";
 import { useParams } from "next/navigation";
 import { createSupabaseClient } from "@/lib/supabase";
+import { formatAdminOrderDateTime, formatAdminOrderDateTimeInput } from "@/lib/admin-order-detail";
 import { PaymentCompletionPanel } from "@/components/admin/PaymentCompletionPanel";
 
 type PaymentRow = {
@@ -72,11 +73,7 @@ function money(value: number | null | undefined) {
 }
 
 function dateTime(value: string | null | undefined) {
-  if (!value) return "-";
-  return new Intl.DateTimeFormat("id-ID", {
-    dateStyle: "medium",
-    timeStyle: "short"
-  }).format(new Date(value));
+  return formatAdminOrderDateTime(value, { fallback: "-" });
 }
 
 function sanitizeFileName(value: string) {
@@ -219,7 +216,7 @@ export function PaymentTrackingManager() {
   function openEdit(row: PaymentRow) {
     setEditing(row);
     setAmount(String(row.amount));
-    setPaidAt(new Date(row.paid_at).toISOString().slice(0, 16));
+    setPaidAt(formatAdminOrderDateTimeInput(row.paid_at));
     setMethod(row.method);
     setChannelName(row.channel_name || "");
     setReferenceNumber(row.reference_number || "");
