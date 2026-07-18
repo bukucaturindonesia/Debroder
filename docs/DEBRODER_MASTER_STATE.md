@@ -160,7 +160,15 @@ The FROZEN commerce/landing blueprints and official Owner Decisions remain autho
 ## Custom Order end-to-end revision — 2026-07-18
 
 - Custom Hub keeps its CMS/PIM ownership and protected Jersey routing. The non-Jersey builder now uses canonical pricing components and prevents a method fee from duplicating print-size pricing.
-- Custom shipping has an additive structured Indonesian address contract and immutable order snapshot. The repository intentionally contains no invented region seed; owner-approved region data is required before Preview shipping verification.
+- Custom shipping has an additive structured Indonesian address contract and immutable order snapshot. The owner-supplied province/regency/district catalog is now represented by a separate canonical seed migration; village/kelurahan and postal data remain required before Preview shipping verification.
 - Custom order review, immutable quotation versions, customer approval evidence, locked totals, automatic-payment gating, design versions, 12-stage Admin focus, final fulfillment verification, and restrained tracking refresh are implemented at source level.
 - Local migration `20260718180000_custom_order_end_to_end_revision.sql` is pending owner application. No remote database, GitHub, Vercel, Jersey, PIM, or frozen Phase 7 action was performed.
 - Status: **IMPLEMENTED, STATIC AUDIT ONLY / LOCAL ENVIRONMENT BLOCKED** because dependency installation failed before source gates could run.
+
+### Region seed refinement — 2026-07-18
+
+- Owner-supplied `kode-wilayah-indonesia-2025-dengan-kecamatan.zip` was structurally audited and converted into canonical migration `20260718181000_indonesia_regions_province_regency_district_seed.sql`.
+- Coverage is 38 provinces, 514 regencies/cities (416 kabupaten and 98 kota), and 7,285 districts/kecamatan, with no duplicate code, malformed code, blank name, or orphan parent found by static audit.
+- The migration upserts only into `public.indonesia_regions`, preserves existing RLS/grants, performs no deletion/deactivation, and must run after `20260718180000_custom_order_end_to_end_revision.sql`.
+- Villages/kelurahan and postal codes were not present in the supplied dataset. Custom shipping hierarchy therefore remains incomplete until owner-approved village and postal data is added.
+- No remote database, GitHub, Vercel, Jersey, PIM, or frozen Phase 7 action was performed.

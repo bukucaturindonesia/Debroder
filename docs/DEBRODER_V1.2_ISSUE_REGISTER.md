@@ -108,10 +108,16 @@
 
 - Severity: Gate
 - Status: OPEN / SOURCE IMPLEMENTED
-- Detail: Custom structured shipping requires an owner-approved `indonesia_regions` dataset. The additive migration, hierarchy validation, immutable address snapshot, quotation/approval proof, locked-total gate, and final-verification guard are source-audited only. Apply in controlled Preview, load official region data, then test pickup and shipping end-to-end without altering preserved records.
+- Detail: Custom structured shipping now includes owner-supplied province/regency/district rows in the canonical `indonesia_regions` seed, but still requires approved village/kelurahan/postal rows. The additive migrations, hierarchy validation, immutable address snapshot, quotation/approval proof, locked-total gate, and final-verification guard are source-audited only. Apply in controlled Preview, complete the lower hierarchy, then test pickup and shipping end-to-end without altering preserved records.
 
 ### V12-028 — Local dependency runner unavailable
 
 - Severity: Environment gate
 - Status: OPEN / ENVIRONMENT BLOCKED
 - Detail: The single allowed `pnpm install --frozen-lockfile` attempt failed before dependency resolution because the runner could not create `/root/.local` (ENOENT). TypeScript, lint, targeted tests, full tests, and build were therefore not runnable locally; no retry or environment workaround was attempted under the Master Override.
+
+### V12-029 — Indonesian region hierarchy is seeded through district level
+
+- Severity: Preview data gate
+- Status: OPEN / PROVINCE, REGENCY, AND DISTRICT SOURCE IMPLEMENTED
+- Detail: The owner-supplied dataset is represented canonically by `20260718181000_indonesia_regions_province_regency_district_seed.sql` with 38 provinces, 514 regencies/cities, and 7,285 districts/kecamatan. It contains no village/kelurahan or postal-code rows, so the complete shipping hierarchy and five-digit postal validation remain blocked pending owner-approved lower-level data and controlled Preview verification.
