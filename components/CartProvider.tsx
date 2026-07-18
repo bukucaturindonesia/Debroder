@@ -34,13 +34,6 @@ export type CartProductInput = {
   customProject?: CustomProjectSnapshot;
 };
 
-type CartServiceSelection = {
-  id: string;
-  quantity: number;
-  position: string;
-  notes: string;
-};
-
 type CartItemRole = "primary" | "additional";
 
 export type CartItem = CartProductInput & {
@@ -58,7 +51,6 @@ export type CartItem = CartProductInput & {
   stockAvailable?: number;
   variantSnapshot?: Record<string, unknown>;
   notes: string;
-  services: CartServiceSelection[];
 };
 
 type CartContextValue = {
@@ -76,15 +68,6 @@ type CartContextValue = {
   preserveJerseyInteractions: boolean;
 };
 
-type ServiceOption = {
-  id: string;
-  name: string;
-  shortName: string;
-  description: string;
-  defaultPosition: string;
-  pricePerPcs: number;
-};
-
 type SearchSuggestion = {
   id: string;
   name: string;
@@ -96,49 +79,6 @@ type SearchSuggestion = {
 const storageKey = "debroder-cart-v4";
 const legacyStorageKeys = ["debroder-cart-v3", "debroder-cart-v2", "debroder-cart-v1"];
 const CartContext = createContext<CartContextValue | null>(null);
-
-const serviceOptions: ServiceOption[] = [
-  {
-    id: "sablon-dtf-depan-kecil",
-    name: "Sablon DTF Depan Kecil",
-    shortName: "Sablon DTF",
-    description: "Logo kecil, dada kiri, atau artwork kecil.",
-    defaultPosition: "Depan kecil",
-    pricePerPcs: 15000
-  },
-  {
-    id: "bordir-komputer-logo-kecil",
-    name: "Bordir Komputer Logo Kecil",
-    shortName: "Bordir Komputer",
-    description: "Estimasi normal untuk logo kecil.",
-    defaultPosition: "Dada kiri",
-    pricePerPcs: 20000
-  },
-  {
-    id: "sablon-dtf-belakang-besar",
-    name: "Sablon DTF Belakang Besar",
-    shortName: "DTF Belakang Besar",
-    description: "Artwork besar untuk bagian belakang.",
-    defaultPosition: "Belakang besar",
-    pricePerPcs: 25000
-  },
-  {
-    id: "bordir-komputer-logo-besar",
-    name: "Bordir Komputer Logo Besar",
-    shortName: "Bordir Logo Besar",
-    description: "Estimasi normal untuk bordir lebih besar/lebih detail.",
-    defaultPosition: "Logo besar",
-    pricePerPcs: 30000
-  },
-  {
-    id: "sublim-printing",
-    name: "Sublim Printing",
-    shortName: "Sublim",
-    description: "Estimasi normal untuk jersey/apparel full color.",
-    defaultPosition: "Full body",
-    pricePerPcs: 35000
-  }
-];
 
 const defaultColorOptions = [
   { name: "Hitam", hex: "#111111" },
@@ -256,11 +196,6 @@ function repriceCartItem(item: CartItem): CartItem {
   };
 }
 
-function serviceById(serviceId: string) {
-  return serviceOptions.find((service) => service.id === serviceId) || null;
-}
-
-
 function recordValue(value: unknown): Record<string, unknown> | null {
   return value && typeof value === "object" && !Array.isArray(value) ? value as Record<string, unknown> : null;
 }
@@ -294,6 +229,19 @@ function CustomProjectSummary({ item }: { item: CartItem }) {
         <p><span className="font-semibold">Status harga:</span> {project.pricing.status === "final" ? "Final" : project.pricing.status === "estimated" ? "Estimasi" : "Perlu penawaran"}</p>
         <p><span className="font-semibold">Lead time:</span> {Array.from(new Set(project.items.map((projectItem) => projectItem.leadTime))).join(", ")}</p>
       </div>
+      <div className="mt-4 grid gap-3 border-t border-black/10 pt-4">
+        {project.items.map((projectItem) => (
+          <div key={projectItem.id}>
+            <p className="font-semibold">{projectItem.productName} · {projectItem.quantity} pcs</p>
+            {projectItem.designPackages.flatMap((designPackage) => designPackage.services.map((service) => (
+              <p key={`${designPackage.id}:${service.id}`} className="mt-1 text-xs text-black/60">
+                Layanan {service.serviceId}{service.placementId ? ` · Placement ${service.placementId}` : ""}{service.printSizeId ? ` · Print size ${service.printSizeId}` : ""}
+              </p>
+            )))}
+            {projectItem.personalization.sharedValue || projectItem.personalization.entries.length ? <p className="mt-1 text-xs text-black/60">Personalisasi: {projectItem.personalization.sharedValue || `${projectItem.personalization.entries.length} data per item`}</p> : null}
+          </div>
+        ))}
+      </div>
       <Link href={`/custom/${project.categorySlug}?draft=${encodeURIComponent(project.id)}`} className="mt-3 inline-flex font-semibold underline underline-offset-4">Edit konfigurasi</Link>
     </div>
   );
@@ -324,45 +272,13 @@ function JerseyConfigSummary({ item }: { item: CartItem }) {
   );
 }
 
-function normalizeServices(services: unknown, quantity: number): CartServiceSelection[] {
-  if (!Array.isArray(services)) return [];
-  return services
-    .map((raw) => {
-      const service = raw as Partial<CartServiceSelection>;
-      if (!service.id || !serviceById(service.id)) return null;
-      return {
-        id: service.id,
-        quantity: normalizeNumber(Number(service.quantity || quantity), quantity),
-        position: service.position || serviceById(service.id)?.defaultPosition || "",
-        notes: service.notes || ""
-      };
-    })
-    .filter(Boolean) as CartServiceSelection[];
-}
-
-function selectedServices(item: CartItem) {
-  return item.services
-    .map((selection) => {
-      const service = serviceById(selection.id);
-      return service ? { service, selection } : null;
-    })
-    .filter(Boolean) as { service: ServiceOption; selection: CartServiceSelection }[];
-}
-
 function itemProductSubtotal(item: CartItem) {
   return itemUnitPrice(item) * item.quantity;
 }
 
-function itemServiceSubtotal(item: CartItem) {
-  return selectedServices(item).reduce((total, entry) => total + entry.service.pricePerPcs * entry.selection.quantity, 0);
-}
-
 function cartTotals(items: CartItem[]) {
   const productSubtotal = items.reduce((total, item) => total + itemProductSubtotal(item), 0);
-  const serviceSubtotal = items.reduce((total, item) => total + itemServiceSubtotal(item), 0);
-  const normalTotal = productSubtotal + serviceSubtotal;
-  const hasServices = serviceSubtotal > 0;
-  return { productSubtotal, serviceSubtotal, normalTotal, hasServices };
+  return { productSubtotal, normalTotal: productSubtotal };
 }
 
 function safeCurrency(value: number) {
@@ -376,11 +292,13 @@ function labelForItem(item: CartItem) {
 function ensureRoles(items: CartItem[]) {
   let hasPrimary = false;
   return items.map((item, index) => {
+    const itemWithoutLegacyServices = { ...(item as CartItem & { services?: unknown }) };
+    delete itemWithoutLegacyServices.services;
     const quantity = normalizeNumber(Number(item.quantity || 1));
     const role: CartItemRole = !hasPrimary && (item.role === "primary" || index === 0) ? "primary" : "additional";
     if (role === "primary") hasPrimary = true;
     const normalized = {
-      ...item,
+      ...itemWithoutLegacyServices,
       role,
       quantity,
       color: item.color || "",
@@ -396,38 +314,10 @@ function ensureRoles(items: CartItem[]) {
           ? Math.max(0, Math.floor(item.stockAvailable))
           : undefined,
       variantSnapshot: item.variantSnapshot || undefined,
-      notes: item.notes || "",
-      services: isCustomProjectCartItem(item) ? [] : normalizeServices(item.services, quantity)
+      notes: item.notes || ""
     };
     return isCustomProjectCartItem(normalized) ? normalized : repriceCartItem(normalized);
   });
-}
-
-function serviceIsSelected(item: CartItem, serviceId: string) {
-  return item.services.some((service) => service.id === serviceId);
-}
-
-function toggleService(item: CartItem, service: ServiceOption) {
-  const exists = serviceIsSelected(item, service.id);
-  return exists
-    ? item.services.filter((selection) => selection.id !== service.id)
-    : [
-        ...item.services,
-        {
-          id: service.id,
-          quantity: item.quantity,
-          position: service.defaultPosition,
-          notes: ""
-        }
-      ];
-}
-
-function updateService(item: CartItem, serviceId: string, updates: Partial<CartServiceSelection>) {
-  return item.services.map((service) =>
-    service.id === serviceId
-      ? { ...service, ...updates, quantity: normalizeNumber(Number(updates.quantity ?? service.quantity), item.quantity) }
-      : service
-  );
 }
 
 function CartIcon() {
@@ -537,61 +427,6 @@ function ProductDetails({ item }: { item: CartItem }) {
   );
 }
 
-function ProductionChoices({ item }: { item: CartItem }) {
-  const cart = useCart();
-  const selectedRing = cart.preserveJerseyInteractions ? "ring-[#063d24]/25" : "ring-black/25";
-  const accent = cart.preserveJerseyInteractions ? "#063d24" : "#111111";
-  const totalProductionQty = item.services.reduce((total, service) => total + service.quantity, 0);
-
-  return (
-    <section className="mt-6 border-t border-black/10 pt-6">
-      <div className="flex flex-wrap items-end justify-between gap-3">
-        <div>
-          <p className="text-xs font-bold uppercase tracking-[0.14em] text-[#063d24]">Pilihan Produksi</p>
-          <p className="mt-1 text-sm leading-6 text-black/55">Pilih metode produksi jika produk ingin dicustom. Jumlah bisa dibuat mix, misalnya 5 pcs sablon dan 5 pcs bordir.</p>
-        </div>
-        {totalProductionQty > 0 ? <p className="rounded-full bg-[#f5f5ef] px-3 py-1 text-xs font-semibold text-black/55">Total produksi dipilih: {totalProductionQty} pcs</p> : null}
-      </div>
-      <div className="mt-4 grid gap-3">
-        {serviceOptions.map((service) => {
-          const selected = item.services.find((entry) => entry.id === service.id);
-          const selectedQty = selected?.quantity || item.quantity;
-          return (
-            <article key={`${item.cartId}-${service.id}`} className={`rounded-[22px] bg-white/50 p-4 transition ${selected ? `ring-1 ${selectedRing}` : "ring-1 ring-black/5 hover:ring-black/15"}`}>
-              <div className="flex items-start justify-between gap-4">
-                <label className="flex min-w-0 cursor-pointer gap-3">
-                  <input type="checkbox" checked={Boolean(selected)} onChange={() => cart.updateItem(item.cartId, { services: toggleService(item, service) })} className="mt-1 h-4 w-4" style={{ accentColor: accent }} />
-                  <span className="min-w-0">
-                    <span className="block text-sm font-semibold leading-5">{service.name}</span>
-                    <span className="mt-1 block text-xs leading-5 text-black/55">Harga normal {formatRupiah(service.pricePerPcs)} / pcs · {service.description}</span>
-                  </span>
-                </label>
-                <span className="shrink-0 text-sm font-semibold">{selected ? formatRupiah(service.pricePerPcs * selectedQty) : formatRupiah(service.pricePerPcs)}</span>
-              </div>
-              {selected ? (
-                <div className="mt-4 grid gap-3 rounded-[18px] bg-white/50 p-3 sm:grid-cols-[160px_1fr]">
-                  <label className="grid gap-2 text-xs font-semibold uppercase tracking-[0.12em] text-black/45">
-                    Jumlah pcs
-                    <input value={selected.quantity} onChange={(event) => cart.updateItem(item.cartId, { services: updateService(item, service.id, { quantity: normalizeNumber(Number(event.target.value || 1), item.quantity) }) })} className={`min-h-10 rounded-lg border border-black/10 bg-white px-3 text-sm font-semibold normal-case tracking-normal text-black outline-none ${cart.preserveJerseyInteractions ? "focus:border-[#063d24]" : "focus:border-black"}`} inputMode="numeric" />
-                  </label>
-                  <label className="grid gap-2 text-xs font-semibold uppercase tracking-[0.12em] text-black/45">
-                    Posisi / detail
-                    <input value={selected.position} onChange={(event) => cart.updateItem(item.cartId, { services: updateService(item, service.id, { position: event.target.value }) })} placeholder="Contoh: dada kiri / belakang besar" className={`min-h-10 rounded-lg border border-black/10 bg-white px-3 text-sm font-normal normal-case tracking-normal text-black outline-none ${cart.preserveJerseyInteractions ? "focus:border-[#063d24]" : "focus:border-black"}`} />
-                  </label>
-                  <label className="grid gap-2 text-xs font-semibold uppercase tracking-[0.12em] text-black/45 sm:col-span-2">
-                    Catatan produksi
-                    <input value={selected.notes} onChange={(event) => cart.updateItem(item.cartId, { services: updateService(item, service.id, { notes: event.target.value }) })} placeholder="Contoh: logo perusahaan warna putih" className={`min-h-10 rounded-lg border border-black/10 bg-white px-3 text-sm font-normal normal-case tracking-normal text-black outline-none ${cart.preserveJerseyInteractions ? "focus:border-[#063d24]" : "focus:border-black"}`} />
-                  </label>
-                </div>
-              ) : null}
-            </article>
-          );
-        })}
-      </div>
-    </section>
-  );
-}
-
 function FullCartItem({ item }: { item: CartItem }) {
   const isJersey = isJerseyConfiguredItem(item);
   const isCustomProject = isCustomProjectCartItem(item);
@@ -601,7 +436,6 @@ function FullCartItem({ item }: { item: CartItem }) {
       <CustomProjectSummary item={item} />
       <JerseyConfigSummary item={item} />
       {!isJersey && !isCustomProject && !item.variantSizeId ? <ProductDetails item={item} /> : null}
-      {!isJersey && !isCustomProject ? <ProductionChoices item={item} /> : null}
     </article>
   );
 }
@@ -618,28 +452,18 @@ function CartSummary({ compact = false }: { compact?: boolean }) {
           <span className="text-black/60">Subtotal Produk</span>
           <span className="font-semibold">{safeCurrency(totals.productSubtotal)}</span>
         </div>
-        <div className="flex items-center justify-between gap-4">
-          <span className="text-black/60">Pilihan Produksi</span>
-          <span className="font-semibold">{totals.serviceSubtotal > 0 ? formatRupiah(totals.serviceSubtotal) : "—"}</span>
-        </div>
         <div className="border-t border-black/10 pt-4">
           <div className="flex items-center justify-between gap-4">
-            <span className="font-semibold">{totals.hasServices ? "Estimasi Normal" : "Total"}</span>
+            <span className="font-semibold">Total</span>
             <span className="text-xl font-bold text-[#063d24]">{safeCurrency(totals.normalTotal)}</span>
           </div>
         </div>
       </div>
-      {totals.hasServices ? (
-        <div className="mt-5 rounded-2xl bg-[#fff7e6] p-4 text-xs leading-6 text-[#6a4300]">
-          Harga final bisa lebih hemat setelah admin mengecek detail desain, jumlah pesanan, dan kebutuhan produksi.
-        </div>
-      ) : (
-        <div className="mt-5 rounded-2xl bg-[#f5f5ef] p-4 text-xs leading-6 text-black/58">
-          Jika hanya pesan produk tanpa pilihan produksi, biaya mengikuti harga produk yang tertera.
-        </div>
-      )}
+      <div className="mt-5 rounded-2xl bg-[#f5f5ef] p-4 text-xs leading-6 text-black/58">
+        Produk Ready Stock mengikuti harga PIM. Konfigurasi layanan hanya dilakukan melalui Custom Builder.
+      </div>
       <Link href={cart.items.length ? "/checkout" : "#"} className={`mt-5 inline-flex min-h-12 w-full items-center justify-center rounded-full px-5 text-center text-sm font-semibold ${cart.items.length ? cart.preserveJerseyInteractions ? "bg-[#063d24] text-white" : "bg-black text-white hover:bg-black/75" : "pointer-events-none bg-black/10 text-black/35"}`}>
-        {totals.hasServices ? "Tinjau Sebelum Checkout" : "Lanjut ke Checkout"}
+        Lanjut ke Checkout
       </Link>
       {!compact ? <p className="mt-4 text-center text-[11px] leading-5 text-black/45">Guest checkout tersedia. Order dibuat di sistem sebelum pembayaran.</p> : null}
     </aside>
@@ -744,21 +568,15 @@ function MiniCartContent() {
           <span className="text-black/60">Subtotal Produk</span>
           <span className="font-semibold">{safeCurrency(totals.productSubtotal)}</span>
         </div>
-        {totals.serviceSubtotal > 0 ? (
-          <div className="mt-3 flex items-center justify-between text-sm">
-            <span className="text-black/60">Pilihan Produksi</span>
-            <span className="font-semibold">{formatRupiah(totals.serviceSubtotal)}</span>
-          </div>
-        ) : null}
         <div className="mt-4 border-t border-black/10 pt-4">
           <div className="flex items-center justify-between gap-4">
-            <span className="font-semibold">{totals.hasServices ? "Estimasi Normal" : "Total"}</span>
+            <span className="font-semibold">Total</span>
             <span className="text-lg font-bold text-[#063d24]">{safeCurrency(totals.normalTotal)}</span>
           </div>
         </div>
         <Link href="/keranjang" onClick={cart.closeCart} className="mt-5 inline-flex min-h-11 w-full items-center justify-center rounded-full border border-black/10 px-5 text-sm font-semibold transition hover:border-black">Lihat Keranjang</Link>
         <Link href="/checkout" onClick={cart.closeCart} className={`mt-3 inline-flex min-h-11 w-full items-center justify-center rounded-full px-5 text-center text-sm font-semibold text-white ${cart.preserveJerseyInteractions ? "bg-[#063d24]" : "bg-black hover:bg-black/75"}`}>
-          {totals.hasServices ? "Tinjau Sebelum Checkout" : "Checkout"}
+          Checkout
         </Link>
       </section>
     </div>
@@ -881,8 +699,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
             stockLabel: product.stockLabel,
             stockAvailable: product.stockAvailable,
             variantSnapshot: product.variantSnapshot,
-            notes: "",
-            services: []
+            notes: ""
           }
         ]);
       });
@@ -899,7 +716,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
           ...item,
           ...updates,
           quantity: nextQuantity,
-          services: updates.services ? updates.services : item.services
+          notes: typeof updates.notes === "string" ? updates.notes : item.notes
         };
       })));
     },
@@ -932,7 +749,6 @@ export function CartProvider({ children }: { children: ReactNode }) {
           color: "",
           size: "",
           notes: project.note,
-          services: [],
           customProject: project
         };
         return ensureRoles(existing ? current.map((item) => item.cartId === cartId ? next : item) : [...current, next]);

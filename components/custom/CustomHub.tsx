@@ -29,16 +29,19 @@ export function CustomHub({ categories }: { categories: CustomCategory[] }) {
           const href = category.entryType === "jersey_configurator" ? category.targetRoute! : `/custom/${category.slug}`;
           return (
             <Link key={category.id} href={href} className="group overflow-hidden rounded-[28px] bg-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-black">
-              <div className="relative aspect-[4/3] overflow-hidden bg-[#e9e9e4]">
+              <div className="relative aspect-[4/5] overflow-hidden bg-[#e9e9e4]">
                 <SafeImage src={category.imageUrl} fallbackSrc={fallbackImages.product} alt={category.imageAlt || category.name} fill className="object-cover transition duration-500 group-hover:scale-[1.025]" sizes="(min-width:1024px) 33vw, (min-width:640px) 50vw, 100vw" />
               </div>
               <div className="p-5 sm:p-6">
-                <div className="flex items-start justify-between gap-4"><h2 className="text-xl font-semibold">{category.name}</h2><span aria-hidden="true" className="text-2xl">↗</span></div>
+                <h2 className="text-xl font-semibold">{category.name}</h2>
                 {category.shortDescription ? <p className="mt-2 text-sm leading-6 text-black/60">{category.shortDescription}</p> : null}
                 <div className="mt-4 flex flex-wrap gap-2 text-xs font-semibold text-black/55">
                   <span className="rounded-full bg-[#f5f5ef] px-3 py-1.5">{category.minimumOrderDisplay}</span>
                   <span className="rounded-full bg-[#f5f5ef] px-3 py-1.5">{category.leadTimeDisplay}</span>
                 </div>
+                <span className="mt-5 inline-flex min-h-11 items-center rounded-full bg-black px-5 text-sm font-semibold text-white transition group-hover:bg-black/75" aria-hidden="true">
+                  Mulai Custom <span className="ml-2">↗</span>
+                </span>
               </div>
             </Link>
           );

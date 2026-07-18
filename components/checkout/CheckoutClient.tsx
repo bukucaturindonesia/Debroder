@@ -26,9 +26,9 @@ export function CheckoutClient({ stores }: { stores: StoreOption[] }) {
   const [fulfillment, setFulfillment] = useState<"pickup" | "shipping">(stores.length ? "pickup" : "shipping");
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
-  const readyItems = useMemo(() => cart.items.filter((item) => !isCustomProjectCartItem(item) && item.variantSizeId && item.services.length === 0 && Number(item.priceValue) >= 0), [cart.items]);
+  const readyItems = useMemo(() => cart.items.filter((item) => !isCustomProjectCartItem(item) && item.variantSizeId && Number(item.priceValue) >= 0), [cart.items]);
   const customItems = useMemo(() => cart.items.filter(isCustomProjectCartItem), [cart.items]);
-  const unsupportedItems = cart.items.filter((item) => !isCustomProjectCartItem(item) && (!item.variantSizeId || item.services.length > 0));
+  const unsupportedItems = cart.items.filter((item) => !isCustomProjectCartItem(item) && !item.variantSizeId);
   const subtotal = readyItems.reduce((sum, item) => sum + Number(item.priceValue || 0) * item.quantity, 0)
     + customItems.reduce((sum, item) => sum + Number(item.customProject?.pricing.finalTotal || 0), 0);
 

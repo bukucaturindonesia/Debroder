@@ -6,6 +6,7 @@ import { AdminPageHeader } from "@/components/admin/layout/AdminPageHeader";
 import { AdminAlert, AdminErrorState, AdminLoadingState } from "@/components/admin/ui/AdminFeedback";
 import { notificationApiFetch } from "@/lib/admin-notification-api";
 import { isAdminRole, roleCanAccessPath } from "@/components/admin/layout/admin-navigation";
+import { resolveNotificationTarget } from "@/lib/notification-routing";
 import {
   NOTIFICATION_CHANNEL_LABELS,
   NOTIFICATION_STATUS_LABELS,
@@ -110,10 +111,11 @@ export function NotificationDetailAdmin({ notificationId }: { notificationId: st
   }
 
   const { notification, event, deliveries, role } = data;
+  const resolvedTarget = resolveNotificationTarget(notification, event);
   const canOpenRelatedPath = Boolean(
-    notification.related_path &&
+    resolvedTarget &&
       isAdminRole(role) &&
-      roleCanAccessPath(role, notification.related_path)
+      roleCanAccessPath(role, resolvedTarget.split(/[?#]/)[0])
   );
 
   return (
@@ -125,9 +127,7 @@ export function NotificationDetailAdmin({ notificationId }: { notificationId: st
         actions={
           <div className="flex flex-wrap gap-2">
             <Link href="/admin/notifications" className="inline-flex min-h-11 items-center rounded-full border border-brand-softGray px-5 text-sm font-semibold">Kembali</Link>
-            {canOpenRelatedPath && notification.related_path ? (
-              <Link href={notification.related_path} className="inline-flex min-h-11 items-center rounded-full bg-brand-charcoal px-5 text-sm font-semibold text-white">Buka Data Terkait</Link>
-            ) : null}
+            {canOpenRelatedPath ? <Link href={resolvedTarget} className="inline-flex min-h-11 items-center rounded-full bg-brand-charcoal px-5 text-sm font-semibold text-white">Buka Data Terkait</Link> : <span className="inline-flex min-h-11 items-center text-sm text-brand-charcoal/55">Data terkait tidak tersedia atau tautan sudah tidak berlaku.</span>}
           </div>
         }
       />
