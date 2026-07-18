@@ -108,7 +108,7 @@
 
 - Severity: Gate
 - Status: OPEN / SOURCE IMPLEMENTED
-- Detail: Custom structured shipping now includes owner-supplied province/regency/district rows in the canonical `indonesia_regions` seed, but still requires approved village/kelurahan/postal rows. The additive migrations, hierarchy validation, immutable address snapshot, quotation/approval proof, locked-total gate, and final-verification guard are source-audited only. Apply in controlled Preview, complete the lower hierarchy, then test pickup and shipping end-to-end without altering preserved records.
+- Detail: Custom structured shipping now has owner-supplied canonical source migrations through village/kelurahan/desa-adat and postal code. The additive migrations, hierarchy validation, immutable address snapshot, quotation/approval proof, locked-total gate, and final-verification guard remain source-audited only. Apply pending migration(s) in controlled Preview, then test pickup and shipping end-to-end without altering preserved records.
 
 ### V12-028 — Local dependency runner unavailable
 
@@ -116,8 +116,15 @@
 - Status: OPEN / ENVIRONMENT BLOCKED
 - Detail: The single allowed `pnpm install --frozen-lockfile` attempt failed before dependency resolution because the runner could not create `/root/.local` (ENOENT). TypeScript, lint, targeted tests, full tests, and build were therefore not runnable locally; no retry or environment workaround was attempted under the Master Override.
 
-### V12-029 — Indonesian region hierarchy is seeded through district level
+### V12-029 — Indonesian region hierarchy source is complete through village and postal code
 
 - Severity: Preview data gate
-- Status: OPEN / PROVINCE, REGENCY, AND DISTRICT SOURCE IMPLEMENTED
-- Detail: The owner-supplied dataset is represented canonically by `20260718181000_indonesia_regions_province_regency_district_seed.sql` with 38 provinces, 514 regencies/cities, and 7,285 districts/kecamatan. It contains no village/kelurahan or postal-code rows, so the complete shipping hierarchy and five-digit postal validation remain blocked pending owner-approved lower-level data and controlled Preview verification.
+- Status: OPEN / COMPLETE REGION SOURCE IMPLEMENTED
+- Detail: The owner-supplied canonical migrations represent 38 provinces, 514 regencies/cities, 7,285 districts/kecamatan, 83,762 village/kelurahan/desa-adat rows, and 10,632 distinct postal codes. Remote application and controlled Preview queries remain required before the catalog can be declared operationally verified.
+
+### V12-030 — Active Custom checkout structured-address wiring
+
+- Severity: Preview interaction gate
+- Status: OPEN / SOURCE FIXED
+- Detail: The active `/checkout` route imported the canonical CheckoutClient, but that canonical file remained legacy while structured UI was hidden in duplicate `CheckoutClientV2` behind a path alias. The structured implementation is canonical and the duplicate/alias are removed. Admin fulfillment reads the same immutable snapshot, and the additive snapshot refinement records the shipping method. Browser verification must confirm selectors, confirmation gating, pickup behavior, state preservation, mobile layout, server rejection of fake hierarchy, and snapshot output.
+

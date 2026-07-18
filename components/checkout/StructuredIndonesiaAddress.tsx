@@ -18,7 +18,7 @@ export function StructuredIndonesiaAddress({ value, confirmed, onChange, onConfi
   const [regencies, setRegencies] = useState<IndonesiaRegionOption[]>([]);
   const [districts, setDistricts] = useState<IndonesiaRegionOption[]>([]);
   const [villages, setVillages] = useState<IndonesiaRegionOption[]>([]);
-  const [loading, setLoading] = useState("");
+  const [loading, setLoading] = useState("province");
   const [error, setError] = useState("");
 
   useEffect(() => { void loadRegions("province", "", setProvinces, setLoading, setError); }, []);
@@ -28,6 +28,8 @@ export function StructuredIndonesiaAddress({ value, confirmed, onChange, onConfi
 
   const selectedVillage = villages.find((region) => region.code === value.villageId);
   const summary = useMemo(() => [
+    value.recipientName,
+    value.recipientPhone,
     value.addressDetail,
     value.houseNumber ? `No. ${value.houseNumber}` : "",
     value.rt ? `RT ${value.rt}` : "",
@@ -36,14 +38,15 @@ export function StructuredIndonesiaAddress({ value, confirmed, onChange, onConfi
     districts.find((item) => item.code === value.districtId)?.name,
     regencies.find((item) => item.code === value.regencyId)?.name,
     provinces.find((item) => item.code === value.provinceId)?.name,
-    value.postalCode
+    value.postalCode,
+    value.landmark ? "Patokan: " + value.landmark : ""
   ].filter(Boolean).join(", "), [districts, provinces, regencies, value, villages]);
 
   const setField = (field: keyof StructuredIndonesiaAddressInput, next: string) => {
     onConfirmedChange(false);
     onChange({ ...value, [field]: next });
   };
-  const complete = Boolean(value.recipientName.trim() && value.recipientPhone.trim() && value.provinceId && value.regencyId && value.districtId && value.villageId && /^\d{5}$/.test(value.postalCode) && value.addressDetail.trim().length >= 5);
+  const complete = Boolean(value.recipientName.trim().length >= 2 && /^\d{9,15}$/.test(value.recipientPhone.replace(/\D/g, "")) && value.provinceId && value.regencyId && value.districtId && value.villageId && /^\d{5}$/.test(value.postalCode) && value.addressDetail.trim().length >= 5 && (!value.rt || /^\d{1,3}$/.test(value.rt)) && (!value.rw || /^\d{1,3}$/.test(value.rw)));
 
   return <div className="grid gap-5">
     <div className="grid gap-4 sm:grid-cols-2">
@@ -62,7 +65,7 @@ export function StructuredIndonesiaAddress({ value, confirmed, onChange, onConfi
       <Field label="Catatan kurir"><input value={value.courierNote} onChange={(event) => setField("courierNote", event.target.value)} maxLength={500} /></Field>
     </div>
     {error ? <p role="alert" className="border border-amber-300 bg-amber-50 p-3 text-sm text-amber-900">{error} Pengiriman Custom belum dapat dipilih sampai data wilayah resmi tersedia.</p> : null}
-    <div className="rounded-2xl bg-[#f6f5f0] p-4 text-sm"><p className="font-semibold">Konfirmasi alamat</p><p className="mt-2 leading-6 text-black/60">{summary || "Lengkapi wilayah dan rincian alamat."}</p><label className="mt-3 flex min-h-11 items-center gap-3 font-semibold"><input type="checkbox" checked={confirmed} disabled={!complete} onChange={(event) => onConfirmedChange(event.target.checked)} /> Gunakan Alamat Ini</label></div>
+    <div className="rounded-2xl bg-[#f6f5f0] p-4 text-sm"><p className="font-semibold">Konfirmasi alamat</p><p className="mt-2 leading-6 text-black/60">{summary || "Lengkapi wilayah dan rincian alamat."}</p>{confirmed ? <button type="button" onClick={() => onConfirmedChange(false)} className="mt-3 min-h-11 rounded-full border border-black/20 bg-white px-4 font-semibold">Ubah Alamat</button> : <label className="mt-3 flex min-h-11 items-center gap-3 font-semibold"><input type="checkbox" checked={confirmed} disabled={!complete} onChange={(event) => onConfirmedChange(event.target.checked)} /> Gunakan Alamat Ini</label>}</div>
   </div>;
 }
 

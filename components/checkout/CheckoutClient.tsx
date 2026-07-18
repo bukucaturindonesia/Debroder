@@ -6,6 +6,8 @@ import { type FormEvent, useMemo, useRef, useState } from "react";
 import { isCustomProjectCartItem, useCart } from "@/components/CartProvider";
 import { formatRupiah } from "@/lib/url";
 import { removeCustomDraft } from "@/lib/custom-commerce/draft-storage";
+import { EMPTY_STRUCTURED_ADDRESS, StructuredIndonesiaAddress } from "@/components/checkout/StructuredIndonesiaAddress";
+import type { StructuredIndonesiaAddressInput } from "@/lib/indonesia-address";
 
 type StoreOption = { id: string; name: string; address: string; hours: string };
 type CheckoutDraft = { idempotencyKey: string; accessToken: string; confirmationCode: string };
@@ -26,6 +28,8 @@ export function CheckoutClient({ stores }: { stores: StoreOption[] }) {
   const [fulfillment, setFulfillment] = useState<"pickup" | "shipping">(stores.length ? "pickup" : "shipping");
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
+  const [structuredAddress, setStructuredAddress] = useState<StructuredIndonesiaAddressInput>(EMPTY_STRUCTURED_ADDRESS);
+  const [addressConfirmed, setAddressConfirmed] = useState(false);
   const readyItems = useMemo(() => cart.items.filter((item) => !isCustomProjectCartItem(item) && item.variantSizeId && Number(item.priceValue) >= 0), [cart.items]);
   const customItems = useMemo(() => cart.items.filter(isCustomProjectCartItem), [cart.items]);
   const unsupportedItems = cart.items.filter((item) => !isCustomProjectCartItem(item) && !item.variantSizeId);
@@ -35,6 +39,10 @@ export function CheckoutClient({ stores }: { stores: StoreOption[] }) {
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (submitting || unsupportedItems.length || readyItems.length + customItems.length === 0) return;
+    if (fulfillment === "shipping" && customItems.length > 0 && !addressConfirmed) {
+      setError("Konfirmasi alamat terstruktur sebelum membuat Custom Order.");
+      return;
+    }
     setSubmitting(true);
     setError("");
     const form = new FormData(event.currentTarget);
@@ -55,7 +63,8 @@ export function CheckoutClient({ stores }: { stores: StoreOption[] }) {
           },
           fulfillment: {
             method: fulfillment,
-            address: fulfillment === "shipping" ? form.get("address") : undefined,
+            address: fulfillment === "shipping" && customItems.length === 0 ? form.get("address") : undefined,
+            addressSnapshot: fulfillment === "shipping" && customItems.length > 0 ? structuredAddress : undefined,
             pickupLocationId: fulfillment === "pickup" ? form.get("pickupLocationId") : undefined,
             paymentMethod: fulfillment === "pickup" ? form.get("paymentMethod") : "bank_transfer"
           },
@@ -121,7 +130,11 @@ export function CheckoutClient({ stores }: { stores: StoreOption[] }) {
                   <Field label="Cara pembayaran"><select name="paymentMethod" defaultValue="bank_transfer"><option value="bank_transfer">Transfer bank</option><option value="pay_at_store">Bayar di toko</option></select></Field>
                 </div>
               ) : (
-                <div className="mt-5"><Field label="Alamat pengiriman lengkap"><textarea name="address" autoComplete="street-address" minLength={10} rows={4} required /></Field></div>
+                customItems.length > 0 ? (
+                  <div className="mt-5"><StructuredIndonesiaAddress value={structuredAddress} confirmed={addressConfirmed} onChange={(next) => { setStructuredAddress(next); setAddressConfirmed(false); }} onConfirmedChange={setAddressConfirmed} /></div>
+                ) : (
+                  <div className="mt-5"><Field label="Alamat pengiriman lengkap"><textarea name="address" autoComplete="street-address" minLength={10} rows={4} required /></Field></div>
+                )
               )}
             </Panel>
           </div>
@@ -137,7 +150,7 @@ export function CheckoutClient({ stores }: { stores: StoreOption[] }) {
             <div className="mt-5 flex items-center justify-between"><span>Subtotal</span><strong>{formatRupiah(subtotal)}</strong></div>
             <p className="mt-3 text-xs leading-5 text-black/50">{fulfillment === "shipping" ? "Ongkir ditambahkan Admin pada order yang sama, lalu Anda menyetujui total final." : "Pickup tidak dikenakan ongkir."}</p>
             {error ? <p className="mt-4 border border-red-200 bg-red-50 p-3 text-sm text-red-700">{error}</p> : null}
-            <button type="submit" disabled={submitting || Boolean(unsupportedItems.length)} className="mt-5 min-h-12 w-full rounded-full bg-black px-5 font-semibold text-white hover:bg-black/75 disabled:cursor-not-allowed disabled:opacity-45">{submitting ? "Membuat order..." : "Buat Order"}</button>
+            <button type="submit" disabled={submitting || Boolean(unsupportedItems.length) || (fulfillment === "shipping" && customItems.length > 0 && !addressConfirmed)} className="mt-5 min-h-12 w-full rounded-full bg-black px-5 font-semibold text-white hover:bg-black/75 disabled:cursor-not-allowed disabled:opacity-45">{submitting ? "Membuat order..." : "Buat Order"}</button>
             <p className="mt-3 text-center text-[11px] leading-5 text-black/45">Order dibuat sebagai unpaid. Double-click dan retry menggunakan kunci idempotensi yang sama.</p>
           </aside>
         </form>

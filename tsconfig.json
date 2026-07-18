@@ -12,7 +12,6 @@
     "baseUrl": ".",
     "paths": {
       "@/components/admin/OrderOperationalWorkspace": ["./components/admin/CustomOrderOperationalWorkspace.tsx"],
-      "@/components/checkout/CheckoutClient": ["./components/checkout/CheckoutClientV2.tsx"],
       "@/lib/automatic-payment-link": ["./lib/automatic-payment-link-v2.ts"],
       "@/*": ["./*"]
     },
