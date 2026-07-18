@@ -1,58 +1,82 @@
-DEBRODER — ADMIN 3 ROLES
-CHANGED FILES ONLY
-Baseline source: local baseline equivalent to af09e5d
-Package date: 2026-07-15
+DEBRODER ADMIN ORDER DETAIL REACT #130 FUNDAMENTAL FIX
 
-SUMMARY
-- Added: 13 files
-- Modified: 28 files
-- Deleted: 0 files
-- Total payload source files: 41
+ADDED:
+- components/admin/AdminOrderSectionBoundary.tsx
+  Reason: isolate optional Admin Order Detail sections so one secondary renderer cannot collapse the entire detail page.
+  Classification: DEFENSIVE HARDENING.
+  Risk: low; boundary is local to Admin Order Detail and does not alter business state.
+  Coverage: test/admin-order-detail-react130.test.ts; full lint; production compile.
+- lib/admin-order-detail.ts
+  Reason: canonical standard/custom workspace selection, unknown-state warning, and safe timestamp normalization.
+  Classification: ROOT-CAUSE SUPPORT + DEFENSIVE HARDENING.
+  Risk: low; pure functions only.
+  Coverage: test/admin-order-detail-react130.test.ts scenario and invalid-date matrix.
+- test/admin-order-detail-react130.test.ts
+  Reason: prevent recurrence of the exact alias/export mismatch and undefined React element type.
+  Classification: ROOT-CAUSE REGRESSION GATE.
+  Risk: low; test-only.
+  Coverage: included by package prebuild and full Vitest suite.
 
-ADDED FILES
-app/api/admin/products/route.ts
-app/api/admin/session/route.ts
-components/admin/AdminDashboardGate.tsx
-components/admin/AdminGuestDashboard.tsx
-components/admin/layout/AdminAccessContext.tsx
-lib/admin-data-masking.ts
-lib/admin-product-api.ts
-lib/admin-role-security.ts
-lib/product-manager.ts
-supabase/migrations/20260715104222_pim_phase_1_product_lifecycle_consolidation.sql
-supabase/migrations/20260715223043_admin_three_roles_read_only.sql
-test/admin-three-roles.test.ts
-test/pim-phase1-consolidation.test.ts
+MODIFIED:
+- tsconfig.json
+  Reason: remove the exact alias that redirected OrderOperationalWorkspace to CustomOrderOperationalWorkspace.tsx.
+  Classification: ROOT CAUSE.
+  Risk: low; generic @/* alias and automatic-payment-link alias remain unchanged.
+  Coverage: React #130 targeted contract; Next production compilation.
+- components/admin/OrderDetailAdmin.tsx
+  Reason: import both workspace implementations explicitly, select one through a type-safe canonical discriminator, warn on unknown historical status, and isolate optional sections.
+  Classification: ROOT CAUSE + DEFENSIVE HARDENING.
+  Risk: medium; Admin Order Detail renderer only. Business mutations and API calls are unchanged.
+  Coverage: React #130 targeted contract; full lint; production compilation.
+- components/admin/OrderOperationalWorkspace.tsx
+  Reason: retain the canonical named export and use safe timestamp formatting.
+  Classification: ROOT-CAUSE CONTRACT + DEFENSIVE HARDENING.
+  Risk: low.
+  Coverage: named-export contract, invalid timestamp tests, lint, production compilation.
+- components/admin/PaymentTrackingManager.tsx
+  Reason: guard displayed/edit-form timestamps; orderId continues to come from the canonical route params.
+  Classification: DEFENSIVE HARDENING; NOT the React #130 root cause.
+  Risk: low; payment mutation flow is unchanged.
+  Coverage: invalid timestamp helper tests; lint; production compilation.
+- components/admin/PaymentCompletionPanel.tsx
+  Reason: use safe timestamp normalization for optional payment records.
+  Classification: DEFENSIVE HARDENING.
+  Risk: low.
+  Coverage: invalid timestamp helper tests; lint; production compilation.
+- components/admin/CustomerOrderHistory.tsx
+  Reason: protect historical order date rendering from invalid or missing timestamps.
+  Classification: DEFENSIVE HARDENING.
+  Risk: low.
+  Coverage: invalid timestamp helper tests; lint; production compilation.
+- components/admin/CommerceOrderOperations.tsx
+  Reason: guard commerce confirmation/reservation timestamps.
+  Classification: DEFENSIVE HARDENING.
+  Risk: low.
+  Coverage: invalid timestamp helper tests; lint; production compilation.
+- components/admin/OrderTrackingLinkManager.tsx
+  Reason: guard optional tracking-link expiry timestamps.
+  Classification: DEFENSIVE HARDENING.
+  Risk: low.
+  Coverage: invalid timestamp helper tests; lint; production compilation.
+- package.json
+  Reason: add a prebuild regression gate for the exact Admin Order Detail module-integrity failure.
+  Classification: ROOT-CAUSE PREVENTION.
+  Risk: low; no dependency or lockfile change.
+  Coverage: contract verified by test source and full suite; owner must re-run package build.
+- next.config.ts
+  Reason: document retained baseline bypasses. Unrelated frozen baseline type/lint findings prevent safely making them globally blocking in this scoped fix; package prebuild now blocks the exact React #130 regression.
+  Classification: BUILD PIPELINE HARDENING.
+  Risk: medium; the exact failure is gated, but unrelated TypeScript errors remain baseline debt.
+  Coverage: production compile reached type validation without attempted-import warning; owner build re-run required after final prebuild change.
 
-MODIFIED FILES
-app/admin/admin-shell.css
-app/admin/dashboard/page.tsx
-app/admin/pim-manager/page.tsx
-app/admin/pim-v2/page.tsx
-app/admin/products/page.tsx
-app/api/admin/access-control/users/[id]/route.ts
-app/api/admin/pim-v2/products/route.ts
-app/api/admin/pim-v2/validate-publish/route.ts
-components/admin/AccessControlAdmin.tsx
-components/admin/AdminLogin.tsx
-components/admin/PimV2Admin.tsx
-components/admin/ProductAdmin.tsx
-components/admin/QuotationItemManager.tsx
-components/admin/layout/AdminHeader.tsx
-components/admin/layout/AdminShell.tsx
-components/admin/layout/admin-navigation.ts
-lib/access-control.ts
-lib/notification-auth.ts
-lib/payment-auth.ts
-lib/phase13-auth.ts
-lib/product-validation.ts
-lib/public-data.ts
-lib/public-navigation.ts
-lib/repeat-order-auth.ts
-lib/types.ts
-test/p0-security-canonical-cancellation.test.ts
-test/p0-security-checkout-abuse-protection.test.ts
-test/role-audit-phase13.test.ts
+DELETED:
+- NONE
 
-DELETED FILES
-None.
+RENAMED:
+- NONE
+
+JERSEY FILES CHANGED:
+- NONE
+
+DATABASE / MIGRATION FILES CHANGED:
+- NONE

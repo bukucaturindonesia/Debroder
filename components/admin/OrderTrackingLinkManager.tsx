@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { createSupabaseClient } from "@/lib/supabase";
+import { formatAdminOrderDateTime } from "@/lib/admin-order-detail";
 
 type LinkResult = {
   publicUrl: string;
@@ -84,5 +85,5 @@ export function OrderTrackingLinkManager({ orderId }: { orderId: string }) {
 }
 
 function dateTime(value: string) {
-  return new Intl.DateTimeFormat("id-ID", { dateStyle: "medium", timeStyle: "short", timeZone: "Asia/Makassar" }).format(new Date(value));
+  return formatAdminOrderDateTime(value, { fallback: "-", timeZone: "Asia/Makassar" });
 }

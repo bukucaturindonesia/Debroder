@@ -1,0 +1,68 @@
+DEBRODER ADMIN ORDER DETAIL REACT #130 — ROOT CAUSE REPORT
+
+STATUS:
+ROOT CAUSE CONFIRMED — IMPORT/EXPORT MISMATCH.
+PRODUCTION FIXED is NOT claimed. Owner Preview verification is still required.
+
+1. ELEMENT THAT WAS UNDEFINED
+The React element type was the imported identifier `OrderOperationalWorkspace` used by OrderDetailAdmin. It was rendered as `<OrderOperationalWorkspace ... />`, but module resolution redirected its import to a module that did not export that name. React therefore received an undefined element type and production raised minified React error #130 with args[]=undefined.
+
+2. EXACT SOURCE CAUSE
+Before fix:
+- OrderDetailAdmin imported `{ OrderOperationalWorkspace }` from `@/components/admin/OrderOperationalWorkspace`.
+- Baseline tsconfig.json line 14 contained the exact path alias:
+  `"@/components/admin/OrderOperationalWorkspace": ["./components/admin/CustomOrderOperationalWorkspace.tsx"]`
+- The redirected file exported `CustomOrderOperationalWorkspace`, not `OrderOperationalWorkspace`.
+- The real file `components/admin/OrderOperationalWorkspace.tsx` did export `OrderOperationalWorkspace`, but the exact alias prevented that file from being resolved.
+
+After fix:
+- The incorrect exact alias is removed.
+- OrderDetailAdmin imports the standard and Custom implementations by their real, case-correct paths.
+- `resolveAdminOrderWorkspaceKind` selects `standard` or `custom` from the immutable Custom snapshot.
+- JSX uses a direct, exhaustive conditional between two statically imported functions. No dynamic component/icon map can return undefined on this path.
+
+3. PAYMENTTRACKINGMANAGER / ORDERID CLASSIFICATION
+PaymentTrackingManager did not cause or repair the undefined element type. Its deployed source obtains orderId from canonical route params through `useParams`; this contract was retained. Passing an orderId prop would not change module resolution and could not turn an undefined OrderOperationalWorkspace export into a valid React component. Classification: NOT RELATED to React #130. Only timestamp formatting inside PaymentTrackingManager was hardened defensively.
+
+4. TIMESTAMP CLASSIFICATION
+Invalid/missing timestamps are a separate defensive risk. A direct DateTimeFormat call can throw RangeError for invalid data, but that is not React #130 and does not produce an undefined React element type. All timestamp renderers in the audited Admin Order Detail dependency chain now use guarded helpers. Classification: DEFENSIVE HARDENING / SECONDARY BUG PREVENTION, not root cause.
+
+5. EXPORT / IMPORT CONTRACT
+- Canonical standard export: `components/admin/OrderOperationalWorkspace.tsx` → named function `OrderOperationalWorkspace`.
+- Canonical Custom export: `components/admin/CustomOrderOperationalWorkspace.tsx` → named function `CustomOrderOperationalWorkspace`.
+- Canonical imports: both direct named imports in `components/admin/OrderDetailAdmin.tsx`.
+- Barrel export: NOT APPLICABLE; no barrel participates in this dependency path.
+- Case-sensitive path audit: PASS on Linux; file names and import specifiers match exactly.
+- Circular dependency audit: PASS by static dependency inspection. The helper imports no component; workspaces do not import OrderDetailAdmin; the boundary imports React only.
+
+6. DYNAMIC RENDERER / ICON AUDIT
+No dynamic component map, icon map, React.createElement lookup, or conditional variable component exists in the Admin Order Detail workspace selection path. The selected renderer is a direct JSX conditional between two verified named functions. Unknown/legacy status produces a visible warning and structured console warning with orderId, status, and workspace kind; it does not become a silent arbitrary state.
+
+7. CANONICAL VIEW-MODEL / SERIALIZATION
+Status: PARTIAL but sufficient for this scoped root cause.
+The new pure helper centralizes workspace-kind selection, unknown-state compatibility, and timestamp normalization. Existing order mutations/data flows are intentionally unchanged. Supabase values passed to client renderers remain strings, numbers, booleans, null, or JSON; no Date, BigInt, Map, Set, Error, or class instance was introduced.
+
+8. ERROR ISOLATION
+Optional Payment, Repeat Order, Tracking, Commerce, History, and workspace sections are wrapped in a local error boundary. A secondary optional renderer can show a safe operational warning without hiding the main order data. The boundary does not swallow or disguise the import/export root cause; that root cause is removed separately.
+
+9. BUILD PIPELINE
+The baseline build had `ignoreBuildErrors` and `ignoreDuringBuilds`, and the repository currently contains unrelated baseline type/lint findings. Enabling both globally as blockers caused the clean build to stop at CartProvider.tsx, contrary to the instruction not to turn frozen baseline failures into this scoped fix. The final package therefore retains and documents those baseline bypasses and adds a package `prebuild` test dedicated to the Admin Order Detail module-integrity contract. No dependency or lockfile was changed.
+
+10. BUILD RESULT
+Next production compilation: SUCCESS.
+Attempted import warning: NOT OBSERVED / REMOVED.
+Final build: FAIL during TypeScript validation at unrelated baseline `components/CartProvider.tsx:235` (`CustomProjectItem.quantity`). No changed-file compile error was observed. Build was not retried after final prebuild configuration because owner GO is required.
+
+11. DIRECT ROUTE AND ORDER MATRIX
+Direct `/admin/orders/[id]`: NOT VERIFIED in browser.
+Ready Stock, Custom, Jersey Ready Stock, Jersey Custom, historical, and order-without-payment renderer selection: PASS by static targeted contract.
+Real authenticated route, refresh, and action flows: NOT RUN.
+
+12. FINAL CLASSIFICATION
+- Root cause: CONFIRMED and corrected in source.
+- React #130 in Preview/production: NOT VERIFIED.
+- PaymentTrackingManager orderId: NOT RELATED.
+- Timestamp guard: DEFENSIVE HARDENING.
+- Database/migration: NOT REQUIRED.
+- GitHub/Vercel/remote Supabase: UNCHANGED.
+- Deployment: NOT PERFORMED; OWNER ACTION REQUIRED.

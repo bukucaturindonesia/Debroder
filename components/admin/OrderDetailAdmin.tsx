@@ -12,6 +12,12 @@ import { CustomerOrderHistory } from "@/components/admin/CustomerOrderHistory";
 import { CommerceOrderOperations } from "@/components/admin/CommerceOrderOperations";
 import { OrderTrackingLinkManager } from "@/components/admin/OrderTrackingLinkManager";
 import { OrderOperationalWorkspace } from "@/components/admin/OrderOperationalWorkspace";
+import { CustomOrderOperationalWorkspace } from "@/components/admin/CustomOrderOperationalWorkspace";
+import { AdminOrderSectionBoundary } from "@/components/admin/AdminOrderSectionBoundary";
+import {
+  adminOrderCompatibilityWarning,
+  resolveAdminOrderWorkspaceKind
+} from "@/lib/admin-order-detail";
 
 type Order = {
   id: string;
@@ -125,6 +131,8 @@ export function OrderDetailAdmin() {
   const [archiveReason, setArchiveReason] = useState("");
   const [cancelReason, setCancelReason] = useState("");
   const [pendingNavigation, setPendingNavigation] = useState<string | null>(null);
+  const workspaceKind = resolveAdminOrderWorkspaceKind(order?.custom_project_snapshot);
+  const compatibilityWarning = order ? adminOrderCompatibilityWarning(order.status) : null;
   const hasUnsavedChanges = Boolean(order && editOpen && (
     shippingAddress !== (order.shipping_address || "") ||
     deliveryMethod !== (order.delivery_method || "pickup") ||
@@ -195,6 +203,15 @@ export function OrderDetailAdmin() {
     void loadData();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [orderId]);
+
+  useEffect(() => {
+    if (!order || !compatibilityWarning) return;
+    console.warn("DEBRODER_ADMIN_ORDER_UNKNOWN_STATE", {
+      orderId: order.id,
+      status: order.status || null,
+      workspaceKind
+    });
+  }, [compatibilityWarning, order, workspaceKind]);
 
   async function persistEdit() {
     if (!order || working || order.status !== "baru") return false;
@@ -321,8 +338,14 @@ export function OrderDetailAdmin() {
           description={`${order.customer_name}${order.company_name ? ` · ${order.company_name}` : ""}`}
           actions={
             <>
-              <RepeatOrderDialog orderId={order.id} />
-              {pricingIsFinal ? <PaymentTrackingManager /> : null}
+              <AdminOrderSectionBoundary label="Ulangi Order">
+                <RepeatOrderDialog orderId={order.id} />
+              </AdminOrderSectionBoundary>
+              {pricingIsFinal ? (
+                <AdminOrderSectionBoundary label="Pembayaran">
+                  <PaymentTrackingManager />
+                </AdminOrderSectionBoundary>
+              ) : null}
               <Link
                 href={`/admin/job-orders?order=${order.id}`}
                 className="inline-flex min-h-10 items-center rounded-full border border-brand-softGray bg-white px-5 text-sm font-semibold"
@@ -379,7 +402,20 @@ export function OrderDetailAdmin() {
           </div>
         ) : null}
 
-        <OrderOperationalWorkspace order={order} jobOrder={jobOrder} qualityControl={qualityControl} fulfillment={fulfillment} />
+        {compatibilityWarning ? (
+          <div role="alert" className="border border-amber-300 bg-amber-50 p-4 text-sm text-amber-950">
+            <p className="font-semibold">Peringatan kompatibilitas order</p>
+            <p className="mt-1">{compatibilityWarning}</p>
+          </div>
+        ) : null}
+
+        <AdminOrderSectionBoundary label="Pusat Kendali Order">
+          {workspaceKind === "custom" ? (
+            <CustomOrderOperationalWorkspace order={order} jobOrder={jobOrder} qualityControl={qualityControl} fulfillment={fulfillment} />
+          ) : (
+            <OrderOperationalWorkspace order={order} jobOrder={jobOrder} qualityControl={qualityControl} fulfillment={fulfillment} />
+          )}
+        </AdminOrderSectionBoundary>
 
         <section id="order-data" className="grid scroll-mt-24 gap-5 border border-brand-softGray bg-white p-5 sm:grid-cols-2 sm:p-7">
           <Data label="Status" value={order.status === "baru" ? "Pesanan Baru" : order.status} />
@@ -454,11 +490,23 @@ export function OrderDetailAdmin() {
           </section>
         ) : null}
 
-        <OrderTrackingLinkManager orderId={order.id} />
+        <AdminOrderSectionBoundary label="Tautan Tracking">
+          <OrderTrackingLinkManager orderId={order.id} />
+        </AdminOrderSectionBoundary>
 
-        <div id="commerce" className="scroll-mt-24">{order.checkout_source === "public_checkout" ? <CommerceOrderOperations orderId={order.id} onChanged={loadData} /> : null}</div>
+        <div id="commerce" className="scroll-mt-24">
+          {order.checkout_source === "public_checkout" ? (
+            <AdminOrderSectionBoundary label="Operasional Commerce">
+              <CommerceOrderOperations orderId={order.id} onChanged={loadData} />
+            </AdminOrderSectionBoundary>
+          ) : null}
+        </div>
 
-        <div id="order-history" className="scroll-mt-24"><CustomerOrderHistory orderId={order.id} /></div>
+        <div id="order-history" className="scroll-mt-24">
+          <AdminOrderSectionBoundary label="Histori Order">
+            <CustomerOrderHistory orderId={order.id} />
+          </AdminOrderSectionBoundary>
+        </div>
       </div>
 
       {editOpen ? (

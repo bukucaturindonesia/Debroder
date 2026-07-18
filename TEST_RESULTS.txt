@@ -1,0 +1,85 @@
+DEBRODER ADMIN ORDER DETAIL REACT #130 — LOCAL TEST RESULTS
+
+SOURCE COMMIT:
+74eac91367a20f81f5a24fc341b0e5055ec26947
+
+DEPENDENCY INSTALL (ONE ATTEMPT):
+Command: pnpm install --frozen-lockfile --store-dir /workspace/.pnpm-store
+Result: PARTIAL / ENVIRONMENT NOTICE.
+Details: 494 packages were linked. pnpm then reported ERR_PNPM_IGNORED_BUILDS for esbuild, sharp, and unrs-resolver. No second install was attempted.
+
+TYPECHECK:
+Command attempted: pnpm typecheck
+Result: ENVIRONMENT BLOCKED before TypeScript; pnpm attempted to create /root/.local.
+Fallback command: node_modules/.bin/tsc --noEmit
+Result: FAIL — BASELINE ISSUES.
+Observed unrelated errors:
+- components/CartProvider.tsx:235 — CustomProjectItem.quantity does not exist.
+- components/admin/ProductAdmin.tsx:426 — nullable ProductManagerPayload.
+- lib/pim-audit-server.ts:212,277,280,282-284 — baseline audit typing/parser errors.
+- lib/variant-matrix.ts:148 — snapshot/null assignment.
+- test/pim-phase6-export-reconciliation.test.ts:88,178 — ArrayBuffer type mismatch.
+Changed-file TypeScript errors observed: NONE.
+
+LINT:
+Command: node_modules/.bin/eslint .
+Result: PASS — 0 errors, 28 baseline warnings.
+Changed-file lint errors: NONE.
+
+TARGETED TEST (ONE TARGETED COMMAND):
+Command: node_modules/.bin/vitest run test/admin-order-detail-react130.test.ts
+Result: FAIL — 5/6 passed.
+Failure classification: test-harness mismatch. Direct SSR execution used Vitest's classic JSX runtime and raised `React is not defined`; this was not React #130 and did not indicate an undefined element export.
+Correction: test now asserts each React element's `type` identity directly, which is the relevant React #130 contract.
+Targeted command was not retried without owner GO.
+
+FULL TEST SUITE (ONE ATTEMPT):
+Command: node_modules/.bin/vitest run
+Result: BASELINE FAILURES — 40 files; 35 passed, 5 failed. 284 tests; 278 passed, 6 failed.
+React #130 regression file in full suite: PASS — 6/6.
+Unrelated baseline failures:
+- test/custom-commerce.test.ts — 1 failure.
+- test/pim-phase6-export-reconciliation.test.ts — 1 failure.
+- test/custom-order-end-to-end-revision.test.ts — 2 failures.
+- test/indonesia-region-seed.test.ts — 1 failure.
+- test/custom-checkout-structured-address-hotfix.test.ts — 1 failure.
+No baseline test was changed to manufacture PASS.
+
+CLEAN PRODUCTION BUILD (ONE ATTEMPT):
+Command: node_modules/.bin/next build
+Build cache: NOT USED; the working copy had no pre-existing .next cache.
+Result: FAIL after `Compiled successfully`.
+Attempted-import warning: REMOVED / NOT OBSERVED.
+Blocking error: components/CartProvider.tsx:235 — `quantity` missing on CustomProjectItem (baseline/out of scope).
+Final package prebuild change was not followed by a build retry because owner GO is required for retries.
+
+PRODUCTION RUNTIME SMOKE:
+NOT RUN — clean build did not complete.
+
+DIRECT ROUTE `/admin/orders/[id]`:
+NOT RUN — authenticated browser/runtime unavailable.
+
+ORDER-TYPE MATRIX:
+- Ready Stock: static workspace selection PASS; browser/action NOT RUN.
+- Custom non-Jersey: static workspace selection PASS; browser/action NOT RUN.
+- Jersey Ready Stock: static workspace selection PASS; Jersey source unchanged; browser/action NOT RUN.
+- Jersey Custom: static workspace selection PASS; Jersey source unchanged; browser/action NOT RUN.
+- Historical/legacy: standard fallback and warning helper PASS; browser/action NOT RUN.
+- Order without payment: static workspace selection PASS; payment action NOT RUN.
+- Order without quotation: renderer has no quotation dependency; browser/action NOT RUN.
+- Pickup: business flow unchanged; browser/action NOT RUN.
+- External courier: business flow unchanged; browser/action NOT RUN.
+- Invalid/missing timestamp: helper matrix PASS for null, undefined, empty, invalid string, NaN, and valid ISO.
+
+STATIC SAFETY GATES:
+- Changed-files diff/check: PASS.
+- Conflict-marker scan: PASS.
+- Secret-pattern scan: PASS.
+- JSON config parse: PASS.
+- Static Vercel compatibility: PASS with owner build/retest required; no .vercel state or deployment command used.
+
+UNVERIFIED:
+- Preview/browser absence of client-side exception.
+- Refresh/direct navigation under authenticated Admin session.
+- Review, pricing, customer verification, payment verification, and lifecycle actions.
+- Real production/historical records.
