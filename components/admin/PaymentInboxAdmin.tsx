@@ -6,6 +6,7 @@ import { createSupabaseClient } from "@/lib/supabase";
 import { AdminPageHeader } from "@/components/admin/layout/AdminPageHeader";
 import { AdminErrorState, AdminLoadingState } from "@/components/admin/ui/AdminFeedback";
 import { getPaymentStatusLabel } from "@/lib/ui-language";
+import { PaymentSettingsAdmin } from "@/components/admin/PaymentSettingsAdmin";
 
 type Tab = "pending" | "verified" | "rejected" | "correction" | "all";
 type PaymentInboxRow = {
@@ -62,6 +63,7 @@ export function PaymentInboxAdmin() {
 
   return <main className="grid gap-6 text-brand-charcoal">
     <AdminPageHeader eyebrow="ANTREAN KERJA" title="Pembayaran" description="Periksa bukti pembayaran dari satu antrean, lalu lanjutkan keputusan pada detail pesanan." />
+    <PaymentSettingsAdmin />
     <div className="flex flex-wrap gap-2" role="tablist" aria-label="Filter pembayaran">
       {TABS.map((item) => { const count = item.id === "all" ? rows.length : item.id === "correction" ? rows.filter((row) => row.status === "refunded").length : rows.filter((row) => row.status === item.id).length; return <button key={item.id} type="button" role="tab" aria-selected={tab === item.id} onClick={() => setTab(item.id)} className={`min-h-11 rounded-full px-4 text-sm font-semibold ${tab === item.id ? "bg-brand-charcoal text-white" : "border border-brand-softGray bg-white"}`}>{item.label} · {count}</button>; })}
     </div>

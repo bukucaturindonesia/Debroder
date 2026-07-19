@@ -1,42 +1,67 @@
-NAMA PEKERJAAN
-DEBRODER — Standardisasi Bahasa Seluruh UI Publik dan Admin
+WORK NAME:
+DEBRODER Payment Verification & Post-Payment Order Fulfillment
 
-BASELINE
-Commit source: 2d3960c0ee6e3ebc3f4ed4edd7fa24b345af8004
-Checkpoint: source yang diberikan owner melalui Debroder(12).zip.
+BASELINE:
+- Owner source archive: Debroder(14).zip
+- Included Git HEAD: 747038bdd494739cfddffe41ccbf2771d48e95a2
+- Content delta was prepared from HEAD after confirming the archive's apparent
+  repository-wide modifications were line-ending-only.
 
-SCOPE
-Perubahan copy UI publik dan admin, kamus istilah, pemetaan status terpusat, fallback aman, serta test statis bahasa. Layout, route, business logic, API, database, enum, permission, lifecycle, dan perhitungan commerce dipertahankan.
+SCOPE:
+- Central payment-method settings.
+- Customer payment instructions, safe order summary, and proof submission.
+- Bank-mutation review workspace and server-side verification gate.
+- Funds-not-found, correction, rejection, partial payment, and overpayment.
+- Ready Stock versus Custom post-payment routing.
+- Ready Stock and Custom final-check gate before shipping/pickup.
+- Targeted regression contracts including Jersey and React #130 coverage files.
 
-FILE YANG HARUS DIHAPUS MANUAL
-NONE
+FILES TO DELETE MANUALLY:
+- NONE
 
-MIGRATION
-NONE
+MIGRATION:
+- REQUIRED: supabase/migrations/20260719140000_payment_verification_and_fulfillment.sql
+- Apply only in a controlled owner Preview database after all earlier migrations,
+  especially 20260718180000, 20260718181000, 20260718182000,
+  20260718182500, and 20260719110000.
+- Remote migration performed by Codex: NONE.
 
-HASIL LOCAL GATES
-- Dependency install: ENVIRONMENT BLOCKED — pnpm ENOENT saat membuat /root/.local; dijalankan satu kali dan tidak diulang.
-- TypeScript: ENVIRONMENT BLOCKED — compiler tidak mulai; no source error observed.
-- Lint: ENVIRONMENT BLOCKED — linter tidak mulai; no source error observed.
-- Targeted tests: ENVIRONMENT BLOCKED — Vitest tidak mulai; no source error observed.
-- Full tests: ENVIRONMENT BLOCKED — test runner tidak mulai; no source error observed.
-- Production build: ENVIRONMENT BLOCKED — Next.js build tidak mulai; no source error observed.
-- Changed-files audit: PASS.
-- Conflict scan: PASS.
+LOCAL GATES:
+- Dependency install: ENVIRONMENT BLOCKED; pnpm failed once with ENOENT while
+  creating /root/.local. No retry was performed.
+- TypeScript: ENVIRONMENT BLOCKED; tsc executable unavailable.
+- Lint: ENVIRONMENT BLOCKED; eslint executable unavailable.
+- Targeted tests: ENVIRONMENT BLOCKED; vitest executable unavailable.
+- Full tests: ENVIRONMENT BLOCKED; vitest executable unavailable.
+- Production build: ENVIRONMENT BLOCKED; prebuild could not start because
+  vitest executable was unavailable.
+- Changed-files diff/whitespace check: PASS.
+- Conflict-marker scan: PASS.
 - Secret scan: PASS.
-- Static Vercel compatibility preflight: PASS untuk path/config yang berubah; build owner tetap wajib.
+- TypeScript non-TSX syntax check with Node strip-types: PASS.
+- SQL dollar-quote structure and destructive-statement scan: PASS.
+- Static Vercel compatibility preflight: PASS.
 
-BATAS VERIFIKASI
-STATIC AUDIT ONLY. Browser dan viewport tidak diverifikasi. Vercel Preview dikelola dan diverifikasi owner.
+VERIFICATION BOUNDARY:
+- STATIC AUDIT ONLY.
+- Browser/viewport/runtime verification was not available.
+- Migration was not executed against local or remote Supabase.
+- Direct /admin/orders/[id] browser opening and real Ready Stock, Custom,
+  Jersey, historical, shipping, and pickup records require owner Preview.
 
-RISIKO
-- TypeScript/lint/test/build belum dapat divalidasi di runner lokal akibat environment.
-- Luas copy audit mencakup banyak UI existing; owner perlu smoke test route representatif di Preview.
-- Kode diagnostik, SKU, ID, nama format file, dan istilah industri resmi sengaja dipertahankan.
+RISKS:
+- Source expects the additive migration; apply the migration before deploying
+  this application source.
+- No payment method is seeded or hardcoded. An authorized Admin must configure
+  and activate at least one complete method before new payment links can be
+  issued.
+- SQL compilation and transactional behavior require controlled Preview
+  verification because the local dependency/database runner was unavailable.
+- Existing production data was not inspected or changed.
 
-CARA COPY KE ROOT REPOSITORY
-1. Extract ZIP ke folder sementara.
-2. Salin seluruh isi paket ke root repository dengan struktur path tetap.
-3. Pilih Replace/Merge untuk file existing.
-4. Tidak ada file yang perlu dihapus atau di-rename.
-5. Jalankan quality gate dan Preview melalui environment owner.
+COPY TO REPOSITORY ROOT:
+1. Extract the ZIP into a temporary folder.
+2. Copy all extracted paths into the repository root with path structure kept.
+3. Replace matching files; no file deletion or rename is required.
+4. Apply the migration in controlled Preview before deploying source.
+5. Configure one active payment method, then run build and Preview flow tests.

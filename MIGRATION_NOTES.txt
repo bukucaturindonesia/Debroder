@@ -1,36 +1,50 @@
-MIGRATION: supabase/migrations/20260719110000_admin_order_pricing_workspace.sql
-STATUS: CREATED LOCALLY — NOT APPLIED
-REMOTE SUPABASE: UNCHANGED
+MIGRATION:
+supabase/migrations/20260719140000_payment_verification_and_fulfillment.sql
 
-WHY REQUIRED
-The existing schema persisted immutable sent quote versions but had no pricing-draft contract. The old send RPC required a final non-zero order total while no Stage 3 operation could create that total. UI-only changes could not safely solve this data-flow gap.
+TYPE:
+- Additive forward migration.
+- No table/data deletion, truncate, RLS disable, reset, or remote execution.
 
-ADDITIVE CHANGES
-- orders.custom_pricing_draft jsonb
-- orders.custom_pricing_draft_version integer
-- orders.custom_pricing_draft_updated_at timestamptz
-- orders.custom_pricing_draft_updated_by uuid
-- custom_order_quotation_versions.finalization_key text plus partial unique index
+ADDS:
+- payment_method_settings table, constraints, index, RLS, and audit-backed
+  management RPC.
+- order_payments reported/verified mutation fields, five checklist fields,
+  review outcome, settlement classification, destination setting, reviewer,
+  and normalized unique bank-reference index.
+- submit_customer_order_payment_v2.
+- review_order_payment with row lock, stale record guard, destination match,
+  duplicate reference guard, and outcome handling.
+- complete_fulfillment_final_verification and a generic final-check trigger.
 
-RPC CHANGES
-- build_custom_order_pricing_v1: private server normalizer/recalculator.
-- approve_custom_order_review_v1: replaces ten micro-checkboxes with the two owner-approved confirmations.
-- save_custom_order_pricing_draft_v1: authorized, locked, versioned draft save without lifecycle transition.
-- finalize_custom_order_pricing_v1: authorized, server-recalculated, immutable, idempotent quotation finalization.
-- send_custom_order_quotation_v1: retained by signature but retired with an explicit error so the old checkbox-only bypass cannot be used.
+REPLACES IN PLACE:
+- refresh_order_payment_summary so verified totals use verified_amount while
+  preserving payment requirement, stock reservation, cancellation, and stock
+  consumption guards.
+- capture_order_payment_activity so funds-not-found/correction/rejection and
+  verified mutation metadata are append-only audit events.
 
-SECURITY
-- Existing order.edit is the mutation permission; no role or permission was added.
-- Order row is locked before draft/final mutations.
-- PUBLIC/anon/default authenticated execute is revoked, then the intended authenticated/service_role execution is explicitly granted.
-- Customer API continues to use the existing private-token/service route and receives only finalized pricing_components. internal_note is removed from that snapshot.
+ACL / RLS:
+- payment_method_settings has RLS enabled; public/anon/authenticated direct
+  table access is revoked; service_role server access is retained.
+- Settings and review RPCs require authenticated Admin plus database permission.
+- Customer v2 submission remains service-role-only through the public server route.
+- Authenticated legacy verify/reject RPC grants are revoked to close checklist
+  bypass; service_role remains for trusted server composition.
 
-ROLLBACK
-The migration includes owner guidance. Before real use, restore prior approve/send RPC definitions, drop new RPC/helper, index/column, and draft columns. After data exists, preserve history and use a forward correction. Never delete orders, quotation versions, approvals, payments, PIM, or Jersey data.
+APPLY ORDER:
+1. Verify all prior migrations through 20260719110000 are applied in Preview.
+2. Apply 20260719140000_payment_verification_and_fulfillment.sql once.
+3. Inspect table/RPC/RLS/grants and configure one complete inactive method.
+4. Activate it only after account/QRIS data is verified by owner.
+5. Deploy source to Preview and execute payment/lifecycle test matrix.
 
-OWNER PREVIEW CHECKS
-1. Apply only after reviewing dependencies through 20260718180000_custom_order_end_to_end_revision.sql.
-2. Save an incomplete draft; confirm lifecycle remains under_review and blockers persist.
-3. Save a valid draft; confirm server totals match product snapshot plus editable lines.
-4. Finalize twice with the same key; confirm one quote version and one lifecycle transition.
-5. Approve/revise through the existing customer link and verify locked total, payment prerequisite, audit, and history.
+RECOVERY:
+- Application rollback should precede database recovery.
+- Deactivate all payment_method_settings.
+- Restore prior RPC grants only if the old application must run temporarily.
+- Preserve settings and additive verification/final-check columns as audit data.
+- Do not delete order, payment, proof, fulfillment, stock, or history records.
+
+REMOTE SUPABASE:
+- NOT ACCESSED
+- NOT MODIFIED

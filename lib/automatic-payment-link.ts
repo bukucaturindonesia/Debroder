@@ -44,12 +44,20 @@ export async function ensureAutomaticPaymentLink(
   const now = new Date();
   const nowIso = now.toISOString();
 
-  const { data: candidates, error: candidateError } = await client
-    .from("payment_submission_links")
-    .select("id,expires_at,max_uses,used_count,revoked_at,archived_at,created_by")
-    .eq("order_id", order.id)
-    .order("created_at", { ascending: false });
+  const [{ data: candidates, error: candidateError }, { data: activeMethods, error: methodError }] = await Promise.all([
+    client.from("payment_submission_links")
+      .select("id,expires_at,max_uses,used_count,revoked_at,archived_at,created_by")
+      .eq("order_id", order.id)
+      .order("created_at", { ascending: false }),
+    client.from("payment_method_settings")
+      .select("expires_in_hours")
+      .eq("is_active", true)
+      .is("archived_at", null)
+      .order("sort_order")
+  ]);
   if (candidateError) throw new Error(candidateError.message);
+  if (methodError) throw new Error(methodError.message);
+  if (!activeMethods?.length) return { blocker: "Metode pembayaran belum diaktifkan.", publicUrl: null, link: null };
 
   const active = (candidates ?? []).find((link) =>
     !link.created_by && !link.revoked_at && !link.archived_at && new Date(link.expires_at).getTime() > now.getTime() && Number(link.used_count) < Number(link.max_uses)
@@ -76,7 +84,8 @@ export async function ensureAutomaticPaymentLink(
 
   const linkId = randomUUID();
   const token = deriveAutomaticPaymentToken(order.id, linkId, env.serviceRoleKey);
-  const expiresAt = new Date(now.getTime() + 30 * 86_400_000).toISOString();
+  const expiryHours = Math.min(...activeMethods.map((method) => Number(method.expires_in_hours || 24)));
+  const expiresAt = new Date(now.getTime() + expiryHours * 3_600_000).toISOString();
   const { data: created, error: createError } = await client.from("payment_submission_links").insert({
     id: linkId,
     order_id: order.id,

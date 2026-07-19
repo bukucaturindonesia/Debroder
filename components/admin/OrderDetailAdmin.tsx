@@ -45,6 +45,8 @@ type Order = {
   payment_effective_total: number;
   payment_production_eligible: boolean;
   payment_balance: number;
+  payment_method: string | null;
+  payment_status: string;
   currency: string;
   converted_at: string | null;
   archived_at: string | null;
@@ -168,7 +170,7 @@ export function OrderDetailAdmin() {
     const [orderResult, itemResult, jobResult, fulfillmentResult] = await Promise.all([
       supabase
         .from("orders")
-        .select("id,order_number,quotation_id,customer_name,company_name,customer_phone,customer_email,shipping_address,delivery_method,customer_notes,admin_notes,status,pricing_status,custom_quote_status,custom_project_snapshot,subtotal_amount,total_amount,payment_required_amount,payment_effective_total,payment_balance,payment_production_eligible,currency,converted_at,archived_at,checkout_source,whatsapp_confirmed_at")
+        .select("id,order_number,quotation_id,customer_name,company_name,customer_phone,customer_email,shipping_address,delivery_method,customer_notes,admin_notes,status,pricing_status,custom_quote_status,custom_project_snapshot,subtotal_amount,total_amount,payment_required_amount,payment_effective_total,payment_balance,payment_method,payment_status,payment_production_eligible,currency,converted_at,archived_at,checkout_source,whatsapp_confirmed_at")
         .eq("id", orderId)
         .maybeSingle(),
       supabase
@@ -334,7 +336,8 @@ export function OrderDetailAdmin() {
   const pricingIsFinal = order.pricing_status === "final";
   const estimate = projectEstimate(customProjects);
   const canOpenPayment = pricingIsFinal && (workspaceKind === "standard" || order.custom_quote_status === "locked");
-  const canOpenJobOrder = Boolean(jobOrder) || order.payment_production_eligible;
+  const canOpenJobOrder = Boolean(jobOrder)
+    || (workspaceKind === "custom" && order.payment_production_eligible);
   const canOpenFulfillment = Boolean(fulfillment)
     || (workspaceKind === "standard" && order.payment_production_eligible)
     || new Set([

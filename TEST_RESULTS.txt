@@ -1,39 +1,47 @@
-DEBRODER UI LANGUAGE STANDARDIZATION — LOCAL TEST RESULTS
+DEPENDENCY INSTALL:
+- COMMAND: pnpm install --frozen-lockfile
+- RESULT: ENVIRONMENT BLOCKED
+- ERROR: ENOENT creating /root/.local
+- RETRY: NONE
 
-Dependency install
-Command: pnpm install --frozen-lockfile
-Result: ENVIRONMENT BLOCKED
-Detail: ENOENT: no such file or directory, mkdir '/root/.local'.
+TYPESCRIPT:
+- COMMAND: npm run typecheck
+- RESULT: ENVIRONMENT BLOCKED
+- DETAIL: tsc: not found
 
-TypeScript
-Command: pnpm typecheck
-Result: ENVIRONMENT BLOCKED — compiler did not start; no source error observed.
+LINT:
+- COMMAND: npm run lint
+- RESULT: ENVIRONMENT BLOCKED
+- DETAIL: eslint: not found
 
-Lint
-Command: pnpm lint
-Result: ENVIRONMENT BLOCKED — linter did not start; no source error observed.
+TARGETED TESTS:
+- COMMAND: npm run test -- test/payment-verification-workspace.test.ts
+  test/post-payment-fulfillment-routing.test.ts
+  test/admin-order-detail-react130.test.ts test/jersey-commerce.test.ts
+- RESULT: ENVIRONMENT BLOCKED
+- DETAIL: vitest: not found
 
-Targeted tests
-Command: pnpm exec vitest run test/ui-language-standardization.test.ts test/admin-order-detail-react130.test.ts test/admin-order-pricing-workspace.test.ts
-Result: ENVIRONMENT BLOCKED — Vitest did not start; no source error observed.
+FULL TESTS:
+- COMMAND: npm test
+- RESULT: ENVIRONMENT BLOCKED
+- DETAIL: vitest: not found
 
-Full tests
-Command: pnpm test
-Result: ENVIRONMENT BLOCKED — test runner did not start; no source error observed.
+PRODUCTION BUILD:
+- COMMAND: npm run build
+- RESULT: ENVIRONMENT BLOCKED
+- DETAIL: prebuild could not start because vitest was not found
 
-Production build
-Command: pnpm build
-Result: ENVIRONMENT BLOCKED — build did not start; no source error observed.
+STATIC GATES:
+- Node strip-types syntax check for changed .ts files: PASS
+- SQL dollar-quote pairing: PASS (14 markers)
+- Destructive SQL scan: PASS
+- Changed-files-only diff/whitespace check: PASS
+- Conflict-marker scan: PASS
+- Secret/token scan: PASS
+- Static Vercel preflight: PASS
+- Browser verification: NOT RUN / STATIC AUDIT ONLY
 
-Static checks
-- Changed-files-only path audit: PASS
-- API/database/migration path protection: PASS
-- Raw payload.error UI scan: PASS (0)
-- Critical forbidden-copy scan: PASS (0)
-- Raw status direct-render audit: PASS; remaining candidates use badge/label mapping or select values
-- Conflict-marker scan: PASS (0)
-- Secret scan: PASS (0)
-- Browser verification: NOT RUN — STATIC AUDIT ONLY
-
-LOCAL ENVIRONMENT: BLOCKED
-VERCEL BUILD: OWNER VERIFICATION REQUIRED
+INTERPRETATION:
+ENVIRONMENT BLOCKED — NO SOURCE ERROR OBSERVED.
+These results do not prove TypeScript, lint, tests, build, SQL runtime, or
+browser flows pass. Owner Preview verification is required.

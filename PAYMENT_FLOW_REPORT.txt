@@ -1,0 +1,53 @@
+CUSTOMER PAYMENT INSTRUCTIONS:
+- /payment/[token] displays order number, customer, item summary, totals,
+  verified amount, balance, requirement, expiry, and dynamic active methods.
+- Account/QRIS details, copy actions, method instructions, and a clear warning
+  explain that proof upload is not final payment confirmation.
+
+PAYMENT SETTINGS:
+- payment_method_settings is the central source for bank transfer, QRIS, and
+  e-wallet destinations, owner/account details, instructions, expiry, sort,
+  and active state.
+- Authorized Admins manage settings from /admin/payments.
+- No bank account, QRIS, or financial destination is hardcoded or seeded.
+
+PAYMENT PROOF UPLOAD:
+- Customer submission remains token-protected, server-only, and idempotent.
+- Files remain in private payment-proofs storage.
+- Limits: PNG/JPG/PDF, maximum 5 MB, MIME allowlist, and signature validation.
+- Deterministic idempotency paths plus database keys prevent duplicate payment
+  records and make retry reuse the same order/payment.
+
+ADMIN PAYMENT WORKSPACE:
+- Displays the customer report, private proof, destination method, mutation
+  amount/account/time/reference, internal notes, and five required checks.
+- Outcomes: Verify Funds, Funds Not Found, Request Correction, and Reject.
+- Customer-safe history exposes correction/funds-not-found/rejection reasons
+  without internal notes or proof URLs.
+
+BANK MUTATION CONFIRMATION / SOURCE OF TRUTH:
+- Verification requires actual funds, destination account, amount, timestamp,
+  unique bank reference, active order, pending payment, proof, and fresh row.
+- Bank/provider settlement values are stored separately from reported values.
+- Verified totals use verified_amount, not the customer's claimed amount.
+
+UNDERPAYMENT / OVERPAYMENT:
+- Settlement classification records partial, exact, overpayment,
+  under_reported, or over_reported.
+- Partial values continue to use existing payment requirement/balance logic.
+- Overpayments remain visible in immutable payment history and can use the
+  existing adjustment/refund approval flow.
+
+DUPLICATE PAYMENT PROTECTION / IDEMPOTENCY:
+- Public submissions reuse submission_idempotency_key.
+- Verified bank references have a normalized partial unique index.
+- Review RPC locks payment and order rows and rejects stale timestamps or
+  already-reviewed payments.
+
+AUTHORIZATION / AUDIT:
+- Public clients cannot call submission/review/settings RPCs directly.
+- Admin JWT, role gate, database permission checks, and RPC grants are enforced.
+- Authenticated access to legacy verify/reject RPCs is revoked to prevent
+  checklist bypass; trusted service-role composition is retained server-side.
+- Settings changes and payment outcomes are written to existing audit/history
+  domains. Payment activity remains append-only.
