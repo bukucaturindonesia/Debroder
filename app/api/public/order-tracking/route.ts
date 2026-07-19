@@ -97,7 +97,7 @@ export async function POST(request: Request) {
     ? await ensureAutomaticPaymentLink(client, order as AutomaticPaymentOrder).catch(() => null)
     : null;
 
-  const [itemsResult, quoteResult, fulfillmentResult, activeStageResult] = await Promise.all([
+  const [itemsResult, quoteResult, fulfillmentResult, activeStageResult, pickupResult, cancellationResult, refundResult] = await Promise.all([
     client.from("order_items")
       .select("id,product_name,variant_name,color,size,sku,quantity,unit_price,subtotal,custom_project_id,pricing_status")
       .eq("order_id", order.id).is("archived_at", null).order("created_at"),
@@ -108,7 +108,16 @@ export async function POST(request: Request) {
       .select("method,status,courier,tracking_number,scheduled_at,ready_at,shipped_at,delivered_at,picked_up_at")
       .eq("order_id", order.id).is("archived_at", null).neq("status", "cancelled")
       .order("created_at", { ascending: false }).limit(1).maybeSingle(),
-    client.rpc("resolve_order_active_stage_v1", { p_order_id: order.id })
+    client.rpc("resolve_order_active_stage_v1", { p_order_id: order.id }),
+    client.from("pickup_preparations")
+      .select("id,status,ready_at,pickup_deadline,extension_requested_at,requested_deadline,expired_at")
+      .eq("order_id", order.id).maybeSingle(),
+    client.from("order_cancellation_requests")
+      .select("id,status,reason,requires_refund,requested_at,decision_reason")
+      .eq("order_id", order.id).order("created_at", { ascending: false }).limit(1).maybeSingle(),
+    client.from("refund_cases")
+      .select("id,refund_number,status,amount,sent_at,confirmed_at")
+      .eq("order_id", order.id).order("created_at", { ascending: false }).limit(1).maybeSingle()
   ]);
 
   const fulfillment = fulfillmentResult.data as {
@@ -150,6 +159,14 @@ export async function POST(request: Request) {
       activeStage: activeStageResult.error ? null : activeStageResult.data
     },
     items: itemsResult.data ?? [],
+    customerOperations: {
+      cancellation: cancellationResult.data ?? null,
+      refund: refundResult.data ? {
+        ...refundResult.data,
+        amount: Number(refundResult.data.amount ?? 0)
+      } : null,
+      pickup: pickupResult.data ?? null
+    },
     shippingQuote: quoteResult.data ? {
       version: Number(quoteResult.data.version),
       courier: quoteResult.data.courier,

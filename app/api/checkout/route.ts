@@ -12,6 +12,7 @@ import { priceCustomProject } from "@/lib/custom-commerce/pricing";
 import type { CustomProjectSnapshot } from "@/lib/custom-commerce/types";
 import { getAdminSupabaseEnv } from "@/lib/env";
 import { getAdminSupabaseClient } from "@/lib/supabase/client";
+import { publicApiErrorResponse, safePublicResponse } from "@/lib/public-api-error";
 
 function sha256(value: string) {
   return createHash("sha256").update(value).digest("hex");
@@ -25,6 +26,50 @@ function jsonResponse(body: unknown, status: number, headers?: HeadersInit) {
       ...headers
     }
   });
+}
+
+
+export async function GET(request: Request) {
+  try {
+    const key = new URL(request.url).searchParams.get("idempotencyKey")?.trim() ?? "";
+    if (!/^[a-zA-Z0-9_-]{16,100}$/.test(key)) {
+      return safePublicResponse({ code: "CHECKOUT_RECOVERY_INVALID", error: "Data pemulihan checkout tidak valid." }, 400);
+    }
+    const client = getAdminSupabaseClient();
+    const env = getAdminSupabaseEnv();
+    if (!client || !env) {
+      return safePublicResponse({ code: "CHECKOUT_UNAVAILABLE", error: "Layanan checkout belum tersedia." }, 503);
+    }
+    const { data, error } = await client
+      .from("orders")
+      .select("order_number,status,public_access_token_hash,public_access_token_expires_at")
+      .eq("public_idempotency_key", key)
+      .maybeSingle();
+    if (error) throw error;
+    if (!data) return safePublicResponse({ found: false }, 404);
+
+    const trackingToken = deriveCheckoutTrackingToken(key, env.serviceRoleKey);
+    if (data.public_access_token_hash !== sha256(trackingToken)) {
+      return safePublicResponse({ code: "CHECKOUT_RECOVERY_CONFLICT", error: "Checkout lama tidak dapat dipulihkan dengan aman." }, 409);
+    }
+    if (data.public_access_token_expires_at && new Date(data.public_access_token_expires_at).getTime() <= Date.now()) {
+      return safePublicResponse({ code: "CHECKOUT_RECOVERY_EXPIRED", error: "Tautan checkout lama telah kedaluwarsa." }, 410);
+    }
+    return safePublicResponse({
+      found: true,
+      orderNumber: data.order_number,
+      status: data.status,
+      confirmationUrl: `/order-confirmation/${encodeURIComponent(trackingToken)}`,
+      trackingUrl: `/track-order/${encodeURIComponent(data.order_number)}?token=${encodeURIComponent(trackingToken)}`,
+      trackingToken
+    });
+  } catch (error) {
+    return publicApiErrorResponse(error, "checkout recovery", {
+      code: "CHECKOUT_RECOVERY_FAILED",
+      message: "Checkout lama belum dapat dipulihkan. Coba lagi.",
+      status: 503
+    });
+  }
 }
 
 export async function POST(request: Request) {
@@ -162,8 +207,11 @@ export async function POST(request: Request) {
         error.status
       );
     }
-    console.error("Checkout route failed", { error: error instanceof Error ? error.name : "unknown" });
-    return jsonResponse({ code: "CHECKOUT_UNAVAILABLE", error: "Checkout gagal diproses." }, 503);
+    return publicApiErrorResponse(error, "checkout creation", {
+      code: "CHECKOUT_UNAVAILABLE",
+      message: "Checkout gagal diproses. Keranjang Anda tetap tersimpan.",
+      status: 503
+    });
   }
 }
 

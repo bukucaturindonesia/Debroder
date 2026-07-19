@@ -1,6 +1,7 @@
 import { createHash } from "node:crypto";
 import { ensureAutomaticPaymentLink } from "@/lib/automatic-payment-link-v2";
 import { getAdminSupabaseClient } from "@/lib/supabase/client";
+import { publicApiErrorResponse } from "@/lib/public-api-error";
 
 type Context = { params: Promise<{ token: string }> };
 type PublicOrderRow = {
@@ -146,7 +147,11 @@ export async function GET(_request: Request, context: Context) {
       activeStage
     }, { headers: { "cache-control": "no-store, private" } });
   } catch (error) {
-    return Response.json({ error: error instanceof Error ? error.message : "Order gagal dimuat." }, { status: 500 });
+    return publicApiErrorResponse(error, "public order read", {
+      code: "ORDER_LOAD_FAILED",
+      message: "Pesanan belum dapat dimuat. Coba lagi.",
+      status: 500
+    });
   }
 }
 
@@ -169,7 +174,10 @@ export async function POST(request: Request, context: Context) {
     if (error) throw new Error(error.message);
     return Response.json({ status: (data as { status?: string } | null)?.status ?? "awaiting_payment" });
   } catch (error) {
-    const message = error instanceof Error ? error.message : "Total gagal disetujui.";
-    return Response.json({ error: message }, { status: /stok/i.test(message) ? 409 : 400 });
+    return publicApiErrorResponse(error, "public order action", {
+      code: "ORDER_ACTION_FAILED",
+      message: "Tindakan pesanan belum dapat diproses. Muat ulang status lalu coba lagi.",
+      status: 409
+    });
   }
 }

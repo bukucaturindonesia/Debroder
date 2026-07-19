@@ -33,11 +33,15 @@ export const QUOTATION_ROLES: readonly AdminRole[] = ["owner", "superadmin", "su
 export const QUOTATION_VIEW_ROLES: readonly AdminRole[] = [...QUOTATION_ROLES, "designer"];
 export const REPEAT_ORDER_ROLES: readonly AdminRole[] = QUOTATION_ROLES;
 const ALL_STAFF_ROLES: readonly AdminRole[] = ADMIN_ROLES.filter((role) => role !== "admin_guest");
-const ORDER_READ_ROLES: readonly AdminRole[] = ["owner", "superadmin", "super_admin", "admin", "sales_admin", "finance", "production_admin", "store_staff"];
+const ORDER_READ_ROLES: readonly AdminRole[] = ["owner", "superadmin", "super_admin", "admin", "sales_admin", "finance", "production_admin", "quality_control", "store_staff"];
 const QUOTATION_READ_ROLES: readonly AdminRole[] = QUOTATION_VIEW_ROLES;
 const PRODUCTION_ROLES: readonly AdminRole[] = ["owner", "superadmin", "super_admin", "admin", "production_admin", "operator"];
 const QC_ROLES: readonly AdminRole[] = ["owner", "superadmin", "super_admin", "admin", "production_admin", "quality_control"];
 const SHIPPING_ROLES: readonly AdminRole[] = ["owner", "superadmin", "super_admin", "admin", "production_admin", "store_staff"];
+const TASK_ROLES: readonly AdminRole[] = ["owner", "superadmin", "super_admin", "admin", "sales_admin", "finance", "production_admin", "operator", "quality_control", "store_staff"];
+const INVENTORY_OPERATION_ROLES: readonly AdminRole[] = ["owner", "superadmin", "super_admin", "admin", "production_admin", "store_staff"];
+const REFUND_ROLES: readonly AdminRole[] = ["owner", "superadmin", "super_admin", "admin", "sales_admin", "finance"];
+const OUTBOX_ROLES: readonly AdminRole[] = ["owner", "superadmin", "super_admin", "admin", "sales_admin", "finance", "store_staff"];
 export const PRODUCT_MAINTENANCE_ROLES: readonly AdminRole[] = ["owner", "superadmin", "super_admin"];
 const ACCESS_READ_ROLES: readonly AdminRole[] = PRODUCT_MAINTENANCE_ROLES;
 const AUDIT_ROLES: readonly AdminRole[] = ["owner", "superadmin", "super_admin"];
@@ -81,7 +85,9 @@ export const adminNavigationGroups: readonly AdminNavigationGroup[] = [
       label: "Pesanan",
       roles: ALL_STAFF_ROLES,
       children: [
+        { label: "Kotak Tugas", href: "/admin/order-tasks", roles: TASK_ROLES },
         { label: "Pesanan", href: "/admin/orders", roles: ORDER_READ_ROLES, exact: true },
+        { label: "Pembayaran", href: "/admin/payments", roles: REFUND_ROLES },
         { label: "Pesanan Ulang", href: "/admin/repeat-orders", roles: REPEAT_ORDER_ROLES },
         { label: "Penawaran Harga", href: "/admin/orders/quotations", roles: QUOTATION_READ_ROLES },
         { label: "Surat Perintah Kerja", href: "/admin/job-orders", roles: PRODUCTION_ROLES },
@@ -89,6 +95,9 @@ export const adminNavigationGroups: readonly AdminNavigationGroup[] = [
         { label: "Status Produksi", href: "/admin/production", roles: PRODUCTION_ROLES },
         { label: "Pemeriksaan Kualitas", href: "/admin/quality-control", roles: QC_ROLES },
         { label: "Pengiriman & Ambil di Toko", href: "/admin/fulfillments", roles: SHIPPING_ROLES },
+        { label: "Stok Lokasi & Pickup", href: "/admin/inventory-operations", roles: INVENTORY_OPERATION_ROLES },
+        { label: "Pembatalan & Refund", href: "/admin/refunds", roles: REFUND_ROLES },
+        { label: "Outbox Pelanggan", href: "/admin/customer-outbox", roles: OUTBOX_ROLES },
         { label: "Notifikasi", href: "/admin/notifications", roles: ALL_STAFF_ROLES }
       ]
     }]
@@ -100,7 +109,8 @@ export const adminNavigationGroups: readonly AdminNavigationGroup[] = [
       { label: "Pengaturan", href: "/admin/website-settings", roles: FULL_ADMIN_ROLES },
       { label: "Penomoran Dokumen", href: "/admin/document-numbering", roles: FULL_ADMIN_ROLES },
       { label: "Pengguna & Hak Akses", href: "/admin/access-control", roles: ACCESS_READ_ROLES },
-      { label: "Riwayat Aktivitas", href: "/admin/audit-log", roles: AUDIT_ROLES }
+      { label: "Riwayat Aktivitas", href: "/admin/audit-log", roles: AUDIT_ROLES },
+      { label: "Kesehatan Operasional", href: "/admin/operations-health", roles: AUDIT_ROLES }
     ]
   }
 ] as const;
@@ -225,6 +235,11 @@ export function roleCanAccessPath(role: AdminRole, pathname: string) {
     return hasRole(role, FULL_ADMIN_ROLES);
   }
   if (pathname.startsWith("/admin/notifications")) return true;
+  if (pathname.startsWith("/admin/order-tasks")) return hasRole(role, TASK_ROLES);
+  if (pathname.startsWith("/admin/inventory-operations")) return hasRole(role, INVENTORY_OPERATION_ROLES);
+  if (pathname.startsWith("/admin/refunds")) return hasRole(role, REFUND_ROLES);
+  if (pathname.startsWith("/admin/customer-outbox")) return hasRole(role, OUTBOX_ROLES);
+  if (pathname.startsWith("/admin/operations-health")) return hasRole(role, AUDIT_ROLES);
   if (pathname === "/admin/pim-v2" || pathname.startsWith("/admin/pim-v2/")) {
     return hasRole(role, PRODUCT_MAINTENANCE_ROLES);
   }
@@ -247,6 +262,11 @@ export function getCurrentNavigationLabel(pathname: string) {
   if (pathname === "/admin/custom-commerce") return "CMS / Custom";
   if (pathname === "/admin/access-control") return "Pengguna & Hak Akses";
   if (pathname === "/admin/payments") return "Pembayaran";
+  if (pathname === "/admin/order-tasks") return "Kotak Tugas";
+  if (pathname === "/admin/inventory-operations") return "Stok Lokasi & Pickup";
+  if (pathname === "/admin/refunds") return "Pembatalan & Refund";
+  if (pathname === "/admin/customer-outbox") return "Outbox Pelanggan";
+  if (pathname === "/admin/operations-health") return "Kesehatan Operasional";
   if (pathname === "/admin/reports") return "Laporan Operasional";
   if (pathname === "/admin/pim-v2") return "Manajemen Produk Lanjutan";
   if (pathname === "/admin/pim-manager") return "Pemeliharaan Produk";
@@ -295,5 +315,5 @@ export function getAdminBreadcrumbs(pathname: string): AdminBreadcrumbItem[] {
 }
 
 export function isLegacyAdminRoute(pathname: string) {
-  return !(pathname.startsWith("/admin/orders") || pathname.startsWith("/admin/document-numbering") || pathname.startsWith("/admin/job-orders") || pathname.startsWith("/admin/work-items") || pathname.startsWith("/admin/production") || pathname.startsWith("/admin/quality-control") || pathname.startsWith("/admin/fulfillments") || pathname.startsWith("/admin/notifications") || pathname.startsWith("/admin/access-control") || pathname.startsWith("/admin/audit-log") || pathname.startsWith("/admin/repeat-orders") || pathname.startsWith("/admin/custom-commerce"));
+  return !(pathname.startsWith("/admin/orders") || pathname.startsWith("/admin/order-tasks") || pathname.startsWith("/admin/inventory-operations") || pathname.startsWith("/admin/refunds") || pathname.startsWith("/admin/customer-outbox") || pathname.startsWith("/admin/operations-health") || pathname.startsWith("/admin/document-numbering") || pathname.startsWith("/admin/job-orders") || pathname.startsWith("/admin/work-items") || pathname.startsWith("/admin/production") || pathname.startsWith("/admin/quality-control") || pathname.startsWith("/admin/fulfillments") || pathname.startsWith("/admin/notifications") || pathname.startsWith("/admin/access-control") || pathname.startsWith("/admin/audit-log") || pathname.startsWith("/admin/repeat-orders") || pathname.startsWith("/admin/custom-commerce"));
 }

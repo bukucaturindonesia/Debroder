@@ -47,6 +47,11 @@ type TrackingPayload = {
     custom_project_id?: string | null;
     pricing_status?: string;
   }>;
+  customerOperations: {
+    cancellation: { id: string; status: string; reason: string; requires_refund: boolean; requested_at: string; decision_reason: string | null } | null;
+    refund: { id: string; refund_number: string; status: string; amount: number; sent_at: string | null; confirmed_at: string | null } | null;
+    pickup: { id: string; status: string; ready_at: string | null; pickup_deadline: string | null; extension_requested_at: string | null; requested_deadline: string | null; expired_at: string | null } | null;
+  };
   shippingQuote: {
     version: number;
     courier: string;
@@ -160,6 +165,7 @@ export function GuestOrderTracking({
         {data ? (
           <TrackingDetail
             data={data}
+            credentials={lastCredentials}
             refreshing={loading}
             onRefresh={() => lastCredentials ? void lookup(lastCredentials) : undefined}
           />
@@ -169,7 +175,7 @@ export function GuestOrderTracking({
   );
 }
 
-function TrackingDetail({ data, refreshing, onRefresh }: { data: TrackingPayload; refreshing: boolean; onRefresh: () => void }) {
+function TrackingDetail({ data, credentials, refreshing, onRefresh }: { data: TrackingPayload; credentials: TrackingCredentials | null; refreshing: boolean; onRefresh: () => void }) {
   const { order } = data;
   const isCustom = data.items.some((item) => Boolean(item.custom_project_id));
   const isPickup = order.fulfillmentMethod === "pickup";
@@ -219,6 +225,14 @@ function TrackingDetail({ data, refreshing, onRefresh }: { data: TrackingPayload
           ) : null}
         </CustomerOrderStatusCard>
       </div>
+
+      <CustomerOperationsPanel
+        orderNumber={order.orderNumber}
+        credentials={credentials}
+        operations={data.customerOperations}
+        terminal={["completed", "selesai", "cancelled", "expired", "picked_up"].includes(order.status)}
+        onChanged={onRefresh}
+      />
 
       {pickupNotReady ? (
         <section className="mt-5 rounded-[24px] border border-amber-300 bg-amber-50 p-5 text-sm text-amber-950">
@@ -293,6 +307,106 @@ function trackingPrimaryAction(action: ReturnType<typeof resolveCustomerOrderPre
     return <a href={contactHref} target="_blank" rel="noopener noreferrer" className={className}>Hubungi Admin</a>;
   }
   return undefined;
+}
+
+
+function CustomerOperationsPanel({
+  orderNumber,
+  credentials,
+  operations,
+  terminal,
+  onChanged
+}: {
+  orderNumber: string;
+  credentials: TrackingCredentials | null;
+  operations: TrackingPayload["customerOperations"];
+  terminal: boolean;
+  onChanged: () => void;
+}) {
+  const [mode, setMode] = useState<"" | "cancel" | "extend">("");
+  const [reason, setReason] = useState("");
+  const [deadline, setDeadline] = useState("");
+  const [working, setWorking] = useState(false);
+  const [notice, setNotice] = useState("");
+
+  async function submitAction(action: "request_cancellation" | "request_pickup_extension") {
+    if (!credentials || reason.trim().length < 5 || (action === "request_pickup_extension" && !deadline)) return;
+    setWorking(true);
+    setNotice("");
+    try {
+      const response = await fetch("/api/public/order-actions", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({
+          ...credentials,
+          orderNumber,
+          action,
+          reason: reason.trim(),
+          requestedDeadline: deadline ? new Date(deadline).toISOString() : undefined
+        })
+      });
+      const payload = await response.json().catch(() => ({})) as { error?: string };
+      if (!response.ok) throw new Error(payload.error || "Permintaan belum dapat dikirim.");
+      setNotice(action === "request_cancellation" ? "Permintaan pembatalan sudah dikirim ke Admin." : "Permintaan perpanjangan pickup sudah dikirim.");
+      setMode("");
+      setReason("");
+      setDeadline("");
+      onChanged();
+    } catch (error) {
+      setNotice(error instanceof Error ? error.message : "Permintaan belum dapat dikirim.");
+    } finally {
+      setWorking(false);
+    }
+  }
+
+  const pickupCanExtend = operations.pickup && ["ready_for_pickup", "no_show"].includes(operations.pickup.status) && !operations.pickup.extension_requested_at;
+  if (!operations.cancellation && !pickupCanExtend && !operations.refund) return null;
+
+  return (
+    <section className="mt-5 rounded-[24px] border border-black/10 bg-white p-5 text-sm">
+      <h2 className="font-semibold">Bantuan Pesanan</h2>
+      {operations.cancellation ? (
+        <div className="mt-3 rounded-2xl bg-[#f6f5f0] p-4">
+          <p className="font-semibold">Permintaan pembatalan: {operations.cancellation.status.replaceAll("_", " ")}</p>
+          <p className="mt-1 text-black/60">{operations.cancellation.requires_refund ? "Pembatalan memerlukan proses refund dana terverifikasi." : operations.cancellation.reason}</p>
+        </div>
+      ) : !terminal ? (
+        <button type="button" onClick={() => setMode(mode === "cancel" ? "" : "cancel")} className="mt-3 min-h-11 rounded-full border border-black/20 px-5 font-semibold">
+          Ajukan Pembatalan
+        </button>
+      ) : null}
+
+      {operations.refund ? (
+        <div className="mt-3 rounded-2xl bg-emerald-50 p-4 text-emerald-950">
+          <p className="font-semibold">Refund {operations.refund.refund_number}</p>
+          <p className="mt-1">Status: {operations.refund.status.replaceAll("_", " ")} · {formatRupiah(operations.refund.amount)}</p>
+        </div>
+      ) : null}
+
+      {pickupCanExtend ? (
+        <button type="button" onClick={() => setMode(mode === "extend" ? "" : "extend")} className="mt-3 ml-2 min-h-11 rounded-full border border-black/20 px-5 font-semibold">
+          Minta Perpanjangan Pickup
+        </button>
+      ) : null}
+
+      {mode ? (
+        <div className="mt-4 grid gap-3 border-t border-black/10 pt-4">
+          {mode === "extend" ? (
+            <label className="grid gap-2 font-semibold">Batas waktu yang diminta
+              <input type="datetime-local" value={deadline} onChange={(event) => setDeadline(event.target.value)} className="min-h-11 rounded-xl border border-black/15 px-3" />
+            </label>
+          ) : null}
+          <label className="grid gap-2 font-semibold">Alasan
+            <textarea value={reason} onChange={(event) => setReason(event.target.value)} minLength={5} maxLength={1000} rows={3} className="rounded-xl border border-black/15 p-3" />
+          </label>
+          <button type="button" disabled={working || reason.trim().length < 5 || (mode === "extend" && !deadline)} onClick={() => void submitAction(mode === "cancel" ? "request_cancellation" : "request_pickup_extension")} className="min-h-11 rounded-full bg-black px-5 font-semibold text-white disabled:opacity-45">
+            {working ? "Mengirim..." : "Kirim Permintaan"}
+          </button>
+        </div>
+      ) : null}
+      {notice ? <p className="mt-3 rounded-xl bg-[#f6f5f0] p-3">{notice}</p> : null}
+    </section>
+  );
 }
 
 function Disclosure({ title, summary, children }: { title: string; summary: string; children: ReactNode }) {

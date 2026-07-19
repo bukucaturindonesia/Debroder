@@ -1,5 +1,6 @@
 import { hashPaymentToken } from "@/lib/payment-token";
 import { getAdminSupabaseClient } from "@/lib/supabase/client";
+import { publicApiErrorResponse } from "@/lib/public-api-error";
 
 const ALLOWED_TYPES = new Map([
   ["image/png", "png"],
@@ -104,7 +105,11 @@ export async function GET(_request: Request, context: Context) {
       }))
     });
   } catch (error) {
-    return Response.json({ error: error instanceof Error ? error.message : "Data pembayaran gagal dimuat." }, { status: 500 });
+    return publicApiErrorResponse(error, "public payment read", {
+      code: "PAYMENT_LOAD_FAILED",
+      message: "Data pembayaran belum dapat dimuat. Coba lagi.",
+      status: 500
+    });
   }
 }
 
@@ -203,7 +208,11 @@ export async function POST(request: Request, context: Context) {
       const client = getAdminSupabaseClient();
       if (client) await client.storage.from("payment-proofs").remove([uploadedPath]);
     }
-    return Response.json({ error: error instanceof Error ? error.message : "Pembayaran gagal dikirim." }, { status: 400 });
+    return publicApiErrorResponse(error, "public payment submission", {
+      code: "PAYMENT_SUBMISSION_FAILED",
+      message: "Bukti pembayaran belum dapat dikirim. Data Anda tetap aman; coba lagi.",
+      status: 400
+    });
   }
 }
 

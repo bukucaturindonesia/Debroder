@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { type FormEvent, useMemo, useRef, useState } from "react";
+import { type FormEvent, useEffect, useMemo, useRef, useState } from "react";
 import { isCustomProjectCartItem, useCart } from "@/components/CartProvider";
 import { formatRupiah } from "@/lib/url";
 import { removeCustomDraft } from "@/lib/custom-commerce/draft-storage";
@@ -11,6 +11,9 @@ import type { StructuredIndonesiaAddressInput } from "@/lib/indonesia-address";
 
 type StoreOption = { id: string; name: string; address: string; hours: string };
 type CheckoutDraft = { idempotencyKey: string; accessToken: string; confirmationCode: string };
+
+const RECOVERY_KEY = "debroder-checkout-recovery-v1";
+type StoredCheckoutDraft = CheckoutDraft & { createdAt: string };
 
 function createDraft(): CheckoutDraft {
   const compact = () => crypto.randomUUID().replace(/-/g, "");
@@ -27,6 +30,7 @@ export function CheckoutClient({ stores }: { stores: StoreOption[] }) {
   const draft = useRef<CheckoutDraft | null>(null);
   const [fulfillment, setFulfillment] = useState<"pickup" | "shipping">(stores.length ? "pickup" : "shipping");
   const [submitting, setSubmitting] = useState(false);
+  const [recovering, setRecovering] = useState(true);
   const [error, setError] = useState("");
   const [structuredAddress, setStructuredAddress] = useState<StructuredIndonesiaAddressInput>(EMPTY_STRUCTURED_ADDRESS);
   const [formattedStructuredAddress, setFormattedStructuredAddress] = useState("");
@@ -36,6 +40,40 @@ export function CheckoutClient({ stores }: { stores: StoreOption[] }) {
   const unsupportedItems = cart.items.filter((item) => !isCustomProjectCartItem(item) && !item.variantSizeId);
   const subtotal = readyItems.reduce((sum, item) => sum + Number(item.priceValue || 0) * item.quantity, 0)
     + customItems.reduce((sum, item) => sum + Number(item.customProject?.pricing.finalTotal || 0), 0);
+
+  useEffect(() => {
+    let active = true;
+    async function recover() {
+      const stored = readStoredDraft();
+      if (!stored) { if (active) setRecovering(false); return; }
+      draft.current = stored;
+      try {
+        const response = await fetch(`/api/checkout?idempotencyKey=${encodeURIComponent(stored.idempotencyKey)}`, { cache: "no-store" });
+        const payload = await response.json().catch(() => ({})) as { found?: boolean; confirmationUrl?: string; trackingUrl?: string; trackingToken?: string; orderNumber?: string };
+        if (response.ok && payload.found && payload.confirmationUrl) {
+          const trackingToken = payload.trackingToken || stored.accessToken;
+          sessionStorage.setItem(`debroder-order-${trackingToken}`, JSON.stringify({
+            confirmationCode: stored.confirmationCode,
+            orderNumber: payload.orderNumber,
+            trackingUrl: payload.trackingUrl
+          }));
+          sessionStorage.removeItem(RECOVERY_KEY);
+          router.replace(payload.confirmationUrl);
+          return;
+        }
+        if (response.status === 410 || Date.now() - new Date(stored.createdAt).getTime() > 2 * 60 * 60 * 1000) {
+          sessionStorage.removeItem(RECOVERY_KEY);
+          draft.current = null;
+        }
+      } catch {
+        // Keep the draft. A later submit reuses the same idempotency key.
+      } finally {
+        if (active) setRecovering(false);
+      }
+    }
+    void recover();
+    return () => { active = false; };
+  }, [router]);
 
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -47,8 +85,9 @@ export function CheckoutClient({ stores }: { stores: StoreOption[] }) {
     setSubmitting(true);
     setError("");
     const form = new FormData(event.currentTarget);
-    draft.current ??= createDraft();
+    draft.current ??= readStoredDraft() ?? createDraft();
     const currentDraft = draft.current;
+    sessionStorage.setItem(RECOVERY_KEY, JSON.stringify({ ...currentDraft, createdAt: new Date().toISOString() } satisfies StoredCheckoutDraft));
 
     try {
       const response = await fetch("/api/checkout", {
@@ -81,6 +120,7 @@ export function CheckoutClient({ stores }: { stores: StoreOption[] }) {
         orderNumber: payload.orderNumber,
         trackingUrl: payload.trackingUrl
       }));
+      sessionStorage.removeItem(RECOVERY_KEY);
       customItems.forEach((item) => item.customProject ? removeCustomDraft(item.customProject.id) : undefined);
       cart.clearCart();
       router.push(payload.confirmationUrl);
@@ -91,7 +131,7 @@ export function CheckoutClient({ stores }: { stores: StoreOption[] }) {
     }
   }
 
-  if (!cart.isLoaded) return <CheckoutMessage title="Memuat keranjang..." />;
+  if (!cart.isLoaded || recovering) return <CheckoutMessage title={recovering ? "Memulihkan checkout..." : "Memuat keranjang..."} />;
   if (!cart.items.length) return <CheckoutMessage title="Keranjang masih kosong." action="/koleksi" actionLabel="Lihat Koleksi" />;
 
   return (
@@ -154,6 +194,18 @@ export function CheckoutClient({ stores }: { stores: StoreOption[] }) {
       </div>
     </section>
   );
+}
+
+function readStoredDraft(): StoredCheckoutDraft | null {
+  try {
+    const value = sessionStorage.getItem(RECOVERY_KEY);
+    if (!value) return null;
+    const parsed = JSON.parse(value) as Partial<StoredCheckoutDraft>;
+    if (!parsed.idempotencyKey || !parsed.accessToken || !parsed.confirmationCode || !parsed.createdAt) return null;
+    return parsed as StoredCheckoutDraft;
+  } catch {
+    return null;
+  }
 }
 
 function CheckoutMessage({ title, action, actionLabel }: { title: string; action?: string; actionLabel?: string }) {

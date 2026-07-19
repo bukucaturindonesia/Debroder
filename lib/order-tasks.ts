@@ -27,7 +27,17 @@ export const ORDER_TASK_TYPES = [
   "run_final_check",
   "dispatch_shipping",
   "handover_pickup",
-  "resolve_integrity"
+  "resolve_integrity",
+  "stock_transfer",
+  "pickup_prepare",
+  "pickup_extension_review",
+  "pickup_no_show",
+  "cancellation_review",
+  "refund_process",
+  "customer_contact",
+  "shipping_exception",
+  "outbox_failure",
+  "health_reconcile"
 ] as const;
 
 export type OrderTaskType = typeof ORDER_TASK_TYPES[number];
@@ -72,7 +82,17 @@ const TASK_TYPE_LABELS: Record<OrderTaskType, string> = {
   run_final_check: "Lakukan Pengecekan Akhir",
   dispatch_shipping: "Serahkan Pesanan ke Kurir",
   handover_pickup: "Serahkan Pesanan Pickup",
-  resolve_integrity: "Periksa Integritas Pesanan"
+  resolve_integrity: "Periksa Integritas Pesanan",
+  stock_transfer: "Pindahkan Stok",
+  pickup_prepare: "Siapkan Pickup",
+  pickup_extension_review: "Periksa Perpanjangan Pickup",
+  pickup_no_show: "Tangani Pickup Terlambat",
+  cancellation_review: "Periksa Pembatalan",
+  refund_process: "Proses Refund",
+  customer_contact: "Hubungi Pelanggan",
+  shipping_exception: "Tangani Masalah Pengiriman",
+  outbox_failure: "Ulangi Notifikasi Pelanggan",
+  health_reconcile: "Perbaiki Temuan Rekonsiliasi"
 };
 
 const TASK_STATUS_LABELS: Record<OrderTaskStatus, string> = {
