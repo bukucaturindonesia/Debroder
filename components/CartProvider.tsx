@@ -222,12 +222,12 @@ function CustomProjectSummary({ item }: { item: CartItem }) {
   const services = project.items.reduce((sum, projectItem) => sum + projectItem.designPackages.reduce((serviceSum, designPackage) => serviceSum + designPackage.services.length, 0), 0);
   return (
     <div className="mt-5 rounded-[22px] bg-[#f5f5ef] p-4 text-sm leading-6 text-black/70">
-      <p className="text-xs font-bold uppercase tracking-[0.14em] text-black/55">Custom Project</p>
+      <p className="text-xs font-bold uppercase tracking-[0.14em] text-black/55">Proyek Custom</p>
       <div className="mt-3 grid gap-1 text-xs sm:text-sm">
         <p><span className="font-semibold">Produk:</span> {productGroups} grup · {quantity} pcs</p>
         <p><span className="font-semibold">Paket desain:</span> {designs} · {services} layanan</p>
         <p><span className="font-semibold">Status harga:</span> {project.pricing.status === "final" ? "Final" : project.pricing.status === "estimated" ? "Estimasi" : "Perlu penawaran"}</p>
-        <p><span className="font-semibold">Lead time:</span> {Array.from(new Set(project.items.map((projectItem) => projectItem.leadTime))).join(", ")}</p>
+        <p><span className="font-semibold">Estimasi pengerjaan:</span> {Array.from(new Set(project.items.map((projectItem) => projectItem.leadTime))).join(", ")}</p>
       </div>
       <div className="mt-4 grid gap-3 border-t border-black/10 pt-4">
         {project.items.map((projectItem) => (
@@ -235,7 +235,7 @@ function CustomProjectSummary({ item }: { item: CartItem }) {
             <p className="font-semibold">{projectItem.productName} · {projectItem.quantity} pcs</p>
             {projectItem.designPackages.flatMap((designPackage) => designPackage.services.map((service) => (
               <p key={`${designPackage.id}:${service.id}`} className="mt-1 text-xs text-black/60">
-                Layanan {service.serviceId}{service.placementId ? ` · Placement ${service.placementId}` : ""}{service.printSizeId ? ` · Print size ${service.printSizeId}` : ""}
+                Layanan {service.serviceId}{service.placementId ? ` · Posisi ${service.placementId}` : ""}{service.printSizeId ? ` · Ukuran cetak ${service.printSizeId}` : ""}
               </p>
             )))}
             {projectItem.personalization.sharedValue || projectItem.personalization.entries.length ? <p className="mt-1 text-xs text-black/60">Personalisasi: {projectItem.personalization.sharedValue || `${projectItem.personalization.entries.length} data per item`}</p> : null}

@@ -42,6 +42,10 @@ const STATUS_LABELS: Record<string, string> = {
   ready_for_review: "Siap Diperiksa"
 };
 
+function statusLabel(status: string) {
+  return STATUS_LABELS[status] || "Status desain sedang diperbarui";
+}
+
 export function PublicMockupApproval({ token }: { token: string }) {
   const [data, setData] = useState<PublicData | null>(null);
   const [loading, setLoading] = useState(true);
@@ -196,7 +200,7 @@ export function PublicMockupApproval({ token }: { token: string }) {
           <InfoCard
             label="Status"
             value={
-              STATUS_LABELS[data.mockup_set.status] || "Sedang Diproses"
+              statusLabel(data.mockup_set.status)
             }
           />
           <InfoCard
@@ -232,7 +236,7 @@ export function PublicMockupApproval({ token }: { token: string }) {
                       {part.is_required ? "Wajib" : "Opsional"}
                     </span>
                     <span className="rounded-full border border-black/10 px-3 py-1 text-xs font-semibold">
-                      {STATUS_LABELS[part.status] || part.status}
+                      {statusLabel(part.status)}
                     </span>
                   </div>
                   {part.position ? (

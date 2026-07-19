@@ -60,7 +60,7 @@ export default async function HeadwearPage({ searchParams }: HeadwearPageProps) 
       catalogTitle: "Pilih headwear sesuai kebutuhan",
       catalogDescription: "Temukan model, warna, ukuran, dan bahan dari katalog produk DEBRODER.",
       closingHeadline: "Butuh headwear custom untuk merchandise, komunitas, atau brand?",
-      closingCtaLabel: "Custom Order",
+      closingCtaLabel: "Buat Pesanan Custom",
       closingCtaHref: customDestination || "/custom",
       productTypeOptions: headwearTypeOptions,
       typeFilterLabel: "Semua model headwear"

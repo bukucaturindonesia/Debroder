@@ -179,7 +179,7 @@ export function QualityControlDetailAdmin() {
 
     setLoading(false);
     const firstError = workItemResult.error || jobOrderResult.error || checklistResult.error || filesResult.error || historyResult.error || revisionsResult.error;
-    if (firstError) setNotice({ type: "error", text: `Sebagian detail QC gagal dimuat: ${firstError.message}` });
+    if (firstError) setNotice({ type: "error", text: "Sebagian detail pemeriksaan kualitas belum dapat dimuat. Muat ulang halaman atau coba lagi." });
 
     const nextChecklist = (checklistResult.data || []) as QcChecklistRow[];
     setRole(typeof profileResult.data?.role === "string" ? profileResult.data.role : null);
@@ -249,7 +249,7 @@ export function QualityControlDetailAdmin() {
     });
     setWorking(false);
     if (result.error) {
-      setNotice({ type: "error", text: result.error.message || "Draft QC gagal disimpan." });
+      setNotice({ type: "error", text: "Draft pemeriksaan belum dapat disimpan. Coba lagi." });
       return;
     }
     setEditOpen(false);
@@ -269,7 +269,7 @@ export function QualityControlDetailAdmin() {
     });
     setWorking(false);
     if (result.error) {
-      setNotice({ type: "error", text: result.error.message || "Pemeriksaan QC gagal dimulai." });
+      setNotice({ type: "error", text: "Pemeriksaan kualitas belum dapat dimulai. Coba lagi." });
       return;
     }
     setBeginOpen(false);
@@ -300,7 +300,7 @@ export function QualityControlDetailAdmin() {
     });
     if (uploadResult.error) {
       setWorking(false);
-      setNotice({ type: "error", text: `Upload bukti gagal: ${uploadResult.error.message}` });
+      setNotice({ type: "error", text: "Bukti pemeriksaan belum dapat diunggah. Periksa file lalu coba lagi." });
       return;
     }
     const registerResult = await supabase.rpc("register_qc_file", {
@@ -313,7 +313,7 @@ export function QualityControlDetailAdmin() {
     if (registerResult.error) {
       await supabase.storage.from("qc-proofs").remove([path]);
       setWorking(false);
-      setNotice({ type: "error", text: registerResult.error.message || "Metadata bukti QC gagal disimpan." });
+      setNotice({ type: "error", text: "Informasi bukti pemeriksaan belum dapat disimpan. Coba lagi." });
       return;
     }
     setWorking(false);
@@ -342,13 +342,13 @@ export function QualityControlDetailAdmin() {
     const storageResult = await supabase.storage.from(file.bucket).remove([file.path]);
     if (storageResult.error) {
       setWorking(false);
-      setNotice({ type: "error", text: storageResult.error.message || "File bukti gagal dihapus." });
+      setNotice({ type: "error", text: "File bukti belum dapat dihapus. Coba lagi." });
       return;
     }
     const result = await supabase.rpc("remove_qc_file", { p_qc_file_id: file.id });
     setWorking(false);
     if (result.error) {
-      setNotice({ type: "error", text: `${result.error.message}. File storage sudah dibersihkan; muat ulang lalu ulangi pembersihan metadata.` });
+      setNotice({ type: "error", text: "File sudah dibersihkan, tetapi daftar bukti belum diperbarui. Muat ulang lalu coba lagi." });
       return;
     }
     setNotice({ type: "success", text: "Bukti QC berhasil dihapus." });
@@ -371,11 +371,11 @@ export function QualityControlDetailAdmin() {
     });
     setWorking(false);
     if (result.error) {
-      setNotice({ type: "error", text: result.error.message || "Hasil QC gagal difinalisasi." });
+      setNotice({ type: "error", text: "Hasil pemeriksaan belum dapat diselesaikan. Periksa data lalu coba lagi." });
       return;
     }
     setFinalizeOpen(false);
-    setNotice({ type: "success", text: finalizeForm.result === "passed" ? "QC lulus dan Work Item selesai." : "Work Item dikembalikan ke tahap perbaikan." });
+    setNotice({ type: "success", text: finalizeForm.result === "passed" ? "Pemeriksaan lulus dan pekerjaan selesai." : "Pekerjaan dikembalikan ke tahap perbaikan." });
     await loadData();
   }
 
@@ -391,7 +391,7 @@ export function QualityControlDetailAdmin() {
     });
     setWorking(false);
     if (result.error) {
-      setNotice({ type: "error", text: result.error.message || "QC gagal diarsipkan." });
+      setNotice({ type: "error", text: "Pemeriksaan belum dapat diarsipkan. Coba lagi." });
       return;
     }
     router.replace("/admin/quality-control");
@@ -407,7 +407,7 @@ export function QualityControlDetailAdmin() {
     const result = await supabase.rpc("restore_qc_record", { p_qc_record_id: record.id });
     setWorking(false);
     if (result.error) {
-      setNotice({ type: "error", text: result.error.message || "QC gagal dipulihkan." });
+      setNotice({ type: "error", text: "Pemeriksaan belum dapat dipulihkan. Coba lagi." });
       return;
     }
     setNotice({ type: "success", text: "Draft QC berhasil dipulihkan." });
@@ -424,28 +424,28 @@ export function QualityControlDetailAdmin() {
       const storageResult = await supabase.storage.from("qc-proofs").remove(files.map((file) => file.path));
       if (storageResult.error) {
         setWorking(false);
-        setNotice({ type: "error", text: `File bukti belum dapat dibersihkan: ${storageResult.error.message}` });
+        setNotice({ type: "error", text: "File bukti belum dapat dibersihkan. Coba lagi." });
         return;
       }
     }
     const result = await supabase.rpc("permanently_delete_qc_record", { p_qc_record_id: record.id });
     setWorking(false);
     if (result.error) {
-      setNotice({ type: "error", text: result.error.message || "QC gagal dihapus permanen." });
+      setNotice({ type: "error", text: "Pemeriksaan belum dapat dihapus permanen." });
       return;
     }
     router.replace("/admin/quality-control");
     router.refresh();
   }
 
-  if (loading) return <AdminLoadingState label="Memuat detail Quality Control..." />;
+  if (loading) return <AdminLoadingState label="Memuat detail pemeriksaan kualitas..." />;
 
   if (!record) {
     return (
       <AdminErrorState
-        title="Quality Control tidak ditemukan"
+        title="Pemeriksaan kualitas tidak ditemukan"
         description="Pemeriksaan mungkin sudah dihapus atau tautannya tidak valid."
-        action={<Link href="/admin/quality-control" className="inline-flex min-h-11 items-center rounded-full bg-brand-charcoal px-6 text-sm font-semibold text-white">Kembali ke Quality Control</Link>}
+        action={<Link href="/admin/quality-control" className="inline-flex min-h-11 items-center rounded-full bg-brand-charcoal px-6 text-sm font-semibold text-white">Kembali ke Pemeriksaan Kualitas</Link>}
       />
     );
   }
@@ -460,15 +460,15 @@ export function QualityControlDetailAdmin() {
         <AdminPageHeader
           eyebrow="DEBRODER v1.2 · Phase 10"
           title={record.qc_number}
-          description={`${workItem?.work_item_number || "Work Item"} · ${workItem?.title || "Quality Control"} · Percobaan #${record.attempt_number}`}
+          description={`${workItem?.work_item_number || "Pekerjaan"} · ${workItem?.title || "Pemeriksaan Kualitas"} · Pemeriksaan #${record.attempt_number}`}
           actions={
             <>
               <Link href="/admin/quality-control" className="inline-flex min-h-10 items-center rounded-full border border-brand-softGray bg-white px-5 text-sm font-semibold">Kembali</Link>
-              {workItem ? <Link href={`/admin/work-items/${workItem.id}`} className="inline-flex min-h-10 items-center rounded-full border border-brand-softGray bg-white px-5 text-sm font-semibold">Work Item</Link> : null}
-              {jobOrder ? <Link href={`/admin/job-orders/${jobOrder.id}`} className="inline-flex min-h-10 items-center rounded-full border border-brand-softGray bg-white px-5 text-sm font-semibold">Job Order</Link> : null}
-              {editable && canManage ? <button type="button" onClick={() => setEditOpen(true)} className="inline-flex min-h-10 items-center rounded-full border border-brand-softGray bg-white px-5 text-sm font-semibold">Edit QC</button> : null}
+              {workItem ? <Link href={`/admin/work-items/${workItem.id}`} className="inline-flex min-h-10 items-center rounded-full border border-brand-softGray bg-white px-5 text-sm font-semibold">Buka Pekerjaan</Link> : null}
+              {jobOrder ? <Link href={`/admin/job-orders/${jobOrder.id}`} className="inline-flex min-h-10 items-center rounded-full border border-brand-softGray bg-white px-5 text-sm font-semibold">Buka Surat Perintah Kerja</Link> : null}
+              {editable && canManage ? <button type="button" onClick={() => setEditOpen(true)} className="inline-flex min-h-10 items-center rounded-full border border-brand-softGray bg-white px-5 text-sm font-semibold">Edit Pemeriksaan</button> : null}
               {!record.archived_at && record.status === "draft" && record.result === "pending" && canManage ? <button type="button" onClick={() => setBeginOpen(true)} className="inline-flex min-h-10 items-center rounded-full bg-brand-charcoal px-5 text-sm font-semibold text-white">Mulai Pemeriksaan</button> : null}
-              {!record.archived_at && record.status === "in_review" && record.result === "pending" && canManage ? <button type="button" onClick={() => setFinalizeOpen(true)} className="inline-flex min-h-10 items-center rounded-full bg-brand-green px-5 text-sm font-semibold text-white">Finalisasi QC</button> : null}
+              {!record.archived_at && record.status === "in_review" && record.result === "pending" && canManage ? <button type="button" onClick={() => setFinalizeOpen(true)} className="inline-flex min-h-10 items-center rounded-full bg-brand-green px-5 text-sm font-semibold text-white">Selesaikan Pemeriksaan</button> : null}
               {canArchiveQc(record) && canManage ? <button type="button" onClick={() => setArchiveOpen(true)} className="inline-flex min-h-10 items-center rounded-full border border-amber-300 bg-white px-5 text-sm font-semibold text-amber-800">Arsipkan</button> : null}
               {record.archived_at && canManage ? <button type="button" onClick={() => void restoreRecord()} disabled={working} className="inline-flex min-h-10 items-center rounded-full border border-brand-green bg-white px-5 text-sm font-semibold text-brand-green disabled:opacity-45">Pulihkan</button> : null}
               {record.archived_at && canDelete ? <button type="button" onClick={() => setDeleteOpen(true)} className="inline-flex min-h-10 items-center rounded-full border border-red-300 bg-white px-5 text-sm font-semibold text-red-700">Hapus Permanen</button> : null}
@@ -477,7 +477,7 @@ export function QualityControlDetailAdmin() {
         />
 
         {notice ? <AdminAlert type={notice.type}>{notice.text}</AdminAlert> : null}
-        {!canManage ? <AdminAlert type="error">Akun ini tidak mempunyai akses Quality Control.</AdminAlert> : null}
+        {!canManage ? <AdminAlert type="error">Akun ini tidak mempunyai akses Pemeriksaan Kualitas.</AdminAlert> : null}
         {record.archived_at ? <AdminAlert type="warning">QC diarsipkan {formatQcDate(record.archived_at)} oleh {actorLabel(record.archived_by)}{record.archive_reason ? ` · ${record.archive_reason}` : ""}.</AdminAlert> : null}
         {record.status === "finalized" ? <AdminAlert type={record.result === "passed" ? "success" : "warning"}>Hasil QC sudah final: {QC_RESULT_LABELS[record.result]}. Catatan final tidak dapat diedit atau diarsipkan.</AdminAlert> : null}
 
@@ -486,10 +486,10 @@ export function QualityControlDetailAdmin() {
           <Data label="Hasil" value={QC_RESULT_LABELS[record.result]} />
           <Data label="Jumlah Diperiksa" value={`${record.checked_quantity} ${workItem?.unit || "pcs"}`} />
           <Data label="Lulus / Gagal" value={`${record.passed_quantity} / ${record.failed_quantity}`} />
-          <Data label="Work Item" value={workItem?.work_item_number || "-"} />
-          <Data label="Job Order" value={jobOrder?.job_order_number || "-"} />
-          <Data label="Target Work Item" value={formatWorkItemTarget(workItem?.target_date)} />
-          <Data label="Status Work Item" value={workItem ? WORK_ITEM_STATUS_LABELS[workItem.status] : "-"} />
+          <Data label="Pekerjaan" value={workItem?.work_item_number || "-"} />
+          <Data label="Surat Perintah Kerja" value={jobOrder?.job_order_number || "-"} />
+          <Data label="Target Pekerjaan" value={formatWorkItemTarget(workItem?.target_date)} />
+          <Data label="Status Pekerjaan" value={workItem ? WORK_ITEM_STATUS_LABELS[workItem.status] : "-"} />
           <Data label="Inspector" value={actorLabel(record.inspector_id)} />
           <Data label="Pemeriksaan Dimulai" value={formatQcDate(record.inspection_started_at)} />
           <Data label="Disahkan oleh" value={actorLabel(record.approved_by)} />
@@ -520,12 +520,12 @@ export function QualityControlDetailAdmin() {
         </section>
 
         <section className="border border-brand-softGray bg-white p-5 sm:p-7">
-          <h2 className="text-2xl font-semibold">Bukti Quality Control</h2>
+          <h2 className="text-2xl font-semibold">Bukti Pemeriksaan Kualitas</h2>
           <p className="mt-2 text-sm text-brand-charcoal/60">Minimal satu foto atau PDF diperlukan sebelum finalisasi.</p>
           {editable && canManage ? (
             <div className="mt-5 grid gap-3 rounded-lg border border-dashed border-brand-softGray bg-brand-offWhite p-4 sm:grid-cols-[1fr_auto] sm:items-center">
               <input type="file" accept="image/png,image/jpeg,image/webp,application/pdf" onChange={(event) => setUploadFile(event.target.files?.[0] || null)} className="text-sm" />
-              <button type="button" onClick={() => void uploadProof()} disabled={!uploadFile || working} className="rounded-full bg-brand-charcoal px-5 py-2.5 text-sm font-semibold text-white disabled:opacity-45">{working ? "Memproses..." : "Upload Bukti QC"}</button>
+              <button type="button" onClick={() => void uploadProof()} disabled={!uploadFile || working} className="rounded-full bg-brand-charcoal px-5 py-2.5 text-sm font-semibold text-white disabled:opacity-45">{working ? "Memproses..." : "Unggah Bukti Pemeriksaan"}</button>
             </div>
           ) : null}
           <div className="mt-5 grid gap-3">
@@ -575,7 +575,7 @@ export function QualityControlDetailAdmin() {
       {editOpen ? (
         <div className="fixed inset-0 z-[100] overflow-y-auto bg-black/60 p-4 sm:p-8">
           <form onSubmit={saveDraft} className="mx-auto max-w-3xl bg-white p-6 shadow-2xl sm:p-8">
-            <h2 className="text-2xl font-semibold">Edit Draft Quality Control</h2>
+            <h2 className="text-2xl font-semibold">Edit Draft Pemeriksaan Kualitas</h2>
             <label className="mt-5 block text-sm font-semibold">Jumlah diperiksa<input type="number" min={1} max={workItem?.quantity || undefined} value={checkedQuantity} onChange={(event) => setCheckedQuantity(Number(event.target.value) || 1)} className="mt-2 min-h-11 w-full rounded-lg border border-brand-softGray px-4" /></label>
             <label className="mt-4 block text-sm font-semibold">Catatan cacat / catatan umum<textarea rows={3} value={defectNotes} onChange={(event) => setDefectNotes(event.target.value)} className="mt-2 w-full rounded-lg border border-brand-softGray px-4 py-3" /></label>
             <div className="mt-6 grid gap-4">
@@ -603,7 +603,7 @@ export function QualityControlDetailAdmin() {
       {beginOpen ? (
         <div className="fixed inset-0 z-[100] grid place-items-center bg-black/60 p-4">
           <section className="w-full max-w-lg bg-white p-6 shadow-2xl">
-            <h2 className="text-2xl font-semibold">Mulai Pemeriksaan QC?</h2>
+            <h2 className="text-2xl font-semibold">Mulai Pemeriksaan Kualitas?</h2>
             <p className="mt-3 text-sm leading-6 text-brand-charcoal/65">Checklist tetap dapat diedit selama pemeriksaan berjalan. Setiap perubahan akan tercatat sebagai revisi.</p>
             <textarea rows={3} value={beginNote} onChange={(event) => setBeginNote(event.target.value)} placeholder="Catatan awal pemeriksaan" className="mt-5 w-full rounded-lg border border-brand-softGray px-4 py-3" />
             <div className="mt-6 flex flex-wrap gap-3">
@@ -617,8 +617,8 @@ export function QualityControlDetailAdmin() {
       {finalizeOpen ? (
         <div className="fixed inset-0 z-[100] overflow-y-auto bg-black/60 p-4 sm:p-8">
           <form onSubmit={finalizeQc} className="mx-auto max-w-xl bg-white p-6 shadow-2xl sm:p-8">
-            <h2 className="text-2xl font-semibold">Finalisasi Quality Control</h2>
-            <p className="mt-2 text-sm leading-6 text-brand-charcoal/60">Keputusan final akan menyelesaikan Work Item atau mengembalikannya ke tahap perbaikan.</p>
+            <h2 className="text-2xl font-semibold">Selesaikan Pemeriksaan Kualitas</h2>
+            <p className="mt-2 text-sm leading-6 text-brand-charcoal/60">Keputusan akhir akan menyelesaikan pekerjaan atau mengembalikannya ke tahap perbaikan.</p>
             <label className="mt-5 block text-sm font-semibold">Hasil akhir<select value={finalizeForm.result} onChange={(event) => {
               const result = event.target.value as Exclude<QcResult, "pending">;
               setFinalizeForm((current) => ({

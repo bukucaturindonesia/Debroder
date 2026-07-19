@@ -48,7 +48,7 @@ export function PublicProductCard({
         product.badge,
         product.label_new && "New",
         product.label_promo && "Promo",
-        product.label_best_seller && "Best Seller"
+        product.label_best_seller && "Terlaris"
       ].filter(Boolean)
     )
   ) as string[];

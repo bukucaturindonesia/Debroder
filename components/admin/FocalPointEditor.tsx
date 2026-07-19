@@ -57,7 +57,7 @@ function Preview({
   );
 }
 
-export function FocalPointEditor({ src, alt = "Preview focal point", value, onChange, onSave, compact = false }: Props) {
+export function FocalPointEditor({ src, alt = "Pratinjau titik fokus", value, onChange, onSave, compact = false }: Props) {
   const dragStart = useRef<{ x: number; y: number; focalX: number; focalY: number } | null>(null);
   const [isDragging, setIsDragging] = useState(false);
   const selectedFrame = useMemo(
@@ -168,7 +168,7 @@ export function FocalPointEditor({ src, alt = "Preview focal point", value, onCh
 
       {!compact ? (
         <div className="mt-4 grid grid-cols-2 gap-3">
-          <Preview src={src} alt={alt} value={value} ratio="4 / 5" label="Mobile / catalog" />
+          <Preview src={src} alt={alt} value={value} ratio="4 / 5" label="Ponsel / katalog" />
           <Preview src={src} alt={alt} value={value} ratio="16 / 7" label="Desktop" />
         </div>
       ) : null}

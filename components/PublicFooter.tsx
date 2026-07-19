@@ -17,9 +17,9 @@ const shopLinks = [
 const publicShopLinks = [...shopLinks, { label: "Custom", href: "/custom" }];
 
 const helpLinks = [
-  { label: "Cara Order", href: "/cara-order" },
+  { label: "Cara Pemesanan", href: "/cara-order" },
   { label: "Keranjang", href: "/keranjang" },
-  { label: "Store", href: "/store" },
+  { label: "Toko", href: "/store" },
   { label: "Koleksi", href: "/koleksi" }
 ];
 

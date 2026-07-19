@@ -147,7 +147,7 @@ export function JobOrderDetailAdmin() {
     event.preventDefault();
     if (!row || working || !canEditJobOrder(row.status)) return;
     if (row.status === "ready" && !editForm.reason.trim()) {
-      setNotice({ type: "error", text: "Alasan perubahan wajib diisi untuk Job Order Siap Dirilis." });
+      setNotice({ type: "error", text: "Alasan perubahan wajib diisi untuk Surat Perintah Kerja yang siap dirilis." });
       return;
     }
     const supabase = createSupabaseClient();
@@ -163,11 +163,11 @@ export function JobOrderDetailAdmin() {
     });
     setWorking(false);
     if (result.error) {
-      setNotice({ type: "error", text: result.error.message || "Perubahan Job Order gagal disimpan." });
+      setNotice({ type: "error", text: "Perubahan Surat Perintah Kerja belum berhasil disimpan. Coba lagi." });
       return;
     }
     setEditOpen(false);
-    setNotice({ type: "success", text: "Perubahan Job Order berhasil disimpan dan dicatat sebagai revisi." });
+    setNotice({ type: "success", text: "Perubahan Surat Perintah Kerja berhasil disimpan dan dicatat sebagai revisi." });
     await loadData();
   }
 
@@ -188,13 +188,13 @@ export function JobOrderDetailAdmin() {
     });
     setWorking(false);
     if (result.error) {
-      setNotice({ type: "error", text: result.error.message || "Perubahan status ditolak." });
+      setNotice({ type: "error", text: "Status belum dapat diubah. Muat ulang data lalu coba lagi." });
       return;
     }
     setTransitionTarget(null);
     setTransitionNote("");
     setTransitionReason("");
-    setNotice({ type: "success", text: "Status Job Order berhasil diperbarui." });
+    setNotice({ type: "success", text: "Status Surat Perintah Kerja berhasil diperbarui." });
     await loadData();
   }
 
@@ -209,23 +209,23 @@ export function JobOrderDetailAdmin() {
     });
     setWorking(false);
     if (result.error) {
-      setNotice({ type: "error", text: result.error.message || "Job Order gagal diarsipkan." });
+      setNotice({ type: "error", text: "Surat Perintah Kerja belum berhasil diarsipkan. Coba lagi." });
       return;
     }
     router.replace("/admin/job-orders");
     router.refresh();
   }
 
-  if (loading) return <AdminLoadingState label="Memuat detail Job Order..." />;
+  if (loading) return <AdminLoadingState label="Memuat detail Surat Perintah Kerja..." />;
 
   if (!row) {
     return (
       <AdminErrorState
-        title="Job Order tidak ditemukan"
-        description="Job Order mungkin sudah dihapus atau tautannya tidak valid."
+        title="Surat Perintah Kerja tidak ditemukan"
+        description="Data mungkin sudah dihapus atau tautannya tidak valid. Kembali ke daftar dan pilih data yang tersedia."
         action={
           <Link href="/admin/job-orders" className="inline-flex min-h-11 items-center rounded-full bg-brand-charcoal px-6 text-sm font-semibold text-white">
-            Kembali ke Job Order
+            Kembali ke Surat Perintah Kerja
           </Link>
         }
       />
@@ -254,11 +254,11 @@ export function JobOrderDetailAdmin() {
                 Status Produksi
               </Link>
               <Link href={`/admin/work-items?job_order=${row.id}`} className="inline-flex min-h-10 items-center rounded-full border border-brand-softGray bg-white px-5 text-sm font-semibold">
-                Kelola Work Item
+                Kelola Daftar Pekerjaan
               </Link>
               {canEditJobOrder(row.status) ? (
                 <button type="button" onClick={() => setEditOpen(true)} className="inline-flex min-h-10 items-center rounded-full border border-brand-softGray bg-white px-5 text-sm font-semibold">
-                  Edit Job Order
+                  Edit Surat Perintah Kerja
                 </button>
               ) : null}
               {canArchiveJobOrder(row.status) ? (
@@ -290,7 +290,7 @@ export function JobOrderDetailAdmin() {
           <section className="border border-brand-softGray bg-white p-5 sm:p-7">
             <h2 className="text-xl font-semibold">Kontrol Produksi</h2>
             <p className="mt-2 text-sm leading-6 text-brand-charcoal/60">
-              Rilis, mulai, tahan, atau lanjutkan produksi. Penyelesaian Job Order tetap menunggu Quality Control Phase 10.
+              Rilis, mulai, tahan, atau lanjutkan produksi. Penyelesaian dokumen tetap menunggu pemeriksaan kualitas.
             </p>
             <div className="mt-5 flex flex-wrap gap-2">
               {productionTransitions.map((status) => (
@@ -308,7 +308,7 @@ export function JobOrderDetailAdmin() {
         ) : null}
 
         {row.status === "in_progress" && Number(row.progress_percentage || 0) >= 90 ? (
-          <AdminAlert type="success">Produksi sudah mencapai serah-terima QC. Lanjutkan pemeriksaan pada Phase 10 sebelum Job Order ditandai selesai.</AdminAlert>
+          <AdminAlert type="success">Produksi sudah mencapai tahap pemeriksaan kualitas. Selesaikan pemeriksaan sebelum Surat Perintah Kerja ditandai selesai.</AdminAlert>
         ) : null}
 
         <section className="grid gap-5 lg:grid-cols-2">
@@ -331,7 +331,7 @@ export function JobOrderDetailAdmin() {
 
         <section className="border border-brand-softGray bg-white p-5 sm:p-7">
           <h2 className="text-xl font-semibold">Snapshot Item Produksi</h2>
-          <p className="mt-2 text-sm text-brand-charcoal/60">Data ini dikunci saat Job Order dibuat dan tidak mengikuti perubahan katalog setelahnya.</p>
+          <p className="mt-2 text-sm text-brand-charcoal/60">Data ini dikunci saat Surat Perintah Kerja dibuat dan tidak mengikuti perubahan katalog setelahnya.</p>
           <div className="mt-5 divide-y divide-brand-softGray border-y border-brand-softGray">
             {sourceItems.length ? sourceItems.map((entry, index) => {
               const item = objectValue(objectValue(entry).item);
@@ -388,7 +388,7 @@ export function JobOrderDetailAdmin() {
       {editOpen ? (
         <div className="fixed inset-0 z-[100] overflow-y-auto bg-black/60 p-4 sm:p-8">
           <form onSubmit={saveEdit} className="mx-auto max-w-2xl bg-white p-6 shadow-2xl sm:p-8">
-            <h2 className="text-2xl font-semibold">Edit Job Order</h2>
+            <h2 className="text-2xl font-semibold">Edit Surat Perintah Kerja</h2>
             <p className="mt-2 text-sm text-brand-charcoal/60">Perubahan dicatat sebagai revisi. Snapshot pesanan dan mockup tidak ditimpa.</p>
             <div className="mt-5 grid gap-4 sm:grid-cols-2">
               <label className="block text-sm font-semibold">
@@ -416,7 +416,7 @@ export function JobOrderDetailAdmin() {
       {transitionTarget ? (
         <div className="fixed inset-0 z-[100] grid place-items-center bg-black/60 p-4">
           <section className="w-full max-w-lg bg-white p-6 shadow-2xl">
-            <h2 className="text-2xl font-semibold">Ubah Status Job Order</h2>
+            <h2 className="text-2xl font-semibold">Ubah Status Surat Perintah Kerja</h2>
             <p className="mt-2 text-sm text-brand-charcoal/60">Tujuan: {JOB_ORDER_STATUS_LABELS[transitionTarget]}</p>
             <textarea rows={3} value={transitionNote} onChange={(event) => setTransitionNote(event.target.value)} placeholder="Catatan tindakan" className="mt-5 w-full rounded-lg border border-brand-softGray px-4 py-3" />
             {jobOrderTransitionNeedsReason(transitionTarget) ? <textarea rows={3} value={transitionReason} onChange={(event) => setTransitionReason(event.target.value)} placeholder={transitionTarget === "on_hold" ? "Alasan penahanan wajib diisi" : "Alasan pembatalan wajib diisi"} className="mt-4 w-full rounded-lg border border-amber-300 px-4 py-3" /> : null}
@@ -431,7 +431,7 @@ export function JobOrderDetailAdmin() {
       {archiveOpen ? (
         <div className="fixed inset-0 z-[100] grid place-items-center bg-black/60 p-4">
           <section className="w-full max-w-lg bg-white p-6 shadow-2xl">
-            <h2 className="text-2xl font-semibold">Arsipkan Job Order?</h2>
+            <h2 className="text-2xl font-semibold">Arsipkan Surat Perintah Kerja?</h2>
             <textarea rows={4} value={archiveReason} onChange={(event) => setArchiveReason(event.target.value)} placeholder="Alasan arsip wajib diisi" className="mt-5 w-full rounded-lg border border-brand-softGray px-4 py-3" />
             <div className="mt-6 flex flex-wrap gap-3">
               <button type="button" onClick={() => void archiveJobOrder()} disabled={working || !archiveReason.trim()} className="rounded-full bg-amber-700 px-6 py-3 text-sm font-semibold text-white disabled:opacity-45">{working ? "Memindahkan..." : "Arsipkan"}</button>

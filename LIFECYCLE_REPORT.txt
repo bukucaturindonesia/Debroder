@@ -1,0 +1,44 @@
+READY STOCK POST-PAYMENT:
+- Ready Stock and Jersey Ready Stock use the standard workspace.
+- After verified payment: Preparation -> Goods Check -> Packing -> Final Check
+  -> Shipping/Pickup -> Complete.
+- They do not create a fake Job Order, production, or QC path.
+- Existing Commerce P0 reservation, paid-stock consumption, and fulfillment
+  functions remain authoritative.
+
+CUSTOM POST-PAYMENT:
+- Custom and Jersey Custom are detected by custom_project_snapshot.
+- After payment requirement is met: Job Order -> Production -> QC/Rework ->
+  Packing -> Final Check -> Shipping/Pickup -> Complete.
+- Existing Job Order, Work Item, production, and QC domains remain canonical.
+
+FINAL CHECK:
+- One generic server RPC now covers Ready Stock and Custom fulfillment.
+- Ready Stock checks order/customer/product/variant/color/size/quantity,
+  package content/count, fulfillment method, and package condition.
+- Custom additionally checks method/design/placement/print size,
+  personalization, and QC.
+- Shipping additionally checks recipient address and postal code.
+- Transition from packing to ready_to_ship/ready_for_pickup is database-blocked
+  until final verification is complete.
+- Editing packing recipient/package data invalidates the prior final check.
+
+SHIPPING / PICKUP / TRACKING:
+- Existing fulfillment statuses, carrier/tracking data, handover proof, and
+  order-status synchronization are preserved.
+- pay_at_store pickup can prepare fulfillment before payment and retains the
+  existing atomic payment-and-pickup completion flow.
+
+HISTORICAL / PAYMENT-LESS:
+- Existing records remain readable; no backfill invents a payment or bank
+  destination.
+- Historical pending payments can be rejected/corrected without a configured
+  destination; verification requires selecting a valid configured destination.
+- Existing historical compatibility warning remains active.
+
+REACT #130:
+- No dynamic component/icon map was added.
+- Existing admin-order-detail React #130 regression test remains included in
+  the targeted command definition.
+- Runtime/browser proof is NOT AVAILABLE because dependencies and local server
+  could not start. No FIXED claim is made.

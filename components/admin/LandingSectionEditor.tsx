@@ -105,7 +105,7 @@ export function LandingSectionEditor({ sectionKey }: { sectionKey: string }) {
 
     setSaving(false);
     if (!result.success) {
-      setStatus(`Pengaturan section gagal disimpan: ${result.error.message}`);
+      setStatus("Pengaturan bagian belum dapat disimpan. Periksa data lalu coba lagi.");
       return;
     }
 
@@ -145,7 +145,7 @@ export function LandingSectionEditor({ sectionKey }: { sectionKey: string }) {
         <div className="grid gap-4 sm:grid-cols-2"><Field label="CTA label"><input value={section.cta_label || ""} onChange={(event) => update({ cta_label: event.target.value })} /></Field><Field label="CTA URL"><input value={section.cta_url || ""} onChange={(event) => update({ cta_url: event.target.value })} /></Field></div>
       </div>
 
-      {section.desktop_image_url ? <div className="mt-5 overflow-hidden bg-brand-offWhite"><img src={section.desktop_image_url} alt="Preview section" className="aspect-[16/6] w-full object-cover" /></div> : null}
+      {section.desktop_image_url ? <div className="mt-5 overflow-hidden bg-brand-offWhite"><img src={section.desktop_image_url} alt="Pratinjau bagian" className="aspect-[16/6] w-full object-cover" /></div> : null}
       <div className="mt-5 flex flex-col gap-3 sm:flex-row">
         <button type="button" onClick={() => save("draft")} disabled={saving} className="min-h-11 rounded-full border border-brand-charcoal px-6 text-sm font-semibold disabled:opacity-50">
           {saving ? "Menyimpan..." : "Simpan Draft"}

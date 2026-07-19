@@ -54,7 +54,7 @@ export default async function KaosPolosPage({ searchParams }: KaosPolosPageProps
       catalogTitle: "Pilih kaos sesuai kebutuhan",
       catalogDescription: "Temukan tipe, bahan, warna, dan ukuran dari katalog produk DEBRODER.",
       closingHeadline: "Punya desain sendiri? Lanjutkan ke layanan custom DEBRODER.",
-      closingCtaLabel: "Custom Order",
+      closingCtaLabel: "Buat Pesanan Custom",
       closingCtaHref: customDestination || "/custom",
       productTypeOptions: kaosTypeOptions,
       typeFilterLabel: "Semua tipe kaos"

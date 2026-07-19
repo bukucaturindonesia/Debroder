@@ -63,10 +63,10 @@ export function NotificationInboxAdmin({ initialScope = "active" }: { initialSco
       setRows(payload.notifications);
       setCounts(payload.counts);
       setRole(payload.role);
-    } catch (error) {
+    } catch {
       setNotice({
         type: "error",
-        text: error instanceof Error ? error.message : "Notifikasi gagal dimuat."
+        text: "Notifikasi belum dapat dimuat. Coba lagi."
       });
     } finally {
       setLoading(false);
@@ -111,8 +111,8 @@ export function NotificationInboxAdmin({ initialScope = "active" }: { initialSco
       });
       window.dispatchEvent(new Event("debroder:notifications-changed"));
       await load();
-    } catch (error) {
-      setNotice({ type: "error", text: error instanceof Error ? error.message : "Aksi gagal." });
+    } catch {
+      setNotice({ type: "error", text: "Notifikasi belum dapat diperbarui. Coba lagi." });
     } finally {
       setWorkingId("");
     }
@@ -129,8 +129,8 @@ export function NotificationInboxAdmin({ initialScope = "active" }: { initialSco
       setNotice({ type: "success", text: `${result.affected} notifikasi ditandai sudah dibaca.` });
       window.dispatchEvent(new Event("debroder:notifications-changed"));
       await load();
-    } catch (error) {
-      setNotice({ type: "error", text: error instanceof Error ? error.message : "Aksi gagal." });
+    } catch {
+      setNotice({ type: "error", text: "Notifikasi belum dapat diperbarui. Coba lagi." });
     } finally {
       setWorkingId("");
     }
@@ -146,8 +146,8 @@ export function NotificationInboxAdmin({ initialScope = "active" }: { initialSco
       setDeleteConfirmation("");
       setNotice({ type: "success", text: "Notifikasi dihapus permanen dan audit penghapusan disimpan." });
       await load();
-    } catch (error) {
-      setNotice({ type: "error", text: error instanceof Error ? error.message : "Penghapusan gagal." });
+    } catch {
+      setNotice({ type: "error", text: "Notifikasi belum dapat dihapus. Coba lagi." });
     } finally {
       setWorkingId("");
     }

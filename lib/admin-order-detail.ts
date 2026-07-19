@@ -37,7 +37,7 @@ export function resolveAdminOrderWorkspaceKind(
 export function adminOrderCompatibilityWarning(status: unknown) {
   const normalized = typeof status === "string" ? status.trim().toLowerCase() : "";
   if (normalized && KNOWN_ORDER_STATUSES.has(normalized)) return null;
-  return "Sebagian state pesanan lama tidak dikenali. Periksa data sebelum melanjutkan.";
+  return "Sebagian status pesanan lama tidak dikenali. Periksa data sebelum melanjutkan.";
 }
 
 type DateStyle = "full" | "long" | "medium" | "short";

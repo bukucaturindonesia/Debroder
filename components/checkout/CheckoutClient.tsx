@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { type FormEvent, useMemo, useRef, useState } from "react";
+import { type FormEvent, useEffect, useMemo, useRef, useState } from "react";
 import { isCustomProjectCartItem, useCart } from "@/components/CartProvider";
 import { formatRupiah } from "@/lib/url";
 import { removeCustomDraft } from "@/lib/custom-commerce/draft-storage";
@@ -11,6 +11,9 @@ import type { StructuredIndonesiaAddressInput } from "@/lib/indonesia-address";
 
 type StoreOption = { id: string; name: string; address: string; hours: string };
 type CheckoutDraft = { idempotencyKey: string; accessToken: string; confirmationCode: string };
+
+const RECOVERY_KEY = "debroder-checkout-recovery-v1";
+type StoredCheckoutDraft = CheckoutDraft & { createdAt: string };
 
 function createDraft(): CheckoutDraft {
   const compact = () => crypto.randomUUID().replace(/-/g, "");
@@ -27,6 +30,7 @@ export function CheckoutClient({ stores }: { stores: StoreOption[] }) {
   const draft = useRef<CheckoutDraft | null>(null);
   const [fulfillment, setFulfillment] = useState<"pickup" | "shipping">(stores.length ? "pickup" : "shipping");
   const [submitting, setSubmitting] = useState(false);
+  const [recovering, setRecovering] = useState(true);
   const [error, setError] = useState("");
   const [structuredAddress, setStructuredAddress] = useState<StructuredIndonesiaAddressInput>(EMPTY_STRUCTURED_ADDRESS);
   const [formattedStructuredAddress, setFormattedStructuredAddress] = useState("");
@@ -36,6 +40,40 @@ export function CheckoutClient({ stores }: { stores: StoreOption[] }) {
   const unsupportedItems = cart.items.filter((item) => !isCustomProjectCartItem(item) && !item.variantSizeId);
   const subtotal = readyItems.reduce((sum, item) => sum + Number(item.priceValue || 0) * item.quantity, 0)
     + customItems.reduce((sum, item) => sum + Number(item.customProject?.pricing.finalTotal || 0), 0);
+
+  useEffect(() => {
+    let active = true;
+    async function recover() {
+      const stored = readStoredDraft();
+      if (!stored) { if (active) setRecovering(false); return; }
+      draft.current = stored;
+      try {
+        const response = await fetch(`/api/checkout?idempotencyKey=${encodeURIComponent(stored.idempotencyKey)}`, { cache: "no-store" });
+        const payload = await response.json().catch(() => ({})) as { found?: boolean; confirmationUrl?: string; trackingUrl?: string; trackingToken?: string; orderNumber?: string };
+        if (response.ok && payload.found && payload.confirmationUrl) {
+          const trackingToken = payload.trackingToken || stored.accessToken;
+          sessionStorage.setItem(`debroder-order-${trackingToken}`, JSON.stringify({
+            confirmationCode: stored.confirmationCode,
+            orderNumber: payload.orderNumber,
+            trackingUrl: payload.trackingUrl
+          }));
+          sessionStorage.removeItem(RECOVERY_KEY);
+          router.replace(payload.confirmationUrl);
+          return;
+        }
+        if (response.status === 410 || Date.now() - new Date(stored.createdAt).getTime() > 2 * 60 * 60 * 1000) {
+          sessionStorage.removeItem(RECOVERY_KEY);
+          draft.current = null;
+        }
+      } catch {
+        // Keep the draft. A later submit reuses the same idempotency key.
+      } finally {
+        if (active) setRecovering(false);
+      }
+    }
+    void recover();
+    return () => { active = false; };
+  }, [router]);
 
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -47,8 +85,9 @@ export function CheckoutClient({ stores }: { stores: StoreOption[] }) {
     setSubmitting(true);
     setError("");
     const form = new FormData(event.currentTarget);
-    draft.current ??= createDraft();
+    draft.current ??= readStoredDraft() ?? createDraft();
     const currentDraft = draft.current;
+    sessionStorage.setItem(RECOVERY_KEY, JSON.stringify({ ...currentDraft, createdAt: new Date().toISOString() } satisfies StoredCheckoutDraft));
 
     try {
       const response = await fetch("/api/checkout", {
@@ -74,13 +113,14 @@ export function CheckoutClient({ stores }: { stores: StoreOption[] }) {
         })
       });
       const payload = await response.json() as { confirmationUrl?: string; trackingUrl?: string; trackingToken?: string; orderNumber?: string; error?: string };
-      if (!response.ok || !payload.confirmationUrl) throw new Error(payload.error || "Order gagal dibuat.");
+      if (!response.ok || !payload.confirmationUrl) throw new Error("Pesanan belum dapat dibuat. Periksa kembali data Anda lalu coba lagi.");
       const trackingToken = payload.trackingToken || currentDraft.accessToken;
       sessionStorage.setItem(`debroder-order-${trackingToken}`, JSON.stringify({
         confirmationCode: currentDraft.confirmationCode,
         orderNumber: payload.orderNumber,
         trackingUrl: payload.trackingUrl
       }));
+      sessionStorage.removeItem(RECOVERY_KEY);
       customItems.forEach((item) => item.customProject ? removeCustomDraft(item.customProject.id) : undefined);
       cart.clearCart();
       router.push(payload.confirmationUrl);
@@ -91,21 +131,21 @@ export function CheckoutClient({ stores }: { stores: StoreOption[] }) {
     }
   }
 
-  if (!cart.isLoaded) return <CheckoutMessage title="Memuat keranjang..." />;
+  if (!cart.isLoaded || recovering) return <CheckoutMessage title={recovering ? "Memulihkan checkout..." : "Memuat keranjang..."} />;
   if (!cart.items.length) return <CheckoutMessage title="Keranjang masih kosong." action="/koleksi" actionLabel="Lihat Koleksi" />;
 
   return (
     <section className="bg-[#f6f5f0] px-4 py-10 sm:py-16">
       <div className="mx-auto max-w-6xl">
-        <p className="text-xs font-semibold uppercase tracking-[0.18em] text-black/45">Guest Checkout</p>
-        <h1 className="mt-3 text-3xl font-semibold sm:text-5xl">Selesaikan order dengan cepat</h1>
-        <p className="mt-3 max-w-2xl text-sm leading-7 text-black/60">Tidak perlu login. Produk ready stock, konfigurasi custom, minimum, compatibility, dan harga divalidasi ulang oleh server saat order dibuat.</p>
+        <p className="text-xs font-semibold uppercase tracking-[0.18em] text-black/45">Checkout Tanpa Akun</p>
+        <h1 className="mt-3 text-3xl font-semibold sm:text-5xl">Selesaikan pesanan dengan cepat</h1>
+        <p className="mt-3 max-w-2xl text-sm leading-7 text-black/60">Tidak perlu masuk ke akun. Ketersediaan produk siap beli, konfigurasi custom, jumlah minimum, kecocokan layanan, dan harga akan diperiksa kembali saat pesanan dibuat.</p>
 
         {unsupportedItems.length ? (
           <div className="mt-7 border border-amber-300 bg-amber-50 p-5 text-sm text-amber-950">
-            <p className="font-semibold">Ada item legacy/Jersey custom yang belum aman untuk checkout gabungan.</p>
-            <p className="mt-1">Custom Project non-Jersey didukung. Item Jersey custom tetap mengikuti alur Configurator existing agar business logic Jersey tidak berubah.</p>
-            <div className="mt-3 flex gap-3"><Link className="font-semibold underline" href="/keranjang">Edit keranjang</Link><Link className="font-semibold underline" href="/jersey/configurator">Buka Configurator</Link></div>
+            <p className="font-semibold">Ada produk Jersey custom yang perlu diproses secara terpisah.</p>
+            <p className="mt-1">Proyek custom non-Jersey dapat dilanjutkan di sini. Produk Jersey custom tetap mengikuti konfigurator Jersey.</p>
+            <div className="mt-3 flex gap-3"><Link className="font-semibold underline" href="/keranjang">Ubah keranjang</Link><Link className="font-semibold underline" href="/jersey/configurator">Buka Konfigurator Jersey</Link></div>
           </div>
         ) : null}
 
@@ -120,14 +160,14 @@ export function CheckoutClient({ stores }: { stores: StoreOption[] }) {
               </div>
             </Panel>
 
-            <Panel title="Fulfillment">
+            <Panel title="Metode Pengiriman">
               <div className="grid gap-3 sm:grid-cols-2">
-                <Choice checked={fulfillment === "pickup"} disabled={!stores.length} onChange={() => setFulfillment("pickup")} title="Pickup Toko" detail="Ongkir Rp0; reservasi 12 jam setelah WhatsApp diverifikasi." />
+                <Choice checked={fulfillment === "pickup"} disabled={!stores.length} onChange={() => setFulfillment("pickup")} title="Ambil di Toko" detail="Tanpa ongkir; stok disimpan selama 12 jam setelah WhatsApp diverifikasi." />
                 <Choice checked={fulfillment === "shipping"} onChange={() => setFulfillment("shipping")} title="Kurir Eksternal" detail="Admin mengecek ongkir; stok direservasi 24 jam setelah total disetujui." />
               </div>
               {fulfillment === "pickup" ? (
                 <div className="mt-5 grid gap-4">
-                  <Field label="Lokasi pickup"><select name="pickupLocationId" required defaultValue=""><option value="" disabled>Pilih toko</option>{stores.map((store) => <option key={store.id} value={store.id}>{store.name} — {store.address}</option>)}</select></Field>
+                  <Field label="Lokasi pengambilan"><select name="pickupLocationId" required defaultValue=""><option value="" disabled>Pilih toko</option>{stores.map((store) => <option key={store.id} value={store.id}>{store.name} — {store.address}</option>)}</select></Field>
                   <Field label="Cara pembayaran"><select name="paymentMethod" defaultValue="bank_transfer"><option value="bank_transfer">Transfer bank</option><option value="pay_at_store">Bayar di toko</option></select></Field>
                 </div>
               ) : (
@@ -137,23 +177,35 @@ export function CheckoutClient({ stores }: { stores: StoreOption[] }) {
           </div>
 
           <aside className="h-fit rounded-[28px] bg-white p-5 sm:p-6 lg:sticky lg:top-24">
-            <h2 className="text-xl font-semibold">Ringkasan order</h2>
+            <h2 className="text-xl font-semibold">Ringkasan pesanan</h2>
             <div className="mt-5 grid gap-4">{readyItems.map((item) => (
               <div key={item.cartId} className="flex justify-between gap-4 border-b border-black/10 pb-4 text-sm">
                 <div><p className="font-semibold">{item.name}</p><p className="mt-1 text-black/55">{item.variantName || item.color} · {item.size} · {item.variantSku || item.sku} × {item.quantity}</p></div>
                 <p className="shrink-0 font-semibold">{formatRupiah(Number(item.priceValue || 0) * item.quantity)}</p>
               </div>
-            ))}{customItems.map((item) => <div key={item.cartId} className="flex justify-between gap-4 border-b border-black/10 pb-4 text-sm"><div><p className="font-semibold">{item.name}</p><p className="mt-1 text-black/55">{item.customProject?.items.length} Product Group · {item.customProject?.pricing.totalQuantity} pcs · {item.customProject?.pricing.status === "final" ? "Final" : item.customProject?.pricing.status === "estimated" ? "Estimasi" : "Review"}</p></div><p className="shrink-0 font-semibold">{item.customProject?.pricing.finalTotal ? formatRupiah(item.customProject.pricing.finalTotal) : "Review admin"}</p></div>)}</div>
+            ))}{customItems.map((item) => <div key={item.cartId} className="flex justify-between gap-4 border-b border-black/10 pb-4 text-sm"><div><p className="font-semibold">{item.name}</p><p className="mt-1 text-black/55">{item.customProject?.items.length} grup produk · {item.customProject?.pricing.totalQuantity} pcs · {item.customProject?.pricing.status === "final" ? "Harga final" : item.customProject?.pricing.status === "estimated" ? "Estimasi" : "Menunggu pemeriksaan"}</p></div><p className="shrink-0 font-semibold">{item.customProject?.pricing.finalTotal ? formatRupiah(item.customProject.pricing.finalTotal) : "Diperiksa admin"}</p></div>)}</div>
             <div className="mt-5 flex items-center justify-between"><span>Subtotal</span><strong>{formatRupiah(subtotal)}</strong></div>
-            <p className="mt-3 text-xs leading-5 text-black/50">{fulfillment === "shipping" ? "Ongkir ditambahkan Admin pada order yang sama, lalu Anda menyetujui total final." : "Pickup tidak dikenakan ongkir."}</p>
+            <p className="mt-3 text-xs leading-5 text-black/50">{fulfillment === "shipping" ? "Admin akan menambahkan ongkir pada pesanan ini, lalu Anda dapat menyetujui total akhirnya." : "Pengambilan di toko tidak dikenakan ongkir."}</p>
             {error ? <p className="mt-4 border border-red-200 bg-red-50 p-3 text-sm text-red-700">{error}</p> : null}
-            <button type="submit" disabled={submitting || Boolean(unsupportedItems.length) || (fulfillment === "shipping" && !addressConfirmed)} className="mt-5 min-h-12 w-full rounded-full bg-black px-5 font-semibold text-white hover:bg-black/75 disabled:cursor-not-allowed disabled:opacity-45">{submitting ? "Membuat order..." : "Buat Order"}</button>
-            <p className="mt-3 text-center text-[11px] leading-5 text-black/45">Order dibuat sebagai unpaid. Double-click dan retry menggunakan kunci idempotensi yang sama.</p>
+            <button type="submit" disabled={submitting || Boolean(unsupportedItems.length) || (fulfillment === "shipping" && !addressConfirmed)} className="mt-5 min-h-12 w-full rounded-full bg-black px-5 font-semibold text-white hover:bg-black/75 disabled:cursor-not-allowed disabled:opacity-45">{submitting ? "Membuat pesanan..." : "Buat Pesanan"}</button>
+            <p className="mt-3 text-center text-[11px] leading-5 text-black/45">Pesanan akan dibuat dengan status belum dibayar. Jika jaringan terputus, coba lagi tanpa menekan tombol berulang kali.</p>
           </aside>
         </form>
       </div>
     </section>
   );
+}
+
+function readStoredDraft(): StoredCheckoutDraft | null {
+  try {
+    const value = sessionStorage.getItem(RECOVERY_KEY);
+    if (!value) return null;
+    const parsed = JSON.parse(value) as Partial<StoredCheckoutDraft>;
+    if (!parsed.idempotencyKey || !parsed.accessToken || !parsed.confirmationCode || !parsed.createdAt) return null;
+    return parsed as StoredCheckoutDraft;
+  } catch {
+    return null;
+  }
 }
 
 function CheckoutMessage({ title, action, actionLabel }: { title: string; action?: string; actionLabel?: string }) {

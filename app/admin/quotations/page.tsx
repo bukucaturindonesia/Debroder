@@ -1,8 +1,9 @@
 import { formatRupiah } from "@/lib/money";
+import { getQuotationStatusLabel } from "@/lib/quotation-status-copy";
 import { listQuotationDrafts } from "@/lib/supabase/quotations";
 
 export const metadata = {
-  title: "Quotation Drafts"
+  title: "Draft Penawaran Harga"
 };
 
 export default async function AdminQuotationsPage() {
@@ -12,12 +13,12 @@ export default async function AdminQuotationsPage() {
     <div className="page-shell">
       <div className="stack" style={{ marginBottom: 24 }}>
         <p className="eyebrow">Admin</p>
-        <h1 className="product-title">Quotation Drafts</h1>
+        <h1 className="product-title">Draft Penawaran Harga</h1>
       </div>
 
       {quotations.length === 0 ? (
         <div className="notice">
-          Belum ada quotation draft atau Supabase admin belum dikonfigurasi.
+          Belum ada draft penawaran harga.
         </div>
       ) : (
         <div className="admin-panel">
@@ -27,7 +28,7 @@ export default async function AdminQuotationsPage() {
                 <th>Nomor</th>
                 <th>Kontak</th>
                 <th>Produk</th>
-                <th>Qty</th>
+                <th>Jumlah</th>
                 <th>Total</th>
                 <th>Status</th>
               </tr>
@@ -62,11 +63,11 @@ export default async function AdminQuotationsPage() {
                     {quotation.requiresReview ? (
                       <>
                         <br />
-                        <span className="muted">Perlu review</span>
+                        <span className="muted">Perlu diperiksa</span>
                       </>
                     ) : null}
                   </td>
-                  <td>{quotation.status}</td>
+                  <td>{getQuotationStatusLabel(quotation.status, "admin")}</td>
                 </tr>
               ))}
             </tbody>

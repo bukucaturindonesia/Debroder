@@ -1,18 +1,32 @@
-ADDED:
-- lib/admin-order-pricing.ts
-- supabase/migrations/20260719110000_admin_order_pricing_workspace.sql
-- test/admin-order-pricing-workspace.test.ts
+DEBRODER CUSTOMER ORDER HUB — CHANGED FILES ONLY
 
-MODIFIED:
-- components/admin/CustomOrderOperationalWorkspace.tsx
-- components/admin/OrderDetailAdmin.tsx
+BASELINE
+- Source archive: Debroder(17).zip
+- Branch label: costum-produk-cekout
+- Git checkpoint inside archive: dd29ad22a05baf56b503141c8f0bd3f34e98d02d
+
+ADDED
+- components/customer-order/CustomerOrderStatusCard.tsx
+- components/customer-order/PersistentTrackingButton.tsx
+- lib/customer-order-presentation.ts
+- test/customer-order-hub.test.ts
+
+MODIFIED
+- app/api/public/order-tracking/route.ts
+- app/api/public/orders/[token]/route.ts
+- app/api/public/payments/[token]/route.ts
+- app/payment/[token]/page.tsx
 - components/checkout/OrderConfirmationClient.tsx
-- package.json
-- test/admin-order-detail-react130.test.ts
-- test/custom-order-end-to-end-revision.test.ts
+- components/payments/PublicPaymentForm.tsx
+- components/tracking/GuestOrderTracking.tsx
+- test/order-confirmation-payment-link.test.ts
+- test/payment-verification-workspace.test.ts
 
-DELETED:
+DELETED
 - NONE
 
-RENAMED:
+RENAMED
+- NONE
+
+DATABASE / SQL
 - NONE

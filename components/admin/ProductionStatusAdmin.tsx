@@ -81,7 +81,7 @@ export function ProductionStatusAdmin() {
     setLoading(false);
     const firstError = jobsResult.error || workResult.error || profilesResult.error;
     if (firstError) {
-      setNotice(firstError.message || "Dashboard produksi gagal dimuat.");
+      setNotice("Ringkasan produksi belum dapat dimuat. Muat ulang halaman atau coba lagi.");
       return;
     }
     setJobs((jobsResult.data || []) as JobRow[]);
@@ -147,7 +147,7 @@ export function ProductionStatusAdmin() {
       <AdminPageHeader
         eyebrow="DEBRODER v1.2 · Phase 9"
         title="Status Produksi"
-        description="Pantau Job Order, progres Work Item, pekerjaan tertahan, dan serah-terima ke Quality Control."
+        description="Pantau Surat Perintah Kerja, progres pekerjaan, pekerjaan tertahan, dan serah-terima ke Pemeriksaan Kualitas."
         actions={
           <button
             type="button"
@@ -189,7 +189,7 @@ export function ProductionStatusAdmin() {
         <input
           value={query}
           onChange={(event) => setQuery(event.target.value)}
-          placeholder="Cari Job Order, pesanan, atau pelanggan"
+          placeholder="Cari Surat Perintah Kerja, pesanan, atau pelanggan"
           className="mt-4 min-h-11 w-full rounded-lg border border-brand-softGray px-4 text-sm"
         />
       </section>
@@ -224,7 +224,7 @@ export function ProductionStatusAdmin() {
                       Buka Job Order
                     </Link>
                     <Link href={`/admin/work-items?job_order=${job.id}`} className="rounded-full border border-brand-softGray px-5 py-2.5 text-sm font-semibold">
-                      Work Item
+                      Pekerjaan
                     </Link>
                   </div>
                 </div>
@@ -237,7 +237,7 @@ export function ProductionStatusAdmin() {
                 </div>
                 <div className="mt-2 flex flex-wrap justify-between gap-2 text-xs font-semibold text-brand-charcoal/55">
                   <span>Progress milestone {Number(job.progress_percentage || 0)}%</span>
-                  <span>{items.length} Work Item</span>
+                  <span>{items.length} pekerjaan</span>
                 </div>
 
                 <div className="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
@@ -250,7 +250,7 @@ export function ProductionStatusAdmin() {
                 <div className="mt-5 flex flex-wrap gap-2">
                   {Object.entries(statusCounts).map(([status, count]) => (
                     <span key={status} className="rounded-full border border-brand-softGray bg-brand-offWhite px-3 py-1.5 text-xs font-semibold">
-                      {WORK_ITEM_STATUS_LABELS[status as WorkItemStatus] || status}: {count}
+                      {WORK_ITEM_STATUS_LABELS[status as WorkItemStatus] || "Status pekerjaan belum dikenali"}: {count}
                     </span>
                   ))}
                 </div>
@@ -265,7 +265,7 @@ export function ProductionStatusAdmin() {
       ) : (
         <AdminEmptyState
           title="Tidak ada produksi pada tampilan ini"
-          description="Ubah filter atau pastikan Job Order dan Work Item telah melewati tahap persiapan."
+          description="Ubah filter atau pastikan Surat Perintah Kerja dan pekerjaan turunannya telah melewati tahap persiapan."
         />
       )}
     </main>

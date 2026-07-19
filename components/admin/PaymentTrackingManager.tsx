@@ -4,6 +4,8 @@ import { FormEvent, useEffect, useMemo, useState } from "react";
 import { useParams } from "next/navigation";
 import { createSupabaseClient } from "@/lib/supabase";
 import { formatAdminOrderDateTime, formatAdminOrderDateTimeInput } from "@/lib/admin-order-detail";
+import { getPaymentStatusLabel } from "@/lib/ui-language";
+import { paymentSettlementLabel, type PaymentReviewAction } from "@/lib/payments";
 import { PaymentCompletionPanel } from "@/components/admin/PaymentCompletionPanel";
 
 type PaymentRow = {
@@ -11,12 +13,26 @@ type PaymentRow = {
   payment_number: string;
   order_id: string;
   amount: number;
+  reported_amount: number | null;
   paid_at: string;
   method: string;
   channel_name: string | null;
   reference_number: string | null;
   status: string;
   customer_notes: string | null;
+  sender_name: string | null;
+  destination_payment_method_id: string | null;
+  review_outcome: string;
+  check_funds_received: boolean | null;
+  check_destination_account: boolean | null;
+  check_amount: boolean | null;
+  check_transaction_time: boolean | null;
+  check_reference_unique: boolean | null;
+  verified_amount: number | null;
+  verified_destination_account: string | null;
+  verified_transaction_at: string | null;
+  verified_reference: string | null;
+  settlement_classification: string | null;
   admin_notes: string | null;
   proof_bucket: string | null;
   proof_path: string | null;
@@ -30,6 +46,18 @@ type PaymentRow = {
   archived_by: string | null;
   archive_reason: string | null;
   created_at: string;
+  updated_at: string;
+};
+
+type PaymentMethodSetting = {
+  id: string;
+  method_code: string;
+  method_type: string;
+  display_name: string;
+  bank_name: string | null;
+  account_number: string | null;
+  account_holder: string | null;
+  is_active: boolean;
 };
 
 type OrderSummary = {
@@ -62,7 +90,7 @@ const PAYMENT_METHOD: Record<string, string> = {
 };
 
 const SUPER_ROLES = ["superadmin", "super_admin"];
-const VERIFY_ROLES = ["owner", "superadmin", "super_admin", "admin"];
+const VERIFY_ROLES = ["owner", "superadmin", "super_admin", "admin", "finance"];
 
 function money(value: number | null | undefined) {
   return new Intl.NumberFormat("id-ID", {
@@ -92,6 +120,7 @@ export function PaymentTrackingManager() {
 
   const [summary, setSummary] = useState<OrderSummary | null>(null);
   const [rows, setRows] = useState<PaymentRow[]>([]);
+  const [paymentMethods, setPaymentMethods] = useState<PaymentMethodSetting[]>([]);
   const [role, setRole] = useState("");
   const [actorNames, setActorNames] = useState<Record<string, string>>({});
   const [open, setOpen] = useState(false);
@@ -111,8 +140,21 @@ export function PaymentTrackingManager() {
   const [adminNotes, setAdminNotes] = useState("");
   const [proofFile, setProofFile] = useState<File | null>(null);
 
-  const [rejectTarget, setRejectTarget] = useState<PaymentRow | null>(null);
-  const [rejectReason, setRejectReason] = useState("");
+  const [reviewTarget, setReviewTarget] = useState<PaymentRow | null>(null);
+  const [reviewMethodId, setReviewMethodId] = useState("");
+  const [reviewChecks, setReviewChecks] = useState({
+    fundsReceived: false,
+    destinationAccount: false,
+    amount: false,
+    transactionTime: false,
+    referenceUnique: false
+  });
+  const [verifiedAmount, setVerifiedAmount] = useState("");
+  const [verifiedDestinationAccount, setVerifiedDestinationAccount] = useState("");
+  const [verifiedTransactionAt, setVerifiedTransactionAt] = useState("");
+  const [verifiedReference, setVerifiedReference] = useState("");
+  const [reviewNotes, setReviewNotes] = useState("");
+  const [reviewReason, setReviewReason] = useState("");
   const [archiveTarget, setArchiveTarget] = useState<PaymentRow | null>(null);
   const [archiveReason, setArchiveReason] = useState("");
   const [deleteTarget, setDeleteTarget] = useState<PaymentRow | null>(null);
@@ -127,8 +169,9 @@ export function PaymentTrackingManager() {
     setLoading(true);
     const { data: sessionData } = await supabase.auth.getSession();
     const user = sessionData.session?.user;
+    const accessToken = sessionData.session?.access_token ?? "";
 
-    const [orderResult, paymentResult, profileResult] = await Promise.all([
+    const [orderResult, paymentResult, profileResult, settingsResponse] = await Promise.all([
       supabase
         .from("orders")
         .select(
@@ -139,13 +182,19 @@ export function PaymentTrackingManager() {
       supabase
         .from("order_payments")
         .select(
-          "id,payment_number,order_id,amount,paid_at,method,channel_name,reference_number,status,customer_notes,admin_notes,proof_bucket,proof_path,proof_file_name,proof_mime_type,proof_size_bytes,submitted_at,verified_at,rejection_reason,archived_at,archived_by,archive_reason,created_at"
+          "id,payment_number,order_id,amount,reported_amount,paid_at,method,channel_name,reference_number,status,customer_notes,sender_name,destination_payment_method_id,review_outcome,check_funds_received,check_destination_account,check_amount,check_transaction_time,check_reference_unique,verified_amount,verified_destination_account,verified_transaction_at,verified_reference,settlement_classification,admin_notes,proof_bucket,proof_path,proof_file_name,proof_mime_type,proof_size_bytes,submitted_at,verified_at,rejection_reason,archived_at,archived_by,archive_reason,created_at,updated_at"
         )
         .eq("order_id", orderId)
         .order("created_at", { ascending: false }),
       user
         ? supabase.from("profiles").select("role").eq("id", user.id).maybeSingle()
-        : Promise.resolve({ data: null, error: null })
+        : Promise.resolve({ data: null, error: null }),
+      accessToken
+        ? fetch("/api/admin/payment-settings", {
+          headers: { Authorization: `Bearer ${accessToken}` },
+          cache: "no-store"
+        })
+        : Promise.resolve(null)
     ]);
 
     setLoading(false);
@@ -158,6 +207,10 @@ export function PaymentTrackingManager() {
     setSummary(orderResult.data as OrderSummary);
     setRows((paymentResult.data || []) as PaymentRow[]);
     setRole(String(profileResult.data?.role || ""));
+    if (settingsResponse?.ok) {
+      const payload = await settingsResponse.json() as { settings?: PaymentMethodSetting[] };
+      setPaymentMethods(payload.settings ?? []);
+    }
     const actorIds = Array.from(new Set((paymentResult.data || []).map((row) => row.archived_by).filter((value): value is string => typeof value === "string")));
     if (actorIds.length > 0) {
       const { data: profiles } = await supabase.from("profiles").select("id,email").in("id", actorIds);
@@ -197,7 +250,7 @@ export function PaymentTrackingManager() {
       body: JSON.stringify(body)
     });
     const payload = await response.json() as { error?: string };
-    if (!response.ok) throw new Error(payload.error || "Aksi pembayaran gagal.");
+    if (!response.ok) throw new Error(payload.error || "Perubahan pembayaran belum berhasil disimpan. Coba lagi.");
   }
 
   function openCreate() {
@@ -238,6 +291,11 @@ export function PaymentTrackingManager() {
 
     if (!paidAt) {
       setMessage("Tanggal pembayaran wajib diisi.");
+      return;
+    }
+
+    if (!editing && !proofFile) {
+      setMessage("Bukti pembayaran wajib diunggah sebelum pemeriksaan mutasi.");
       return;
     }
 
@@ -343,54 +401,73 @@ export function PaymentTrackingManager() {
     await loadData();
   }
 
-  async function verify(row: PaymentRow) {
-    if (!canVerify || workingId) return;
-    setWorkingId(row.id);
+  function openReview(row: PaymentRow) {
+    const method = paymentMethods.find((item) => item.id === row.destination_payment_method_id)
+      ?? paymentMethods.find((item) => item.is_active)
+      ?? paymentMethods[0];
+    setReviewTarget(row);
+    setReviewMethodId(method?.id ?? "");
+    setReviewChecks({
+      fundsReceived: false,
+      destinationAccount: false,
+      amount: false,
+      transactionTime: false,
+      referenceUnique: false
+    });
+    setVerifiedAmount(String(row.reported_amount ?? row.amount));
+    setVerifiedDestinationAccount(method?.account_number ?? method?.display_name ?? "");
+    setVerifiedTransactionAt(formatAdminOrderDateTimeInput(row.paid_at));
+    setVerifiedReference(row.reference_number ?? "");
+    setReviewNotes(row.admin_notes ?? "");
+    setReviewReason("");
     setMessage("");
-    let error: unknown = null;
-    try {
-      await paymentAction(row.id, {
-        action: "verify",
-        adminNotes: row.admin_notes || null
-      });
-    } catch (reason) {
-      error = reason;
-    }
-    setWorkingId(null);
-
-    if (error) {
-      setMessage(error instanceof Error ? error.message : "Pembayaran belum berhasil diverifikasi.");
-      return;
-    }
-
-    setMessage(`${row.payment_number} berhasil diverifikasi.`);
-    await loadData();
   }
 
-  async function reject() {
-    if (!rejectTarget || !rejectReason.trim() || workingId) return;
-    setWorkingId(rejectTarget.id);
-    setMessage("");
-    let error: unknown = null;
-    try {
-      await paymentAction(rejectTarget.id, {
-        action: "reject",
-        reason: rejectReason.trim()
-      });
-    } catch (reason) {
-      error = reason;
-    }
-    setWorkingId(null);
+  function changeReviewMethod(methodId: string) {
+    const method = paymentMethods.find((item) => item.id === methodId);
+    setReviewMethodId(methodId);
+    setVerifiedDestinationAccount(method?.account_number ?? method?.display_name ?? "");
+    setReviewChecks((current) => ({ ...current, destinationAccount: false }));
+  }
 
-    if (error) {
-      setMessage(error instanceof Error ? error.message : "Pembayaran belum berhasil ditolak.");
+  async function submitReview(action: PaymentReviewAction) {
+    if (!reviewTarget || !canVerify || workingId || (action === "verify" && !reviewMethodId)) return;
+    if (action !== "verify" && !reviewReason.trim()) {
+      setMessage("Alasan tindak lanjut wajib diisi.");
       return;
     }
-
-    setMessage(`${rejectTarget.payment_number} ditolak.`);
-    setRejectTarget(null);
-    setRejectReason("");
-    await loadData();
+    setWorkingId(reviewTarget.id);
+    setMessage("");
+    try {
+      await paymentAction(reviewTarget.id, {
+        action,
+        destinationMethodId: reviewMethodId,
+        checks: reviewChecks,
+        verifiedAmount: Number(verifiedAmount),
+        verifiedDestinationAccount,
+        verifiedTransactionAt: verifiedTransactionAt
+          ? new Date(verifiedTransactionAt).toISOString()
+          : null,
+        verifiedReference,
+        adminNotes: reviewNotes,
+        reason: reviewReason,
+        expectedUpdatedAt: reviewTarget.updated_at
+      });
+      const label = action === "verify"
+        ? "diverifikasi berdasarkan mutasi"
+        : action === "funds_not_found"
+          ? "ditandai dana belum ditemukan"
+          : action === "request_correction"
+            ? "dikembalikan untuk koreksi"
+            : "ditolak";
+      setMessage(`${reviewTarget.payment_number} ${label}.`);
+      setReviewTarget(null);
+      await loadData();
+    } catch (reason) {
+      setMessage(reason instanceof Error ? reason.message : "Pemeriksaan pembayaran belum berhasil.");
+    } finally {
+      setWorkingId(null);
+    }
   }
 
   async function archive() {
@@ -607,11 +684,7 @@ export function PaymentTrackingManager() {
                       canVerify={canVerify}
                       working={workingId === row.id}
                       onEdit={() => openEdit(row)}
-                      onVerify={() => void verify(row)}
-                      onReject={() => {
-                        setRejectTarget(row);
-                        setRejectReason("");
-                      }}
+                      onReview={() => openReview(row)}
                       onArchive={() => {
                         setArchiveTarget(row);
                         setArchiveReason("");
@@ -763,6 +836,7 @@ export function PaymentTrackingManager() {
                 Bukti pembayaran
                 <input
                   type="file"
+                  required
                   accept=".png,.jpg,.jpeg,.pdf,image/png,image/jpeg,application/pdf"
                   onChange={(event) =>
                     setProofFile(event.target.files?.[0] || null)
@@ -820,35 +894,52 @@ export function PaymentTrackingManager() {
         </Modal>
       ) : null}
 
-      {rejectTarget ? (
-        <Modal title={`Tolak ${rejectTarget.payment_number}?`}>
-          <p className="text-sm leading-6 text-brand-charcoal/65">
-            Jelaskan alasan penolakan agar tindak lanjut pembayaran jelas.
-          </p>
-          <textarea
-            rows={5}
-            value={rejectReason}
-            onChange={(event) => setRejectReason(event.target.value)}
-            placeholder="Alasan penolakan wajib diisi"
-            className="mt-4 w-full rounded-lg border border-brand-softGray px-4 py-3"
-          />
+      {reviewTarget ? (
+        <Modal title={`Pemeriksaan Mutasi · ${reviewTarget.payment_number}`} size="large">
+          <div className="grid gap-5 lg:grid-cols-2">
+            <section className="border border-brand-softGray p-4 text-sm">
+              <h3 className="font-semibold">Laporan Pelanggan</h3>
+              <dl className="mt-3 grid gap-2">
+                <ReviewLine label="Nama pengirim" value={reviewTarget.sender_name || "Tidak tersedia"} />
+                <ReviewLine label="Bank / dompet pengirim" value={reviewTarget.channel_name || "Tidak tersedia"} />
+                <ReviewLine label="Nominal dilaporkan" value={money(reviewTarget.reported_amount ?? reviewTarget.amount)} />
+                <ReviewLine label="Waktu dilaporkan" value={dateTime(reviewTarget.paid_at)} />
+                <ReviewLine label="Referensi pengirim" value={reviewTarget.reference_number || "Tidak diisi"} />
+              </dl>
+              {reviewTarget.customer_notes ? <p className="mt-3 whitespace-pre-line border-l-2 border-brand-softGray pl-3 text-brand-charcoal/65">{reviewTarget.customer_notes}</p> : null}
+              <button type="button" onClick={() => void openProof(reviewTarget)} className="mt-4 min-h-10 rounded-full border border-brand-charcoal px-4 font-semibold">Buka Bukti Privat</button>
+            </section>
+
+            <section className="border border-brand-softGray p-4">
+              <h3 className="font-semibold">Data Mutasi Aktual</h3>
+              <label className="mt-4 grid gap-2 text-sm font-semibold">Rekening tujuan<select value={reviewMethodId} onChange={(event) => changeReviewMethod(event.target.value)} className="min-h-11 rounded-lg border border-brand-softGray px-3"><option value="">Pilih rekening tujuan</option>{paymentMethods.map((method) => <option key={method.id} value={method.id}>{method.display_name}{method.account_number ? ` · ${method.account_number}` : ""}</option>)}</select></label>
+              <label className="mt-3 grid gap-2 text-sm font-semibold">Nominal masuk<input type="number" min="1" value={verifiedAmount} onChange={(event) => setVerifiedAmount(event.target.value)} className="min-h-11 rounded-lg border border-brand-softGray px-3" /></label>
+              <label className="mt-3 grid gap-2 text-sm font-semibold">Rekening / tujuan terkonfirmasi<input value={verifiedDestinationAccount} onChange={(event) => setVerifiedDestinationAccount(event.target.value)} className="min-h-11 rounded-lg border border-brand-softGray px-3" /></label>
+              <label className="mt-3 grid gap-2 text-sm font-semibold">Waktu transaksi<input type="datetime-local" value={verifiedTransactionAt} onChange={(event) => setVerifiedTransactionAt(event.target.value)} className="min-h-11 rounded-lg border border-brand-softGray px-3" /></label>
+              <label className="mt-3 grid gap-2 text-sm font-semibold">Referensi mutasi<input value={verifiedReference} onChange={(event) => setVerifiedReference(event.target.value)} className="min-h-11 rounded-lg border border-brand-softGray px-3" /></label>
+            </section>
+          </div>
+
+          <fieldset className="mt-5 border border-brand-softGray p-4">
+            <legend className="px-2 text-sm font-semibold">Checklist wajib mutasi bank</legend>
+            <div className="grid gap-3 sm:grid-cols-2">
+              <Check label="Dana benar-benar sudah masuk" checked={reviewChecks.fundsReceived} onChange={(value) => setReviewChecks({ ...reviewChecks, fundsReceived: value })} />
+              <Check label="Rekening tujuan sesuai" checked={reviewChecks.destinationAccount} onChange={(value) => setReviewChecks({ ...reviewChecks, destinationAccount: value })} />
+              <Check label="Nominal cocok dengan mutasi" checked={reviewChecks.amount} onChange={(value) => setReviewChecks({ ...reviewChecks, amount: value })} />
+              <Check label="Tanggal dan waktu cocok" checked={reviewChecks.transactionTime} onChange={(value) => setReviewChecks({ ...reviewChecks, transactionTime: value })} />
+              <Check label="Referensi bukan transaksi duplikat" checked={reviewChecks.referenceUnique} onChange={(value) => setReviewChecks({ ...reviewChecks, referenceUnique: value })} />
+            </div>
+          </fieldset>
+
+          <label className="mt-4 grid gap-2 text-sm font-semibold">Catatan internal<textarea rows={3} value={reviewNotes} onChange={(event) => setReviewNotes(event.target.value)} className="rounded-lg border border-brand-softGray p-3 font-normal" /></label>
+          <label className="mt-4 grid gap-2 text-sm font-semibold">Alasan tindak lanjut (wajib selain Verifikasi)<textarea rows={3} value={reviewReason} onChange={(event) => setReviewReason(event.target.value)} className="rounded-lg border border-brand-softGray p-3 font-normal" /></label>
+
           <div className="mt-6 flex flex-wrap gap-3">
-            <button
-              type="button"
-              onClick={() => void reject()}
-              disabled={!rejectReason.trim() || Boolean(workingId)}
-              className="rounded-full bg-red-700 px-6 py-3 text-sm font-semibold text-white disabled:opacity-45"
-            >
-              {workingId ? "Memproses..." : "Tolak Pembayaran"}
-            </button>
-            <button
-              type="button"
-              onClick={() => setRejectTarget(null)}
-              disabled={Boolean(workingId)}
-              className="rounded-full border border-brand-softGray px-6 py-3 text-sm font-semibold"
-            >
-              Batal
-            </button>
+            <button type="button" onClick={() => void submitReview("verify")} disabled={Boolean(workingId) || !Object.values(reviewChecks).every(Boolean) || !reviewMethodId || !verifiedAmount || !verifiedTransactionAt || !verifiedReference} className="rounded-full bg-brand-green px-5 py-3 text-sm font-semibold text-white disabled:opacity-45">Verifikasi Dana Masuk</button>
+            <button type="button" onClick={() => void submitReview("funds_not_found")} disabled={Boolean(workingId) || !reviewReason.trim()} className="rounded-full border border-amber-500 px-5 py-3 text-sm font-semibold text-amber-900 disabled:opacity-45">Dana Belum Ditemukan</button>
+            <button type="button" onClick={() => void submitReview("request_correction")} disabled={Boolean(workingId) || !reviewReason.trim()} className="rounded-full border border-brand-charcoal px-5 py-3 text-sm font-semibold disabled:opacity-45">Minta Koreksi</button>
+            <button type="button" onClick={() => void submitReview("reject")} disabled={Boolean(workingId) || !reviewReason.trim()} className="rounded-full border border-red-300 px-5 py-3 text-sm font-semibold text-red-700 disabled:opacity-45">Tolak</button>
+            <button type="button" onClick={() => setReviewTarget(null)} disabled={Boolean(workingId)} className="rounded-full border border-brand-softGray px-5 py-3 text-sm font-semibold">Batal</button>
           </div>
         </Modal>
       ) : null}
@@ -931,8 +1022,7 @@ function PaymentCard({
   canVerify,
   working,
   onEdit,
-  onVerify,
-  onReject,
+  onReview,
   onArchive,
   onProof
 }: {
@@ -940,8 +1030,7 @@ function PaymentCard({
   canVerify: boolean;
   working: boolean;
   onEdit: () => void;
-  onVerify: () => void;
-  onReject: () => void;
+  onReview: () => void;
   onArchive: () => void;
   onProof: () => void;
 }) {
@@ -954,10 +1043,11 @@ function PaymentCard({
           <div className="flex flex-wrap items-center gap-2">
             <h3 className="font-semibold">{row.payment_number}</h3>
             <span className="rounded-full border border-brand-softGray px-3 py-1 text-xs font-semibold">
-              {PAYMENT_STATUS[row.status] || row.status}
+              {PAYMENT_STATUS[row.status] || getPaymentStatusLabel(row.status)}
             </span>
           </div>
-          <p className="mt-3 text-2xl font-semibold">{money(row.amount)}</p>
+          <p className="mt-3 text-2xl font-semibold">{money(row.verified_amount ?? row.reported_amount ?? row.amount)}</p>
+          {row.verified_amount && row.reported_amount && row.verified_amount !== row.reported_amount ? <p className="mt-1 text-xs text-amber-800">Dilaporkan pelanggan: {money(row.reported_amount)}</p> : null}
           <p className="mt-2 text-sm text-brand-charcoal/60">
             {PAYMENT_METHOD[row.method] || row.method}
             {row.channel_name ? ` · ${row.channel_name}` : ""}
@@ -966,6 +1056,10 @@ function PaymentCard({
           <p className="mt-2 text-xs text-brand-charcoal/55">
             Dibayar: {dateTime(row.paid_at)}
           </p>
+          {row.sender_name ? <p className="mt-1 text-xs text-brand-charcoal/55">Pengirim: {row.sender_name}</p> : null}
+          {row.status === "verified" ? <p className="mt-2 text-sm font-semibold text-emerald-800">{paymentSettlementLabel(row.settlement_classification)} · Ref. {row.verified_reference || "-"}</p> : null}
+          {row.review_outcome === "funds_not_found" ? <p className="mt-2 text-sm font-semibold text-amber-800">Dana belum ditemukan pada mutasi.</p> : null}
+          {row.review_outcome === "correction_requested" ? <p className="mt-2 text-sm font-semibold text-amber-800">Koreksi laporan diminta.</p> : null}
           {row.rejection_reason ? (
             <p className="mt-3 border-l-2 border-red-600 pl-3 text-sm text-red-700">
               Ditolak: {row.rejection_reason}
@@ -998,19 +1092,11 @@ function PaymentCard({
             <>
               <button
                 type="button"
-                onClick={onVerify}
+                onClick={onReview}
                 disabled={working}
                 className="rounded-full bg-brand-green px-4 py-2 text-sm font-semibold text-white disabled:opacity-45"
               >
-                {working ? "Memproses..." : "Verifikasi"}
-              </button>
-              <button
-                type="button"
-                onClick={onReject}
-                disabled={working}
-                className="rounded-full border border-red-200 px-4 py-2 text-sm font-semibold text-red-700 disabled:opacity-45"
-              >
-                Tolak / Minta Bukti Ulang
+                {working ? "Memproses..." : "Periksa Mutasi"}
               </button>
             </>
           ) : null}
@@ -1031,17 +1117,27 @@ function PaymentCard({
 
 function Modal({
   title,
-  children
+  children,
+  size = "default"
 }: {
   title: string;
   children: React.ReactNode;
+  size?: "default" | "large";
 }) {
   return (
     <div className="fixed inset-0 z-[110] overflow-y-auto bg-black/60 p-4 sm:p-8">
-      <section className="mx-auto max-w-xl bg-white p-6 shadow-2xl sm:p-8">
+      <section className={`mx-auto bg-white p-6 shadow-2xl sm:p-8 ${size === "large" ? "max-w-5xl" : "max-w-xl"}`}>
         <h2 className="text-2xl font-semibold">{title}</h2>
         <div className="mt-6">{children}</div>
       </section>
     </div>
   );
+}
+
+function ReviewLine({ label, value }: { label: string; value: string }) {
+  return <div className="flex justify-between gap-4"><dt className="text-brand-charcoal/55">{label}</dt><dd className="text-right font-semibold">{value}</dd></div>;
+}
+
+function Check({ label, checked, onChange }: { label: string; checked: boolean; onChange: (value: boolean) => void }) {
+  return <label className="flex min-h-11 items-center gap-3 text-sm font-semibold"><input type="checkbox" checked={checked} onChange={(event) => onChange(event.target.checked)} />{label}</label>;
 }

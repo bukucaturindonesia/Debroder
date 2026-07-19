@@ -53,7 +53,7 @@ export function AdminHeader({
             onClick={onLogout}
             className="inline-flex min-h-10 items-center justify-center rounded-full border border-brand-softGray px-4 text-sm font-semibold transition hover:border-brand-charcoal"
           >
-            Logout
+            Keluar
           </button>
         </div>
       </div>

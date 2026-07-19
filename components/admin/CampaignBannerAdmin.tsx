@@ -54,7 +54,7 @@ export function CampaignBannerAdmin() {
     setLoading(false);
 
     if (bannerResult.error) {
-      setStatus(`Campaign Banner belum siap: ${bannerResult.error.message}`);
+      setStatus("Banner kampanye belum dapat dimuat. Coba lagi.");
       return;
     }
 
@@ -161,7 +161,7 @@ export function CampaignBannerAdmin() {
 
     setSaving(false);
     if (!result.success) {
-      setStatus(`Campaign banner gagal disimpan: ${result.error.message}`);
+      setStatus("Banner kampanye belum dapat disimpan. Periksa data lalu coba lagi.");
       return;
     }
 
@@ -179,7 +179,7 @@ export function CampaignBannerAdmin() {
     const supabase = createSupabaseClient();
     if (!supabase) return;
     const { error } = await supabase.from("cms_banners").delete().eq("id", banner.id);
-    setStatus(error ? `Banner gagal dihapus: ${error.message}` : "Campaign banner dihapus.");
+    setStatus(error ? "Banner belum dapat dihapus. Coba lagi." : "Banner kampanye dihapus.");
     if (!error) await loadData();
   }
 
@@ -189,7 +189,7 @@ export function CampaignBannerAdmin() {
         <div className="flex items-center justify-between gap-3">
           <div>
             <h2 className="text-xl font-semibold">{editingId ? "Edit Built for Identity" : "Built for Identity"}</h2>
-            <p className="mt-1 text-sm text-brand-charcoal/55">Pilih media dari Media Library atau tempel URL gambar secara manual.</p>
+            <p className="mt-1 text-sm text-brand-charcoal/55">Pilih media dari Galeri Media atau tempel URL gambar secara manual.</p>
             <span className={`mt-3 inline-flex rounded-full border px-3 py-1 text-xs font-semibold ${cmsBadgeClass(form)}`}>
               {cmsStatusLabel(form)}
             </span>
@@ -201,9 +201,9 @@ export function CampaignBannerAdmin() {
         <div className="mt-5 grid gap-4">
           <Field label="Nama internal"><input required value={form.name} onChange={(event) => update("name", event.target.value)} /></Field>
           <Field label="Tipe media"><select value={form.media_type} onChange={(event) => update("media_type", event.target.value as CmsBanner["media_type"])}><option value="image">Image</option><option value="video">Video</option></select></Field>
-          <Field label="Media desktop dari Media Library"><select value={form.desktop_media_url} onChange={(event) => update("desktop_media_url", event.target.value)}><option value="">Pilih media...</option>{primaryMedia.map((asset) => <option key={asset.id} value={asset.public_url}>{asset.name}</option>)}</select></Field>
+          <Field label="Media desktop dari Galeri Media"><select value={form.desktop_media_url} onChange={(event) => update("desktop_media_url", event.target.value)}><option value="">Pilih media...</option>{primaryMedia.map((asset) => <option key={asset.id} value={asset.public_url}>{asset.name}</option>)}</select></Field>
           <Field label="URL gambar/video desktop"><input required value={form.desktop_media_url} onChange={(event) => update("desktop_media_url", event.target.value)} placeholder="https://... atau /brand/..." /></Field>
-          <Field label="Media mobile dari Media Library (opsional)"><select value={form.mobile_media_url || ""} onChange={(event) => update("mobile_media_url", event.target.value)}><option value="">Gunakan media desktop</option>{primaryMedia.map((asset) => <option key={asset.id} value={asset.public_url}>{asset.name}</option>)}</select></Field>
+          <Field label="Media ponsel dari Galeri Media (opsional)"><select value={form.mobile_media_url || ""} onChange={(event) => update("mobile_media_url", event.target.value)}><option value="">Gunakan media desktop</option>{primaryMedia.map((asset) => <option key={asset.id} value={asset.public_url}>{asset.name}</option>)}</select></Field>
           <Field label="URL gambar/video mobile (opsional)"><input value={form.mobile_media_url || ""} onChange={(event) => update("mobile_media_url", event.target.value)} placeholder="Kosongkan untuk memakai media desktop" /></Field>
           {form.media_type === "video" ? <Field label="Poster image"><select value={form.poster_url || ""} onChange={(event) => update("poster_url", event.target.value)}><option value="">Tanpa poster</option>{imageMedia.map((asset) => <option key={asset.id} value={asset.public_url}>{asset.name}</option>)}</select></Field> : null}
           <div className="grid gap-4 sm:grid-cols-2"><Field label="Eyebrow"><input value={form.eyebrow} onChange={(event) => update("eyebrow", event.target.value)} /></Field><Field label="Urutan"><input type="number" min="0" value={form.sort_order} onChange={(event) => update("sort_order", Number(event.target.value))} /></Field></div>
@@ -218,7 +218,7 @@ export function CampaignBannerAdmin() {
                 {form.media_type === "video" ? (
                   <video src={form.desktop_media_url} poster={form.poster_url || undefined} muted controls className="h-full w-full object-cover" />
                 ) : (
-                  <img src={form.desktop_media_url} alt="Preview Built for Identity" className="h-full w-full object-cover" />
+                  <img src={form.desktop_media_url} alt="Pratinjau banner Built for Identity" className="h-full w-full object-cover" />
                 )}
               </div>
               <div className="px-4 py-5 text-center">

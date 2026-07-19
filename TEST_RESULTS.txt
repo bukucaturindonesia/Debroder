@@ -1,49 +1,43 @@
-SOURCE COMMIT: 394613b2175188477330165d36a8c2c0f2841f85
-DATE: 2026-07-19 Asia/Makassar
+DEBRODER CUSTOMER ORDER HUB — TEST RESULTS
 
-DEPENDENCY INSTALL
-COMMAND: pnpm install --frozen-lockfile
-RESULT: ENVIRONMENT BLOCKED
-DETAIL: ENOENT while pnpm attempted mkdir /root/.local. No source compilation occurred. Not retried.
+SOURCE CHECKPOINT
+- Branch: costum-produk-cekout
+- Git checkpoint: dd29ad22a05baf56b503141c8f0bd3f34e98d02d
 
-TARGETED TESTS
-COMMAND: pnpm test -- test/admin-order-detail-react130.test.ts test/admin-order-pricing-workspace.test.ts test/custom-order-end-to-end-revision.test.ts
-RESULT: NOT RUN — ENVIRONMENT BLOCKED
-DETAIL: same pnpm /root/.local failure before Vitest execution.
-
-TYPECHECK
-COMMAND: npm run typecheck
-RESULT: NOT RUN — ENVIRONMENT BLOCKED
-DETAIL: tsc not found because dependencies are absent.
-
-LINT
-COMMAND: npm run lint
-RESULT: NOT RUN — ENVIRONMENT BLOCKED
-DETAIL: eslint not found because dependencies are absent.
-
-FULL TESTS
-COMMAND: npm run test
-RESULT: NOT RUN — ENVIRONMENT BLOCKED
-DETAIL: vitest not found because dependencies are absent.
-
-CLEAN PRODUCTION BUILD
-COMMAND: remove .next if present; npm run build
-RESULT: NOT RUN — ENVIRONMENT BLOCKED
-DETAIL: prebuild stopped at missing vitest; Next compilation did not start.
-
-LOCAL BROWSER
-RESULT: BLOCKED
-DETAIL: no production build/runtime was available. No claim of direct /admin/orders/[id] browser verification, React #130 runtime verification, hydration verification, or viewport verification is made.
-
-STATIC / LIGHTWEIGHT GATES
-- Node pure pricing domain smoke: PASS (integer totals, invalid input, DTF collision, legacy snapshot extraction).
-- Node syntax check for lib/admin-order-pricing.ts and its test source: PASS.
-- Migration delimiter/parenthesis balance: PASS.
-- Changed-files diff check: PASS after ignoring existing CRLF end-of-line only; no CRLF normalization performed.
-- Conflict marker scan: PASS.
+COMPLETED
+- TypeScript isolated transpilation for all 13 changed/new TS/TSX/test files: PASS.
+- Deterministic customer presentation resolver scenarios: PASS.
+  - Ready Stock transfer awaiting payment.
+  - Payment under mutation review.
+  - Custom payment under mutation review.
+  - Pay-at-store preparing.
+  - Pay-at-store ready for pickup.
+  - Completed order.
+- Static Customer Order Hub contracts: PASS.
+- Persistent tracking CTA contract: PASS.
+- Progressive disclosure contract: PASS.
+- Payment form hidden during pending verification: PASS.
+- Custom-aware automatic payment gate: PASS.
+- Pay-at-store transfer-link block: PASS.
+- Preview-relative payment-link contract: PASS.
+- Pickup warning contract: PASS.
+- Existing relevant static test expectations: PASS by direct source assertion.
+- git diff --check for tracked changed files: PASS.
+- New-file whitespace and conflict-marker scan: PASS.
+- Client/server boundary scan (`node:crypto` absent from client modules): PASS.
 - Secret signature scan: PASS.
-- Prebuild contract retains React #130 test and adds pricing workspace test: PASS.
+- Hardcoded demo bank-account scan: PASS.
 
-SUMMARY
-ENVIRONMENT BLOCKED — NO SOURCE ERROR OBSERVED.
-This is source-ready for owner review, not locally verified and not browser fixed.
+ENVIRONMENT BLOCKED / NOT RUN
+- pnpm dependency install: BLOCKED because the execution environment has no internet access and the ZIP has no node_modules.
+- Repository TypeScript gate: NOT VERIFIED. A global tsc attempt could not resolve Next.js, React, Supabase, and their type packages because dependencies are absent.
+- ESLint: NOT RUN because dependencies are absent.
+- Vitest: NOT RUN because dependencies are absent.
+- Full test suite: NOT RUN because dependencies are absent.
+- Clean Next.js production build: NOT RUN because dependencies are absent.
+- Browser/viewport/console verification: NOT RUN.
+
+STATUS
+- SOURCE IMPLEMENTED.
+- STATIC AND PURE-DOMAIN CHECKS PASS.
+- OWNER MUST RUN PACKAGE GATES AND PREVIEW BROWSER TESTS BEFORE MERGE.

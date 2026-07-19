@@ -121,9 +121,9 @@ export function NotificationDetailAdmin({ notificationId }: { notificationId: st
   return (
     <div className="space-y-6">
       <AdminPageHeader
-        eyebrow="Phase 12"
+        eyebrow="NOTIFIKASI"
         title={notification.title}
-        description="Detail pesan, event sumber, jalur terkait, dan riwayat delivery yang tidak dapat diubah."
+        description="Detail pesan, aktivitas sumber, tautan terkait, dan riwayat pengiriman yang tidak dapat diubah."
         actions={
           <div className="flex flex-wrap gap-2">
             <Link href="/admin/notifications" className="inline-flex min-h-11 items-center rounded-full border border-brand-softGray px-5 text-sm font-semibold">Kembali</Link>
@@ -147,7 +147,7 @@ export function NotificationDetailAdmin({ notificationId }: { notificationId: st
           <p className="mt-5 text-base leading-8 text-brand-charcoal/80">{notification.body}</p>
           {notification.error_message ? (
             <div className="mt-5 border border-red-200 bg-red-50 p-4 text-sm text-red-800">
-              {notification.error_message}
+              Notifikasi belum dapat dikirim. Periksa kanal tujuan lalu coba lagi.
             </div>
           ) : null}
         </div>
@@ -172,33 +172,30 @@ export function NotificationDetailAdmin({ notificationId }: { notificationId: st
       </section>
 
       <section className="border border-brand-softGray bg-white p-5 sm:p-7">
-        <h2 className="text-xl font-semibold">Event Sumber</h2>
+        <h2 className="text-xl font-semibold">Aktivitas Sumber</h2>
         {event ? (
           <div className="mt-5 grid gap-5 lg:grid-cols-2">
             <dl className="space-y-4 text-sm">
-              <Meta label="Event" value={getNotificationEventLabel(event.event_code)} />
-              <Meta label="Kode event" value={event.event_code} mono />
-              <Meta label="Entitas" value={getNotificationEntityLabel(event.entity_type)} />
-              <Meta label="Entity ID" value={event.entity_id} mono />
-              <Meta label="Idempotency key" value={event.idempotency_key} mono />
-              <Meta label="Waktu event" value={formatNotificationDate(event.created_at)} />
+              <Meta label="Aktivitas" value={getNotificationEventLabel(event.event_code)} />
+              <Meta label="Objek" value={getNotificationEntityLabel(event.entity_type)} />
+              <Meta label="Waktu aktivitas" value={formatNotificationDate(event.created_at)} />
             </dl>
             <div>
-              <p className="text-xs font-semibold uppercase tracking-[0.16em] text-brand-charcoal/45">Payload</p>
-              <pre className="mt-2 max-h-80 overflow-auto border border-brand-softGray bg-brand-offWhite p-4 text-xs leading-6">{JSON.stringify(event.payload, null, 2)}</pre>
+              <p className="text-xs font-semibold uppercase tracking-[0.16em] text-brand-charcoal/45">RINCIAN AKTIVITAS</p>
+              <p className="mt-2 border border-brand-softGray bg-brand-offWhite p-4 text-sm leading-6 text-brand-charcoal/65">Rincian teknis disimpan untuk keperluan sistem dan tidak ditampilkan pada alur operasional admin.</p>
             </div>
           </div>
         ) : (
-          <p className="mt-4 text-sm text-brand-charcoal/60">Event sumber tidak dapat dibaca oleh role ini atau sudah tidak tersedia.</p>
+          <p className="mt-4 text-sm text-brand-charcoal/60">Aktivitas sumber tidak dapat dibaca oleh peran ini atau sudah tidak tersedia.</p>
         )}
       </section>
 
       <section className="border border-brand-softGray bg-white p-5 sm:p-7">
-        <h2 className="text-xl font-semibold">Riwayat Delivery</h2>
-        <p className="mt-2 text-sm text-brand-charcoal/60">Riwayat attempt bersifat append-only dan tidak dapat diedit.</p>
+        <h2 className="text-xl font-semibold">Riwayat Pengiriman</h2>
+        <p className="mt-2 text-sm text-brand-charcoal/60">Riwayat pengiriman tidak dapat diedit.</p>
         {deliveries.length === 0 ? (
           <p className="mt-5 border border-dashed border-brand-softGray bg-brand-offWhite p-5 text-sm text-brand-charcoal/60">
-            Tidak ada attempt provider. Untuk channel in-app, status terkirim dicatat langsung pada notifikasi.
+            Tidak ada percobaan pengiriman melalui penyedia eksternal. Untuk notifikasi dalam aplikasi, status terkirim dicatat langsung.
           </p>
         ) : (
           <div className="mt-5 overflow-x-auto">

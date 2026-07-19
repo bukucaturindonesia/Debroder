@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import { repeatOrderApiFetch } from "@/lib/admin-repeat-order-api";
 import { formatAdminOrderDate, formatAdminOrderDateTime } from "@/lib/admin-order-detail";
 import type { RepeatOrderHistoryRow, RepeatOrderSource } from "@/lib/repeat-orders";
+import { getOrderStatusLabel } from "@/lib/ui-language";
 
 function money(value: number, currency: string) {
   return new Intl.NumberFormat("id-ID", {
@@ -71,7 +72,7 @@ export function CustomerOrderHistory({ orderId }: { orderId: string }) {
               <div>
                 <p className="font-semibold">{order.order_number}</p>
                 <p className="mt-1 text-xs text-brand-charcoal/55">
-                  {order.status} · {formatAdminOrderDate(order.created_at)}
+                  {getOrderStatusLabel(order.status)} · {formatAdminOrderDate(order.created_at)}
                 </p>
                 <p className="mt-1 text-sm font-semibold">{money(order.total_amount, order.currency)}</p>
               </div>

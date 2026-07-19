@@ -11,6 +11,7 @@ import {
   type RepeatOrderHistoryRow,
   type RepeatOrderSource
 } from "@/lib/repeat-orders";
+import { getOrderStatusLabel } from "@/lib/ui-language";
 
 function money(value: number, currency: string) {
   return new Intl.NumberFormat("id-ID", {
@@ -48,7 +49,7 @@ export function RepeatOrderAdmin() {
       setHistory(payload.history);
       setRole(payload.role);
     } catch (loadError) {
-      setError(loadError instanceof Error ? loadError.message : "Repeat Order gagal dimuat.");
+      setError(loadError instanceof Error ? loadError.message : "Pesanan ulang belum dapat dimuat.");
     } finally {
       setLoading(false);
     }
@@ -66,12 +67,12 @@ export function RepeatOrderAdmin() {
     void load(next);
   }
 
-  if (loading && !sources.length) return <AdminLoadingState label="Memuat Repeat Order..." />;
+  if (loading && !sources.length) return <AdminLoadingState label="Memuat pesanan ulang..." />;
 
   if (error && !sources.length) {
     return (
       <AdminErrorState
-        title="Repeat Order gagal dimuat"
+        title="Pesanan ulang belum dapat dimuat"
         description={error}
         action={
           <button
@@ -91,7 +92,7 @@ export function RepeatOrderAdmin() {
       <div className="grid gap-6">
         <AdminPageHeader
           eyebrow="DEBRODER v1.2 · Phase 14"
-          title="Repeat Order"
+          title="Pesan Ulang"
           description="Pilih order lama yang siap/selesai, periksa harga aktif dan stok, lalu buat quotation baru yang terhubung secara audit-safe."
           actions={
             <Link
@@ -140,7 +141,7 @@ export function RepeatOrderAdmin() {
                     <div className="flex flex-wrap items-center gap-2">
                       <h2 className="font-semibold">{source.order_number}</h2>
                       <span className="rounded-full bg-brand-green/10 px-3 py-1 text-xs font-semibold text-brand-green">
-                        {source.status}
+                        {getOrderStatusLabel(source.status)}
                       </span>
                     </div>
                     <p className="mt-2 text-sm text-brand-charcoal/65">
@@ -169,12 +170,12 @@ export function RepeatOrderAdmin() {
         ) : (
           <AdminEmptyState
             title="Tidak ada order yang memenuhi syarat"
-            description="Repeat Order hanya tersedia untuk order aktif berstatus siap diambil, siap dikirim, atau selesai."
+            description="Pesan ulang hanya tersedia untuk pesanan aktif berstatus siap diambil, siap dikirim, atau selesai."
           />
         )}
 
         <section className="border border-brand-softGray bg-white p-5 sm:p-7">
-          <h2 className="text-2xl font-semibold">Riwayat Repeat Order</h2>
+          <h2 className="text-2xl font-semibold">Riwayat Pesan Ulang</h2>
           <p className="mt-2 text-sm text-brand-charcoal/60">
             Riwayat bersifat append-only dan mempertahankan hubungan source order dengan quotation baru.
           </p>
@@ -192,13 +193,13 @@ export function RepeatOrderAdmin() {
                     href={`/admin/orders/quotations/${row.new_quotation_id}`}
                     className="inline-flex min-h-10 items-center justify-center rounded-full border border-brand-softGray px-4 text-sm font-semibold"
                   >
-                    Buka Quotation
+                    Buka Penawaran
                   </Link>
                 </article>
               ))}
             </div>
           ) : (
-            <p className="mt-6 text-sm text-brand-charcoal/60">Belum ada Repeat Order.</p>
+            <p className="mt-6 text-sm text-brand-charcoal/60">Belum ada pesanan ulang.</p>
           )}
         </section>
       </div>

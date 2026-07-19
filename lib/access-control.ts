@@ -26,7 +26,7 @@ export const ROLE_LABELS: Record<AdminRole, string> = {
   production_admin: "Admin Produksi",
   operator: "Operator",
   finance: "Finance",
-  quality_control: "Quality Control",
+  quality_control: "Pemeriksaan Kualitas",
   store_staff: "Store Staff"
 };
 
@@ -36,10 +36,10 @@ export const ROLE_DESCRIPTIONS: Record<AdminRole, string> = {
   super_admin: "Alias kompatibilitas Super Admin.",
   admin: "Akses operasional existing tanpa pengelolaan akses, permission, dan maintenance owner-only.",
   admin_guest: "Full Panel Viewer read-only: seluruh modul dapat dilihat melalui data yang disanitasi tanpa mutation atau akses secret.",
-  sales_admin: "Quotation, pesanan, pelanggan, dan pencatatan pembayaran.",
+  sales_admin: "Penawaran harga, pesanan, pelanggan, dan pencatatan pembayaran.",
   designer: "Mockup, file desain, revisi, dan pengiriman proof.",
-  production_admin: "Job Order, Work Item, penugasan, dan status produksi.",
-  operator: "Work Item yang ditugaskan dan pembaruan progres produksi.",
+  production_admin: "Surat Perintah Kerja, daftar pekerjaan, penugasan, dan status produksi.",
+  operator: "Pekerjaan yang ditugaskan dan pembaruan progres produksi.",
   finance: "Verifikasi pembayaran, koreksi, dan riwayat pembayaran.",
   quality_control: "Pemeriksaan, bukti, hasil QC, dan rework.",
   store_staff: "Persiapan pengiriman, pickup, resi, dan serah terima."

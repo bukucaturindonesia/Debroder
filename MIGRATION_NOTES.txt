@@ -1,36 +1,6 @@
-MIGRATION: supabase/migrations/20260719110000_admin_order_pricing_workspace.sql
-STATUS: CREATED LOCALLY — NOT APPLIED
-REMOTE SUPABASE: UNCHANGED
+DATABASE CHANGE: NONE
+MIGRATION: NONE
+REMOTE SUPABASE: UNCHANGED BY THIS PACKAGE
 
-WHY REQUIRED
-The existing schema persisted immutable sent quote versions but had no pricing-draft contract. The old send RPC required a final non-zero order total while no Stage 3 operation could create that total. UI-only changes could not safely solve this data-flow gap.
-
-ADDITIVE CHANGES
-- orders.custom_pricing_draft jsonb
-- orders.custom_pricing_draft_version integer
-- orders.custom_pricing_draft_updated_at timestamptz
-- orders.custom_pricing_draft_updated_by uuid
-- custom_order_quotation_versions.finalization_key text plus partial unique index
-
-RPC CHANGES
-- build_custom_order_pricing_v1: private server normalizer/recalculator.
-- approve_custom_order_review_v1: replaces ten micro-checkboxes with the two owner-approved confirmations.
-- save_custom_order_pricing_draft_v1: authorized, locked, versioned draft save without lifecycle transition.
-- finalize_custom_order_pricing_v1: authorized, server-recalculated, immutable, idempotent quotation finalization.
-- send_custom_order_quotation_v1: retained by signature but retired with an explicit error so the old checkbox-only bypass cannot be used.
-
-SECURITY
-- Existing order.edit is the mutation permission; no role or permission was added.
-- Order row is locked before draft/final mutations.
-- PUBLIC/anon/default authenticated execute is revoked, then the intended authenticated/service_role execution is explicitly granted.
-- Customer API continues to use the existing private-token/service route and receives only finalized pricing_components. internal_note is removed from that snapshot.
-
-ROLLBACK
-The migration includes owner guidance. Before real use, restore prior approve/send RPC definitions, drop new RPC/helper, index/column, and draft columns. After data exists, preserve history and use a forward correction. Never delete orders, quotation versions, approvals, payments, PIM, or Jersey data.
-
-OWNER PREVIEW CHECKS
-1. Apply only after reviewing dependencies through 20260718180000_custom_order_end_to_end_revision.sql.
-2. Save an incomplete draft; confirm lifecycle remains under_review and blockers persist.
-3. Save a valid draft; confirm server totals match product snapshot plus editable lines.
-4. Finalize twice with the same key; confirm one quote version and one lifecycle transition.
-5. Approve/revise through the existing customer link and verify locked total, payment prerequisite, audit, and history.
+The previously configured payment method remains database-managed. No bank name,
+account number, account holder, or QRIS value is hardcoded into the customer UI.

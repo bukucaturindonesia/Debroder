@@ -123,7 +123,7 @@ export function QuotationDetailAdmin() {
 
     const supabase = createSupabaseClient();
     if (!supabase) {
-      setMessage("Supabase belum dikonfigurasi.");
+      setMessage("Layanan data belum tersedia. Hubungi pengelola sistem.");
       setLoading(false);
       return;
     }
@@ -188,7 +188,7 @@ export function QuotationDetailAdmin() {
       const supabase = createSupabaseClient();
       if (!supabase) {
         if (active) {
-          setMessage("Supabase belum dikonfigurasi.");
+          setMessage("Layanan data belum tersedia. Hubungi pengelola sistem.");
           setCheckingAccess(false);
           setLoading(false);
         }
@@ -341,9 +341,9 @@ export function QuotationDetailAdmin() {
 
         {quotation.repeated_from_order_id ? (
           <section className="border border-brand-green/20 bg-brand-green/5 p-5 text-sm">
-            <p className="font-semibold text-brand-green">Quotation Repeat Order</p>
+            <p className="font-semibold text-brand-green">Penawaran Pesan Ulang</p>
             <p className="mt-2 text-brand-charcoal/70">
-              Quotation ini dibuat dari order lama dan tetap memakai proses pemeriksaan harga, stok, layanan, serta approval desain yang baru.
+              Penawaran ini dibuat dari pesanan lama dan tetap memakai proses pemeriksaan harga, stok, layanan, serta persetujuan desain yang baru.
             </p>
             {quotation.repeat_reason ? (
               <p className="mt-2"><strong>Alasan:</strong> {quotation.repeat_reason}</p>
@@ -378,7 +378,7 @@ export function QuotationDetailAdmin() {
               <div className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
                 <div>
                   <p className="text-xs font-semibold uppercase tracking-[0.18em] text-brand-charcoal/45">
-                    Rincian Quotation
+                    Rincian Penawaran
                   </p>
                   <h2 className="mt-2 text-2xl font-semibold">
                     Produk & Layanan

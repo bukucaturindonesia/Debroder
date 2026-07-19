@@ -57,7 +57,7 @@ export function VariantDeleteManager() {
     const supabase = createSupabaseClient();
 
     if (!supabase) {
-      setMessage("Supabase belum dikonfigurasi.");
+      setMessage("Layanan data belum tersedia. Hubungi pengelola sistem.");
       return;
     }
 
@@ -174,7 +174,7 @@ export function VariantDeleteManager() {
     setDeleting(false);
 
     if (error) {
-      setMessage(`Varian gagal dihapus: ${error.message}`);
+      setMessage("Varian belum dapat dihapus. Periksa keterkaitan data lalu coba lagi.");
       return;
     }
 
@@ -282,7 +282,7 @@ export function VariantDeleteManager() {
                   </div>
                   <div>
                     <span className="block text-xs text-black/50">
-                      Quotation terkait
+                      Penawaran terkait
                     </span>
                     <strong>{counts.quotations}</strong>
                   </div>

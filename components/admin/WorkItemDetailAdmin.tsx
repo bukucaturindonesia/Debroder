@@ -202,7 +202,7 @@ export function WorkItemDetailAdmin() {
     setLoading(false);
     const firstError = jobResult.error || siblingsResult.error || dependenciesResult.error || statusResult.error || revisionsResult.error || assignmentsResult.error || dependencyHistoryResult.error;
     if (firstError) {
-      setNotice({ type: "error", text: `Sebagian detail Work Item gagal dimuat: ${firstError.message}` });
+      setNotice({ type: "error", text: "Sebagian detail pekerjaan belum dapat dimuat. Muat ulang halaman atau coba lagi." });
     }
 
     setRole(typeof profileResult.data?.role === "string" ? profileResult.data.role : null);
@@ -267,7 +267,7 @@ export function WorkItemDetailAdmin() {
     event.preventDefault();
     if (!row || !canManage || working || !canEditWorkItem(row.status)) return;
     if (row.status === "ready" && !editForm.reason.trim()) {
-      setNotice({ type: "error", text: "Alasan perubahan wajib diisi untuk Work Item Siap Dikerjakan." });
+      setNotice({ type: "error", text: "Alasan perubahan wajib diisi untuk pekerjaan yang siap dikerjakan." });
       return;
     }
     const supabase = createSupabaseClient();
@@ -286,11 +286,11 @@ export function WorkItemDetailAdmin() {
     });
     setWorking(false);
     if (result.error) {
-      setNotice({ type: "error", text: result.error.message || "Perubahan Work Item gagal disimpan." });
+      setNotice({ type: "error", text: "Perubahan pekerjaan belum berhasil disimpan. Coba lagi." });
       return;
     }
     setEditOpen(false);
-    setNotice({ type: "success", text: "Perubahan Work Item berhasil disimpan sebagai revisi." });
+    setNotice({ type: "success", text: "Perubahan pekerjaan berhasil disimpan sebagai revisi." });
     await loadData();
   }
 
@@ -311,7 +311,7 @@ export function WorkItemDetailAdmin() {
     });
     setWorking(false);
     if (result.error) {
-      setNotice({ type: "error", text: result.error.message || "Penugasan Work Item gagal disimpan." });
+      setNotice({ type: "error", text: "Penugasan pekerjaan belum berhasil disimpan. Coba lagi." });
       return;
     }
     setAssignmentOpen(false);
@@ -332,12 +332,12 @@ export function WorkItemDetailAdmin() {
     });
     setWorking(false);
     if (result.error) {
-      setNotice({ type: "error", text: result.error.message || "Dependensi gagal ditambahkan." });
+      setNotice({ type: "error", text: "Keterkaitan pekerjaan belum dapat ditambahkan." });
       return;
     }
     setDependencyId("");
     setDependencyOpen(false);
-    setNotice({ type: "success", text: "Dependensi Work Item berhasil ditambahkan." });
+    setNotice({ type: "success", text: "Ketergantungan pekerjaan berhasil ditambahkan." });
     await loadData();
   }
 
@@ -353,10 +353,10 @@ export function WorkItemDetailAdmin() {
     });
     setWorking(false);
     if (result.error) {
-      setNotice({ type: "error", text: result.error.message || "Dependensi gagal dihapus." });
+      setNotice({ type: "error", text: "Keterkaitan pekerjaan belum dapat dihapus." });
       return;
     }
-    setNotice({ type: "success", text: "Dependensi Work Item berhasil dihapus." });
+    setNotice({ type: "success", text: "Ketergantungan pekerjaan berhasil dihapus." });
     await loadData();
   }
 
@@ -378,13 +378,13 @@ export function WorkItemDetailAdmin() {
     });
     setWorking(false);
     if (result.error) {
-      setNotice({ type: "error", text: result.error.message || "Perubahan status ditolak." });
+      setNotice({ type: "error", text: "Status belum dapat diubah. Muat ulang data lalu coba lagi." });
       return;
     }
     setTransitionTarget(null);
     setTransitionNote("");
     setTransitionReason("");
-    setNotice({ type: "success", text: "Status Work Item berhasil diperbarui." });
+    setNotice({ type: "success", text: "Status pekerjaan berhasil diperbarui." });
     await loadData();
   }
 
@@ -400,7 +400,7 @@ export function WorkItemDetailAdmin() {
     });
     setWorking(false);
     if (result.error) {
-      setNotice({ type: "error", text: result.error.message || "Work Item gagal diarsipkan." });
+      setNotice({ type: "error", text: "Pekerjaan belum dapat diarsipkan. Coba lagi." });
       return;
     }
     router.replace(`/admin/work-items?job_order=${row.job_order_id}`);
@@ -416,10 +416,10 @@ export function WorkItemDetailAdmin() {
     const result = await supabase.rpc("restore_work_item", { p_work_item_id: row.id });
     setWorking(false);
     if (result.error) {
-      setNotice({ type: "error", text: result.error.message || "Work Item gagal dipulihkan." });
+      setNotice({ type: "error", text: "Pekerjaan belum dapat dipulihkan. Coba lagi." });
       return;
     }
-    setNotice({ type: "success", text: "Work Item berhasil dipulihkan." });
+    setNotice({ type: "success", text: "Pekerjaan berhasil dipulihkan." });
     await loadData();
   }
 
@@ -432,23 +432,23 @@ export function WorkItemDetailAdmin() {
     const result = await supabase.rpc("permanently_delete_work_item", { p_work_item_id: row.id });
     setWorking(false);
     if (result.error) {
-      setNotice({ type: "error", text: result.error.message || "Work Item gagal dihapus permanen." });
+      setNotice({ type: "error", text: "Pekerjaan belum dapat dihapus permanen." });
       return;
     }
     router.replace(`/admin/work-items?job_order=${row.job_order_id}`);
     router.refresh();
   }
 
-  if (loading) return <AdminLoadingState label="Memuat detail Work Item..." />;
+  if (loading) return <AdminLoadingState label="Memuat detail pekerjaan..." />;
 
   if (!row) {
     return (
       <AdminErrorState
-        title="Work Item tidak ditemukan"
-        description="Work Item mungkin sudah dihapus atau tautannya tidak valid."
+        title="Pekerjaan tidak ditemukan"
+        description="Pekerjaan mungkin sudah dihapus atau tautannya tidak valid. Kembali ke daftar dan pilih data yang tersedia."
         action={
           <Link href="/admin/work-items" className="inline-flex min-h-11 items-center rounded-full bg-brand-charcoal px-6 text-sm font-semibold text-white">
-            Kembali ke Work Item
+            Kembali ke Daftar Pekerjaan
           </Link>
         }
       />
@@ -469,7 +469,7 @@ export function WorkItemDetailAdmin() {
         <AdminPageHeader
           eyebrow="DEBRODER v1.2 · Phase 9"
           title={row.work_item_number}
-          description={`${row.title} · ${jobOrder?.job_order_number || "Job Order tidak tersedia"}`}
+          description={`${row.title} · ${jobOrder?.job_order_number || "Surat Perintah Kerja tidak tersedia"}`}
           actions={
             <>
               <Link href={`/admin/work-items?job_order=${row.job_order_id}`} className="inline-flex min-h-10 items-center rounded-full border border-brand-softGray bg-white px-5 text-sm font-semibold">
@@ -480,7 +480,7 @@ export function WorkItemDetailAdmin() {
               </Link>
               {jobOrder ? (
                 <Link href={`/admin/job-orders/${jobOrder.id}`} className="inline-flex min-h-10 items-center rounded-full border border-brand-softGray bg-white px-5 text-sm font-semibold">
-                  Buka Job Order
+                  Buka Surat Perintah Kerja
                 </Link>
               ) : null}
               {!row.archived_at && canManage && canEditWorkItem(row.status) ? (
@@ -513,10 +513,10 @@ export function WorkItemDetailAdmin() {
         />
 
         {notice ? <AdminAlert type={notice.type}>{notice.text}</AdminAlert> : null}
-        {!canView ? <AdminAlert type="error">Akun ini tidak mempunyai akses operasional Work Item.</AdminAlert> : !canManage ? <AdminAlert type="info">Mode operator: perubahan dibatasi pada status Work Item yang ditugaskan kepada akun ini.</AdminAlert> : null}
+        {!canView ? <AdminAlert type="error">Akun ini tidak mempunyai akses ke pekerjaan operasional.</AdminAlert> : !canManage ? <AdminAlert type="info">Mode operator: perubahan dibatasi pada pekerjaan yang ditugaskan kepada akun ini.</AdminAlert> : null}
         {row.archived_at ? (
           <AdminAlert type="warning">
-            Work Item diarsipkan {formatWorkItemDate(row.archived_at)} oleh {actorLabel(row.archived_by)}{row.archive_reason ? ` · ${row.archive_reason}` : ""}.
+            Pekerjaan diarsipkan {formatWorkItemDate(row.archived_at)} oleh {actorLabel(row.archived_by)}{row.archive_reason ? ` · ${row.archive_reason}` : ""}.
           </AdminAlert>
         ) : null}
 
@@ -538,7 +538,7 @@ export function WorkItemDetailAdmin() {
           <section className="border border-brand-softGray bg-white p-5 sm:p-7">
             <h2 className="text-xl font-semibold">Kontrol Pekerjaan</h2>
             <p className="mt-2 text-sm leading-6 text-brand-charcoal/60">
-              Mulai, tahan, lanjutkan, atau kirim pekerjaan ke Quality Control. Keputusan lulus dan perbaikan diselesaikan pada Phase 10.
+              Mulai, tahan, lanjutkan, atau kirim pekerjaan ke Pemeriksaan Kualitas. Keputusan lulus dan perbaikan diselesaikan pada tahap tersebut.
             </p>
             <div className="mt-5 flex flex-wrap gap-3">
               {transitions.map((target) => (
@@ -557,9 +557,9 @@ export function WorkItemDetailAdmin() {
 
         {row.status === "awaiting_qc" ? (
           <section className="border border-brand-softGray bg-white p-5 sm:p-7">
-            <AdminAlert type="success">Work Item sudah diserahkan ke Quality Control dan tidak dapat ditandai selesai sebelum pemeriksaan Phase 10.</AdminAlert>
+            <AdminAlert type="success">Pekerjaan sudah diserahkan ke Pemeriksaan Kualitas dan tidak dapat ditandai selesai sebelum pemeriksaan berakhir.</AdminAlert>
             <Link href={`/admin/quality-control?work_item=${row.id}`} className="mt-4 inline-flex min-h-10 items-center rounded-full bg-brand-green px-5 text-sm font-semibold text-white">
-              Buka Quality Control
+              Buka Pemeriksaan Kualitas
             </Link>
           </section>
         ) : null}
@@ -585,7 +585,7 @@ export function WorkItemDetailAdmin() {
             <div>
               <h2 className="text-xl font-semibold">Dependensi Pekerjaan</h2>
               <p className="mt-2 text-sm leading-6 text-brand-charcoal/60">
-                Work Item ini baru dapat dimulai setelah pekerjaan yang menjadi dependensinya selesai. Siklus dependensi ditolak oleh database.
+                Pekerjaan ini baru dapat dimulai setelah pekerjaan yang menjadi ketergantungannya selesai. Ketergantungan berulang tidak diizinkan.
               </p>
             </div>
             {!row.archived_at && canManage && canEditWorkItem(row.status) ? (
@@ -603,7 +603,7 @@ export function WorkItemDetailAdmin() {
                 return (
                   <article key={dependency.depends_on_work_item_id} className="flex flex-wrap items-center justify-between gap-3 border border-brand-softGray p-4">
                     <div>
-                      <p className="font-semibold">{source?.work_item_number || "Work Item tidak tersedia"}</p>
+                      <p className="font-semibold">{source?.work_item_number || "Pekerjaan tidak tersedia"}</p>
                       <p className="mt-1 text-sm text-brand-charcoal/60">{source?.title || "Data sumber tidak tersedia"}</p>
                     </div>
                     <div className="flex flex-wrap gap-2">
@@ -659,7 +659,7 @@ export function WorkItemDetailAdmin() {
               const source = siblingMap[history.depends_on_work_item_id];
               return (
                 <article key={history.id} className="border-b border-brand-softGray py-4 last:border-b-0">
-                  <p className="font-semibold">{history.action === "added" ? "Ditambahkan" : "Dihapus"}: {source?.work_item_number || "Work Item lama"}</p>
+                  <p className="font-semibold">{history.action === "added" ? "Ditambahkan" : "Dihapus"}: {source?.work_item_number || "Pekerjaan lama"}</p>
                   <p className="mt-1 text-sm text-brand-charcoal/60">{formatWorkItemDate(history.created_at)} · {actorLabel(history.actor_id)}</p>
                 </article>
               );
@@ -671,7 +671,7 @@ export function WorkItemDetailAdmin() {
       {editOpen ? (
         <div className="fixed inset-0 z-[100] overflow-y-auto bg-black/60 p-4 sm:p-8">
           <form onSubmit={saveEdit} className="mx-auto max-w-2xl bg-white p-6 shadow-2xl sm:p-8">
-            <h2 className="text-2xl font-semibold">Edit Work Item</h2>
+            <h2 className="text-2xl font-semibold">Edit Pekerjaan</h2>
             <p className="mt-2 text-sm text-brand-charcoal/60">Perubahan disimpan sebagai revisi dan tidak mengubah snapshot sumber.</p>
             <label className="mt-6 block text-sm font-semibold">Judul<input required value={editForm.title} onChange={(event) => setEditForm((current) => ({ ...current, title: event.target.value }))} className="mt-2 min-h-11 w-full rounded-lg border border-brand-softGray px-4" /></label>
             <label className="mt-4 block text-sm font-semibold">Instruksi<textarea rows={4} value={editForm.description} onChange={(event) => setEditForm((current) => ({ ...current, description: event.target.value }))} className="mt-2 w-full rounded-lg border border-brand-softGray px-4 py-3" /></label>
@@ -688,7 +688,7 @@ export function WorkItemDetailAdmin() {
       ) : null}
 
       {assignmentOpen ? (
-        <Modal title="Tugaskan Work Item" description="Pilih penanggung jawab produksi. Setiap perubahan dicatat dalam riwayat penugasan.">
+        <Modal title="Tugaskan Pekerjaan" description="Pilih penanggung jawab produksi. Setiap perubahan dicatat dalam riwayat penugasan.">
           <select value={assignedTo} onChange={(event) => setAssignedTo(event.target.value)} className="mt-5 min-h-11 w-full rounded-lg border border-brand-softGray px-4">
             <option value="">Belum ditugaskan</option>
             {productionProfiles.map((profile) => <option key={profile.id} value={profile.id}>{profile.email || "Akun tanpa email"}</option>)}
@@ -699,9 +699,9 @@ export function WorkItemDetailAdmin() {
       ) : null}
 
       {dependencyOpen ? (
-        <Modal title="Tambah Dependensi" description="Pilih pekerjaan yang harus diselesaikan lebih dahulu. Database menolak dependensi silang Job Order dan siklus.">
+        <Modal title="Tambah Ketergantungan" description="Pilih pekerjaan yang harus diselesaikan lebih dahulu. Ketergantungan lintas Surat Perintah Kerja dan berulang tidak diizinkan.">
           <select value={dependencyId} onChange={(event) => setDependencyId(event.target.value)} className="mt-5 min-h-11 w-full rounded-lg border border-brand-softGray px-4">
-            <option value="">Pilih Work Item</option>
+            <option value="">Pilih Pekerjaan</option>
             {dependencyCandidates.map((candidate) => <option key={candidate.id} value={candidate.id}>{candidate.work_item_number} · {candidate.title}</option>)}
           </select>
           <ModalActions working={working} primary="Tambah Dependensi" onPrimary={() => void addDependency()} onCancel={() => setDependencyOpen(false)} />
@@ -709,7 +709,7 @@ export function WorkItemDetailAdmin() {
       ) : null}
 
       {transitionTarget ? (
-        <Modal title="Ubah Status Work Item" description={`${WORK_ITEM_STATUS_LABELS[row.status]} → ${WORK_ITEM_STATUS_LABELS[transitionTarget]}`}>
+        <Modal title="Ubah Status Pekerjaan" description={`${WORK_ITEM_STATUS_LABELS[row.status]} → ${WORK_ITEM_STATUS_LABELS[transitionTarget]}`}>
           <textarea rows={3} value={transitionNote} onChange={(event) => setTransitionNote(event.target.value)} placeholder="Catatan tindakan (opsional)" className="mt-5 w-full rounded-lg border border-brand-softGray px-4 py-3" />
           {workItemTransitionNeedsReason(transitionTarget) ? <textarea rows={3} value={transitionReason} onChange={(event) => setTransitionReason(event.target.value)} placeholder={transitionTarget === "on_hold" ? "Alasan penahanan wajib diisi" : transitionTarget === "rework" ? "Alasan perbaikan wajib diisi" : "Alasan pembatalan wajib diisi"} className="mt-4 w-full rounded-lg border border-amber-300 px-4 py-3" /> : null}
           <ModalActions working={working} primary="Konfirmasi Status" onPrimary={() => void transitionStatus()} onCancel={() => setTransitionTarget(null)} />
@@ -717,14 +717,14 @@ export function WorkItemDetailAdmin() {
       ) : null}
 
       {archiveOpen ? (
-        <Modal title="Arsipkan Work Item?" description="Work Item dapat dipulihkan melalui Gudang Arsip selama Job Order induknya masih dapat diedit.">
+        <Modal title="Arsipkan Pekerjaan?" description="Pekerjaan dapat dipulihkan dari arsip selama Surat Perintah Kerja induknya masih dapat diedit.">
           <textarea rows={4} value={archiveReason} onChange={(event) => setArchiveReason(event.target.value)} placeholder="Alasan arsip wajib diisi" className="mt-5 w-full rounded-lg border border-brand-softGray px-4 py-3" />
           <ModalActions working={working} primary="Arsipkan" onPrimary={() => void archiveItem()} onCancel={() => setArchiveOpen(false)} danger />
         </Modal>
       ) : null}
 
       {deleteOpen ? (
-        <Modal title="Hapus Permanen Work Item?" description="Tindakan Super Admin ini tidak dapat dibatalkan. Work Item yang mempunyai catatan QC tidak dapat dihapus.">
+        <Modal title="Hapus Pekerjaan Secara Permanen?" description="Tindakan Super Admin ini tidak dapat dibatalkan. Pekerjaan yang mempunyai catatan pemeriksaan kualitas tidak dapat dihapus.">
           <label className="mt-5 block text-sm font-semibold">Ketik <strong>{row.work_item_number}</strong><input value={deleteConfirmation} onChange={(event) => setDeleteConfirmation(event.target.value)} className="mt-2 min-h-11 w-full rounded-lg border border-red-300 px-4" /></label>
           <ModalActions working={working} primary="Hapus Permanen" onPrimary={() => void permanentlyDelete()} onCancel={() => setDeleteOpen(false)} danger />
         </Modal>

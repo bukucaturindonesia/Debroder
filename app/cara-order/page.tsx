@@ -4,12 +4,12 @@ import { getPublicContent } from "@/lib/public-data";
 import { whatsappLinkWithMessage } from "@/lib/url";
 
 export const metadata: Metadata = {
-  title: "Cara Order di DE BRODER",
+  title: "Cara Pemesanan di DEBRODER",
   description:
     "Ikuti langkah mudah untuk memesan kaos polos, sablon DTF, custom jersey, maklon DTF, dan cetak sublim di DE BRODER.",
   alternates: { canonical: "/cara-order" },
   openGraph: {
-    title: "Cara Order di DE BRODER",
+    title: "Cara Pemesanan di DEBRODER",
     description:
       "Langkah mudah memesan kaos polos, sablon DTF, custom jersey, maklon DTF, dan cetak sublim."
   }
@@ -61,7 +61,7 @@ export default async function CaraOrderPage() {
         ctaHref={undefined}
         breadcrumbs={[
           { label: "Beranda", href: "/" },
-          { label: "Cara Order" }
+          { label: "Cara Pemesanan" }
         ]}
       />
       <section className="bg-brand-offWhite py-10 sm:py-12">

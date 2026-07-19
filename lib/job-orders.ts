@@ -103,7 +103,7 @@ export function getJobOrderTransitionLabel(status: JobOrderStatus) {
     released: "Rilis ke Produksi",
     in_progress: "Mulai / Lanjutkan Produksi",
     on_hold: "Tahan Produksi",
-    cancelled: "Batalkan Job Order",
+    cancelled: "Batalkan Surat Perintah Kerja",
     completed: "Selesaikan"
   }[status];
 }

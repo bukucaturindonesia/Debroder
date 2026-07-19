@@ -524,7 +524,7 @@ export function QuotationServiceManager() {
             <header className="flex flex-col gap-5 border-b border-brand-softGray bg-white p-5 sm:flex-row sm:items-start sm:justify-between sm:p-7">
               <div>
                 <p className="text-xs font-semibold uppercase tracking-[0.18em] text-brand-charcoal/45">
-                  Formal Quotation
+                  Penawaran Harga Resmi
                 </p>
                 <h2 className="mt-2 text-2xl font-semibold">Kelola Layanan</h2>
                 <p className="mt-2 text-sm text-brand-charcoal/60">
@@ -860,7 +860,7 @@ export function QuotationServiceManager() {
 
             <section className="mt-5 border border-brand-softGray bg-brand-offWhite p-4">
               <p className="text-xs font-semibold uppercase tracking-[0.14em] text-brand-charcoal/45">
-                Preview subtotal
+                Pratinjau subtotal
               </p>
               <p className="mt-2 text-xl font-semibold">
                 {money(calculateSubtotal())}

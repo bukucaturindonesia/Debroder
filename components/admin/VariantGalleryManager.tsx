@@ -166,7 +166,7 @@ export function VariantGalleryManager({ variants, images, onChanged, onStatus }:
 
     setBusyRole(null);
     if (error) {
-      onStatus({ type: "error", text: `Foto varian gagal disimpan: ${error.message}` });
+      onStatus({ type: "error", text: "Foto varian belum dapat disimpan. Coba lagi." });
       return;
     }
     onStatus({ type: "success", text: `${PRODUCT_IMAGE_SLOTS[PRODUCT_IMAGE_ROLE_ORDER[role]].label} berhasil disimpan.` });
@@ -185,9 +185,9 @@ export function VariantGalleryManager({ variants, images, onChanged, onStatus }:
       await supabase.from("product_variants").update({ image_url: null }).eq("id", selectedVariantId);
     }
     setBusyRole(null);
-    if (error) onStatus({ type: "error", text: `Foto gagal dihapus: ${error.message}` });
+    if (error) onStatus({ type: "error", text: "Foto belum dapat dihapus. Coba lagi." });
     else {
-      onStatus({ type: "success", text: "Foto varian dihapus dari slot. File asli tetap aman di Media Library." });
+      onStatus({ type: "success", text: "Foto varian dihapus dari slot. File asli tetap aman di Galeri Media." });
       await onChanged();
     }
   }
@@ -218,7 +218,7 @@ export function VariantGalleryManager({ variants, images, onChanged, onStatus }:
       });
       if (uploadError) {
         setBusyRole(null);
-        onStatus({ type: "error", text: `Upload gagal: ${uploadError.message}` });
+        onStatus({ type: "error", text: "Foto belum dapat diunggah. Periksa file lalu coba lagi." });
         return;
       }
       publicUrl = supabase.storage.from(WEBSITE_IMAGES_BUCKET).getPublicUrl(path).data.publicUrl;
@@ -268,7 +268,7 @@ export function VariantGalleryManager({ variants, images, onChanged, onStatus }:
         <div>
           <p className="text-xs font-semibold uppercase tracking-[0.16em] text-brand-charcoal/45">Galeri Per Varian Warna</p>
           <h3 className="mt-2 text-xl font-semibold">Empat slot yang konsisten</h3>
-          <p className="mt-2 max-w-2xl text-sm leading-6 text-brand-charcoal/55">Pilih foto dari Media Library atau upload langsung. Urutan peran dikunci: depan, belakang, detail, lalu lifestyle.</p>
+          <p className="mt-2 max-w-2xl text-sm leading-6 text-brand-charcoal/55">Pilih foto dari Galeri Media atau unggah langsung. Urutan peran dikunci: depan, belakang, detail, lalu gaya penggunaan.</p>
         </div>
         <span className={`rounded-full px-3 py-1.5 text-xs font-semibold ${completeCount === PRODUCT_GALLERY_LIMIT ? "bg-green-50 text-green-800" : "bg-amber-50 text-amber-800"}`}>
           {completeCount} / {PRODUCT_GALLERY_LIMIT} foto
@@ -297,9 +297,9 @@ export function VariantGalleryManager({ variants, images, onChanged, onStatus }:
                 {image?.image_url ? <img src={image.image_url} alt={image.alt_text || slot.label} className="h-full w-full object-cover" /> : <div className="grid h-full place-items-center p-4 text-center text-xs font-semibold text-brand-charcoal/35">Belum ada foto</div>}
               </div>
               <div className="mt-3 grid gap-2">
-                <button type="button" disabled={busy} onClick={() => setPickerRole(role)} className="min-h-10 border border-brand-charcoal bg-white px-3 text-xs font-semibold disabled:opacity-50">Pilih dari Media Library</button>
+                <button type="button" disabled={busy} onClick={() => setPickerRole(role)} className="min-h-10 border border-brand-charcoal bg-white px-3 text-xs font-semibold disabled:opacity-50">Pilih dari Galeri Media</button>
                 <label className="grid min-h-10 cursor-pointer place-items-center bg-brand-charcoal px-3 text-center text-xs font-semibold text-white">
-                  {busy ? "Memproses..." : image ? "Ganti lewat upload" : "Upload foto"}
+                  {busy ? "Memproses..." : image ? "Ganti lewat unggah" : "Unggah foto"}
                   <input type="file" accept="image/jpeg,image/png,image/webp" className="sr-only" disabled={busy} onChange={(event) => void uploadToSlot(event, role)} />
                 </label>
                 {image ? <button type="button" disabled={busy} onClick={() => void removeSlot(role)} className="min-h-9 text-xs font-semibold text-red-700 disabled:opacity-50">Kosongkan slot</button> : null}
@@ -319,7 +319,7 @@ export function VariantGalleryManager({ variants, images, onChanged, onStatus }:
         <div className="fixed inset-0 z-[120] overflow-y-auto bg-black/60 p-4 sm:p-8" role="dialog" aria-modal="true" aria-label="Pilih media untuk galeri varian">
           <div className="mx-auto max-w-6xl bg-white p-5 sm:p-7">
             <div className="flex items-start justify-between gap-4">
-              <div><p className="text-xs font-semibold uppercase tracking-[0.16em] text-brand-charcoal/45">Media Library</p><h3 className="mt-2 text-xl font-semibold">Pilih {PRODUCT_IMAGE_SLOTS[PRODUCT_IMAGE_ROLE_ORDER[pickerRole]].label}</h3></div>
+              <div><p className="text-xs font-semibold uppercase tracking-[0.16em] text-brand-charcoal/45">Galeri Media</p><h3 className="mt-2 text-xl font-semibold">Pilih {PRODUCT_IMAGE_SLOTS[PRODUCT_IMAGE_ROLE_ORDER[pickerRole]].label}</h3></div>
               <button type="button" onClick={() => setPickerRole(null)} className="grid h-10 w-10 place-items-center rounded-full bg-brand-offWhite text-xl">×</button>
             </div>
             <input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Cari nama, folder, atau alt text..." className="mt-5 min-h-11 w-full border border-brand-softGray px-4" />

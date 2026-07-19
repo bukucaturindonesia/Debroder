@@ -1,0 +1,67 @@
+DEBRODER — CUSTOMER ORDER HUB UI SIMPLIFICATION
+
+GOAL
+- One current status.
+- One responsible party.
+- One active customer task.
+- One primary action.
+- Persistent “Lacak Pesanan” access.
+- Secondary information preserved behind progressive disclosure.
+
+IMPLEMENTED
+1. Central customer presentation resolver
+   - Maps order, payment, fulfillment, pickup, Ready Stock, and Custom states.
+   - Produces responsibility, title, explanation, next step, compact 3-step progress, and active action.
+   - Labels: TINDAKAN ANDA / SEDANG DIPROSES DEBRODER / TIDAK ADA TINDAKAN YANG DIPERLUKAN.
+
+2. Shared customer status card
+   - Displays only the active operational context.
+   - Shows previous/current/next stage instead of opening the full lifecycle.
+
+3. Persistent tracking CTA
+   - Desktop: visible beside the order header.
+   - Mobile: sticky at the bottom.
+   - Applied to order confirmation and payment pages.
+   - Payment fallback opens the tracking lookup with the order number prefilled; the customer confirms with WhatsApp because the payment token is not reused as a tracking credential.
+
+4. Order confirmation simplification
+   - Replaced the two-column dashboard-like presentation with one active status card.
+   - Custom quote approval, shipping-total approval, WhatsApp confirmation, payment, and pickup remain available only when active.
+   - Order summary, delivery/payment information, and secure tracking link are collapsed.
+   - Pickup warning remains visible until the item is ready.
+
+5. Payment simplification
+   - Transfer instructions and proof form appear only while customer action is required.
+   - After proof submission, the form is hidden and replaced by “Pembayaran sedang diperiksa”.
+   - Pending review refreshes every 20 seconds.
+   - Correction/funds-not-found/rejection reopens the same-order payment workspace with Admin notes.
+   - Submission idempotency key rotates only after a successful submission.
+   - Order summary and payment history are collapsed.
+
+6. Tracking simplification
+   - One current status card with one action.
+   - Manual “Perbarui Status” action retained.
+   - Item, payment, and delivery/pickup information are collapsed.
+   - Pickup warning remains visible until the item is ready.
+
+7. Payment-link safety
+   - Public order confirmation and tracking use the Custom-aware automatic payment gate.
+   - Tracking never creates a bank-transfer link for pay-at-store orders.
+   - Absolute configured payment URLs are reduced to same-deployment relative paths for Preview safety.
+
+PRESERVED
+- Existing checkout.
+- Existing orders and order items.
+- Existing payment records and proof upload.
+- Existing Custom quotation approval.
+- Existing tracking authorization and masking.
+- Existing stock reservation and fulfillment lifecycle.
+- Existing Admin workflows.
+- Existing database schema and migration history.
+
+NOT PERFORMED
+- No feature removal.
+- No route replacement.
+- No SQL or migration.
+- No Supabase change.
+- No commit, push, merge, or Vercel deployment.

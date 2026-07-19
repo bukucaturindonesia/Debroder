@@ -26,7 +26,7 @@ const panels = {
     resources: [
       { label: "Product root", table: "products", columns: PRODUCT_COLUMNS, orderBy: "updated_at" },
       { label: "Color variant", table: "product_variants", columns: ["id", "product_id", "name", "variant_name", "color_name", "slug", "sku", "status", "is_active", "price_adjustment", "sort_order"], orderBy: "sort_order", ascending: true },
-      { label: "Sellable SKU", table: "product_variant_sizes", columns: ["id", "variant_id", "size_id", "size_name", "sku", "stock_quantity", "stock", "status", "is_active", "price_adjustment", "sort_order"], orderBy: "sort_order", ascending: true },
+      { label: "SKU Siap Jual", table: "product_variant_sizes", columns: ["id", "variant_id", "size_id", "size_name", "sku", "stock_quantity", "stock", "status", "is_active", "price_adjustment", "sort_order"], orderBy: "sort_order", ascending: true },
       { label: "Variant image", table: "product_variant_images", columns: ["id", "variant_id", "image_role", "alt_text", "target_ratio", "is_cover", "sort_order"], orderBy: "sort_order", ascending: true },
       { label: "Master warna", table: "product_color_master", columns: ["id", "name", "slug", "color_hex", "color_group", "is_active", "sort_order"], orderBy: "sort_order", ascending: true },
       { label: "Master ukuran", table: "product_size_master", columns: ["id", "name", "slug", "size_group", "is_active", "sort_order"], orderBy: "sort_order", ascending: true }
@@ -48,7 +48,7 @@ const panels = {
     title: "CMS & Tampilan Website",
     description: "Konten landing page, banner, hero, dan penempatan produk dapat ditinjau tanpa form editorial atau aksi publish.",
     resources: [
-      { label: "Section landing", table: "homepage_sections", columns: ["id", "name", "slug", "status", "is_active", "sort_order", "publish_at", "updated_at"], orderBy: "sort_order", ascending: true },
+      { label: "Bagian Halaman Utama", table: "homepage_sections", columns: ["id", "name", "slug", "status", "is_active", "sort_order", "publish_at", "updated_at"], orderBy: "sort_order", ascending: true },
       { label: "Item section", table: "homepage_section_items", columns: ["id", "section_id", "product_id", "service_id", "status", "is_active", "sort_order", "updated_at"], orderBy: "sort_order", ascending: true },
       { label: "Landing sections", table: "landing_sections", columns: ["id", "name", "slug", "status", "is_active", "sort_order", "updated_at"], orderBy: "sort_order", ascending: true },
       { label: "CMS banner", table: "cms_banners", columns: ["id", "experience_key", "title", "subtitle", "status", "is_active", "sort_order", "updated_at"], orderBy: "sort_order", ascending: true }
@@ -67,8 +67,8 @@ const panels = {
   },
   media: {
     eyebrow: "MEDIA",
-    title: "Media Library",
-    description: "Metadata aset publik dapat dilihat. Upload, replace, delete, private file, dan signed URL tidak tersedia.",
+    title: "Galeri Media",
+    description: "Informasi aset publik dapat dilihat. Unggah, ganti, hapus, file privat, dan tautan aman tidak tersedia.",
     resources: [
       { label: "Aset media publik", table: "media_assets", columns: ["id", "name", "media_type", "mime_type", "width", "height", "status_aktif", "created_at", "updated_at"], orderBy: "created_at" }
     ]
@@ -105,27 +105,27 @@ const panels = {
   },
   quotations: {
     eyebrow: "QUOTATION",
-    title: "Quotation",
+    title: "Penawaran Harga",
     description: "Draft, versi, item, nilai, dan status quotation ditampilkan read-only dengan data kontak termasking.",
     resources: [
-      { label: "Quotation", table: "quotations", columns: QUOTATION_COLUMNS, orderBy: "created_at" },
-      { label: "Quotation draft", table: "quotation_drafts", columns: ["id", "quotation_number", "customer_name", "customer_phone", "customer_email", "status", "total_amount", "created_at", "updated_at"], orderBy: "created_at" },
+      { label: "Penawaran Harga", table: "quotations", columns: QUOTATION_COLUMNS, orderBy: "created_at" },
+      { label: "Draft Penawaran Harga", table: "quotation_drafts", columns: ["id", "quotation_number", "customer_name", "customer_phone", "customer_email", "status", "total_amount", "created_at", "updated_at"], orderBy: "created_at" },
       { label: "Item quotation", table: "quotation_items", columns: ["id", "quotation_id", "product_name", "variant_name", "size_name", "sku", "quantity", "unit_price", "subtotal", "status", "created_at"], orderBy: "created_at" }
     ]
   },
   production: {
     eyebrow: "PRODUKSI",
-    title: "Produksi & Work Item",
-    description: "Job Order, Work Item, assignment, dan status produksi dapat ditinjau tanpa perubahan status atau penugasan.",
+    title: "Produksi & Daftar Pekerjaan",
+    description: "Surat Perintah Kerja, daftar pekerjaan, penugasan, dan status produksi dapat ditinjau tanpa perubahan status atau penugasan.",
     resources: [
-      { label: "Job Order", table: "job_orders", columns: ["id", "job_order_number", "order_id", "status", "priority", "planned_start_at", "planned_finish_at", "actual_start_at", "actual_finish_at", "created_at", "updated_at"], orderBy: "created_at" },
-      { label: "Work Item", table: "work_items", columns: ["id", "work_item_number", "job_order_id", "title", "department", "status", "priority", "assigned_to", "planned_start_at", "planned_finish_at", "updated_at"], orderBy: "updated_at" },
-      { label: "Riwayat Work Item", table: "work_item_status_history", columns: ["id", "work_item_id", "from_status", "to_status", "reason", "actor_role", "created_at"], orderBy: "created_at" }
+      { label: "Surat Perintah Kerja", table: "job_orders", columns: ["id", "job_order_number", "order_id", "status", "priority", "planned_start_at", "planned_finish_at", "actual_start_at", "actual_finish_at", "created_at", "updated_at"], orderBy: "created_at" },
+      { label: "Daftar Pekerjaan", table: "work_items", columns: ["id", "work_item_number", "job_order_id", "title", "department", "status", "priority", "assigned_to", "planned_start_at", "planned_finish_at", "updated_at"], orderBy: "updated_at" },
+      { label: "Riwayat Pekerjaan", table: "work_item_status_history", columns: ["id", "work_item_id", "from_status", "to_status", "reason", "actor_role", "created_at"], orderBy: "created_at" }
     ]
   },
   qc: {
     eyebrow: "QUALITY CONTROL",
-    title: "Quality Control",
+    title: "Pemeriksaan Kualitas",
     description: "Checklist dan status QC dapat dilihat. Bukti privat, signed URL, upload, rework, approval, dan delete tidak tersedia.",
     resources: [
       { label: "QC Record", table: "qc_records", columns: ["id", "qc_number", "work_item_id", "job_order_id", "status", "result", "inspected_at", "created_at", "updated_at"], orderBy: "created_at" },
@@ -138,7 +138,7 @@ const panels = {
     title: "Pengiriman & Pickup",
     description: "Status fulfillment dan item dapat dilihat. Alamat dimasking; bukti privat, resi mutation, status transition, dan upload dinonaktifkan.",
     resources: [
-      { label: "Fulfillment", table: "fulfillments", columns: ["id", "fulfillment_number", "order_id", "method", "status", "recipient_name", "recipient_phone", "delivery_address", "carrier_name", "scheduled_at", "completed_at", "created_at"], orderBy: "created_at" },
+      { label: "Pengiriman", table: "fulfillments", columns: ["id", "fulfillment_number", "order_id", "method", "status", "recipient_name", "recipient_phone", "delivery_address", "carrier_name", "scheduled_at", "completed_at", "created_at"], orderBy: "created_at" },
       { label: "Item fulfillment", table: "fulfillment_items", columns: ["id", "fulfillment_id", "order_item_id", "quantity", "status", "created_at"], orderBy: "created_at" },
       { label: "Riwayat fulfillment", table: "fulfillment_status_history", columns: ["id", "fulfillment_id", "from_status", "to_status", "reason", "actor_role", "created_at"], orderBy: "created_at" }
     ]
@@ -155,7 +155,7 @@ const panels = {
   },
   access: {
     eyebrow: "ACCESS CONTROL",
-    title: "Role & Permission",
+    title: "Pengguna & Hak Akses",
     description: "Akun, role, dan matriks permission dapat ditinjau. Email dimasking; authentication metadata dan seluruh perubahan role/permission dinonaktifkan.",
     resources: [
       { label: "Profil Admin", table: "profiles", columns: ["id", "email", "role", "created_at", "updated_at"], orderBy: "created_at" },
@@ -187,9 +187,9 @@ const panels = {
     resources: [
       { label: "Order", table: "orders", columns: ORDER_COLUMNS, orderBy: "created_at" },
       { label: "Pembayaran", table: "order_payments", columns: ["id", "payment_number", "order_id", "amount", "method", "status", "submitted_at", "verified_at", "created_at"], orderBy: "created_at" },
-      { label: "Job Order", table: "job_orders", columns: ["id", "job_order_number", "order_id", "status", "priority", "created_at", "updated_at"], orderBy: "created_at" },
+      { label: "Surat Perintah Kerja", table: "job_orders", columns: ["id", "job_order_number", "order_id", "status", "priority", "created_at", "updated_at"], orderBy: "created_at" },
       { label: "QC", table: "qc_records", columns: ["id", "qc_number", "job_order_id", "status", "result", "created_at"], orderBy: "created_at" },
-      { label: "Fulfillment", table: "fulfillments", columns: ["id", "fulfillment_number", "order_id", "method", "status", "created_at"], orderBy: "created_at" }
+      { label: "Pengiriman", table: "fulfillments", columns: ["id", "fulfillment_number", "order_id", "method", "status", "created_at"], orderBy: "created_at" }
     ]
   }
 } satisfies Record<string, AdminViewerPanelSpec>;

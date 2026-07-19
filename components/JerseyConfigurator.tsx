@@ -267,7 +267,7 @@ export function JerseyConfigurator({ config, jerseyName, jerseySlug, imageUrl, i
             </article>
 
             <article className="rounded-[28px] bg-white/40 p-4 ring-1 ring-black/5 sm:p-6">
-              <StepLabel number={6} title="Desain dan data tim" description="Untuk V1, file desain dicatat di keranjang/WhatsApp. Upload server penuh bisa ditambahkan di tahap berikutnya." />
+              <StepLabel number={6} title="Desain dan data tim" description="File desain akan dicatat pada keranjang dan dapat dilanjutkan melalui WhatsApp." />
               <div className="mt-5 grid gap-4">
                 <label className="grid gap-2 text-sm font-semibold text-black/70">Nama tim / komunitas
                   <input value={teamInfo.teamName} onChange={(event) => updateTeamInfo("teamName", event.target.value)} placeholder="Contoh: Garuda FC" className="min-h-12 rounded-[18px] border-0 bg-white/70 px-4 text-sm font-normal outline-none ring-1 ring-black/8 focus:ring-[#063d24]/35" />
@@ -275,7 +275,7 @@ export function JerseyConfigurator({ config, jerseyName, jerseySlug, imageUrl, i
                 <label className="grid gap-2 text-sm font-semibold text-black/70">Link desain / referensi
                   <input value={teamInfo.designReference} onChange={(event) => updateTeamInfo("designReference", event.target.value)} placeholder="Link Google Drive, Canva, atau catatan desain" className="min-h-12 rounded-[18px] border-0 bg-white/70 px-4 text-sm font-normal outline-none ring-1 ring-black/8 focus:ring-[#063d24]/35" />
                 </label>
-                <label className="grid gap-2 text-sm font-semibold text-black/70">Upload desain
+                <label className="grid gap-2 text-sm font-semibold text-black/70">Unggah desain
                   <input type="file" accept="image/*,.pdf,.ai,.cdr,.psd,.zip" onChange={(event) => updateTeamInfo("designFileName", event.target.files?.[0]?.name || "")} className="rounded-[18px] bg-white/70 px-4 py-3 text-sm font-normal outline-none ring-1 ring-black/8 file:mr-3 file:rounded-full file:border-0 file:bg-[#063d24] file:px-4 file:py-2 file:text-xs file:font-semibold file:text-white" />
                   {teamInfo.designFileName ? <span className="text-xs font-medium text-black/50">File dipilih: {teamInfo.designFileName}</span> : null}
                 </label>

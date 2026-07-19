@@ -307,7 +307,7 @@ export function QuotationItemManager() {
             <header className="flex items-start justify-between gap-4 border-b border-brand-softGray bg-white p-5 sm:p-7">
               <div>
                 <p className="text-xs font-semibold uppercase tracking-[0.18em] text-brand-charcoal/45">
-                  Formal Quotation
+                  Penawaran Harga Resmi
                 </p>
                 <h2 className="mt-2 text-2xl font-semibold">Kelola Produk</h2>
                 <p className="mt-2 text-sm text-brand-charcoal/60">

@@ -10,7 +10,7 @@ import {
   TRACKING_RATE_LIMIT_MINUTES,
   trackingNextStep
 } from "@/lib/order-tracking";
-import { ensureAutomaticPaymentLink, type AutomaticPaymentOrder } from "@/lib/automatic-payment-link";
+import { ensureAutomaticPaymentLink, type AutomaticPaymentOrder } from "@/lib/automatic-payment-link-v2";
 import { getAdminSupabaseClient } from "@/lib/supabase/client";
 
 export const dynamic = "force-dynamic";
@@ -22,6 +22,7 @@ type TrackingOrderRow = {
   status: string;
   payment_status: string;
   delivery_method: string;
+  payment_method: string;
   shipping_address: string | null;
   subtotal_amount: number;
   shipping_cost: number | null;
@@ -71,7 +72,7 @@ export async function POST(request: Request) {
   const { data, error } = await client
     .from("orders")
     .select([
-      "id", "order_number", "customer_phone", "status", "payment_status", "delivery_method",
+      "id", "order_number", "customer_phone", "status", "payment_status", "delivery_method", "payment_method",
       "shipping_address", "subtotal_amount", "shipping_cost", "shipping_courier", "shipping_service",
       "shipping_estimate", "total_amount", "payment_effective_total", "payment_balance",
       "public_access_token_hash", "public_access_token_expires_at", "pricing_status", "created_at",
@@ -92,9 +93,11 @@ export async function POST(request: Request) {
   }
   if (!order) return safeResponse({ error: "Data tracking tidak cocok atau pesanan tidak tersedia." }, 404);
 
-  const paymentLink = await ensureAutomaticPaymentLink(client, order as AutomaticPaymentOrder).catch(() => null);
+  const paymentLink = order.payment_method === "bank_transfer" && order.status === "awaiting_payment"
+    ? await ensureAutomaticPaymentLink(client, order as AutomaticPaymentOrder).catch(() => null)
+    : null;
 
-  const [itemsResult, quoteResult, fulfillmentResult] = await Promise.all([
+  const [itemsResult, quoteResult, fulfillmentResult, activeStageResult, pickupResult, cancellationResult, refundResult] = await Promise.all([
     client.from("order_items")
       .select("id,product_name,variant_name,color,size,sku,quantity,unit_price,subtotal,custom_project_id,pricing_status")
       .eq("order_id", order.id).is("archived_at", null).order("created_at"),
@@ -104,7 +107,17 @@ export async function POST(request: Request) {
     client.from("fulfillments")
       .select("method,status,courier,tracking_number,scheduled_at,ready_at,shipped_at,delivered_at,picked_up_at")
       .eq("order_id", order.id).is("archived_at", null).neq("status", "cancelled")
-      .order("created_at", { ascending: false }).limit(1).maybeSingle()
+      .order("created_at", { ascending: false }).limit(1).maybeSingle(),
+    client.rpc("resolve_order_active_stage_v1", { p_order_id: order.id }),
+    client.from("pickup_preparations")
+      .select("id,status,ready_at,pickup_deadline,extension_requested_at,requested_deadline,expired_at")
+      .eq("order_id", order.id).maybeSingle(),
+    client.from("order_cancellation_requests")
+      .select("id,status,reason,requires_refund,requested_at,decision_reason")
+      .eq("order_id", order.id).order("created_at", { ascending: false }).limit(1).maybeSingle(),
+    client.from("refund_cases")
+      .select("id,refund_number,status,amount,sent_at,confirmed_at")
+      .eq("order_id", order.id).order("created_at", { ascending: false }).limit(1).maybeSingle()
   ]);
 
   const fulfillment = fulfillmentResult.data as {
@@ -130,6 +143,7 @@ export async function POST(request: Request) {
       amountPaid: Number(order.payment_effective_total ?? 0),
       remainingBalance: Number(order.payment_balance ?? 0),
       fulfillmentMethod: order.delivery_method,
+      paymentMethod: order.payment_method,
       courier: fulfillment?.courier ?? order.shipping_courier,
       trackingNumber,
       pickupStatus: order.delivery_method === "pickup" ? fulfillment?.status ?? order.status : null,
@@ -141,9 +155,18 @@ export async function POST(request: Request) {
         trackingNumber
       }),
       pricingStatus: order.pricing_status ?? "final",
-      paymentUrl: paymentLink?.publicUrl ?? null
+      paymentUrl: relativePaymentPath(paymentLink?.publicUrl ?? null),
+      activeStage: activeStageResult.error ? null : activeStageResult.data
     },
     items: itemsResult.data ?? [],
+    customerOperations: {
+      cancellation: cancellationResult.data ?? null,
+      refund: refundResult.data ? {
+        ...refundResult.data,
+        amount: Number(refundResult.data.amount ?? 0)
+      } : null,
+      pickup: pickupResult.data ?? null
+    },
     shippingQuote: quoteResult.data ? {
       version: Number(quoteResult.data.version),
       courier: quoteResult.data.courier,
@@ -155,6 +178,17 @@ export async function POST(request: Request) {
       createdAt: quoteResult.data.created_at
     } : null
   }, 200);
+}
+
+function relativePaymentPath(publicUrl: string | null) {
+  if (!publicUrl) return null;
+  if (publicUrl.startsWith("/")) return publicUrl;
+  try {
+    const url = new URL(publicUrl);
+    return `${url.pathname}${url.search}${url.hash}`;
+  } catch {
+    return null;
+  }
 }
 
 async function readBody(request: Request) {

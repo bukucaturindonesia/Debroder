@@ -1,5 +1,7 @@
 import { createHash, createHmac, randomBytes, timingSafeEqual } from "node:crypto";
 import { normalizeWhatsapp } from "@/lib/commerce-checkout";
+import { getOrderStatusLabel, getPaymentStatusLabel } from "@/lib/ui-language";
+import { resolveOrderActiveStage } from "@/lib/order-active-stage";
 
 export const TRACKING_TOKEN_DAYS = 90;
 export const TRACKING_RATE_LIMIT_ATTEMPTS = 5;
@@ -92,70 +94,41 @@ export function maskAddress(address: string | null) {
 }
 
 export function customerOrderStatusLabel(status: string) {
-  const labels: Record<string, string> = {
-    baru: "Pesanan diterima",
-    pending_confirmation: "Menunggu verifikasi WhatsApp",
-    awaiting_shipping_quote: "Ongkir sedang diperiksa",
-    awaiting_customer_approval: "Menunggu persetujuan total",
-    awaiting_payment: "Menunggu pembayaran",
-    under_review: "Custom Project sedang direview",
-    confirmed: "Pesanan dikonfirmasi",
-    processing: "Sedang diproses",
-    in_progress: "Sedang diproses",
-    ready_for_pickup: "Siap diambil",
-    siap_diambil: "Siap diambil",
-    ready_to_ship: "Siap dikirim",
-    shipped: "Dikirim",
-    delivered: "Terkirim",
-    picked_up: "Sudah diambil",
-    completed: "Selesai",
-    selesai: "Selesai",
-    expired: "Kedaluwarsa",
-    cancelled: "Dibatalkan"
-  };
-  return labels[status] ?? "Pesanan sedang diproses";
+  return getOrderStatusLabel(status, "customer");
 }
 
 export function customerPaymentStatusLabel(status: string) {
-  const labels: Record<string, string> = {
-    unpaid: "Belum dibayar",
-    belum_bayar: "Belum dibayar",
-    pending_verification: "Menunggu verifikasi pembayaran",
-    menunggu_verifikasi: "Menunggu verifikasi pembayaran",
-    partially_paid: "Dibayar sebagian",
-    paid: "Lunas",
-    terverifikasi: "Lunas",
-    rejected: "Bukti pembayaran ditolak",
-    ditolak: "Bukti pembayaran ditolak",
-    expired: "Pembayaran kedaluwarsa",
-    refunded: "Dikembalikan"
-  };
-  return labels[status] ?? "Sedang diperiksa";
+  return getPaymentStatusLabel(status, "customer");
 }
 
 export function trackingNextStep(input: {
   status: string;
   paymentStatus: string;
   fulfillmentMethod: string;
+  paymentMethod?: string | null;
+  fulfillmentStatus?: string | null;
   trackingNumber?: string | null;
+  isCustom?: boolean;
+  paymentRequirementMet?: boolean;
+  paymentProductionEligible?: boolean;
+  hasJobOrder?: boolean;
+  jobOrderStatus?: string | null;
+  qualityControlStatus?: string | null;
 }) {
-  if (["completed", "selesai", "delivered", "picked_up"].includes(input.status)) {
-    return "Pesanan selesai. Simpan nomor order untuk kebutuhan layanan setelah pembelian.";
-  }
-  if (["cancelled", "expired"].includes(input.status)) {
-    return "Hubungi DEBRODER bila Anda ingin membuat atau mengaktifkan kembali pesanan.";
-  }
-  if (input.status === "pending_confirmation") return "Verifikasi nomor WhatsApp melalui petunjuk pada konfirmasi order.";
-  if (input.status === "awaiting_shipping_quote") return "Tunggu Admin menetapkan kurir dan ongkir.";
-  if (input.status === "awaiting_customer_approval") return "Buka tautan konfirmasi order dan setujui total akhir setelah memeriksa ongkir.";
-  if (input.status === "under_review") return "Tunggu Admin memeriksa desain, layanan, lead time, dan harga Custom Project pada order yang sama.";
-  if (["unpaid", "belum_bayar", "rejected", "ditolak"].includes(input.paymentStatus)) return "Selesaikan atau unggah ulang pembayaran pada tautan pembayaran order yang sama.";
-  if (["pending_verification", "menunggu_verifikasi"].includes(input.paymentStatus)) return "Tunggu Admin memeriksa bukti pembayaran Anda.";
-  if (input.status === "ready_for_pickup" || input.status === "siap_diambil") return "Datang ke lokasi pickup dengan membawa nomor order dan nomor WhatsApp yang digunakan saat checkout.";
-  if (input.status === "shipped") return input.trackingNumber ? "Gunakan nomor resi untuk memantau paket sampai diterima." : "Pesanan sedang dikirim. Nomor resi akan ditampilkan setelah tersedia.";
-  return input.fulfillmentMethod === "pickup"
-    ? "Tunggu pembaruan kesiapan pickup dari DEBRODER."
-    : "Tunggu pembaruan proses dan pengiriman dari DEBRODER.";
+  return resolveOrderActiveStage({
+    status: input.status,
+    paymentStatus: input.paymentStatus,
+    fulfillmentStatus: input.fulfillmentStatus,
+    fulfillmentMethod: input.fulfillmentMethod,
+    paymentMethod: input.paymentMethod,
+    trackingNumber: input.trackingNumber,
+    isCustom: input.isCustom,
+    paymentRequirementMet: input.paymentRequirementMet,
+    paymentProductionEligible: input.paymentProductionEligible,
+    hasJobOrder: input.hasJobOrder,
+    jobOrderStatus: input.jobOrderStatus,
+    qualityControlStatus: input.qualityControlStatus
+  }).nextStep;
 }
 
 function safeEqual(left: string, right: string) {

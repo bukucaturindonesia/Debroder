@@ -1,32 +1,50 @@
-WORK: DEBRODER Admin Order Detail Pricing Workspace Fundamental Revision
-BASELINE: commit 394613b2175188477330165d36a8c2c0f2841f85 (error fix long)
-SCOPE: /admin/orders/[id] Stage 3 pricing, its customer quote display, pure pricing validation, local forward migration, and focused regression tests.
+CARA MENERAPKAN
 
-COPY/APPLY
-1. Extract this ZIP to a temporary folder.
-2. Copy all paths into the repository root and choose Replace/Merge.
-3. Review the nine source files in FILES_CHANGED.txt.
-4. Review and apply supabase/migrations/20260719110000_admin_order_pricing_workspace.sql through the owner-controlled Preview database process BEFORE deploying source that selects custom_pricing_draft columns.
-5. Run install, targeted tests, typecheck, lint, full tests, clean build, then controlled Preview browser tests.
+1. Backup repository DEBRODER terbaru.
+2. Pastikan source yang akan menerima paket berasal dari Debroder(17).zip atau review setiap konflik secara manual.
+3. Extract ZIP ini ke folder sementara.
+4. Copy seluruh folder/file ke root repository DEBRODER dengan struktur path tetap.
+5. Pilih Replace/Merge untuk file yang sama.
+6. Jangan menghapus file lain.
+7. Tidak ada SQL atau migration yang perlu dijalankan.
+8. Review diff di GitHub Desktop.
+9. Jalankan quality gates:
 
-FILES TO DELETE MANUALLY: NONE
-MIGRATION: PROPOSED LOCALLY — NOT APPLIED
-REMOTE SUPABASE: UNCHANGED
-GITHUB: UNCHANGED
-VERCEL: UNCHANGED
+   pnpm vitest run test/customer-order-hub.test.ts test/order-confirmation-payment-link.test.ts test/payment-verification-workspace.test.ts
+   pnpm typecheck
+   pnpm lint
+   pnpm test
+   pnpm build
 
-LOCAL GATE LIMITATION
-The supplied ZIP did not contain node_modules. The one permitted pnpm install failed before dependency resolution because the runner could not create /root/.local. No install retry or environment workaround was performed. Package-based tests, TypeScript, lint, and Next build therefore did not execute.
+10. Owner melakukan commit dan push ke branch Preview.
+11. Redeploy Preview Vercel.
 
-LIGHTWEIGHT RESULTS
-- Pure pricing domain smoke with Node type stripping: PASS.
-- Changed-files diff (ignoring repository baseline CRLF only): PASS.
-- Conflict-marker scan: PASS.
-- Credential/secret signature scan: PASS.
-- Package/prebuild static compatibility check: PASS.
+BROWSER CHECK WAJIB
 
-RISKS / OWNER VERIFICATION REQUIRED
-- Migration SQL has been statically reviewed but not compiled or applied to a database.
-- TypeScript, ESLint, Vitest, clean Next production build, and browser smoke remain owner-run gates.
-- Final “send” prepares the quote in the existing customer token/polling flow. No external WhatsApp/email provider was invented.
-- Test historical missing-base, Custom, Jersey Custom, Ready Stock, Jersey Ready Stock, pickup, courier, unauthorized/read-only, stale-tab, and double-click cases on controlled Preview data.
+A. Ready Stock + Transfer
+- Confirmation shows one “TINDAKAN ANDA” card.
+- “Lihat Rekening & Bayar” works.
+- “Lacak Pesanan” is visible on desktop and sticky on mobile.
+- After proof upload, the form disappears.
+- The page shows “Pembayaran sedang diperiksa”.
+
+B. Ready Stock + Bayar di Toko + Ambil di Toko
+- No bank-transfer payment link appears.
+- Before ready, customer sees “Jangan datang ke toko sebelum ada konfirmasi”.
+- When ready, active action becomes “Hubungi Admin Sebelum Datang”.
+
+C. Custom
+- Payment link is not issued before the Custom quote is approved and locked.
+- Quote approval remains the only active task at the approval stage.
+- After payment proof, next stage text points to Surat Perintah Kerja.
+
+D. Tracking
+- Only the active status card is open.
+- Summary, payment, and shipping/pickup details remain collapsed.
+- “Perbarui Status” works.
+- Payment CTA stays on the same Preview deployment.
+
+E. Responsive
+- Mobile sticky tracking button does not cover page content.
+- Desktop tracking button remains in the order header.
+- No horizontal overflow at 360–430 px.

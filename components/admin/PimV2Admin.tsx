@@ -392,7 +392,7 @@ export function PimV2Admin() {
   async function loadData() {
     const supabase = createSupabaseClient();
     if (!supabase) {
-      setStatus({ type: "error", text: "Supabase belum dikonfigurasi. Cek NEXT_PUBLIC_SUPABASE_URL dan NEXT_PUBLIC_SUPABASE_ANON_KEY." });
+      setStatus({ type: "error", text: "Layanan data belum tersedia. Hubungi pengelola sistem." });
       setLoading(false);
       return;
     }
@@ -439,7 +439,7 @@ export function PimV2Admin() {
       .filter(Boolean);
 
     if (errors.length) {
-      setStatus({ type: "error", text: `PIM V2 belum siap. Jalankan SQL Stage 1 dulu. Detail: ${errors[0]}` });
+      setStatus({ type: "error", text: "Manajemen Produk belum siap digunakan. Hubungi pengelola sistem." });
       setLoading(false);
       return;
     }
@@ -462,7 +462,7 @@ export function PimV2Admin() {
 
     const settingValue = settingResult.data?.setting_value as { minimum_order_qty?: number } | null | undefined;
     setMinimumOrder(String(settingValue?.minimum_order_qty || 6));
-    setStatus({ type: "success", text: "PIM V2 siap. Admin bisa mengelola master data, varian, size guide, dan fondasi jersey." });
+    setStatus({ type: "success", text: "Manajemen Produk siap. Admin dapat mengelola data utama, varian, panduan ukuran, dan fondasi jersey." });
     setLoading(false);
   }
 
@@ -519,7 +519,7 @@ export function PimV2Admin() {
     };
 
     const { error } = await supabase.from("products").update(payload).eq("id", productPatch.id);
-    if (error) setStatus({ type: "error", text: `Produk gagal disimpan: ${error.message}` });
+    if (error) setStatus({ type: "error", text: "Produk belum dapat disimpan. Periksa data lalu coba lagi." });
     else {
       setStatus({ type: "success", text: "Pengaturan PIM V2 produk berhasil disimpan." });
       await loadData();
@@ -542,7 +542,7 @@ export function PimV2Admin() {
       ? supabase.from("product_subcategories").update(payload).eq("id", subcategoryForm.id)
       : supabase.from("product_subcategories").insert(payload);
     const { error } = await request;
-    if (error) setStatus({ type: "error", text: `Subkategori gagal disimpan: ${error.message}` });
+    if (error) setStatus({ type: "error", text: "Subkategori belum dapat disimpan. Periksa data lalu coba lagi." });
     else {
       setSubcategoryForm({ ...emptySubcategory });
       setStatus({ type: "success", text: "Subkategori PIM V2 berhasil disimpan." });
@@ -568,7 +568,7 @@ export function PimV2Admin() {
       ? supabase.from("production_services").update(payload).eq("id", serviceForm.id)
       : supabase.from("production_services").insert(payload);
     const { error } = await request;
-    if (error) setStatus({ type: "error", text: `Layanan produksi gagal disimpan: ${error.message}` });
+    if (error) setStatus({ type: "error", text: "Layanan produksi belum dapat disimpan. Coba lagi." });
     else {
       setServiceForm({ ...emptyService });
       setStatus({ type: "success", text: "Layanan produksi berhasil disimpan." });
@@ -591,7 +591,7 @@ export function PimV2Admin() {
       ? supabase.from("product_color_master").update(payload).eq("id", colorForm.id)
       : supabase.from("product_color_master").insert(payload);
     const { error } = await request;
-    if (error) setStatus({ type: "error", text: `Warna gagal disimpan: ${error.message}` });
+    if (error) setStatus({ type: "error", text: "Warna belum dapat disimpan. Coba lagi." });
     else {
       setColorForm({ ...emptyColor });
       setStatus({ type: "success", text: "Master warna berhasil disimpan." });
@@ -614,7 +614,7 @@ export function PimV2Admin() {
       ? supabase.from("product_size_master").update(payload).eq("id", sizeForm.id)
       : supabase.from("product_size_master").insert(payload);
     const { error } = await request;
-    if (error) setStatus({ type: "error", text: `Ukuran gagal disimpan: ${error.message}` });
+    if (error) setStatus({ type: "error", text: "Ukuran belum dapat disimpan. Coba lagi." });
     else {
       setSizeForm({ ...emptySize });
       setStatus({ type: "success", text: "Master ukuran berhasil disimpan." });
@@ -649,7 +649,7 @@ export function PimV2Admin() {
       ? supabase.from("product_variants").update(payload).eq("id", variantForm.id)
       : supabase.from("product_variants").insert(payload);
     const { error } = await request;
-    if (error) setStatus({ type: "error", text: `Varian gagal disimpan: ${error.message}` });
+    if (error) setStatus({ type: "error", text: "Varian belum dapat disimpan. Periksa data lalu coba lagi." });
     else {
       await supabase.from("products").update({ has_variants: true, pricing_mode: "variant_based", updated_at: new Date().toISOString() }).eq("id", payload.product_id);
       setVariantForm({ ...emptyVariant, product_id: selectedProductId });
@@ -678,7 +678,7 @@ export function PimV2Admin() {
       ? supabase.from("product_variant_sizes").update(payload).eq("id", variantSizeForm.id)
       : supabase.from("product_variant_sizes").insert(payload);
     const { error } = await request;
-    if (error) setStatus({ type: "error", text: `Ukuran varian gagal disimpan: ${error.message}` });
+    if (error) setStatus({ type: "error", text: "Ukuran varian belum dapat disimpan. Coba lagi." });
     else {
       setVariantSizeForm({ ...emptyVariantSize, variant_id: payload.variant_id });
       setStatus({ type: "success", text: "Ukuran / stok varian berhasil disimpan." });
@@ -707,7 +707,7 @@ export function PimV2Admin() {
       ? supabase.from("product_size_guides").update(payload).eq("id", sizeGuideForm.id)
       : supabase.from("product_size_guides").insert(payload);
     const { error, data } = await request.select("*").single();
-    if (error) setStatus({ type: "error", text: `Panduan ukuran gagal disimpan: ${error.message}` });
+    if (error) setStatus({ type: "error", text: "Panduan ukuran belum dapat disimpan. Coba lagi." });
     else {
       if (payload.product_id && data?.id) await supabase.from("products").update({ size_guide_id: data.id }).eq("id", payload.product_id);
       setSizeGuideForm({ ...emptySizeGuide });
@@ -732,7 +732,7 @@ export function PimV2Admin() {
     };
     const request = packageForm.id ? supabase.from("jersey_packages").update(payload).eq("id", packageForm.id) : supabase.from("jersey_packages").insert(payload);
     const { error } = await request;
-    if (error) setStatus({ type: "error", text: `Paket jersey gagal disimpan: ${error.message}` });
+    if (error) setStatus({ type: "error", text: "Paket jersey belum dapat disimpan. Coba lagi." });
     else { setPackageForm({ ...emptyPackage }); setStatus({ type: "success", text: "Paket jersey berhasil disimpan." }); await loadData(); }
   }
 
@@ -758,7 +758,7 @@ export function PimV2Admin() {
         ? supabase.from("jersey_collars").update(payload).eq("id", formValue.id)
         : supabase.from("jersey_collars").insert(payload);
       const { error } = await request;
-      if (error) setStatus({ type: "error", text: `${label} gagal disimpan: ${error.message}` });
+      if (error) setStatus({ type: "error", text: `${label} belum dapat disimpan. Coba lagi.` });
       else { reset(); setStatus({ type: "success", text: `${label} berhasil disimpan.` }); await loadData(); }
       return;
     }
@@ -775,7 +775,7 @@ export function PimV2Admin() {
         ? supabase.from("jersey_addons").update(payload).eq("id", formValue.id)
         : supabase.from("jersey_addons").insert(payload);
     const { error } = await request;
-    if (error) setStatus({ type: "error", text: `${label} gagal disimpan: ${error.message}` });
+    if (error) setStatus({ type: "error", text: `${label} belum dapat disimpan. Coba lagi.` });
     else { reset(); setStatus({ type: "success", text: `${label} berhasil disimpan.` }); await loadData(); }
   }
 
@@ -791,7 +791,7 @@ export function PimV2Admin() {
     };
     const request = collarGroupForm.id ? supabase.from("jersey_collar_groups").update(payload).eq("id", collarGroupForm.id) : supabase.from("jersey_collar_groups").insert(payload);
     const { error } = await request;
-    if (error) setStatus({ type: "error", text: `Group kerah gagal disimpan: ${error.message}` });
+    if (error) setStatus({ type: "error", text: "Kelompok kerah belum dapat disimpan. Coba lagi." });
     else { setCollarGroupForm({ ...emptyCollarGroup }); setStatus({ type: "success", text: "Group kerah berhasil disimpan." }); await loadData(); }
   }
 
@@ -805,7 +805,7 @@ export function PimV2Admin() {
       description: "Minimum order default untuk Jersey Configurator"
     };
     const { error } = await supabase.from("jersey_settings").upsert(payload, { onConflict: "setting_key" });
-    if (error) setStatus({ type: "error", text: `Minimum order gagal disimpan: ${error.message}` });
+    if (error) setStatus({ type: "error", text: "Minimum pesanan belum dapat disimpan. Coba lagi." });
     else { setStatus({ type: "success", text: "Minimum order Jersey berhasil disimpan." }); await loadData(); }
   }
 
@@ -826,7 +826,7 @@ export function PimV2Admin() {
             <SmallLabel>PIM V2 ENTERPRISE</SmallLabel>
             <h2 className="mt-2 text-2xl font-semibold tracking-[-0.02em]">Admin Master Data Produk</h2>
             <p className="mt-2 max-w-3xl text-sm leading-6 text-brand-charcoal/60">
-              Dependency sementara untuk varian warna/ukuran, sellable SKU, stok, variant images, size guide, layanan produksi, dan master jersey. Product root serta lifecycle dikelola di Product Manager.
+              Halaman pendukung sementara untuk varian warna/ukuran, SKU siap jual, stok, gambar varian, panduan ukuran, layanan produksi, dan data jersey. Produk utama serta status penerbitan dikelola di Manajemen Produk.
             </p>
           </div>
           <button type="button" onClick={loadData} className="inline-flex min-h-11 items-center justify-center rounded-full bg-brand-charcoal px-5 text-sm font-semibold text-white">

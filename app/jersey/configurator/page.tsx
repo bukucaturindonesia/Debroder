@@ -7,7 +7,7 @@ import { productsForCategoryRoute } from "@/lib/product-route-matching";
 import { getPublicContent } from "@/lib/public-data";
 
 export const metadata: Metadata = {
-  title: "Jersey Configurator | DEBRODER",
+  title: "Konfigurator Jersey | DEBRODER",
   description: "Atur paket, bahan, kerah, ukuran, jumlah, desain, dan data pemain Jersey DEBRODER dalam satu alur resmi.",
   alternates: { canonical: "/jersey/configurator" }
 };

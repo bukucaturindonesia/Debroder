@@ -83,15 +83,30 @@ type EditForm = {
   reason: string;
 };
 
-const FINAL_CHECKS = [
+const BASE_FINAL_CHECKS = [
   ["order_number", "Nomor order"], ["customer", "Nama pelanggan"], ["phone", "Nomor telepon"],
   ["product", "Produk"], ["variant", "Varian"], ["color", "Warna"], ["size", "Ukuran"],
-  ["quantity", "Quantity"], ["method", "Metode Custom"], ["design", "Desain aktif"],
-  ["placement", "Placement"], ["print_size", "Ukuran cetak"], ["personalization", "Personalisasi"],
-  ["qc", "Hasil QC"], ["package_content", "Isi paket"], ["package_count", "Jumlah paket"],
-  ["recipient_address", "Alamat penerima"], ["postal_code", "Kode pos"],
+  ["quantity", "Quantity"], ["package_content", "Isi paket"], ["package_count", "Jumlah paket"],
   ["fulfillment_method", "Metode fulfillment"], ["package_condition", "Kondisi kemasan"]
 ] as const;
+
+const CUSTOM_FINAL_CHECKS = [
+  ["method", "Metode Custom"], ["design", "Desain aktif"],
+  ["placement", "Placement"], ["print_size", "Ukuran cetak"], ["personalization", "Personalisasi"],
+  ["qc", "Hasil QC"]
+] as const;
+
+const SHIPPING_FINAL_CHECKS = [
+  ["recipient_address", "Alamat penerima"], ["postal_code", "Kode pos"]
+] as const;
+
+function finalVerificationChecks(isCustom: boolean, method: string) {
+  return [
+    ...BASE_FINAL_CHECKS,
+    ...(isCustom ? CUSTOM_FINAL_CHECKS : []),
+    ...(method === "shipping" ? SHIPPING_FINAL_CHECKS : [])
+  ];
+}
 
 function toLocalInput(value: string | null) {
   if (!value) return "";
@@ -286,7 +301,7 @@ export function FulfillmentDetailAdmin() {
     });
     setWorking(false);
     if (result.error) {
-      setNotice({ type: "error", text: result.error.message || "Perubahan gagal disimpan." });
+      setNotice({ type: "error", text: "Perubahan pengiriman belum dapat disimpan. Coba lagi." });
       return;
     }
     setEditOpen(false);
@@ -295,11 +310,12 @@ export function FulfillmentDetailAdmin() {
   }
 
   async function completeFinalVerification() {
-    if (!record || !canManage || working || record.status !== "packing" || FINAL_CHECKS.some(([key]) => !finalChecklist[key])) return;
+    const checks = finalVerificationChecks(Array.isArray(order?.custom_project_snapshot) && order.custom_project_snapshot.length > 0, record?.method ?? "");
+    if (!record || !canManage || working || record.status !== "packing" || checks.some(([key]) => !finalChecklist[key])) return;
     const supabase = createSupabaseClient();
     if (!supabase) return;
     setWorking(true); setNotice(null);
-    const result = await supabase.rpc("complete_custom_fulfillment_final_verification", {
+    const result = await supabase.rpc("complete_fulfillment_final_verification", {
       p_fulfillment_id: record.id,
       p_checklist: finalChecklist,
       p_note: finalNote.trim() || null,
@@ -307,7 +323,7 @@ export function FulfillmentDetailAdmin() {
     });
     setWorking(false);
     if (result.error) {
-      setNotice({ type: "error", text: /admin lain/i.test(result.error.message) ? "Data ini telah diperbarui oleh admin lain. Muat ulang kondisi terbaru." : result.error.message || "Pengecekan akhir gagal disimpan." });
+      setNotice({ type: "error", text: /admin lain/i.test(result.error.message) ? "Data ini telah diperbarui oleh admin lain. Muat ulang kondisi terbaru." : "Pengecekan akhir belum dapat disimpan. Coba lagi." });
       return;
     }
     setNotice({ type: "success", text: "Pengecekan akhir tersimpan. Pengiriman / pickup sekarang dapat dilanjutkan." });
@@ -328,7 +344,7 @@ export function FulfillmentDetailAdmin() {
     });
     setWorking(false);
     if (result.error) {
-      setNotice({ type: "error", text: result.error.message || "Status penyerahan gagal diperbarui." });
+      setNotice({ type: "error", text: "Status pengiriman belum dapat diperbarui. Coba lagi." });
       return;
     }
     setTransitionTarget(null);
@@ -364,7 +380,7 @@ export function FulfillmentDetailAdmin() {
     });
     if (uploadResult.error) {
       setWorking(false);
-      setNotice({ type: "error", text: `Upload bukti gagal: ${uploadResult.error.message}` });
+      setNotice({ type: "error", text: "Bukti pengiriman belum dapat diunggah. Periksa file lalu coba lagi." });
       return;
     }
     const registerResult = await supabase.rpc("register_fulfillment_file", {
@@ -378,7 +394,7 @@ export function FulfillmentDetailAdmin() {
     if (registerResult.error) {
       await supabase.storage.from("fulfillment-proofs").remove([path]);
       setWorking(false);
-      setNotice({ type: "error", text: registerResult.error.message || "Metadata bukti gagal disimpan." });
+      setNotice({ type: "error", text: "Informasi bukti pengiriman belum dapat disimpan. Coba lagi." });
       return;
     }
     setWorking(false);
@@ -407,13 +423,13 @@ export function FulfillmentDetailAdmin() {
     const rpcResult = await supabase.rpc("remove_fulfillment_file", { p_file_id: file.id });
     if (rpcResult.error) {
       setWorking(false);
-      setNotice({ type: "error", text: rpcResult.error.message || "Bukti gagal dihapus." });
+      setNotice({ type: "error", text: "Bukti pengiriman belum dapat dihapus. Coba lagi." });
       return;
     }
     const storageResult = await supabase.storage.from(file.bucket).remove([file.path]);
     setWorking(false);
     if (storageResult.error) {
-      setNotice({ type: "warning", text: `Metadata sudah dihapus, tetapi objek storage perlu dibersihkan: ${storageResult.error.message}` });
+      setNotice({ type: "warning", text: "Daftar file sudah diperbarui, tetapi file lama masih perlu dibersihkan. Coba lagi." });
     } else {
       setNotice({ type: "success", text: "Bukti berhasil dihapus." });
     }
@@ -432,7 +448,7 @@ export function FulfillmentDetailAdmin() {
     });
     setWorking(false);
     if (result.error) {
-      setNotice({ type: "error", text: result.error.message || "Dokumen gagal diarsipkan." });
+      setNotice({ type: "error", text: "Dokumen pengiriman belum dapat diarsipkan. Coba lagi." });
       return;
     }
     setArchiveOpen(false);
@@ -450,7 +466,7 @@ export function FulfillmentDetailAdmin() {
     const result = await supabase.rpc("restore_fulfillment", { p_fulfillment_id: record.id });
     setWorking(false);
     if (result.error) {
-      setNotice({ type: "error", text: result.error.message || "Dokumen gagal dipulihkan." });
+      setNotice({ type: "error", text: "Dokumen pengiriman belum dapat dipulihkan. Coba lagi." });
       return;
     }
     setNotice({ type: "success", text: "Dokumen berhasil dipulihkan dari Gudang Arsip." });
@@ -466,7 +482,7 @@ export function FulfillmentDetailAdmin() {
     const result = await supabase.rpc("permanently_delete_fulfillment", { p_fulfillment_id: record.id });
     setWorking(false);
     if (result.error) {
-      setNotice({ type: "error", text: result.error.message || "Hapus permanen gagal." });
+      setNotice({ type: "error", text: "Dokumen pengiriman belum dapat dihapus permanen." });
       return;
     }
     router.replace("/admin/fulfillments");
@@ -490,7 +506,8 @@ export function FulfillmentDetailAdmin() {
   }
 
   const isCustomOrder = Array.isArray(order?.custom_project_snapshot) && order.custom_project_snapshot.length > 0;
-  const transitions = getFulfillmentTransitions(record.method, record.status).filter((target) => !(isCustomOrder && record.status === "packing" && !record.final_verified_at && ["ready_to_ship", "ready_for_pickup"].includes(target)));
+  const finalChecks = finalVerificationChecks(isCustomOrder, record.method);
+  const transitions = getFulfillmentTransitions(record.method, record.status).filter((target) => !(record.status === "packing" && !record.final_verified_at && ["ready_to_ship", "ready_for_pickup"].includes(target)));
   const filesCanBeRemoved = !record.archived_at
     ? !["delivered", "picked_up", "cancelled"].includes(record.status)
     : canDelete && ["preparing", "cancelled"].includes(record.status);
@@ -619,12 +636,12 @@ export function FulfillmentDetailAdmin() {
           </section>
         ) : null}
 
-        {isCustomOrder && (record.status === "packing" || record.final_verified_at) ? (
+        {(record.status === "packing" || record.final_verified_at) ? (
           <section id="final-verification" className="scroll-mt-24 border border-brand-softGray bg-white p-5 sm:p-7">
-            <div className="flex flex-wrap items-start justify-between gap-4"><div><p className="text-xs font-semibold uppercase tracking-[0.12em] text-brand-charcoal/45">Custom Order</p><h2 className="mt-2 text-xl font-semibold">Pengecekan Akhir</h2><p className="mt-2 max-w-3xl text-sm leading-6 text-brand-charcoal/60">Bandingkan order pelanggan, hasil QC, isi paket, dan data penerima. Pengiriman terkunci sampai semua item dikonfirmasi server.</p></div>{record.final_verified_at ? <span className="rounded-full bg-emerald-50 px-3 py-1 text-xs font-semibold text-brand-green">Selesai {formatFulfillmentDate(record.final_verified_at)}</span> : <span className="rounded-full bg-amber-50 px-3 py-1 text-xs font-semibold text-amber-800">Wajib diselesaikan</span>}</div>
-            <div className="mt-5 grid gap-2 sm:grid-cols-2 lg:grid-cols-3">{FINAL_CHECKS.map(([key, label]) => <label key={key} className="flex min-h-11 items-center gap-3 border border-brand-softGray px-3 text-sm font-semibold"><input type="checkbox" checked={Boolean(finalChecklist[key])} disabled={Boolean(record.final_verified_at) || !canManage} onChange={(event) => setFinalChecklist((current) => ({ ...current, [key]: event.target.checked }))} />{label}</label>)}</div>
+            <div className="flex flex-wrap items-start justify-between gap-4"><div><p className="text-xs font-semibold uppercase tracking-[0.12em] text-brand-charcoal/45">{isCustomOrder ? "PESANAN CUSTOM" : "READY STOCK"}</p><h2 className="mt-2 text-xl font-semibold">Pengecekan Akhir</h2><p className="mt-2 max-w-3xl text-sm leading-6 text-brand-charcoal/60">Bandingkan pesanan, isi paket, kondisi kemasan, dan data penerima. {isCustomOrder ? "Hasil QC dan desain aktif juga wajib cocok. " : ""}Pengiriman terkunci sampai semua barang dikonfirmasi.</p></div>{record.final_verified_at ? <span className="rounded-full bg-emerald-50 px-3 py-1 text-xs font-semibold text-brand-green">Selesai {formatFulfillmentDate(record.final_verified_at)}</span> : <span className="rounded-full bg-amber-50 px-3 py-1 text-xs font-semibold text-amber-800">Wajib diselesaikan</span>}</div>
+            <div className="mt-5 grid gap-2 sm:grid-cols-2 lg:grid-cols-3">{finalChecks.map(([key, label]) => <label key={key} className="flex min-h-11 items-center gap-3 border border-brand-softGray px-3 text-sm font-semibold"><input type="checkbox" checked={Boolean(finalChecklist[key])} disabled={Boolean(record.final_verified_at) || !canManage} onChange={(event) => setFinalChecklist((current) => ({ ...current, [key]: event.target.checked }))} />{label}</label>)}</div>
             <label className="mt-5 grid gap-2 text-sm font-semibold">Catatan pengecekan akhir<textarea rows={3} value={finalNote} disabled={Boolean(record.final_verified_at) || !canManage} onChange={(event) => setFinalNote(event.target.value)} className="rounded-lg border border-brand-softGray px-4 py-3" /></label>
-            {!record.final_verified_at ? <button type="button" onClick={() => void completeFinalVerification()} disabled={working || !canManage || FINAL_CHECKS.some(([key]) => !finalChecklist[key])} className="mt-5 min-h-11 rounded-full bg-brand-green px-5 text-sm font-semibold text-white disabled:opacity-45">{working ? "Menyimpan..." : "Konfirmasi Sesuai & Lanjut Kirim"}</button> : <p className="mt-5 text-sm text-brand-charcoal/60">Checklist tersimpan read-only. Perubahan detail paket/penerima pada tahap packing akan membatalkan verifikasi dan mewajibkan pemeriksaan ulang.</p>}
+            {!record.final_verified_at ? <button type="button" onClick={() => void completeFinalVerification()} disabled={working || !canManage || finalChecks.some(([key]) => !finalChecklist[key])} className="mt-5 min-h-11 rounded-full bg-brand-green px-5 text-sm font-semibold text-white disabled:opacity-45">{working ? "Menyimpan..." : "Konfirmasi Sesuai & Lanjut Kirim"}</button> : <p className="mt-5 text-sm text-brand-charcoal/60">Checklist tersimpan read-only. Perubahan detail paket/penerima pada tahap packing akan membatalkan verifikasi dan mewajibkan pemeriksaan ulang.</p>}
           </section>
         ) : null}
 
@@ -636,8 +653,8 @@ export function FulfillmentDetailAdmin() {
               return (
                 <article key={item.id} className="grid gap-3 py-4 sm:grid-cols-[1fr_auto] sm:items-center">
                   <div>
-                    <p className="font-semibold">{workItem?.work_item_number || "Work Item"}</p>
-                    <p className="mt-1 text-sm text-brand-charcoal/60">{workItem?.title || "Data Work Item tidak ditemukan"}</p>
+                    <p className="font-semibold">{workItem?.work_item_number || "Pekerjaan"}</p>
+                    <p className="mt-1 text-sm text-brand-charcoal/60">{workItem?.title || "Data pekerjaan tidak ditemukan"}</p>
                   </div>
                   <p className="font-semibold">{item.quantity} {workItem?.unit || "pcs"}</p>
                 </article>
@@ -673,7 +690,7 @@ export function FulfillmentDetailAdmin() {
                   disabled={!uploadFile || !canManage || working}
                   className="rounded-full bg-brand-green px-5 py-2.5 text-sm font-semibold text-white disabled:opacity-45"
                 >
-                  Upload Bukti
+                  Unggah Bukti
                 </button>
               </div>
             ) : null}

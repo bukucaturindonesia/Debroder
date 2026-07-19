@@ -4,6 +4,7 @@ import Link from "next/link";
 import { FormEvent, useEffect, useMemo, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { createSupabaseClient } from "@/lib/supabase";
+import { resolveOrderActiveStageFromServer, type OrderActiveStageResolution } from "@/lib/order-active-stage";
 import { AdminPageHeader } from "@/components/admin/layout/AdminPageHeader";
 import { AdminErrorState, AdminLoadingState } from "@/components/admin/ui/AdminFeedback";
 import { PaymentTrackingManager } from "@/components/admin/PaymentTrackingManager";
@@ -18,6 +19,10 @@ import {
   adminOrderCompatibilityWarning,
   resolveAdminOrderWorkspaceKind
 } from "@/lib/admin-order-detail";
+import {
+  getOrderStatusLabel,
+  getPricingStatusLabel
+} from "@/lib/ui-language";
 
 type Order = {
   id: string;
@@ -40,7 +45,10 @@ type Order = {
   payment_required_amount: number | null;
   payment_effective_total: number;
   payment_production_eligible: boolean;
+  payment_requirement_met: boolean;
   payment_balance: number;
+  payment_method: string | null;
+  payment_status: string;
   currency: string;
   converted_at: string | null;
   archived_at: string | null;
@@ -117,8 +125,9 @@ export function OrderDetailAdmin() {
   const [order, setOrder] = useState<Order | null>(null);
   const [items, setItems] = useState<Item[]>([]);
   const [jobOrder, setJobOrder] = useState<{ id: string; status: string; updated_at: string | null } | null>(null);
+  const [activeStage, setActiveStage] = useState<OrderActiveStageResolution | null>(null);
   const [qualityControl, setQualityControl] = useState<{ id: string; status: string; result: string | null; updated_at: string | null } | null>(null);
-  const [fulfillment, setFulfillment] = useState<{ id: string; status: string; updated_at: string | null } | null>(null);
+  const [fulfillment, setFulfillment] = useState<{ id: string; method: string; status: string; final_verified_at: string | null; tracking_number: string | null; updated_at: string | null } | null>(null);
   const [loading, setLoading] = useState(true);
   const [working, setWorking] = useState(false);
   const [message, setMessage] = useState("");
@@ -161,10 +170,10 @@ export function OrderDetailAdmin() {
     if (!supabase || !orderId) return;
     setLoading(true);
 
-    const [orderResult, itemResult, jobResult, fulfillmentResult] = await Promise.all([
+    const [orderResult, itemResult, jobResult, fulfillmentResult, paymentResult, activeStageResult] = await Promise.all([
       supabase
         .from("orders")
-        .select("id,order_number,quotation_id,customer_name,company_name,customer_phone,customer_email,shipping_address,delivery_method,customer_notes,admin_notes,status,pricing_status,custom_quote_status,custom_project_snapshot,subtotal_amount,total_amount,payment_required_amount,payment_effective_total,payment_balance,payment_production_eligible,currency,converted_at,archived_at,checkout_source,whatsapp_confirmed_at")
+        .select("id,order_number,quotation_id,customer_name,company_name,customer_phone,customer_email,shipping_address,delivery_method,customer_notes,admin_notes,status,pricing_status,custom_quote_status,custom_project_snapshot,subtotal_amount,total_amount,payment_required_amount,payment_effective_total,payment_balance,payment_method,payment_status,payment_production_eligible,payment_requirement_met,currency,converted_at,archived_at,checkout_source,whatsapp_confirmed_at")
         .eq("id", orderId)
         .maybeSingle(),
       supabase
@@ -174,7 +183,9 @@ export function OrderDetailAdmin() {
         .is("archived_at", null)
         .order("created_at", { ascending: true }),
       supabase.from("job_orders").select("id,status,updated_at").eq("order_id", orderId).is("archived_at", null).order("created_at", { ascending: false }).limit(1).maybeSingle(),
-      supabase.from("fulfillments").select("id,status,updated_at").eq("order_id", orderId).is("archived_at", null).neq("status", "cancelled").order("created_at", { ascending: false }).limit(1).maybeSingle()
+      supabase.from("fulfillments").select("id,method,status,final_verified_at,tracking_number,updated_at").eq("order_id", orderId).is("archived_at", null).neq("status", "cancelled").order("created_at", { ascending: false }).limit(1).maybeSingle(),
+      supabase.from("order_payments").select("status,review_outcome,updated_at").eq("order_id", orderId).is("archived_at", null).order("created_at", { ascending: false }).limit(1).maybeSingle(),
+      supabase.rpc("resolve_order_active_stage_v1", { p_order_id: orderId })
     ]);
 
     setLoading(false);
@@ -189,11 +200,39 @@ export function OrderDetailAdmin() {
     setItems((itemResult.data || []) as Item[]);
     const nextJob = jobResult.data as { id: string; status: string; updated_at: string | null } | null;
     setJobOrder(nextJob);
-    setFulfillment(fulfillmentResult.data as { id: string; status: string; updated_at: string | null } | null);
+    const nextFulfillment = fulfillmentResult.data as { id: string; method: string; status: string; final_verified_at: string | null; tracking_number: string | null; updated_at: string | null } | null;
+    setFulfillment(nextFulfillment);
+    let nextQualityControl: { id: string; status: string; result: string | null; updated_at: string | null } | null = null;
     if (nextJob?.id) {
       const qcResult = await supabase.from("qc_records").select("id,status,result,updated_at").eq("job_order_id", nextJob.id).is("archived_at", null).order("created_at", { ascending: false }).limit(1).maybeSingle();
-      setQualityControl(qcResult.data as { id: string; status: string; result: string | null; updated_at: string | null } | null);
-    } else setQualityControl(null);
+      nextQualityControl = qcResult.data as { id: string; status: string; result: string | null; updated_at: string | null } | null;
+    }
+    setQualityControl(nextQualityControl);
+    setActiveStage(resolveOrderActiveStageFromServer({
+      orderId: row.id,
+      orderNumber: row.order_number,
+      status: row.status,
+      paymentStatus: row.payment_status,
+      latestPaymentStatus: paymentResult.data?.status ?? null,
+      latestPaymentReviewOutcome: paymentResult.data?.review_outcome ?? null,
+      fulfillmentStatus: nextFulfillment?.status ?? null,
+      fulfillmentMethod: nextFulfillment?.method ?? row.delivery_method,
+      paymentMethod: row.payment_method,
+      pricingStatus: row.pricing_status,
+      customQuoteStatus: row.custom_quote_status,
+      isCustom: resolveAdminOrderWorkspaceKind(row.custom_project_snapshot) === "custom",
+      whatsappConfirmed: Boolean(row.whatsapp_confirmed_at),
+      paymentRequirementMet: row.payment_requirement_met,
+      paymentProductionEligible: row.payment_production_eligible,
+      paymentEffectiveTotal: row.payment_effective_total,
+      hasVerifiedPayment: row.payment_effective_total > 0,
+      hasJobOrder: Boolean(nextJob),
+      jobOrderStatus: nextJob?.status ?? null,
+      qualityControlStatus: nextQualityControl?.result ?? nextQualityControl?.status ?? null,
+      finalVerificationCompleted: Boolean(nextFulfillment?.final_verified_at),
+      trackingNumber: nextFulfillment?.tracking_number ?? null,
+      taskRevision: nextJob?.updated_at ?? paymentResult.data?.updated_at ?? row.status
+    }, activeStageResult.error ? null : activeStageResult.data));
     setShippingAddress(row.shipping_address || "");
     setDeliveryMethod(row.delivery_method || "pickup");
     setCustomerNotes(row.customer_notes || "");
@@ -265,7 +304,7 @@ export function OrderDetailAdmin() {
     setWorking(false);
 
     if (error) {
-      setMessage(error.message || "Pesanan gagal dibatalkan.");
+      setMessage("Pesanan belum dapat dibatalkan. Periksa status terbaru lalu coba lagi.");
       return;
     }
 
@@ -288,7 +327,7 @@ export function OrderDetailAdmin() {
     setWorking(false);
 
     if (error) {
-      setMessage(error.message || "Pesanan gagal dipindahkan ke Gudang Arsip.");
+      setMessage("Pesanan belum dapat dipindahkan ke arsip. Coba lagi.");
       return;
     }
 
@@ -330,7 +369,8 @@ export function OrderDetailAdmin() {
   const pricingIsFinal = order.pricing_status === "final";
   const estimate = projectEstimate(customProjects);
   const canOpenPayment = pricingIsFinal && (workspaceKind === "standard" || order.custom_quote_status === "locked");
-  const canOpenJobOrder = Boolean(jobOrder) || order.payment_production_eligible;
+  const canOpenJobOrder = Boolean(jobOrder)
+    || (workspaceKind === "custom" && order.payment_production_eligible);
   const canOpenFulfillment = Boolean(fulfillment)
     || (workspaceKind === "standard" && order.payment_production_eligible)
     || new Set([
@@ -351,7 +391,7 @@ export function OrderDetailAdmin() {
           description={`${order.customer_name}${order.company_name ? ` · ${order.company_name}` : ""}`}
           actions={
             <>
-              <AdminOrderSectionBoundary label="Ulangi Order">
+              <AdminOrderSectionBoundary label="Pesan Ulang">
                 <RepeatOrderDialog orderId={order.id} />
               </AdminOrderSectionBoundary>
               {canOpenPayment ? (
@@ -419,6 +459,13 @@ export function OrderDetailAdmin() {
           </div>
         ) : null}
 
+        {activeStage?.warning ? (
+          <div role="alert" className="border border-red-300 bg-red-50 p-4 text-sm text-red-950">
+            <p className="font-semibold">Peringatan integritas pesanan</p>
+            <p className="mt-1">{activeStage.warning}</p>
+          </div>
+        ) : null}
+
         {compatibilityWarning ? (
           <div role="alert" className="border border-amber-300 bg-amber-50 p-4 text-sm text-amber-950">
             <p className="font-semibold">Peringatan kompatibilitas order</p>
@@ -426,7 +473,7 @@ export function OrderDetailAdmin() {
           </div>
         ) : null}
 
-        <AdminOrderSectionBoundary label="Pusat Kendali Order">
+        <AdminOrderSectionBoundary label="Pusat Kendali Pesanan">
           {workspaceKind === "custom" ? (
             <CustomOrderOperationalWorkspace order={order} jobOrder={jobOrder} qualityControl={qualityControl} fulfillment={fulfillment} />
           ) : (
@@ -435,7 +482,10 @@ export function OrderDetailAdmin() {
         </AdminOrderSectionBoundary>
 
         <section id="order-data" className="grid scroll-mt-24 gap-5 border border-brand-softGray bg-white p-5 sm:grid-cols-2 sm:p-7">
-          <Data label="Status" value={order.status === "baru" ? "Pesanan Baru" : order.status} />
+          <Data label="Tahap Aktif" value={activeStage?.adminStatusLabel ?? getOrderStatusLabel(order.status)} />
+          <Data label="Status Order" value={getOrderStatusLabel(order.status)} />
+          <Data label="Penanggung Jawab" value={activeStage?.responsibilityLabel ?? "Belum ditentukan"} />
+          <Data label="Tugas Aktif" value={activeStage?.adminTaskType ? activeStage.adminStatusLabel : "Tidak ada tugas aktif"} />
           <Data label="Status Harga" value={pricingStatusLabel(order.pricing_status)} />
           <Data label="Total Terkunci" value={pricingIsFinal ? money(order.total_amount) : "Menunggu penetapan harga"} />
           <Data label="Estimasi Proyek" value={estimate ?? (pricingIsFinal ? money(order.subtotal_amount) : "Belum tersedia")} />
@@ -482,7 +532,7 @@ export function OrderDetailAdmin() {
         {customProjects.length ? (
           <section id="custom-pricing" className="scroll-mt-24 border border-brand-softGray bg-white p-5 sm:p-7">
             <h2 className="text-2xl font-semibold">Breakdown Custom Canonical</h2>
-            <p className="mt-2 text-sm text-brand-charcoal/60">Layanan, placement, ukuran cetak, personalisasi, upload, dan harga dibaca dari snapshot order—bukan dari data PIM/CMS terbaru.</p>
+            <p className="mt-2 text-sm text-brand-charcoal/60">Layanan, posisi, ukuran cetak, personalisasi, file, dan harga mengikuti rincian saat pesanan dibuat—bukan data PIM/CMS terbaru.</p>
             <div className="mt-6 grid gap-5">
               {customProjects.map((project) => (
                 <article key={project.id} className="border border-brand-softGray p-4 sm:p-5">
@@ -499,7 +549,7 @@ export function OrderDetailAdmin() {
                     ))}
                   </div>
                   {project.items.map((item) => (
-                    <div key={item.id} className="mt-4 rounded-lg bg-brand-offWhite p-4 text-sm"><p className="font-semibold">{item.productName}</p>{item.selectedServices.length ? <div className="mt-3"><p className="font-semibold">Layanan dipilih pada snapshot</p><ul className="mt-2 grid gap-2">{item.selectedServices.map((service) => { const serviceLine = project.lines.find((line) => line.serviceId === service.serviceId && line.kind === "service"); return <li key={service.id} className="border-l-2 border-brand-softGray pl-3"><p className="font-semibold">{serviceLine?.label || service.serviceId}</p><p className={`mt-1 text-xs ${service.assignedQuantity ? "text-brand-charcoal/60" : "font-semibold text-red-700"}`}>{service.packageName} · {service.assignedQuantity ? `${service.assignedQuantity} pcs dialokasikan` : "Belum dialokasikan—tidak ikut harga"}{service.placementId ? ` · Placement ${service.placementId}` : ""}{service.printSizeId ? ` · Print size ${service.printSizeId}` : ""}</p>{service.note ? <p className="mt-1 text-xs text-brand-charcoal/60">Catatan: {service.note}</p> : null}</li>; })}</ul></div> : null}{item.personalization ? <p className="mt-3 text-brand-charcoal/65">Personalisasi: {item.personalization}</p> : null}{item.uploads.length ? <div className="mt-3"><p className="font-semibold">File pelanggan</p><ul className="mt-1 grid gap-1 text-xs text-brand-charcoal/60">{item.uploads.map((upload) => <li key={upload.id}>{upload.fileName} · {upload.mimeType || "tipe tidak tersedia"} · {formatBytes(upload.fileSize)}</li>)}</ul></div> : null}</div>
+                    <div key={item.id} className="mt-4 rounded-lg bg-brand-offWhite p-4 text-sm"><p className="font-semibold">{item.productName}</p>{item.selectedServices.length ? <div className="mt-3"><p className="font-semibold">Layanan yang dipilih saat pemesanan</p><ul className="mt-2 grid gap-2">{item.selectedServices.map((service) => { const serviceLine = project.lines.find((line) => line.serviceId === service.serviceId && line.kind === "service"); return <li key={service.id} className="border-l-2 border-brand-softGray pl-3"><p className="font-semibold">{serviceLine?.label || "Layanan custom"}</p><p className={`mt-1 text-xs ${service.assignedQuantity ? "text-brand-charcoal/60" : "font-semibold text-red-700"}`}>{service.packageName} · {service.assignedQuantity ? `${service.assignedQuantity} pcs dialokasikan` : "Belum dialokasikan—tidak ikut harga"}{service.placementId ? ` · Posisi ${service.placementId}` : ""}{service.printSizeId ? ` · Ukuran cetak ${service.printSizeId}` : ""}</p>{service.note ? <p className="mt-1 text-xs text-brand-charcoal/60">Catatan: {service.note}</p> : null}</li>; })}</ul></div> : null}{item.personalization ? <p className="mt-3 text-brand-charcoal/65">Personalisasi: {item.personalization}</p> : null}{item.uploads.length ? <div className="mt-3"><p className="font-semibold">File pelanggan</p><ul className="mt-1 grid gap-1 text-xs text-brand-charcoal/60">{item.uploads.map((upload) => <li key={upload.id}>{upload.fileName} · {upload.mimeType || "tipe tidak tersedia"} · {formatBytes(upload.fileSize)}</li>)}</ul></div> : null}</div>
                   ))}
                 </article>
               ))}
@@ -507,7 +557,7 @@ export function OrderDetailAdmin() {
           </section>
         ) : null}
 
-        <AdminOrderSectionBoundary label="Tautan Tracking">
+        <AdminOrderSectionBoundary label="Tautan Pelacakan">
           <OrderTrackingLinkManager orderId={order.id} />
         </AdminOrderSectionBoundary>
 
@@ -520,7 +570,7 @@ export function OrderDetailAdmin() {
         </div>
 
         <div id="order-history" className="scroll-mt-24">
-          <AdminOrderSectionBoundary label="Histori Order">
+          <AdminOrderSectionBoundary label="Riwayat Pesanan">
             <CustomerOrderHistory orderId={order.id} />
           </AdminOrderSectionBoundary>
         </div>
@@ -771,15 +821,12 @@ function projectEstimate(projects: SnapshotProject[]) {
 }
 
 function pricingStatusLabel(value: string) {
-  if (value === "final") return "Harga final";
-  if (value === "estimated") return "Estimasi · menunggu penetapan harga";
-  if (value === "quotation_required") return "Menunggu penawaran Admin";
-  return value || "Status belum tersedia";
+  return getPricingStatusLabel(value);
 }
 
 function pricingKindLabel(value: string) {
-  const labels: Record<string, string> = { product: "Produk PIM", service: "Layanan", placement: "Placement", print_size: "Ukuran cetak", personalization: "Personalisasi" };
-  return labels[value] ?? value;
+  const labels: Record<string, string> = { product: "Produk", service: "Layanan", placement: "Posisi Cetak", print_size: "Ukuran Cetak", personalization: "Personalisasi" };
+  return labels[value] ?? "Rincian Harga";
 }
 
 function record(value: unknown): Record<string, unknown> | null {

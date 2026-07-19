@@ -176,13 +176,13 @@ function ImageCropControl({
         <div className="grid gap-3 sm:grid-cols-2">
           <div>
             <p className="mb-2 text-xs font-semibold text-brand-charcoal/55">
-              Preview card 4:5
+              Pratinjau kartu 4:5
             </p>
             <div className="relative aspect-[4/5] overflow-hidden bg-white">
               {imageUrl ? (
                 <img
                   src={imageUrl}
-                  alt="Preview crop 4:5"
+                  alt="Pratinjau potongan 4:5"
                   className="h-full w-full"
                   style={previewStyle}
                 />
@@ -195,19 +195,19 @@ function ImageCropControl({
           </div>
           <div>
             <p className="mb-2 text-xs font-semibold text-brand-charcoal/55">
-              Preview banner 16:9
+              Pratinjau banner 16:9
             </p>
             <div className="relative aspect-video overflow-hidden bg-white">
               {imageUrl ? (
                 <img
                   src={imageUrl}
-                  alt="Preview crop 16:9"
+                  alt="Pratinjau potongan 16:9"
                   className="h-full w-full"
                   style={previewStyle}
                 />
               ) : (
                 <div className="grid h-full place-items-center px-6 text-center text-xs text-brand-charcoal/45">
-                  Preview banner muncul setelah gambar dipilih.
+                  Pratinjau banner muncul setelah gambar dipilih.
                 </div>
               )}
             </div>
@@ -405,7 +405,7 @@ export function HomepageSectionsAdmin({
 
     if (sectionResult.error) {
       setLoading(false);
-      setStatus(`Homepage Sections belum siap: ${sectionResult.error.message}`);
+      setStatus("Bagian halaman utama belum dapat dimuat. Coba lagi.");
       return;
     }
 
@@ -634,7 +634,7 @@ export function HomepageSectionsAdmin({
       });
     setSaving(false);
     if (error) {
-      setStatus(`Section gagal dibuat: ${error.message}`);
+      setStatus("Bagian belum dapat dibuat. Periksa data lalu coba lagi.");
       return;
     }
     setNewTitle("");
@@ -661,7 +661,7 @@ export function HomepageSectionsAdmin({
     setSaving(false);
     setStatus(
       error
-        ? `Section gagal disimpan: ${error.message}`
+        ? "Bagian belum dapat disimpan. Periksa data lalu coba lagi."
         : mode === "published"
           ? "Section disimpan dan dipublikasikan."
           : "Section disimpan sebagai draft.",
@@ -712,7 +712,7 @@ export function HomepageSectionsAdmin({
       .eq("id", section.id);
     setStatus(
       error
-        ? `Section gagal dihapus: ${error.message}`
+        ? "Bagian belum dapat dihapus. Coba lagi."
         : "Section dan penempatannya dihapus. Produk/layanan asli tetap aman.",
     );
     if (!error) await loadData();
@@ -755,7 +755,7 @@ export function HomepageSectionsAdmin({
       setStatus(
         error.code === "23505"
           ? "Item tersebut sudah ada di section ini."
-          : `Item gagal ditambahkan: ${error.message}`,
+          : "Item belum dapat ditambahkan. Periksa data lalu coba lagi.",
       );
       return;
     }
@@ -816,7 +816,7 @@ export function HomepageSectionsAdmin({
       ...workflowFields(mode),
     });
     if (error) {
-      setStatus(`Custom card gagal ditambahkan: ${error.message}`);
+      setStatus("Kartu custom belum dapat ditambahkan. Periksa data lalu coba lagi.");
       return;
     }
     setCustomDrafts((current) => ({
@@ -883,7 +883,7 @@ export function HomepageSectionsAdmin({
     const error = results.find((result) => result.error)?.error;
     setStatus(
       error
-        ? `Item gagal disimpan: ${error.message}`
+        ? "Item belum dapat disimpan. Periksa data lalu coba lagi."
         : mode === "published"
           ? "Item disimpan dan dipublikasikan."
           : "Item disimpan sebagai draft.",
@@ -906,7 +906,7 @@ export function HomepageSectionsAdmin({
       .eq("id", item.id);
     setStatus(
       error
-        ? `Item gagal dihapus: ${error.message}`
+        ? "Item belum dapat dihapus. Coba lagi."
         : "Item dilepas dari homepage. Data asli tidak dihapus.",
     );
     if (!error) await loadData();
@@ -930,7 +930,7 @@ export function HomepageSectionsAdmin({
           <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <div className="max-w-2xl">
               <p className="text-xs font-semibold uppercase tracking-[0.18em] text-brand-charcoal/50">
-                Landing Page Settings
+                Pengaturan Halaman Utama
               </p>
               <h2 className="mt-2 text-xl font-semibold">
                 Tampilkan Section Pakaian Polos Berdasarkan Kategori
@@ -1192,7 +1192,7 @@ export function HomepageSectionsAdmin({
                       className="min-h-11 rounded-lg border border-brand-softGray bg-white px-4 text-sm"
                     >
                       <option value="">
-                        Pilih gambar dari Media Library...
+                        Pilih gambar dari Galeri Media...
                       </option>
                       {media.map((asset) => (
                         <option key={asset.id} value={asset.public_url}>

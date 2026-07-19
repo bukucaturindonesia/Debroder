@@ -75,7 +75,7 @@ export function AccessControlAdmin() {
     const role = draftRoles[profile.id];
     if (!role || role === profile.role) return;
     if (!isAdminRole(role)) {
-      setError("Pilih role staf resmi sebelum menyimpan.");
+      setError("Pilih peran staf yang tersedia sebelum menyimpan.");
       return;
     }
     setBusyId(profile.id);
@@ -90,38 +90,38 @@ export function AccessControlAdmin() {
         ...current,
         profiles: current.profiles.map((item) => item.id === profile.id ? payload.profile : item)
       } : current);
-      setNotice(`Role ${payload.profile.email || payload.profile.id} diperbarui menjadi ${getRoleLabel(payload.profile.role)}.`);
+      setNotice(`Peran ${payload.profile.email || "pengguna"} diperbarui menjadi ${getRoleLabel(payload.profile.role)}.`);
     } catch (saveError) {
       setDraftRoles((current) => ({ ...current, [profile.id]: isAdminRole(profile.role) ? profile.role : "viewer" }));
-      setError(saveError instanceof Error ? saveError.message : "Role gagal diperbarui.");
+      setError(saveError instanceof Error ? saveError.message : "Peran pengguna belum dapat diperbarui.");
     } finally {
       setBusyId("");
     }
   }
 
-  if (loading) return <AdminLoadingState label="Memuat role dan permission..." />;
+  if (loading) return <AdminLoadingState label="Memuat peran dan hak akses..." />;
 
   const canManage = isSuperAdminRole(data?.actorRole);
 
   return (
     <div className="space-y-6">
       <AdminPageHeader
-        eyebrow="Phase 13"
-        title="Role & Permission"
-        description="Tetapkan role staf dan periksa matriks permission resmi v1.2. Perubahan role dicatat ke audit sistem."
+        eyebrow="PENGGUNA & HAK AKSES"
+        title="Peran dan Hak Akses"
+        description="Tetapkan peran staf dan periksa hak akses yang berlaku. Setiap perubahan peran dicatat dalam riwayat aktivitas."
       />
 
       {error ? <AdminAlert type="error">{error}</AdminAlert> : null}
       {notice ? <AdminAlert type="success">{notice}</AdminAlert> : null}
       {!canManage ? (
-        <AdminAlert type="info">Mode baca saja. Hanya Super Admin yang dapat mengubah role pengguna.</AdminAlert>
+        <AdminAlert type="info">Mode lihat saja. Hanya Super Admin yang dapat mengubah peran pengguna.</AdminAlert>
       ) : null}
 
       <section className="border border-brand-softGray bg-white p-5 sm:p-6">
         <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
           <div>
             <p className="text-xs font-semibold uppercase tracking-[0.18em] text-brand-charcoal/45">Pengguna</p>
-            <h2 className="mt-2 text-2xl font-semibold">Penetapan Role</h2>
+            <h2 className="mt-2 text-2xl font-semibold">Penetapan Peran</h2>
           </div>
           <p className="text-sm text-brand-charcoal/55">{data?.profiles.length ?? 0} profil terdaftar</p>
         </div>
@@ -134,8 +134,8 @@ export function AccessControlAdmin() {
               <thead>
                 <tr className="border-y border-brand-softGray bg-brand-offWhite text-xs uppercase tracking-[0.12em] text-brand-charcoal/55">
                   <th className="px-4 py-3">Akun</th>
-                  <th className="px-4 py-3">Role Saat Ini</th>
-                  <th className="px-4 py-3">Role Baru</th>
+                  <th className="px-4 py-3">Peran Saat Ini</th>
+                  <th className="px-4 py-3">Peran Baru</th>
                   <th className="px-4 py-3 text-right">Aksi</th>
                 </tr>
               </thead>
@@ -156,11 +156,11 @@ export function AccessControlAdmin() {
                           onChange={(event) => setDraftRoles((current) => ({ ...current, [profile.id]: event.target.value as RoleDraft }))}
                           className="min-h-11 min-w-56 border border-brand-softGray bg-white px-3 disabled:opacity-60"
                         >
-                          {draftRole === "viewer" ? <option value="viewer" disabled>Viewer / belum staf</option> : null}
-                          {!ASSIGNABLE_ADMIN_ROLES.includes(draftRole as (typeof ASSIGNABLE_ADMIN_ROLES)[number]) && draftRole !== "viewer" ? <option value={draftRole} disabled>{getRoleLabel(draftRole)} · legacy</option> : null}
+                          {draftRole === "viewer" ? <option value="viewer" disabled>Pengunjung / belum menjadi staf</option> : null}
+                          {!ASSIGNABLE_ADMIN_ROLES.includes(draftRole as (typeof ASSIGNABLE_ADMIN_ROLES)[number]) && draftRole !== "viewer" ? <option value={draftRole} disabled>{getRoleLabel(draftRole)} · peran lama</option> : null}
                           {ASSIGNABLE_ADMIN_ROLES.map((role) => <option key={role} value={role}>{ROLE_LABELS[role]}</option>)}
                         </select>
-                        <p className="mt-2 max-w-sm text-xs leading-5 text-brand-charcoal/55">{isAdminRole(draftRole) ? ROLE_DESCRIPTIONS[draftRole] : "Akun belum memiliki role operasional v1.2."}</p>
+                        <p className="mt-2 max-w-sm text-xs leading-5 text-brand-charcoal/55">{isAdminRole(draftRole) ? ROLE_DESCRIPTIONS[draftRole] : "Akun belum memiliki peran operasional."}</p>
                       </td>
                       <td className="px-4 py-4 text-right">
                         <button
@@ -169,7 +169,7 @@ export function AccessControlAdmin() {
                           onClick={() => void saveRole(profile)}
                           className="inline-flex min-h-10 items-center rounded-full bg-brand-charcoal px-4 text-xs font-semibold text-white disabled:cursor-not-allowed disabled:opacity-40"
                         >
-                          {busyId === profile.id ? "Menyimpan..." : "Simpan Role"}
+                          {busyId === profile.id ? "Menyimpan..." : "Simpan Peran"}
                         </button>
                       </td>
                     </tr>
@@ -184,16 +184,16 @@ export function AccessControlAdmin() {
       <section className="space-y-4">
         <div className="border border-brand-softGray bg-white p-5 sm:p-6">
           <p className="text-xs font-semibold uppercase tracking-[0.18em] text-brand-charcoal/45">Matriks Terkunci</p>
-          <h2 className="mt-2 text-2xl font-semibold">Permission per Role</h2>
-          <p className="mt-2 text-sm leading-6 text-brand-charcoal/60">Matriks ini dibaca dari database. Perubahan permission dilakukan melalui migration yang terkontrol, bukan edit bebas di browser.</p>
+          <h2 className="mt-2 text-2xl font-semibold">Hak Akses per Peran</h2>
+          <p className="mt-2 text-sm leading-6 text-brand-charcoal/60">Daftar ini menampilkan hak akses yang berlaku. Perubahan hak akses tidak dapat dilakukan dari halaman ini.</p>
         </div>
 
         {modules.map(([module, permissions]) => (
           <details key={module} className="border border-brand-softGray bg-white" open={module === "system" || module === "audit"}>
-            <summary className="cursor-pointer p-5 font-semibold capitalize">{module} · {permissions.length} permission</summary>
+            <summary className="cursor-pointer p-5 font-semibold capitalize">{module} · {permissions.length} hak akses</summary>
             <div className="overflow-x-auto border-t border-brand-softGray">
               <table className="min-w-[980px] border-collapse text-xs">
-                <thead><tr className="bg-brand-offWhite"><th className="sticky left-0 bg-brand-offWhite px-4 py-3 text-left">Permission</th>{ASSIGNABLE_ADMIN_ROLES.map((role) => <th key={role} className="px-3 py-3 text-center">{ROLE_LABELS[role]}</th>)}</tr></thead>
+                <thead><tr className="bg-brand-offWhite"><th className="sticky left-0 bg-brand-offWhite px-4 py-3 text-left">Hak Akses</th>{ASSIGNABLE_ADMIN_ROLES.map((role) => <th key={role} className="px-3 py-3 text-center">{ROLE_LABELS[role]}</th>)}</tr></thead>
                 <tbody>{permissions.map((permission) => (
                   <tr key={permission.permission_key} className="border-t border-brand-softGray">
                     <td className="sticky left-0 bg-white px-4 py-3"><p className="font-semibold">{permission.label}</p><p className="mt-1 font-mono text-[11px] text-brand-charcoal/45">{permission.permission_key}</p></td>

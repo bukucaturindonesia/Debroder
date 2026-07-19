@@ -4,7 +4,7 @@ import { GuestOrderTracking } from "@/components/tracking/GuestOrderTracking";
 import { getPublicContent } from "@/lib/public-data";
 
 export const metadata: Metadata = {
-  title: "Detail Tracking Order | DEBRODER",
+  title: "Detail Pelacakan Pesanan | DEBRODER",
   robots: { index: false, follow: false },
   referrer: "no-referrer"
 };

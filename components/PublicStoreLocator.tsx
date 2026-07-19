@@ -20,12 +20,12 @@ export function PublicStoreLocator({ stores }: { stores: Store[] }) {
 
   const whatsappHref = whatsappLinkWithMessage(
     activeStore.whatsapp_link || activeStore.whatsapp,
-    `Halo DEBRODER, saya ingin bertanya tentang Store ${activeStore.nama_store}.`
+    `Halo DEBRODER, saya ingin bertanya tentang toko ${activeStore.nama_store}.`
   );
 
   return (
     <div className="grid gap-6 md:gap-8 lg:grid-cols-[minmax(0,2fr)_minmax(0,3fr)] lg:gap-10">
-      <div aria-label="Daftar Store DEBRODER">
+      <div aria-label="Daftar toko DEBRODER">
         {visibleStores.map((store, index) => {
           const key = storeKey(store, index);
           const isActive = key === storeKey(activeStore, activeIndex);

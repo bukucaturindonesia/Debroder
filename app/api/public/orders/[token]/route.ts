@@ -1,5 +1,7 @@
 import { createHash } from "node:crypto";
+import { ensureAutomaticPaymentLink } from "@/lib/automatic-payment-link-v2";
 import { getAdminSupabaseClient } from "@/lib/supabase/client";
+import { publicApiErrorResponse } from "@/lib/public-api-error";
 
 type Context = { params: Promise<{ token: string }> };
 type PublicOrderRow = {
@@ -8,8 +10,14 @@ type PublicOrderRow = {
   shipping_courier: string | null; shipping_service: string | null; shipping_estimate: string | null; total_amount: number;
   whatsapp_confirmation_expires_at: string | null; whatsapp_confirmed_at: string | null; reservation_expires_at: string | null;
   final_total_approved_at: string | null; public_access_token_expires_at: string | null; created_at: string;
-  pricing_status?: string;
+  pricing_status?: string | null;
   custom_quote_version: number | null; custom_quote_status: string | null; custom_quote_locked_at: string | null;
+};
+
+type PublicPaymentLink = {
+  url: string | null;
+  expiresAt: string | null;
+  unavailableReason: string | null;
 };
 
 function tokenHash(token: string) {
@@ -23,6 +31,55 @@ function validToken(token: string) {
 function maskPhone(phone: string | null) {
   if (!phone) return "";
   return phone.length <= 6 ? "***" : `${phone.slice(0, 4)}***${phone.slice(-3)}`;
+}
+
+function relativePaymentPath(publicUrl: string | null) {
+  if (!publicUrl) return null;
+  if (publicUrl.startsWith("/")) return publicUrl;
+  try {
+    const url = new URL(publicUrl);
+    return `${url.pathname}${url.search}${url.hash}`;
+  } catch {
+    return null;
+  }
+}
+
+async function resolvePublicPaymentLink(
+  client: NonNullable<ReturnType<typeof getAdminSupabaseClient>>,
+  order: PublicOrderRow
+): Promise<PublicPaymentLink> {
+  if (order.payment_method !== "bank_transfer" || order.status !== "awaiting_payment") {
+    return { url: null, expiresAt: null, unavailableReason: null };
+  }
+
+  try {
+    const result = await ensureAutomaticPaymentLink(client, {
+      id: order.id,
+      order_number: order.order_number,
+      status: order.status,
+      payment_status: order.payment_status,
+      pricing_status: order.pricing_status ?? null,
+      total_amount: Number(order.total_amount ?? 0),
+      whatsapp_confirmed_at: order.whatsapp_confirmed_at,
+      archived_at: null
+    });
+
+    return {
+      url: relativePaymentPath(result.publicUrl),
+      expiresAt: result.link?.expires_at ?? null,
+      unavailableReason: result.blocker
+    };
+  } catch (error) {
+    console.error("Public order payment link unavailable", {
+      orderId: order.id,
+      error: error instanceof Error ? error.name : "unknown"
+    });
+    return {
+      url: null,
+      expiresAt: null,
+      unavailableReason: "Instruksi pembayaran belum tersedia."
+    };
+  }
 }
 
 export async function GET(_request: Request, context: Context) {
@@ -45,11 +102,15 @@ export async function GET(_request: Request, context: Context) {
       return Response.json({ error: "Tautan order sudah kedaluwarsa. Gunakan nomor WhatsApp atau minta tautan baru." }, { status: 410 });
     }
 
-    const [{ data: items }, { data: reservations }, { data: quote }, { data: customQuote }] = await Promise.all([
+    const [{ data: items }, { data: reservations }, { data: quote }, { data: customQuote }, payment, activeStage] = await Promise.all([
       client.from("order_items").select("id,product_name,variant_name,color,size,sku,quantity,unit_price,subtotal,custom_project_id,pricing_status").eq("order_id", row.id).is("archived_at", null).order("created_at"),
       client.from("stock_reservations").select("status,quantity,expires_at").eq("order_id", row.id).eq("status", "active"),
       client.from("order_shipping_quotes").select("version,courier,service,cost,estimate,total_snapshot,status,created_at").eq("order_id", row.id).order("version", { ascending: false }).limit(1).maybeSingle(),
-      row.custom_quote_version ? client.from("custom_order_quotation_versions").select("version_number,status,quoted_total,pricing_components,design_version_snapshot,valid_until,sent_at,locked_at").eq("order_id", row.id).eq("version_number", row.custom_quote_version).maybeSingle() : Promise.resolve({ data: null })
+      row.custom_quote_version ? client.from("custom_order_quotation_versions").select("version_number,status,quoted_total,pricing_components,design_version_snapshot,valid_until,sent_at,locked_at").eq("order_id", row.id).eq("version_number", row.custom_quote_version).maybeSingle() : Promise.resolve({ data: null }),
+      resolvePublicPaymentLink(client, row),
+      client.rpc("resolve_order_active_stage_v1", { p_order_id: row.id })
+        .then(({ data, error }) => error ? null : data)
+        .catch(() => null)
     ]);
 
     return Response.json({
@@ -81,10 +142,16 @@ export async function GET(_request: Request, context: Context) {
       items: items ?? [],
       reservation: reservations?.[0] ?? null,
       quote: quote ?? null,
-      customQuote: customQuote ?? null
+      customQuote: customQuote ?? null,
+      payment,
+      activeStage
     }, { headers: { "cache-control": "no-store, private" } });
   } catch (error) {
-    return Response.json({ error: error instanceof Error ? error.message : "Order gagal dimuat." }, { status: 500 });
+    return publicApiErrorResponse(error, "public order read", {
+      code: "ORDER_LOAD_FAILED",
+      message: "Pesanan belum dapat dimuat. Coba lagi.",
+      status: 500
+    });
   }
 }
 
@@ -107,7 +174,10 @@ export async function POST(request: Request, context: Context) {
     if (error) throw new Error(error.message);
     return Response.json({ status: (data as { status?: string } | null)?.status ?? "awaiting_payment" });
   } catch (error) {
-    const message = error instanceof Error ? error.message : "Total gagal disetujui.";
-    return Response.json({ error: message }, { status: /stok/i.test(message) ? 409 : 400 });
+    return publicApiErrorResponse(error, "public order action", {
+      code: "ORDER_ACTION_FAILED",
+      message: "Tindakan pesanan belum dapat diproses. Muat ulang status lalu coba lagi.",
+      status: 409
+    });
   }
 }

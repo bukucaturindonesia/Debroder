@@ -1,0 +1,46 @@
+DEBRODER Order Operations Phase 4–13 — Changed Files Only
+Date: 2026-07-20
+Baseline: Debroder(19).zip
+
+This package does not include or repeat Phase 0–3. It requires the existing Phase 0–3 foundation.
+
+Files:
+- lib/public-api-error.ts
+- lib/operations-auth.ts
+- lib/admin-operations-api.ts
+- lib/order-tasks.ts
+- app/api/checkout/route.ts
+- components/checkout/CheckoutClient.tsx
+- app/api/public/payments/[token]/route.ts
+- app/api/public/orders/[token]/route.ts
+- app/api/public/order-tracking/route.ts
+- app/api/public/order-actions/route.ts
+- components/tracking/GuestOrderTracking.tsx
+- app/api/admin/order-tasks/route.ts
+- app/api/admin/order-tasks/[id]/route.ts
+- app/api/admin/inventory-operations/route.ts
+- app/api/admin/refunds/route.ts
+- app/api/admin/refunds/[id]/evidence/route.ts
+- app/api/admin/customer-outbox/route.ts
+- app/api/admin/customer-outbox/[id]/route.ts
+- app/api/admin/operations-health/route.ts
+- app/admin/order-tasks/page.tsx
+- app/admin/inventory-operations/page.tsx
+- app/admin/refunds/page.tsx
+- app/admin/customer-outbox/page.tsx
+- app/admin/operations-health/page.tsx
+- components/admin/OrderTaskInboxAdmin.tsx
+- components/admin/InventoryOperationsAdmin.tsx
+- components/admin/RefundOperationsAdmin.tsx
+- components/admin/CustomerOutboxAdmin.tsx
+- components/admin/OperationsHealthAdmin.tsx
+- components/admin/layout/admin-navigation.ts
+- supabase/migrations/20260720020000_order_operations_phase4_13.sql
+- test/order-operations-phase4-13.test.ts
+- docs/ORDER_OPERATIONS_PHASE4_13_REPORT.md
+- ORDER_OPERATIONS_PHASE4_13_APPLY_NOTES.md
+- ORDER_OPERATIONS_PHASE4_13_FILES_CHANGED.txt
+- ORDER_OPERATIONS_PHASE4_13_TEST_RESULTS.md
+- ORDER_OPERATIONS_PHASE4_13_SHA256SUMS.txt
+
+Total: 37 files

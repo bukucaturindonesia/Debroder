@@ -64,7 +64,7 @@ export function QuotationCreateAdmin() {
       const supabase = createSupabaseClient();
       if (!supabase) {
         if (active) {
-          setMessage("Supabase belum dikonfigurasi.");
+          setMessage("Layanan data belum tersedia. Hubungi pengelola sistem.");
           setCheckingAccess(false);
         }
         return;
@@ -170,7 +170,7 @@ export function QuotationCreateAdmin() {
 
     if (error || !data) {
       setSaving(false);
-      setMessage("Quotation gagal dibuat. Periksa data lalu coba kembali.");
+      setMessage("Penawaran belum dapat dibuat. Periksa data lalu coba kembali.");
       return;
     }
 
@@ -209,8 +209,8 @@ export function QuotationCreateAdmin() {
     <main className="text-brand-charcoal">
       <div className="mx-auto grid max-w-5xl gap-6">
         <AdminPageHeader
-          eyebrow="DEBRODER v1.2 · Formal Quotation"
-          title="Buat Quotation Baru"
+          eyebrow="DEBRODER v1.2 · PENAWARAN HARGA RESMI"
+          title="Buat Penawaran Baru"
           description="Buat data awal pelanggan. Produk, varian, ukuran, layanan, dan harga dilanjutkan pada halaman detail."
         />
 
@@ -386,7 +386,7 @@ export function QuotationCreateAdmin() {
               disabled={saving}
               className="inline-flex min-h-11 items-center justify-center rounded-full bg-brand-green px-6 text-sm font-semibold text-white disabled:cursor-not-allowed disabled:opacity-50"
             >
-              {saving ? "Menyimpan Draft..." : "Buat Draft Quotation"}
+              {saving ? "Menyimpan Draft..." : "Buat Draft Penawaran"}
             </button>
             <Link
               href="/admin/orders/quotations"

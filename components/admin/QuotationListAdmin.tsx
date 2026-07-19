@@ -61,7 +61,7 @@ export function QuotationListAdmin() {
 
     setLoading(false);
     if (error) {
-      setMessage("Quotation gagal dimuat.");
+      setMessage("Daftar penawaran belum dapat dimuat.");
       return;
     }
     setRows((data || []) as Row[]);
@@ -125,7 +125,7 @@ export function QuotationListAdmin() {
   if (!allowed) {
     return (
       <AdminErrorState
-        title="Akses Quotation Ditolak"
+        title="Akses Penawaran Ditolak"
         description={message || "Akun ini tidak memiliki akses quotation."}
       />
     );
@@ -136,7 +136,7 @@ export function QuotationListAdmin() {
       <div className="grid gap-6">
         <AdminPageHeader
           eyebrow="DEBRODER v1.2 · Phase 1"
-          title="Formal Quotation"
+          title="Penawaran Harga Resmi"
           description="Kelola quotation aktif, status, harga, dan siklus arsip."
           actions={
             role && QUOTATION_ROLES.includes(role as (typeof QUOTATION_ROLES)[number]) ? (
@@ -151,7 +151,7 @@ export function QuotationListAdmin() {
                 href="/admin/orders/quotations/new"
                 className="inline-flex min-h-11 items-center rounded-full bg-brand-green px-5 text-sm font-semibold text-white"
               >
-                Buat Quotation
+                Buat Penawaran
               </Link>
             </>
             ) : null
@@ -270,7 +270,7 @@ export function QuotationListAdmin() {
                 href="/admin/orders/quotations/new"
                 className="inline-flex min-h-11 items-center rounded-full bg-brand-charcoal px-6 text-sm font-semibold text-white"
               >
-                Buat Quotation
+                Buat Penawaran
               </Link>
             }
           />

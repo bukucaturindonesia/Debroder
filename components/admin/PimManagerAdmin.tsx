@@ -279,7 +279,7 @@ export function PimManagerAdmin() {
       ));
 
     setWorking(false);
-    setStatus("Struktur PIM berhasil diterapkan. Sekarang lanjut: Store → Media Library → Produk.");
+    setStatus("Struktur produk berhasil diterapkan. Sekarang lanjut: Toko → Galeri Media → Produk.");
     await loadStats();
   }
 
@@ -344,7 +344,7 @@ export function PimManagerAdmin() {
           </div>
           <div className="mt-5 flex flex-wrap gap-2">
             <Link href="/admin/store" className="rounded-full border border-brand-softGray px-4 py-2 text-xs font-semibold">Store</Link>
-            <Link href="/admin/media" className="rounded-full border border-brand-softGray px-4 py-2 text-xs font-semibold">Media Library</Link>
+            <Link href="/admin/media" className="rounded-full border border-brand-softGray px-4 py-2 text-xs font-semibold">Galeri Media</Link>
             <Link href="/admin/categories" className="rounded-full border border-brand-softGray px-4 py-2 text-xs font-semibold">Kategori / Model</Link>
             <Link href="/admin/services" className="rounded-full border border-brand-softGray px-4 py-2 text-xs font-semibold">Layanan</Link>
             <Link href="/admin/products" className="rounded-full bg-brand-charcoal px-4 py-2 text-xs font-semibold text-white">PIM / Produk</Link>

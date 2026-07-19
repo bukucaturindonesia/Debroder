@@ -60,7 +60,7 @@ export default async function JaketHoodiePage({ searchParams }: JaketHoodiePageP
       catalogTitle: "Pilih jaket sesuai kebutuhan",
       catalogDescription: "Temukan tipe, bahan, warna, dan ukuran dari katalog produk DEBRODER.",
       closingHeadline: "Butuh jaket atau hoodie custom untuk tim dan brand Anda?",
-      closingCtaLabel: "Custom Order",
+      closingCtaLabel: "Buat Pesanan Custom",
       closingCtaHref: customDestination || "/custom",
       productTypeOptions: jacketTypeOptions,
       typeFilterLabel: "Semua tipe jaket"

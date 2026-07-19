@@ -1,0 +1,30 @@
+ADDED
+- docs/DATA_REPAIR_PLAN.md
+- docs/ORDER_INTEGRITY_AUDIT_REPORT.md
+- docs/ORDER_INVARIANT_MATRIX.md
+- lib/order-active-stage.ts
+- lib/order-tasks.ts
+- supabase/migrations/20260720010000_order_integrity_handoff_phase0_3.sql
+- test/order-integrity-handoff-phase0-3.test.ts
+- ORDER_INTEGRITY_PHASE0_3_APPLY_NOTES.md
+- ORDER_INTEGRITY_PHASE0_3_MIGRATION_NOTES.md
+- ORDER_INTEGRITY_PHASE0_3_TEST_RESULTS.md
+- ORDER_INTEGRITY_PHASE0_3_FILES_CHANGED.txt
+- ORDER_INTEGRITY_PHASE0_3_SHA256SUMS.txt
+
+MODIFIED
+- app/api/public/order-tracking/route.ts
+- app/api/public/orders/[token]/route.ts
+- app/api/public/payments/[token]/route.ts
+- components/admin/OrderDetailAdmin.tsx
+- components/checkout/OrderConfirmationClient.tsx
+- components/payments/PublicPaymentForm.tsx
+- components/tracking/GuestOrderTracking.tsx
+- lib/customer-order-presentation.ts
+- lib/order-tracking.ts
+
+DELETED
+- NONE
+
+RENAMED
+- NONE
