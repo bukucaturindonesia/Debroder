@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { type ReactNode, useCallback, useEffect, useMemo, useState } from "react";
 import { AdminPageHeader } from "@/components/admin/layout/AdminPageHeader";
 import { AdminAlert, AdminEmptyState, AdminLoadingState } from "@/components/admin/ui/AdminFeedback";
 import { operationsApiFetch } from "@/lib/admin-operations-api";
@@ -9,9 +9,21 @@ import { orderTaskStatusLabel, orderTaskTypeLabel, type OrderTaskRow } from "@/l
 
 type TaskWithOrder = OrderTaskRow & {
   escalated_at: string | null;
-  orders: { order_number: string; customer_name: string; status: string; payment_status: string; delivery_method: string } | null;
+  orders: {
+    order_number: string;
+    customer_name: string;
+    status: string;
+    payment_status: string;
+    delivery_method: string;
+  } | null;
 };
-type Response = { tasks: TaskWithOrder[]; counts: { active: number; overdue: number; mine: number }; role: string; userId: string };
+
+type Response = {
+  tasks: TaskWithOrder[];
+  counts: { active: number; overdue: number; mine: number };
+  role: string;
+  userId: string;
+};
 
 export function OrderTaskInboxAdmin() {
   const [rows, setRows] = useState<TaskWithOrder[]>([]);
@@ -41,10 +53,15 @@ export function OrderTaskInboxAdmin() {
     }
   }, [assigned, priority, scope, search]);
 
-  useEffect(() => { const timer = window.setTimeout(() => void load(), 180); return () => window.clearTimeout(timer); }, [load]);
+  useEffect(() => {
+    const timer = window.setTimeout(() => void load(), 180);
+    return () => window.clearTimeout(timer);
+  }, [load]);
 
   async function action(task: TaskWithOrder, value: "acknowledge" | "start" | "block" | "resolve" | "assign") {
-    const reason = value === "block" || value === "resolve" ? window.prompt(value === "block" ? "Alasan tugas terhambat:" : "Catatan penyelesaian:") : null;
+    const reason = value === "block" || value === "resolve"
+      ? window.prompt(value === "block" ? "Alasan tugas terhambat:" : "Catatan penyelesaian:")
+      : null;
     if ((value === "block" || value === "resolve") && (!reason || reason.trim().length < 3)) return;
     setWorking(task.id);
     try {
@@ -52,48 +69,145 @@ export function OrderTaskInboxAdmin() {
         method: "PATCH",
         body: JSON.stringify({ action: value, reason, assignedTo: value === "assign" ? "self" : null })
       });
-      setNotice({ type: "success", text: "Tugas berhasil diperbarui." });
+      setNotice({ type: "success", text: "Status tugas berhasil diperbarui." });
       await load();
     } catch (error) {
       setNotice({ type: "error", text: error instanceof Error ? error.message : "Tugas belum dapat diperbarui." });
-    } finally { setWorking(""); }
+    } finally {
+      setWorking("");
+    }
   }
 
   const grouped = useMemo(() => [...rows].sort((a, b) => taskRank(a) - taskRank(b)), [rows]);
 
-  return <main className="grid gap-6 text-brand-charcoal">
-    <AdminPageHeader eyebrow="OPERASIONAL" title="Kotak Tugas" description="Satu antrean resmi untuk handoff pelanggan–admin. Tugas ditampilkan berdasarkan role, penugasan, prioritas, dan SLA." />
-    {notice ? <AdminAlert type={notice.type}>{notice.text}</AdminAlert> : null}
-    <section className="grid gap-3 sm:grid-cols-3">
-      <Summary label="Tugas Aktif" value={counts.active} />
-      <Summary label="Terlambat" value={counts.overdue} danger />
-      <Summary label="Tugas Saya" value={counts.mine} />
-    </section>
-    <section className="grid gap-3 border border-brand-softGray bg-white p-4 lg:grid-cols-[1fr_auto_auto_auto]">
-      <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Cari tugas" className="min-h-11 border border-brand-softGray px-4" />
-      <select value={scope} onChange={(e) => setScope(e.target.value as "active" | "resolved")} className="min-h-11 border border-brand-softGray bg-white px-3"><option value="active">Aktif</option><option value="resolved">Selesai</option></select>
-      <select value={assigned} onChange={(e) => setAssigned(e.target.value as typeof assigned)} className="min-h-11 border border-brand-softGray bg-white px-3"><option value="all">Semua penugasan</option><option value="me">Tugas saya</option><option value="unassigned">Belum diambil</option></select>
-      <select value={priority} onChange={(e) => setPriority(e.target.value)} className="min-h-11 border border-brand-softGray bg-white px-3"><option value="all">Semua prioritas</option><option value="urgent">Mendesak</option><option value="high">Tinggi</option><option value="normal">Normal</option><option value="low">Rendah</option></select>
-    </section>
-    {loading ? <AdminLoadingState label="Memuat kotak tugas..." /> : grouped.length ? <section className="grid gap-4">{grouped.map((task) => {
-      const overdue = Boolean(task.due_at && new Date(task.due_at).getTime() < Date.now() && !task.resolved_at);
-      return <article key={task.id} className={`border bg-white p-5 ${overdue ? "border-red-300" : "border-brand-softGray"}`}>
-        <div className="flex flex-wrap items-start justify-between gap-4"><div><div className="flex flex-wrap gap-2"><Badge text={orderTaskTypeLabel(task.task_type)} /><Badge text={task.priority === "urgent" ? "Mendesak" : task.priority} danger={task.priority === "urgent" || overdue} /></div><h2 className="mt-3 text-lg font-semibold">{task.title}</h2><p className="mt-1 text-sm text-brand-charcoal/60">{task.orders?.order_number} · {task.orders?.customer_name}</p></div><div className="text-right text-xs text-brand-charcoal/55"><p>{orderTaskStatusLabel(task.status)}</p><p className={overdue ? "mt-1 font-semibold text-red-700" : "mt-1"}>{task.due_at ? `${overdue ? "Terlambat · " : "Batas · "}${dateTime(task.due_at)}` : "Tanpa SLA"}</p></div></div>
-        <p className="mt-4 text-sm leading-6 text-brand-charcoal/70">{task.description}</p>
-        <div className="mt-4 flex flex-wrap gap-2">
-          {task.related_path ? <Link href={task.related_path} className="inline-flex min-h-10 items-center rounded-full bg-brand-charcoal px-4 text-xs font-semibold text-white">Buka Pesanan</Link> : null}
-          {task.status === "open" ? <button data-admin-mutation="true" disabled={working===task.id} onClick={() => void action(task,"acknowledge")} className="min-h-10 rounded-full border border-brand-softGray px-4 text-xs font-semibold">Terima Tugas</button> : null}
-          {task.status === "open" && !task.assigned_to ? <button data-admin-mutation="true" disabled={working===task.id} onClick={() => void action(task,"assign")} className="min-h-10 rounded-full border border-brand-softGray px-4 text-xs font-semibold">Ambil Tugas</button> : null}
-          {["open","acknowledged","blocked"].includes(task.status) ? <button data-admin-mutation="true" disabled={working===task.id} onClick={() => void action(task,"start")} className="min-h-10 rounded-full border border-brand-softGray px-4 text-xs font-semibold">Mulai</button> : null}
-          {["open","acknowledged","in_progress"].includes(task.status) ? <button data-admin-mutation="true" disabled={working===task.id} onClick={() => void action(task,"block")} className="min-h-10 rounded-full border border-amber-300 px-4 text-xs font-semibold text-amber-800">Tandai Terhambat</button> : null}
-          {["open","acknowledged","in_progress","blocked"].includes(task.status) ? <button data-admin-mutation="true" disabled={working===task.id} onClick={() => void action(task,"resolve")} className="min-h-10 rounded-full bg-brand-green px-4 text-xs font-semibold text-white">Selesaikan</button> : null}
-        </div>
-      </article>;
-    })}</section> : <AdminEmptyState title="Tidak ada tugas pada antrean ini" description="Tugas baru akan muncul otomatis ketika pelanggan atau Admin menghasilkan handoff berikutnya." />}
-  </main>;
+  return (
+    <main className="grid min-w-0 gap-6 text-brand-charcoal">
+      <AdminPageHeader
+        eyebrow="OPERASIONAL"
+        title="Kotak Tugas"
+        description="Pilih Kerjakan Sekarang. Sistem membuka pesanan langsung pada tahap yang membutuhkan tindakan, sehingga Admin tidak perlu mencari panel secara manual."
+      />
+
+      {notice ? <AdminAlert type={notice.type}>{notice.text}</AdminAlert> : null}
+
+      <section className="grid min-w-0 gap-3 sm:grid-cols-3">
+        <Summary label="Tugas Aktif" value={counts.active} />
+        <Summary label="Terlambat" value={counts.overdue} danger />
+        <Summary label="Tugas Saya" value={counts.mine} />
+      </section>
+
+      <section className="grid min-w-0 gap-3 border border-brand-softGray bg-white p-4 xl:grid-cols-[minmax(220px,1fr)_minmax(150px,auto)_minmax(180px,auto)_minmax(160px,auto)]">
+        <input value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Cari tugas atau pesanan" className="min-h-11 min-w-0 w-full border border-brand-softGray px-4" />
+        <select value={scope} onChange={(event) => setScope(event.target.value as "active" | "resolved")} className="min-h-11 min-w-0 w-full border border-brand-softGray bg-white px-3">
+          <option value="active">Aktif</option>
+          <option value="resolved">Selesai</option>
+        </select>
+        <select value={assigned} onChange={(event) => setAssigned(event.target.value as typeof assigned)} className="min-h-11 min-w-0 w-full border border-brand-softGray bg-white px-3">
+          <option value="all">Semua penugasan</option>
+          <option value="me">Tugas saya</option>
+          <option value="unassigned">Belum diambil</option>
+        </select>
+        <select value={priority} onChange={(event) => setPriority(event.target.value)} className="min-h-11 min-w-0 w-full border border-brand-softGray bg-white px-3">
+          <option value="all">Semua prioritas</option>
+          <option value="urgent">Mendesak</option>
+          <option value="high">Tinggi</option>
+          <option value="normal">Normal</option>
+          <option value="low">Rendah</option>
+        </select>
+      </section>
+
+      {loading ? (
+        <AdminLoadingState label="Memuat kotak tugas..." />
+      ) : grouped.length ? (
+        <section className="grid min-w-0 gap-4">
+          {grouped.map((task) => {
+            const overdue = Boolean(task.due_at && new Date(task.due_at).getTime() < Date.now() && !task.resolved_at);
+            const busy = working === task.id;
+            return (
+              <article key={task.id} className={`min-w-0 border bg-white p-5 sm:p-6 ${overdue ? "border-red-300" : "border-brand-softGray"}`}>
+                <div className="grid min-w-0 gap-5 lg:grid-cols-[minmax(0,1fr)_minmax(180px,auto)]">
+                  <div className="min-w-0">
+                    <div className="flex min-w-0 flex-wrap gap-2">
+                      <Badge text={orderTaskTypeLabel(task.task_type)} />
+                      <Badge text={task.priority === "urgent" ? "Mendesak" : task.priority} danger={task.priority === "urgent" || overdue} />
+                    </div>
+                    <h2 className="mt-3 break-words text-lg font-semibold">{task.title}</h2>
+                    <p className="mt-1 break-words text-sm text-brand-charcoal/60">{task.orders?.order_number || "Pesanan"} · {task.orders?.customer_name || "Pelanggan"}</p>
+                    <p className="mt-4 break-words text-sm leading-6 text-brand-charcoal/70">{task.description}</p>
+                  </div>
+                  <div className="min-w-0 text-xs text-brand-charcoal/55 lg:text-right">
+                    <p>{orderTaskStatusLabel(task.status)}</p>
+                    <p className={overdue ? "mt-1 break-words font-semibold text-red-700" : "mt-1 break-words"}>
+                      {task.due_at ? `${overdue ? "Terlambat · " : "Batas · "}${dateTime(task.due_at)}` : "Tanpa SLA"}
+                    </p>
+                  </div>
+                </div>
+
+                <div className="mt-5 grid min-w-0 gap-3 sm:grid-cols-[minmax(0,auto)_minmax(0,1fr)] sm:items-center">
+                  {task.related_path ? (
+                    <Link href={guidedPath(task.related_path)} className="inline-flex min-h-12 w-full items-center justify-center rounded-full bg-brand-charcoal px-6 text-sm font-semibold text-white sm:w-auto">
+                      Kerjakan Sekarang
+                    </Link>
+                  ) : (
+                    <span className="text-sm font-semibold text-brand-charcoal/55">Tautan kerja belum tersedia.</span>
+                  )}
+                  <p className="text-xs leading-5 text-brand-charcoal/50">Pesanan akan terbuka pada Alur Kerja Terpandu dan menampilkan satu tindakan utama sesuai kondisi terbaru.</p>
+                </div>
+
+                {scope === "active" ? (
+                  <details className="mt-5 border-t border-brand-softGray pt-4">
+                    <summary className="cursor-pointer text-sm font-semibold">Kelola status tugas</summary>
+                    <p className="mt-2 text-xs leading-5 text-brand-charcoal/55">Status tugas membantu pembagian kerja. Penyelesaian proses bisnis tetap dilakukan melalui tombol Kerjakan Sekarang.</p>
+                    <div className="mt-4 flex min-w-0 flex-col gap-2 sm:flex-row sm:flex-wrap">
+                      {task.status === "open" ? <TaskButton disabled={busy} onClick={() => void action(task, "acknowledge")}>Terima Tugas</TaskButton> : null}
+                      {task.status === "open" && !task.assigned_to ? <TaskButton disabled={busy} onClick={() => void action(task, "assign")}>Ambil Tugas</TaskButton> : null}
+                      {["open", "acknowledged", "blocked"].includes(task.status) ? <TaskButton disabled={busy} onClick={() => void action(task, "start")}>Mulai</TaskButton> : null}
+                      {["open", "acknowledged", "in_progress"].includes(task.status) ? <TaskButton disabled={busy} warning onClick={() => void action(task, "block")}>Tandai Terhambat</TaskButton> : null}
+                      {["open", "acknowledged", "in_progress", "blocked"].includes(task.status) ? <TaskButton disabled={busy} success onClick={() => void action(task, "resolve")}>Selesaikan Tugas</TaskButton> : null}
+                    </div>
+                  </details>
+                ) : null}
+              </article>
+            );
+          })}
+        </section>
+      ) : (
+        <AdminEmptyState title="Tidak ada tugas pada antrean ini" description="Tugas baru muncul otomatis ketika pelanggan atau Admin menghasilkan handoff berikutnya." />
+      )}
+    </main>
+  );
 }
 
-function taskRank(task: TaskWithOrder) { const p = { urgent: 0, high: 1, normal: 2, low: 3 }[task.priority] ?? 4; return (task.due_at && new Date(task.due_at).getTime() < Date.now() ? -10 : 0) + p; }
-function Summary({ label, value, danger }: { label: string; value: number; danger?: boolean }) { return <div className={`border bg-white p-5 ${danger && value ? "border-red-300" : "border-brand-softGray"}`}><p className="text-xs font-semibold uppercase tracking-[0.14em] text-brand-charcoal/45">{label}</p><p className={`mt-2 text-3xl font-semibold ${danger && value ? "text-red-700" : ""}`}>{value}</p></div>; }
-function Badge({ text, danger }: { text: string; danger?: boolean }) { return <span className={`rounded-full border px-3 py-1 text-[11px] font-semibold ${danger ? "border-red-200 bg-red-50 text-red-700" : "border-brand-softGray bg-brand-offWhite"}`}>{text}</span>; }
-function dateTime(value: string) { return new Intl.DateTimeFormat("id-ID", { dateStyle: "medium", timeStyle: "short", timeZone: "Asia/Makassar" }).format(new Date(value)); }
+function guidedPath(path: string) {
+  const [withoutHash] = path.split("#");
+  if (withoutHash.includes("/admin/orders/")) return `${withoutHash}#guided-workflow`;
+  if (withoutHash.includes("/admin/fulfillments/")) return `${withoutHash}#guided-action`;
+  return withoutHash;
+}
+
+function taskRank(task: TaskWithOrder) {
+  const priorityRank = { urgent: 0, high: 1, normal: 2, low: 3 }[task.priority] ?? 4;
+  return (task.due_at && new Date(task.due_at).getTime() < Date.now() ? -10 : 0) + priorityRank;
+}
+
+function Summary({ label, value, danger }: { label: string; value: number; danger?: boolean }) {
+  return (
+    <div className={`min-w-0 border bg-white p-5 ${danger && value ? "border-red-300" : "border-brand-softGray"}`}>
+      <p className="break-words text-xs font-semibold uppercase tracking-[0.14em] text-brand-charcoal/45">{label}</p>
+      <p className={`mt-2 text-3xl font-semibold ${danger && value ? "text-red-700" : ""}`}>{value}</p>
+    </div>
+  );
+}
+
+function Badge({ text, danger }: { text: string; danger?: boolean }) {
+  return <span className={`max-w-full break-words rounded-full border px-3 py-1 text-[11px] font-semibold ${danger ? "border-red-200 bg-red-50 text-red-700" : "border-brand-softGray bg-brand-offWhite"}`}>{text}</span>;
+}
+
+function TaskButton({ children, disabled, onClick, warning, success }: { children: ReactNode; disabled: boolean; onClick: () => void; warning?: boolean; success?: boolean }) {
+  const tone = success ? "bg-brand-green text-white" : warning ? "border border-amber-300 text-amber-800" : "border border-brand-softGray";
+  return <button data-admin-mutation="true" disabled={disabled} onClick={onClick} className={`min-h-10 w-full rounded-full px-4 text-xs font-semibold disabled:opacity-45 sm:w-auto ${tone}`}>{disabled ? "Memproses..." : children}</button>;
+}
+
+function dateTime(value: string) {
+  return new Intl.DateTimeFormat("id-ID", { dateStyle: "medium", timeStyle: "short", timeZone: "Asia/Makassar" }).format(new Date(value));
+}

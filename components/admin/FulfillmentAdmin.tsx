@@ -528,10 +528,10 @@ export function FulfillmentAdmin() {
                     </div>
                     <div className="flex flex-wrap gap-2">
                       <Link
-                        href={`/admin/fulfillments/${record.id}`}
+                        href={`/admin/fulfillments/${record.id}#guided-action`}
                         className="rounded-full border border-brand-softGray px-5 py-2.5 text-sm font-semibold"
                       >
-                        Buka Detail
+                        Buka Tahap Aktif
                       </Link>
                       {record.archived_at ? (
                         <>

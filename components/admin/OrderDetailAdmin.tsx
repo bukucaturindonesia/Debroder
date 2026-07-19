@@ -14,6 +14,7 @@ import { CommerceOrderOperations } from "@/components/admin/CommerceOrderOperati
 import { OrderTrackingLinkManager } from "@/components/admin/OrderTrackingLinkManager";
 import { OrderOperationalWorkspace } from "@/components/admin/OrderOperationalWorkspace";
 import { CustomOrderOperationalWorkspace } from "@/components/admin/CustomOrderOperationalWorkspace";
+import { AdminGuidedOrderFlow } from "@/components/admin/AdminGuidedOrderFlow";
 import { AdminOrderSectionBoundary } from "@/components/admin/AdminOrderSectionBoundary";
 import {
   adminOrderCompatibilityWarning,
@@ -23,6 +24,12 @@ import {
   getOrderStatusLabel,
   getPricingStatusLabel
 } from "@/lib/ui-language";
+
+// Keep the named workspace exports loaded as a React #130 module-integrity guard.
+// They are no longer rendered in parallel; AdminGuidedOrderFlow is the only visible cockpit.
+[OrderOperationalWorkspace, CustomOrderOperationalWorkspace].forEach((workspace) => {
+  if (typeof workspace !== "function") throw new Error("Admin order workspace export tidak valid");
+});
 
 type Order = {
   id: string;
@@ -391,38 +398,12 @@ export function OrderDetailAdmin() {
           description={`${order.customer_name}${order.company_name ? ` · ${order.company_name}` : ""}`}
           actions={
             <>
-              <AdminOrderSectionBoundary label="Pesan Ulang">
-                <RepeatOrderDialog orderId={order.id} />
-              </AdminOrderSectionBoundary>
-              {canOpenPayment ? (
-                <AdminOrderSectionBoundary label="Pembayaran">
-                  <PaymentTrackingManager />
-                </AdminOrderSectionBoundary>
-              ) : null}
-              {canOpenJobOrder ? (
-                <Link
-                  href={jobOrder ? `/admin/job-orders/${jobOrder.id}` : `/admin/job-orders?order=${order.id}`}
-                  className="inline-flex min-h-10 items-center rounded-full border border-brand-softGray bg-white px-5 text-sm font-semibold"
-                >
-                  Job Order
-                </Link>
-              ) : null}
-              {canOpenFulfillment ? (
-                <Link
-                  href={fulfillment ? `/admin/fulfillments/${fulfillment.id}` : `/admin/fulfillments?order=${order.id}`}
-                  className="inline-flex min-h-10 items-center rounded-full border border-brand-softGray bg-white px-5 text-sm font-semibold"
-                >
-                  Pengiriman / Pickup
-                </Link>
-              ) : null}
-              {order.quotation_id ? (
-                <Link
-                  href={`/admin/orders/quotations/${order.quotation_id}`}
-                  className="inline-flex min-h-10 items-center rounded-full border border-brand-softGray bg-white px-5 text-sm font-semibold"
-                >
-                  Buka Penawaran
-                </Link>
-              ) : null}
+              <Link
+                href="/admin/orders"
+                className="inline-flex min-h-10 items-center rounded-full border border-brand-softGray bg-white px-5 text-sm font-semibold"
+              >
+                Kembali ke Pesanan
+              </Link>
               <button
                 type="button"
                 onClick={() => setEditOpen(true)}
@@ -473,15 +454,25 @@ export function OrderDetailAdmin() {
           </div>
         ) : null}
 
-        <AdminOrderSectionBoundary label="Pusat Kendali Pesanan">
-          {workspaceKind === "custom" ? (
-            <CustomOrderOperationalWorkspace order={order} jobOrder={jobOrder} qualityControl={qualityControl} fulfillment={fulfillment} />
-          ) : (
-            <OrderOperationalWorkspace order={order} jobOrder={jobOrder} qualityControl={qualityControl} fulfillment={fulfillment} />
-          )}
-        </AdminOrderSectionBoundary>
+        {activeStage ? (
+          <AdminOrderSectionBoundary label="Alur Kerja Terpandu">
+            <AdminGuidedOrderFlow
+              order={order}
+              activeStage={activeStage}
+              jobOrder={jobOrder}
+              qualityControl={qualityControl}
+              fulfillment={fulfillment}
+            />
+          </AdminOrderSectionBoundary>
+        ) : null}
 
-        <section id="order-data" className="grid scroll-mt-24 gap-5 border border-brand-softGray bg-white p-5 sm:grid-cols-2 sm:p-7">
+        <section id="order-details" className="scroll-mt-24 border border-brand-softGray bg-white p-5 sm:p-7">
+          <div className="mb-6">
+            <p className="text-xs font-semibold uppercase tracking-[0.14em] text-brand-charcoal/45">Rincian Pesanan</p>
+            <h2 className="mt-2 text-2xl font-semibold">Data pelanggan dan transaksi</h2>
+            <p className="mt-2 text-sm leading-6 text-brand-charcoal/60">Informasi disusun setelah alur kerja agar admin memahami tindakan utama sebelum membaca rincian teknis.</p>
+          </div>
+          <dl className="grid min-w-0 gap-5 sm:grid-cols-2 lg:grid-cols-3">
           <Data label="Tahap Aktif" value={activeStage?.adminStatusLabel ?? getOrderStatusLabel(order.status)} />
           <Data label="Status Order" value={getOrderStatusLabel(order.status)} />
           <Data label="Penanggung Jawab" value={activeStage?.responsibilityLabel ?? "Belum ditentukan"} />
@@ -495,8 +486,24 @@ export function OrderDetailAdmin() {
           <Data label="WhatsApp" value={order.customer_phone} />
           <Data label="Email" value={order.customer_email || "-"} />
           <Data label="Metode Penyerahan" value={order.delivery_method === "pickup" ? "Ambil di Toko" : "Dikirim"} />
-          <Data label="Alamat Pengiriman" value={order.shipping_address || "-"} />
+          <div className="min-w-0 sm:col-span-2 lg:col-span-3"><Data label="Alamat Pengiriman" value={order.shipping_address || "-"} /></div>
+          </dl>
         </section>
+
+        {canOpenPayment ? (
+          <section id="payment-section" className="scroll-mt-24 border border-brand-softGray bg-white p-5 sm:p-7">
+            <div className="flex min-w-0 flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+              <div className="min-w-0">
+                <p className="text-xs font-semibold uppercase tracking-[0.14em] text-brand-charcoal/45">Tahap Pembayaran</p>
+                <h2 className="mt-2 break-words text-2xl font-semibold">Pemeriksaan dan riwayat pembayaran</h2>
+                <p className="mt-2 max-w-3xl text-sm leading-6 text-brand-charcoal/60">Buka bagian ini saat alur kerja meminta pemeriksaan pembayaran. Bukti pelanggan bukan konfirmasi dana masuk sampai mutasi diverifikasi.</p>
+              </div>
+              <AdminOrderSectionBoundary label="Pembayaran">
+                <PaymentTrackingManager />
+              </AdminOrderSectionBoundary>
+            </div>
+          </section>
+        ) : null}
 
         <section className="border border-brand-softGray bg-white p-5 sm:p-7">
           <h2 className="text-2xl font-semibold">Produk PIM</h2>
@@ -563,11 +570,29 @@ export function OrderDetailAdmin() {
 
         <div id="commerce" className="scroll-mt-24">
           {order.checkout_source === "public_checkout" ? (
+            <section className="grid gap-4">
+              <div className="border border-brand-softGray bg-white p-5 sm:p-7">
+                <p className="text-xs font-semibold uppercase tracking-[0.14em] text-brand-charcoal/45">Operasional Commerce</p>
+                <h2 className="mt-2 text-2xl font-semibold">Tindakan pendukung tahap aktif</h2>
+                <p className="mt-2 text-sm leading-6 text-brand-charcoal/60">Form yang relevan tetap tersedia di sini. Gunakan tombol utama pada Alur Kerja Terpandu untuk langsung menuju bagian yang diperlukan.</p>
+              </div>
             <AdminOrderSectionBoundary label="Operasional Commerce">
               <CommerceOrderOperations orderId={order.id} onChanged={loadData} />
             </AdminOrderSectionBoundary>
+            </section>
           ) : null}
         </div>
+
+        <section className="border border-brand-softGray bg-white p-5 sm:p-7">
+          <p className="text-xs font-semibold uppercase tracking-[0.14em] text-brand-charcoal/45">Dokumen Terkait</p>
+          <h2 className="mt-2 text-2xl font-semibold">Akses lanjutan berdasarkan kebutuhan</h2>
+          <div className="mt-5 flex min-w-0 flex-col gap-3 sm:flex-row sm:flex-wrap">
+            {canOpenJobOrder ? <Link href={jobOrder ? `/admin/job-orders/${jobOrder.id}` : `/admin/job-orders?order=${order.id}`} className="inline-flex min-h-11 items-center justify-center rounded-full border border-brand-softGray px-5 text-sm font-semibold">Surat Perintah Kerja</Link> : null}
+            {canOpenFulfillment ? <Link href={fulfillment ? `/admin/fulfillments/${fulfillment.id}#guided-action` : `/admin/fulfillments?order=${order.id}`} className="inline-flex min-h-11 items-center justify-center rounded-full border border-brand-softGray px-5 text-sm font-semibold">Pengiriman / Pickup</Link> : null}
+            {order.quotation_id ? <Link href={`/admin/orders/quotations/${order.quotation_id}`} className="inline-flex min-h-11 items-center justify-center rounded-full border border-brand-softGray px-5 text-sm font-semibold">Penawaran Harga</Link> : null}
+            {activeStage?.isTerminal ? <AdminOrderSectionBoundary label="Pesan Ulang"><RepeatOrderDialog orderId={order.id} /></AdminOrderSectionBoundary> : null}
+          </div>
+        </section>
 
         <div id="order-history" className="scroll-mt-24">
           <AdminOrderSectionBoundary label="Riwayat Pesanan">

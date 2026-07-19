@@ -224,7 +224,12 @@ export function PaymentTrackingManager() {
   }, [orderId]);
 
   useEffect(() => {
-    if (window.location.hash === "#payment") setOpen(true);
+    const syncPaymentHash = () => {
+      if (window.location.hash === "#payment") setOpen(true);
+    };
+    syncPaymentHash();
+    window.addEventListener("hashchange", syncPaymentHash);
+    return () => window.removeEventListener("hashchange", syncPaymentHash);
   }, []);
 
   const activeRows = rows.filter((row) => !row.archived_at);
