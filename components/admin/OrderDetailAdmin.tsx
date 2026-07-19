@@ -4,6 +4,7 @@ import Link from "next/link";
 import { FormEvent, useEffect, useMemo, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { createSupabaseClient } from "@/lib/supabase";
+import { resolveOrderActiveStageFromServer, type OrderActiveStageResolution } from "@/lib/order-active-stage";
 import { AdminPageHeader } from "@/components/admin/layout/AdminPageHeader";
 import { AdminErrorState, AdminLoadingState } from "@/components/admin/ui/AdminFeedback";
 import { PaymentTrackingManager } from "@/components/admin/PaymentTrackingManager";
@@ -44,6 +45,7 @@ type Order = {
   payment_required_amount: number | null;
   payment_effective_total: number;
   payment_production_eligible: boolean;
+  payment_requirement_met: boolean;
   payment_balance: number;
   payment_method: string | null;
   payment_status: string;
@@ -123,8 +125,9 @@ export function OrderDetailAdmin() {
   const [order, setOrder] = useState<Order | null>(null);
   const [items, setItems] = useState<Item[]>([]);
   const [jobOrder, setJobOrder] = useState<{ id: string; status: string; updated_at: string | null } | null>(null);
+  const [activeStage, setActiveStage] = useState<OrderActiveStageResolution | null>(null);
   const [qualityControl, setQualityControl] = useState<{ id: string; status: string; result: string | null; updated_at: string | null } | null>(null);
-  const [fulfillment, setFulfillment] = useState<{ id: string; status: string; updated_at: string | null } | null>(null);
+  const [fulfillment, setFulfillment] = useState<{ id: string; method: string; status: string; final_verified_at: string | null; tracking_number: string | null; updated_at: string | null } | null>(null);
   const [loading, setLoading] = useState(true);
   const [working, setWorking] = useState(false);
   const [message, setMessage] = useState("");
@@ -167,10 +170,10 @@ export function OrderDetailAdmin() {
     if (!supabase || !orderId) return;
     setLoading(true);
 
-    const [orderResult, itemResult, jobResult, fulfillmentResult] = await Promise.all([
+    const [orderResult, itemResult, jobResult, fulfillmentResult, paymentResult, activeStageResult] = await Promise.all([
       supabase
         .from("orders")
-        .select("id,order_number,quotation_id,customer_name,company_name,customer_phone,customer_email,shipping_address,delivery_method,customer_notes,admin_notes,status,pricing_status,custom_quote_status,custom_project_snapshot,subtotal_amount,total_amount,payment_required_amount,payment_effective_total,payment_balance,payment_method,payment_status,payment_production_eligible,currency,converted_at,archived_at,checkout_source,whatsapp_confirmed_at")
+        .select("id,order_number,quotation_id,customer_name,company_name,customer_phone,customer_email,shipping_address,delivery_method,customer_notes,admin_notes,status,pricing_status,custom_quote_status,custom_project_snapshot,subtotal_amount,total_amount,payment_required_amount,payment_effective_total,payment_balance,payment_method,payment_status,payment_production_eligible,payment_requirement_met,currency,converted_at,archived_at,checkout_source,whatsapp_confirmed_at")
         .eq("id", orderId)
         .maybeSingle(),
       supabase
@@ -180,7 +183,9 @@ export function OrderDetailAdmin() {
         .is("archived_at", null)
         .order("created_at", { ascending: true }),
       supabase.from("job_orders").select("id,status,updated_at").eq("order_id", orderId).is("archived_at", null).order("created_at", { ascending: false }).limit(1).maybeSingle(),
-      supabase.from("fulfillments").select("id,status,updated_at").eq("order_id", orderId).is("archived_at", null).neq("status", "cancelled").order("created_at", { ascending: false }).limit(1).maybeSingle()
+      supabase.from("fulfillments").select("id,method,status,final_verified_at,tracking_number,updated_at").eq("order_id", orderId).is("archived_at", null).neq("status", "cancelled").order("created_at", { ascending: false }).limit(1).maybeSingle(),
+      supabase.from("order_payments").select("status,review_outcome,updated_at").eq("order_id", orderId).is("archived_at", null).order("created_at", { ascending: false }).limit(1).maybeSingle(),
+      supabase.rpc("resolve_order_active_stage_v1", { p_order_id: orderId })
     ]);
 
     setLoading(false);
@@ -195,11 +200,39 @@ export function OrderDetailAdmin() {
     setItems((itemResult.data || []) as Item[]);
     const nextJob = jobResult.data as { id: string; status: string; updated_at: string | null } | null;
     setJobOrder(nextJob);
-    setFulfillment(fulfillmentResult.data as { id: string; status: string; updated_at: string | null } | null);
+    const nextFulfillment = fulfillmentResult.data as { id: string; method: string; status: string; final_verified_at: string | null; tracking_number: string | null; updated_at: string | null } | null;
+    setFulfillment(nextFulfillment);
+    let nextQualityControl: { id: string; status: string; result: string | null; updated_at: string | null } | null = null;
     if (nextJob?.id) {
       const qcResult = await supabase.from("qc_records").select("id,status,result,updated_at").eq("job_order_id", nextJob.id).is("archived_at", null).order("created_at", { ascending: false }).limit(1).maybeSingle();
-      setQualityControl(qcResult.data as { id: string; status: string; result: string | null; updated_at: string | null } | null);
-    } else setQualityControl(null);
+      nextQualityControl = qcResult.data as { id: string; status: string; result: string | null; updated_at: string | null } | null;
+    }
+    setQualityControl(nextQualityControl);
+    setActiveStage(resolveOrderActiveStageFromServer({
+      orderId: row.id,
+      orderNumber: row.order_number,
+      status: row.status,
+      paymentStatus: row.payment_status,
+      latestPaymentStatus: paymentResult.data?.status ?? null,
+      latestPaymentReviewOutcome: paymentResult.data?.review_outcome ?? null,
+      fulfillmentStatus: nextFulfillment?.status ?? null,
+      fulfillmentMethod: nextFulfillment?.method ?? row.delivery_method,
+      paymentMethod: row.payment_method,
+      pricingStatus: row.pricing_status,
+      customQuoteStatus: row.custom_quote_status,
+      isCustom: resolveAdminOrderWorkspaceKind(row.custom_project_snapshot) === "custom",
+      whatsappConfirmed: Boolean(row.whatsapp_confirmed_at),
+      paymentRequirementMet: row.payment_requirement_met,
+      paymentProductionEligible: row.payment_production_eligible,
+      paymentEffectiveTotal: row.payment_effective_total,
+      hasVerifiedPayment: row.payment_effective_total > 0,
+      hasJobOrder: Boolean(nextJob),
+      jobOrderStatus: nextJob?.status ?? null,
+      qualityControlStatus: nextQualityControl?.result ?? nextQualityControl?.status ?? null,
+      finalVerificationCompleted: Boolean(nextFulfillment?.final_verified_at),
+      trackingNumber: nextFulfillment?.tracking_number ?? null,
+      taskRevision: nextJob?.updated_at ?? paymentResult.data?.updated_at ?? row.status
+    }, activeStageResult.error ? null : activeStageResult.data));
     setShippingAddress(row.shipping_address || "");
     setDeliveryMethod(row.delivery_method || "pickup");
     setCustomerNotes(row.customer_notes || "");
@@ -426,6 +459,13 @@ export function OrderDetailAdmin() {
           </div>
         ) : null}
 
+        {activeStage?.warning ? (
+          <div role="alert" className="border border-red-300 bg-red-50 p-4 text-sm text-red-950">
+            <p className="font-semibold">Peringatan integritas pesanan</p>
+            <p className="mt-1">{activeStage.warning}</p>
+          </div>
+        ) : null}
+
         {compatibilityWarning ? (
           <div role="alert" className="border border-amber-300 bg-amber-50 p-4 text-sm text-amber-950">
             <p className="font-semibold">Peringatan kompatibilitas order</p>
@@ -442,7 +482,10 @@ export function OrderDetailAdmin() {
         </AdminOrderSectionBoundary>
 
         <section id="order-data" className="grid scroll-mt-24 gap-5 border border-brand-softGray bg-white p-5 sm:grid-cols-2 sm:p-7">
-          <Data label="Status" value={getOrderStatusLabel(order.status)} />
+          <Data label="Tahap Aktif" value={activeStage?.adminStatusLabel ?? getOrderStatusLabel(order.status)} />
+          <Data label="Status Order" value={getOrderStatusLabel(order.status)} />
+          <Data label="Penanggung Jawab" value={activeStage?.responsibilityLabel ?? "Belum ditentukan"} />
+          <Data label="Tugas Aktif" value={activeStage?.adminTaskType ? activeStage.adminStatusLabel : "Tidak ada tugas aktif"} />
           <Data label="Status Harga" value={pricingStatusLabel(order.pricing_status)} />
           <Data label="Total Terkunci" value={pricingIsFinal ? money(order.total_amount) : "Menunggu penetapan harga"} />
           <Data label="Estimasi Proyek" value={estimate ?? (pricingIsFinal ? money(order.subtotal_amount) : "Belum tersedia")} />

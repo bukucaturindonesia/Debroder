@@ -4,6 +4,7 @@ import { type FormEvent, type ReactNode, useCallback, useEffect, useState } from
 import { CustomerOrderStatusCard } from "@/components/customer-order/CustomerOrderStatusCard";
 import { PersistentTrackingButton } from "@/components/customer-order/PersistentTrackingButton";
 import { resolveCustomerOrderPresentation } from "@/lib/customer-order-presentation";
+import type { OrderActiveStageResolution } from "@/lib/order-active-stage";
 
 type PaymentMethod = {
   id: string;
@@ -46,6 +47,7 @@ type SafeOrder = {
   items: Array<{ id: string; name: string; quantity: number; unitPrice: number; subtotal: number }>;
   submissions: PaymentSubmission[];
   methods: PaymentMethod[];
+  activeStage?: OrderActiveStageResolution | null;
 };
 
 const CORRECTION_OUTCOMES = new Set(["funds_not_found", "correction_requested", "rejected"]);
@@ -151,7 +153,8 @@ export function PublicPaymentForm({ token }: { token: string }) {
     fulfillmentMethod: order.fulfillmentMethod,
     paymentMethod: order.paymentMethod,
     hasPaymentUrl: true,
-    isCustom: order.isCustom
+    isCustom: order.isCustom,
+    activeStage: order.activeStage
   });
   const selectedMethod = order.methods.find((method) => method.id === selectedMethodId) ?? null;
   const showPaymentWorkspace = !order.requirementMet && !awaitingReview;

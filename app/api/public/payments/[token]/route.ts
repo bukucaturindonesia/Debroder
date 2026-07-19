@@ -33,7 +33,7 @@ export async function GET(_request: Request, context: Context) {
     if (order.pricing_status !== "final" || Number(order.total_amount) <= 0) {
       return Response.json({ code: "PAYMENT_PRICING_NOT_FINAL", error: "Pembayaran belum tersedia sampai harga order ditetapkan final." }, { status: 409 });
     }
-    const [{ data: items }, { data: settings, error: settingsError }, { data: submissions }] = await Promise.all([
+    const [{ data: items }, { data: settings, error: settingsError }, { data: submissions }, activeStage] = await Promise.all([
       resolved.client.from("order_items")
         .select("id,product_name,quantity,unit_price,subtotal,custom_project_id")
         .eq("order_id", order.id)
@@ -51,7 +51,10 @@ export async function GET(_request: Request, context: Context) {
         .eq("submission_source", "customer_link")
         .is("archived_at", null)
         .order("created_at", { ascending: false })
-        .limit(10)
+        .limit(10),
+      resolved.client.rpc("resolve_order_active_stage_v1", { p_order_id: order.id })
+        .then(({ data, error }) => error ? null : data)
+        .catch(() => null)
     ]);
     if (settingsError) throw new Error("Pengaturan pembayaran belum tersedia.");
     return Response.json({
@@ -70,6 +73,7 @@ export async function GET(_request: Request, context: Context) {
       expiresAt: resolved.link.expires_at,
       remainingUses: resolved.link.max_uses - resolved.link.used_count,
       isCustom: (items ?? []).some((item) => Boolean(item.custom_project_id)),
+      activeStage,
       items: (items ?? []).map((item) => ({
         id: item.id,
         name: item.product_name,

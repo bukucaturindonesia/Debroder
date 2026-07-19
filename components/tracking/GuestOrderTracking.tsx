@@ -5,6 +5,7 @@ import { type FormEvent, type ReactNode, useCallback, useEffect, useState } from
 import { CustomerOrderStatusCard } from "@/components/customer-order/CustomerOrderStatusCard";
 import { contactLinks } from "@/lib/contact";
 import { resolveCustomerOrderPresentation } from "@/lib/customer-order-presentation";
+import type { OrderActiveStageResolution } from "@/lib/order-active-stage";
 import { formatRupiah } from "@/lib/url";
 
 type TrackingPayload = {
@@ -31,6 +32,7 @@ type TrackingPayload = {
     nextStep: string;
     pricingStatus?: string;
     paymentUrl?: string | null;
+    activeStage?: OrderActiveStageResolution | null;
   };
   items: Array<{
     id: string;
@@ -179,7 +181,8 @@ function TrackingDetail({ data, refreshing, onRefresh }: { data: TrackingPayload
     fulfillmentMethod: order.fulfillmentMethod,
     paymentMethod: order.paymentMethod,
     hasPaymentUrl: Boolean(order.paymentUrl),
-    isCustom
+    isCustom,
+    activeStage: order.activeStage
   });
   const pricingIsFinal = (order.pricingStatus ?? "final") === "final";
   const productBaseSubtotal = data.items.reduce((sum, item) => sum + Number(item.subtotal || 0), 0);

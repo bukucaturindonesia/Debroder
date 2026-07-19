@@ -101,12 +101,15 @@ export async function GET(_request: Request, context: Context) {
       return Response.json({ error: "Tautan order sudah kedaluwarsa. Gunakan nomor WhatsApp atau minta tautan baru." }, { status: 410 });
     }
 
-    const [{ data: items }, { data: reservations }, { data: quote }, { data: customQuote }, payment] = await Promise.all([
+    const [{ data: items }, { data: reservations }, { data: quote }, { data: customQuote }, payment, activeStage] = await Promise.all([
       client.from("order_items").select("id,product_name,variant_name,color,size,sku,quantity,unit_price,subtotal,custom_project_id,pricing_status").eq("order_id", row.id).is("archived_at", null).order("created_at"),
       client.from("stock_reservations").select("status,quantity,expires_at").eq("order_id", row.id).eq("status", "active"),
       client.from("order_shipping_quotes").select("version,courier,service,cost,estimate,total_snapshot,status,created_at").eq("order_id", row.id).order("version", { ascending: false }).limit(1).maybeSingle(),
       row.custom_quote_version ? client.from("custom_order_quotation_versions").select("version_number,status,quoted_total,pricing_components,design_version_snapshot,valid_until,sent_at,locked_at").eq("order_id", row.id).eq("version_number", row.custom_quote_version).maybeSingle() : Promise.resolve({ data: null }),
-      resolvePublicPaymentLink(client, row)
+      resolvePublicPaymentLink(client, row),
+      client.rpc("resolve_order_active_stage_v1", { p_order_id: row.id })
+        .then(({ data, error }) => error ? null : data)
+        .catch(() => null)
     ]);
 
     return Response.json({
@@ -139,7 +142,8 @@ export async function GET(_request: Request, context: Context) {
       reservation: reservations?.[0] ?? null,
       quote: quote ?? null,
       customQuote: customQuote ?? null,
-      payment
+      payment,
+      activeStage
     }, { headers: { "cache-control": "no-store, private" } });
   } catch (error) {
     return Response.json({ error: error instanceof Error ? error.message : "Order gagal dimuat." }, { status: 500 });

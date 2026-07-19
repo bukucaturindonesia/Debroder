@@ -6,6 +6,7 @@ import { CustomerOrderStatusCard } from "@/components/customer-order/CustomerOrd
 import { PersistentTrackingButton } from "@/components/customer-order/PersistentTrackingButton";
 import { contactLinks } from "@/lib/contact";
 import { resolveCustomerOrderPresentation } from "@/lib/customer-order-presentation";
+import type { OrderActiveStageResolution } from "@/lib/order-active-stage";
 import { getOrderStatusLabel } from "@/lib/ui-language";
 import { formatRupiah } from "@/lib/url";
 
@@ -59,6 +60,7 @@ type OrderPayload = {
     locked_at: string | null;
   } | null;
   payment?: { url: string | null; expiresAt: string | null; unavailableReason: string | null };
+  activeStage?: OrderActiveStageResolution | null;
 };
 
 const TERMINAL_ORDER_STATUSES = new Set(["completed", "selesai", "delivered", "picked_up", "cancelled", "dibatalkan", "expired"]);
@@ -168,7 +170,8 @@ export function OrderConfirmationClient({ token }: { token: string }) {
     fulfillmentMethod: order.fulfillmentMethod,
     paymentMethod: order.paymentMethod,
     hasPaymentUrl: Boolean(paymentUrl),
-    isCustom
+    isCustom,
+    activeStage: data.activeStage
   });
   const pricingIsFinal = (order.pricingStatus ?? "final") === "final";
   const productBaseSubtotal = data.items.reduce((sum, item) => sum + Number(item.subtotal || 0), 0);
