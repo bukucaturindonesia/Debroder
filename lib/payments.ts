@@ -1,5 +1,3 @@
-import { createHash, randomBytes } from "node:crypto";
-
 export const PAYMENT_ROLES = [
   "owner",
   "superadmin",
@@ -108,15 +106,6 @@ export function paymentSettlementLabel(value: string | null | undefined) {
     under_reported: "Mutasi lebih kecil dari laporan",
     over_reported: "Mutasi lebih besar dari laporan"
   } as Record<string, string>)[value ?? ""] ?? "Belum diklasifikasikan";
-}
-
-export function createPaymentToken(): { token: string; hash: string } {
-  const token = randomBytes(32).toString("base64url");
-  return { token, hash: hashPaymentToken(token) };
-}
-
-export function hashPaymentToken(token: string): string {
-  return createHash("sha256").update(token, "utf8").digest("hex");
 }
 
 export function calculateRequiredPayment(

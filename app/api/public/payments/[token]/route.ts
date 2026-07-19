@@ -1,4 +1,4 @@
-import { hashPaymentToken } from "@/lib/payments";
+import { hashPaymentToken } from "@/lib/payment-token";
 import { getAdminSupabaseClient } from "@/lib/supabase/client";
 
 const ALLOWED_TYPES = new Map([

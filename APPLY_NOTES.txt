@@ -1,15 +1,25 @@
-CARA MENERAPKAN
+APPLY FROM THE ROOT OF THE DEBRODER REPOSITORY
 
-1. Extract ZIP ini.
-2. Copy folder `test` ke root repository DEBRODER.
-3. Izinkan replace hanya untuk:
-   test/admin-order-pricing-workspace.test.ts
-4. Review diff.
-5. Jalankan:
-   pnpm vitest run test/admin-order-pricing-workspace.test.ts
-   pnpm run build
+1. Extract this ZIP.
+2. Copy these folders into the repository root:
+   - app
+   - lib
+   - test
+3. Choose Replace when asked for existing files.
+4. Confirm the new file exists:
+   lib/payment-token.ts
+5. Do not remove any other file.
 
-BATASAN
-- Tidak ada source produksi yang berubah.
-- Tidak ada database/migration yang berubah.
-- Tidak ada commit, push, atau deploy yang dilakukan oleh paket ini.
+Then run:
+
+pnpm vitest run test/payment-phase5b.test.ts test/payment-verification-workspace.test.ts
+pnpm run build
+
+Expected effect:
+- components/admin/PaymentTrackingManager.tsx may continue importing UI-safe helpers/types from lib/payments.ts.
+- lib/payments.ts no longer imports node:crypto.
+- token hashing/generation remains implemented with Node crypto in lib/payment-token.ts and is used only by server routes/server modules/tests.
+
+No migration is included.
+No database change is required for this compile fix.
+No deployment was performed.

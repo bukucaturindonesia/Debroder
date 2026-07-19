@@ -2,12 +2,11 @@ import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 import {
   calculateRequiredPayment,
-  createPaymentToken,
   effectivePaidTotal,
-  hashPaymentToken,
   isPaymentRole,
   isPaymentVerifier
 } from "@/lib/payments";
+import { createPaymentToken, hashPaymentToken } from "@/lib/payment-token";
 
 const paymentAuth = readFileSync("lib/payment-auth.ts", "utf8");
 const verificationRoute = readFileSync(
@@ -42,6 +41,13 @@ describe("Phase 5B payment policy", () => {
   it("calculates an effective balance from immutable effects", () => {
     expect(effectivePaidTotal(150_000, [-25_000, 5_000])).toBe(130_000);
     expect(effectivePaidTotal(20_000, [-50_000])).toBe(0);
+  });
+
+  it("keeps Node crypto outside the client-imported payment module", () => {
+    const sharedPayments = readFileSync("lib/payments.ts", "utf8");
+    const tokenHelpers = readFileSync("lib/payment-token.ts", "utf8");
+    expect(sharedPayments).not.toContain("node:crypto");
+    expect(tokenHelpers).toContain('from "node:crypto"');
   });
 
   it("uses strong non-stored public tokens and stable hashes", () => {

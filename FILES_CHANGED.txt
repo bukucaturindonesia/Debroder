@@ -1,8 +1,22 @@
-test/admin-order-pricing-workspace.test.ts
+DEBRODER PAYMENT CRYPTO CLIENT-BUNDLE FIX
+Baseline: Debroder(15).zip / branch costum-produk-cekout / commit 5943cb5
 
-Perubahan:
-- Mengganti assertion source-string satu baris yang rapuh.
-- Memakai regex whitespace-tolerant untuk kontrak guard aktual.
-- Tetap memastikan Custom hanya membuka Job Order setelah pembayaran memenuhi syarat.
-- Tetap memastikan Ready Stock membuka Fulfillment setelah pembayaran memenuhi syarat.
-- Tidak mengubah source produksi, database, migration, atau business logic.
+CHANGED
+- lib/payments.ts
+  Removed Node.js crypto imports and token helpers so this shared module remains safe for client imports.
+
+- lib/automatic-payment-link.ts
+  Updated hashPaymentToken import to the dedicated Node/server token module.
+
+- app/api/public/payments/[token]/route.ts
+  Updated hashPaymentToken import to the dedicated Node/server token module.
+
+- test/payment-phase5b.test.ts
+  Updated token-helper imports and added regression coverage that lib/payments.ts stays free of node:crypto.
+
+ADDED
+- lib/payment-token.ts
+  Contains createPaymentToken/hashPaymentToken and the node:crypto import.
+
+DELETED
+- None
