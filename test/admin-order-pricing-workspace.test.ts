@@ -138,8 +138,13 @@ describe("Admin Order pricing workspace", () => {
 
   it("hides premature Job Order and Fulfillment header actions behind canonical prerequisites", () => {
     const detail = read("components/admin/OrderDetailAdmin.tsx");
-    expect(detail).toContain("const canOpenJobOrder = Boolean(jobOrder) || order.payment_production_eligible");
-    expect(detail).toContain("const canOpenFulfillment = Boolean(fulfillment)");
+
+    expect(detail).toMatch(
+      /const canOpenJobOrder = Boolean\(jobOrder\)\s*\|\|\s*\(workspaceKind === "custom" && order\.payment_production_eligible\);/
+    );
+    expect(detail).toMatch(
+      /const canOpenFulfillment = Boolean\(fulfillment\)\s*\|\|\s*\(workspaceKind === "standard" && order\.payment_production_eligible\)/
+    );
     expect(detail).toContain('workspaceKind === "standard" || order.custom_quote_status === "locked"');
     expect(detail).toContain("{canOpenJobOrder ? (");
     expect(detail).toContain("{canOpenFulfillment ? (");

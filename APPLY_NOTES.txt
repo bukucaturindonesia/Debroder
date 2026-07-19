@@ -1,67 +1,15 @@
-WORK NAME:
-DEBRODER Payment Verification & Post-Payment Order Fulfillment
+CARA MENERAPKAN
 
-BASELINE:
-- Owner source archive: Debroder(14).zip
-- Included Git HEAD: 747038bdd494739cfddffe41ccbf2771d48e95a2
-- Content delta was prepared from HEAD after confirming the archive's apparent
-  repository-wide modifications were line-ending-only.
+1. Extract ZIP ini.
+2. Copy folder `test` ke root repository DEBRODER.
+3. Izinkan replace hanya untuk:
+   test/admin-order-pricing-workspace.test.ts
+4. Review diff.
+5. Jalankan:
+   pnpm vitest run test/admin-order-pricing-workspace.test.ts
+   pnpm run build
 
-SCOPE:
-- Central payment-method settings.
-- Customer payment instructions, safe order summary, and proof submission.
-- Bank-mutation review workspace and server-side verification gate.
-- Funds-not-found, correction, rejection, partial payment, and overpayment.
-- Ready Stock versus Custom post-payment routing.
-- Ready Stock and Custom final-check gate before shipping/pickup.
-- Targeted regression contracts including Jersey and React #130 coverage files.
-
-FILES TO DELETE MANUALLY:
-- NONE
-
-MIGRATION:
-- REQUIRED: supabase/migrations/20260719140000_payment_verification_and_fulfillment.sql
-- Apply only in a controlled owner Preview database after all earlier migrations,
-  especially 20260718180000, 20260718181000, 20260718182000,
-  20260718182500, and 20260719110000.
-- Remote migration performed by Codex: NONE.
-
-LOCAL GATES:
-- Dependency install: ENVIRONMENT BLOCKED; pnpm failed once with ENOENT while
-  creating /root/.local. No retry was performed.
-- TypeScript: ENVIRONMENT BLOCKED; tsc executable unavailable.
-- Lint: ENVIRONMENT BLOCKED; eslint executable unavailable.
-- Targeted tests: ENVIRONMENT BLOCKED; vitest executable unavailable.
-- Full tests: ENVIRONMENT BLOCKED; vitest executable unavailable.
-- Production build: ENVIRONMENT BLOCKED; prebuild could not start because
-  vitest executable was unavailable.
-- Changed-files diff/whitespace check: PASS.
-- Conflict-marker scan: PASS.
-- Secret scan: PASS.
-- TypeScript non-TSX syntax check with Node strip-types: PASS.
-- SQL dollar-quote structure and destructive-statement scan: PASS.
-- Static Vercel compatibility preflight: PASS.
-
-VERIFICATION BOUNDARY:
-- STATIC AUDIT ONLY.
-- Browser/viewport/runtime verification was not available.
-- Migration was not executed against local or remote Supabase.
-- Direct /admin/orders/[id] browser opening and real Ready Stock, Custom,
-  Jersey, historical, shipping, and pickup records require owner Preview.
-
-RISKS:
-- Source expects the additive migration; apply the migration before deploying
-  this application source.
-- No payment method is seeded or hardcoded. An authorized Admin must configure
-  and activate at least one complete method before new payment links can be
-  issued.
-- SQL compilation and transactional behavior require controlled Preview
-  verification because the local dependency/database runner was unavailable.
-- Existing production data was not inspected or changed.
-
-COPY TO REPOSITORY ROOT:
-1. Extract the ZIP into a temporary folder.
-2. Copy all extracted paths into the repository root with path structure kept.
-3. Replace matching files; no file deletion or rename is required.
-4. Apply the migration in controlled Preview before deploying source.
-5. Configure one active payment method, then run build and Preview flow tests.
+BATASAN
+- Tidak ada source produksi yang berubah.
+- Tidak ada database/migration yang berubah.
+- Tidak ada commit, push, atau deploy yang dilakukan oleh paket ini.

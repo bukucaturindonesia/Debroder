@@ -1,32 +1,8 @@
-ADDED:
-- app/api/admin/payment-settings/route.ts
-- components/admin/PaymentSettingsAdmin.tsx
-- supabase/migrations/20260719140000_payment_verification_and_fulfillment.sql
-- test/payment-verification-workspace.test.ts
-- test/post-payment-fulfillment-routing.test.ts
-- FILES_CHANGED.txt
-- PAYMENT_FLOW_REPORT.txt
-- LIFECYCLE_REPORT.txt
-- APPLY_NOTES.txt
-- TEST_RESULTS.txt
-- MIGRATION_NOTES.txt
-- SHA256SUMS.txt
+test/admin-order-pricing-workspace.test.ts
 
-MODIFIED:
-- app/api/admin/payments/[id]/verification/route.ts
-- app/api/public/payments/[token]/route.ts
-- components/admin/FulfillmentDetailAdmin.tsx
-- components/admin/OrderDetailAdmin.tsx
-- components/admin/OrderOperationalWorkspace.tsx
-- components/admin/PaymentCompletionPanel.tsx
-- components/admin/PaymentInboxAdmin.tsx
-- components/admin/PaymentTrackingManager.tsx
-- components/payments/PublicPaymentForm.tsx
-- lib/automatic-payment-link.ts
-- lib/payments.ts
-
-DELETED:
-- NONE
-
-RENAMED:
-- NONE
+Perubahan:
+- Mengganti assertion source-string satu baris yang rapuh.
+- Memakai regex whitespace-tolerant untuk kontrak guard aktual.
+- Tetap memastikan Custom hanya membuka Job Order setelah pembayaran memenuhi syarat.
+- Tetap memastikan Ready Stock membuka Fulfillment setelah pembayaran memenuhi syarat.
+- Tidak mengubah source produksi, database, migration, atau business logic.
