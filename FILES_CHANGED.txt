@@ -1,82 +1,18 @@
-DEBRODER ADMIN ORDER DETAIL REACT #130 FUNDAMENTAL FIX
-
 ADDED:
-- components/admin/AdminOrderSectionBoundary.tsx
-  Reason: isolate optional Admin Order Detail sections so one secondary renderer cannot collapse the entire detail page.
-  Classification: DEFENSIVE HARDENING.
-  Risk: low; boundary is local to Admin Order Detail and does not alter business state.
-  Coverage: test/admin-order-detail-react130.test.ts; full lint; production compile.
-- lib/admin-order-detail.ts
-  Reason: canonical standard/custom workspace selection, unknown-state warning, and safe timestamp normalization.
-  Classification: ROOT-CAUSE SUPPORT + DEFENSIVE HARDENING.
-  Risk: low; pure functions only.
-  Coverage: test/admin-order-detail-react130.test.ts scenario and invalid-date matrix.
-- test/admin-order-detail-react130.test.ts
-  Reason: prevent recurrence of the exact alias/export mismatch and undefined React element type.
-  Classification: ROOT-CAUSE REGRESSION GATE.
-  Risk: low; test-only.
-  Coverage: included by package prebuild and full Vitest suite.
+- lib/admin-order-pricing.ts
+- supabase/migrations/20260719110000_admin_order_pricing_workspace.sql
+- test/admin-order-pricing-workspace.test.ts
 
 MODIFIED:
-- tsconfig.json
-  Reason: remove the exact alias that redirected OrderOperationalWorkspace to CustomOrderOperationalWorkspace.tsx.
-  Classification: ROOT CAUSE.
-  Risk: low; generic @/* alias and automatic-payment-link alias remain unchanged.
-  Coverage: React #130 targeted contract; Next production compilation.
+- components/admin/CustomOrderOperationalWorkspace.tsx
 - components/admin/OrderDetailAdmin.tsx
-  Reason: import both workspace implementations explicitly, select one through a type-safe canonical discriminator, warn on unknown historical status, and isolate optional sections.
-  Classification: ROOT CAUSE + DEFENSIVE HARDENING.
-  Risk: medium; Admin Order Detail renderer only. Business mutations and API calls are unchanged.
-  Coverage: React #130 targeted contract; full lint; production compilation.
-- components/admin/OrderOperationalWorkspace.tsx
-  Reason: retain the canonical named export and use safe timestamp formatting.
-  Classification: ROOT-CAUSE CONTRACT + DEFENSIVE HARDENING.
-  Risk: low.
-  Coverage: named-export contract, invalid timestamp tests, lint, production compilation.
-- components/admin/PaymentTrackingManager.tsx
-  Reason: guard displayed/edit-form timestamps; orderId continues to come from the canonical route params.
-  Classification: DEFENSIVE HARDENING; NOT the React #130 root cause.
-  Risk: low; payment mutation flow is unchanged.
-  Coverage: invalid timestamp helper tests; lint; production compilation.
-- components/admin/PaymentCompletionPanel.tsx
-  Reason: use safe timestamp normalization for optional payment records.
-  Classification: DEFENSIVE HARDENING.
-  Risk: low.
-  Coverage: invalid timestamp helper tests; lint; production compilation.
-- components/admin/CustomerOrderHistory.tsx
-  Reason: protect historical order date rendering from invalid or missing timestamps.
-  Classification: DEFENSIVE HARDENING.
-  Risk: low.
-  Coverage: invalid timestamp helper tests; lint; production compilation.
-- components/admin/CommerceOrderOperations.tsx
-  Reason: guard commerce confirmation/reservation timestamps.
-  Classification: DEFENSIVE HARDENING.
-  Risk: low.
-  Coverage: invalid timestamp helper tests; lint; production compilation.
-- components/admin/OrderTrackingLinkManager.tsx
-  Reason: guard optional tracking-link expiry timestamps.
-  Classification: DEFENSIVE HARDENING.
-  Risk: low.
-  Coverage: invalid timestamp helper tests; lint; production compilation.
+- components/checkout/OrderConfirmationClient.tsx
 - package.json
-  Reason: add a prebuild regression gate for the exact Admin Order Detail module-integrity failure.
-  Classification: ROOT-CAUSE PREVENTION.
-  Risk: low; no dependency or lockfile change.
-  Coverage: contract verified by test source and full suite; owner must re-run package build.
-- next.config.ts
-  Reason: document retained baseline bypasses. Unrelated frozen baseline type/lint findings prevent safely making them globally blocking in this scoped fix; package prebuild now blocks the exact React #130 regression.
-  Classification: BUILD PIPELINE HARDENING.
-  Risk: medium; the exact failure is gated, but unrelated TypeScript errors remain baseline debt.
-  Coverage: production compile reached type validation without attempted-import warning; owner build re-run required after final prebuild change.
+- test/admin-order-detail-react130.test.ts
+- test/custom-order-end-to-end-revision.test.ts
 
 DELETED:
 - NONE
 
 RENAMED:
-- NONE
-
-JERSEY FILES CHANGED:
-- NONE
-
-DATABASE / MIGRATION FILES CHANGED:
 - NONE

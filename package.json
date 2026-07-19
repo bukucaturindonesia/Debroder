@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "next dev",
     "typecheck": "tsc --noEmit",
-    "prebuild": "vitest run test/admin-order-detail-react130.test.ts",
+    "prebuild": "vitest run test/admin-order-detail-react130.test.ts test/admin-order-pricing-workspace.test.ts",
     "build": "next build",
     "start": "next start",
     "lint": "eslint .",
