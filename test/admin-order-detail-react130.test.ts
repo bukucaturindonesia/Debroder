@@ -55,7 +55,8 @@ describe("Admin Order Detail React #130 regression", () => {
     const packageJson = JSON.parse(read("package.json")) as { scripts: Record<string, string> };
     expect(config).toContain("ignoreBuildErrors");
     expect(config).toContain("ignoreDuringBuilds");
-    expect(packageJson.scripts.prebuild).toBe("vitest run test/admin-order-detail-react130.test.ts");
+    expect(packageJson.scripts.prebuild).toContain("test/admin-order-detail-react130.test.ts");
+    expect(packageJson.scripts.prebuild).toContain("test/admin-order-pricing-workspace.test.ts");
   });
 
   it("selects a stable workspace for Ready Stock, Custom, Jersey, payment-less, and historical orders", () => {

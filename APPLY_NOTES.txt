@@ -1,49 +1,32 @@
-WORK: DEBRODER Admin Order Detail React #130 Fundamental Fix
-BASELINE COMMIT: 74eac91367a20f81f5a24fc341b0e5055ec26947
-BASELINE BRANCH LABEL FROM OWNER ZIP: costum-produk-cekout
-SCOPE: Admin Order Detail module integrity, renderer selection, timestamp safety, error isolation, and targeted prebuild gate.
+WORK: DEBRODER Admin Order Detail Pricing Workspace Fundamental Revision
+BASELINE: commit 394613b2175188477330165d36a8c2c0f2841f85 (error fix long)
+SCOPE: /admin/orders/[id] Stage 3 pricing, its customer quote display, pure pricing validation, local forward migration, and focused regression tests.
 
-IMPORTANT:
-- Apply only to a repository checkout matching the baseline commit or review every conflict manually.
-- The package contains complete replacement files at repository-relative paths.
-- No file must be deleted or renamed manually.
-- Migration: NONE / NOT REQUIRED.
-- Database and remote Supabase: UNCHANGED.
-- Jersey source: UNCHANGED.
-- GitHub and Vercel: OWNER-MANAGED; Codex did not commit, push, or deploy.
+COPY/APPLY
+1. Extract this ZIP to a temporary folder.
+2. Copy all paths into the repository root and choose Replace/Merge.
+3. Review the nine source files in FILES_CHANGED.txt.
+4. Review and apply supabase/migrations/20260719110000_admin_order_pricing_workspace.sql through the owner-controlled Preview database process BEFORE deploying source that selects custom_pricing_draft columns.
+5. Run install, targeted tests, typecheck, lint, full tests, clean build, then controlled Preview browser tests.
 
-LOCAL GATE SUMMARY:
-- Dependency install: completed dependency extraction, but pnpm reported ignored native build scripts.
-- TypeScript: FAIL on pre-existing out-of-scope errors; no changed-file TypeScript error appeared.
-- Lint: PASS with 0 errors and 28 pre-existing warnings.
-- Targeted command: FAIL on first run because the test invoked Next JSX through Vitest's classic JSX runtime (5/6 passed).
-- Corrected targeted test inside full suite: PASS 6/6.
-- Full tests: BASELINE FAILURES; 278/284 passed, including React #130 regression 6/6.
-- Production build: FAIL after successful compilation, on baseline CartProvider.tsx type error. No attempted-import warning was observed.
-- Browser/direct route/action verification: NOT RUN.
+FILES TO DELETE MANUALLY: NONE
+MIGRATION: PROPOSED LOCALLY — NOT APPLIED
+REMOTE SUPABASE: UNCHANGED
+GITHUB: UNCHANGED
+VERCEL: UNCHANGED
 
-OWNER APPLY AND VERIFY:
-1. Back up the source and confirm commit 74eac91367a20f81f5a24fc341b0e5055ec26947 or review the delta against the actual deployment source.
-2. Copy the package contents into the repository root using Replace/Merge, then review only the listed source changes.
-3. Run `pnpm typecheck`, `pnpm lint`, `pnpm vitest run test/admin-order-detail-react130.test.ts`, `pnpm test`, remove `.next`, and run `pnpm build`.
-4. Owner commits and pushes only after local gates are acceptable; Codex did not perform either action.
-5. Owner deploys Preview and retests direct URL plus refresh on `/admin/orders/[id]` for Ready Stock, Custom, Jersey Ready Stock, Jersey Custom, historical, payment-less, pickup, and external-courier orders. Do not merge if the client-side exception or an action-flow regression remains.
+LOCAL GATE LIMITATION
+The supplied ZIP did not contain node_modules. The one permitted pnpm install failed before dependency resolution because the runner could not create /root/.local. No install retry or environment workaround was performed. Package-based tests, TypeScript, lint, and Next build therefore did not execute.
 
-DETAILED OWNER SEQUENCE REQUIRED BY GOVERNANCE:
-1. Backup source.
-2. Confirm source commit.
-3. Apply changed files.
-4. Review diff.
-5. Run typecheck.
-6. Run lint.
-7. Run tests.
-8. Run clean build.
-9. Owner commit.
-10. Owner push.
-11. Owner deploy.
-12. Owner retest Admin Order Detail.
+LIGHTWEIGHT RESULTS
+- Pure pricing domain smoke with Node type stripping: PASS.
+- Changed-files diff (ignoring repository baseline CRLF only): PASS.
+- Conflict-marker scan: PASS.
+- Credential/secret signature scan: PASS.
+- Package/prebuild static compatibility check: PASS.
 
-VERIFICATION LIMITS:
-- No authenticated production browser was available.
-- Production runtime could not be started because the clean build stopped on a baseline type error.
-- No production data was changed for testing.
+RISKS / OWNER VERIFICATION REQUIRED
+- Migration SQL has been statically reviewed but not compiled or applied to a database.
+- TypeScript, ESLint, Vitest, clean Next production build, and browser smoke remain owner-run gates.
+- Final “send” prepares the quote in the existing customer token/polling flow. No external WhatsApp/email provider was invented.
+- Test historical missing-base, Custom, Jersey Custom, Ready Stock, Jersey Ready Stock, pickup, courier, unauthorized/read-only, stale-tab, and double-click cases on controlled Preview data.

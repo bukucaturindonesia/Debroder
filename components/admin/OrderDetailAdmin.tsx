@@ -33,6 +33,7 @@ type Order = {
   admin_notes: string;
   status: string;
   pricing_status: "final" | "estimated" | "quotation_required";
+  custom_quote_status: string | null;
   custom_project_snapshot: unknown;
   subtotal_amount: number;
   total_amount: number;
@@ -163,7 +164,7 @@ export function OrderDetailAdmin() {
     const [orderResult, itemResult, jobResult, fulfillmentResult] = await Promise.all([
       supabase
         .from("orders")
-        .select("id,order_number,quotation_id,customer_name,company_name,customer_phone,customer_email,shipping_address,delivery_method,customer_notes,admin_notes,status,pricing_status,custom_project_snapshot,subtotal_amount,total_amount,payment_required_amount,payment_effective_total,payment_balance,payment_production_eligible,currency,converted_at,archived_at,checkout_source,whatsapp_confirmed_at")
+        .select("id,order_number,quotation_id,customer_name,company_name,customer_phone,customer_email,shipping_address,delivery_method,customer_notes,admin_notes,status,pricing_status,custom_quote_status,custom_project_snapshot,subtotal_amount,total_amount,payment_required_amount,payment_effective_total,payment_balance,payment_production_eligible,currency,converted_at,archived_at,checkout_source,whatsapp_confirmed_at")
         .eq("id", orderId)
         .maybeSingle(),
       supabase
@@ -328,6 +329,18 @@ export function OrderDetailAdmin() {
   const customProjects = parseCustomProjects(order.custom_project_snapshot);
   const pricingIsFinal = order.pricing_status === "final";
   const estimate = projectEstimate(customProjects);
+  const canOpenPayment = pricingIsFinal && (workspaceKind === "standard" || order.custom_quote_status === "locked");
+  const canOpenJobOrder = Boolean(jobOrder) || order.payment_production_eligible;
+  const canOpenFulfillment = Boolean(fulfillment)
+    || (workspaceKind === "standard" && order.payment_production_eligible)
+    || new Set([
+      "ready_for_pickup",
+      "ready_to_ship",
+      "shipped",
+      "picked_up",
+      "completed",
+      "selesai"
+    ]).has(order.status);
 
   return (
     <main className="text-brand-charcoal">
@@ -341,23 +354,27 @@ export function OrderDetailAdmin() {
               <AdminOrderSectionBoundary label="Ulangi Order">
                 <RepeatOrderDialog orderId={order.id} />
               </AdminOrderSectionBoundary>
-              {pricingIsFinal ? (
+              {canOpenPayment ? (
                 <AdminOrderSectionBoundary label="Pembayaran">
                   <PaymentTrackingManager />
                 </AdminOrderSectionBoundary>
               ) : null}
-              <Link
-                href={`/admin/job-orders?order=${order.id}`}
-                className="inline-flex min-h-10 items-center rounded-full border border-brand-softGray bg-white px-5 text-sm font-semibold"
-              >
-                Job Order
-              </Link>
-              <Link
-                href={`/admin/fulfillments?order=${order.id}`}
-                className="inline-flex min-h-10 items-center rounded-full border border-brand-softGray bg-white px-5 text-sm font-semibold"
-              >
-                Pengiriman / Pickup
-              </Link>
+              {canOpenJobOrder ? (
+                <Link
+                  href={jobOrder ? `/admin/job-orders/${jobOrder.id}` : `/admin/job-orders?order=${order.id}`}
+                  className="inline-flex min-h-10 items-center rounded-full border border-brand-softGray bg-white px-5 text-sm font-semibold"
+                >
+                  Job Order
+                </Link>
+              ) : null}
+              {canOpenFulfillment ? (
+                <Link
+                  href={fulfillment ? `/admin/fulfillments/${fulfillment.id}` : `/admin/fulfillments?order=${order.id}`}
+                  className="inline-flex min-h-10 items-center rounded-full border border-brand-softGray bg-white px-5 text-sm font-semibold"
+                >
+                  Pengiriman / Pickup
+                </Link>
+              ) : null}
               {order.quotation_id ? (
                 <Link
                   href={`/admin/orders/quotations/${order.quotation_id}`}

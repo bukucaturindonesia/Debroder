@@ -1,85 +1,49 @@
-DEBRODER ADMIN ORDER DETAIL REACT #130 — LOCAL TEST RESULTS
+SOURCE COMMIT: 394613b2175188477330165d36a8c2c0f2841f85
+DATE: 2026-07-19 Asia/Makassar
 
-SOURCE COMMIT:
-74eac91367a20f81f5a24fc341b0e5055ec26947
+DEPENDENCY INSTALL
+COMMAND: pnpm install --frozen-lockfile
+RESULT: ENVIRONMENT BLOCKED
+DETAIL: ENOENT while pnpm attempted mkdir /root/.local. No source compilation occurred. Not retried.
 
-DEPENDENCY INSTALL (ONE ATTEMPT):
-Command: pnpm install --frozen-lockfile --store-dir /workspace/.pnpm-store
-Result: PARTIAL / ENVIRONMENT NOTICE.
-Details: 494 packages were linked. pnpm then reported ERR_PNPM_IGNORED_BUILDS for esbuild, sharp, and unrs-resolver. No second install was attempted.
+TARGETED TESTS
+COMMAND: pnpm test -- test/admin-order-detail-react130.test.ts test/admin-order-pricing-workspace.test.ts test/custom-order-end-to-end-revision.test.ts
+RESULT: NOT RUN — ENVIRONMENT BLOCKED
+DETAIL: same pnpm /root/.local failure before Vitest execution.
 
-TYPECHECK:
-Command attempted: pnpm typecheck
-Result: ENVIRONMENT BLOCKED before TypeScript; pnpm attempted to create /root/.local.
-Fallback command: node_modules/.bin/tsc --noEmit
-Result: FAIL — BASELINE ISSUES.
-Observed unrelated errors:
-- components/CartProvider.tsx:235 — CustomProjectItem.quantity does not exist.
-- components/admin/ProductAdmin.tsx:426 — nullable ProductManagerPayload.
-- lib/pim-audit-server.ts:212,277,280,282-284 — baseline audit typing/parser errors.
-- lib/variant-matrix.ts:148 — snapshot/null assignment.
-- test/pim-phase6-export-reconciliation.test.ts:88,178 — ArrayBuffer type mismatch.
-Changed-file TypeScript errors observed: NONE.
+TYPECHECK
+COMMAND: npm run typecheck
+RESULT: NOT RUN — ENVIRONMENT BLOCKED
+DETAIL: tsc not found because dependencies are absent.
 
-LINT:
-Command: node_modules/.bin/eslint .
-Result: PASS — 0 errors, 28 baseline warnings.
-Changed-file lint errors: NONE.
+LINT
+COMMAND: npm run lint
+RESULT: NOT RUN — ENVIRONMENT BLOCKED
+DETAIL: eslint not found because dependencies are absent.
 
-TARGETED TEST (ONE TARGETED COMMAND):
-Command: node_modules/.bin/vitest run test/admin-order-detail-react130.test.ts
-Result: FAIL — 5/6 passed.
-Failure classification: test-harness mismatch. Direct SSR execution used Vitest's classic JSX runtime and raised `React is not defined`; this was not React #130 and did not indicate an undefined element export.
-Correction: test now asserts each React element's `type` identity directly, which is the relevant React #130 contract.
-Targeted command was not retried without owner GO.
+FULL TESTS
+COMMAND: npm run test
+RESULT: NOT RUN — ENVIRONMENT BLOCKED
+DETAIL: vitest not found because dependencies are absent.
 
-FULL TEST SUITE (ONE ATTEMPT):
-Command: node_modules/.bin/vitest run
-Result: BASELINE FAILURES — 40 files; 35 passed, 5 failed. 284 tests; 278 passed, 6 failed.
-React #130 regression file in full suite: PASS — 6/6.
-Unrelated baseline failures:
-- test/custom-commerce.test.ts — 1 failure.
-- test/pim-phase6-export-reconciliation.test.ts — 1 failure.
-- test/custom-order-end-to-end-revision.test.ts — 2 failures.
-- test/indonesia-region-seed.test.ts — 1 failure.
-- test/custom-checkout-structured-address-hotfix.test.ts — 1 failure.
-No baseline test was changed to manufacture PASS.
+CLEAN PRODUCTION BUILD
+COMMAND: remove .next if present; npm run build
+RESULT: NOT RUN — ENVIRONMENT BLOCKED
+DETAIL: prebuild stopped at missing vitest; Next compilation did not start.
 
-CLEAN PRODUCTION BUILD (ONE ATTEMPT):
-Command: node_modules/.bin/next build
-Build cache: NOT USED; the working copy had no pre-existing .next cache.
-Result: FAIL after `Compiled successfully`.
-Attempted-import warning: REMOVED / NOT OBSERVED.
-Blocking error: components/CartProvider.tsx:235 — `quantity` missing on CustomProjectItem (baseline/out of scope).
-Final package prebuild change was not followed by a build retry because owner GO is required for retries.
+LOCAL BROWSER
+RESULT: BLOCKED
+DETAIL: no production build/runtime was available. No claim of direct /admin/orders/[id] browser verification, React #130 runtime verification, hydration verification, or viewport verification is made.
 
-PRODUCTION RUNTIME SMOKE:
-NOT RUN — clean build did not complete.
+STATIC / LIGHTWEIGHT GATES
+- Node pure pricing domain smoke: PASS (integer totals, invalid input, DTF collision, legacy snapshot extraction).
+- Node syntax check for lib/admin-order-pricing.ts and its test source: PASS.
+- Migration delimiter/parenthesis balance: PASS.
+- Changed-files diff check: PASS after ignoring existing CRLF end-of-line only; no CRLF normalization performed.
+- Conflict marker scan: PASS.
+- Secret signature scan: PASS.
+- Prebuild contract retains React #130 test and adds pricing workspace test: PASS.
 
-DIRECT ROUTE `/admin/orders/[id]`:
-NOT RUN — authenticated browser/runtime unavailable.
-
-ORDER-TYPE MATRIX:
-- Ready Stock: static workspace selection PASS; browser/action NOT RUN.
-- Custom non-Jersey: static workspace selection PASS; browser/action NOT RUN.
-- Jersey Ready Stock: static workspace selection PASS; Jersey source unchanged; browser/action NOT RUN.
-- Jersey Custom: static workspace selection PASS; Jersey source unchanged; browser/action NOT RUN.
-- Historical/legacy: standard fallback and warning helper PASS; browser/action NOT RUN.
-- Order without payment: static workspace selection PASS; payment action NOT RUN.
-- Order without quotation: renderer has no quotation dependency; browser/action NOT RUN.
-- Pickup: business flow unchanged; browser/action NOT RUN.
-- External courier: business flow unchanged; browser/action NOT RUN.
-- Invalid/missing timestamp: helper matrix PASS for null, undefined, empty, invalid string, NaN, and valid ISO.
-
-STATIC SAFETY GATES:
-- Changed-files diff/check: PASS.
-- Conflict-marker scan: PASS.
-- Secret-pattern scan: PASS.
-- JSON config parse: PASS.
-- Static Vercel compatibility: PASS with owner build/retest required; no .vercel state or deployment command used.
-
-UNVERIFIED:
-- Preview/browser absence of client-side exception.
-- Refresh/direct navigation under authenticated Admin session.
-- Review, pricing, customer verification, payment verification, and lifecycle actions.
-- Real production/historical records.
+SUMMARY
+ENVIRONMENT BLOCKED — NO SOURCE ERROR OBSERVED.
+This is source-ready for owner review, not locally verified and not browser fixed.

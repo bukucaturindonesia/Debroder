@@ -1,0 +1,40 @@
+WORK: DEBRODER Admin Order Detail — Stage 3 Pricing Workspace Fundamental Revision
+SOURCE COMMIT: 394613b2175188477330165d36a8c2c0f2841f85
+
+CURRENT PRICING PROBLEM
+The existing Stage 3 UI displayed fifteen confirmation checkboxes but no editor or persistence path that could establish price components. It called send_custom_order_quotation_v1 directly.
+
+ROOT CAUSE — UX AND DATA FLOW
+send_custom_order_quotation_v1 required orders.pricing_status='final' and total_amount>0. The only Stage 3 UI action called that function, but the UI had no operation that could create/edit price lines, calculate a canonical total, or move pricing_status to final. Therefore an order whose total remained Rp0 could never satisfy the RPC precondition through the provided workspace.
+
+DESIGN
+- Existing order-first Custom lifecycle remains canonical; no second quotation system was created.
+- Immutable product base lines are rebuilt from order_items snapshots on every server validation.
+- Editable lines are limited to SERVICE, PERSONALIZATION, SETUP_FEE, DESIGN_FEE, DISCOUNT, ADJUSTMENT, SHIPPING, and controlled OTHER.
+- Client totals are previews only. Save and finalize call a server builder that normalizes lines and recalculates integer IDR totals.
+- Drafts remain on orders.custom_pricing_draft with an optimistic draft version and do not change lifecycle.
+- Finalization inserts one immutable custom_order_quotation_versions row, sets status awaiting_customer_approval, and exposes the existing customer decision flow.
+- finalization_key plus the order row lock prevent double-click/network retry duplicates. updated_at and draft version reject stale tabs.
+- Product, service, setup, personalization, placement, exact component, and DTF generic/specific collisions block finalization but do not prevent a safe draft save.
+- Internal notes stay only in the order draft. They are removed from pricing_components before the quote reaches the customer API.
+
+PRODUCT SOURCE
+order_items immutable snapshots: product_name, SKU, variant, color, size, quantity, unit_price, and subtotal. Missing or invalid historical base prices are shown and block finalization; live PIM is not used to overwrite history.
+
+SERVICE SOURCE
+custom_project_snapshot pricing lines and legacy designPackages/service metadata. No service is converted into a fake PIM product.
+
+PERSISTENCE SOURCE
+orders.custom_pricing_draft and custom_pricing_draft_version (local migration), then the existing custom_order_quotation_versions immutable version table.
+
+LIFECYCLE
+under_review is retained as the canonical order status for its Review and Pricing sub-stages. The UI labels Stage 3 as “under_review · Penetapan Harga”. Finalization moves the order once to awaiting_customer_approval. Existing customer approval moves it to payment/processing.
+
+HEADER AND SERVER GUARDS
+Payment is hidden for Custom orders until quote status is locked. Job Order requires payment_production_eligible or an existing Job Order. Custom fulfillment is not exposed early. Existing create_job_order already rejects production before payment eligibility; no parallel production guard was invented.
+
+AUTHORIZATION AND AUDIT
+All mutating RPCs require existing order.edit. PUBLIC/anon/authenticated default execution is revoked before explicit authenticated/service_role grants. Draft create/save and line-change summaries are written to system_audit_log. Finalization records quote ID/version, totals, actor, and lifecycle transition in operational audit/history; PIM audit is untouched.
+
+JERSEY PARITY
+No app/jersey/** or components/jersey/** file changed. Jersey Ready Stock continues through the standard renderer; Jersey Custom continues through the canonical Custom order snapshot/lifecycle.
