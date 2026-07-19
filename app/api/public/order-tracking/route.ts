@@ -10,7 +10,7 @@ import {
   TRACKING_RATE_LIMIT_MINUTES,
   trackingNextStep
 } from "@/lib/order-tracking";
-import { ensureAutomaticPaymentLink, type AutomaticPaymentOrder } from "@/lib/automatic-payment-link";
+import { ensureAutomaticPaymentLink, type AutomaticPaymentOrder } from "@/lib/automatic-payment-link-v2";
 import { getAdminSupabaseClient } from "@/lib/supabase/client";
 
 export const dynamic = "force-dynamic";
@@ -22,6 +22,7 @@ type TrackingOrderRow = {
   status: string;
   payment_status: string;
   delivery_method: string;
+  payment_method: string;
   shipping_address: string | null;
   subtotal_amount: number;
   shipping_cost: number | null;
@@ -71,7 +72,7 @@ export async function POST(request: Request) {
   const { data, error } = await client
     .from("orders")
     .select([
-      "id", "order_number", "customer_phone", "status", "payment_status", "delivery_method",
+      "id", "order_number", "customer_phone", "status", "payment_status", "delivery_method", "payment_method",
       "shipping_address", "subtotal_amount", "shipping_cost", "shipping_courier", "shipping_service",
       "shipping_estimate", "total_amount", "payment_effective_total", "payment_balance",
       "public_access_token_hash", "public_access_token_expires_at", "pricing_status", "created_at",
@@ -92,7 +93,9 @@ export async function POST(request: Request) {
   }
   if (!order) return safeResponse({ error: "Data tracking tidak cocok atau pesanan tidak tersedia." }, 404);
 
-  const paymentLink = await ensureAutomaticPaymentLink(client, order as AutomaticPaymentOrder).catch(() => null);
+  const paymentLink = order.payment_method === "bank_transfer" && order.status === "awaiting_payment"
+    ? await ensureAutomaticPaymentLink(client, order as AutomaticPaymentOrder).catch(() => null)
+    : null;
 
   const [itemsResult, quoteResult, fulfillmentResult] = await Promise.all([
     client.from("order_items")
@@ -130,6 +133,7 @@ export async function POST(request: Request) {
       amountPaid: Number(order.payment_effective_total ?? 0),
       remainingBalance: Number(order.payment_balance ?? 0),
       fulfillmentMethod: order.delivery_method,
+      paymentMethod: order.payment_method,
       courier: fulfillment?.courier ?? order.shipping_courier,
       trackingNumber,
       pickupStatus: order.delivery_method === "pickup" ? fulfillment?.status ?? order.status : null,
@@ -141,7 +145,7 @@ export async function POST(request: Request) {
         trackingNumber
       }),
       pricingStatus: order.pricing_status ?? "final",
-      paymentUrl: paymentLink?.publicUrl ?? null
+      paymentUrl: relativePaymentPath(paymentLink?.publicUrl ?? null)
     },
     items: itemsResult.data ?? [],
     shippingQuote: quoteResult.data ? {
@@ -155,6 +159,17 @@ export async function POST(request: Request) {
       createdAt: quoteResult.data.created_at
     } : null
   }, 200);
+}
+
+function relativePaymentPath(publicUrl: string | null) {
+  if (!publicUrl) return null;
+  if (publicUrl.startsWith("/")) return publicUrl;
+  try {
+    const url = new URL(publicUrl);
+    return `${url.pathname}${url.search}${url.hash}`;
+  } catch {
+    return null;
+  }
 }
 
 async function readBody(request: Request) {

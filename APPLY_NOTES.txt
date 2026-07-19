@@ -1,31 +1,50 @@
-DEBRODER — ORDER CONFIRMATION PAYMENT LINK & PICKUP CLARITY HOTFIX
+CARA MENERAPKAN
 
-PROBLEM CONFIRMED
-1. Ready Stock pickup order displayed “Ongkir Menunggu Admin” even though delivery_method=pickup.
-2. A valid automatic payment_submission_link existed, but /order-confirmation did not return or render its payment URL.
-3. Customer therefore saw “Admin akan mengirim tautan pembayaran” instead of a direct next action.
+1. Backup repository DEBRODER terbaru.
+2. Pastikan source yang akan menerima paket berasal dari Debroder(17).zip atau review setiap konflik secara manual.
+3. Extract ZIP ini ke folder sementara.
+4. Copy seluruh folder/file ke root repository DEBRODER dengan struktur path tetap.
+5. Pilih Replace/Merge untuk file yang sama.
+6. Jangan menghapus file lain.
+7. Tidak ada SQL atau migration yang perlu dijalankan.
+8. Review diff di GitHub Desktop.
+9. Jalankan quality gates:
 
-FIX
-- Public order API resolves/ensures the canonical automatic payment link server-side.
-- Only a relative /payment/[token] path is returned, so Preview stays on the current deployment origin.
-- Payment-link failure is fail-soft and does not break order confirmation.
-- Awaiting-payment orders get a clear “Lihat Rekening & Bayar” CTA.
-- Pickup summary no longer displays shipping cost as “Menunggu Admin”.
-- Pickup orders display the mandatory warning to contact Admin and wait before visiting the store.
-- Bank data remains centralized in payment_method_settings and is not hardcoded in UI.
-
-HOW TO APPLY
-1. Back up repository.
-2. Copy this package into the repository root using Merge/Replace.
-3. Review only paths listed in FILES_CHANGED.txt.
-4. Run:
-   pnpm vitest run test/order-confirmation-payment-link.test.ts
+   pnpm vitest run test/customer-order-hub.test.ts test/order-confirmation-payment-link.test.ts test/payment-verification-workspace.test.ts
    pnpm typecheck
    pnpm lint
-   rm -rf .next
+   pnpm test
    pnpm build
-5. Owner commits, pushes, and redeploys Preview.
-6. Reopen ORD-DEB-2026-0028 confirmation URL.
-7. Expected: “Lihat Rekening & Bayar” appears; opening it shows the active Mandiri setting.
 
-NO COMMIT, PUSH, OR DEPLOY PERFORMED.
+10. Owner melakukan commit dan push ke branch Preview.
+11. Redeploy Preview Vercel.
+
+BROWSER CHECK WAJIB
+
+A. Ready Stock + Transfer
+- Confirmation shows one “TINDAKAN ANDA” card.
+- “Lihat Rekening & Bayar” works.
+- “Lacak Pesanan” is visible on desktop and sticky on mobile.
+- After proof upload, the form disappears.
+- The page shows “Pembayaran sedang diperiksa”.
+
+B. Ready Stock + Bayar di Toko + Ambil di Toko
+- No bank-transfer payment link appears.
+- Before ready, customer sees “Jangan datang ke toko sebelum ada konfirmasi”.
+- When ready, active action becomes “Hubungi Admin Sebelum Datang”.
+
+C. Custom
+- Payment link is not issued before the Custom quote is approved and locked.
+- Quote approval remains the only active task at the approval stage.
+- After payment proof, next stage text points to Surat Perintah Kerja.
+
+D. Tracking
+- Only the active status card is open.
+- Summary, payment, and shipping/pickup details remain collapsed.
+- “Perbarui Status” works.
+- Payment CTA stays on the same Preview deployment.
+
+E. Responsive
+- Mobile sticky tracking button does not cover page content.
+- Desktop tracking button remains in the order header.
+- No horizontal overflow at 360–430 px.

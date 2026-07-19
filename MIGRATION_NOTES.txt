@@ -1,50 +1,6 @@
-MIGRATION:
-supabase/migrations/20260719140000_payment_verification_and_fulfillment.sql
+DATABASE CHANGE: NONE
+MIGRATION: NONE
+REMOTE SUPABASE: UNCHANGED BY THIS PACKAGE
 
-TYPE:
-- Additive forward migration.
-- No table/data deletion, truncate, RLS disable, reset, or remote execution.
-
-ADDS:
-- payment_method_settings table, constraints, index, RLS, and audit-backed
-  management RPC.
-- order_payments reported/verified mutation fields, five checklist fields,
-  review outcome, settlement classification, destination setting, reviewer,
-  and normalized unique bank-reference index.
-- submit_customer_order_payment_v2.
-- review_order_payment with row lock, stale record guard, destination match,
-  duplicate reference guard, and outcome handling.
-- complete_fulfillment_final_verification and a generic final-check trigger.
-
-REPLACES IN PLACE:
-- refresh_order_payment_summary so verified totals use verified_amount while
-  preserving payment requirement, stock reservation, cancellation, and stock
-  consumption guards.
-- capture_order_payment_activity so funds-not-found/correction/rejection and
-  verified mutation metadata are append-only audit events.
-
-ACL / RLS:
-- payment_method_settings has RLS enabled; public/anon/authenticated direct
-  table access is revoked; service_role server access is retained.
-- Settings and review RPCs require authenticated Admin plus database permission.
-- Customer v2 submission remains service-role-only through the public server route.
-- Authenticated legacy verify/reject RPC grants are revoked to close checklist
-  bypass; service_role remains for trusted server composition.
-
-APPLY ORDER:
-1. Verify all prior migrations through 20260719110000 are applied in Preview.
-2. Apply 20260719140000_payment_verification_and_fulfillment.sql once.
-3. Inspect table/RPC/RLS/grants and configure one complete inactive method.
-4. Activate it only after account/QRIS data is verified by owner.
-5. Deploy source to Preview and execute payment/lifecycle test matrix.
-
-RECOVERY:
-- Application rollback should precede database recovery.
-- Deactivate all payment_method_settings.
-- Restore prior RPC grants only if the old application must run temporarily.
-- Preserve settings and additive verification/final-check columns as audit data.
-- Do not delete order, payment, proof, fulfillment, stock, or history records.
-
-REMOTE SUPABASE:
-- NOT ACCESSED
-- NOT MODIFIED
+The previously configured payment method remains database-managed. No bank name,
+account number, account holder, or QRIS value is hardcoded into the customer UI.

@@ -27,7 +27,7 @@ export async function GET(_request: Request, context: Context) {
     const resolved = await resolveLink(token);
     if (!resolved) return Response.json({ error: "Tautan pembayaran tidak aktif atau sudah kedaluwarsa." }, { status: 404 });
     const { data: order, error } = await resolved.client.from("orders")
-      .select("id,order_number,customer_name,total_amount,payment_effective_total,payment_balance,payment_required_amount,payment_requirement_met,payment_status,currency,pricing_status")
+      .select("id,order_number,customer_name,status,delivery_method,payment_method,total_amount,payment_effective_total,payment_balance,payment_required_amount,payment_requirement_met,payment_status,currency,pricing_status")
       .eq("id", resolved.link.order_id).is("archived_at", null).maybeSingle();
     if (error || !order) return Response.json({ error: "Pesanan tidak tersedia." }, { status: 404 });
     if (order.pricing_status !== "final" || Number(order.total_amount) <= 0) {
@@ -35,7 +35,7 @@ export async function GET(_request: Request, context: Context) {
     }
     const [{ data: items }, { data: settings, error: settingsError }, { data: submissions }] = await Promise.all([
       resolved.client.from("order_items")
-        .select("id,product_name,quantity,unit_price,subtotal")
+        .select("id,product_name,quantity,unit_price,subtotal,custom_project_id")
         .eq("order_id", order.id)
         .is("archived_at", null)
         .order("created_at"),
@@ -57,6 +57,9 @@ export async function GET(_request: Request, context: Context) {
     return Response.json({
       orderNumber: order.order_number,
       customerName: order.customer_name,
+      orderStatus: order.status,
+      fulfillmentMethod: order.delivery_method,
+      paymentMethod: order.payment_method,
       paymentStatus: order.payment_status,
       currency: order.currency,
       totalAmount: Number(order.total_amount),
@@ -66,6 +69,7 @@ export async function GET(_request: Request, context: Context) {
       requirementMet: Boolean(order.payment_requirement_met),
       expiresAt: resolved.link.expires_at,
       remainingUses: resolved.link.max_uses - resolved.link.used_count,
+      isCustom: (items ?? []).some((item) => Boolean(item.custom_project_id)),
       items: (items ?? []).map((item) => ({
         id: item.id,
         name: item.product_name,

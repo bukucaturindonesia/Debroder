@@ -67,9 +67,9 @@ describe("Payment verification and mutation workspace", () => {
     expect(publicRoute).toContain('rpc("submit_customer_order_payment_v2"');
     expect(migration).toContain("laporan pembayaran pelanggan menunggu pemeriksaan mutasi bank");
     expect(publicForm).toContain("Bukti transfer bukan konfirmasi pembayaran final");
-    expect(publicForm).toContain("Kirim Laporan Pembayaran");
+    expect(publicForm).toContain("Kirim Bukti Pembayaran");
     expect(publicForm).toContain("Riwayat laporan pembayaran");
-    expect(publicForm).toContain("Admin meminta koreksi laporan pembayaran");
+    expect(publicForm).toContain("Admin meminta perbaikan laporan pembayaran");
   });
 
   it("provides centrally managed methods and all four review outcomes", () => {

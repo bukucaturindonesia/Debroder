@@ -1,17 +1,32 @@
-MODIFIED:
+DEBRODER CUSTOMER ORDER HUB — CHANGED FILES ONLY
+
+BASELINE
+- Source archive: Debroder(17).zip
+- Branch label: costum-produk-cekout
+- Git checkpoint inside archive: dd29ad22a05baf56b503141c8f0bd3f34e98d02d
+
+ADDED
+- components/customer-order/CustomerOrderStatusCard.tsx
+- components/customer-order/PersistentTrackingButton.tsx
+- lib/customer-order-presentation.ts
+- test/customer-order-hub.test.ts
+
+MODIFIED
+- app/api/public/order-tracking/route.ts
 - app/api/public/orders/[token]/route.ts
+- app/api/public/payments/[token]/route.ts
+- app/payment/[token]/page.tsx
 - components/checkout/OrderConfirmationClient.tsx
-
-ADDED:
+- components/payments/PublicPaymentForm.tsx
+- components/tracking/GuestOrderTracking.tsx
 - test/order-confirmation-payment-link.test.ts
-- FILES_CHANGED.txt
-- APPLY_NOTES.txt
-- TEST_RESULTS.txt
-- SHA256SUMS.txt
+- test/payment-verification-workspace.test.ts
 
-DELETED:
+DELETED
 - NONE
 
-DATABASE:
-- NO NEW MIGRATION
-- EXISTING REMOTE PAYMENT SETTINGS PRESERVED
+RENAMED
+- NONE
+
+DATABASE / SQL
+- NONE

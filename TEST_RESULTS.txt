@@ -1,20 +1,43 @@
-STATIC TYPESCRIPT / TSX SYNTAX:
-PASS
-- app/api/public/orders/[token]/route.ts
-- components/checkout/OrderConfirmationClient.tsx
-- test/order-confirmation-payment-link.test.ts
+DEBRODER CUSTOMER ORDER HUB — TEST RESULTS
 
-STATIC SOURCE CONTRACT:
-PASS
-- Public order API resolves the canonical automatic payment link.
-- Returned payment URL is converted to a relative path for the active Preview origin.
-- Confirmation page renders the payment CTA.
-- Bank account data is not hardcoded in the confirmation component.
-- Pickup orders no longer display Ongkir: Menunggu Admin.
-- Pickup contact-admin warning and WhatsApp action are present.
+SOURCE CHECKPOINT
+- Branch: costum-produk-cekout
+- Git checkpoint: dd29ad22a05baf56b503141c8f0bd3f34e98d02d
 
-FULL REPOSITORY TESTS:
-NOT RUN — a complete repository checkout and installed dependencies were not available in the execution container.
+COMPLETED
+- TypeScript isolated transpilation for all 13 changed/new TS/TSX/test files: PASS.
+- Deterministic customer presentation resolver scenarios: PASS.
+  - Ready Stock transfer awaiting payment.
+  - Payment under mutation review.
+  - Custom payment under mutation review.
+  - Pay-at-store preparing.
+  - Pay-at-store ready for pickup.
+  - Completed order.
+- Static Customer Order Hub contracts: PASS.
+- Persistent tracking CTA contract: PASS.
+- Progressive disclosure contract: PASS.
+- Payment form hidden during pending verification: PASS.
+- Custom-aware automatic payment gate: PASS.
+- Pay-at-store transfer-link block: PASS.
+- Preview-relative payment-link contract: PASS.
+- Pickup warning contract: PASS.
+- Existing relevant static test expectations: PASS by direct source assertion.
+- git diff --check for tracked changed files: PASS.
+- New-file whitespace and conflict-marker scan: PASS.
+- Client/server boundary scan (`node:crypto` absent from client modules): PASS.
+- Secret signature scan: PASS.
+- Hardcoded demo bank-account scan: PASS.
 
-TYPECHECK / LINT / NEXT BUILD:
-NOT RUN — run after applying this package to the owner repository.
+ENVIRONMENT BLOCKED / NOT RUN
+- pnpm dependency install: BLOCKED because the execution environment has no internet access and the ZIP has no node_modules.
+- Repository TypeScript gate: NOT VERIFIED. A global tsc attempt could not resolve Next.js, React, Supabase, and their type packages because dependencies are absent.
+- ESLint: NOT RUN because dependencies are absent.
+- Vitest: NOT RUN because dependencies are absent.
+- Full test suite: NOT RUN because dependencies are absent.
+- Clean Next.js production build: NOT RUN because dependencies are absent.
+- Browser/viewport/console verification: NOT RUN.
+
+STATUS
+- SOURCE IMPLEMENTED.
+- STATIC AND PURE-DOMAIN CHECKS PASS.
+- OWNER MUST RUN PACKAGE GATES AND PREVIEW BROWSER TESTS BEFORE MERGE.
