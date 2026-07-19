@@ -1,29 +1,20 @@
-ROOT CAUSE CONFIRMED
-- Vercel import trace:
-  node:crypto -> lib/payments.ts -> PaymentTrackingManager.tsx -> OrderDetailAdmin.tsx
-- PaymentTrackingManager is a client component.
-- A client-reachable shared module imported Node's node:crypto, causing Webpack UnhandledSchemeError.
+STATIC TYPESCRIPT / TSX SYNTAX:
+PASS
+- app/api/public/orders/[token]/route.ts
+- components/checkout/OrderConfirmationClient.tsx
+- test/order-confirmation-payment-link.test.ts
 
-FIX APPLIED TO LOCAL COPY
-- Node crypto token helpers moved to lib/payment-token.ts.
-- lib/payments.ts is now client-safe and has no Node imports.
-- All known production/test token imports were updated.
-- A regression assertion was added.
+STATIC SOURCE CONTRACT:
+PASS
+- Public order API resolves the canonical automatic payment link.
+- Returned payment URL is converted to a relative path for the active Preview origin.
+- Confirmation page renders the payment CTA.
+- Bank account data is not hardcoded in the confirmation component.
+- Pickup orders no longer display Ongkir: Menunggu Admin.
+- Pickup contact-admin warning and WhatsApp action are present.
 
-STATIC VERIFICATION
-PASS - lib/payments.ts contains no node:crypto import.
-PASS - lib/payment-token.ts contains Node crypto token helpers.
-PASS - public payment route imports hashPaymentToken from lib/payment-token.ts.
-PASS - automatic payment-link service imports hashPaymentToken from lib/payment-token.ts.
-PASS - no remaining createPaymentToken/hashPaymentToken import from lib/payments.ts was found.
-PASS - no database/migration file changed.
+FULL REPOSITORY TESTS:
+NOT RUN — a complete repository checkout and installed dependencies were not available in the execution container.
 
-EXECUTED TESTS / BUILD
-NOT RUN in this environment.
-Reason: package dependencies were not present and package-manager download failed because registry.npmjs.org was unreachable (EAI_AGAIN).
-
-Owner verification required:
-- targeted payment tests
-- prebuild tests
-- clean pnpm run build
-- Vercel Preview build
+TYPECHECK / LINT / NEXT BUILD:
+NOT RUN — run after applying this package to the owner repository.

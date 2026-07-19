@@ -1,22 +1,17 @@
-DEBRODER PAYMENT CRYPTO CLIENT-BUNDLE FIX
-Baseline: Debroder(15).zip / branch costum-produk-cekout / commit 5943cb5
+MODIFIED:
+- app/api/public/orders/[token]/route.ts
+- components/checkout/OrderConfirmationClient.tsx
 
-CHANGED
-- lib/payments.ts
-  Removed Node.js crypto imports and token helpers so this shared module remains safe for client imports.
+ADDED:
+- test/order-confirmation-payment-link.test.ts
+- FILES_CHANGED.txt
+- APPLY_NOTES.txt
+- TEST_RESULTS.txt
+- SHA256SUMS.txt
 
-- lib/automatic-payment-link.ts
-  Updated hashPaymentToken import to the dedicated Node/server token module.
+DELETED:
+- NONE
 
-- app/api/public/payments/[token]/route.ts
-  Updated hashPaymentToken import to the dedicated Node/server token module.
-
-- test/payment-phase5b.test.ts
-  Updated token-helper imports and added regression coverage that lib/payments.ts stays free of node:crypto.
-
-ADDED
-- lib/payment-token.ts
-  Contains createPaymentToken/hashPaymentToken and the node:crypto import.
-
-DELETED
-- None
+DATABASE:
+- NO NEW MIGRATION
+- EXISTING REMOTE PAYMENT SETTINGS PRESERVED

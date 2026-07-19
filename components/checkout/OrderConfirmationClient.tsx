@@ -17,7 +17,10 @@ type OrderPayload = {
   };
   items: Array<{ id: string; product_name: string; variant_name: string; color: string; size: string; sku: string; quantity: number; unit_price: number; subtotal: number; custom_project_id?: string | null; pricing_status?: string }>;
   customQuote?: { version_number: number; status: string; quoted_total: number; pricing_components: unknown; design_version_snapshot: unknown; valid_until: string; sent_at: string; locked_at: string | null } | null;
+  payment?: { url: string | null; expiresAt: string | null; unavailableReason: string | null };
 };
+
+const TERMINAL_ORDER_STATUSES = new Set(["completed", "cancelled", "expired"]);
 
 export function OrderConfirmationClient({ token }: { token: string }) {
   const [data, setData] = useState<OrderPayload | null>(null);
@@ -86,10 +89,18 @@ export function OrderConfirmationClient({ token }: { token: string }) {
   const pricingIsFinal = (order.pricingStatus ?? "final") === "final";
   const productBaseSubtotal = data.items.reduce((sum, item) => sum + Number(item.subtotal || 0), 0);
   const customQuotePreview = customerQuotePreview(data.customQuote?.pricing_components);
+  const isPickup = order.fulfillmentMethod === "pickup";
+  const isBankTransfer = order.paymentMethod === "bank_transfer";
+  const isPayAtStore = order.paymentMethod === "pay_at_store";
+  const paymentUrl = data.payment?.url ?? null;
   const whatsappText = confirmationCode
     ? `Halo DEBRODER, saya ingin verifikasi order ${order.orderNumber}. Kode konfirmasi: ${confirmationCode}. Nomor WhatsApp saya harus dicocokkan dengan data checkout.`
     : `Halo DEBRODER, saya memerlukan bantuan verifikasi order ${order.orderNumber}.`;
   const whatsappHref = `${contactLinks.whatsapp}?text=${encodeURIComponent(whatsappText)}`;
+  const pickupWhatsappText = `Halo Admin DEBRODER, saya ingin memastikan kesiapan pesanan ${order.orderNumber} sebelum datang ke toko.`;
+  const pickupWhatsappHref = `${contactLinks.whatsapp}?text=${encodeURIComponent(pickupWhatsappText)}`;
+  const paymentHelpText = `Halo Admin DEBRODER, saya memerlukan bantuan instruksi pembayaran untuk pesanan ${order.orderNumber}.`;
+  const paymentHelpHref = `${contactLinks.whatsapp}?text=${encodeURIComponent(paymentHelpText)}`;
   const trackingPath = `/track-order/${encodeURIComponent(order.orderNumber)}?token=${encodeURIComponent(token)}`;
 
   async function copyTrackingLink() {
@@ -149,8 +160,34 @@ export function OrderConfirmationClient({ token }: { token: string }) {
 
           {order.status === "awaiting_shipping_quote" ? <Info>Admin akan memasukkan kurir, layanan, ongkir, dan estimasi pada pesanan ini. Halaman akan diperbarui otomatis.</Info> : null}
           {order.status === "under_review" ? <Info>Proyek custom sudah tercatat pada pesanan ini. Admin akan memeriksa desain, layanan, estimasi pengerjaan, dan harga sebelum meminta pembayaran.</Info> : null}
-          {order.status === "awaiting_payment" ? <Info>Stok sudah disimpan. Admin akan mengirim tautan pembayaran pribadi untuk transfer manual dan unggah bukti.</Info> : null}
-          {order.status === "processing" && order.paymentMethod === "pay_at_store" ? <Info>Stok untuk pengambilan di toko sudah disimpan. Tunggu status siap diambil, lalu bayar di toko dengan menunjukkan nomor pesanan dan nomor WhatsApp.</Info> : null}
+
+          {order.status === "awaiting_payment" && isBankTransfer ? (
+            paymentUrl ? (
+              <div className="mt-5 border border-emerald-200 bg-emerald-50 p-5 text-sm text-emerald-950">
+                <p className="font-semibold">Instruksi pembayaran sudah tersedia</p>
+                <p className="mt-2 leading-6">Total yang perlu dibayar adalah <strong>{formatRupiah(order.total)}</strong>. Buka halaman pembayaran untuk melihat rekening aktif DEBRODER, menyalin nomor rekening dan nominal, lalu mengunggah bukti pembayaran.</p>
+                {data.payment?.expiresAt ? <p className="mt-2 text-xs text-emerald-900/70">Tautan pembayaran berlaku sampai {formatDate(data.payment.expiresAt)}.</p> : null}
+                <Link href={paymentUrl} className="mt-4 inline-flex min-h-11 items-center rounded-full bg-black px-5 font-semibold text-white hover:bg-black/75">{order.paymentStatus === "unpaid" ? "Lihat Rekening & Bayar" : "Buka Status Pembayaran"}</Link>
+              </div>
+            ) : (
+              <div className="mt-5 border border-amber-300 bg-amber-50 p-5 text-sm text-amber-950">
+                <p className="font-semibold">Instruksi pembayaran belum tersedia</p>
+                <p className="mt-2 leading-6">Pesanan tetap tersimpan. Hubungi Admin DEBRODER agar instruksi pembayaran dapat diperiksa.</p>
+                <a href={paymentHelpHref} target="_blank" rel="noopener noreferrer" className="mt-4 inline-flex min-h-11 items-center rounded-full bg-black px-5 font-semibold text-white hover:bg-black/75">Hubungi Admin</a>
+              </div>
+            )
+          ) : null}
+
+          {order.status === "processing" && isPayAtStore ? <Info>Stok untuk pengambilan di toko sudah disimpan. Anda belum perlu transfer. Tunggu konfirmasi barang siap, lalu bayar di toko dengan menunjukkan nomor pesanan dan nomor WhatsApp.</Info> : null}
+
+          {isPickup && !TERMINAL_ORDER_STATUSES.has(order.status) ? (
+            <div className="mt-5 border border-amber-300 bg-amber-50 p-5 text-sm text-amber-950">
+              <p className="font-semibold">Penting sebelum datang ke toko</p>
+              <p className="mt-2 leading-6">Jangan datang sebelum menerima konfirmasi dari Admin. Meskipun produk berstatus Ready Stock, barang mungkin masih berada di lokasi penyimpanan lain, sedang disiapkan, atau perlu dipindahkan ke toko.</p>
+              <a href={pickupWhatsappHref} target="_blank" rel="noopener noreferrer" className="mt-4 inline-flex min-h-11 items-center rounded-full border border-amber-900/30 bg-white px-5 font-semibold hover:border-amber-900">Hubungi Admin via WhatsApp</a>
+            </div>
+          ) : null}
+
           {order.reservationExpiresAt ? <p className="mt-4 text-xs text-black/50">Reservasi aktif sampai {formatDate(order.reservationExpiresAt)}.</p> : null}
           {error ? <p className="mt-4 border border-red-200 bg-red-50 p-3 text-sm text-red-700">{error}</p> : null}
         </section>
@@ -158,7 +195,13 @@ export function OrderConfirmationClient({ token }: { token: string }) {
         <aside className="h-fit rounded-[28px] bg-white p-6">
           <h2 className="text-xl font-semibold">Ringkasan</h2>
           <div className="mt-5 grid gap-4">{data.items.map((item) => <div key={item.id} className="border-b border-black/10 pb-4 text-sm"><div className="flex justify-between gap-3"><strong>{item.product_name}</strong><strong>{formatRupiah(Number(item.subtotal))}</strong></div><p className="mt-1 text-black/55">{item.variant_name || item.color} · {item.size} · {item.sku} × {item.quantity}</p>{item.custom_project_id ? <p className="mt-1 text-xs font-semibold text-[#063d24]">Custom Project · {item.pricing_status === "final" ? "Harga final" : "Review harga"}</p> : null}</div>)}</div>
-          <dl className="mt-5 grid gap-3 text-sm"><div className="flex justify-between"><dt>{pricingIsFinal ? "Subtotal" : "Subtotal produk PIM"}</dt><dd>{formatRupiah(pricingIsFinal ? order.subtotal : productBaseSubtotal)}</dd></div><div className="flex justify-between"><dt>Ongkir</dt><dd>{order.shippingCost === null ? "Menunggu Admin" : formatRupiah(order.shippingCost)}</dd></div><div className="flex justify-between border-t border-black/10 pt-3 text-base font-semibold"><dt>{pricingIsFinal ? "Total" : "Total terkunci"}</dt><dd>{pricingIsFinal ? formatRupiah(order.total) : "Menunggu penetapan harga"}</dd></div></dl>
+          <dl className="mt-5 grid gap-3 text-sm">
+            <div className="flex justify-between"><dt>{pricingIsFinal ? "Subtotal" : "Subtotal produk PIM"}</dt><dd>{formatRupiah(pricingIsFinal ? order.subtotal : productBaseSubtotal)}</dd></div>
+            <div className="flex justify-between"><dt>Penyerahan</dt><dd>{isPickup ? "Ambil di Toko" : "Dikirim"}</dd></div>
+            <div className="flex justify-between"><dt>Pembayaran</dt><dd>{paymentMethodLabel(order.paymentMethod)}</dd></div>
+            {!isPickup ? <div className="flex justify-between"><dt>Ongkir</dt><dd>{order.shippingCost === null ? "Menunggu Admin" : formatRupiah(order.shippingCost)}</dd></div> : null}
+            <div className="flex justify-between border-t border-black/10 pt-3 text-base font-semibold"><dt>{pricingIsFinal ? "Total" : "Total terkunci"}</dt><dd>{pricingIsFinal ? formatRupiah(order.total) : "Menunggu penetapan harga"}</dd></div>
+          </dl>
           <Link href={data.items.some((item) => item.custom_project_id) ? "/custom" : "/koleksi"} className="mt-6 inline-flex text-sm font-semibold underline">Kembali belanja</Link>
         </aside>
       </div>
@@ -168,6 +211,12 @@ export function OrderConfirmationClient({ token }: { token: string }) {
 
 function Shell({ children }: { children: React.ReactNode }) { return <div className="mx-auto max-w-xl rounded-[28px] bg-white p-8">{children}</div>; }
 function Info({ children }: { children: React.ReactNode }) { return <div className="mt-5 border border-black/10 bg-[#f8f8f4] p-5 text-sm leading-6">{children}</div>; }
+
+function paymentMethodLabel(value: string) {
+  if (value === "bank_transfer") return "Transfer Bank";
+  if (value === "pay_at_store") return "Bayar di Toko";
+  return "Diperiksa Admin";
+}
 
 function customerQuotePreview(value: unknown) {
   const record = value && typeof value === "object" && !Array.isArray(value) ? value as Record<string, unknown> : null;

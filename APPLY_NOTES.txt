@@ -1,25 +1,31 @@
-APPLY FROM THE ROOT OF THE DEBRODER REPOSITORY
+DEBRODER — ORDER CONFIRMATION PAYMENT LINK & PICKUP CLARITY HOTFIX
 
-1. Extract this ZIP.
-2. Copy these folders into the repository root:
-   - app
-   - lib
-   - test
-3. Choose Replace when asked for existing files.
-4. Confirm the new file exists:
-   lib/payment-token.ts
-5. Do not remove any other file.
+PROBLEM CONFIRMED
+1. Ready Stock pickup order displayed “Ongkir Menunggu Admin” even though delivery_method=pickup.
+2. A valid automatic payment_submission_link existed, but /order-confirmation did not return or render its payment URL.
+3. Customer therefore saw “Admin akan mengirim tautan pembayaran” instead of a direct next action.
 
-Then run:
+FIX
+- Public order API resolves/ensures the canonical automatic payment link server-side.
+- Only a relative /payment/[token] path is returned, so Preview stays on the current deployment origin.
+- Payment-link failure is fail-soft and does not break order confirmation.
+- Awaiting-payment orders get a clear “Lihat Rekening & Bayar” CTA.
+- Pickup summary no longer displays shipping cost as “Menunggu Admin”.
+- Pickup orders display the mandatory warning to contact Admin and wait before visiting the store.
+- Bank data remains centralized in payment_method_settings and is not hardcoded in UI.
 
-pnpm vitest run test/payment-phase5b.test.ts test/payment-verification-workspace.test.ts
-pnpm run build
+HOW TO APPLY
+1. Back up repository.
+2. Copy this package into the repository root using Merge/Replace.
+3. Review only paths listed in FILES_CHANGED.txt.
+4. Run:
+   pnpm vitest run test/order-confirmation-payment-link.test.ts
+   pnpm typecheck
+   pnpm lint
+   rm -rf .next
+   pnpm build
+5. Owner commits, pushes, and redeploys Preview.
+6. Reopen ORD-DEB-2026-0028 confirmation URL.
+7. Expected: “Lihat Rekening & Bayar” appears; opening it shows the active Mandiri setting.
 
-Expected effect:
-- components/admin/PaymentTrackingManager.tsx may continue importing UI-safe helpers/types from lib/payments.ts.
-- lib/payments.ts no longer imports node:crypto.
-- token hashing/generation remains implemented with Node crypto in lib/payment-token.ts and is used only by server routes/server modules/tests.
-
-No migration is included.
-No database change is required for this compile fix.
-No deployment was performed.
+NO COMMIT, PUSH, OR DEPLOY PERFORMED.
