@@ -5,14 +5,14 @@ import { PublicStoreLocator } from "@/components/PublicStoreLocator";
 import { getPublicContent } from "@/lib/public-data";
 
 export const metadata: Metadata = {
-  title: "Store DE BRODER",
+  title: "Toko DEBRODER",
   description:
-    "Temukan store DE BRODER di Pettarani, Tello, Landak, dan Parepare.",
+    "Temukan toko DEBRODER di Pettarani, Tello, Landak, dan Parepare.",
   alternates: { canonical: "/store" },
   openGraph: {
-    title: "Store DE BRODER",
+    title: "Toko DEBRODER",
     description:
-      "Store DE BRODER untuk sablon kaos, cetak DTF, jersey, dan kaos polos."
+      "Toko DEBRODER untuk sablon kaos, cetak DTF, jersey, dan kaos polos."
   }
 };
 
@@ -32,7 +32,7 @@ export default async function StorePage() {
         mobileObjectPosition={pageHero?.mobile_object_position}
         breadcrumbs={[
           { label: "Beranda", href: "/" },
-          { label: "Store" }
+          { label: "Toko" }
         ]}
       />
       <section className="bg-brand-offWhite py-10 sm:py-12">

@@ -44,19 +44,19 @@ const AUDIT_ROLES: readonly AdminRole[] = ["owner", "superadmin", "super_admin"]
 
 export const adminNavigationGroups: readonly AdminNavigationGroup[] = [
   {
-    label: "DASHBOARD",
+    label: "RINGKASAN",
     roles: DASHBOARD_ROLES,
-    items: [{ label: "Dashboard", href: "/admin/dashboard", roles: DASHBOARD_ROLES, exact: true }]
+    items: [{ label: "Ringkasan", href: "/admin/dashboard", roles: DASHBOARD_ROLES, exact: true }]
   },
   {
     label: "WEBSITE",
     roles: FULL_ADMIN_ROLES,
     items: [
-      { label: "CMS / Landing Page", href: "/admin/homepage-sections", roles: FULL_ADMIN_ROLES },
+      { label: "CMS / Halaman Utama", href: "/admin/homepage-sections", roles: FULL_ADMIN_ROLES },
       { label: "CMS / Jersey", href: "/admin/commerce/jersey", roles: FULL_ADMIN_ROLES },
       { label: "CMS / Custom", href: "/admin/custom-commerce", roles: FULL_ADMIN_ROLES },
-      { label: "Page Hero", href: "/admin/page-hero", roles: FULL_ADMIN_ROLES },
-      { label: "Media Library", href: "/admin/media", roles: FULL_ADMIN_ROLES },
+      { label: "Hero Halaman", href: "/admin/page-hero", roles: FULL_ADMIN_ROLES },
+      { label: "Galeri Media", href: "/admin/media", roles: FULL_ADMIN_ROLES },
       { label: "Gambar Website", href: "/admin/site-media", roles: FULL_ADMIN_ROLES },
       { label: "Banner Instagram", href: "/admin/banner", roles: FULL_ADMIN_ROLES }
     ]
@@ -65,30 +65,30 @@ export const adminNavigationGroups: readonly AdminNavigationGroup[] = [
     label: "KATALOG",
     roles: PRODUCT_MANAGER_VIEW_ROLES,
     items: [
-      { label: "Product Manager", href: "/admin/products", roles: PRODUCT_MANAGER_VIEW_ROLES, exact: true },
-      { label: "Audit & Riwayat Aktivitas", href: "/admin/products/audit-history", roles: PRODUCT_MANAGER_VIEW_ROLES },
-      { label: "Export & Reconciliation", href: "/admin/products/export-reconciliation", roles: PRODUCT_MANAGER_VIEW_ROLES },
-      { label: "Maintenance PIM", href: "/admin/pim-manager", roles: PRODUCT_MAINTENANCE_ROLES },
+      { label: "Manajemen Produk", href: "/admin/products", roles: PRODUCT_MANAGER_VIEW_ROLES, exact: true },
+      { label: "Riwayat Aktivitas Produk", href: "/admin/products/audit-history", roles: PRODUCT_MANAGER_VIEW_ROLES },
+      { label: "Ekspor & Pencocokan Data", href: "/admin/products/export-reconciliation", roles: PRODUCT_MANAGER_VIEW_ROLES },
+      { label: "Pemeliharaan Produk", href: "/admin/pim-manager", roles: PRODUCT_MAINTENANCE_ROLES },
       { label: "Kategori / Model", href: "/admin/categories", roles: FULL_ADMIN_ROLES },
       { label: "Layanan", href: "/admin/services", roles: FULL_ADMIN_ROLES },
-      { label: "Store / Cabang", href: "/admin/store", roles: FULL_ADMIN_ROLES }
+      { label: "Toko / Cabang", href: "/admin/store", roles: FULL_ADMIN_ROLES }
     ]
   },
   {
     label: "OPERASIONAL",
     roles: ALL_STAFF_ROLES,
     items: [{
-      label: "Order",
+      label: "Pesanan",
       roles: ALL_STAFF_ROLES,
       children: [
         { label: "Pesanan", href: "/admin/orders", roles: ORDER_READ_ROLES, exact: true },
-        { label: "Repeat Order", href: "/admin/repeat-orders", roles: REPEAT_ORDER_ROLES },
-        { label: "Formal Quotation", href: "/admin/orders/quotations", roles: QUOTATION_READ_ROLES },
-        { label: "Job Order", href: "/admin/job-orders", roles: PRODUCTION_ROLES },
-        { label: "Work Item", href: "/admin/work-items", roles: PRODUCTION_ROLES },
+        { label: "Pesanan Ulang", href: "/admin/repeat-orders", roles: REPEAT_ORDER_ROLES },
+        { label: "Penawaran Harga", href: "/admin/orders/quotations", roles: QUOTATION_READ_ROLES },
+        { label: "Surat Perintah Kerja", href: "/admin/job-orders", roles: PRODUCTION_ROLES },
+        { label: "Daftar Pekerjaan", href: "/admin/work-items", roles: PRODUCTION_ROLES },
         { label: "Status Produksi", href: "/admin/production", roles: PRODUCTION_ROLES },
-        { label: "Quality Control", href: "/admin/quality-control", roles: QC_ROLES },
-        { label: "Pengiriman & Pickup", href: "/admin/fulfillments", roles: SHIPPING_ROLES },
+        { label: "Pemeriksaan Kualitas", href: "/admin/quality-control", roles: QC_ROLES },
+        { label: "Pengiriman & Ambil di Toko", href: "/admin/fulfillments", roles: SHIPPING_ROLES },
         { label: "Notifikasi", href: "/admin/notifications", roles: ALL_STAFF_ROLES }
       ]
     }]
@@ -99,26 +99,26 @@ export const adminNavigationGroups: readonly AdminNavigationGroup[] = [
     items: [
       { label: "Pengaturan", href: "/admin/website-settings", roles: FULL_ADMIN_ROLES },
       { label: "Penomoran Dokumen", href: "/admin/document-numbering", roles: FULL_ADMIN_ROLES },
-      { label: "Role & Permission", href: "/admin/access-control", roles: ACCESS_READ_ROLES },
-      { label: "Audit Sistem", href: "/admin/audit-log", roles: AUDIT_ROLES }
+      { label: "Pengguna & Hak Akses", href: "/admin/access-control", roles: ACCESS_READ_ROLES },
+      { label: "Riwayat Aktivitas", href: "/admin/audit-log", roles: AUDIT_ROLES }
     ]
   }
 ] as const;
 const adminGuestNavigationGroups: readonly AdminNavigationGroup[] = [
   {
-    label: "DASHBOARD",
+    label: "RINGKASAN",
     roles: ADMIN_GUEST_ROLES,
-    items: [{ label: "Dashboard", href: "/admin/dashboard", roles: ADMIN_GUEST_ROLES, exact: true }]
+    items: [{ label: "Ringkasan", href: "/admin/dashboard", roles: ADMIN_GUEST_ROLES, exact: true }]
   },
   {
     label: "WEBSITE",
     roles: ADMIN_GUEST_ROLES,
     items: [
-      { label: "CMS / Landing Page", href: "/admin/homepage-sections", roles: ADMIN_GUEST_ROLES },
+      { label: "CMS / Halaman Utama", href: "/admin/homepage-sections", roles: ADMIN_GUEST_ROLES },
       { label: "CMS / Jersey", href: "/admin/commerce/jersey", roles: ADMIN_GUEST_ROLES },
       { label: "CMS / Custom", href: "/admin/custom-commerce", roles: ADMIN_GUEST_ROLES },
-      { label: "Page Hero", href: "/admin/page-hero", roles: ADMIN_GUEST_ROLES },
-      { label: "Media Library", href: "/admin/media", roles: ADMIN_GUEST_ROLES },
+      { label: "Hero Halaman", href: "/admin/page-hero", roles: ADMIN_GUEST_ROLES },
+      { label: "Galeri Media", href: "/admin/media", roles: ADMIN_GUEST_ROLES },
       { label: "Gambar Website", href: "/admin/site-media", roles: ADMIN_GUEST_ROLES },
       { label: "Banner Instagram", href: "/admin/banner", roles: ADMIN_GUEST_ROLES }
     ]
@@ -127,14 +127,14 @@ const adminGuestNavigationGroups: readonly AdminNavigationGroup[] = [
     label: "KATALOG",
     roles: ADMIN_GUEST_ROLES,
     items: [
-      { label: "Product Manager", href: "/admin/products", roles: ADMIN_GUEST_ROLES, exact: true },
-      { label: "Audit & Riwayat Aktivitas", href: "/admin/products/audit-history", roles: ADMIN_GUEST_ROLES },
-      { label: "Export & Reconciliation", href: "/admin/products/export-reconciliation", roles: ADMIN_GUEST_ROLES },
-      { label: "PIM V2 Dependency", href: "/admin/pim-v2", roles: ADMIN_GUEST_ROLES },
-      { label: "Maintenance PIM", href: "/admin/pim-manager", roles: ADMIN_GUEST_ROLES },
+      { label: "Manajemen Produk", href: "/admin/products", roles: ADMIN_GUEST_ROLES, exact: true },
+      { label: "Riwayat Aktivitas Produk", href: "/admin/products/audit-history", roles: ADMIN_GUEST_ROLES },
+      { label: "Ekspor & Pencocokan Data", href: "/admin/products/export-reconciliation", roles: ADMIN_GUEST_ROLES },
+      { label: "Manajemen Produk Lanjutan", href: "/admin/pim-v2", roles: ADMIN_GUEST_ROLES },
+      { label: "Pemeliharaan Produk", href: "/admin/pim-manager", roles: ADMIN_GUEST_ROLES },
       { label: "Kategori / Model", href: "/admin/categories", roles: ADMIN_GUEST_ROLES },
       { label: "Layanan", href: "/admin/services", roles: ADMIN_GUEST_ROLES },
-      { label: "Store / Cabang", href: "/admin/store", roles: ADMIN_GUEST_ROLES }
+      { label: "Toko / Cabang", href: "/admin/store", roles: ADMIN_GUEST_ROLES }
     ]
   },
   {
@@ -146,13 +146,13 @@ const adminGuestNavigationGroups: readonly AdminNavigationGroup[] = [
       children: [
         { label: "Pesanan", href: "/admin/orders", roles: ADMIN_GUEST_ROLES, exact: true },
         { label: "Pembayaran", href: "/admin/payments", roles: ADMIN_GUEST_ROLES },
-        { label: "Repeat Order", href: "/admin/repeat-orders", roles: ADMIN_GUEST_ROLES },
-        { label: "Formal Quotation", href: "/admin/orders/quotations", roles: ADMIN_GUEST_ROLES },
-        { label: "Job Order", href: "/admin/job-orders", roles: ADMIN_GUEST_ROLES },
-        { label: "Work Item", href: "/admin/work-items", roles: ADMIN_GUEST_ROLES },
+        { label: "Pesanan Ulang", href: "/admin/repeat-orders", roles: ADMIN_GUEST_ROLES },
+        { label: "Penawaran Harga", href: "/admin/orders/quotations", roles: ADMIN_GUEST_ROLES },
+        { label: "Surat Perintah Kerja", href: "/admin/job-orders", roles: ADMIN_GUEST_ROLES },
+        { label: "Daftar Pekerjaan", href: "/admin/work-items", roles: ADMIN_GUEST_ROLES },
         { label: "Status Produksi", href: "/admin/production", roles: ADMIN_GUEST_ROLES },
-        { label: "Quality Control", href: "/admin/quality-control", roles: ADMIN_GUEST_ROLES },
-        { label: "Pengiriman & Pickup", href: "/admin/fulfillments", roles: ADMIN_GUEST_ROLES },
+        { label: "Pemeriksaan Kualitas", href: "/admin/quality-control", roles: ADMIN_GUEST_ROLES },
+        { label: "Pengiriman & Ambil di Toko", href: "/admin/fulfillments", roles: ADMIN_GUEST_ROLES },
         { label: "Notifikasi", href: "/admin/notifications", roles: ADMIN_GUEST_ROLES },
         { label: "Laporan", href: "/admin/reports", roles: ADMIN_GUEST_ROLES }
       ]
@@ -164,8 +164,8 @@ const adminGuestNavigationGroups: readonly AdminNavigationGroup[] = [
     items: [
       { label: "Pengaturan", href: "/admin/website-settings", roles: ADMIN_GUEST_ROLES },
       { label: "Penomoran Dokumen", href: "/admin/document-numbering", roles: ADMIN_GUEST_ROLES },
-      { label: "Role & Permission", href: "/admin/access-control", roles: ADMIN_GUEST_ROLES },
-      { label: "Audit Sistem", href: "/admin/audit-log", roles: ADMIN_GUEST_ROLES }
+      { label: "Pengguna & Hak Akses", href: "/admin/access-control", roles: ADMIN_GUEST_ROLES },
+      { label: "Riwayat Aktivitas", href: "/admin/audit-log", roles: ADMIN_GUEST_ROLES }
     ]
   }
 ] as const;
@@ -241,32 +241,32 @@ export function getRoleHome(role: AdminRole) {
 }
 
 export function getCurrentNavigationLabel(pathname: string) {
-  if (pathname === "/admin/products/export-reconciliation") return "Export & Reconciliation";
-  if (pathname === "/admin/products/bulk-edit") return "Bulk Edit & Actions";
-  if (pathname === "/admin/products/bulk-import") return "Bulk Import Produk";
+  if (pathname === "/admin/products/export-reconciliation") return "Ekspor & Pencocokan Data";
+  if (pathname === "/admin/products/bulk-edit") return "Ubah Banyak Produk";
+  if (pathname === "/admin/products/bulk-import") return "Impor Banyak Produk";
   if (pathname === "/admin/custom-commerce") return "CMS / Custom";
-  if (pathname === "/admin/access-control") return "Role & Permission";
+  if (pathname === "/admin/access-control") return "Pengguna & Hak Akses";
   if (pathname === "/admin/payments") return "Pembayaran";
   if (pathname === "/admin/reports") return "Laporan Operasional";
-  if (pathname === "/admin/pim-v2") return "PIM V2 Dependency";
-  if (pathname === "/admin/pim-manager") return "Maintenance PIM";
-  if (pathname === "/admin/audit-log") return "Audit Sistem";
+  if (pathname === "/admin/pim-v2") return "Manajemen Produk Lanjutan";
+  if (pathname === "/admin/pim-manager") return "Pemeliharaan Produk";
+  if (pathname === "/admin/audit-log") return "Riwayat Aktivitas";
   if (pathname === "/admin/notifications/templates") return "Template Notifikasi";
   if (pathname === "/admin/notifications/history") return "Riwayat Notifikasi";
   if (pathname.startsWith("/admin/notifications/")) return "Detail Notifikasi";
   if (pathname === "/admin/notifications") return "Notifikasi";
-  if (pathname.startsWith("/admin/fulfillments/")) return "Detail Pengiriman & Pickup";
-  if (pathname === "/admin/fulfillments") return "Pengiriman & Pickup";
-  if (pathname.startsWith("/admin/quality-control/")) return "Detail Quality Control";
-  if (pathname === "/admin/quality-control") return "Quality Control";
+  if (pathname.startsWith("/admin/fulfillments/")) return "Detail Pengiriman";
+  if (pathname === "/admin/fulfillments") return "Pengiriman & Ambil di Toko";
+  if (pathname.startsWith("/admin/quality-control/")) return "Detail Pemeriksaan Kualitas";
+  if (pathname === "/admin/quality-control") return "Pemeriksaan Kualitas";
   if (pathname === "/admin/production") return "Status Produksi";
-  if (pathname.startsWith("/admin/work-items/")) return "Detail Work Item";
-  if (pathname === "/admin/work-items") return "Work Item";
-  if (pathname.startsWith("/admin/job-orders/")) return "Detail Job Order";
-  if (pathname === "/admin/job-orders") return "Job Order";
-  if (pathname === "/admin/repeat-orders") return "Repeat Order";
-  if (pathname === "/admin/orders/quotations/new") return "Buat Quotation";
-  if (pathname.startsWith("/admin/orders/quotations/")) return "Detail Quotation";
+  if (pathname.startsWith("/admin/work-items/")) return "Detail Pekerjaan";
+  if (pathname === "/admin/work-items") return "Daftar Pekerjaan";
+  if (pathname.startsWith("/admin/job-orders/")) return "Detail Surat Perintah Kerja";
+  if (pathname === "/admin/job-orders") return "Surat Perintah Kerja";
+  if (pathname === "/admin/repeat-orders") return "Pesanan Ulang";
+  if (pathname === "/admin/orders/quotations/new") return "Buat Penawaran Harga";
+  if (pathname.startsWith("/admin/orders/quotations/")) return "Detail Penawaran Harga";
   if (pathname === "/admin/orders/archive") return "Gudang Arsip Pesanan";
   if (pathname.startsWith("/admin/orders/")) return "Detail Pesanan";
   for (const group of adminNavigationGroups) for (const item of group.items) {
@@ -278,11 +278,11 @@ export function getCurrentNavigationLabel(pathname: string) {
 
 export type AdminBreadcrumbItem = { label: string; href?: string };
 export function getAdminBreadcrumbs(pathname: string): AdminBreadcrumbItem[] {
-  if (pathname === "/admin/dashboard" || pathname === "/admin") return [{ label: "Dashboard" }];
+  if (pathname === "/admin/dashboard" || pathname === "/admin") return [{ label: "Ringkasan" }];
   if (pathname === "/admin/custom-commerce") return [{ label: "Website" }, { label: "CMS / Custom" }];
-  if (pathname === "/admin/access-control") return [{ label: "Sistem" }, { label: "Role & Permission" }];
-  if (pathname === "/admin/audit-log") return [{ label: "Sistem" }, { label: "Audit Sistem" }];
-  if (pathname === "/admin/repeat-orders") return [{ label: "Order", href: "/admin/orders" }, { label: "Repeat Order" }];
+  if (pathname === "/admin/access-control") return [{ label: "Sistem" }, { label: "Pengguna & Hak Akses" }];
+  if (pathname === "/admin/audit-log") return [{ label: "Sistem" }, { label: "Riwayat Aktivitas" }];
+  if (pathname === "/admin/repeat-orders") return [{ label: "Pesanan", href: "/admin/orders" }, { label: "Pesanan Ulang" }];
   if (pathname.startsWith("/admin/notifications")) {
     const crumbs: AdminBreadcrumbItem[] = [{ label: "Operasional" }, { label: "Notifikasi", href: pathname === "/admin/notifications" ? undefined : "/admin/notifications" }];
     if (pathname === "/admin/notifications/templates") crumbs.push({ label: "Template" });
@@ -290,7 +290,7 @@ export function getAdminBreadcrumbs(pathname: string): AdminBreadcrumbItem[] {
     else if (pathname !== "/admin/notifications") crumbs.push({ label: "Detail Notifikasi" });
     return crumbs;
   }
-  const group = pathname.startsWith("/admin/orders") ? "Order" : pathname.startsWith("/admin/") ? (pathname.match(/job-orders|work-items|production|quality-control|fulfillments/) ? "Operasional" : "Sistem") : "Admin";
+  const group = pathname.startsWith("/admin/orders") ? "Pesanan" : pathname.startsWith("/admin/") ? (pathname.match(/job-orders|work-items|production|quality-control|fulfillments/) ? "Operasional" : "Sistem") : "Admin";
   return [{ label: group }, { label: getCurrentNavigationLabel(pathname) }];
 }
 

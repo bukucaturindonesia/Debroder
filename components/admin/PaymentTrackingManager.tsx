@@ -4,6 +4,7 @@ import { FormEvent, useEffect, useMemo, useState } from "react";
 import { useParams } from "next/navigation";
 import { createSupabaseClient } from "@/lib/supabase";
 import { formatAdminOrderDateTime, formatAdminOrderDateTimeInput } from "@/lib/admin-order-detail";
+import { getPaymentStatusLabel } from "@/lib/ui-language";
 import { PaymentCompletionPanel } from "@/components/admin/PaymentCompletionPanel";
 
 type PaymentRow = {
@@ -196,8 +197,8 @@ export function PaymentTrackingManager() {
       },
       body: JSON.stringify(body)
     });
-    const payload = await response.json() as { error?: string };
-    if (!response.ok) throw new Error(payload.error || "Aksi pembayaran gagal.");
+    await response.json();
+    if (!response.ok) throw new Error("Perubahan pembayaran belum berhasil disimpan. Coba lagi.");
   }
 
   function openCreate() {
@@ -359,7 +360,7 @@ export function PaymentTrackingManager() {
     setWorkingId(null);
 
     if (error) {
-      setMessage(error instanceof Error ? error.message : "Pembayaran belum berhasil diverifikasi.");
+      setMessage("Pembayaran belum berhasil diverifikasi. Periksa data lalu coba lagi.");
       return;
     }
 
@@ -383,7 +384,7 @@ export function PaymentTrackingManager() {
     setWorkingId(null);
 
     if (error) {
-      setMessage(error instanceof Error ? error.message : "Pembayaran belum berhasil ditolak.");
+      setMessage("Pembayaran belum berhasil ditolak. Periksa alasan lalu coba lagi.");
       return;
     }
 
@@ -954,7 +955,7 @@ function PaymentCard({
           <div className="flex flex-wrap items-center gap-2">
             <h3 className="font-semibold">{row.payment_number}</h3>
             <span className="rounded-full border border-brand-softGray px-3 py-1 text-xs font-semibold">
-              {PAYMENT_STATUS[row.status] || row.status}
+              {PAYMENT_STATUS[row.status] || getPaymentStatusLabel(row.status)}
             </span>
           </div>
           <p className="mt-3 text-2xl font-semibold">{money(row.amount)}</p>

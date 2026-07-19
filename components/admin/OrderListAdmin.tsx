@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { createSupabaseClient } from "@/lib/supabase";
+import { getOrderStatusLabel } from "@/lib/ui-language";
 import { AdminPageHeader } from "@/components/admin/layout/AdminPageHeader";
 import { AdminEmptyState, AdminLoadingState } from "@/components/admin/ui/AdminFeedback";
 
@@ -14,22 +15,6 @@ type OrderRow = {
   status: string;
   total_amount: number;
   created_at: string;
-};
-
-const STATUS: Record<string, string> = {
-  baru: "Pesanan Baru",
-  pending_confirmation: "Menunggu Verifikasi WhatsApp",
-  awaiting_shipping_quote: "Menunggu Ongkir",
-  awaiting_customer_approval: "Menunggu Persetujuan Total",
-  awaiting_payment: "Menunggu Pembayaran",
-  confirmed: "Pesanan Dikonfirmasi",
-  processing: "Sedang Diproses",
-  ready_for_pickup: "Siap Diambil",
-  shipped: "Dikirim",
-  picked_up: "Sudah Diambil",
-  expired: "Kedaluwarsa",
-  cancelled: "Pesanan Dibatalkan",
-  completed: "Pesanan Selesai"
 };
 
 function money(value: number) {
@@ -84,9 +69,9 @@ export function OrderListAdmin() {
     <main className="text-brand-charcoal">
       <div className="grid gap-6">
         <AdminPageHeader
-          eyebrow="DEBRODER v1.2 · Phase 4"
+          eyebrow="Operasional Pesanan"
           title="Pesanan"
-          description="Pesanan resmi dari guest checkout, penawaran yang disetujui, dan repeat order."
+          description="Pesanan resmi dari checkout pelanggan, penawaran yang disetujui, dan pesanan ulang."
           actions={
             <Link
               href="/admin/orders/archive"
@@ -128,14 +113,14 @@ export function OrderListAdmin() {
                     </p>
                     <p className="mt-2 text-sm font-semibold">{money(row.total_amount)}</p>
                     <p className="mt-2 text-xs text-brand-charcoal/55">
-                      {STATUS[row.status] || row.status}
+                      {getOrderStatusLabel(row.status)}
                     </p>
                   </div>
                   <Link
                     href={`/admin/orders/${row.id}`}
                     className="inline-flex min-h-10 items-center justify-center rounded-full bg-brand-charcoal px-5 text-sm font-semibold text-white"
                   >
-                    Buka Detail
+                    Lihat Detail Pesanan
                   </Link>
                 </div>
               </article>
@@ -144,7 +129,7 @@ export function OrderListAdmin() {
         ) : (
           <AdminEmptyState
             title="Belum ada pesanan"
-            description="Pesanan akan muncul setelah guest checkout berhasil atau penawaran disetujui dan dikonversi."
+            description="Pesanan akan muncul setelah checkout berhasil atau penawaran harga disetujui dan dijadikan pesanan."
           />
         )}
       </div>

@@ -11,15 +11,11 @@ import {
 } from "@/lib/supabase";
 
 function configMessage(status: ReturnType<typeof getSupabaseEnvStatus>) {
-  if (status.usesRestEndpoint) {
-    return "Supabase belum aktif. Gunakan Project URL, bukan URL /rest/v1.";
+  if (status.usesRestEndpoint || (!status.anonKeyValid && status.hasAnonKey)) {
+    return "Konfigurasi layanan data belum sesuai. Hubungi pengelola sistem.";
   }
 
-  if (!status.anonKeyValid && status.hasAnonKey) {
-    return "Supabase belum aktif. Gunakan anon/public/publishable key, bukan secret key.";
-  }
-
-  return "Supabase belum aktif. Periksa Environment Variables.";
+  return "Layanan data belum aktif. Hubungi pengelola sistem.";
 }
 
 export function AdminLogin() {
@@ -90,7 +86,7 @@ export function AdminLogin() {
     if (!response.ok) {
       await supabase.auth.signOut();
       setIsLoading(false);
-      setError(access.error || "Akses panel admin ditolak.");
+      setError("Akses panel admin ditolak. Pastikan akun Anda memiliki peran yang sesuai.");
       return;
     }
 
@@ -108,28 +104,28 @@ export function AdminLogin() {
         >
           <Logo variant="primary-dark" size="md" />
 
-          <h1 className="mt-8 text-3xl font-black">Login Panel Admin</h1>
+          <h1 className="mt-8 text-3xl font-black">Masuk ke Panel Admin</h1>
           <p className="mt-3 text-sm leading-6 text-brand-charcoal/70">
-            Masuk sebagai Super Admin, Admin, atau Admin Guest sesuai role pada profil terverifikasi.
+            Masuk sebagai Super Admin, Admin, atau Admin Guest sesuai peran pada profil terverifikasi.
           </p>
 
           {!configured ? (
             <div className="mt-5 rounded-2xl bg-brand-offWhite p-4 text-sm font-semibold leading-6 text-brand-charcoal/70">
               <p>{configMessage(supabaseStatus)}</p>
               <div className="mt-4 rounded-2xl bg-white p-4">
-                <p className="font-black text-brand-charcoal">Supabase Status:</p>
+                <p className="font-black text-brand-charcoal">Status layanan data:</p>
                 <div className="mt-3 grid gap-1">
                   <p>URL tersedia: {supabaseStatus.hasUrl ? "Ya" : "Tidak"}</p>
                   <p>
-                    Anon Key tersedia:{" "}
+                    Kunci akses tersedia:{" "}
                     {supabaseStatus.hasAnonKey ? "Ya" : "Tidak"}
                   </p>
                   <p>URL valid: {supabaseStatus.urlValid ? "Ya" : "Tidak"}</p>
                   <p>
-                    Anon Key valid:{" "}
+                    Kunci akses valid:{" "}
                     {supabaseStatus.anonKeyValid ? "Ya" : "Tidak"}
                   </p>
-                  <p>Environment: {supabaseStatus.environment}</p>
+                  <p>Lingkungan aplikasi: {supabaseStatus.environment}</p>
                 </div>
               </div>
             </div>
@@ -137,7 +133,7 @@ export function AdminLogin() {
 
           {!recaptchaSiteKey ? (
             <p className="mt-4 rounded-lg bg-amber-50 p-3 text-xs font-semibold leading-5 text-amber-800">
-              reCAPTCHA belum aktif. Isi NEXT_PUBLIC_RECAPTCHA_SITE_KEY dan RECAPTCHA_SECRET_KEY sebelum deploy production.
+              Verifikasi keamanan belum aktif. Hubungi pengelola sistem sebelum menggunakan aplikasi di lingkungan produksi.
             </p>
           ) : null}
 
@@ -153,7 +149,7 @@ export function AdminLogin() {
           </label>
 
           <label className="mt-4 block text-sm font-black">
-            Password
+            Kata sandi
             <input
               type="password"
               value={password}
@@ -174,7 +170,7 @@ export function AdminLogin() {
             disabled={isLoading || !configured}
             className="mt-6 inline-flex min-h-12 w-full items-center justify-center rounded-full bg-brand-charcoal px-6 py-4 text-sm font-black text-white transition hover:bg-black/80 disabled:cursor-not-allowed disabled:opacity-50"
           >
-            {isLoading ? "Memproses..." : "Login"}
+            {isLoading ? "Memproses..." : "Masuk"}
           </button>
         </form>
       </div>

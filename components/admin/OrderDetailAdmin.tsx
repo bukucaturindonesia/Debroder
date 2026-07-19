@@ -18,6 +18,10 @@ import {
   adminOrderCompatibilityWarning,
   resolveAdminOrderWorkspaceKind
 } from "@/lib/admin-order-detail";
+import {
+  getOrderStatusLabel,
+  getPricingStatusLabel
+} from "@/lib/ui-language";
 
 type Order = {
   id: string;
@@ -265,7 +269,7 @@ export function OrderDetailAdmin() {
     setWorking(false);
 
     if (error) {
-      setMessage(error.message || "Pesanan gagal dibatalkan.");
+      setMessage("Pesanan belum dapat dibatalkan. Periksa status terbaru lalu coba lagi.");
       return;
     }
 
@@ -288,7 +292,7 @@ export function OrderDetailAdmin() {
     setWorking(false);
 
     if (error) {
-      setMessage(error.message || "Pesanan gagal dipindahkan ke Gudang Arsip.");
+      setMessage("Pesanan belum dapat dipindahkan ke arsip. Coba lagi.");
       return;
     }
 
@@ -351,7 +355,7 @@ export function OrderDetailAdmin() {
           description={`${order.customer_name}${order.company_name ? ` · ${order.company_name}` : ""}`}
           actions={
             <>
-              <AdminOrderSectionBoundary label="Ulangi Order">
+              <AdminOrderSectionBoundary label="Pesan Ulang">
                 <RepeatOrderDialog orderId={order.id} />
               </AdminOrderSectionBoundary>
               {canOpenPayment ? (
@@ -426,7 +430,7 @@ export function OrderDetailAdmin() {
           </div>
         ) : null}
 
-        <AdminOrderSectionBoundary label="Pusat Kendali Order">
+        <AdminOrderSectionBoundary label="Pusat Kendali Pesanan">
           {workspaceKind === "custom" ? (
             <CustomOrderOperationalWorkspace order={order} jobOrder={jobOrder} qualityControl={qualityControl} fulfillment={fulfillment} />
           ) : (
@@ -435,7 +439,7 @@ export function OrderDetailAdmin() {
         </AdminOrderSectionBoundary>
 
         <section id="order-data" className="grid scroll-mt-24 gap-5 border border-brand-softGray bg-white p-5 sm:grid-cols-2 sm:p-7">
-          <Data label="Status" value={order.status === "baru" ? "Pesanan Baru" : order.status} />
+          <Data label="Status" value={getOrderStatusLabel(order.status)} />
           <Data label="Status Harga" value={pricingStatusLabel(order.pricing_status)} />
           <Data label="Total Terkunci" value={pricingIsFinal ? money(order.total_amount) : "Menunggu penetapan harga"} />
           <Data label="Estimasi Proyek" value={estimate ?? (pricingIsFinal ? money(order.subtotal_amount) : "Belum tersedia")} />
@@ -482,7 +486,7 @@ export function OrderDetailAdmin() {
         {customProjects.length ? (
           <section id="custom-pricing" className="scroll-mt-24 border border-brand-softGray bg-white p-5 sm:p-7">
             <h2 className="text-2xl font-semibold">Breakdown Custom Canonical</h2>
-            <p className="mt-2 text-sm text-brand-charcoal/60">Layanan, placement, ukuran cetak, personalisasi, upload, dan harga dibaca dari snapshot order—bukan dari data PIM/CMS terbaru.</p>
+            <p className="mt-2 text-sm text-brand-charcoal/60">Layanan, posisi, ukuran cetak, personalisasi, file, dan harga mengikuti rincian saat pesanan dibuat—bukan data PIM/CMS terbaru.</p>
             <div className="mt-6 grid gap-5">
               {customProjects.map((project) => (
                 <article key={project.id} className="border border-brand-softGray p-4 sm:p-5">
@@ -499,7 +503,7 @@ export function OrderDetailAdmin() {
                     ))}
                   </div>
                   {project.items.map((item) => (
-                    <div key={item.id} className="mt-4 rounded-lg bg-brand-offWhite p-4 text-sm"><p className="font-semibold">{item.productName}</p>{item.selectedServices.length ? <div className="mt-3"><p className="font-semibold">Layanan dipilih pada snapshot</p><ul className="mt-2 grid gap-2">{item.selectedServices.map((service) => { const serviceLine = project.lines.find((line) => line.serviceId === service.serviceId && line.kind === "service"); return <li key={service.id} className="border-l-2 border-brand-softGray pl-3"><p className="font-semibold">{serviceLine?.label || service.serviceId}</p><p className={`mt-1 text-xs ${service.assignedQuantity ? "text-brand-charcoal/60" : "font-semibold text-red-700"}`}>{service.packageName} · {service.assignedQuantity ? `${service.assignedQuantity} pcs dialokasikan` : "Belum dialokasikan—tidak ikut harga"}{service.placementId ? ` · Placement ${service.placementId}` : ""}{service.printSizeId ? ` · Print size ${service.printSizeId}` : ""}</p>{service.note ? <p className="mt-1 text-xs text-brand-charcoal/60">Catatan: {service.note}</p> : null}</li>; })}</ul></div> : null}{item.personalization ? <p className="mt-3 text-brand-charcoal/65">Personalisasi: {item.personalization}</p> : null}{item.uploads.length ? <div className="mt-3"><p className="font-semibold">File pelanggan</p><ul className="mt-1 grid gap-1 text-xs text-brand-charcoal/60">{item.uploads.map((upload) => <li key={upload.id}>{upload.fileName} · {upload.mimeType || "tipe tidak tersedia"} · {formatBytes(upload.fileSize)}</li>)}</ul></div> : null}</div>
+                    <div key={item.id} className="mt-4 rounded-lg bg-brand-offWhite p-4 text-sm"><p className="font-semibold">{item.productName}</p>{item.selectedServices.length ? <div className="mt-3"><p className="font-semibold">Layanan yang dipilih saat pemesanan</p><ul className="mt-2 grid gap-2">{item.selectedServices.map((service) => { const serviceLine = project.lines.find((line) => line.serviceId === service.serviceId && line.kind === "service"); return <li key={service.id} className="border-l-2 border-brand-softGray pl-3"><p className="font-semibold">{serviceLine?.label || "Layanan custom"}</p><p className={`mt-1 text-xs ${service.assignedQuantity ? "text-brand-charcoal/60" : "font-semibold text-red-700"}`}>{service.packageName} · {service.assignedQuantity ? `${service.assignedQuantity} pcs dialokasikan` : "Belum dialokasikan—tidak ikut harga"}{service.placementId ? ` · Posisi ${service.placementId}` : ""}{service.printSizeId ? ` · Ukuran cetak ${service.printSizeId}` : ""}</p>{service.note ? <p className="mt-1 text-xs text-brand-charcoal/60">Catatan: {service.note}</p> : null}</li>; })}</ul></div> : null}{item.personalization ? <p className="mt-3 text-brand-charcoal/65">Personalisasi: {item.personalization}</p> : null}{item.uploads.length ? <div className="mt-3"><p className="font-semibold">File pelanggan</p><ul className="mt-1 grid gap-1 text-xs text-brand-charcoal/60">{item.uploads.map((upload) => <li key={upload.id}>{upload.fileName} · {upload.mimeType || "tipe tidak tersedia"} · {formatBytes(upload.fileSize)}</li>)}</ul></div> : null}</div>
                   ))}
                 </article>
               ))}
@@ -507,7 +511,7 @@ export function OrderDetailAdmin() {
           </section>
         ) : null}
 
-        <AdminOrderSectionBoundary label="Tautan Tracking">
+        <AdminOrderSectionBoundary label="Tautan Pelacakan">
           <OrderTrackingLinkManager orderId={order.id} />
         </AdminOrderSectionBoundary>
 
@@ -520,7 +524,7 @@ export function OrderDetailAdmin() {
         </div>
 
         <div id="order-history" className="scroll-mt-24">
-          <AdminOrderSectionBoundary label="Histori Order">
+          <AdminOrderSectionBoundary label="Riwayat Pesanan">
             <CustomerOrderHistory orderId={order.id} />
           </AdminOrderSectionBoundary>
         </div>
@@ -771,15 +775,12 @@ function projectEstimate(projects: SnapshotProject[]) {
 }
 
 function pricingStatusLabel(value: string) {
-  if (value === "final") return "Harga final";
-  if (value === "estimated") return "Estimasi · menunggu penetapan harga";
-  if (value === "quotation_required") return "Menunggu penawaran Admin";
-  return value || "Status belum tersedia";
+  return getPricingStatusLabel(value);
 }
 
 function pricingKindLabel(value: string) {
-  const labels: Record<string, string> = { product: "Produk PIM", service: "Layanan", placement: "Placement", print_size: "Ukuran cetak", personalization: "Personalisasi" };
-  return labels[value] ?? value;
+  const labels: Record<string, string> = { product: "Produk", service: "Layanan", placement: "Posisi Cetak", print_size: "Ukuran Cetak", personalization: "Personalisasi" };
+  return labels[value] ?? "Rincian Harga";
 }
 
 function record(value: unknown): Record<string, unknown> | null {

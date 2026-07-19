@@ -1,32 +1,42 @@
-WORK: DEBRODER Admin Order Detail Pricing Workspace Fundamental Revision
-BASELINE: commit 394613b2175188477330165d36a8c2c0f2841f85 (error fix long)
-SCOPE: /admin/orders/[id] Stage 3 pricing, its customer quote display, pure pricing validation, local forward migration, and focused regression tests.
+NAMA PEKERJAAN
+DEBRODER — Standardisasi Bahasa Seluruh UI Publik dan Admin
 
-COPY/APPLY
-1. Extract this ZIP to a temporary folder.
-2. Copy all paths into the repository root and choose Replace/Merge.
-3. Review the nine source files in FILES_CHANGED.txt.
-4. Review and apply supabase/migrations/20260719110000_admin_order_pricing_workspace.sql through the owner-controlled Preview database process BEFORE deploying source that selects custom_pricing_draft columns.
-5. Run install, targeted tests, typecheck, lint, full tests, clean build, then controlled Preview browser tests.
+BASELINE
+Commit source: 2d3960c0ee6e3ebc3f4ed4edd7fa24b345af8004
+Checkpoint: source yang diberikan owner melalui Debroder(12).zip.
 
-FILES TO DELETE MANUALLY: NONE
-MIGRATION: PROPOSED LOCALLY — NOT APPLIED
-REMOTE SUPABASE: UNCHANGED
-GITHUB: UNCHANGED
-VERCEL: UNCHANGED
+SCOPE
+Perubahan copy UI publik dan admin, kamus istilah, pemetaan status terpusat, fallback aman, serta test statis bahasa. Layout, route, business logic, API, database, enum, permission, lifecycle, dan perhitungan commerce dipertahankan.
 
-LOCAL GATE LIMITATION
-The supplied ZIP did not contain node_modules. The one permitted pnpm install failed before dependency resolution because the runner could not create /root/.local. No install retry or environment workaround was performed. Package-based tests, TypeScript, lint, and Next build therefore did not execute.
+FILE YANG HARUS DIHAPUS MANUAL
+NONE
 
-LIGHTWEIGHT RESULTS
-- Pure pricing domain smoke with Node type stripping: PASS.
-- Changed-files diff (ignoring repository baseline CRLF only): PASS.
-- Conflict-marker scan: PASS.
-- Credential/secret signature scan: PASS.
-- Package/prebuild static compatibility check: PASS.
+MIGRATION
+NONE
 
-RISKS / OWNER VERIFICATION REQUIRED
-- Migration SQL has been statically reviewed but not compiled or applied to a database.
-- TypeScript, ESLint, Vitest, clean Next production build, and browser smoke remain owner-run gates.
-- Final “send” prepares the quote in the existing customer token/polling flow. No external WhatsApp/email provider was invented.
-- Test historical missing-base, Custom, Jersey Custom, Ready Stock, Jersey Ready Stock, pickup, courier, unauthorized/read-only, stale-tab, and double-click cases on controlled Preview data.
+HASIL LOCAL GATES
+- Dependency install: ENVIRONMENT BLOCKED — pnpm ENOENT saat membuat /root/.local; dijalankan satu kali dan tidak diulang.
+- TypeScript: ENVIRONMENT BLOCKED — compiler tidak mulai; no source error observed.
+- Lint: ENVIRONMENT BLOCKED — linter tidak mulai; no source error observed.
+- Targeted tests: ENVIRONMENT BLOCKED — Vitest tidak mulai; no source error observed.
+- Full tests: ENVIRONMENT BLOCKED — test runner tidak mulai; no source error observed.
+- Production build: ENVIRONMENT BLOCKED — Next.js build tidak mulai; no source error observed.
+- Changed-files audit: PASS.
+- Conflict scan: PASS.
+- Secret scan: PASS.
+- Static Vercel compatibility preflight: PASS untuk path/config yang berubah; build owner tetap wajib.
+
+BATAS VERIFIKASI
+STATIC AUDIT ONLY. Browser dan viewport tidak diverifikasi. Vercel Preview dikelola dan diverifikasi owner.
+
+RISIKO
+- TypeScript/lint/test/build belum dapat divalidasi di runner lokal akibat environment.
+- Luas copy audit mencakup banyak UI existing; owner perlu smoke test route representatif di Preview.
+- Kode diagnostik, SKU, ID, nama format file, dan istilah industri resmi sengaja dipertahankan.
+
+CARA COPY KE ROOT REPOSITORY
+1. Extract ZIP ke folder sementara.
+2. Salin seluruh isi paket ke root repository dengan struktur path tetap.
+3. Pilih Replace/Merge untuk file existing.
+4. Tidak ada file yang perlu dihapus atau di-rename.
+5. Jalankan quality gate dan Preview melalui environment owner.

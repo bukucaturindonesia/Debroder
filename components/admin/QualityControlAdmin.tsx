@@ -80,7 +80,7 @@ export function QualityControlAdmin() {
     const supabase = createSupabaseClient();
     if (!supabase) {
       setLoading(false);
-      setNotice({ type: "error", text: "Supabase belum dikonfigurasi." });
+      setNotice({ type: "error", text: "Layanan data belum tersedia. Hubungi pengelola sistem." });
       return;
     }
 
@@ -114,7 +114,7 @@ export function QualityControlAdmin() {
     setLoading(false);
     const firstError = recordsResult.error || workItemsResult.error || jobOrdersResult.error || filesResult.error;
     if (firstError) {
-      setNotice({ type: "error", text: `Quality Control belum dapat dimuat: ${firstError.message}` });
+      setNotice({ type: "error", text: "Data pemeriksaan kualitas belum dapat dimuat. Coba lagi." });
       return;
     }
 
@@ -239,7 +239,7 @@ export function QualityControlAdmin() {
     });
     setWorking(false);
     if (result.error) {
-      setNotice({ type: "error", text: result.error.message || "Draft QC gagal dibuat." });
+      setNotice({ type: "error", text: "Draft pemeriksaan belum dapat dibuat. Coba lagi." });
       return;
     }
     const id = typeof result.data?.id === "string" ? result.data.id : null;
@@ -258,7 +258,7 @@ export function QualityControlAdmin() {
     const result = await supabase.rpc("restore_qc_record", { p_qc_record_id: record.id });
     setWorking(false);
     if (result.error) {
-      setNotice({ type: "error", text: result.error.message || "Draft QC gagal dipulihkan." });
+      setNotice({ type: "error", text: "Draft pemeriksaan belum dapat dipulihkan. Coba lagi." });
       return;
     }
     setRestoreTarget(null);
@@ -280,7 +280,7 @@ export function QualityControlAdmin() {
       const removeResult = await supabase.storage.from("qc-proofs").remove(recordFiles.map((file) => file.path));
       if (removeResult.error) {
         setWorking(false);
-        setNotice({ type: "error", text: `File bukti belum dapat dibersihkan: ${removeResult.error.message}` });
+        setNotice({ type: "error", text: "File bukti belum dapat dibersihkan. Coba lagi." });
         return;
       }
     }
@@ -290,7 +290,7 @@ export function QualityControlAdmin() {
     });
     setWorking(false);
     if (result.error) {
-      setNotice({ type: "error", text: result.error.message || "QC gagal dihapus permanen." });
+      setNotice({ type: "error", text: "Pemeriksaan belum dapat dihapus permanen." });
       return;
     }
     setDeleteTarget(null);
@@ -298,14 +298,14 @@ export function QualityControlAdmin() {
     await loadData();
   }
 
-  if (loading) return <AdminLoadingState label="Memuat Quality Control..." />;
+  if (loading) return <AdminLoadingState label="Memuat pemeriksaan kualitas..." />;
 
   return (
     <main className="text-brand-charcoal">
       <div className="grid gap-6">
         <AdminPageHeader
           eyebrow="DEBRODER v1.2 · Phase 10"
-          title="Quality Control"
+          title="Pemeriksaan Kualitas"
           description="Periksa hasil produksi, simpan checklist dan bukti, lalu putuskan lulus atau kembali ke perbaikan."
           actions={
             <Link href="/admin/production" className="inline-flex min-h-10 items-center rounded-full border border-brand-softGray bg-white px-5 text-sm font-semibold">
@@ -315,7 +315,7 @@ export function QualityControlAdmin() {
         />
 
         {notice ? <AdminAlert type={notice.type}>{notice.text}</AdminAlert> : null}
-        {!canManage ? <AdminAlert type="error">Akun ini tidak mempunyai akses Quality Control.</AdminAlert> : null}
+        {!canManage ? <AdminAlert type="error">Akun ini tidak mempunyai akses pemeriksaan kualitas.</AdminAlert> : null}
 
         <section className="border border-brand-softGray bg-white p-4 sm:p-5">
           <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
@@ -338,7 +338,7 @@ export function QualityControlAdmin() {
             <input
               value={search}
               onChange={(event) => setSearch(event.target.value)}
-              placeholder="Cari nomor QC, Work Item, atau Job Order"
+              placeholder="Cari nomor pemeriksaan, pekerjaan, atau Surat Perintah Kerja"
               className="min-h-11 w-full rounded-lg border border-brand-softGray px-4 text-sm lg:max-w-md"
             />
           </div>
@@ -346,7 +346,7 @@ export function QualityControlAdmin() {
 
         {tab === "queue" ? (
           queue.length === 0 ? (
-            <AdminEmptyState title="Belum ada Work Item menunggu QC" description="Work Item akan muncul setelah produksi mengirimkannya ke tahap Menunggu QC." />
+            <AdminEmptyState title="Belum ada pekerjaan yang menunggu pemeriksaan" description="Pekerjaan akan muncul setelah produksi mengirimkannya ke tahap Menunggu Pemeriksaan Kualitas." />
           ) : (
             <section className="grid gap-4">
               {queue.map((item) => {
@@ -356,13 +356,13 @@ export function QualityControlAdmin() {
                   <article key={item.id} className="border border-brand-softGray bg-white p-5 sm:p-6">
                     <div className="flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between">
                       <div>
-                        <p className="text-xs font-semibold uppercase tracking-[0.18em] text-brand-charcoal/50">{job?.job_order_number || "Job Order"}</p>
+                        <p className="text-xs font-semibold uppercase tracking-[0.18em] text-brand-charcoal/50">{job?.job_order_number || "Surat Perintah Kerja"}</p>
                         <h2 className="mt-2 text-xl font-semibold">{item.work_item_number} · {item.title}</h2>
                         <p className="mt-2 text-sm text-brand-charcoal/60">{item.quantity} {item.unit} · {WORK_ITEM_STATUS_LABELS[item.status]}</p>
                         {active ? <p className="mt-3 text-sm font-semibold text-amber-700">Draft aktif: {active.qc_number}</p> : null}
                       </div>
                       <div className="flex flex-wrap gap-2">
-                        <Link href={`/admin/work-items/${item.id}`} className="inline-flex min-h-10 items-center rounded-full border border-brand-softGray px-5 text-sm font-semibold">Detail Work Item</Link>
+                        <Link href={`/admin/work-items/${item.id}`} className="inline-flex min-h-10 items-center rounded-full border border-brand-softGray px-5 text-sm font-semibold">Detail Pekerjaan</Link>
                         <button
                           type="button"
                           onClick={() => openCreate(item)}
@@ -393,9 +393,9 @@ export function QualityControlAdmin() {
                 <article key={record.id} className="border border-brand-softGray bg-white p-5 sm:p-6">
                   <div className="flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between">
                     <div>
-                      <p className="text-xs font-semibold uppercase tracking-[0.18em] text-brand-charcoal/50">Percobaan #{record.attempt_number} · {job?.job_order_number || "Job Order"}</p>
+                      <p className="text-xs font-semibold uppercase tracking-[0.18em] text-brand-charcoal/50">Pemeriksaan #{record.attempt_number} · {job?.job_order_number || "Surat Perintah Kerja"}</p>
                       <h2 className="mt-2 text-xl font-semibold">{record.qc_number}</h2>
-                      <p className="mt-2 text-sm text-brand-charcoal/65">{item?.work_item_number || "Work Item"} · {item?.title || "Pekerjaan tidak tersedia"}</p>
+                      <p className="mt-2 text-sm text-brand-charcoal/65">{item?.work_item_number || "Pekerjaan"} · {item?.title || "Pekerjaan tidak tersedia"}</p>
                       <div className="mt-3 flex flex-wrap gap-2 text-xs font-semibold">
                         <span className="rounded-full bg-brand-offWhite px-3 py-1.5">{QC_WORKFLOW_LABELS[record.status]}</span>
                         <span className="rounded-full bg-brand-offWhite px-3 py-1.5">{QC_RESULT_LABELS[record.result]}</span>
@@ -425,7 +425,7 @@ export function QualityControlAdmin() {
       {createOpen ? (
         <div className="fixed inset-0 z-[100] overflow-y-auto bg-black/60 p-4 sm:p-8">
           <form onSubmit={createQc} className="mx-auto max-w-xl bg-white p-6 shadow-2xl sm:p-8">
-            <h2 className="text-2xl font-semibold">Buat Draft Quality Control</h2>
+            <h2 className="text-2xl font-semibold">Buat Draft Pemeriksaan Kualitas</h2>
             <p className="mt-2 text-sm leading-6 text-brand-charcoal/60">Checklist standar akan dibuat otomatis dan dapat diperbarui pada halaman detail.</p>
             <label className="mt-5 block text-sm font-semibold">
               Jumlah yang diperiksa

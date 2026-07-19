@@ -138,14 +138,14 @@ export function CustomProjectBuilder({ catalogs, initialCategoryId, preselectedP
     try {
       const response = await fetch("/api/custom/reprice", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ project }) });
       const payload = await response.json() as { pricing?: CustomProjectPricing; error?: string };
-      if (!response.ok || !payload.pricing) throw new Error(payload.error || "Harga belum dapat divalidasi.");
+      if (!response.ok || !payload.pricing) throw new Error("Harga belum dapat divalidasi. Periksa pilihan produk lalu coba lagi.");
       setPricing(payload.pricing);
       setPricingState("idle");
-      setMessage(payload.pricing.status === "quotation_required" ? "Konfigurasi tervalidasi server dan menunggu penawaran Admin." : "Harga dan konfigurasi sudah divalidasi server.");
+      setMessage(payload.pricing.status === "quotation_required" ? "Konfigurasi sudah diperiksa dan menunggu penawaran dari admin." : "Harga dan konfigurasi sudah diperiksa.");
       setDirty(false);
     } catch (error) {
       setPricingState("error");
-      setMessage(error instanceof Error ? error.message : "Harga belum dapat divalidasi.");
+      setMessage("Harga belum dapat divalidasi. Periksa pilihan produk lalu coba lagi.");
     }
   }
 
@@ -336,10 +336,10 @@ function ServiceEditor({ catalog, item, selection, sessionToken, attachUpload, u
       const form = new FormData(); form.set("file", file); form.set("session_token", sessionToken);
       const response = await fetch("/api/customer-uploads", { method: "POST", body: form });
       const payload = await response.json() as { upload?: CustomProjectItem["uploads"][number]; error?: string };
-      if (!response.ok || !payload.upload) throw new Error(payload.error || "Upload gagal.");
+      if (!response.ok || !payload.upload) throw new Error("File belum dapat diunggah. Periksa jenis dan ukuran file lalu coba lagi.");
       updatePackage((current) => ({ ...current, services: current.services.map((candidate) => candidate.id === selection.id ? { ...candidate, uploadIds: [...candidate.uploadIds, payload.upload!.id] } : candidate) }));
       attachUpload(payload.upload);
-    } catch (error) { setUploadError(error instanceof Error ? error.message : "Upload gagal."); }
+    } catch (error) { setUploadError(error instanceof Error ? error.message : "File belum dapat diunggah. Coba lagi."); }
     finally { setUploading(false); }
   }
 
@@ -377,10 +377,10 @@ function PersonalizationEditor({ item, catalog, mutate }: { item: CustomProjectI
 }
 
 function ReviewStep({ catalogs, project, pricing, totalQuantity, pricingState, onReprice, onAddToCart }: { catalogs: CustomCategoryCatalog[]; project: CustomProject; pricing: CustomProjectPricing | null; totalQuantity: number; pricingState: "idle" | "loading" | "error"; onReprice: () => void; onAddToCart: () => void }) {
-  return <div><StepHeading title="Ringkasan" detail="Server memeriksa ulang produk, varian, minimum, layanan, compatibility, upload, personalisasi, dan harga." />
+  return <div><StepHeading title="Ringkasan" detail="Sistem memeriksa ulang produk, varian, jumlah minimum, kecocokan layanan, file, personalisasi, dan harga." />
     <div className="mt-5 grid gap-5 lg:grid-cols-[1fr_360px]"><div className="grid gap-4">{project.items.map((item) => { const catalog = catalogs.find((candidate) => candidate.category.id === item.categoryId); return <article key={item.id} className="rounded-[24px] bg-[#f5f5ef] p-5"><div className="flex items-start justify-between gap-4"><div><p className="text-xs font-semibold uppercase tracking-[0.12em] text-black/45">{item.categoryName}</p><h3 className="mt-1 text-lg font-semibold">{item.productName}</h3></div><span className="font-semibold">{item.allocations.reduce((sum, allocation) => sum + allocation.quantity, 0)} pcs</span></div><div className="mt-4 grid gap-2 text-sm text-black/60">{item.allocations.map((allocation) => <p key={allocation.id}>{allocation.variantName} · {allocation.sizeName} · {allocation.quantity} pcs · {item.designPackages.find((designPackage) => designPackage.id === allocation.designPackageId)?.name || "Tanpa layanan"}</p>)}</div>{item.designPackages.map((designPackage) => designPackage.services.length ? <div key={designPackage.id} className="mt-4 border-t border-black/10 pt-3"><p className="text-xs font-semibold uppercase tracking-[0.1em] text-black/45">{designPackage.name}</p>{designPackage.services.map((selection) => { const service = catalog?.services.find((candidate) => candidate.id === selection.serviceId); const placement = catalog?.placements.find((candidate) => candidate.id === selection.placementId); const printSize = catalog?.printSizes.find((candidate) => candidate.id === selection.printSizeId); return <p key={selection.id} className="mt-2 text-sm text-black/65">{service?.name || "Layanan"}{printSize ? ` · ${printSize.name}` : ""}{placement ? ` · ${placement.name}` : ""}{selection.uploadIds.length ? ` · ${selection.uploadIds.length} file` : ""}</p>; })}</div> : null)}{item.personalization.ruleId ? <p className="mt-4 text-sm text-black/65">Personalisasi: {item.personalization.mode === "same_for_all" ? item.personalization.sharedValue : `${item.personalization.entries.length} data individual`}</p> : null}{item.note ? <p className="mt-2 text-sm text-black/65">Catatan: {item.note}</p> : null}</article>; })}</div>
-      <aside className="h-fit rounded-[24px] border border-black/10 p-5 lg:sticky lg:top-28"><h3 className="text-xl font-semibold">Total proyek</h3><p className="mt-2 text-sm text-black/55">{project.items.length} Product Group · {totalQuantity} pcs</p>
-        {pricing ? <div className="mt-5"><p className="text-xs font-semibold uppercase tracking-[0.12em] text-black/45">{pricing.status === "final" ? "Harga final" : pricing.status === "estimated" ? "Estimasi" : "Perlu penawaran"}</p><p className="mt-2 text-2xl font-bold">{pricing.status === "final" ? formatRupiah(pricing.finalTotal) : pricing.status === "estimated" ? `${formatRupiah(pricing.estimatedMinTotal)} – ${formatRupiah(pricing.estimatedMaxTotal)}` : "Diperiksa admin"}</p><div className="mt-4 max-h-56 overflow-y-auto border-t border-black/10 pt-3 text-xs text-black/60">{pricing.lines.map((line) => <div key={line.key} className="flex justify-between gap-3 py-1"><span>{line.label} × {line.quantity}</span><span>{line.subtotal === null ? "Review" : formatRupiah(line.subtotal)}</span></div>)}</div></div> : <p className="mt-5 rounded-2xl bg-[#f5f5ef] p-4 text-sm leading-6 text-black/60">Validasi harga server wajib dilakukan sebelum proyek masuk keranjang.</p>}
+      <aside className="h-fit rounded-[24px] border border-black/10 p-5 lg:sticky lg:top-28"><h3 className="text-xl font-semibold">Total proyek</h3><p className="mt-2 text-sm text-black/55">{project.items.length} grup produk · {totalQuantity} pcs</p>
+        {pricing ? <div className="mt-5"><p className="text-xs font-semibold uppercase tracking-[0.12em] text-black/45">{pricing.status === "final" ? "Harga final" : pricing.status === "estimated" ? "Estimasi" : "Perlu penawaran"}</p><p className="mt-2 text-2xl font-bold">{pricing.status === "final" ? formatRupiah(pricing.finalTotal) : pricing.status === "estimated" ? `${formatRupiah(pricing.estimatedMinTotal)} – ${formatRupiah(pricing.estimatedMaxTotal)}` : "Diperiksa admin"}</p><div className="mt-4 max-h-56 overflow-y-auto border-t border-black/10 pt-3 text-xs text-black/60">{pricing.lines.map((line) => <div key={line.key} className="flex justify-between gap-3 py-1"><span>{line.label} × {line.quantity}</span><span>{line.subtotal === null ? "Diperiksa" : formatRupiah(line.subtotal)}</span></div>)}</div></div> : <p className="mt-5 rounded-2xl bg-[#f5f5ef] p-4 text-sm leading-6 text-black/60">Harga harus diperiksa sebelum proyek masuk ke keranjang.</p>}
         <button type="button" disabled={pricingState === "loading"} onClick={onReprice} className="mt-5 min-h-12 w-full rounded-full border border-black/15 px-4 text-sm font-semibold disabled:opacity-40">{pricingState === "loading" ? "Memvalidasi..." : pricing ? "Validasi ulang" : "Validasi harga"}</button>
         <button type="button" disabled={!pricing || Boolean(pricing.issues.length)} onClick={onAddToCart} className="mt-3 min-h-12 w-full rounded-full bg-black px-4 text-sm font-semibold text-white disabled:opacity-35">Gunakan Konfigurasi Ini & Lanjut ke Keranjang</button>
       </aside>

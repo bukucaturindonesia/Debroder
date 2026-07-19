@@ -30,7 +30,7 @@ export function AdminSidebar({
           <Logo variant="primary-dark" size="md" />
         </Link>
         <p className="mt-3 text-xs font-semibold uppercase tracking-[0.18em] text-brand-charcoal/45">
-          Admin Workspace
+          Area Kerja Admin
         </p>
       </div>
 

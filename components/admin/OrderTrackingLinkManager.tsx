@@ -24,7 +24,7 @@ export function OrderTrackingLinkManager({ orderId }: { orderId: string }) {
     setCopied(null);
     try {
       const client = createSupabaseClient();
-      if (!client) throw new Error("Supabase belum dikonfigurasi.");
+      if (!client) throw new Error("Layanan data belum tersedia. Hubungi pengelola sistem.");
       const { data } = await client.auth.getSession();
       const token = data.session?.access_token;
       if (!token) throw new Error("Sesi Admin tidak aktif. Silakan login ulang.");
@@ -33,7 +33,7 @@ export function OrderTrackingLinkManager({ orderId }: { orderId: string }) {
         headers: { Authorization: `Bearer ${token}` }
       });
       const payload = await response.json() as LinkResult & { error?: string };
-      if (!response.ok) throw new Error(payload.error || "Tautan tracking gagal dibuat.");
+      if (!response.ok) throw new Error("Tautan pelacakan belum dapat dibuat. Coba lagi.");
       setResult(payload);
       setMessage("Tautan baru aktif. Tautan tracking sebelumnya sudah tidak berlaku.");
     } catch (reason) {
@@ -74,7 +74,7 @@ export function OrderTrackingLinkManager({ orderId }: { orderId: string }) {
           </div>
           <div className="break-all bg-brand-offWhite p-3 text-xs">{result.publicUrl}</div>
           <div className="flex flex-wrap gap-3">
-            <button type="button" onClick={() => void copy(result.publicUrl, "link")} className="min-h-10 rounded-full border border-brand-charcoal px-4 text-sm font-semibold">{copied === "link" ? "Link Tersalin" : "Salin Link"}</button>
+            <button type="button" onClick={() => void copy(result.publicUrl, "link")} className="min-h-10 rounded-full border border-brand-charcoal px-4 text-sm font-semibold">{copied === "link" ? "Tautan Tersalin" : "Salin Tautan"}</button>
             <button type="button" onClick={() => void copy(result.whatsappMessage, "message")} className="min-h-10 rounded-full border border-brand-charcoal px-4 text-sm font-semibold">{copied === "message" ? "Template Tersalin" : "Salin Template WhatsApp"}</button>
             {result.whatsappUrl ? <a href={result.whatsappUrl} target="_blank" rel="noopener noreferrer" className="inline-flex min-h-10 items-center rounded-full bg-[#063d24] px-4 text-sm font-semibold text-white">Buka WhatsApp</a> : null}
           </div>

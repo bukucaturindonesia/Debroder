@@ -441,7 +441,7 @@ export default async function Home() {
       })() : freshDropFallback.length ? (
         <LandingSectionSlot setting={landingSection("fresh-drop")}>
           <ManagedHomepageSection
-            section={{ id: "fresh-drop-fallback", title: landingSection("fresh-drop")?.title || "Fresh Drop", slug: "fresh-drops", is_active: true, sort_order: 60, items: [] }}
+            section={{ id: "fresh-drop-fallback", title: landingSection("fresh-drop")?.title || "Produk Terbaru", slug: "fresh-drops", is_active: true, sort_order: 60, items: [] }}
             setting={landingSection("fresh-drop")}
             fallbackProducts={freshDropFallback}
           />
@@ -452,7 +452,7 @@ export default async function Home() {
         <section id="shop-category" className="home-section home-categories section-space bg-white">
           <PublicSectionFrame variant="inset">
             <SectionHeading
-              title={landingSection("services-products")?.title || "Shop by Category"}
+              title={landingSection("services-products")?.title || "Belanja Berdasarkan Kategori"}
               description={landingSection("services-products")?.subtitle}
               textPosition={landingSection("services-products")?.text_position}
               action={
@@ -499,10 +499,10 @@ export default async function Home() {
           <section id="store" className="home-section home-store section-space bg-white">
             <PublicSectionFrame variant="inset">
               <SectionHeading
-                title={landingSection("stores")?.title || "Store DEBRODER"}
+                title={landingSection("stores")?.title || "Toko DEBRODER"}
                 description={landingSection("stores")?.subtitle || "Konsultasikan bahan, teknik cetak, dan estimasi produksi langsung bersama tim kami."}
                 textPosition={landingSection("stores")?.text_position}
-                action={<Link href={landingSection("stores")?.cta_url || "/store"} className="hidden text-sm font-semibold hover:underline sm:block">{landingSection("stores")?.cta_label || "Semua store"}</Link>}
+                action={<Link href={landingSection("stores")?.cta_url || "/store"} className="hidden text-sm font-semibold hover:underline sm:block">{landingSection("stores")?.cta_label || "Lihat Semua Toko"}</Link>}
               />
               <div className="mt-4 md:mt-6">
                 <PublicStoreLocator stores={stores} />
@@ -518,7 +518,7 @@ export default async function Home() {
                   <h3 id="cara-order-heading" className="mt-2 text-2xl font-semibold tracking-[-0.02em] sm:text-3xl">Pesan apparel custom dengan alur yang jelas.</h3>
                 </div>
                 <div className="flex flex-wrap gap-2">
-                  <Link href="/cara-order" className="inline-flex min-h-11 items-center justify-center rounded-full bg-[#111] px-6 text-sm font-semibold text-white transition hover:bg-black/75">Cara Order</Link>
+                  <Link href="/cara-order" className="inline-flex min-h-11 items-center justify-center rounded-full bg-[#111] px-6 text-sm font-semibold text-white transition hover:bg-black/75">Cara Pemesanan</Link>
                   <a href={whatsappHref} target="_blank" rel="noopener noreferrer" className="inline-flex min-h-11 items-center justify-center rounded-full border border-black/20 px-6 text-sm font-semibold text-[#111] transition hover:border-black">Konsultasi WhatsApp</a>
                 </div>
               </div>
@@ -544,7 +544,7 @@ export default async function Home() {
               <ResponsivePicture desktopSrc={content.trustAbout.image_url} mobileSrc={content.trustAbout.mobile_image_url || content.trustAbout.image_url} alt="Tentang DEBRODER" className="aspect-[4/3] h-full w-full object-cover" />
             ) : (
               <div className="grid grid-cols-2 border-l border-t border-black/10">
-                {[["2016", "Berdiri"], ["4", "Store Aktif"], ["DTF", "& Apparel"], ["ID", "Kirim Indonesia"]].map(([value, label]) => (
+                {[["2016", "Berdiri"], ["4", "Toko Aktif"], ["DTF", "& Apparel"], ["ID", "Kirim Indonesia"]].map(([value, label]) => (
                   <div key={`${value}-${label}`} className="border-b border-r border-black/10 p-6 sm:p-8">
                     <p className="text-3xl font-semibold tracking-[-0.03em] text-[#063d24]">{value}</p>
                     <p className="mt-2 text-sm text-black/50">{label}</p>

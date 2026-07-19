@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
 import { contactLinks } from "@/lib/contact";
+import { getOrderStatusLabel } from "@/lib/ui-language";
 import { formatRupiah } from "@/lib/url";
 
 type OrderPayload = {
@@ -16,20 +17,6 @@ type OrderPayload = {
   };
   items: Array<{ id: string; product_name: string; variant_name: string; color: string; size: string; sku: string; quantity: number; unit_price: number; subtotal: number; custom_project_id?: string | null; pricing_status?: string }>;
   customQuote?: { version_number: number; status: string; quoted_total: number; pricing_components: unknown; design_version_snapshot: unknown; valid_until: string; sent_at: string; locked_at: string | null } | null;
-};
-
-const statusLabels: Record<string, string> = {
-  pending_confirmation: "Menunggu verifikasi WhatsApp",
-  awaiting_shipping_quote: "Ongkir sedang diperiksa Admin",
-  awaiting_customer_approval: "Menunggu persetujuan total",
-  awaiting_payment: "Menunggu pembayaran",
-  processing: "Sedang diproses",
-  ready_for_pickup: "Siap diambil",
-  shipped: "Dikirim",
-  completed: "Selesai",
-  expired: "Kedaluwarsa",
-  cancelled: "Dibatalkan",
-  under_review: "Custom Project sedang direview"
 };
 
 export function OrderConfirmationClient({ token }: { token: string }) {
@@ -47,9 +34,9 @@ export function OrderConfirmationClient({ token }: { token: string }) {
     try {
       const response = await fetch(`/api/public/orders/${encodeURIComponent(token)}`, { cache: "no-store" });
       const payload = await response.json() as OrderPayload & { error?: string };
-      if (!response.ok) throw new Error(payload.error || "Order tidak tersedia.");
+      if (!response.ok) throw new Error("Pesanan tidak tersedia. Periksa kembali tautan yang Anda gunakan.");
       setData(payload); setError("");
-    } catch (reason) { if (!quiet) setError(reason instanceof Error ? reason.message : "Order tidak tersedia."); }
+    } catch (reason) { if (!quiet) setError(reason instanceof Error ? reason.message : "Pesanan tidak tersedia. Periksa kembali tautan yang Anda gunakan."); }
     finally { if (!quiet) setLoading(false); }
   }, [token]);
 
@@ -69,7 +56,7 @@ export function OrderConfirmationClient({ token }: { token: string }) {
     try {
       const response = await fetch(`/api/public/orders/${encodeURIComponent(token)}`, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ action: "approve_total" }) });
       const payload = await response.json() as { error?: string };
-      if (!response.ok) throw new Error(payload.error || "Total gagal disetujui.");
+      if (!response.ok) throw new Error("Total pesanan belum dapat disetujui. Coba lagi.");
       await load(true);
     } catch (reason) { setError(reason instanceof Error ? reason.message : "Total gagal disetujui."); }
     finally { setApproving(false); }
@@ -86,13 +73,13 @@ export function OrderConfirmationClient({ token }: { token: string }) {
         body: JSON.stringify({ action, acknowledgement: acknowledged ? "Saya menyetujui versi, desain, rincian, dan total penawaran aktif." : "", reason: revisionReason.trim() })
       });
       const payload = await response.json() as { error?: string };
-      if (!response.ok) throw new Error(payload.error || "Keputusan penawaran gagal disimpan.");
+      if (!response.ok) throw new Error("Pilihan penawaran belum dapat disimpan. Coba lagi.");
       setRevisionReason(""); await load(true);
     } catch (reason) { setError(reason instanceof Error ? reason.message : "Keputusan penawaran gagal disimpan."); }
     finally { setApproving(false); }
   }
 
-  if (loading) return <Shell><p>Memuat order aman...</p></Shell>;
+  if (loading) return <Shell><p>Memuat pesanan...</p></Shell>;
   if (error && !data) return <Shell><p className="text-red-700">{error}</p></Shell>;
   if (!data) return null;
   const { order } = data;
@@ -110,26 +97,26 @@ export function OrderConfirmationClient({ token }: { token: string }) {
       await navigator.clipboard.writeText(`${window.location.origin}${trackingPath}`);
       setTrackingCopied(true);
     } catch {
-      setError("Browser tidak mengizinkan salin otomatis. Buka tracking lalu salin alamat halaman.");
+      setError("Tautan belum dapat disalin otomatis. Buka halaman pelacakan, lalu salin alamat halaman secara manual.");
     }
   }
 
   return (
     <div className="mx-auto max-w-5xl">
-      <p className="text-sm font-semibold">DEBRODER · Order Aman</p>
+      <p className="text-sm font-semibold">DEBRODER · Pesanan Aman</p>
       <div className="mt-5 grid gap-6 lg:grid-cols-[1.1fr_0.9fr]">
         <section className="rounded-[28px] bg-white p-6 sm:p-8">
-          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-black/45">Order berhasil dibuat</p>
+          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-black/45">Pesanan berhasil dibuat</p>
           <h1 className="mt-2 text-3xl font-semibold">{order.orderNumber}</h1>
           <p className="mt-2 text-sm text-black/55">{order.customerName} · {order.maskedPhone}</p>
-          <div className="mt-6 rounded-2xl bg-emerald-50 p-4"><p className="text-xs uppercase tracking-[0.14em] text-emerald-800/65">Status</p><p className="mt-1 font-semibold text-emerald-950">{statusLabels[order.status] ?? order.status}</p></div>
+          <div className="mt-6 rounded-2xl bg-emerald-50 p-4"><p className="text-xs uppercase tracking-[0.14em] text-emerald-800/65">Status</p><p className="mt-1 font-semibold text-emerald-950">{getOrderStatusLabel(order.status, "customer")}</p></div>
 
           <div className="mt-5 border border-black/10 bg-[#f8f8f4] p-5 text-sm">
-            <p className="font-semibold">Simpan tautan tracking aman</p>
-            <p className="mt-2 leading-6 text-black/60">Tautan ini membuka status order tanpa login. Jangan bagikan kepada orang lain.</p>
+            <p className="font-semibold">Simpan tautan pelacakan aman</p>
+            <p className="mt-2 leading-6 text-black/60">Tautan ini membuka status pesanan tanpa login. Jangan bagikan kepada orang lain.</p>
             {order.trackingTokenExpiresAt ? <p className="mt-2 text-xs text-black/50">Berlaku sampai {formatDate(order.trackingTokenExpiresAt)}.</p> : null}
             <div className="mt-4 flex flex-wrap gap-3">
-              <Link href={trackingPath} className="inline-flex min-h-11 items-center rounded-full bg-black px-5 font-semibold text-white hover:bg-black/75">Lacak Order</Link>
+              <Link href={trackingPath} className="inline-flex min-h-11 items-center rounded-full bg-black px-5 font-semibold text-white hover:bg-black/75">Lacak Pesanan</Link>
               <button type="button" onClick={() => void copyTrackingLink()} className="min-h-11 rounded-full border border-black/20 px-5 font-semibold">{trackingCopied ? "Link Tersalin" : "Salin Link"}</button>
             </div>
           </div>
@@ -160,10 +147,10 @@ export function OrderConfirmationClient({ token }: { token: string }) {
             )
           ) : null}
 
-          {order.status === "awaiting_shipping_quote" ? <Info>Admin akan memasukkan kurir, layanan, ongkir, dan estimasi pada order ini. Halaman diperbarui otomatis.</Info> : null}
-          {order.status === "under_review" ? <Info>Custom Project sudah tercatat pada order ini. Admin akan memeriksa desain, layanan, lead time, dan harga sebelum pembayaran diminta.</Info> : null}
-          {order.status === "awaiting_payment" ? <Info>Stok sudah direservasi. Admin akan mengirim tautan pembayaran privat untuk transfer manual dan upload bukti.</Info> : null}
-          {order.status === "processing" && order.paymentMethod === "pay_at_store" ? <Info>Stok pickup sudah direservasi. Tunggu status siap diambil, lalu bayar di toko dengan menunjukkan nomor order dan nomor WhatsApp.</Info> : null}
+          {order.status === "awaiting_shipping_quote" ? <Info>Admin akan memasukkan kurir, layanan, ongkir, dan estimasi pada pesanan ini. Halaman akan diperbarui otomatis.</Info> : null}
+          {order.status === "under_review" ? <Info>Proyek custom sudah tercatat pada pesanan ini. Admin akan memeriksa desain, layanan, estimasi pengerjaan, dan harga sebelum meminta pembayaran.</Info> : null}
+          {order.status === "awaiting_payment" ? <Info>Stok sudah disimpan. Admin akan mengirim tautan pembayaran pribadi untuk transfer manual dan unggah bukti.</Info> : null}
+          {order.status === "processing" && order.paymentMethod === "pay_at_store" ? <Info>Stok untuk pengambilan di toko sudah disimpan. Tunggu status siap diambil, lalu bayar di toko dengan menunjukkan nomor pesanan dan nomor WhatsApp.</Info> : null}
           {order.reservationExpiresAt ? <p className="mt-4 text-xs text-black/50">Reservasi aktif sampai {formatDate(order.reservationExpiresAt)}.</p> : null}
           {error ? <p className="mt-4 border border-red-200 bg-red-50 p-3 text-sm text-red-700">{error}</p> : null}
         </section>

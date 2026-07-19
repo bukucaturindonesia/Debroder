@@ -66,7 +66,7 @@ export function LandingSectionsAdmin() {
 
     setLoading(false);
     if (error) {
-      setStatus(`Section landing page belum dapat dimuat: ${error.message}`);
+      setStatus("Bagian halaman utama belum dapat dimuat. Coba lagi.");
       return;
     }
 
@@ -104,7 +104,7 @@ export function LandingSectionsAdmin() {
 
     setSavingKey(null);
     if (!result.success) {
-      setStatus(`Section gagal disimpan: ${result.error.message}`);
+      setStatus("Bagian belum dapat disimpan. Periksa data lalu coba lagi.");
       return;
     }
 
@@ -133,17 +133,17 @@ export function LandingSectionsAdmin() {
 
     setSavingKey(null);
     const error = currentResult.error || swapResult.error;
-    setStatus(error ? `Urutan gagal disimpan: ${error.message}` : "Urutan landing page diperbarui.");
+    setStatus(error ? "Urutan belum dapat disimpan. Coba lagi." : "Urutan halaman utama diperbarui.");
     if (!error) await loadSections();
   }
 
   return (
     <div className="mt-6 grid gap-4">
       <div className="border border-brand-softGray bg-white p-5 sm:p-6">
-        <p className="text-xs font-semibold uppercase tracking-[0.18em] text-brand-charcoal/50">CMS / Landing Page</p>
-        <h2 className="mt-2 text-xl font-semibold">Section landing page</h2>
-        <p className="mt-2 text-sm leading-6 text-brand-charcoal/60">Status OFF menghapus section dari hasil render publik. Urutan mengikuti nilai yang tersimpan di Supabase.</p>
-        <nav aria-label="Editor section landing page" className="mt-5 grid gap-2 sm:grid-cols-2 lg:grid-cols-5">
+        <p className="text-xs font-semibold uppercase tracking-[0.18em] text-brand-charcoal/50">CMS / HALAMAN UTAMA</p>
+        <h2 className="mt-2 text-xl font-semibold">Bagian Halaman Utama</h2>
+        <p className="mt-2 text-sm leading-6 text-brand-charcoal/60">Status Nonaktif menyembunyikan bagian dari halaman publik. Urutan mengikuti nilai yang tersimpan.</p>
+        <nav aria-label="Editor bagian halaman utama" className="mt-5 grid gap-2 sm:grid-cols-2 lg:grid-cols-5">
           {cmsEditorLinks.map(([label, href]) => <Link key={href} href={href} className="inline-flex min-h-11 items-center justify-between border border-brand-softGray px-4 text-sm font-semibold transition hover:border-brand-charcoal">{label}<span aria-hidden="true">›</span></Link>)}
         </nav>
       </div>

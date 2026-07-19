@@ -1,0 +1,26 @@
+DEBRODER — REMAINING TERMS / APPROVED EXCEPTIONS
+
+Istilah berikut sengaja dipertahankan karena umum di industri, merupakan nama produk/format, atau diperlukan untuk operasi:
+- SKU
+- DTF
+- QRIS
+- WhatsApp
+- PDF, XLSX, CSV, Excel, WebP, JPG, PNG
+- URL dan email
+- Mockup
+- Checkout
+- Custom
+- Ready Stock pada konteks industri tertentu
+- Draft
+- Hero pada konteks CMS
+
+Istilah diagnostik terbatas yang sengaja dipertahankan pada halaman audit/rekonsiliasi:
+- kode masalah/event;
+- SKU;
+- ID produk, varian, permintaan, operasi, atau proses;
+- checksum SHA-256;
+- versi format dan versi aturan.
+
+Nilai tersebut diperlukan agar admin dapat menemukan sumber data dan menindaklanjuti masalah. Nilai status mentah dan exception backend tidak ditampilkan sebagai label UI.
+
+Tidak ada istilah teknis tertunda yang diketahui pada alur utama publik, checkout, pelacakan, pembayaran, detail pesanan admin, penetapan harga, produksi, pemeriksaan kualitas, atau pengiriman.

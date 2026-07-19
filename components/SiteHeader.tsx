@@ -12,8 +12,8 @@ import type { PublicNavigationFacets } from "@/lib/public-navigation";
 import { whatsappLinkWithMessage } from "@/lib/url";
 
 const topbarItems = [
-  { label: "Store", href: "/store" },
-  { label: "Cara Order", href: "/cara-order" },
+  { label: "Toko", href: "/store" },
+  { label: "Cara Pemesanan", href: "/cara-order" },
   { label: "Lacak Pesanan", href: "/track-order" }
 ];
 
@@ -48,9 +48,9 @@ const legacyCollectionMenu: MegaMenuColumn[] = [
     title: "Koleksi",
     links: [
       { label: "Belanja Semua", href: "/koleksi", highlight: true },
-      { label: "Best Seller", href: "/koleksi?label=best" },
-      { label: "New", href: "/koleksi?label=new" },
-      { label: "Popular", href: "/koleksi?sort=best-selling" },
+      { label: "Terlaris", href: "/koleksi?label=best" },
+      { label: "Produk Baru", href: "/koleksi?label=new" },
+      { label: "Populer", href: "/koleksi?sort=best-selling" },
       { label: "Turun Harga", href: "/koleksi?label=promo" }
     ]
   },
@@ -69,21 +69,21 @@ const legacyCollectionMenu: MegaMenuColumn[] = [
   {
     title: "Belanja Berdasarkan Warna",
     links: [
-      { label: "White", href: "/koleksi?color=white" },
-      { label: "Black", href: "/koleksi?color=black" },
+      { label: "Putih", href: "/koleksi?color=white" },
+      { label: "Hitam", href: "/koleksi?color=black" },
       { label: "Navy", href: "/koleksi?color=navy" },
-      { label: "Forest Green", href: "/koleksi?color=forest-green" },
-      { label: "Gold", href: "/koleksi?color=gold" }
+      { label: "Hijau Hutan", href: "/koleksi?color=forest-green" },
+      { label: "Emas", href: "/koleksi?color=gold" }
     ]
   }
 ];
 
 const colorLinks = [
-  { label: "White", value: "white" },
-  { label: "Black", value: "black" },
+  { label: "Putih", value: "white" },
+  { label: "Hitam", value: "black" },
   { label: "Navy", value: "navy" },
-  { label: "Forest Green", value: "forest-green" },
-  { label: "Gold", value: "gold" }
+  { label: "Hijau Hutan", value: "forest-green" },
+  { label: "Emas", value: "gold" }
 ];
 
 const legacyNavMegaMenus: Record<string, MegaMenuColumn[]> = {
@@ -93,8 +93,8 @@ const legacyNavMegaMenus: Record<string, MegaMenuColumn[]> = {
       title: "Kaos Polos",
       links: [
         { label: "Belanja Semua", href: "/kaos-polos", highlight: true },
-        { label: "New", href: "/kaos-polos?label=new" },
-        { label: "Best Seller", href: "/kaos-polos?label=best" },
+        { label: "Produk Baru", href: "/kaos-polos?label=new" },
+        { label: "Terlaris", href: "/kaos-polos?label=best" },
         { label: "Promo", href: "/kaos-polos?label=promo" }
       ]
     },
@@ -112,8 +112,8 @@ const legacyNavMegaMenus: Record<string, MegaMenuColumn[]> = {
       title: "Jaket & Hoodie",
       links: [
         { label: "Belanja Semua", href: "/jaket-hoodie", highlight: true },
-        { label: "New", href: "/jaket-hoodie?label=new" },
-        { label: "Best Seller", href: "/jaket-hoodie?label=best" },
+        { label: "Produk Baru", href: "/jaket-hoodie?label=new" },
+        { label: "Terlaris", href: "/jaket-hoodie?label=best" },
         { label: "Promo", href: "/jaket-hoodie?label=promo" }
       ]
     },
@@ -139,8 +139,8 @@ const emptyNavigationFacets: PublicNavigationFacets = {
 function buildCollectionMenu(facets: PublicNavigationFacets): MegaMenuColumn[] {
   const curated = [
     { visible: facets.collections.new, label: "Produk Baru", href: "/koleksi?label=new" },
-    { visible: facets.collections.best, label: "Best Seller", href: "/koleksi?label=best" },
-    { visible: facets.collections.popular, label: "Popular", href: "/koleksi?sort=best-selling" },
+    { visible: facets.collections.best, label: "Terlaris", href: "/koleksi?label=best" },
+    { visible: facets.collections.popular, label: "Populer", href: "/koleksi?sort=best-selling" },
     { visible: facets.collections.promo, label: "Turun Harga", href: "/koleksi?label=promo" }
   ].filter((item) => item.visible).map(({ label, href }) => ({ label, href }));
   const availability = [
@@ -176,7 +176,7 @@ function buildCategoryMenu(
       links: [
         { label: "Belanja Semua", href: route, highlight: true },
         { label: "Produk Baru", href: `${route}?label=new` },
-        { label: "Best Seller", href: `${route}?label=best` },
+        { label: "Terlaris", href: `${route}?label=best` },
         { label: "Promo", href: `${route}?label=promo` }
       ]
     },
@@ -200,10 +200,10 @@ const searchItems = [
   { title: "Sablon DTF", href: "/sablon-dtf", description: "Sablon custom untuk brand, event, dan komunitas.", keywords: ["sablon", "dtf", "custom"] },
   { title: "Maklon DTF", href: "/maklon-dtf", description: "Partner produksi DTF untuk brand apparel.", keywords: ["maklon", "dtf", "produksi"] },
   { title: "Cetak Sublim", href: "/cetak-sublim", description: "Cetak sublim untuk jersey dan apparel custom.", keywords: ["sublim", "cetak"] },
-  { title: "Store DEBRODER", href: "/store", description: "Pettarani, Tello, Landak, dan Parepare.", keywords: ["lokasi", "alamat", "store"] },
-  { title: "Cara Order", href: "/cara-order", description: "Panduan pemesanan DEBRODER.", keywords: ["cara", "order", "pesan"] },
-  { title: "Lacak Pesanan", href: "/track-order", description: "Periksa status order tanpa perlu login.", keywords: ["lacak", "tracking", "status", "order", "pesanan"] },
-  { title: "Keranjang Belanja", href: "/keranjang", description: "Cek pesanan utama, layanan tambahan, estimasi normal, dan kirim ke WhatsApp.", keywords: ["keranjang", "cart", "pesanan", "whatsapp"] }
+  { title: "Toko DEBRODER", href: "/store", description: "Pettarani, Tello, Landak, dan Parepare.", keywords: ["lokasi", "alamat", "toko", "store"] },
+  { title: "Cara Pemesanan", href: "/cara-order", description: "Panduan pemesanan DEBRODER.", keywords: ["cara", "order", "pesan"] },
+  { title: "Lacak Pesanan", href: "/track-order", description: "Periksa status pesanan tanpa perlu login.", keywords: ["lacak", "pelacakan", "tracking", "status", "order", "pesanan"] },
+  { title: "Keranjang Belanja", href: "/keranjang", description: "Periksa produk, jumlah, dan rincian harga sebelum checkout.", keywords: ["keranjang", "cart", "pesanan", "checkout"] }
 ];
 
 const whatsappUrl = whatsappLinkWithMessage(

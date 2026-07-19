@@ -123,12 +123,12 @@ const imageGuides = [
   ["Banner Instagram Desktop", "1920 x 800", "12:5", "Banner Instagram homepage"],
   ["Banner Instagram Mobile", "1080 x 1350", "4:5", "Banner Instagram mobile"],
   ["Benefit Images", "1200 x 900", "4:3", "Carousel keunggulan"],
-  ["Product Images", "1200 x 1500", "4:5", "Katalog produk"],
-  ["Store Images", "1200 x 800", "3:2", "Kartu store"],
-  ["Logo SVG", "Vector", "Original", "Navbar, footer, admin"],
-  ["Logo PNG", "2048 px sisi panjang", "Original", "Fallback logo transparan"],
-  ["Favicon", "512 x 512", "1:1", "Browser icon"],
-  ["Apple Touch Icon", "180 x 180", "1:1", "Icon iOS"]
+  ["Gambar Produk", "1200 x 1500", "4:5", "Katalog produk"],
+  ["Gambar Toko", "1200 x 800", "3:2", "Kartu toko"],
+  ["Logo SVG", "Vektor", "Asli", "Navigasi, footer, admin"],
+  ["Logo PNG", "2048 px sisi panjang", "Asli", "Cadangan logo transparan"],
+  ["Favicon", "512 x 512", "1:1", "Ikon browser"],
+  ["Ikon Apple Touch", "180 x 180", "1:1", "Ikon iOS"]
 ];
 
 const preferredProductCategories = [
@@ -143,8 +143,8 @@ const preferredProductCategories = [
 const tableConfigs: TableConfig[] = [
   {
     key: "overview",
-    label: "Dashboard",
-    navLabel: "Dashboard",
+    label: "Ringkasan",
+    navLabel: "Ringkasan",
     href: "/admin/dashboard",
     table: "",
     description: "Ringkasan konten toko online DE BRODER.",
@@ -152,47 +152,47 @@ const tableConfigs: TableConfig[] = [
   },
   {
     key: "homepage-sections",
-    label: "CMS / Landing Page",
-    navLabel: "CMS / Landing Page",
+    label: "CMS / Halaman Utama",
+    navLabel: "CMS / Halaman Utama",
     href: "/admin/homepage-sections",
     table: "",
-    description: "Atur status section landing page, urutan section, dan penempatan Produk & Layanan.",
+    description: "Atur status bagian halaman utama, urutan bagian, serta penempatan produk dan layanan.",
     fields: []
   },
   {
     key: "featured-products",
-    label: "Featured Products",
-    navLabel: "Featured Products",
+    label: "Produk Pilihan",
+    navLabel: "Produk Pilihan",
     href: "/admin/featured-products",
     table: "",
-    description: "Atur konten dan produk yang tampil pada Featured Products.",
+    description: "Atur konten dan produk yang tampil pada bagian Produk Pilihan.",
     fields: []
   },
   {
     key: "trending-section",
-    label: "Trending",
-    navLabel: "Trending",
+    label: "Sedang Populer",
+    navLabel: "Sedang Populer",
     href: "/admin/trending",
     table: "",
-    description: "Atur konten dan produk yang tampil pada Trending.",
+    description: "Atur konten dan produk yang tampil pada bagian Sedang Populer.",
     fields: []
   },
   {
     key: "fresh-drop-section",
-    label: "Fresh Drop",
-    navLabel: "Fresh Drop",
+    label: "Produk Baru",
+    navLabel: "Produk Baru",
     href: "/admin/fresh-drop",
     table: "",
-    description: "Atur konten dan produk yang tampil pada Fresh Drop.",
+    description: "Atur konten dan produk yang tampil pada bagian Produk Baru.",
     fields: []
   },
   {
     key: "shop-category-section",
-    label: "Shop by Category",
-    navLabel: "Shop by Category",
+    label: "Belanja Berdasarkan Kategori",
+    navLabel: "Belanja Berdasarkan Kategori",
     href: "/admin/shop-category",
     table: "",
-    description: "Atur custom card Shop by Category: gambar upload, teks, dan link tujuan.",
+    description: "Atur kartu kategori: gambar, teks, dan tautan tujuan.",
     fields: []
   },
   {
@@ -241,16 +241,16 @@ const tableConfigs: TableConfig[] = [
       },
       {
         name: "image_url",
-        label: "Upload Hero Desktop",
+        label: "Unggah Hero Desktop",
         type: "image",
-        placeholder: "Pilih dari Media Library atau upload foto",
+        placeholder: "Pilih dari Galeri Media atau unggah foto",
         helper: "Rekomendasi 1920x900."
       },
       {
         name: "mobile_image_url",
-        label: "Upload Hero Mobile",
+        label: "Unggah Hero Mobile",
         type: "image",
-        placeholder: "Pilih dari Media Library atau upload foto",
+        placeholder: "Pilih dari Galeri Media atau unggah foto",
         helper: "Rekomendasi 1080x1350."
       },
       {
@@ -304,7 +304,7 @@ const tableConfigs: TableConfig[] = [
     navLabel: "Gambar Website",
     href: "/admin/site-media",
     table: "",
-    description: "Atur gambar default/fallback website dari Media Library agar tidak ada foto kosong.",
+    description: "Atur gambar cadangan website dari Galeri Media agar tidak ada foto kosong.",
     fields: []
   },
   {
@@ -322,7 +322,7 @@ const tableConfigs: TableConfig[] = [
     navLabel: "PIM V2",
     href: "/admin/pim-v2",
     table: "",
-    description: "Kelola master data PIM V2: produk, subkategori, varian warna/ukuran, size guide, layanan produksi, dan master jersey.",
+    description: "Kelola data produk, subkategori, varian warna/ukuran, panduan ukuran, layanan produksi, dan data jersey.",
     fields: []
   },
   {
@@ -376,7 +376,7 @@ const tableConfigs: TableConfig[] = [
         name: "image_url",
         label: "Gambar produk",
         type: "image",
-        placeholder: "Pilih dari Media Library atau upload foto",
+        placeholder: "Pilih dari Galeri Media atau unggah foto",
         helper: "Rekomendasi 1200x1200."
       },
       {
@@ -454,7 +454,7 @@ const tableConfigs: TableConfig[] = [
         name: "gambar_url",
         label: "Gambar kategori",
         type: "image",
-        placeholder: "Pilih dari Media Library atau upload foto"
+        placeholder: "Pilih dari Galeri Media atau unggah foto"
       },
       {
         name: "image_alt",
@@ -481,8 +481,8 @@ const tableConfigs: TableConfig[] = [
       { name: "object_position", label: "Posisi gambar", type: "select", options: objectPositionOptions },
       { name: "seo_title", label: "SEO title", type: "text", placeholder: "Judul kategori untuk mesin pencari" },
       { name: "seo_description", label: "SEO description", type: "textarea", placeholder: "Ringkasan kategori untuk hasil pencarian" },
-      { name: "og_image_url", label: "Open Graph image", type: "image", placeholder: "Pilih dari Media Library" },
-      { name: "canonical_url", label: "Canonical URL", type: "text", placeholder: "/jersey" },
+      { name: "og_image_url", label: "Gambar Open Graph", type: "image", placeholder: "Pilih dari Galeri Media" },
+      { name: "canonical_url", label: "URL utama halaman", type: "text", placeholder: "/jersey" },
       { name: "urutan", label: "Urutan tampil", type: "number" },
       { name: "status_aktif", label: "Aktif", type: "boolean" }
     ]
@@ -533,19 +533,19 @@ const tableConfigs: TableConfig[] = [
       { name: "subtitle", label: "Subtitle", type: "textarea", placeholder: "Ikuti karya dan update terbaru DEBRODER." },
       {
         name: "image_url",
-        label: "Upload Banner Desktop",
+        label: "Unggah Banner Desktop",
         type: "image",
-        placeholder: "Pilih dari Media Library atau upload foto",
+        placeholder: "Pilih dari Galeri Media atau unggah foto",
         helper: "Rekomendasi 1920x800."
       },
       {
         name: "mobile_image_url",
-        label: "Upload Banner Mobile",
+        label: "Unggah Banner Mobile",
         type: "image",
-        placeholder: "Pilih dari Media Library atau upload foto",
+        placeholder: "Pilih dari Galeri Media atau unggah foto",
         helper: "Rekomendasi 1080x1350."
       },
-      { name: "video_url", label: "Video desktop", type: "video", placeholder: "Pilih video dari Media Library" },
+      { name: "video_url", label: "Video desktop", type: "video", placeholder: "Pilih video dari Galeri Media" },
       { name: "mobile_video_url", label: "Video mobile", type: "video", placeholder: "Opsional" },
       {
         name: "image_alt",
@@ -630,16 +630,16 @@ const tableConfigs: TableConfig[] = [
       },
       {
         name: "image_url",
-        label: "Upload Hero Desktop",
+        label: "Unggah Hero Desktop",
         type: "image",
-        placeholder: "Pilih dari Media Library atau upload foto",
+        placeholder: "Pilih dari Galeri Media atau unggah foto",
         helper: "Rekomendasi 1920x800."
       },
       {
         name: "mobile_image_url",
-        label: "Upload Hero Mobile",
+        label: "Unggah Hero Mobile",
         type: "image",
-        placeholder: "Pilih dari Media Library atau upload foto",
+        placeholder: "Pilih dari Galeri Media atau unggah foto",
         helper: "Rekomendasi 1080x1350."
       },
       {
@@ -672,8 +672,8 @@ const tableConfigs: TableConfig[] = [
   },
   {
     key: "store",
-    label: "Store / Cabang",
-    navLabel: "Store / Cabang",
+    label: "Toko / Cabang",
+    navLabel: "Toko / Cabang",
     href: "/admin/store",
     table: "stores",
     description: "Kelola store, alamat, WhatsApp, Maps, dan foto store.",
@@ -726,14 +726,14 @@ const tableConfigs: TableConfig[] = [
         name: "image_url",
         label: "Foto store",
         type: "image",
-        placeholder: "Pilih dari Media Library atau upload foto",
+        placeholder: "Pilih dari Galeri Media atau unggah foto",
         helper: "Rekomendasi 1200x800."
       },
       {
         name: "image_alt",
         label: "Teks alternatif gambar",
         type: "text",
-        placeholder: "Foto Store DE BRODER"
+        placeholder: "Foto Toko DEBRODER"
       },
       { name: "urutan", label: "Urutan tampil", type: "number" },
       { name: "status_aktif", label: "Aktif", type: "boolean" }
@@ -777,7 +777,7 @@ const tableConfigs: TableConfig[] = [
         name: "trust_items",
         label: "Trust item",
         type: "list",
-        placeholder: "4 Store Aktif\nApparel & Custom\nSablon DTF",
+        placeholder: "4 Toko Aktif\nApparel & Custom\nSablon DTF",
         helper: "Gunakan teks singkat agar landing page tetap ringan."
       },
       {
@@ -787,7 +787,7 @@ const tableConfigs: TableConfig[] = [
         placeholder: "De Broder adalah perusahaan percetakan...",
         helper: "Gunakan teks singkat agar landing page tetap ringan."
       },
-      { name: "image_url", label: "Gambar desktop", type: "image", placeholder: "Pilih dari Media Library" },
+      { name: "image_url", label: "Gambar desktop", type: "image", placeholder: "Pilih dari Galeri Media" },
       { name: "mobile_image_url", label: "Gambar mobile", type: "image", placeholder: "Opsional" },
       { name: "video_url", label: "Video", type: "video", placeholder: "Opsional" },
       { name: "cta_label", label: "CTA label", type: "text", placeholder: "Tentang kami" },
@@ -799,26 +799,26 @@ const tableConfigs: TableConfig[] = [
   },
   {
     key: "media",
-    label: "Media Library",
-    navLabel: "Media Library",
+    label: "Galeri Media",
+    navLabel: "Galeri Media",
     href: "/admin/media",
     table: "",
-    description: "Upload, cari, replace, dan kelola aset foto atau video.",
+    description: "Unggah, cari, ganti, dan kelola aset foto atau video.",
     fields: []
   },
   {
     key: "campaign-banners",
-    label: "Campaign Banner",
-    navLabel: "Campaign Banner",
+    label: "Banner Kampanye",
+    navLabel: "Banner Kampanye",
     href: "/admin/campaign-banners",
     table: "",
-    description: "Kelola campaign foto atau video untuk landing page.",
+    description: "Kelola kampanye foto atau video untuk halaman utama.",
     fields: []
   },
   {
     key: "orders",
-    label: "Order Management",
-    navLabel: "Order Management",
+    label: "Manajemen Pesanan",
+    navLabel: "Manajemen Pesanan",
     href: "/admin/orders",
     table: "",
     description: "Kelola pesanan, item, status produksi, dan catatan admin.",
@@ -826,11 +826,11 @@ const tableConfigs: TableConfig[] = [
   },
   {
     key: "website-settings",
-    label: "Website Settings",
-    navLabel: "Website Settings",
+    label: "Pengaturan Website",
+    navLabel: "Pengaturan Website",
     href: "/admin/website-settings",
     table: "",
-    description: "Kelola konfigurasi umum website berbasis key dan JSON.",
+    description: "Kelola konfigurasi umum website berdasarkan kunci pengaturan dan nilai JSON.",
     fields: []
   },
   {
@@ -956,10 +956,10 @@ function valueToText(value: AdminValue) {
 function friendlyError(message?: string) {
   if (!message) return "Aksi belum berhasil. Coba lagi sebentar.";
   if (message.toLowerCase().includes("storage")) {
-    return "Upload belum berhasil. Anda tetap bisa memakai input URL manual.";
+    return "Unggah belum berhasil. Anda tetap dapat memakai URL manual.";
   }
   if (message.toLowerCase().includes("does not exist")) {
-    return "Tabel belum tersedia. Jalankan schema Supabase terbaru terlebih dahulu.";
+    return "Data yang diperlukan belum tersedia. Hubungi pengelola sistem sebelum melanjutkan.";
   }
   return "Aksi belum berhasil. Periksa data lalu coba lagi.";
 }
@@ -1085,7 +1085,7 @@ export function AdminDashboard() {
   useEffect(() => {
     async function checkAccess() {
       if (!configured) {
-        setStatus("Supabase belum dikonfigurasi.");
+        setStatus("Layanan data belum dikonfigurasi. Hubungi pengelola sistem.");
         setIsDenied(true);
         return;
       }
@@ -1458,7 +1458,7 @@ export function AdminDashboard() {
 
     const supabase = createSupabaseClient();
     if (!supabase) {
-      setStatus("Upload belum tersedia. Isi URL manual terlebih dahulu.");
+      setStatus("Fitur unggah belum tersedia. Isi URL manual terlebih dahulu.");
       return;
     }
 
@@ -1478,7 +1478,7 @@ export function AdminDashboard() {
 
     if (error) {
       setUploadingField(null);
-      setStatus("Upload belum berhasil. Input URL manual tetap bisa dipakai.");
+      setStatus("Unggah belum berhasil. URL manual tetap dapat dipakai.");
       return;
     }
 
@@ -1515,7 +1515,7 @@ export function AdminDashboard() {
     });
     loadMediaChoices();
     setUploadingField(null);
-    setStatus("Upload berhasil. Jangan lupa Simpan Perubahan.");
+    setStatus("Unggah berhasil. Jangan lupa simpan perubahan.");
   }
 
   async function saveRow(event: FormEvent<HTMLFormElement>) {
@@ -1572,7 +1572,7 @@ export function AdminDashboard() {
 
       if (!workflowResult.success) {
         setIsLoading(false);
-        setStatus(workflowResult.error.message);
+        setStatus("Perubahan status konten belum dapat disimpan. Coba lagi.");
         return;
       }
 
@@ -1675,7 +1675,7 @@ export function AdminDashboard() {
           />
           <div className="flex flex-wrap items-center gap-2">
             <label className="inline-flex min-h-10 cursor-pointer items-center rounded-full border border-brand-softGray px-4 text-xs font-semibold transition hover:border-brand-charcoal">
-              {uploadingField === field.name ? "Mengupload..." : "Upload ke galeri"}
+              {uploadingField === field.name ? "Mengunggah..." : "Unggah ke Galeri"}
               <input type="file" accept="image/*" className="sr-only" onChange={(event) => uploadAsset(field, event.target.files?.[0])} />
             </label>
             {mediaChoices.some((asset) => asset.media_type === "image") ? (
@@ -1685,9 +1685,9 @@ export function AdminDashboard() {
                   if (event.target.value) updateField(field, [...urls, event.target.value].join("\n"));
                 }}
                 className="min-h-10 rounded-full border border-brand-softGray px-4 text-xs font-semibold"
-                aria-label="Tambahkan gambar dari Media Library"
+                aria-label="Tambahkan gambar dari Galeri Media"
               >
-                <option value="">Tambah dari Media Library...</option>
+                <option value="">Tambah dari Galeri Media...</option>
                 {mediaChoices.filter((asset) => asset.media_type === "image").map((asset) => <option key={asset.id} value={asset.public_url}>{asset.name}</option>)}
               </select>
             ) : null}
@@ -1697,7 +1697,7 @@ export function AdminDashboard() {
               {urls.map((url, index) => (
                 <div key={`${url}-${index}`} className="relative overflow-hidden bg-brand-offWhite">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src={url} alt={`Preview galeri ${index + 1}`} className="aspect-square w-full object-cover" />
+                  <img src={url} alt={`Pratinjau galeri ${index + 1}`} className="aspect-square w-full object-cover" />
                   <button type="button" onClick={() => updateField(field, urls.filter((_, itemIndex) => itemIndex !== index).join("\n"))} className="absolute right-2 top-2 rounded-full bg-white px-3 py-1 text-xs font-semibold shadow">Hapus</button>
                 </div>
               ))}
@@ -1812,7 +1812,7 @@ export function AdminDashboard() {
               className={commonClass}
               aria-label={`Pilih media lama untuk ${field.label}`}
             >
-              <option value="">Pilih dari Media Library...</option>
+              <option value="">Pilih dari Galeri Media...</option>
               {mediaChoices
                 .filter((asset) => asset.media_type === field.type)
                 .map((asset) => (
@@ -1822,7 +1822,7 @@ export function AdminDashboard() {
           ) : null}
           <div className="flex flex-wrap items-center gap-2">
             <label className="inline-flex min-h-10 cursor-pointer items-center rounded-full border border-brand-softGray px-4 text-xs font-semibold text-brand-charcoal transition hover:border-brand-charcoal">
-              {uploadingField === field.name ? "Mengupload..." : "Upload"}
+              {uploadingField === field.name ? "Mengunggah..." : "Unggah"}
               <input
                 type="file"
                 accept={field.type === "video" ? "video/*" : "image/*"}
@@ -1855,7 +1855,7 @@ export function AdminDashboard() {
               // eslint-disable-next-line @next/next/no-img-element
               <img
                 src={url}
-                alt={`Preview ${field.label}`}
+                alt={`Pratinjau ${field.label}`}
                 className={`${field.name === "mobile_image_url" ? "aspect-[4/5]" : "aspect-video"} w-full bg-brand-offWhite`}
                 style={{ objectFit, objectPosition }}
               />
@@ -1907,7 +1907,7 @@ export function AdminDashboard() {
       <main className="min-h-screen bg-brand-offWhite p-6 text-brand-charcoal">
         <div className="mx-auto mt-20 max-w-lg rounded-xl border border-brand-softGray bg-white p-8 text-center shadow-soft">
           <h1 className="text-3xl font-semibold">
-            {isDenied ? "Akses Ditolak" : "Memuat Dashboard"}
+            {isDenied ? "Akses Ditolak" : "Memuat Ringkasan"}
           </h1>
           <p className="mt-4 text-sm font-medium text-brand-charcoal/70">
             {status}
@@ -1942,7 +1942,7 @@ export function AdminDashboard() {
               onClick={logout}
               className="rounded-lg px-4 py-3 text-left text-sm font-semibold text-red-700 hover:bg-red-50"
             >
-              Logout
+              Keluar
             </button>
           </nav>
         </aside>
@@ -1966,7 +1966,7 @@ export function AdminDashboard() {
                 onClick={logout}
                 className="inline-flex min-h-11 items-center justify-center rounded-full border border-brand-softGray px-5 py-3 text-sm font-semibold text-brand-charcoal transition hover:border-brand-charcoal"
               >
-                Logout
+                Keluar
               </button>
             </div>
             <select
@@ -2003,39 +2003,39 @@ export function AdminDashboard() {
                 {[
                   [
                     "Supabase",
-                    configured ? "Supabase Connected" : "Supabase Not Connected",
+                    configured ? "Supabase terhubung" : "Supabase belum terhubung",
                     configured
                   ],
-                  ["Auth", isAllowed ? "Auth Active" : "Auth Not Ready", isAllowed],
+                  ["Autentikasi", isAllowed ? "Autentikasi aktif" : "Autentikasi belum siap", isAllowed],
                   [
                     "Hero",
-                    stats.heroes > 0 ? "Hero Data Found" : "Hero Data Empty",
+                    stats.heroes > 0 ? "Data hero tersedia" : "Data hero belum tersedia",
                     stats.heroes > 0
                   ],
                   [
-                    "Product",
+                    "Produk",
                     stats.products > 0
-                      ? "Product Data Found"
-                      : "Product Data Empty",
+                      ? "Data produk tersedia"
+                      : "Data produk belum tersedia",
                     stats.products > 0
                   ],
                   [
-                    "Store",
-                    stats.stores > 0 ? "Store Data Found" : "Store Data Empty",
+                    "Toko",
+                    stats.stores > 0 ? "Data toko tersedia" : "Data toko belum tersedia",
                     stats.stores > 0
                   ],
                   [
-                    "Page Hero",
+                    "Hero Halaman",
                     stats.pageHeroes > 0
-                      ? "Page Hero Data Found"
-                      : "Page Hero Data Empty",
+                      ? "Data hero halaman tersedia"
+                      : "Data hero halaman belum tersedia",
                     stats.pageHeroes > 0
                   ],
                   [
-                    "Storage",
+                    "Penyimpanan",
                     storageReady
-                      ? "Storage Upload Ready"
-                      : "Storage Upload Not Ready",
+                      ? "Unggah file siap digunakan"
+                      : "Unggah file belum siap",
                     storageReady
                   ]
                 ].map(([label, value, ready]) => (
@@ -2115,12 +2115,12 @@ export function AdminDashboard() {
                       </article>
                     ))}
                   </div>
-                ) : <p className="mt-5 bg-brand-offWhite p-4 text-sm text-brand-charcoal/60">Belum ada media. Tambahkan aset pertama melalui Media Library.</p>}
+                ) : <p className="mt-5 bg-brand-offWhite p-4 text-sm text-brand-charcoal/60">Belum ada media. Tambahkan aset pertama melalui Galeri Media.</p>}
               </div>
               <div className="border border-brand-softGray bg-white p-5">
                 <div className="max-w-3xl">
                   <p className="text-xs font-semibold uppercase tracking-[0.2em] text-brand-charcoal/50">
-                    Panduan Upload
+                    Panduan Unggah
                   </p>
                   <h2 className="mt-2 text-2xl font-semibold">
                     Image Dimension Guide
@@ -2344,7 +2344,7 @@ export function AdminDashboard() {
                             // eslint-disable-next-line @next/next/no-img-element
                             <img
                               src={image}
-                              alt="Preview data"
+                              alt="Pratinjau data"
                               className="aspect-square w-full object-cover"
                             />
                           ) : (

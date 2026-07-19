@@ -23,7 +23,7 @@ export function PublicPaymentForm({ token }: { token: string }) {
     fetch(`/api/public/payments/${encodeURIComponent(token)}`, { cache: "no-store" })
       .then(async (response) => {
         const payload = (await response.json()) as SafeOrder & { error?: string };
-        if (!response.ok) throw new Error(payload.error || "Tautan tidak tersedia.");
+        if (!response.ok) throw new Error("Tautan pembayaran tidak tersedia atau sudah tidak berlaku.");
         setOrder(payload);
       })
       .catch((reason: unknown) => setError(reason instanceof Error ? reason.message : "Tautan tidak tersedia."))
@@ -37,7 +37,7 @@ export function PublicPaymentForm({ token }: { token: string }) {
     try {
       const response = await fetch(`/api/public/payments/${encodeURIComponent(token)}`, { method: "POST", body: form });
       const payload = (await response.json()) as { paymentNumber?: string; error?: string };
-      if (!response.ok) throw new Error(payload.error || "Pembayaran gagal dikirim.");
+      if (!response.ok) throw new Error("Pembayaran belum dapat dikirim. Periksa data dan file bukti lalu coba lagi.");
       setSuccess(`${payload.paymentNumber ?? "Pembayaran"} berhasil dikirim dan menunggu verifikasi.`);
     } catch (reason) { setError(reason instanceof Error ? reason.message : "Pembayaran gagal dikirim."); }
     finally { setSending(false); }
@@ -54,7 +54,7 @@ export function PublicPaymentForm({ token }: { token: string }) {
         <h1 className="mt-2 text-2xl font-semibold">{order.orderNumber}</h1>
         <dl className="mt-6 grid gap-4 text-sm">
           <div><dt className="text-brand-charcoal/55">Total tagihan</dt><dd className="mt-1 font-semibold">{money(order.totalAmount)}</dd></div>
-          <div><dt className="text-brand-charcoal/55">Sudah efektif dibayar</dt><dd className="mt-1 font-semibold">{money(order.effectivePaid)}</dd></div>
+          <div><dt className="text-brand-charcoal/55">Pembayaran terverifikasi</dt><dd className="mt-1 font-semibold">{money(order.effectivePaid)}</dd></div>
           <div><dt className="text-brand-charcoal/55">Sisa tagihan</dt><dd className="mt-1 font-semibold">{money(order.outstandingBalance)}</dd></div>
           <div><dt className="text-brand-charcoal/55">Minimum pembayaran saat ini</dt><dd className="mt-1 font-semibold">{money(order.requiredAmount)}</dd></div>
         </dl>

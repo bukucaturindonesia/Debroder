@@ -402,7 +402,7 @@ export function StoreGrid({ stores }: { stores: Store[] }) {
       {stores.map((store) => {
         const whatsappHref = whatsappLinkWithMessage(
           store.whatsapp_link || store.whatsapp || "",
-          `Halo DE BRODER, saya ingin bertanya tentang layanan di Store ${store.nama_store}.`
+          `Halo DEBRODER, saya ingin bertanya tentang layanan di toko ${store.nama_store}.`
         );
 
         return (

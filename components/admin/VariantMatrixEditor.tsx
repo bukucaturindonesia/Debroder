@@ -144,7 +144,7 @@ export function VariantMatrixEditor({
     }
     const changed = changedMatrixRows(rows);
     if (!changed.length) {
-      setMessage("Tidak ada perubahan. Database tidak disentuh.");
+      setMessage("Tidak ada perubahan yang perlu disimpan.");
       return;
     }
     await onSave({ productId: product.id, rows: changed });
@@ -154,10 +154,10 @@ export function VariantMatrixEditor({
     <section id="variant-matrix" className="scroll-mt-24 bg-white p-5 sm:p-7">
       <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
         <div>
-          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-brand-green">PIM PHASE 3</p>
-          <h2 className="mt-2 text-2xl font-semibold">Variant Matrix</h2>
+          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-brand-green">MANAJEMEN PRODUK</p>
+          <h2 className="mt-2 text-2xl font-semibold">Matriks Varian</h2>
           <p className="mt-2 max-w-3xl text-sm leading-6 text-brand-charcoal/60">
-            Generate warna × ukuran sebagai draft, review SKU/stok/harga, lalu simpan seluruh perubahan melalui service canonical.
+            Buat kombinasi warna × ukuran sebagai draft, periksa SKU, stok, dan harga, lalu simpan seluruh perubahan.
           </p>
         </div>
         <div className="flex flex-wrap gap-2 text-xs font-semibold">
@@ -172,7 +172,7 @@ export function VariantMatrixEditor({
 
       {readOnly ? (
         <div className="mt-5 border border-amber-200 bg-amber-50 px-4 py-3 text-sm font-semibold text-amber-900">
-          MODE LIHAT SAJA — matrix dapat direview, tetapi Generate, bulk edit, dan Save dinonaktifkan.
+          MODE LIHAT SAJA — matriks dapat diperiksa, tetapi pembuatan kombinasi, edit massal, dan penyimpanan dinonaktifkan.
         </div>
       ) : null}
 
@@ -231,7 +231,7 @@ export function VariantMatrixEditor({
           <div className="flex flex-wrap items-end gap-3">
             <label className="text-xs font-semibold">Bulk stok<input type="number" min={0} step={1} value={bulkStock} onChange={(event) => setBulkStock(event.target.value)} className="mt-2 block min-h-10 w-32 border border-brand-softGray px-3 text-sm" /></label>
             <label className="text-xs font-semibold">Bulk price adjustment<input type="number" step={1} value={bulkPrice} onChange={(event) => setBulkPrice(event.target.value)} className="mt-2 block min-h-10 w-40 border border-brand-softGray px-3 text-sm" /></label>
-            <label className="text-xs font-semibold">Bulk status<select value={bulkStatus} onChange={(event) => setBulkStatus(event.target.value === "inactive" ? "inactive" : "active")} className="mt-2 block min-h-10 w-36 border border-brand-softGray bg-white px-3 text-sm"><option value="active">Active</option><option value="inactive">Inactive</option></select></label>
+            <label className="text-xs font-semibold">Status sekaligus<select value={bulkStatus} onChange={(event) => setBulkStatus(event.target.value === "inactive" ? "inactive" : "active")} className="mt-2 block min-h-10 w-36 border border-brand-softGray bg-white px-3 text-sm"><option value="active">Aktif</option><option value="inactive">Tidak Aktif</option></select></label>
             <button data-admin-mutation="true" type="button" onClick={applyBulk} disabled={working || !selectedRowKeys.size} className="min-h-10 rounded-full border border-brand-softGray px-4 text-xs font-semibold disabled:opacity-45">Terapkan ke {selectedRowKeys.size} row</button>
             <button data-admin-mutation="true" type="button" onClick={() => void save()} disabled={working || !summary.affected || blockers.length > 0} className="min-h-10 rounded-full bg-brand-green px-5 text-xs font-semibold text-white disabled:opacity-45">{working ? "Menyimpan..." : `Simpan Matrix (${summary.affected})`}</button>
           </div>
@@ -256,11 +256,11 @@ export function VariantMatrixEditor({
                   <td className="p-3"><input type="number" min={0} step={1} value={row.stockQuantity} onChange={(event) => updateRow(row.key, { stockQuantity: Number(event.target.value) })} disabled={readOnly || working} className="min-h-10 w-24 border border-brand-softGray px-3" /></td>
                   <td className="p-3"><input type="number" step={1} value={row.priceAdjustment} onChange={(event) => updateRow(row.key, { priceAdjustment: Number(event.target.value) })} disabled={readOnly || working} className="min-h-10 w-28 border border-brand-softGray px-3" /></td>
                   <td className="p-3 font-semibold">{formatRupiah(product.basePrice + variantAdjustment + row.priceAdjustment)}</td>
-                  <td className="p-3"><select value={row.status} onChange={(event) => updateRow(row.key, { status: event.target.value === "inactive" ? "inactive" : "active" })} disabled={readOnly || working} className="min-h-10 border border-brand-softGray bg-white px-3"><option value="active">Active</option><option value="inactive">Inactive</option></select></td>
+                  <td className="p-3"><select value={row.status} onChange={(event) => updateRow(row.key, { status: event.target.value === "inactive" ? "inactive" : "active" })} disabled={readOnly || working} className="min-h-10 border border-brand-softGray bg-white px-3"><option value="active">Aktif</option><option value="inactive">Tidak Aktif</option></select></td>
                   <td className="p-3">{rowIssues.length ? <span className="font-semibold text-amber-800">BLOCKER</span> : <span className="font-semibold text-green-700">READY</span>}</td>
                 </tr>
               );
-            }) : <tr><td colSpan={9} className="p-8 text-center text-brand-charcoal/50">Belum ada kombinasi. Pilih warna dan ukuran lalu Generate Draft Matrix.</td></tr>}
+            }) : <tr><td colSpan={9} className="p-8 text-center text-brand-charcoal/50">Belum ada kombinasi. Pilih warna dan ukuran lalu buat draf matriks.</td></tr>}
           </tbody>
         </table>
       </div>

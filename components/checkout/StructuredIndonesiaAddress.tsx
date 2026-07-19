@@ -90,11 +90,11 @@ async function loadRegions(level: IndonesiaRegionLevel, parentCode: string, sett
     if (parentCode) query.set("parent_code", parentCode);
     const response = await fetch(`/api/public/indonesia-regions?${query}`, { cache: "force-cache" });
     const payload = await response.json() as { regions?: IndonesiaRegionOption[]; error?: string };
-    if (!response.ok) throw new Error(payload.error || "Katalog wilayah gagal dimuat.");
+    if (!response.ok) throw new Error("Daftar wilayah belum dapat dimuat. Coba lagi.");
     setter(payload.regions ?? []);
     if (!(payload.regions ?? []).length) setError("Data wilayah untuk pilihan ini belum dikonfigurasi.");
   } catch (reason) {
     setter([]);
-    setError(reason instanceof Error ? reason.message : "Katalog wilayah gagal dimuat.");
+    setError(reason instanceof Error ? reason.message : "Daftar wilayah belum dapat dimuat. Coba lagi.");
   } finally { setLoading(""); }
 }

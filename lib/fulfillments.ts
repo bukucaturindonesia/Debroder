@@ -163,7 +163,7 @@ export function fulfillmentTransitionNeedsReason(status: FulfillmentStatus) {
 export function getFulfillmentTransitionLabel(status: FulfillmentStatus) {
   return {
     preparing: "Kembalikan ke Persiapan",
-    packing: "Mulai Packing",
+    packing: "Mulai Pengemasan",
     ready_to_ship: "Tandai Siap Dikirim",
     shipped: "Tandai Sudah Dikirim",
     in_transit: "Tandai Dalam Perjalanan",

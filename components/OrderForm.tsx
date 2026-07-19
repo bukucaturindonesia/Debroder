@@ -54,7 +54,7 @@ export function OrderForm({ products, initialProduct }: { products: Product[]; i
 
   async function uploadFile(file: File, submissionId: string, kind: "design" | "payment") {
     const supabase = createSupabaseClient();
-    if (!supabase) throw new Error("Supabase belum dikonfigurasi.");
+    if (!supabase) throw new Error("Layanan data belum tersedia. Silakan coba lagi nanti.");
     const path = `${submissionId}/${kind}-${Date.now()}.${fileExtension(file)}`;
     const { error } = await supabase.storage.from(ORDER_UPLOADS_BUCKET).upload(path, file, {
       contentType: file.type,
@@ -109,9 +109,9 @@ export function OrderForm({ products, initialProduct }: { products: Product[]; i
       const row = Array.isArray(data) ? data[0] : data;
       if (!row?.created_order_id || !row?.created_order_number) throw new Error("Nomor pesanan tidak diterima.");
       setCreatedOrder({ id: row.created_order_id, orderNumber: row.created_order_number, phone: phone.trim(), submissionId });
-      setStatus("Pesanan berhasil dibuat dan masuk ke Order Management.");
-    } catch (error) {
-      setStatus(`Pesanan belum berhasil disimpan: ${error instanceof Error ? error.message : "coba lagi"}`);
+      setStatus("Pesanan berhasil dibuat dan masuk ke daftar pesanan admin.");
+    } catch {
+      setStatus("Pesanan belum berhasil disimpan. Periksa data lalu coba lagi.");
     } finally {
       setSubmitting(false);
     }
@@ -144,8 +144,8 @@ export function OrderForm({ products, initialProduct }: { products: Product[]; i
       if (error) throw error;
       setStatus("Bukti pembayaran terkirim dan menunggu verifikasi admin.");
       setProofFile(null);
-    } catch (error) {
-      setStatus(`Bukti pembayaran gagal dikirim: ${error instanceof Error ? error.message : "coba lagi"}`);
+    } catch {
+      setStatus("Bukti pembayaran belum dapat dikirim. Periksa file lalu coba lagi.");
     } finally {
       setUploadingProof(false);
     }
@@ -161,10 +161,10 @@ export function OrderForm({ products, initialProduct }: { products: Product[]; i
           {status ? <p role="status" className="mt-5 bg-brand-offWhite p-4 text-sm font-semibold">{status}</p> : null}
         </section>
         <form onSubmit={submitPaymentProof} className="bg-white p-6 sm:p-8">
-          <h2 className="text-xl font-semibold">Bayar / Upload Bukti Bayar</h2>
+          <h2 className="text-xl font-semibold">Pembayaran / Unggah Bukti Pembayaran</h2>
           <p className="mt-2 text-sm leading-6 text-brand-charcoal/60">Pembayaran masih manual. Transfer sesuai arahan tim, lalu upload bukti agar admin dapat memverifikasi.</p>
           <label className="mt-5 grid gap-2 text-sm font-semibold">Bukti transfer<input type="file" accept="image/jpeg,image/png,image/webp" onChange={(event) => setProofFile(event.target.files?.[0] || null)} className="min-h-11 rounded-lg border border-brand-softGray p-3 font-normal" /></label>
-          <button disabled={uploadingProof || !proofFile} className="mt-5 min-h-11 w-full bg-black px-6 text-sm font-semibold text-white hover:bg-black/75 disabled:opacity-50">{uploadingProof ? "Mengupload..." : "Upload Bukti Bayar"}</button>
+          <button disabled={uploadingProof || !proofFile} className="mt-5 min-h-11 w-full bg-black px-6 text-sm font-semibold text-white hover:bg-black/75 disabled:opacity-50">{uploadingProof ? "Mengunggah..." : "Unggah Bukti Pembayaran"}</button>
         </form>
       </div>
     );
@@ -174,7 +174,7 @@ export function OrderForm({ products, initialProduct }: { products: Product[]; i
     <form onSubmit={submitOrder} className="grid gap-6 lg:grid-cols-[1fr_.72fr]">
       <section className="bg-white p-6 sm:p-8">
         <h1 className="text-3xl font-semibold">Form Pemesanan</h1>
-        <p className="mt-2 text-sm leading-6 text-brand-charcoal/60">Isi kebutuhan produk. Pesanan langsung masuk ke Order Management DEBRODER.</p>
+        <p className="mt-2 text-sm leading-6 text-brand-charcoal/60">Isi kebutuhan produk. Pesanan akan langsung masuk ke daftar pesanan DEBRODER.</p>
         {status ? <p role="status" className="mt-5 bg-brand-offWhite p-4 text-sm font-semibold">{status}</p> : null}
         <div className="mt-6 grid gap-4 sm:grid-cols-2">
           <Field label="Nama customer"><input required value={customerName} onChange={(event) => setCustomerName(event.target.value)} /></Field>
@@ -184,7 +184,7 @@ export function OrderForm({ products, initialProduct }: { products: Product[]; i
           <Field label="Warna"><input list="order-colors" value={color} onChange={(event) => setColor(event.target.value)} /><datalist id="order-colors">{(selectedProduct?.color_tags || []).map((item) => <option key={item} value={item} />)}</datalist></Field>
           <Field label="Ukuran"><input list="order-sizes" value={size} onChange={(event) => setSize(event.target.value)} /><datalist id="order-sizes">{(selectedProduct?.size_tags || []).map((item) => <option key={item} value={item} />)}</datalist></Field>
           <Field label="Jumlah"><input required type="number" min="1" max="10000" value={quantity} onChange={(event) => setQuantity(Math.max(1, Number(event.target.value)))} /></Field>
-          <Field label="Upload desain (opsional)"><input type="file" accept="image/jpeg,image/png,image/webp,application/pdf" onChange={(event) => setDesignFile(event.target.files?.[0] || null)} /></Field>
+          <Field label="Unggah desain (opsional)"><input type="file" accept="image/jpeg,image/png,image/webp,application/pdf" onChange={(event) => setDesignFile(event.target.files?.[0] || null)} /></Field>
           <div className="sm:col-span-2"><Field label="Catatan"><textarea rows={4} value={notes} onChange={(event) => setNotes(event.target.value)} /></Field></div>
           <Field label="Metode ambil/kirim"><select value={deliveryMethod} onChange={(event) => setDeliveryMethod(event.target.value as "pickup" | "shipping")}><option value="pickup">Ambil di store</option><option value="shipping">Kirim ke alamat</option></select></Field>
           {deliveryMethod === "shipping" ? <Field label="Alamat pengiriman"><textarea required rows={3} value={shippingAddress} onChange={(event) => setShippingAddress(event.target.value)} /></Field> : null}

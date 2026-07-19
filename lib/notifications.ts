@@ -122,7 +122,7 @@ export const NOTIFICATION_CHANNEL_LABELS: Record<NotificationChannel, string> = 
   email: "Email",
   whatsapp: "WhatsApp",
   sms: "SMS",
-  push: "Push Notification"
+  push: "Notifikasi Perangkat"
 };
 
 export const NOTIFICATION_STATUS_LABELS: Record<NotificationStatus, string> = {
@@ -131,13 +131,13 @@ export const NOTIFICATION_STATUS_LABELS: Record<NotificationStatus, string> = {
   failed: "Gagal",
   read: "Sudah Dibaca",
   archived: "Diarsipkan",
-  not_configured: "Provider Belum Aktif"
+  not_configured: "Layanan Belum Aktif"
 };
 
 export const NOTIFICATION_EVENT_LABELS: Record<string, string> = {
   order_created: "Pesanan Dibuat",
-  quotation_sent: "Quotation Dikirim",
-  quotation_approved: "Quotation Disetujui",
+  quotation_sent: "Penawaran Harga Dikirim",
+  quotation_approved: "Penawaran Harga Disetujui",
   mockup_ready: "Mockup Siap Diperiksa",
   mockup_revision: "Mockup Memerlukan Revisi",
   mockup_approved: "Mockup Disetujui",
@@ -145,11 +145,11 @@ export const NOTIFICATION_EVENT_LABELS: Record<string, string> = {
   payment_verified: "Pembayaran Diverifikasi",
   payment_rejected: "Pembayaran Ditolak",
   payment_requirement_met: "Syarat Pembayaran Terpenuhi",
-  job_order_created: "Job Order Dibuat",
+  job_order_created: "Surat Perintah Kerja Dibuat",
   production_started: "Produksi Dimulai",
   production_on_hold: "Produksi Ditahan",
-  qc_passed: "QC Lulus",
-  qc_failed: "QC Tidak Lulus",
+  qc_passed: "Pemeriksaan Kualitas Lulus",
+  qc_failed: "Pemeriksaan Kualitas Tidak Lulus",
   ready_to_ship: "Siap Dikirim",
   ready_for_pickup: "Siap Diambil",
   tracking_available: "Nomor Resi Tersedia",
@@ -158,12 +158,12 @@ export const NOTIFICATION_EVENT_LABELS: Record<string, string> = {
 
 export const NOTIFICATION_ENTITY_LABELS: Record<string, string> = {
   order: "Pesanan",
-  quotation: "Quotation",
+  quotation: "Penawaran Harga",
   mockup: "Mockup",
   order_payment: "Pembayaran",
-  job_order: "Job Order",
-  qc_record: "Quality Control",
-  fulfillment: "Pengiriman / Pickup"
+  job_order: "Surat Perintah Kerja",
+  qc_record: "Pemeriksaan Kualitas",
+  fulfillment: "Pengiriman / Ambil di Toko"
 };
 
 export function isNotificationRole(role: string | null | undefined) {
@@ -191,18 +191,11 @@ export function isNotificationSuperAdmin(role: string | null | undefined) {
 }
 
 export function getNotificationEventLabel(eventCode: string) {
-  return (
-    NOTIFICATION_EVENT_LABELS[eventCode] ||
-    eventCode
-      .split("_")
-      .filter(Boolean)
-      .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
-      .join(" ")
-  );
+  return NOTIFICATION_EVENT_LABELS[eventCode] || "Aktivitas belum dikenali";
 }
 
 export function getNotificationEntityLabel(entityType: string) {
-  return NOTIFICATION_ENTITY_LABELS[entityType] || entityType;
+  return NOTIFICATION_ENTITY_LABELS[entityType] || "Objek belum dikenali";
 }
 
 export function formatNotificationDate(value: string | null | undefined) {

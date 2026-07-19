@@ -271,7 +271,7 @@ export function PimV2Client({ products, services }: PimV2ClientProps) {
     });
     const payload = (await response.json()) as { error?: string; issues?: ValidationIssue[] };
     setIssues(payload.issues ?? []);
-    setStatus(response.ok ? "Draft tersimpan." : payload.error ?? "Simpan gagal.");
+    setStatus(response.ok ? "Draf tersimpan." : "Produk belum dapat disimpan. Periksa data lalu coba lagi.");
   }
 
   async function saveServices() {
@@ -289,7 +289,7 @@ export function PimV2Client({ products, services }: PimV2ClientProps) {
       issues?: ValidationIssue[];
     };
     setIssues(payload.issues ?? []);
-    setStatus(response.ok ? "Layanan tersimpan." : payload.error ?? "Simpan gagal.");
+    setStatus(response.ok ? "Layanan tersimpan." : "Layanan belum dapat disimpan. Periksa data lalu coba lagi.");
   }
 
   if (!draft) {
@@ -496,7 +496,7 @@ export function PimV2Client({ products, services }: PimV2ClientProps) {
                 value={draft.minimumRule?.minimumForTierQuantity ?? ""}
               />
             </Field>
-            <Field label="Quotation mulai">
+            <Field label="Penawaran mulai">
               <input
                 className="text-input"
                 min={1}

@@ -43,7 +43,7 @@ export function AdminShell({ children }: { children: ReactNode }) {
       const supabase = createSupabaseClient();
       if (!supabase) {
         if (active) {
-          setAccessError("Supabase belum dikonfigurasi.");
+          setAccessError("Layanan data belum tersedia. Hubungi pengelola sistem.");
           setChecking(false);
         }
         return;

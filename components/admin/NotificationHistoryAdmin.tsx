@@ -254,8 +254,8 @@ export function NotificationHistoryAdmin() {
                         <h2 className="mt-2 text-lg font-semibold">
                           {getNotificationEventLabel(event.event_code)}
                         </h2>
-                        <p className="mt-1 break-all font-mono text-xs text-brand-charcoal/50">
-                          {event.event_code} · {event.entity_id}
+                        <p className="mt-1 text-xs text-brand-charcoal/50">
+                          {eventNotifications.length} notifikasi terkait
                         </p>
                       </div>
                       <div className="flex flex-wrap gap-2 text-xs font-semibold">
@@ -278,9 +278,7 @@ export function NotificationHistoryAdmin() {
                   </summary>
                   <div className="grid gap-5 border-t border-brand-softGray p-5 sm:p-6 lg:grid-cols-2">
                     <dl className="space-y-4 text-sm">
-                      <HistoryMeta label="Event ID" value={event.id} mono />
-                      <HistoryMeta label="Idempotency key" value={event.idempotency_key} mono />
-                      <HistoryMeta label="Dibuat oleh" value={event.created_by || "Sistem / trigger"} mono />
+                      <HistoryMeta label="Dibuat oleh" value={event.created_by ? "Admin" : "Sistem otomatis"} />
                       <HistoryMeta label="Waktu" value={formatNotificationDate(event.created_at)} />
                       <HistoryMeta
                         label="Status notifikasi"
@@ -298,11 +296,11 @@ export function NotificationHistoryAdmin() {
                     </dl>
                     <div>
                       <p className="text-xs font-semibold uppercase tracking-[0.15em] text-brand-charcoal/45">
-                        Payload Event
+                        Rincian Aktivitas
                       </p>
-                      <pre className="mt-2 max-h-72 overflow-auto border border-brand-softGray bg-brand-offWhite p-4 text-xs leading-6">
-                        {JSON.stringify(event.payload, null, 2)}
-                      </pre>
+                      <p className="mt-2 border border-brand-softGray bg-brand-offWhite p-4 text-sm leading-6 text-brand-charcoal/65">
+                        Rincian teknis disimpan untuk keperluan sistem dan tidak ditampilkan pada alur operasional admin.
+                      </p>
                     </div>
                   </div>
                 </details>
@@ -315,8 +313,8 @@ export function NotificationHistoryAdmin() {
       {tab === "deliveries" ? (
         deliveries.length === 0 ? (
           <AdminEmptyState
-            title="Belum ada delivery attempt"
-            description="Channel in-app tidak memerlukan attempt provider. Attempt akan muncul saat provider eksternal diaktifkan."
+            title="Belum ada percobaan pengiriman"
+            description="Notifikasi dalam aplikasi tidak memerlukan penyedia eksternal. Riwayat akan muncul saat kanal eksternal diaktifkan."
           />
         ) : (
           <section className="overflow-x-auto border border-brand-softGray bg-white">

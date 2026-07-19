@@ -22,7 +22,7 @@ export function CustomHub({ categories }: { categories: CustomCategory[] }) {
       <div className="max-w-3xl">
         <p className="text-xs font-semibold uppercase tracking-[0.18em] text-black/45">Custom DEBRODER</p>
         <h1 className="mt-3 text-4xl font-semibold tracking-tight sm:text-6xl">Mulai dari kebutuhanmu.</h1>
-        <p className="mt-4 text-base leading-8 text-black/60">Pilih kategori, gunakan Paket Instan, atau rakit proyek custom multi-produk dengan harga yang divalidasi ulang oleh server.</p>
+        <p className="mt-4 text-base leading-8 text-black/60">Pilih kategori, gunakan Paket Instan, atau rakit proyek custom berisi beberapa produk. Harga akan diperiksa kembali sebelum pesanan dibuat.</p>
       </div>
       <div className="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
         {categories.map((category) => {

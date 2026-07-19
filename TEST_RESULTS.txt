@@ -1,49 +1,39 @@
-SOURCE COMMIT: 394613b2175188477330165d36a8c2c0f2841f85
-DATE: 2026-07-19 Asia/Makassar
+DEBRODER UI LANGUAGE STANDARDIZATION — LOCAL TEST RESULTS
 
-DEPENDENCY INSTALL
-COMMAND: pnpm install --frozen-lockfile
-RESULT: ENVIRONMENT BLOCKED
-DETAIL: ENOENT while pnpm attempted mkdir /root/.local. No source compilation occurred. Not retried.
+Dependency install
+Command: pnpm install --frozen-lockfile
+Result: ENVIRONMENT BLOCKED
+Detail: ENOENT: no such file or directory, mkdir '/root/.local'.
 
-TARGETED TESTS
-COMMAND: pnpm test -- test/admin-order-detail-react130.test.ts test/admin-order-pricing-workspace.test.ts test/custom-order-end-to-end-revision.test.ts
-RESULT: NOT RUN — ENVIRONMENT BLOCKED
-DETAIL: same pnpm /root/.local failure before Vitest execution.
+TypeScript
+Command: pnpm typecheck
+Result: ENVIRONMENT BLOCKED — compiler did not start; no source error observed.
 
-TYPECHECK
-COMMAND: npm run typecheck
-RESULT: NOT RUN — ENVIRONMENT BLOCKED
-DETAIL: tsc not found because dependencies are absent.
+Lint
+Command: pnpm lint
+Result: ENVIRONMENT BLOCKED — linter did not start; no source error observed.
 
-LINT
-COMMAND: npm run lint
-RESULT: NOT RUN — ENVIRONMENT BLOCKED
-DETAIL: eslint not found because dependencies are absent.
+Targeted tests
+Command: pnpm exec vitest run test/ui-language-standardization.test.ts test/admin-order-detail-react130.test.ts test/admin-order-pricing-workspace.test.ts
+Result: ENVIRONMENT BLOCKED — Vitest did not start; no source error observed.
 
-FULL TESTS
-COMMAND: npm run test
-RESULT: NOT RUN — ENVIRONMENT BLOCKED
-DETAIL: vitest not found because dependencies are absent.
+Full tests
+Command: pnpm test
+Result: ENVIRONMENT BLOCKED — test runner did not start; no source error observed.
 
-CLEAN PRODUCTION BUILD
-COMMAND: remove .next if present; npm run build
-RESULT: NOT RUN — ENVIRONMENT BLOCKED
-DETAIL: prebuild stopped at missing vitest; Next compilation did not start.
+Production build
+Command: pnpm build
+Result: ENVIRONMENT BLOCKED — build did not start; no source error observed.
 
-LOCAL BROWSER
-RESULT: BLOCKED
-DETAIL: no production build/runtime was available. No claim of direct /admin/orders/[id] browser verification, React #130 runtime verification, hydration verification, or viewport verification is made.
+Static checks
+- Changed-files-only path audit: PASS
+- API/database/migration path protection: PASS
+- Raw payload.error UI scan: PASS (0)
+- Critical forbidden-copy scan: PASS (0)
+- Raw status direct-render audit: PASS; remaining candidates use badge/label mapping or select values
+- Conflict-marker scan: PASS (0)
+- Secret scan: PASS (0)
+- Browser verification: NOT RUN — STATIC AUDIT ONLY
 
-STATIC / LIGHTWEIGHT GATES
-- Node pure pricing domain smoke: PASS (integer totals, invalid input, DTF collision, legacy snapshot extraction).
-- Node syntax check for lib/admin-order-pricing.ts and its test source: PASS.
-- Migration delimiter/parenthesis balance: PASS.
-- Changed-files diff check: PASS after ignoring existing CRLF end-of-line only; no CRLF normalization performed.
-- Conflict marker scan: PASS.
-- Secret signature scan: PASS.
-- Prebuild contract retains React #130 test and adds pricing workspace test: PASS.
-
-SUMMARY
-ENVIRONMENT BLOCKED — NO SOURCE ERROR OBSERVED.
-This is source-ready for owner review, not locally verified and not browser fixed.
+LOCAL ENVIRONMENT: BLOCKED
+VERCEL BUILD: OWNER VERIFICATION REQUIRED

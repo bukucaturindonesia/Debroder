@@ -194,7 +194,7 @@ export function MediaLibraryPanel() {
     window.clearTimeout(slowTimer);
     setLoading(false);
     if (error) {
-      setStatus(`Media Library belum dapat dimuat: ${error.message}`);
+      setStatus("Pustaka media belum dapat dimuat. Coba lagi.");
       return;
     }
     const withUsages = await deriveUsages((data || []) as MediaAsset[]);
@@ -234,7 +234,7 @@ export function MediaLibraryPanel() {
     const bucket = asset.bucket_id || WEBSITE_IMAGES_BUCKET;
     const { error } = await supabase.storage.from(bucket).upload(asset.storage_path, file, { contentType: file.type, cacheControl: "0", upsert: true });
     if (error) {
-      setStatus(`Replace media gagal: ${error.message}. File lama tetap aman.`);
+      setStatus("Media belum dapat diganti. File lama tetap aman.");
       return false;
     }
     const { error: updateError } = await supabase.from("media_assets").update({
@@ -286,7 +286,7 @@ export function MediaLibraryPanel() {
       const storageFolder = folder;
       const path = `${slugFolder(storageFolder)}/${Date.now()}-${index}-${safeFileName(file.name)}`;
       const { error: uploadError } = await supabase.storage.from(WEBSITE_IMAGES_BUCKET).upload(path, file, { cacheControl: "3600", contentType: file.type, upsert: false });
-      if (uploadError) { setStatus(`Upload ${file.name} gagal: ${uploadError.message}`); setUploading(false); return; }
+      if (uploadError) { setStatus(`File ${file.name} belum dapat diunggah. Periksa file lalu coba lagi.`); setUploading(false); return; }
       const publicUrl = supabase.storage.from(WEBSITE_IMAGES_BUCKET).getPublicUrl(path).data.publicUrl;
       const dimensions = await imageDimensions(file);
       let thumbnailUrl: string | null = null;
@@ -346,7 +346,7 @@ export function MediaLibraryPanel() {
     if (!supabase) return;
     const draft = editing[asset.id] || {};
     const { error } = await supabase.from("media_assets").update({ alt_text: draft.alt_text || "", tags: draft.tags || [], folder: draft.folder || "products", updated_at: new Date().toISOString() }).eq("id", asset.id);
-    setStatus(error ? `Metadata gagal disimpan: ${error.message}` : "Metadata media tersimpan.");
+    setStatus(error ? "Informasi media belum dapat disimpan. Coba lagi." : "Informasi media tersimpan.");
     if (!error) await loadAssets();
   }
 
@@ -364,7 +364,7 @@ export function MediaLibraryPanel() {
     const { error: storageError } = await supabase.storage.from(bucket).remove(paths);
     if (storageError) { setStatus(`Media belum dapat dihapus: ${storageError.message}`); return; }
     const { error } = await supabase.from("media_assets").delete().eq("id", asset.id);
-    setStatus(error ? `Metadata media gagal dihapus: ${error.message}` : "Media dihapus.");
+    setStatus(error ? "Media belum dapat dihapus. Coba lagi." : "Media dihapus.");
     if (!error) await loadAssets();
   }
 
@@ -382,7 +382,7 @@ export function MediaLibraryPanel() {
     <div className="mt-6 grid gap-5">
       <div onDragOver={(event) => event.preventDefault()} onDrop={handleDrop} className="border border-dashed border-brand-green/40 bg-white p-6 text-center sm:p-8">
         <p className="text-lg font-semibold">Tarik foto atau video ke sini</p>
-        <p className="mt-2 text-sm leading-6 text-brand-charcoal/60">Upload sekali, lalu pilih aset yang sama dari editor produk, kategori, hero, atau banner.</p>
+        <p className="mt-2 text-sm leading-6 text-brand-charcoal/60">Unggah sekali, lalu pilih aset yang sama dari editor produk, kategori, gambar utama, atau banner.</p>
         <div className="mx-auto mt-5 flex max-w-lg flex-col gap-3 sm:flex-row sm:items-center sm:justify-center">
           <select value={folder} onChange={(event) => setFolder(event.target.value)} className="min-h-11 rounded-lg border border-brand-softGray bg-white px-4 text-sm font-semibold">{availableFolders.map((item) => <option key={item}>{item}</option>)}</select>
           <label className="inline-flex min-h-11 cursor-pointer items-center justify-center rounded-full bg-brand-green px-6 text-sm font-semibold text-white">{uploading ? "Mengupload..." : "Pilih File"}<input ref={inputRef} type="file" multiple accept="image/jpeg,image/png,image/webp,video/mp4,video/webm" className="sr-only" disabled={uploading} onChange={(event) => event.target.files && uploadFiles(event.target.files)} /></label>
@@ -406,7 +406,7 @@ export function MediaLibraryPanel() {
             return <article key={asset.id} className="border border-brand-softGray bg-white p-4">
               {asset.media_type === "video" ? <video src={asset.public_url} muted playsInline preload="metadata" controls poster={asset.thumbnail_url || undefined} className="aspect-video w-full bg-brand-offWhite object-cover" /> : <img src={asset.public_url} alt={asset.alt_text || asset.name} loading="lazy" onError={(event) => { event.currentTarget.src = "/brand/debroder/open-graph-logo.png"; }} className="aspect-video w-full bg-brand-offWhite object-cover" />}
               <h3 className="mt-3 truncate text-sm font-semibold" title={asset.name}>{asset.name}</h3>
-              <dl className="mt-2 grid grid-cols-2 gap-x-3 gap-y-1 text-xs text-brand-charcoal/55"><div><dt className="font-semibold">Dimensi</dt><dd>{asset.width && asset.height ? `${asset.width} × ${asset.height}px` : "—"}</dd></div><div><dt className="font-semibold">Ukuran</dt><dd>{readableSize(asset.size_bytes)}</dd></div><div><dt className="font-semibold">Upload</dt><dd>{new Intl.DateTimeFormat("id-ID", { dateStyle: "medium" }).format(new Date(asset.created_at))}</dd></div><div><dt className="font-semibold">Tipe</dt><dd>{asset.mime_type}</dd></div></dl>
+              <dl className="mt-2 grid grid-cols-2 gap-x-3 gap-y-1 text-xs text-brand-charcoal/55"><div><dt className="font-semibold">Dimensi</dt><dd>{asset.width && asset.height ? `${asset.width} × ${asset.height}px` : "—"}</dd></div><div><dt className="font-semibold">Ukuran</dt><dd>{readableSize(asset.size_bytes)}</dd></div><div><dt className="font-semibold">Diunggah</dt><dd>{new Intl.DateTimeFormat("id-ID", { dateStyle: "medium" }).format(new Date(asset.created_at))}</dd></div><div><dt className="font-semibold">Tipe</dt><dd>{asset.mime_type}</dd></div></dl>
               <div className="mt-3 grid gap-2">
                 <input aria-label={`Alt text ${asset.name}`} value={String(draft.alt_text || "")} onChange={(event) => setEditing((current) => ({ ...current, [asset.id]: { ...current[asset.id], alt_text: event.target.value } }))} placeholder="Alt text" className="min-h-10 rounded-lg border border-brand-softGray px-3 text-xs" />
                 <input aria-label={`Tags ${asset.name}`} value={(draft.tags || []).join(", ")} onChange={(event) => setEditing((current) => ({ ...current, [asset.id]: { ...current[asset.id], tags: event.target.value.split(",").map((item) => item.trim()).filter(Boolean) } }))} placeholder="tag, dipisahkan koma" className="min-h-10 rounded-lg border border-brand-softGray px-3 text-xs" />
@@ -417,7 +417,7 @@ export function MediaLibraryPanel() {
             </article>;
           })}
         </div>
-      ) : <div className="bg-white p-8 text-center"><p className="text-lg font-semibold">Tidak ada media</p><p className="mt-2 text-sm text-brand-charcoal/60">Upload file pertama atau ubah filter pencarian.</p></div>}
+      ) : <div className="bg-white p-8 text-center"><p className="text-lg font-semibold">Tidak ada media</p><p className="mt-2 text-sm text-brand-charcoal/60">Unggah file pertama atau ubah filter pencarian.</p></div>}
     </div>
   );
 }

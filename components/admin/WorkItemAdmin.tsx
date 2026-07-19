@@ -92,7 +92,7 @@ export function WorkItemAdmin() {
   const loadData = useCallback(async () => {
     const supabase = createSupabaseClient();
     if (!supabase) {
-      setNotice({ type: "error", text: "Supabase belum dikonfigurasi." });
+      setNotice({ type: "error", text: "Layanan data belum tersedia. Hubungi pengelola sistem." });
       setLoading(false);
       return;
     }
@@ -120,7 +120,7 @@ export function WorkItemAdmin() {
 
     const firstError = workResult.error || jobResult.error;
     if (firstError) {
-      setNotice({ type: "error", text: `Work Item belum dapat dimuat: ${firstError.message}` });
+      setNotice({ type: "error", text: "Daftar pekerjaan belum dapat dimuat. Coba lagi." });
       return;
     }
 
@@ -217,12 +217,12 @@ export function WorkItemAdmin() {
     setWorking(false);
 
     if (result.error) {
-      setNotice({ type: "error", text: result.error.message || "Work Item gagal dibuat." });
+      setNotice({ type: "error", text: "Pekerjaan belum berhasil dibuat. Periksa data lalu coba lagi." });
       return;
     }
 
     setManualOpen(false);
-    setNotice({ type: "success", text: "Work Item manual berhasil dibuat." });
+    setNotice({ type: "success", text: "Pekerjaan manual berhasil dibuat." });
     await loadData();
   }
 
@@ -239,7 +239,7 @@ export function WorkItemAdmin() {
     setWorking(false);
 
     if (result.error) {
-      setNotice({ type: "error", text: result.error.message || "Work Item otomatis gagal dibuat." });
+      setNotice({ type: "error", text: "Pekerjaan otomatis belum berhasil dibuat. Coba lagi." });
       return;
     }
 
@@ -249,7 +249,7 @@ export function WorkItemAdmin() {
     router.replace(`/admin/work-items?job_order=${generateJobOrderId}`);
     setNotice({
       type: count > 0 ? "success" : "warning",
-      text: count > 0 ? `${count} Work Item berhasil dibuat dari Job Order.` : "Semua sumber Job Order sudah mempunyai Work Item."
+      text: count > 0 ? `${count} pekerjaan berhasil dibuat dari Surat Perintah Kerja.` : "Semua Surat Perintah Kerja sudah mempunyai daftar pekerjaan."
     });
     await loadData();
   }
@@ -263,7 +263,7 @@ export function WorkItemAdmin() {
     const result = await supabase.rpc("restore_work_item", { p_work_item_id: row.id });
     setWorking(false);
     if (result.error) {
-      setNotice({ type: "error", text: result.error.message || "Work Item gagal dipulihkan." });
+      setNotice({ type: "error", text: "Pekerjaan belum berhasil dipulihkan. Coba lagi." });
       return;
     }
     setNotice({ type: "success", text: `${row.work_item_number} berhasil dipulihkan.` });
@@ -280,7 +280,7 @@ export function WorkItemAdmin() {
       return;
     }
     if (pendingAction.type === "delete" && deleteConfirmation !== pendingAction.row.work_item_number) {
-      setNotice({ type: "error", text: "Ketik nomor Work Item secara tepat untuk konfirmasi." });
+      setNotice({ type: "error", text: "Ketik nomor pekerjaan secara tepat untuk konfirmasi." });
       return;
     }
 
@@ -298,7 +298,7 @@ export function WorkItemAdmin() {
     setWorking(false);
 
     if (result.error) {
-      setNotice({ type: "error", text: result.error.message || "Tindakan Work Item gagal dilakukan." });
+      setNotice({ type: "error", text: "Tindakan pada pekerjaan belum berhasil. Periksa status terbaru lalu coba lagi." });
       return;
     }
 
@@ -310,15 +310,15 @@ export function WorkItemAdmin() {
     await loadData();
   }
 
-  if (loading) return <AdminLoadingState label="Memuat Work Item..." />;
+  if (loading) return <AdminLoadingState label="Memuat daftar pekerjaan..." />;
 
   return (
     <main className="text-brand-charcoal">
       <div className="grid gap-6">
         <AdminPageHeader
           eyebrow="DEBRODER v1.2 · Phase 8"
-          title="Work Item Produksi"
-          description="Pecah Job Order menjadi pekerjaan yang dapat ditugaskan, diurutkan, disiapkan, dan diaudit."
+          title="Daftar Pekerjaan Produksi"
+          description="Bagi Surat Perintah Kerja menjadi pekerjaan yang dapat ditugaskan, diurutkan, disiapkan, dan ditelusuri."
           actions={
             canManage ? (
               <>
@@ -336,7 +336,7 @@ export function WorkItemAdmin() {
                   disabled={editableJobOrders.length === 0}
                   className="inline-flex min-h-10 items-center rounded-full bg-brand-green px-5 text-sm font-semibold text-white disabled:opacity-45"
                 >
-                  Tambah Work Item
+                  Tambah Pekerjaan
                 </button>
               </>
             ) : null
@@ -346,16 +346,16 @@ export function WorkItemAdmin() {
         {notice ? <AdminAlert type={notice.type}>{notice.text}</AdminAlert> : null}
 
         {!canView ? (
-          <AdminAlert type="error">Akun ini tidak mempunyai akses operasional Work Item.</AdminAlert>
+          <AdminAlert type="error">Akun ini tidak mempunyai akses ke pekerjaan operasional.</AdminAlert>
         ) : !canManage ? (
-          <AdminAlert type="info">Mode operator: hanya Work Item yang ditugaskan kepada akun ini yang ditampilkan.</AdminAlert>
+          <AdminAlert type="info">Mode operator: hanya pekerjaan yang ditugaskan kepada akun ini yang ditampilkan.</AdminAlert>
         ) : null}
 
         <section className="grid gap-4 border border-brand-softGray bg-white p-4 sm:p-5 lg:grid-cols-[1fr_280px]">
           <input
             value={query}
             onChange={(event) => setQuery(event.target.value)}
-            placeholder="Cari nomor, judul, status, Job Order, atau penanggung jawab"
+            placeholder="Cari nomor, judul, status, Surat Perintah Kerja, atau penanggung jawab"
             className="min-h-11 rounded-lg border border-brand-softGray px-4 text-sm"
           />
           <select
@@ -367,7 +367,7 @@ export function WorkItemAdmin() {
             }}
             className="min-h-11 rounded-lg border border-brand-softGray px-4 text-sm"
           >
-            <option value="">Semua Job Order</option>
+            <option value="">Semua Surat Perintah Kerja</option>
             {jobOrders.map((job) => (
               <option key={job.id} value={job.id}>
                 {jobOrderLabel(job)}
@@ -382,7 +382,7 @@ export function WorkItemAdmin() {
             onClick={() => setTab("active")}
             className={`rounded-full px-5 py-2.5 text-sm font-semibold ${tab === "active" ? "bg-brand-charcoal text-white" : "border border-brand-softGray bg-white"}`}
           >
-            Work Item Aktif
+            Pekerjaan Aktif
           </button>
           <button
             type="button"
@@ -395,13 +395,13 @@ export function WorkItemAdmin() {
 
         {visibleRows.length === 0 ? (
           <AdminEmptyState
-            title={tab === "archive" ? "Gudang Arsip Work Item masih kosong" : "Belum ada Work Item"}
+            title={tab === "archive" ? "Arsip pekerjaan masih kosong" : "Belum ada pekerjaan"}
             description={
               tab === "archive"
-                ? "Work Item yang diarsipkan akan tampil bersama tanggal, alasan, dan pelakunya."
+                ? "Pekerjaan yang diarsipkan akan tampil bersama tanggal, alasan, dan pelakunya."
                 : editableJobOrders.length === 0
-                  ? "Buat Job Order yang masih Draft atau Siap Dirilis terlebih dahulu."
-                  : "Gunakan Buat dari Job Order untuk menghasilkan pekerjaan otomatis atau tambahkan pekerjaan manual."
+                  ? "Buat Surat Perintah Kerja yang masih Draft atau Siap Dirilis terlebih dahulu."
+                  : "Gunakan Buat dari Surat Perintah Kerja untuk menghasilkan pekerjaan otomatis atau tambahkan pekerjaan manual."
             }
             action={
               tab === "active" && editableJobOrders.length > 0 && canManage ? (
@@ -410,7 +410,7 @@ export function WorkItemAdmin() {
                   onClick={() => setGenerateOpen(true)}
                   className="rounded-full bg-brand-green px-6 py-3 text-sm font-semibold text-white"
                 >
-                  Buat Work Item
+                  Buat Pekerjaan
                 </button>
               ) : undefined
             }
@@ -433,7 +433,7 @@ export function WorkItemAdmin() {
                     <h2 className="mt-3 text-xl font-semibold">{row.work_item_number}</h2>
                     <p className="mt-1 text-base font-semibold">{row.title}</p>
                     <p className="mt-2 text-sm text-brand-charcoal/65">
-                      {job ? jobOrderLabel(job) : "Job Order tidak tersedia"}
+                      {job ? jobOrderLabel(job) : "Surat Perintah Kerja tidak tersedia"}
                     </p>
                     <div className="mt-4 grid gap-2 text-sm text-brand-charcoal/65 sm:grid-cols-2 xl:grid-cols-4">
                       <span>Jumlah: {row.quantity} {row.unit}</span>
@@ -501,7 +501,7 @@ export function WorkItemAdmin() {
       {manualOpen ? (
         <div className="fixed inset-0 z-[100] overflow-y-auto bg-black/60 p-4 sm:p-8">
           <form onSubmit={createManual} className="mx-auto max-w-2xl bg-white p-6 shadow-2xl sm:p-8">
-            <h2 className="text-2xl font-semibold">Tambah Work Item Manual</h2>
+            <h2 className="text-2xl font-semibold">Tambah Pekerjaan Manual</h2>
             <p className="mt-2 text-sm leading-6 text-brand-charcoal/60">
               Gunakan untuk pekerjaan tambahan yang tidak berasal langsung dari produk atau layanan pesanan.
             </p>
@@ -522,7 +522,7 @@ export function WorkItemAdmin() {
                 }}
                 className="mt-2 min-h-11 w-full rounded-lg border border-brand-softGray px-4"
               >
-                <option value="">Pilih Job Order</option>
+                <option value="">Pilih Surat Perintah Kerja</option>
                 {editableJobOrders.map((job) => (
                   <option key={job.id} value={job.id}>{jobOrderLabel(job)}</option>
                 ))}
@@ -595,7 +595,7 @@ export function WorkItemAdmin() {
 
             <div className="mt-7 flex flex-wrap gap-3">
               <button type="submit" disabled={working} className="rounded-full bg-brand-green px-6 py-3 text-sm font-semibold text-white disabled:opacity-45">
-                {working ? "Menyimpan..." : "Simpan Work Item"}
+                {working ? "Menyimpan..." : "Simpan Pekerjaan"}
               </button>
               <button type="button" onClick={() => setManualOpen(false)} disabled={working} className="rounded-full border border-brand-softGray px-6 py-3 text-sm font-semibold">
                 Batal
@@ -608,7 +608,7 @@ export function WorkItemAdmin() {
       {generateOpen ? (
         <div className="fixed inset-0 z-[100] grid place-items-center bg-black/60 p-4">
           <section className="w-full max-w-xl bg-white p-6 shadow-2xl sm:p-8">
-            <h2 className="text-2xl font-semibold">Buat Work Item dari Job Order</h2>
+            <h2 className="text-2xl font-semibold">Buat Pekerjaan dari Surat Perintah Kerja</h2>
             <p className="mt-2 text-sm leading-6 text-brand-charcoal/60">
               Sistem membuat pekerjaan dari setiap produk dan layanan. Proses aman dijalankan ulang karena sumber yang sama tidak diduplikasi.
             </p>
@@ -617,7 +617,7 @@ export function WorkItemAdmin() {
               onChange={(event) => setGenerateJobOrderId(event.target.value)}
               className="mt-6 min-h-11 w-full rounded-lg border border-brand-softGray px-4"
             >
-              <option value="">Pilih Job Order</option>
+              <option value="">Pilih Surat Perintah Kerja</option>
               {editableJobOrders.map((job) => (
                 <option key={job.id} value={job.id}>{jobOrderLabel(job)}</option>
               ))}
@@ -643,11 +643,11 @@ export function WorkItemAdmin() {
         <div className="fixed inset-0 z-[110] grid place-items-center bg-black/60 p-4">
           <section className="w-full max-w-lg bg-white p-6 shadow-2xl sm:p-8">
             <h2 className="text-2xl font-semibold">
-              {pendingAction.type === "archive" ? "Arsipkan Work Item?" : "Hapus Permanen Work Item?"}
+              {pendingAction.type === "archive" ? "Arsipkan Pekerjaan?" : "Hapus Pekerjaan Secara Permanen?"}
             </h2>
             <p className="mt-3 text-sm leading-6 text-brand-charcoal/65">
               {pendingAction.type === "archive"
-                ? "Work Item dapat dipulihkan melalui Gudang Arsip selama Job Order induknya masih dapat diedit."
+                ? "Pekerjaan dapat dipulihkan dari arsip selama Surat Perintah Kerja induknya masih dapat diedit."
                 : "Tindakan ini hanya tersedia bagi Super Admin, tidak dapat dibatalkan, dan akan dicatat dalam audit penghapusan."}
             </p>
             {pendingAction.type === "archive" ? (

@@ -116,7 +116,7 @@ export function DocumentNumberingAdmin() {
   const loadData = useCallback(async () => {
     const supabase = createSupabaseClient();
     if (!supabase) {
-      setNotice({ type: "error", text: "Supabase belum dikonfigurasi." });
+      setNotice({ type: "error", text: "Layanan data belum tersedia. Hubungi pengelola sistem." });
       setLoading(false);
       return;
     }
@@ -312,7 +312,7 @@ export function DocumentNumberingAdmin() {
     setWorking(false);
 
     if (result.error) {
-      setNotice({ type: "error", text: result.error.message });
+      setNotice({ type: "error", text: "Aturan penomoran belum dapat disimpan. Periksa data lalu coba lagi." });
       return;
     }
 
@@ -337,7 +337,7 @@ export function DocumentNumberingAdmin() {
     setWorking(false);
 
     if (error) {
-      setNotice({ type: "error", text: error.message });
+      setNotice({ type: "error", text: "Aturan penomoran belum dapat dipulihkan. Coba lagi." });
       return;
     }
 
@@ -378,7 +378,7 @@ export function DocumentNumberingAdmin() {
     setWorking(false);
 
     if (result.error) {
-      setNotice({ type: "error", text: result.error.message });
+      setNotice({ type: "error", text: "Aturan penomoran belum dapat diperbarui. Coba lagi." });
       return;
     }
 

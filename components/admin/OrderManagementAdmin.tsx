@@ -4,6 +4,7 @@
 import { FormEvent, type ReactNode, useEffect, useMemo, useState } from "react";
 import { createSupabaseClient, ORDER_UPLOADS_BUCKET } from "@/lib/supabase";
 import type { Product } from "@/lib/types";
+import { getOrderStatusLabel, getPaymentStatusLabel } from "@/lib/ui-language";
 import { formatRupiah } from "@/lib/url";
 
 const orderStatuses = [
@@ -12,7 +13,7 @@ const orderStatuses = [
   ["sudah_dibayar", "Sudah dibayar"],
   ["masuk_produksi", "Masuk produksi"],
   ["proses_produksi", "Proses produksi"],
-  ["quality_check", "Quality check"],
+  ["quality_check", "Pemeriksaan kualitas"],
   ["siap_diambil", "Siap diambil"],
   ["siap_dikirim", "Siap dikirim"],
   ["selesai", "Selesai"],
@@ -85,11 +86,11 @@ const emptyForm: OrderForm = {
 };
 
 function statusLabel(status: string) {
-  return orderStatuses.find(([value]) => value === status)?.[1] || status;
+  return orderStatuses.find(([value]) => value === status)?.[1] || getOrderStatusLabel(status);
 }
 
 function paymentStatusLabel(status: PaymentStatus) {
-  return paymentStatuses.find(([value]) => value === status)?.[1] || status;
+  return paymentStatuses.find(([value]) => value === status)?.[1] || getPaymentStatusLabel(status);
 }
 
 function generatedOrderNumber() {
@@ -129,7 +130,7 @@ export function OrderManagementAdmin() {
     setLoading(false);
 
     if (orderResult.error) {
-      setStatus(`Order Management belum siap: ${orderResult.error.message}`);
+      setStatus("Manajemen pesanan belum dapat dimuat. Muat ulang halaman atau coba lagi beberapa saat.");
       return;
     }
 
@@ -270,7 +271,7 @@ export function OrderManagementAdmin() {
     const supabase = createSupabaseClient();
     if (!supabase) return;
     const { error } = await supabase.from("orders").delete().eq("id", order.id);
-    setStatus(error ? `Pesanan gagal dihapus: ${error.message}` : "Pesanan dihapus.");
+    setStatus(error ? "Pesanan belum dapat dihapus. Coba lagi." : "Pesanan dihapus.");
     if (!error) await loadOrders(null);
   }
 
@@ -310,7 +311,7 @@ export function OrderManagementAdmin() {
       notes: itemNotes.trim()
     });
     if (error) {
-      setStatus(`Item gagal ditambahkan: ${error.message}`);
+      setStatus("Produk belum dapat ditambahkan. Periksa data lalu coba lagi.");
       return;
     }
     await recalculateTotal(selectedOrder.id);
@@ -330,7 +331,7 @@ export function OrderManagementAdmin() {
     if (!supabase) return;
     const { error } = await supabase.from("order_items").delete().eq("id", item.id);
     if (error) {
-      setStatus(`Item gagal dihapus: ${error.message}`);
+      setStatus("Produk belum dapat dihapus dari pesanan. Coba lagi.");
       return;
     }
     await recalculateTotal(item.order_id);

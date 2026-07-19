@@ -71,10 +71,10 @@ export function BulkImportProductsAdmin() {
     authorizedFetch("/api/admin/products/bulk-import")
       .then(async (response) => {
         const payload = await response.json() as ConfigPayload & { error?: string };
-        if (!response.ok) throw new Error(payload.error || "Konfigurasi Bulk Import gagal dimuat.");
+        if (!response.ok) throw new Error("Pengaturan impor produk belum dapat dimuat.");
         setConfig(payload);
       })
-      .catch((error) => setNotice(error instanceof Error ? error.message : "Konfigurasi Bulk Import gagal dimuat."));
+      .catch(() => setNotice("Pengaturan impor produk belum dapat dimuat. Coba lagi."));
   }, []);
 
   const filteredIssues = useMemo(() => (preview?.issues || []).filter((issue) => {
@@ -92,25 +92,25 @@ export function BulkImportProductsAdmin() {
     setResult(null);
     setConfirmed(false);
     setPage(1);
-    setNotice(next ? `${next.name} dipilih. Jalankan Validasi / Dry Run.` : "File dihapus.");
+    setNotice(next ? `${next.name} dipilih. Jalankan Pratinjau Validasi.` : "File dihapus.");
   }
 
   async function runPreview() {
     if (!file) return setNotice("Pilih file XLSX atau CSV terlebih dahulu.");
     setWorking(true);
-    setNotice("Menjalankan validasi server-side tanpa menulis data...");
+    setNotice("Memeriksa isi file tanpa menyimpan data...");
     try {
       const form = new FormData();
       form.set("file", file);
       const response = await authorizedFetch("/api/admin/products/bulk-import?action=preview", { method: "POST", body: form });
       const payload = await response.json() as PreviewPayload;
-      if (!response.ok && !payload.summary) throw new Error(payload.error || "Dry run gagal.");
+      if (!response.ok && !payload.summary) throw new Error("Pratinjau validasi belum dapat dijalankan.");
       setPreview(payload);
       setConfirmed(false);
       setPage(1);
-      setNotice(payload.status === "ready" ? "Dry run PASS. File siap dikonfirmasi." : `Dry run BLOCKED: ${payload.summary.errors} error harus diperbaiki.`);
-    } catch (error) {
-      setNotice(error instanceof Error ? error.message : "Dry run gagal.");
+      setNotice(payload.status === "ready" ? "Pratinjau validasi berhasil. File siap dikonfirmasi." : `Pratinjau tertahan: ${payload.summary.errors} masalah harus diperbaiki.`);
+    } catch {
+      setNotice("Pratinjau validasi belum dapat dijalankan. Periksa file lalu coba lagi.");
     } finally {
       setWorking(false);
     }
@@ -119,19 +119,19 @@ export function BulkImportProductsAdmin() {
   async function commitImport() {
     if (!file || !preview?.previewToken || preview.status !== "ready" || !confirmed) return;
     setWorking(true);
-    setNotice("Memvalidasi ulang dan menjalankan atomic import...");
+    setNotice("Memeriksa ulang dan menjalankan impor...");
     try {
       const form = new FormData();
       form.set("file", file);
       form.set("previewToken", preview.previewToken);
       const response = await authorizedFetch("/api/admin/products/bulk-import?action=commit", { method: "POST", body: form });
       const payload = await response.json() as { ok?: boolean; result?: Record<string, unknown>; error?: string };
-      if (!response.ok || !payload.ok) throw new Error(payload.error || "Final import gagal.");
+      if (!response.ok || !payload.ok) throw new Error("Impor belum dapat diselesaikan. Periksa file lalu coba lagi.");
       setResult(payload.result || {});
-      setNotice("Atomic import berhasil. Seluruh product root dibuat sebagai Draft.");
+      setNotice("Impor berhasil. Seluruh produk dibuat sebagai Draft.");
       setConfirmed(false);
-    } catch (error) {
-      setNotice(error instanceof Error ? error.message : "Final import gagal dan transaction dibatalkan.");
+    } catch {
+      setNotice("Impor belum dapat diselesaikan dan tidak ada data yang disimpan.");
     } finally {
       setWorking(false);
     }
@@ -140,24 +140,24 @@ export function BulkImportProductsAdmin() {
   return (
     <div className="grid gap-6">
       <AdminPageHeader
-        eyebrow="PIM PHASE 4"
-        title="Bulk Import Produk"
-        description="Import create-only untuk product root, warna, ukuran, SKU, harga, dan stok. Dry run wajib dan seluruh produk hasil import tetap Draft."
-        actions={<Link href="/admin/products" className="rounded-full border border-brand-softGray bg-white px-5 py-3 text-sm font-semibold">Kembali ke Product Manager</Link>}
+        eyebrow="MANAJEMEN PRODUK"
+        title="Impor Produk Massal"
+        description="Buat produk, warna, ukuran, SKU, harga, dan stok dari file. Pratinjau validasi wajib dijalankan dan seluruh produk hasil impor tetap berstatus Draft."
+        actions={<Link href="/admin/products" className="rounded-full border border-brand-softGray bg-white px-5 py-3 text-sm font-semibold">Kembali ke Manajemen Produk</Link>}
       />
 
-      {config?.previewOnly ? <div role="status" className="border border-amber-200 bg-amber-50 px-5 py-4 text-sm font-semibold text-amber-900">PREVIEW ONLY — Admin Guest dapat mengunduh template dan menjalankan dry run, tetapi final import ditolak server.</div> : null}
+      {config?.previewOnly ? <div role="status" className="border border-amber-200 bg-amber-50 px-5 py-4 text-sm font-semibold text-amber-900">MODE LIHAT SAJA — Admin Guest dapat mengunduh template dan menjalankan pratinjau validasi, tetapi tidak dapat menyimpan hasil impor.</div> : null}
       <div aria-live="polite" className="min-h-6 text-sm font-medium text-brand-charcoal">{notice}</div>
 
       <section className="border border-brand-softGray bg-white p-5 sm:p-6" aria-labelledby="template-heading">
         <h2 id="template-heading" className="text-lg font-semibold">1. Unduh Template</h2>
-        <p className="mt-2 text-sm text-brand-charcoal/65">Gunakan reference master terbaru. Jangan mengubah nama sheet atau header canonical.</p>
+        <p className="mt-2 text-sm text-brand-charcoal/65">Gunakan daftar referensi terbaru. Jangan mengubah nama lembar atau judul kolom pada template.</p>
         <div className="mt-4 flex flex-wrap gap-2">
           <DownloadButton label="Template Excel" kind="xlsx" />
           <DownloadButton label="Template CSV" kind="csv" />
-          <DownloadButton label="Color Master" kind="color-reference" />
-          <DownloadButton label="Size Master" kind="size-reference" />
-          <DownloadButton label="Category Reference" kind="category-reference" />
+          <DownloadButton label="Referensi Warna" kind="color-reference" />
+          <DownloadButton label="Referensi Ukuran" kind="size-reference" />
+          <DownloadButton label="Referensi Kategori" kind="category-reference" />
         </div>
       </section>
 
@@ -173,65 +173,65 @@ export function BulkImportProductsAdmin() {
           onDrop={(event: DragEvent<HTMLDivElement>) => { event.preventDefault(); chooseFile(event.dataTransfer.files[0] || null); }}
         >
           <p className="font-semibold">Tarik file ke sini atau pilih file</p>
-          <p className="mt-2 text-sm text-brand-charcoal/60">.xlsx atau .csv UTF-8{config ? ` · maksimal ${config.limits.maxFileBytes / 1024 / 1024} MB · maksimal ${config.limits.maxRows} row` : " · memuat batas server..."}</p>
+          <p className="mt-2 text-sm text-brand-charcoal/60">.xlsx atau .csv UTF-8{config ? ` · maksimal ${config.limits.maxFileBytes / 1024 / 1024} MB · maksimal ${config.limits.maxRows} baris` : " · memuat batas file..."}</p>
           {file ? <p className="mt-4 break-all text-sm font-semibold">{file.name} · {(file.size / 1024).toFixed(1)} KB</p> : null}
         </div>
         <input ref={inputRef} type="file" accept=".xlsx,.csv,text/csv,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" className="sr-only" onChange={(event: ChangeEvent<HTMLInputElement>) => chooseFile(event.target.files?.[0] || null)} />
         <div className="mt-4 flex flex-wrap gap-2">
-          <button type="button" onClick={runPreview} disabled={!file || working} className="min-h-11 rounded-full bg-brand-charcoal px-5 text-sm font-semibold text-white disabled:opacity-45">Validasi / Dry Run</button>
+          <button type="button" onClick={runPreview} disabled={!file || working} className="min-h-11 rounded-full bg-brand-charcoal px-5 text-sm font-semibold text-white disabled:opacity-45">Jalankan Pratinjau Validasi</button>
           <button type="button" onClick={() => chooseFile(null)} disabled={!file || working} className="min-h-11 rounded-full border border-brand-softGray px-5 text-sm font-semibold disabled:opacity-45">Hapus File</button>
         </div>
       </section>
 
       {preview ? <>
         <section className="border border-brand-softGray bg-white p-5 sm:p-6" aria-labelledby="summary-heading">
-          <h2 id="summary-heading" className="text-lg font-semibold">3. Tinjau Hasil Dry Run</h2>
+          <h2 id="summary-heading" className="text-lg font-semibold">3. Tinjau Hasil Validasi</h2>
           <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-4 lg:grid-cols-7">
             {[
-              ["Total row", preview.summary.totalRows], ["Valid", preview.summary.validRows], ["Invalid", preview.summary.invalidRows],
-              ["Produk", preview.summary.productRoots], ["Warna", preview.summary.colorAssociations], ["SKU", preview.summary.skus], ["Error", preview.summary.errors]
+              ["Total baris", preview.summary.totalRows], ["Valid", preview.summary.validRows], ["Tidak valid", preview.summary.invalidRows],
+              ["Produk", preview.summary.productRoots], ["Warna", preview.summary.colorAssociations], ["SKU", preview.summary.skus], ["Masalah", preview.summary.errors]
             ].map(([label, value]) => <div key={String(label)} className="border border-brand-softGray p-3"><p className="text-xs text-brand-charcoal/55">{label}</p><p className="mt-1 text-xl font-semibold">{value}</p></div>)}
           </div>
           <dl className="mt-4 grid gap-2 text-xs text-brand-charcoal/65 sm:grid-cols-2">
             <div><dt className="font-semibold">File SHA-256</dt><dd className="break-all font-mono">{preview.fileChecksum}</dd></div>
-            <div><dt className="font-semibold">Mode</dt><dd>Create Only · Draft</dd></div>
+            <div><dt className="font-semibold">Mode</dt><dd>Buat produk baru · Draft</dd></div>
           </dl>
         </section>
 
         <section className="overflow-hidden border border-brand-softGray bg-white" aria-labelledby="preview-heading">
-          <div className="flex items-center justify-between gap-3 p-5 sm:p-6"><div><h2 id="preview-heading" className="text-lg font-semibold">Preview Table</h2><p className="mt-1 text-xs text-brand-charcoal/55">{config ? `Menampilkan maksimal ${config.limits.previewRows} row; error report tetap lengkap.` : "Batas preview mengikuti konfigurasi server."}</p></div><span className="text-xs font-semibold">Halaman {page}/{totalPages}</span></div>
-          <div className="overflow-x-auto"><table className="min-w-[980px] w-full text-left text-xs"><thead className="bg-brand-offWhite"><tr>{["Row", "Produk", "Slug", "Warna", "Ukuran", "SKU", "Harga", "Adj.", "Stok", "Status"].map((label) => <th key={label} className="px-3 py-3 font-semibold">{label}</th>)}</tr></thead><tbody>{pagedRows.map((row) => <tr key={row.rowNumber} className="border-t border-brand-softGray"><td className="px-3 py-3">{row.rowNumber}</td><td className="px-3 py-3 font-medium">{row.productName}</td><td className="px-3 py-3">{row.slug}</td><td className="px-3 py-3">{row.color}</td><td className="px-3 py-3">{row.size}</td><td className="px-3 py-3 font-mono">{row.sku}</td><td className="px-3 py-3">{row.basePrice}</td><td className="px-3 py-3">{row.priceAdjustment}</td><td className="px-3 py-3">{row.stock}</td><td className="px-3 py-3 font-semibold">{row.validationStatus === "valid" ? "VALID" : "ERROR"}</td></tr>)}</tbody></table></div>
+          <div className="flex items-center justify-between gap-3 p-5 sm:p-6"><div><h2 id="preview-heading" className="text-lg font-semibold">Pratinjau Data</h2><p className="mt-1 text-xs text-brand-charcoal/55">{config ? `Menampilkan maksimal ${config.limits.previewRows} baris; laporan masalah tetap lengkap.` : "Batas pratinjau sedang dimuat."}</p></div><span className="text-xs font-semibold">Halaman {page}/{totalPages}</span></div>
+          <div className="overflow-x-auto"><table className="min-w-[980px] w-full text-left text-xs"><thead className="bg-brand-offWhite"><tr>{["Baris", "Produk", "Slug", "Warna", "Ukuran", "SKU", "Harga", "Penyesuaian", "Stok", "Status"].map((label) => <th key={label} className="px-3 py-3 font-semibold">{label}</th>)}</tr></thead><tbody>{pagedRows.map((row) => <tr key={row.rowNumber} className="border-t border-brand-softGray"><td className="px-3 py-3">{row.rowNumber}</td><td className="px-3 py-3 font-medium">{row.productName}</td><td className="px-3 py-3">{row.slug}</td><td className="px-3 py-3">{row.color}</td><td className="px-3 py-3">{row.size}</td><td className="px-3 py-3 font-mono">{row.sku}</td><td className="px-3 py-3">{row.basePrice}</td><td className="px-3 py-3">{row.priceAdjustment}</td><td className="px-3 py-3">{row.stock}</td><td className="px-3 py-3 font-semibold">{row.validationStatus === "valid" ? "VALID" : "PERLU DIPERBAIKI"}</td></tr>)}</tbody></table></div>
           <div className="flex justify-end gap-2 p-4"><button type="button" disabled={page <= 1} onClick={() => setPage((value) => value - 1)} className="rounded-full border px-4 py-2 text-xs font-semibold disabled:opacity-40">Sebelumnya</button><button type="button" disabled={page >= totalPages} onClick={() => setPage((value) => value + 1)} className="rounded-full border px-4 py-2 text-xs font-semibold disabled:opacity-40">Berikutnya</button></div>
         </section>
 
         <section className="border border-brand-softGray bg-white p-5 sm:p-6" aria-labelledby="errors-heading">
-          <div className="flex flex-wrap items-center justify-between gap-3"><h2 id="errors-heading" className="text-lg font-semibold">Error Panel</h2><button type="button" disabled={!preview.issues.length} onClick={() => downloadErrors(preview.issues)} className="rounded-full border px-4 py-2 text-xs font-semibold disabled:opacity-40">Download Error Report</button></div>
-          <div className="mt-4 flex flex-wrap gap-2"><label className="text-xs font-semibold">Error code<select value={errorCode} onChange={(event) => setErrorCode(event.target.value)} className="ml-2 border px-3 py-2"><option value="all">Semua</option>{errorCodes.map((code) => <option key={code}>{code}</option>)}</select></label><label className="text-xs font-semibold">Row<input value={rowFilter} onChange={(event) => setRowFilter(event.target.value)} inputMode="numeric" className="ml-2 w-24 border px-3 py-2" /></label></div>
-          <div className="mt-4 grid max-h-80 gap-2 overflow-y-auto" tabIndex={0}>{filteredIssues.length ? filteredIssues.map((issue, index) => <article key={`${issue.rowNumber}-${issue.errorCode}-${index}`} className="border border-brand-softGray p-3 text-xs"><p className="font-semibold">{issue.errorCode} · Row {issue.rowNumber || "FILE"} · {issue.field}</p><p className="mt-1">{issue.message}</p><p className="mt-1 text-brand-charcoal/55">Saran: {issue.suggestedFix}</p></article>) : <p className="text-sm text-brand-charcoal/55">Tidak ada error pada filter ini.</p>}</div>
+          <div className="flex flex-wrap items-center justify-between gap-3"><h2 id="errors-heading" className="text-lg font-semibold">Daftar Masalah</h2><button type="button" disabled={!preview.issues.length} onClick={() => downloadErrors(preview.issues)} className="rounded-full border px-4 py-2 text-xs font-semibold disabled:opacity-40">Unduh Laporan Masalah</button></div>
+          <div className="mt-4 flex flex-wrap gap-2"><label className="text-xs font-semibold">Kode masalah<select value={errorCode} onChange={(event) => setErrorCode(event.target.value)} className="ml-2 border px-3 py-2"><option value="all">Semua</option>{errorCodes.map((code) => <option key={code}>{code}</option>)}</select></label><label className="text-xs font-semibold">Baris<input value={rowFilter} onChange={(event) => setRowFilter(event.target.value)} inputMode="numeric" className="ml-2 w-24 border px-3 py-2" /></label></div>
+          <div className="mt-4 grid max-h-80 gap-2 overflow-y-auto" tabIndex={0}>{filteredIssues.length ? filteredIssues.map((issue, index) => <article key={`${issue.rowNumber}-${issue.errorCode}-${index}`} className="border border-brand-softGray p-3 text-xs"><p className="font-semibold">{issue.errorCode} · Baris {issue.rowNumber || "FILE"} · {issue.field}</p><p className="mt-1">{issue.message}</p><p className="mt-1 text-brand-charcoal/55">Saran: {issue.suggestedFix}</p></article>) : <p className="text-sm text-brand-charcoal/55">Tidak ada masalah pada filter ini.</p>}</div>
         </section>
 
         <section className="border border-brand-softGray bg-white p-5 sm:p-6" aria-labelledby="confirm-heading">
-          <h2 id="confirm-heading" className="text-lg font-semibold">4. Konfirmasi Import</h2>
-          <p className="mt-2 text-sm">Mode: <strong>Create Only</strong>. Semua {preview.summary.productRoots} product root akan dibuat sebagai <strong>Draft</strong>.</p>
-          <label className="mt-4 flex items-start gap-3 text-sm"><input type="checkbox" checked={confirmed} onChange={(event) => setConfirmed(event.target.checked)} disabled={config?.previewOnly || preview.status !== "ready" || working} className="mt-1" /><span>Saya sudah meninjau dry run dan memahami bahwa final import bersifat atomic.</span></label>
-          <button data-admin-mutation="true" type="button" onClick={commitImport} disabled={Boolean(config?.previewOnly) || preview.status !== "ready" || !confirmed || working} className="mt-4 min-h-11 rounded-full bg-brand-green px-6 text-sm font-semibold text-white disabled:opacity-45">Final Import</button>
-          {config?.previewOnly ? <p className="mt-2 text-xs font-semibold text-amber-800">Final Import dinonaktifkan: PREVIEW ONLY.</p> : null}
+          <h2 id="confirm-heading" className="text-lg font-semibold">4. Konfirmasi Impor</h2>
+          <p className="mt-2 text-sm">Mode: <strong>Buat produk baru</strong>. Semua {preview.summary.productRoots} produk akan dibuat sebagai <strong>Draft</strong>.</p>
+          <label className="mt-4 flex items-start gap-3 text-sm"><input type="checkbox" checked={confirmed} onChange={(event) => setConfirmed(event.target.checked)} disabled={config?.previewOnly || preview.status !== "ready" || working} className="mt-1" /><span>Saya sudah meninjau hasil validasi dan memahami bahwa seluruh data disimpan sebagai satu proses.</span></label>
+          <button data-admin-mutation="true" type="button" onClick={commitImport} disabled={Boolean(config?.previewOnly) || preview.status !== "ready" || !confirmed || working} className="mt-4 min-h-11 rounded-full bg-brand-green px-6 text-sm font-semibold text-white disabled:opacity-45">Jalankan Impor</button>
+          {config?.previewOnly ? <p className="mt-2 text-xs font-semibold text-amber-800">Impor dinonaktifkan dalam mode lihat saja.</p> : null}
         </section>
       </> : null}
 
-      {result ? <section className="border border-emerald-200 bg-emerald-50 p-5 sm:p-6" aria-labelledby="result-heading"><h2 id="result-heading" className="text-lg font-semibold">5. Hasil Import</h2><p className="mt-2 text-sm">Transaction berhasil. Tidak ada partial write.</p><pre className="mt-4 overflow-auto text-xs">{JSON.stringify(result, null, 2)}</pre><Link href="/admin/products" className="mt-4 inline-flex rounded-full bg-brand-charcoal px-5 py-3 text-sm font-semibold text-white">Buka Product Manager</Link></section> : null}
+      {result ? <section className="border border-emerald-200 bg-emerald-50 p-5 sm:p-6" aria-labelledby="result-heading"><h2 id="result-heading" className="text-lg font-semibold">5. Hasil Impor</h2><p className="mt-2 text-sm">Impor berhasil dan seluruh data telah disimpan.</p><Link href="/admin/products" className="mt-4 inline-flex rounded-full bg-brand-charcoal px-5 py-3 text-sm font-semibold text-white">Buka Manajemen Produk</Link></section> : null}
     </div>
   );
 }
 
 function DownloadButton({ label, kind }: { label: string; kind: string }) {
   const [working, setWorking] = useState(false);
-  return <button type="button" disabled={working} onClick={async () => { setWorking(true); try { const response = await authorizedFetch(`/api/admin/products/bulk-import?download=${kind}`); if (!response.ok) throw new Error("Download gagal."); const blob = await response.blob(); const disposition = response.headers.get("content-disposition") || ""; const name = disposition.match(/filename="([^"]+)"/)?.[1] || `DEBRODER_${kind}`; triggerDownload(blob, name); } finally { setWorking(false); } }} className="min-h-10 rounded-full border border-brand-softGray px-4 text-xs font-semibold disabled:opacity-40">{working ? "Menyiapkan..." : label}</button>;
+  return <button type="button" disabled={working} onClick={async () => { setWorking(true); try { const response = await authorizedFetch(`/api/admin/products/bulk-import?download=${kind}`); if (!response.ok) throw new Error("File belum dapat diunduh."); const blob = await response.blob(); const disposition = response.headers.get("content-disposition") || ""; const name = disposition.match(/filename="([^"]+)"/)?.[1] || `DEBRODER_${kind}`; triggerDownload(blob, name); } finally { setWorking(false); } }} className="min-h-10 rounded-full border border-brand-softGray px-4 text-xs font-semibold disabled:opacity-40">{working ? "Menyiapkan..." : label}</button>;
 }
 
 async function authorizedFetch(input: string, init?: RequestInit) {
   const supabase = createSupabaseClient();
-  if (!supabase) throw new Error("Supabase belum dikonfigurasi.");
+  if (!supabase) throw new Error("Layanan data belum tersedia. Hubungi pengelola sistem.");
   const { data, error } = await supabase.auth.getSession();
   const token = data.session?.access_token;
   if (error || !token) throw new Error("Sesi admin tidak tersedia.");

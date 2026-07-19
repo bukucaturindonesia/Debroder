@@ -57,8 +57,8 @@ export function NotificationTemplateAdmin() {
       );
       setTemplates(payload.templates);
       setRole(payload.role);
-    } catch (error) {
-      setNotice({ type: "error", text: error instanceof Error ? error.message : "Template gagal dimuat." });
+    } catch {
+      setNotice({ type: "error", text: "Template notifikasi belum dapat dimuat. Coba lagi." });
     } finally {
       setLoading(false);
     }
@@ -112,8 +112,8 @@ export function NotificationTemplateAdmin() {
       setForm(EMPTY_FORM);
       setNotice({ type: "success", text: form.id ? "Template berhasil diperbarui." : "Template berhasil dibuat." });
       await load();
-    } catch (error) {
-      setNotice({ type: "error", text: error instanceof Error ? error.message : "Template gagal disimpan." });
+    } catch {
+      setNotice({ type: "error", text: "Template notifikasi belum dapat disimpan. Periksa data lalu coba lagi." });
     } finally {
       setWorking(false);
     }
@@ -132,8 +132,8 @@ export function NotificationTemplateAdmin() {
       setArchiveReason("");
       setNotice({ type: "success", text: "Template dipindahkan ke Gudang Arsip." });
       await load();
-    } catch (error) {
-      setNotice({ type: "error", text: error instanceof Error ? error.message : "Arsip gagal." });
+    } catch {
+      setNotice({ type: "error", text: "Template belum dapat diarsipkan. Coba lagi." });
     } finally {
       setWorking(false);
     }
@@ -149,8 +149,8 @@ export function NotificationTemplateAdmin() {
       });
       setNotice({ type: "success", text: "Template berhasil dipulihkan dan diaktifkan." });
       await load();
-    } catch (error) {
-      setNotice({ type: "error", text: error instanceof Error ? error.message : "Pemulihan gagal." });
+    } catch {
+      setNotice({ type: "error", text: "Template belum dapat dipulihkan. Coba lagi." });
     } finally {
       setWorking(false);
     }
@@ -166,8 +166,8 @@ export function NotificationTemplateAdmin() {
       setDeleteConfirmation("");
       setNotice({ type: "success", text: "Template dihapus permanen dan audit penghapusan tersimpan." });
       await load();
-    } catch (error) {
-      setNotice({ type: "error", text: error instanceof Error ? error.message : "Penghapusan gagal." });
+    } catch {
+      setNotice({ type: "error", text: "Template belum dapat dihapus. Coba lagi." });
     } finally {
       setWorking(false);
     }

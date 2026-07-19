@@ -285,7 +285,7 @@ export function QuotationProductItemPanel() {
 
     const supabase = createSupabaseClient();
     if (!supabase) {
-      setMessage("Supabase belum dikonfigurasi.");
+      setMessage("Layanan data belum tersedia. Hubungi pengelola sistem.");
       return;
     }
 
@@ -334,7 +334,7 @@ export function QuotationProductItemPanel() {
     const { error } = await supabase.from("quotation_items").insert(payload);
     if (error) {
       setSaving(false);
-      setMessage(`Produk gagal ditambahkan: ${error.message}`);
+      setMessage("Produk belum dapat ditambahkan. Periksa data lalu coba lagi.");
       return;
     }
 
@@ -395,7 +395,7 @@ export function QuotationProductItemPanel() {
                   v1.2 Phase 1A
                 </p>
                 <h2 className="mt-2 text-2xl font-semibold text-brand-charcoal">
-                  Tambah Produk ke Quotation
+                  Tambah Produk ke Penawaran
                 </h2>
                 <p className="mt-2 text-sm leading-6 text-brand-charcoal/65">
                   Pilih produk, warna, ukuran, dan jumlah. Snapshot harga disimpan saat item dibuat.
@@ -514,7 +514,7 @@ export function QuotationProductItemPanel() {
                 <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
                   <div>
                     <p className="text-xs font-semibold uppercase tracking-[0.16em] text-brand-charcoal/45">
-                      Preview Harga
+                      Pratinjau Harga
                     </p>
                     <p className="mt-2 text-2xl font-semibold text-brand-charcoal">
                       {money(preview.subtotal)}

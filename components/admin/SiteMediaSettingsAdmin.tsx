@@ -66,7 +66,7 @@ export function SiteMediaSettingsAdmin() {
 
     setLoading(false);
     if (settingResult.error) {
-      setStatus(`Pengaturan gambar belum siap: ${settingResult.error.message}`);
+      setStatus("Pengaturan gambar belum dapat dimuat. Coba lagi.");
     } else {
       setValues(parseSiteMediaDefaults(settingResult.data?.value));
       setStatus("");
@@ -103,7 +103,7 @@ export function SiteMediaSettingsAdmin() {
       { onConflict: "setting_key" }
     );
     setSaving(false);
-    setStatus(error ? `Gambar website gagal disimpan: ${error.message}` : "Gambar default website berhasil disimpan.");
+    setStatus(error ? "Gambar website belum dapat disimpan. Coba lagi." : "Gambar default website berhasil disimpan.");
   }
 
   if (loading) return <div className="mt-6 h-64 animate-pulse bg-white" />;
@@ -120,7 +120,7 @@ export function SiteMediaSettingsAdmin() {
             </p>
           </div>
           <Link href="/admin/media" className="inline-flex min-h-11 items-center justify-center rounded-full border border-brand-softGray px-5 text-sm font-semibold hover:border-brand-charcoal">
-            Buka Media Library
+            Buka Galeri Media
           </Link>
         </div>
         {status ? <p role="status" className="mt-4 bg-brand-offWhite p-3 text-sm font-semibold">{status}</p> : null}
@@ -132,13 +132,13 @@ export function SiteMediaSettingsAdmin() {
           return (
             <article key={slot.key} className="border border-brand-softGray bg-white p-4">
               <div className="overflow-hidden bg-brand-offWhite">
-                <img src={url} alt={`Preview ${slot.label}`} className="aspect-[4/3] w-full object-cover" />
+                <img src={url} alt={`Pratinjau ${slot.label}`} className="aspect-[4/3] w-full object-cover" />
               </div>
               <h3 className="mt-4 font-semibold">{slot.label}</h3>
               <p className="mt-1 text-xs font-semibold text-brand-green">Rekomendasi {slot.ratio}</p>
               <p className="mt-2 min-h-10 text-sm leading-5 text-brand-charcoal/60">{slot.description}</p>
               <label className="mt-4 grid gap-2 text-xs font-semibold">
-                Pilih dari Media Library
+                Pilih dari Galeri Media
                 <select
                   value={url}
                   onChange={(event) => setValues((current) => ({ ...current, [slot.key]: event.target.value }))}

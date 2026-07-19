@@ -120,7 +120,7 @@ export function QuotationArchiveAdmin() {
     setWorkingId(null);
 
     if (error) {
-      setMessage("Quotation gagal dipulihkan.");
+      setMessage("Penawaran belum dapat dipulihkan.");
       return;
     }
 
@@ -155,15 +155,15 @@ export function QuotationArchiveAdmin() {
     <main className="text-brand-charcoal">
       <div className="grid gap-6">
         <AdminPageHeader
-          eyebrow="DEBRODER v1.2 · Formal Quotation"
-          title="Gudang Arsip Quotation"
+          eyebrow="DEBRODER v1.2 · PENAWARAN HARGA RESMI"
+          title="Arsip Penawaran"
           description="Pulihkan quotation yang diarsipkan atau hapus permanen dengan akses Super Admin."
           actions={
             <Link
               href="/admin/orders/quotations"
               className="inline-flex min-h-11 items-center rounded-full border border-brand-softGray bg-white px-5 text-sm font-semibold"
             >
-              Kembali ke Quotation
+              Kembali ke Penawaran
             </Link>
           }
         />
@@ -228,7 +228,7 @@ export function QuotationArchiveAdmin() {
         ) : (
           <AdminEmptyState
             title="Gudang Arsip kosong"
-            description="Quotation yang diarsipkan akan muncul di halaman ini."
+            description="Penawaran yang diarsipkan akan muncul di halaman ini."
           />
         )}
       </div>

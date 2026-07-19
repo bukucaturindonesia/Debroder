@@ -80,6 +80,10 @@ const STATUS_LABELS: Record<string, string> = {
   approved: "Disetujui Pelanggan"
 };
 
+function statusLabel(status: string) {
+  return STATUS_LABELS[status] || "Status mockup belum dikenali";
+}
+
 function formatDate(value: string | null) {
   if (!value) return "-";
   return new Intl.DateTimeFormat("id-ID", {
@@ -830,7 +834,7 @@ export function MockupApprovalManager() {
                       >
                         <p className="font-semibold">{row.title}</p>
                         <p className="mt-2 text-xs opacity-70">
-                          {STATUS_LABELS[row.status] || row.status}
+                          {statusLabel(row.status)}
                         </p>
                       </button>
                     ))}
@@ -858,8 +862,7 @@ export function MockupApprovalManager() {
                                 {selectedSet.notes || "Tidak ada catatan mockup."}
                               </p>
                               <span className="mt-4 inline-flex rounded-full border border-brand-softGray px-3 py-1.5 text-xs font-semibold">
-                                {STATUS_LABELS[selectedSet.status] ||
-                                  selectedSet.status}
+                                {statusLabel(selectedSet.status)}
                               </span>
                             </div>
 
@@ -971,7 +974,7 @@ export function MockupApprovalManager() {
                                         {[
                                           item?.product_name_snapshot,
                                           part.position,
-                                          STATUS_LABELS[part.status] || part.status
+                                          statusLabel(part.status)
                                         ]
                                           .filter(Boolean)
                                           .join(" · ")}

@@ -4,8 +4,8 @@ import { PublicShell } from "@/components/PublicPage";
 import { getPublicContent } from "@/lib/public-data";
 
 export const metadata: Metadata = {
-  title: "Guest Checkout | DEBRODER",
-  description: "Checkout cepat dan aman untuk produk ready stock dan Custom Project DEBRODER.",
+  title: "Checkout | DEBRODER",
+  description: "Checkout cepat dan aman untuk produk siap beli dan pesanan custom DEBRODER.",
   robots: { index: false, follow: false }
 };
 

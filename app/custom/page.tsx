@@ -5,8 +5,8 @@ import { listCustomCategories } from "@/lib/custom-commerce/data";
 import { getPublicContent } from "@/lib/public-data";
 
 export const metadata: Metadata = {
-  title: "Custom Apparel | DEBRODER",
-  description: "Pilih kategori dan rakit Custom Project DEBRODER dari produk, varian, layanan, serta harga yang terhubung ke CMS dan PIM.",
+  title: "Pesanan Custom | DEBRODER",
+  description: "Pilih kategori dan susun pesanan custom DEBRODER dari produk, varian, layanan, serta rincian harga yang tersedia.",
   alternates: { canonical: "/custom" }
 };
 

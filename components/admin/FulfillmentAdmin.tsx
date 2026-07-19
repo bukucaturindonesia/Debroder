@@ -125,7 +125,7 @@ export function FulfillmentAdmin() {
     const supabase = createSupabaseClient();
     if (!supabase) {
       setLoading(false);
-      setNotice({ type: "error", text: "Supabase belum dikonfigurasi." });
+      setNotice({ type: "error", text: "Layanan data belum tersedia. Hubungi pengelola sistem." });
       return;
     }
 
@@ -329,7 +329,7 @@ export function FulfillmentAdmin() {
       .filter(([, quantity]) => Number(quantity) > 0)
       .map(([work_item_id, quantity]) => ({ work_item_id, quantity: Number(quantity) }));
     if (selectedItems.length === 0) {
-      setNotice({ type: "error", text: "Pilih minimal satu Work Item untuk diserahkan." });
+      setNotice({ type: "error", text: "Pilih minimal satu pekerjaan untuk diserahkan." });
       return;
     }
     const supabase = createSupabaseClient();
@@ -352,7 +352,7 @@ export function FulfillmentAdmin() {
     });
     setWorking(false);
     if (result.error) {
-      setNotice({ type: "error", text: result.error.message || "Dokumen penyerahan gagal dibuat." });
+      setNotice({ type: "error", text: "Dokumen pengiriman belum dapat dibuat. Periksa data lalu coba lagi." });
       return;
     }
     const id = typeof result.data?.id === "string" ? result.data.id : null;
@@ -371,7 +371,7 @@ export function FulfillmentAdmin() {
     const result = await supabase.rpc("restore_fulfillment", { p_fulfillment_id: record.id });
     setWorking(false);
     if (result.error) {
-      setNotice({ type: "error", text: result.error.message || "Penyerahan gagal dipulihkan." });
+      setNotice({ type: "error", text: "Dokumen pengiriman belum dapat dipulihkan. Coba lagi." });
       return;
     }
     setRestoreTarget(null);
@@ -391,7 +391,7 @@ export function FulfillmentAdmin() {
     });
     setWorking(false);
     if (result.error) {
-      setNotice({ type: "error", text: result.error.message || "Hapus permanen gagal." });
+      setNotice({ type: "error", text: "Dokumen pengiriman belum dapat dihapus permanen." });
       return;
     }
     setDeleteTarget(null);
@@ -408,8 +408,8 @@ export function FulfillmentAdmin() {
       <div className="grid gap-6">
         <AdminPageHeader
           eyebrow="DEBRODER v1.2 · Phase 11"
-          title="Pengiriman & Pickup"
-          description="Kelola packing, pengiriman, ambil di toko, bukti serah terima, dan penyelesaian pesanan setelah Quality Control lulus."
+          title="Pengiriman & Ambil di Toko"
+          description="Kelola pengemasan, pengiriman, pengambilan di toko, bukti serah terima, dan penyelesaian pesanan setelah pemeriksaan kualitas lulus."
           actions={
             <button
               type="button"
@@ -422,14 +422,14 @@ export function FulfillmentAdmin() {
         />
 
         {notice ? <AdminAlert type={notice.type}>{notice.text}</AdminAlert> : null}
-        {!canManage ? <AdminAlert type="warning">Akun ini tidak mempunyai hak pengelolaan Shipping / Pickup.</AdminAlert> : null}
+        {!canManage ? <AdminAlert type="warning">Akun ini tidak mempunyai hak untuk mengelola pengiriman atau pengambilan di toko.</AdminAlert> : null}
 
         <section className="border border-brand-softGray bg-white p-4 sm:p-6">
           <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
             <div className="flex flex-wrap gap-2">
               {([
                 ["ready", "Siap Diserahkan"],
-                ["records", "Pengiriman / Pickup"],
+                ["records", "Pengiriman / Ambil di Toko"],
                 ["archive", "Gudang Arsip"]
               ] as const).map(([value, label]) => (
                 <button
@@ -447,7 +447,7 @@ export function FulfillmentAdmin() {
             <input
               value={search}
               onChange={(event) => setSearch(event.target.value)}
-              placeholder="Cari nomor, pelanggan, resi, atau Work Item"
+              placeholder="Cari nomor, pelanggan, resi, atau pekerjaan"
               className="min-h-11 w-full rounded-full border border-brand-softGray px-5 text-sm lg:max-w-md"
             />
           </div>
@@ -457,7 +457,7 @@ export function FulfillmentAdmin() {
           visibleEligible.length === 0 ? (
             <AdminEmptyState
               title="Belum ada pesanan siap diserahkan"
-              description="Pesanan muncul setelah seluruh Work Item aktif selesai dan memiliki hasil Quality Control lulus yang belum dialokasikan."
+              description="Pesanan muncul setelah seluruh pekerjaan aktif selesai dan memiliki hasil pemeriksaan kualitas lulus yang belum dialokasikan."
             />
           ) : (
             <section className="grid gap-4">
@@ -567,7 +567,7 @@ export function FulfillmentAdmin() {
       {createOpen && selectedEligible ? (
         <div className="fixed inset-0 z-[100] overflow-y-auto bg-black/60 p-4 sm:p-8">
           <form onSubmit={createFulfillment} className="mx-auto max-w-3xl bg-white p-6 shadow-2xl sm:p-8">
-            <h2 className="text-2xl font-semibold">Buat Pengiriman / Pickup</h2>
+            <h2 className="text-2xl font-semibold">Buat Pengiriman / Pengambilan</h2>
             <p className="mt-2 text-sm text-brand-charcoal/65">
               {selectedEligible.order.order_number} · {selectedEligible.order.customer_name}
             </p>

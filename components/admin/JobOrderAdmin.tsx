@@ -76,7 +76,7 @@ export function JobOrderAdmin() {
   const loadData = useCallback(async () => {
     const supabase = createSupabaseClient();
     if (!supabase) {
-      setNotice({ type: "error", text: "Supabase belum dikonfigurasi." });
+      setNotice({ type: "error", text: "Layanan data belum tersedia. Hubungi pengelola sistem." });
       setLoading(false);
       return;
     }
@@ -105,7 +105,7 @@ export function JobOrderAdmin() {
     setLoading(false);
     const firstError = jobResult.error || orderResult.error;
     if (firstError) {
-      setNotice({ type: "error", text: `Fondasi Job Order belum dapat dimuat: ${firstError.message}` });
+      setNotice({ type: "error", text: "Surat Perintah Kerja belum dapat dimuat. Muat ulang halaman atau coba lagi beberapa saat." });
       return;
     }
 
@@ -215,12 +215,12 @@ export function JobOrderAdmin() {
     });
     setWorking(false);
     if (result.error) {
-      setNotice({ type: "error", text: result.error.message || "Job Order gagal dibuat." });
+      setNotice({ type: "error", text: "Surat Perintah Kerja belum berhasil dibuat. Periksa data lalu coba lagi." });
       return;
     }
     const created = Array.isArray(result.data) ? result.data[0] : result.data;
     if (!created?.id) {
-      setNotice({ type: "error", text: "Job Order tersimpan tetapi ID hasil tidak ditemukan." });
+      setNotice({ type: "error", text: "Surat Perintah Kerja tersimpan, tetapi hasilnya belum dapat dibuka. Muat ulang daftar." });
       return;
     }
     router.push(`/admin/job-orders/${created.id}`);
@@ -238,7 +238,7 @@ export function JobOrderAdmin() {
     });
     setWorking(false);
     if (result.error) {
-      setNotice({ type: "error", text: result.error.message || "Job Order gagal diarsipkan." });
+      setNotice({ type: "error", text: "Surat Perintah Kerja belum berhasil diarsipkan. Coba lagi." });
       return;
     }
     setArchiveTarget(null);
@@ -255,7 +255,7 @@ export function JobOrderAdmin() {
     const result = await supabase.rpc("restore_job_order", { p_job_order_id: row.id });
     setWorking(false);
     if (result.error) {
-      setNotice({ type: "error", text: result.error.message || "Job Order gagal dipulihkan." });
+      setNotice({ type: "error", text: "Surat Perintah Kerja belum berhasil dipulihkan. Coba lagi." });
       return;
     }
     setNotice({ type: "success", text: `${row.job_order_number} berhasil dipulihkan.` });
@@ -272,7 +272,7 @@ export function JobOrderAdmin() {
     });
     setWorking(false);
     if (result.error) {
-      setNotice({ type: "error", text: result.error.message || "Hapus permanen ditolak." });
+      setNotice({ type: "error", text: "Surat Perintah Kerja belum dapat dihapus permanen." });
       return;
     }
     setNotice({ type: "success", text: `${deleteTarget.job_order_number} berhasil dihapus permanen.` });
@@ -281,14 +281,14 @@ export function JobOrderAdmin() {
     await loadData();
   }
 
-  if (loading) return <AdminLoadingState label="Memuat fondasi Job Order..." />;
+  if (loading) return <AdminLoadingState label="Memuat Surat Perintah Kerja..." />;
 
   return (
     <main className="text-brand-charcoal">
       <div className="grid gap-6">
         <AdminPageHeader
           eyebrow="DEBRODER v1.2 · Phase 7 Foundation"
-          title="Job Order"
+          title="Surat Perintah Kerja"
           description="Pusat pembuatan surat kerja produksi dari pesanan yang mockup dan syarat pembayarannya sudah valid."
           actions={
             <button
@@ -300,7 +300,7 @@ export function JobOrderAdmin() {
               disabled={!eligibleOrders.length}
               className="inline-flex min-h-11 items-center rounded-full bg-brand-green px-5 text-sm font-semibold text-white disabled:opacity-45"
             >
-              Buat Job Order
+              Buat Surat Perintah Kerja
             </button>
           }
         />
@@ -327,7 +327,7 @@ export function JobOrderAdmin() {
           <input
             value={query}
             onChange={(event) => setQuery(event.target.value)}
-            placeholder="Cari nomor Job Order, pesanan, atau pelanggan"
+            placeholder="Cari nomor Surat Perintah Kerja, pesanan, atau pelanggan"
             className="mt-4 min-h-11 w-full rounded-lg border border-brand-softGray px-4 text-sm"
           />
         </section>
@@ -351,7 +351,7 @@ export function JobOrderAdmin() {
                       onClick={() => openCreate(row.id)}
                       className="inline-flex min-h-10 items-center justify-center rounded-full bg-brand-green px-5 text-sm font-semibold text-white"
                     >
-                      Buat Job Order
+                      Buat Surat Perintah Kerja
                     </button>
                   </div>
                 </article>
@@ -434,8 +434,8 @@ export function JobOrderAdmin() {
           </section>
         ) : (
           <AdminEmptyState
-            title={tab === "archive" ? "Gudang Arsip Job Order kosong" : "Belum ada Job Order"}
-            description={tab === "archive" ? "Job Order yang diarsipkan akan muncul di sini." : "Buat Job Order dari pesanan yang sudah memenuhi syarat produksi."}
+            title={tab === "archive" ? "Arsip Surat Perintah Kerja masih kosong" : "Belum ada Surat Perintah Kerja"}
+            description={tab === "archive" ? "Surat Perintah Kerja yang diarsipkan akan muncul di sini." : "Buat Surat Perintah Kerja dari pesanan yang sudah memenuhi syarat produksi."}
           />
         )}
       </div>
@@ -443,8 +443,8 @@ export function JobOrderAdmin() {
       {createOpen ? (
         <div className="fixed inset-0 z-[100] overflow-y-auto bg-black/60 p-4 sm:p-8">
           <form onSubmit={createJobOrder} className="mx-auto max-w-2xl bg-white p-6 shadow-2xl sm:p-8">
-            <h2 className="text-2xl font-semibold">Buat Job Order</h2>
-            <p className="mt-2 text-sm text-brand-charcoal/60">Nomor Job Order dan snapshot produksi dibuat otomatis oleh database.</p>
+            <h2 className="text-2xl font-semibold">Buat Surat Perintah Kerja</h2>
+            <p className="mt-2 text-sm text-brand-charcoal/60">Nomor dokumen dan salinan data produksi dibuat otomatis saat disimpan.</p>
 
             <label className="mt-5 block text-sm font-semibold">
               Pesanan siap produksi
@@ -508,7 +508,7 @@ export function JobOrderAdmin() {
 
             <div className="mt-6 flex flex-wrap gap-3">
               <button type="submit" disabled={working || !form.order_id || !form.target_date} className="rounded-full bg-brand-green px-6 py-3 text-sm font-semibold text-white disabled:opacity-45">
-                {working ? "Membuat..." : "Buat Job Order"}
+                {working ? "Membuat..." : "Buat Surat Perintah Kerja"}
               </button>
               <button type="button" onClick={() => setCreateOpen(false)} disabled={working} className="rounded-full border border-brand-softGray px-6 py-3 text-sm font-semibold">
                 Batal
@@ -521,7 +521,7 @@ export function JobOrderAdmin() {
       {archiveTarget ? (
         <div className="fixed inset-0 z-[100] grid place-items-center bg-black/60 p-4">
           <section className="w-full max-w-lg bg-white p-6 shadow-2xl">
-            <h2 className="text-2xl font-semibold">Arsipkan Job Order?</h2>
+            <h2 className="text-2xl font-semibold">Arsipkan Surat Perintah Kerja?</h2>
             <p className="mt-2 text-sm text-brand-charcoal/60">{archiveTarget.job_order_number} dapat dipulihkan melalui Gudang Arsip.</p>
             <textarea
               rows={4}
@@ -545,7 +545,7 @@ export function JobOrderAdmin() {
           <section className="w-full max-w-lg bg-white p-6 shadow-2xl">
             <p className="text-xs font-semibold uppercase tracking-[0.18em] text-red-700">Super Admin Only</p>
             <h2 className="mt-2 text-2xl font-semibold">Hapus Permanen?</h2>
-            <p className="mt-3 text-sm leading-6 text-brand-charcoal/65">Hanya Job Order Draft atau Dibatalkan tanpa Work Item yang dapat dihapus permanen.</p>
+            <p className="mt-3 text-sm leading-6 text-brand-charcoal/65">Hanya Surat Perintah Kerja berstatus Draft atau Dibatalkan tanpa pekerjaan turunan yang dapat dihapus permanen.</p>
             <input
               value={deleteConfirmation}
               onChange={(event) => setDeleteConfirmation(event.target.value)}

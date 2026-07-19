@@ -152,7 +152,7 @@ export function BulkCustomManager() {
   async function loadData() {
     const supabase = createSupabaseClient();
     if (!supabase) {
-      setStatus({ type: "error", text: "Supabase belum dikonfigurasi." });
+      setStatus({ type: "error", text: "Layanan data belum tersedia. Hubungi pengelola sistem." });
       return;
     }
 
@@ -176,7 +176,7 @@ export function BulkCustomManager() {
       serviceRuleResult.error;
 
     if (error) {
-      setStatus({ type: "error", text: `Gagal memuat v1.1: ${error.message}` });
+      setStatus({ type: "error", text: "Pengaturan pesanan custom belum dapat dimuat. Coba lagi." });
       return;
     }
 
@@ -316,7 +316,7 @@ export function BulkCustomManager() {
 
     const { error } = await request;
     if (error) {
-      setStatus({ type: "error", text: `Tier harga gagal disimpan: ${error.message}` });
+      setStatus({ type: "error", text: "Tingkat harga belum dapat disimpan. Periksa data lalu coba lagi." });
       return;
     }
 
@@ -332,7 +332,7 @@ export function BulkCustomManager() {
 
     const { error } = await supabase.from("product_price_tiers").delete().eq("id", id);
     if (error) {
-      setStatus({ type: "error", text: `Tier gagal dihapus: ${error.message}` });
+      setStatus({ type: "error", text: "Tingkat harga belum dapat dihapus. Coba lagi." });
       return;
     }
 
@@ -370,7 +370,7 @@ export function BulkCustomManager() {
       .eq("id", serviceForm.id);
 
     if (error) {
-      setStatus({ type: "error", text: `Layanan gagal disimpan: ${error.message}` });
+      setStatus({ type: "error", text: "Layanan belum dapat disimpan. Periksa data lalu coba lagi." });
       return;
     }
 
@@ -406,7 +406,7 @@ export function BulkCustomManager() {
     if (error) {
       setStatus({
         type: "error",
-        text: `Aturan harga layanan gagal disimpan: ${error.message}`
+        text: "Aturan harga layanan belum dapat disimpan. Periksa data lalu coba lagi."
       });
       return;
     }
@@ -427,7 +427,7 @@ export function BulkCustomManager() {
       .eq("id", id);
 
     if (error) {
-      setStatus({ type: "error", text: `Aturan gagal dihapus: ${error.message}` });
+      setStatus({ type: "error", text: "Aturan belum dapat dihapus. Coba lagi." });
       return;
     }
 
@@ -809,7 +809,7 @@ export function BulkCustomManager() {
                             <option value="fixed_per_item">Tetap per item</option>
                             <option value="flat">Flat</option>
                             <option value="tiered">Bertingkat</option>
-                            <option value="quotation">Quotation</option>
+                            <option value="quotation">Penawaran Harga</option>
                             <option value="estimated">Estimasi</option>
                           </select>
                         </label>

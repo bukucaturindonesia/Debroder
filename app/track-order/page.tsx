@@ -4,8 +4,8 @@ import { GuestOrderTracking } from "@/components/tracking/GuestOrderTracking";
 import { getPublicContent } from "@/lib/public-data";
 
 export const metadata: Metadata = {
-  title: "Lacak Order | DEBRODER",
-  description: "Lacak status order DEBRODER tanpa login menggunakan nomor order dan nomor WhatsApp checkout.",
+  title: "Lacak Pesanan | DEBRODER",
+  description: "Lacak status pesanan DEBRODER tanpa login menggunakan nomor pesanan dan nomor WhatsApp checkout.",
   robots: { index: false, follow: false },
   referrer: "no-referrer"
 };

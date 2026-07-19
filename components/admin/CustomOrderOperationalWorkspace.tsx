@@ -19,6 +19,7 @@ import {
   type ServiceSummary
 } from "@/lib/admin-order-pricing";
 import { createSupabaseClient } from "@/lib/supabase";
+import { getOrderStatusLabel } from "@/lib/ui-language";
 
 type Ref = { id: string; status: string; updated_at: string | null } | null;
 type Props = {
@@ -56,27 +57,27 @@ type StageAction = "start" | "review" | "pricing" | "link";
 type Stage = { index: number; title: string; blocker: string; label: string; href: string; action: StageAction };
 
 const STAGES = [
-  "Order Masuk",
-  "Review Pesanan",
+  "Pesanan Masuk",
+  "Pemeriksaan Pesanan",
   "Penetapan Harga",
   "Persetujuan Pelanggan",
   "Pembayaran",
-  "Job Order",
+  "Surat Perintah Kerja",
   "Produksi",
-  "Quality Control",
-  "Packing",
+  "Pemeriksaan Kualitas",
+  "Pengemasan",
   "Pengecekan Akhir",
-  "Pengiriman / Pickup",
+  "Pengiriman / Ambil di Toko",
   "Selesai"
 ];
 
 const KIND_LABEL: Record<EditablePricingKind, string> = {
   SERVICE: "Layanan",
   PERSONALIZATION: "Personalisasi",
-  SETUP_FEE: "Setup fee",
-  DESIGN_FEE: "Design fee",
+  SETUP_FEE: "Biaya persiapan",
+  DESIGN_FEE: "Biaya desain",
   DISCOUNT: "Diskon",
-  ADJUSTMENT: "Adjustment",
+  ADJUSTMENT: "Penyesuaian",
   SHIPPING: "Ongkir",
   OTHER: "Lainnya"
 };
@@ -139,7 +140,7 @@ export function CustomOrderOperationalWorkspace(props: Props) {
     ]);
 
     if (orderResult.error || !orderResult.data || itemResult.error) {
-      setMessage("State workflow atau snapshot produk belum dapat dimuat.");
+      setMessage("Tahap pesanan atau rincian produk belum dapat dimuat.");
       return;
     }
 
@@ -233,13 +234,13 @@ export function CustomOrderOperationalWorkspace(props: Props) {
     await execute("start_custom_order_review_v1", {
       p_order_id: props.order.id,
       p_expected_updated_at: flow.updated_at
-    }, "Review pesanan dimulai.");
+    }, "Pemeriksaan pesanan dimulai.");
   }
 
   async function approveReview() {
     if (!flow || working || readOnly) return;
     if (!confirmations.product || (services.length > 0 && !confirmations.service)) {
-      setMessage("Dua konfirmasi operasional harus selesai sebelum review disetujui.");
+      setMessage("Dua konfirmasi operasional harus selesai sebelum pemeriksaan disetujui.");
       return;
     }
     await execute("approve_custom_order_review_v1", {
@@ -247,7 +248,7 @@ export function CustomOrderOperationalWorkspace(props: Props) {
       p_checklist: confirmations,
       p_note: reviewNote.trim() || null,
       p_expected_updated_at: flow.updated_at
-    }, "Review pesanan disetujui.");
+    }, "Pemeriksaan pesanan disetujui.");
   }
 
   async function saveDraft() {
@@ -271,7 +272,7 @@ export function CustomOrderOperationalWorkspace(props: Props) {
       setMessage(operationalError(result.error.message));
       return;
     }
-    setMessage("Draft harga tersimpan. Lifecycle dan penawaran pelanggan belum berubah.");
+    setMessage("Draft harga tersimpan. Tahap pesanan dan penawaran pelanggan belum berubah.");
     await load();
   }
 
@@ -314,10 +315,10 @@ export function CustomOrderOperationalWorkspace(props: Props) {
   return (
     <section className="border border-brand-softGray bg-white">
       <header className="border-b border-brand-softGray p-5 sm:p-7">
-        <p className="text-xs font-semibold uppercase tracking-[0.14em] text-brand-charcoal/45">Pusat Kendali Order</p>
+        <p className="text-xs font-semibold uppercase tracking-[0.14em] text-brand-charcoal/45">Pusat Kendali Pesanan</p>
         <h2 className="mt-2 text-2xl font-semibold">{stage.title}</h2>
         <p className="mt-2 text-sm text-brand-charcoal/60">
-          Satu tahap aktif berasal dari state canonical server. Status teknis: {technicalStatus(props.order.status, stage)}.
+          Satu tahap aktif mengikuti status pesanan yang tersimpan. Status saat ini: {displayStatus(props.order.status, stage)}.
         </p>
       </header>
 
@@ -342,27 +343,27 @@ export function CustomOrderOperationalWorkspace(props: Props) {
       <div className="grid lg:grid-cols-[280px_minmax(0,1fr)]">
         <aside className="border-b border-brand-softGray bg-brand-offWhite p-5 lg:sticky lg:top-20 lg:self-start lg:border-b-0 lg:border-r">
           <dl className="grid gap-3 text-sm">
-            <Summary label="Status canonical" value={technicalStatus(props.order.status, stage)} />
+            <Summary label="Status pesanan" value={displayStatus(props.order.status, stage)} />
             <Summary label="Produk" value={String(products.length)} />
             <Summary label="Layanan" value={String(services.length)} />
             <Summary label="Draft" value={flow?.custom_pricing_draft_version ? `v${flow.custom_pricing_draft_version}` : "Belum disimpan"} />
-            <Summary label="Total tervalidasi" value={serverTotals ? money(serverTotals.final) : "Belum divalidasi server"} />
-            <Summary label="Quotation" value={flow?.custom_quote_version ? `v${flow.custom_quote_version} · ${flow.custom_quote_status}` : "Belum dikirim"} />
+            <Summary label="Total terverifikasi" value={serverTotals ? money(serverTotals.final) : "Belum diverifikasi sistem"} />
+            <Summary label="Penawaran harga" value={flow?.custom_quote_version ? `v${flow.custom_quote_version} · ${quoteStatusLabel(flow.custom_quote_status)}` : "Belum dikirim"} />
           </dl>
           <p className="mt-5 border border-brand-softGray bg-white p-3 text-sm">
             <span className="block text-xs text-brand-charcoal/50">Hambatan tahap</span>
             <strong>{stage.blocker}</strong>
           </p>
-          {readOnly ? <p className="mt-3 border border-amber-200 bg-amber-50 p-3 text-sm">Akun ini hanya dapat membaca workspace.</p> : null}
+          {readOnly ? <p className="mt-3 border border-amber-200 bg-amber-50 p-3 text-sm">Akun ini hanya dapat melihat area kerja.</p> : null}
         </aside>
 
         <div className="min-w-0 p-5 sm:p-7">
           <p className="text-xs font-semibold uppercase tracking-[0.12em] text-brand-charcoal/45">{selected < stage.index ? "Tahap selesai · baca saja" : "Tahap aktif"}</p>
           <h3 className="mt-2 text-xl font-semibold">{STAGES[selected]}</h3>
           {selected < stage.index ? (
-            <p className="mt-3 text-sm text-brand-charcoal/60">Selector tidak mengubah status canonical.</p>
+            <p className="mt-3 text-sm text-brand-charcoal/60">Pemilih tahap tidak mengubah status pesanan.</p>
           ) : stage.action === "start" ? (
-            <SimpleAction text="Snapshot order tersedia dan siap direview." button="Mulai Review" disabled={working || readOnly} working={working} onClick={() => void startReview()} message={message} />
+            <SimpleAction text="Rincian pesanan tersedia dan siap diperiksa." button="Mulai Pemeriksaan" disabled={working || readOnly} working={working} onClick={() => void startReview()} message={message} />
           ) : stage.action === "review" ? (
             <ReviewWorkspace
               products={products}
@@ -429,10 +430,10 @@ function ReviewWorkspace(props: {
       <ProductSummary products={props.products} />
       <ServiceSummaryList services={props.services} />
       <ConfirmationFields {...props} />
-      <label className="block text-sm font-semibold">Catatan review
+      <label className="block text-sm font-semibold">Catatan pemeriksaan
         <textarea rows={3} value={props.note} onChange={(event) => props.setNote(event.target.value)} className="mt-2 w-full border border-brand-softGray p-3 font-normal" />
       </label>
-      <SimpleAction text="" button="Setujui Review" disabled={props.disabled} working={props.working} onClick={props.onApprove} message={props.message} />
+      <SimpleAction text="" button="Setujui Pemeriksaan" disabled={props.disabled} working={props.working} onClick={props.onApprove} message={props.message} />
     </div>
   );
 }
@@ -473,13 +474,13 @@ function PricingWorkspace(props: {
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
             <h4 className="font-semibold">Editor Rincian Harga</h4>
-            <p className="mt-1 text-sm text-brand-charcoal/55">Product base line terkunci dari order snapshot. Baris di bawah hanya komponen non-produk.</p>
+            <p className="mt-1 text-sm text-brand-charcoal/55">Harga dasar produk dikunci dari rincian pesanan. Baris di bawah hanya memuat komponen non-produk.</p>
           </div>
           <button type="button" disabled={props.saveDisabled} onClick={() => props.addLine()} className="min-h-10 rounded-full border border-brand-charcoal px-4 text-sm font-semibold disabled:opacity-45">Tambah komponen</button>
         </div>
 
         <div className="mt-4 grid gap-3">
-          {props.lines.length === 0 ? <p className="border border-dashed border-brand-softGray p-4 text-sm text-brand-charcoal/60">Belum ada biaya layanan atau komponen tambahan. Product base tetap dihitung otomatis.</p> : null}
+          {props.lines.length === 0 ? <p className="border border-dashed border-brand-softGray p-4 text-sm text-brand-charcoal/60">Belum ada biaya layanan atau komponen tambahan. Harga dasar produk tetap dihitung otomatis.</p> : null}
           {props.lines.map((line) => (
             <PriceLineEditor
               key={line.id}
@@ -505,9 +506,9 @@ function PricingWorkspace(props: {
         <label className="text-sm font-semibold">Catatan untuk pelanggan
           <textarea rows={3} value={props.customerNote} onChange={(event) => props.setCustomerNote(event.target.value)} className="mt-2 w-full border border-brand-softGray p-3 font-normal" />
         </label>
-        <label className="text-sm font-semibold sm:col-span-2">Catatan internal Admin
+        <label className="text-sm font-semibold sm:col-span-2">Catatan internal admin
           <textarea rows={3} value={props.internalNote} onChange={(event) => props.setInternalNote(event.target.value)} className="mt-2 w-full border border-brand-softGray p-3 font-normal" />
-          <span className="mt-1 block text-xs font-normal text-brand-charcoal/50">Tidak disertakan dalam snapshot penawaran pelanggan.</span>
+          <span className="mt-1 block text-xs font-normal text-brand-charcoal/50">Tidak disertakan dalam rincian penawaran pelanggan.</span>
         </label>
       </section>
 
@@ -531,14 +532,14 @@ function ProductSummary({ products }: { products: OrderProductSnapshot[] }) {
   return (
     <section className="border border-brand-softGray p-4 sm:p-5">
       <h4 className="font-semibold">Ringkasan Produk</h4>
-      <p className="mt-1 text-sm text-brand-charcoal/55">Harga dasar read-only dari immutable order item snapshot.</p>
+      <p className="mt-1 text-sm text-brand-charcoal/55">Harga dasar hanya dapat dilihat dan mengikuti rincian barang saat pesanan dibuat.</p>
       <div className="mt-4 divide-y divide-brand-softGray border-y border-brand-softGray">
         {products.length === 0 ? <p className="py-4 text-sm text-red-700">Product base line tidak tersedia.</p> : products.map((product) => (
           <article key={product.id} className="grid gap-2 py-4 sm:grid-cols-[1fr_auto] sm:items-end">
             <div>
               <p className="font-semibold">{product.productName}</p>
-              <p className="mt-1 text-sm text-brand-charcoal/60">{[product.variantName, product.color, product.size, product.sku].filter(Boolean).join(" · ") || "Varian snapshot tidak tersedia"}</p>
-              <p className="mt-1 text-xs text-brand-charcoal/45">Source: order_item_snapshot · terkunci</p>
+              <p className="mt-1 text-sm text-brand-charcoal/60">{[product.variantName, product.color, product.size, product.sku].filter(Boolean).join(" · ") || "Rincian varian tidak tersedia"}</p>
+              <p className="mt-1 text-xs text-brand-charcoal/45">Sumber: rincian barang pesanan · terkunci</p>
             </div>
             <div className="text-sm sm:text-right">
               <p>{product.quantity} pcs × {product.unitPrice === null ? "Harga belum tersedia" : money(product.unitPrice)}</p>
@@ -555,13 +556,13 @@ function ServiceSummaryList({ services }: { services: ServiceSummary[] }) {
   return (
     <section className="border border-brand-softGray p-4 sm:p-5">
       <h4 className="font-semibold">Ringkasan Layanan</h4>
-      {services.length === 0 ? <p className="mt-3 text-sm text-brand-charcoal/60">Tidak ada layanan custom terstruktur pada snapshot. Konfirmasi layanan tidak diwajibkan.</p> : (
+      {services.length === 0 ? <p className="mt-3 text-sm text-brand-charcoal/60">Tidak ada layanan custom terstruktur pada rincian pesanan. Konfirmasi layanan tidak diwajibkan.</p> : (
         <div className="mt-4 grid gap-3 sm:grid-cols-2">
           {services.map((service) => (
             <article key={service.id} className="border border-brand-softGray bg-brand-offWhite p-4 text-sm">
               <p className="font-semibold">{service.name}</p>
               <dl className="mt-3 grid grid-cols-2 gap-x-3 gap-y-2">
-                <CompactData label="Metode" value={service.method || "Dari snapshot"} />
+                <CompactData label="Metode" value={service.method || "Dari rincian pesanan"} />
                 <CompactData label="Ukuran" value={service.printSize || "-"} />
                 <CompactData label="Placement" value={service.placement || "-"} />
                 <CompactData label="Qty" value={service.quantity ? String(service.quantity) : "-"} />
@@ -642,7 +643,7 @@ function PriceLineEditor({ line, duplicate, disabled, onChange, onRemove }: {
         </div>
       </div>
       {reasonRequired ? <Field label="Alasan (wajib, minimal 5 karakter)"><input value={line.reason} disabled={disabled} onChange={(event) => onChange({ reason: event.target.value })} className="min-h-11 w-full border border-brand-softGray px-3" /></Field> : null}
-      <p className="text-xs text-brand-charcoal/45">Source: {line.source} · editable</p>
+      <p className="text-xs text-brand-charcoal/45">Sumber: {pricingSourceLabel(line.source)} · dapat diubah</p>
     </article>
   );
 }
@@ -652,15 +653,15 @@ function TotalSummary({ totals, serverValidated }: { totals: PricingTotals; serv
     ["Subtotal produk", totals.product],
     ["Subtotal layanan", totals.service],
     ["Personalisasi", totals.personalization],
-    ["Setup / design fee", totals.setupDesign],
-    ["Adjustment", totals.adjustment],
+    ["Biaya persiapan / desain", totals.setupDesign],
+    ["Penyesuaian", totals.adjustment],
     ["Diskon", -totals.discount],
     ["Ongkir", totals.shipping],
     ["Lainnya", totals.other]
   ];
   return (
     <section className="border border-brand-softGray bg-brand-offWhite p-4 sm:p-5">
-      <div className="flex items-center justify-between gap-3"><h4 className="font-semibold">Ringkasan Total</h4><span className={`text-xs font-semibold ${serverValidated ? "text-brand-green" : "text-amber-700"}`}>{serverValidated ? "Tervalidasi server" : "Preview client · simpan draft untuk validasi server"}</span></div>
+      <div className="flex items-center justify-between gap-3"><h4 className="font-semibold">Ringkasan Total</h4><span className={`text-xs font-semibold ${serverValidated ? "text-brand-green" : "text-amber-700"}`}>{serverValidated ? "Terverifikasi sistem" : "Pratinjau sementara · simpan draft untuk verifikasi sistem"}</span></div>
       <dl className="mt-4 grid gap-2 text-sm">{rows.map(([label, value]) => <div key={label} className="flex justify-between gap-4"><dt>{label}</dt><dd className="font-semibold">{money(value)}</dd></div>)}</dl>
       <div className="mt-4 flex justify-between gap-4 border-t border-brand-charcoal pt-4 text-lg font-semibold"><span>Total final</span><span>{money(totals.final)}</span></div>
     </section>
@@ -669,26 +670,42 @@ function TotalSummary({ totals, serverValidated }: { totals: PricingTotals; serv
 
 function resolveStage({ order, jobOrder: job, qualityControl: qc, fulfillment }: Props, flow: Flow | null, custom: boolean): Stage {
   if (new Set(["completed", "selesai", "picked_up", "delivered"]).has(order.status) || ["delivered", "picked_up"].includes(fulfillment?.status ?? "")) return stage(11, "Selesai", "Tidak ada", "Lihat Histori", "#order-history");
-  if (["shipped", "in_transit", "ready_to_ship", "ready_for_pickup"].includes(fulfillment?.status ?? "")) return stage(10, "Pengiriman / Pickup", "Tidak ada", "Buka Fulfillment", `/admin/fulfillments/${fulfillment?.id}`);
+  if (["shipped", "in_transit", "ready_to_ship", "ready_for_pickup"].includes(fulfillment?.status ?? "")) return stage(10, "Pengiriman / Ambil di Toko", "Tidak ada", "Buka Pengiriman", `/admin/fulfillments/${fulfillment?.id}`);
   if (fulfillment?.status === "packing" && custom && !flow?.finalVerifiedAt) return stage(9, "Pengecekan Akhir", "Checklist akhir belum selesai", "Buka Pengecekan Akhir", `/admin/fulfillments/${fulfillment.id}`);
-  if (["preparing", "packing", "problem"].includes(fulfillment?.status ?? "")) return stage(8, "Packing", "Tidak ada", "Lanjutkan Fulfillment", `/admin/fulfillments/${fulfillment?.id}`);
-  if (qc && qc.result !== "passed") return stage(7, "Quality Control", "Menunggu hasil QC", "Buka Quality Control", `/admin/quality-control?job_order=${job?.id ?? ""}`);
-  if (job && !["completed", "cancelled"].includes(job.status)) return stage(6, "Produksi", "Tidak ada", "Buka Job Order", `/admin/job-orders/${job.id}`);
-  if (!job && order.payment_production_eligible) return stage(5, "Job Order", "Job Order belum dibuat", "Buat / Buka Job Order", `/admin/job-orders?order=${order.id}`);
-  if (custom && !flow?.custom_review_started_at) return { ...stage(0, "Order Masuk", order.whatsapp_confirmed_at ? "Tidak ada" : "Pelanggan belum diverifikasi", "Mulai Review", "#"), action: "start" };
-  if (custom && !flow?.custom_review_completed_at) return { ...stage(1, "Review Pesanan", "Review belum disetujui", "Setujui Review", "#"), action: "review" };
-  if (custom && flow?.custom_quote_status !== "sent" && flow?.custom_quote_status !== "locked") return { ...stage(2, "Penetapan Harga", flow?.custom_pricing_draft_version ? "Draft harus lolos validasi server" : "Draft harga belum disimpan", "Tetapkan Harga", "#"), action: "pricing" };
+  if (["preparing", "packing", "problem"].includes(fulfillment?.status ?? "")) return stage(8, "Pengemasan", "Tidak ada", "Lanjutkan Pengiriman", `/admin/fulfillments/${fulfillment?.id}`);
+  if (qc && qc.result !== "passed") return stage(7, "Pemeriksaan Kualitas", "Menunggu hasil pemeriksaan kualitas", "Buka Pemeriksaan Kualitas", `/admin/quality-control?job_order=${job?.id ?? ""}`);
+  if (job && !["completed", "cancelled"].includes(job.status)) return stage(6, "Produksi", "Tidak ada", "Buka Surat Perintah Kerja", `/admin/job-orders/${job.id}`);
+  if (!job && order.payment_production_eligible) return stage(5, "Surat Perintah Kerja", "Surat perintah kerja belum dibuat", "Buat / Buka Surat Perintah Kerja", `/admin/job-orders?order=${order.id}`);
+  if (custom && !flow?.custom_review_started_at) return { ...stage(0, "Pesanan Masuk", order.whatsapp_confirmed_at ? "Tidak ada" : "Pelanggan belum diverifikasi", "Mulai Pemeriksaan", "#"), action: "start" };
+  if (custom && !flow?.custom_review_completed_at) return { ...stage(1, "Pemeriksaan Pesanan", "Pemeriksaan belum disetujui", "Setujui Pemeriksaan", "#"), action: "review" };
+  if (custom && flow?.custom_quote_status !== "sent" && flow?.custom_quote_status !== "locked") return { ...stage(2, "Penetapan Harga", flow?.custom_pricing_draft_version ? "Draft harus lolos verifikasi sistem" : "Draft harga belum disimpan", "Tetapkan Harga", "#"), action: "pricing" };
   if (custom && flow?.custom_quote_status === "sent") return stage(3, "Persetujuan Pelanggan", "Menunggu keputusan pelanggan", "Pantau Persetujuan", "#commerce");
   if (!order.payment_production_eligible) return stage(4, "Pembayaran", "Menunggu pembayaran", "Periksa Pembayaran", "#payment");
-  return stage(1, "Review Pesanan", "Tidak ada", "Lanjutkan Review", "#order-data");
+  return stage(1, "Pemeriksaan Pesanan", "Tidak ada", "Lanjutkan Pemeriksaan", "#order-data");
 }
 
 function stage(index: number, title: string, blocker: string, label: string, href: string): Stage {
   return { index, title, blocker, label, href, action: "link" };
 }
 
-function technicalStatus(status: string, current: Stage) {
-  return current.index === 2 && status === "under_review" ? "under_review · Penetapan Harga" : status;
+function displayStatus(status: string, current: Stage) {
+  return current.index === 2 && status === "under_review"
+    ? "Sedang Diperiksa · Penetapan Harga"
+    : getOrderStatusLabel(status);
+}
+
+function quoteStatusLabel(status: string | null) {
+  if (status === "sent") return "Menunggu Persetujuan Pelanggan";
+  if (status === "locked") return "Disetujui Pelanggan";
+  if (status === "draft") return "Draft";
+  return "Status penawaran belum dikenali";
+}
+
+function pricingSourceLabel(source: string) {
+  if (source === "manual") return "Ditambahkan admin";
+  if (source === "project_snapshot") return "Rincian proyek";
+  if (source === "service_snapshot") return "Rincian layanan";
+  return "Rincian pesanan";
 }
 
 function SimpleAction({ text: description, button, disabled, working, onClick, message }: { text: string; button: string; disabled: boolean; working: boolean; onClick: () => void; message: string }) {
@@ -732,11 +749,11 @@ function lineSubtotalForDisplay(line: EditablePricingLine) {
 function operationalError(message: string) {
   if (/diperbarui|versi draft|stale|conflict/i.test(message)) return "Harga telah diperbarui oleh admin lain. Muat ulang halaman sebelum melanjutkan.";
   if (/duplik|DTF/i.test(message)) return "Komponen harga terduplikasi. Periksa baris yang bertabrakan lalu simpan ulang draft.";
-  if (/base|produk/i.test(message)) return "Harga dasar produk belum tersedia atau snapshot produk tidak valid.";
+  if (/base|produk/i.test(message)) return "Harga dasar produk belum tersedia atau rincian produk tidak valid.";
   if (/berwenang|authorized|permission/i.test(message)) return "Akun ini tidak berwenang mengubah atau mengirim harga.";
   if (/total/i.test(message)) return "Total final harus lebih besar dari Rp0 dan seluruh nominal harus valid.";
-  if (/stage|status|tahap|review/i.test(message)) return "Tahap server tidak sesuai. Muat ulang detail order sebelum melanjutkan.";
-  return "Pricing belum dapat diproses. Draft lokal tetap tersedia; periksa validasi lalu coba kembali.";
+  if (/stage|status|tahap|review/i.test(message)) return "Tahap pesanan tidak sesuai. Muat ulang rincian pesanan sebelum melanjutkan.";
+  return "Harga belum dapat diproses. Draft tetap tersedia; periksa kembali lalu coba lagi.";
 }
 
 function pricingTotals(value: unknown): PricingTotals | null {

@@ -1,0 +1,32 @@
+DEBRODER — STANDARDISASI BAHASA SELURUH UI PUBLIK DAN ADMIN
+
+Baseline source: commit 2d3960c0ee6e3ebc3f4ed4edd7fa24b345af8004
+Scope inventaris: 32 route publik dan 58 route admin pada source aktual.
+
+HASIL AUDIT
+- Navigasi, judul, label, tombol, filter, status, loading, empty state, notifikasi, dan pesan error diperiksa pada route serta shared component terkait.
+- UI publik menggunakan bahasa pelanggan yang ringkas untuk katalog, Custom, Jersey, keranjang, checkout, konfirmasi, pembayaran, mockup, pelacakan, toko, dan halaman informasi.
+- UI admin menggunakan bahasa operasional untuk pesanan, harga, pembayaran, produksi, pekerjaan, pemeriksaan kualitas, pengiriman, PIM, CMS, notifikasi, akses, dan pelaporan.
+- Status pesanan dan pembayaran dipisahkan antara label admin dan pelanggan melalui lib/ui-language.ts.
+- Fallback status tidak menampilkan enum mentah dan selalu menghasilkan string aman.
+- Pesan API/backend mentah tidak lagi diteruskan langsung pada jalur UI yang diaudit. Delapan pemakaian error.message yang tersisa hanya menjadi input mapper aman atau pemeriksaan kondisi; isi mentah tidak dirender.
+- Istilah mesin pada panel ekspor/pemeriksaan PIM diganti dengan istilah operasional. Kode masalah, SKU, dan ID diagnostik tetap tersedia karena diperlukan untuk tindak lanjut admin.
+
+CAKUPAN PERUBAHAN
+- 109 file source existing dimodifikasi.
+- 3 file source/governance/test ditambahkan sebelum dokumen handoff.
+- Heuristik diff menemukan 1.086 baris tambahan yang memuat kandidat string/teks JSX. Angka ini bukan jumlah string unik dan dicatat hanya sebagai ukuran audit yang dapat direproduksi.
+- Tidak ada perubahan route, API contract, database, enum, migration, permission, lifecycle, pricing, checkout calculation, atau business flow.
+
+STATIC AUDIT
+- Forbidden critical copy: 0 temuan.
+- Raw payload.error pada UI: 0 temuan.
+- Raw status direct-render candidate: hanya komponen badge/select yang memetakan label, tidak merender enum mentah.
+- Conflict marker: 0 temuan.
+- Secret candidate: 0 temuan.
+- Protected contract path (app/api, supabase, migration, database): 0 perubahan.
+
+BATAS VERIFIKASI
+- Browser tidak dijalankan; hasil ini STATIC AUDIT ONLY.
+- TypeScript, lint, targeted tests, full tests, dan build tidak sempat memulai compiler/runner karena bootstrap pnpm gagal pada ENOENT /root/.local.
+- Tidak ada source diagnostic yang dihasilkan oleh runner tersebut.

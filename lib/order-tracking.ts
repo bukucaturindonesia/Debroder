@@ -1,5 +1,6 @@
 import { createHash, createHmac, randomBytes, timingSafeEqual } from "node:crypto";
 import { normalizeWhatsapp } from "@/lib/commerce-checkout";
+import { getOrderStatusLabel, getPaymentStatusLabel } from "@/lib/ui-language";
 
 export const TRACKING_TOKEN_DAYS = 90;
 export const TRACKING_RATE_LIMIT_ATTEMPTS = 5;
@@ -92,45 +93,11 @@ export function maskAddress(address: string | null) {
 }
 
 export function customerOrderStatusLabel(status: string) {
-  const labels: Record<string, string> = {
-    baru: "Pesanan diterima",
-    pending_confirmation: "Menunggu verifikasi WhatsApp",
-    awaiting_shipping_quote: "Ongkir sedang diperiksa",
-    awaiting_customer_approval: "Menunggu persetujuan total",
-    awaiting_payment: "Menunggu pembayaran",
-    under_review: "Custom Project sedang direview",
-    confirmed: "Pesanan dikonfirmasi",
-    processing: "Sedang diproses",
-    in_progress: "Sedang diproses",
-    ready_for_pickup: "Siap diambil",
-    siap_diambil: "Siap diambil",
-    ready_to_ship: "Siap dikirim",
-    shipped: "Dikirim",
-    delivered: "Terkirim",
-    picked_up: "Sudah diambil",
-    completed: "Selesai",
-    selesai: "Selesai",
-    expired: "Kedaluwarsa",
-    cancelled: "Dibatalkan"
-  };
-  return labels[status] ?? "Pesanan sedang diproses";
+  return getOrderStatusLabel(status, "customer");
 }
 
 export function customerPaymentStatusLabel(status: string) {
-  const labels: Record<string, string> = {
-    unpaid: "Belum dibayar",
-    belum_bayar: "Belum dibayar",
-    pending_verification: "Menunggu verifikasi pembayaran",
-    menunggu_verifikasi: "Menunggu verifikasi pembayaran",
-    partially_paid: "Dibayar sebagian",
-    paid: "Lunas",
-    terverifikasi: "Lunas",
-    rejected: "Bukti pembayaran ditolak",
-    ditolak: "Bukti pembayaran ditolak",
-    expired: "Pembayaran kedaluwarsa",
-    refunded: "Dikembalikan"
-  };
-  return labels[status] ?? "Sedang diperiksa";
+  return getPaymentStatusLabel(status, "customer");
 }
 
 export function trackingNextStep(input: {
@@ -145,16 +112,16 @@ export function trackingNextStep(input: {
   if (["cancelled", "expired"].includes(input.status)) {
     return "Hubungi DEBRODER bila Anda ingin membuat atau mengaktifkan kembali pesanan.";
   }
-  if (input.status === "pending_confirmation") return "Verifikasi nomor WhatsApp melalui petunjuk pada konfirmasi order.";
-  if (input.status === "awaiting_shipping_quote") return "Tunggu Admin menetapkan kurir dan ongkir.";
-  if (input.status === "awaiting_customer_approval") return "Buka tautan konfirmasi order dan setujui total akhir setelah memeriksa ongkir.";
-  if (input.status === "under_review") return "Tunggu Admin memeriksa desain, layanan, lead time, dan harga Custom Project pada order yang sama.";
-  if (["unpaid", "belum_bayar", "rejected", "ditolak"].includes(input.paymentStatus)) return "Selesaikan atau unggah ulang pembayaran pada tautan pembayaran order yang sama.";
-  if (["pending_verification", "menunggu_verifikasi"].includes(input.paymentStatus)) return "Tunggu Admin memeriksa bukti pembayaran Anda.";
-  if (input.status === "ready_for_pickup" || input.status === "siap_diambil") return "Datang ke lokasi pickup dengan membawa nomor order dan nomor WhatsApp yang digunakan saat checkout.";
+  if (input.status === "pending_confirmation") return "Ikuti petunjuk pada halaman konfirmasi untuk memverifikasi nomor WhatsApp Anda.";
+  if (input.status === "awaiting_shipping_quote") return "Tim DEBRODER sedang menetapkan kurir dan ongkir. Silakan periksa kembali halaman ini nanti.";
+  if (input.status === "awaiting_customer_approval") return "Buka halaman konfirmasi pesanan, periksa ongkir dan total akhir, lalu berikan persetujuan Anda.";
+  if (input.status === "under_review") return "Tim DEBRODER sedang memeriksa desain, layanan, waktu pengerjaan, dan harga pesanan custom Anda.";
+  if (["unpaid", "belum_bayar", "rejected", "ditolak"].includes(input.paymentStatus)) return "Selesaikan atau unggah ulang pembayaran melalui tautan pembayaran pesanan yang sama.";
+  if (["pending_verification", "menunggu_verifikasi"].includes(input.paymentStatus)) return "Tim DEBRODER sedang memeriksa bukti pembayaran Anda.";
+  if (input.status === "ready_for_pickup" || input.status === "siap_diambil") return "Datang ke lokasi pengambilan dengan membawa nomor pesanan dan nomor WhatsApp yang digunakan saat checkout.";
   if (input.status === "shipped") return input.trackingNumber ? "Gunakan nomor resi untuk memantau paket sampai diterima." : "Pesanan sedang dikirim. Nomor resi akan ditampilkan setelah tersedia.";
   return input.fulfillmentMethod === "pickup"
-    ? "Tunggu pembaruan kesiapan pickup dari DEBRODER."
+    ? "Tunggu pemberitahuan bahwa pesanan siap diambil di toko."
     : "Tunggu pembaruan proses dan pengiriman dari DEBRODER.";
 }
 

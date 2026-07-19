@@ -7,6 +7,7 @@ import {
   canCreateRepeatOrder,
   type RepeatOrderPreview
 } from "@/lib/repeat-orders";
+import { getOrderStatusLabel } from "@/lib/ui-language";
 
 function money(value: number | null, currency = "IDR") {
   if (value === null) return "Perlu pemeriksaan";
@@ -61,7 +62,7 @@ export function RepeatOrderDialog({
       setRole(payload.role);
       setIdempotencyKey(createIdempotencyKey(orderId));
     } catch (loadError) {
-      setError(loadError instanceof Error ? loadError.message : "Preview Repeat Order gagal dimuat.");
+      setError(loadError instanceof Error ? loadError.message : "Pratinjau pesan ulang belum dapat dimuat.");
     } finally {
       setLoading(false);
     }
@@ -136,7 +137,7 @@ export function RepeatOrderDialog({
                 <p className="text-xs font-semibold uppercase tracking-[0.18em] text-brand-green">
                   Phase 14 · Repeat Order
                 </p>
-                <h2 className="mt-2 text-2xl font-semibold">Konfirmasi Repeat Order</h2>
+                <h2 className="mt-2 text-2xl font-semibold">Konfirmasi Pesan Ulang</h2>
                 <p className="mt-2 max-w-2xl text-sm leading-6 text-brand-charcoal/65">
                   Sistem membuat quotation baru yang terhubung ke order lama. Produk memakai harga aktif bila dapat dihitung; layanan, stok berubah, dan desain tetap wajib diperiksa sebelum menjadi pesanan resmi.
                 </p>
@@ -166,9 +167,9 @@ export function RepeatOrderDialog({
 
             {success ? (
               <div className="mt-6 border border-emerald-200 bg-emerald-50 p-5">
-                <h3 className="font-semibold text-emerald-900">Repeat Order berhasil dibuat</h3>
+                <h3 className="font-semibold text-emerald-900">Pesan ulang berhasil dibuat</h3>
                 <p className="mt-2 text-sm text-emerald-800">
-                  Quotation baru: <strong>{success.number}</strong>. Order lama tidak berubah.
+                  Penawaran baru: <strong>{success.number}</strong>. Pesanan lama tidak berubah.
                 </p>
                 {success.warning ? (
                   <p className="mt-2 text-sm text-amber-800">{success.warning}</p>
@@ -178,7 +179,7 @@ export function RepeatOrderDialog({
                     href={`/admin/orders/quotations/${success.id}`}
                     className="inline-flex min-h-10 items-center rounded-full bg-brand-green px-5 text-sm font-semibold text-white"
                   >
-                    Buka Quotation Baru
+                    Buka Penawaran Baru
                   </Link>
                   <button
                     type="button"
@@ -196,7 +197,7 @@ export function RepeatOrderDialog({
                 <section className="grid gap-4 border border-brand-softGray bg-brand-offWhite p-5 sm:grid-cols-2 lg:grid-cols-4">
                   <Data label="Order sumber" value={preview.source.order_number} />
                   <Data label="Pelanggan" value={preview.source.customer_name} />
-                  <Data label="Status" value={preview.source.status} />
+                  <Data label="Status" value={getOrderStatusLabel(preview.source.status)} />
                   <Data label="Repeat sebelumnya" value={String(preview.history.length)} />
                 </section>
 
@@ -302,7 +303,7 @@ export function RepeatOrderDialog({
                       disabled={working || reason.trim().length < 3}
                       className="inline-flex min-h-11 items-center rounded-full bg-brand-green px-6 text-sm font-semibold text-white disabled:cursor-not-allowed disabled:opacity-45"
                     >
-                      {working ? "Membuat Repeat Order..." : "Konfirmasi & Buat Quotation Baru"}
+                      {working ? "Membuat pesanan ulang..." : "Konfirmasi & Buat Penawaran Baru"}
                     </button>
                   ) : null}
                 </div>

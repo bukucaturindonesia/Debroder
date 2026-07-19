@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { OrderConfirmationClient } from "@/components/checkout/OrderConfirmationClient";
 
 export const metadata: Metadata = {
-  title: "Konfirmasi Order | DEBRODER",
+  title: "Konfirmasi Pesanan | DEBRODER",
   robots: { index: false, follow: false },
   referrer: "no-referrer"
 };

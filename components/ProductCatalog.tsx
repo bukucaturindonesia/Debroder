@@ -446,7 +446,7 @@ export function ProductCatalog({
         >
           <option value="all">Semua ketersediaan</option>
           <option value="ready-stock">Ready Stock</option>
-          <option value="custom">Custom Order</option>
+          <option value="custom">Pesanan Custom</option>
           <option value="hybrid">Ready Stock & Custom</option>
         </select>
       ) : null}

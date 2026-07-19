@@ -463,14 +463,14 @@ export function ProductDetailClient({
 
       if (!response.ok || !payload.upload) {
         setNotice(
-          payload.error ?? "Upload desain gagal. Coba lagi.",
+          "File desain belum dapat diunggah. Periksa jenis dan ukuran file lalu coba lagi.",
           response.status === 503 ? "warning" : "danger"
         );
         return;
       }
 
       setUploadRefs((current) => [...current, payload.upload as CustomerUploadRef]);
-      setNotice("Desain tersimpan private.", null);
+      setNotice("File desain berhasil disimpan.", null);
     } finally {
       setIsUploading(false);
     }
@@ -493,7 +493,7 @@ export function ProductDetailClient({
 
     if (!response.ok) {
       const payload = (await response.json()) as { error?: string };
-      setNotice(payload.error ?? "File gagal dihapus.", "danger");
+      setNotice("File belum dapat dihapus. Coba lagi.", "danger");
       return;
     }
 
@@ -518,9 +518,9 @@ export function ProductDetailClient({
 
     try {
       await window.navigator.clipboard.writeText(nextUrl);
-      setNotice("Link konfigurasi disalin.", null);
+      setNotice("Tautan konfigurasi disalin.", null);
     } catch {
-      setNotice("Link konfigurasi siap.", null);
+      setNotice("Tautan konfigurasi siap.", null);
     }
   }
 
@@ -555,7 +555,7 @@ export function ProductDetailClient({
 
       if (!response.ok) {
         setNotice(
-          payload.error ?? "Draft penawaran gagal disimpan.",
+          "Draf penawaran belum dapat disimpan. Periksa pilihan Anda lalu coba lagi.",
           response.status === 503 ? "warning" : "danger"
         );
         return;
@@ -891,7 +891,7 @@ export function ProductDetailClient({
               onChange={(event) => void uploadDesign(event.currentTarget.files?.[0])}
               type="file"
             />
-            {isUploading ? <p className="muted">Mengupload...</p> : null}
+            {isUploading ? <p className="muted">Mengunggah...</p> : null}
             {uploadRefs.length > 0 ? (
               <div className="upload-list">
                 {uploadRefs.map((upload) => (
@@ -899,7 +899,7 @@ export function ProductDetailClient({
                     {upload.file_name}
                     {upload.signed_url ? (
                       <a href={upload.signed_url} rel="noreferrer" target="_blank">
-                        Preview
+                        Pratinjau
                       </a>
                     ) : null}
                     <button
@@ -1071,7 +1071,7 @@ export function ProductDetailClient({
 
           {shareUrl ? (
             <input
-              aria-label="Link konfigurasi"
+              aria-label="Tautan konfigurasi"
               className="text-input"
               readOnly
               value={shareUrl}

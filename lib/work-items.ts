@@ -64,7 +64,7 @@ export const WORK_ITEM_STATUS_LABELS: Record<WorkItemStatus, string> = {
   ready: "Siap Dikerjakan",
   in_progress: "Sedang Dikerjakan",
   on_hold: "Ditahan",
-  awaiting_qc: "Menunggu QC",
+  awaiting_qc: "Menunggu Pemeriksaan Kualitas",
   rework: "Perbaikan",
   completed: "Selesai",
   cancelled: "Dibatalkan"
@@ -132,10 +132,10 @@ export function getWorkItemTransitionLabel(status: WorkItemStatus) {
     draft: "Kembalikan ke Draft",
     in_progress: "Mulai / Lanjutkan Pekerjaan",
     on_hold: "Tahan Pekerjaan",
-    awaiting_qc: "Kirim ke Quality Control",
+    awaiting_qc: "Kirim ke Pemeriksaan Kualitas",
     rework: "Kembalikan untuk Perbaikan",
     completed: "Selesaikan",
-    cancelled: "Batalkan Work Item"
+    cancelled: "Batalkan Pekerjaan"
   }[status];
 }
 

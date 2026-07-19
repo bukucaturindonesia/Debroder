@@ -77,7 +77,7 @@ export function GuestOrderTracking({
         body: JSON.stringify(credentials)
       });
       const payload = await response.json() as TrackingPayload & { error?: string };
-      if (!response.ok) throw new Error(payload.error || "Pesanan belum dapat dilacak.");
+      if (!response.ok) throw new Error("Pesanan belum dapat dilacak. Periksa nomor pesanan dan data penerima lalu coba lagi.");
       setData(payload);
     } catch (reason) {
       setData(null);
@@ -100,15 +100,15 @@ export function GuestOrderTracking({
   return (
     <section className="bg-[#f6f5f0] px-4 py-10 sm:py-16">
       <div className="mx-auto max-w-6xl">
-        <p className="text-xs font-semibold uppercase tracking-[0.18em] text-black/45">Guest Order Tracking</p>
+        <p className="text-xs font-semibold uppercase tracking-[0.18em] text-black/45">Pelacakan Pesanan</p>
         <h1 className="mt-3 text-3xl font-semibold sm:text-5xl">Lacak pesanan tanpa login</h1>
         <p className="mt-3 max-w-2xl text-sm leading-7 text-black/60">
-          Gunakan tautan tracking aman, atau masukkan nomor order bersama nomor WhatsApp yang dipakai saat checkout.
+          Gunakan tautan pelacakan aman, atau masukkan nomor pesanan bersama nomor WhatsApp yang dipakai saat checkout.
         </p>
 
         {(!token || error) ? (
           <form onSubmit={submit} className="mt-8 grid gap-4 rounded-[28px] bg-white p-5 sm:grid-cols-[1fr_1fr_auto] sm:p-7">
-            <Field label="Nomor order">
+            <Field label="Nomor pesanan">
               <input
                 value={orderNumber}
                 onChange={(event) => setOrderNumber(event.target.value.toUpperCase())}
@@ -134,14 +134,14 @@ export function GuestOrderTracking({
               disabled={loading}
               className="min-h-12 self-end rounded-full bg-black px-7 text-sm font-semibold text-white hover:bg-black/75 disabled:opacity-50"
             >
-              {loading ? "Memeriksa..." : "Lacak Order"}
+              {loading ? "Memeriksa..." : "Lacak Pesanan"}
             </button>
           </form>
         ) : null}
 
         {error ? (
           <div role="alert" className="mt-5 border border-red-200 bg-red-50 p-4 text-sm text-red-800">
-            <p className="font-semibold">Order belum dapat dibuka</p>
+            <p className="font-semibold">Pesanan belum dapat dibuka</p>
             <p className="mt-1 leading-6">{error}</p>
           </div>
         ) : null}
@@ -163,7 +163,7 @@ function TrackingDetail({ data }: { data: TrackingPayload }) {
         <section className="rounded-[28px] bg-white p-6 sm:p-8">
           <div className="flex flex-wrap items-start justify-between gap-4">
             <div>
-              <p className="text-xs font-semibold uppercase tracking-[0.16em] text-black/45">Nomor order</p>
+              <p className="text-xs font-semibold uppercase tracking-[0.16em] text-black/45">Nomor pesanan</p>
               <h2 className="mt-2 text-2xl font-semibold sm:text-3xl">{order.orderNumber}</h2>
               <p className="mt-2 text-sm text-black/55">{dateTime(order.createdAt)} · {order.maskedPhone}</p>
             </div>
@@ -172,12 +172,12 @@ function TrackingDetail({ data }: { data: TrackingPayload }) {
 
           <div className="mt-7 grid gap-4 sm:grid-cols-2">
             <Info label="Status pembayaran" value={order.paymentStatusLabel} />
-            <Info label="Metode fulfillment" value={order.fulfillmentMethod === "pickup" ? "Pickup Toko" : "Kurir Eksternal"} />
+            <Info label="Metode pengiriman" value={order.fulfillmentMethod === "pickup" ? "Ambil di Toko" : "Kurir Eksternal"} />
             <Info label="Sudah dibayar" value={formatRupiah(order.amountPaid)} />
             <Info label="Sisa pembayaran" value={pricingIsFinal ? formatRupiah(order.remainingBalance) : "Belum berlaku sampai harga final"} />
             {order.courier ? <Info label="Kurir" value={order.courier} /> : null}
             {order.trackingNumber ? <Info label="Nomor resi" value={order.trackingNumber} /> : null}
-            {order.pickupStatus ? <Info label="Status pickup" value={readable(order.pickupStatus)} /> : null}
+            {order.pickupStatus ? <Info label="Status pengambilan" value={readable(order.pickupStatus)} /> : null}
             {order.maskedAddress ? <Info label="Alamat terlindungi" value={order.maskedAddress} /> : null}
           </div>
 
