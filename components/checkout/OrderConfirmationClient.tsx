@@ -98,6 +98,7 @@ export function OrderConfirmationClient({ token }: { token: string }) {
   const { order } = data;
   const pricingIsFinal = (order.pricingStatus ?? "final") === "final";
   const productBaseSubtotal = data.items.reduce((sum, item) => sum + Number(item.subtotal || 0), 0);
+  const customQuotePreview = customerQuotePreview(data.customQuote?.pricing_components);
   const whatsappText = confirmationCode
     ? `Halo DEBRODER, saya ingin verifikasi order ${order.orderNumber}. Kode konfirmasi: ${confirmationCode}. Nomor WhatsApp saya harus dicocokkan dengan data checkout.`
     : `Halo DEBRODER, saya memerlukan bantuan verifikasi order ${order.orderNumber}.`;
@@ -147,6 +148,8 @@ export function OrderConfirmationClient({ token }: { token: string }) {
               <div className="mt-5 border border-blue-200 bg-blue-50 p-5 text-sm">
                 <p className="font-semibold">Penawaran Custom v{data.customQuote.version_number}</p>
                 <p className="mt-2 leading-6">Periksa produk, varian, jumlah, desain, layanan, dan total aktif. Berlaku sampai {formatDate(data.customQuote.valid_until)}.</p>
+                {customQuotePreview.lines.length > 0 ? <div className="mt-4 divide-y divide-blue-200 border-y border-blue-200">{customQuotePreview.lines.map((line) => <div key={line.id} className="flex justify-between gap-4 py-3"><div><p className="font-semibold">{line.label}</p><p className="mt-1 text-xs text-black/55">{line.kind === "PRODUCT_BASE" ? "Produk dasar" : line.kind} · {line.quantity} {line.unit}</p></div><strong className="shrink-0">{formatRupiah(line.subtotal)}</strong></div>)}</div> : null}
+                {customQuotePreview.customerNote ? <div className="mt-4 border border-blue-200 bg-white p-3"><p className="text-xs font-semibold uppercase tracking-[0.12em] text-black/45">Catatan penawaran</p><p className="mt-2 leading-6">{customQuotePreview.customerNote}</p></div> : null}
                 <div className="mt-4 flex items-center justify-between border-y border-blue-200 py-3"><span>Total penawaran</span><strong>{formatRupiah(Number(data.customQuote.quoted_total))}</strong></div>
                 <label className="mt-4 flex items-start gap-3 leading-6"><input type="checkbox" checked={acknowledged} onChange={(event) => setAcknowledged(event.target.checked)} className="mt-1 h-4 w-4"/><span>Saya menyetujui versi penawaran, desain, rincian, dan total aktif ini.</span></label>
                 <button type="button" disabled={approving || !acknowledged} onClick={() => void decideCustomQuote("approve_custom_quote")} className="mt-4 min-h-11 rounded-full bg-black px-5 font-semibold text-white hover:bg-black/75 disabled:opacity-50">{approving ? "Menyimpan keputusan..." : "Setujui Penawaran"}</button>
@@ -178,4 +181,33 @@ export function OrderConfirmationClient({ token }: { token: string }) {
 
 function Shell({ children }: { children: React.ReactNode }) { return <div className="mx-auto max-w-xl rounded-[28px] bg-white p-8">{children}</div>; }
 function Info({ children }: { children: React.ReactNode }) { return <div className="mt-5 border border-black/10 bg-[#f8f8f4] p-5 text-sm leading-6">{children}</div>; }
+
+function customerQuotePreview(value: unknown) {
+  const record = value && typeof value === "object" && !Array.isArray(value) ? value as Record<string, unknown> : null;
+  const productLines = Array.isArray(record?.product_lines) ? record.product_lines : [];
+  const editableLines = Array.isArray(record?.editable_lines) ? record.editable_lines : [];
+  const lines = [...productLines, ...editableLines].flatMap((candidate, index) => {
+    const line = candidate && typeof candidate === "object" && !Array.isArray(candidate) ? candidate as Record<string, unknown> : null;
+    const quantity = integerQuoteValue(line?.quantity);
+    const subtotal = integerQuoteValue(line?.subtotal);
+    if (!line || quantity === null || subtotal === null) return [];
+    return [{
+      id: typeof line.id === "string" ? line.id : `quote-line-${index}`,
+      kind: typeof line.kind === "string" ? line.kind : "OTHER",
+      label: typeof line.label === "string" && line.label.trim() ? line.label : "Komponen harga",
+      quantity,
+      unit: typeof line.unit === "string" && line.unit.trim() ? line.unit : "unit",
+      subtotal
+    }];
+  });
+  return {
+    lines,
+    customerNote: typeof record?.customer_note === "string" ? record.customer_note.trim() : ""
+  };
+}
+
+function integerQuoteValue(value: unknown) {
+  const numeric = typeof value === "number" ? value : typeof value === "string" && value.trim() ? Number(value) : Number.NaN;
+  return Number.isSafeInteger(numeric) ? numeric : null;
+}
 function formatDate(value: string) { return new Intl.DateTimeFormat("id-ID", { dateStyle: "medium", timeStyle: "short", timeZone: "Asia/Makassar" }).format(new Date(value)); }

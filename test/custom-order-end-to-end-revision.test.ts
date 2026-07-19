@@ -35,8 +35,8 @@ describe("Custom Order end-to-end revision", () => {
     const workspace=read("components/admin/CustomOrderOperationalWorkspace.tsx");
     const confirmation=read("components/checkout/OrderConfirmationClient.tsx");
     expect(workspace).toContain("Pengecekan Akhir");
-    expect(workspace).toContain("future");
-    expect(workspace).toContain("Konfirmasi & Kirim ke Pelanggan");
+    expect(workspace).toContain("stage.index");
+    expect(workspace).toContain("Konfirmasi Harga & Kirim ke Pelanggan");
     expect(confirmation).toContain("Setujui Penawaran");
     expect(confirmation).toContain("request_custom_revision");
   });
