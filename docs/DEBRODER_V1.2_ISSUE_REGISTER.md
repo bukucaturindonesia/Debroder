@@ -128,3 +128,21 @@
 - Status: OPEN / SOURCE FIXED
 - Detail: The active `/checkout` route imported the canonical CheckoutClient, but that canonical file remained legacy while structured UI was hidden in duplicate `CheckoutClientV2` behind a path alias. The structured implementation is canonical and the duplicate/alias are removed. Admin fulfillment reads the same immutable snapshot, and the additive snapshot refinement records the shipping method. Browser verification must confirm selectors, confirmation gating, pickup behavior, state preservation, mobile layout, server rejection of fake hierarchy, and snapshot output.
 
+
+### V12-031 — Admin guided workflow and human-readable customer journey
+
+- Severity: P0 usability / operational integrity
+- Status: SOURCE FIXED / PREVIEW VERIFICATION REQUIRED
+- Detail: Admin sebelumnya dapat melihat aksi kontradiktif atau tidak mengetahui langkah berikutnya, sementara pelanggan sudah menampilkan tahap yang lebih maju. Source terbaru memakai canonical stage pada satu guided cockpit, satu primary action, ordered journey, terminal-action suppression, Task Inbox deep-link, dan full customer journey sejak checkout. Verify every Ready Stock/Custom transition in Preview and confirm the stale action disappears after mutation.
+
+### V12-032 — Admin responsive clipping and zoom-out dependency
+
+- Severity: P0 usability
+- Status: SOURCE FIXED / BROWSER MATRIX REQUIRED
+- Detail: Beberapa halaman Admin memotong teks/kolom pada desktop dan mobile sampai browser harus di-zoom out. Global Admin shell, header action composition, min-width/wrapping, media/form constraints, and local table scrolling are revised. Verify at 360, 390, 430, 768, 1024, 1280, 1440, and 1600 px with long order numbers, customer names, task titles, and payment descriptions.
+
+### V12-033 — Ready Stock internal fulfillment number requires automatic handoff
+
+- Severity: P0 workflow
+- Status: SOURCE IMPLEMENTED / DATABASE PREVIEW REQUIRED
+- Detail: Admin should never create a DEBRODER internal shipment document manually. Migration `20260720030000_human_centered_order_experience_p0.sql` creates it automatically and idempotently when Ready Stock prerequisites are met, excludes Custom/terminal/active-cancellation orders, and preserves courier AWB as a separate field. Apply after Phase 4–13 in Preview and verify idempotency, permissions, backfill, cancellation blocking, and no Custom false positives before production.

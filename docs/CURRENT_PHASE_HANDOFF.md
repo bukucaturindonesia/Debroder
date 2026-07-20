@@ -281,3 +281,18 @@ Status: **IMPLEMENTED, STATIC AUDIT ONLY / LOCAL ENVIRONMENT BLOCKED**.
 - Admin fulfillment reads and displays the immutable snapshot used by the order.
 - Browser, remote SQL runtime, TypeScript, lint, tests, and production build are not claimed verified in this environment.
 
+
+---
+
+## 2026-07-20 — Human-Centered Order Experience P0
+
+Status: **SOURCE IMPLEMENTED / STATICALLY VERIFIED / PREVIEW REQUIRED**.
+
+- Phase 0–13 tidak diulang. Mesin order, payment, production, QC, fulfillment, cancellation/refund, task, SLA, outbox, dan reconciliation tetap dipertahankan.
+- Detail order Admin sekarang memiliki satu cockpit `AdminGuidedOrderFlow`: tahap aktif, penanggung jawab, hambatan, satu tindakan utama, tahap berikutnya, dan seluruh urutan proses terlihat tanpa membuka beberapa workspace paralel.
+- Pelanggan melihat perjalanan lengkap sejak checkout pada confirmation, payment, dan tracking. Cancelled/expired menampilkan tahap terminal dan seluruh tahap sesudahnya sebagai `Tidak Dilanjutkan`.
+- Fulfillment memakai satu tindakan normal per status. Exception tetap tersedia secara eksplisit sebagai kontrol sekunder. Nomor internal diberi label `Nomor Pengiriman DEBRODER`; resi kurir tetap data resmi kurir.
+- Task Inbox menggunakan `Kerjakan Sekarang` dan deep-link ke workflow/action yang benar. Payment modal merespons perubahan hash setelah mount.
+- Admin responsive safety diperluas: content/grid `min-width:0`, wrapping, responsive header actions, media/form bounds, serta local table scrolling sampai 1279 px agar halaman tidak memerlukan zoom-out.
+- Migration `20260720030000_human_centered_order_experience_p0.sql` membuat Ready Stock fulfillment/internal number otomatis dan idempotent, menolak Custom, terminal order, dan pembatalan aktif, serta melakukan safe backfill melalui helper yang sama.
+- Schema production diperiksa read-only; migration belum diterapkan. Full dependency typecheck/lint/Vitest/build, PostgreSQL compilation, migration Preview, dan browser E2E tetap menjadi gate owner.

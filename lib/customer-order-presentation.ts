@@ -1,3 +1,4 @@
+import { buildOrderJourney, type OrderJourneyStep } from "@/lib/order-journey";
 import {
   resolveOrderActiveStageFromServer,
   type OrderActiveStageInput,
@@ -34,6 +35,8 @@ export type CustomerOrderPresentation = {
   action: CustomerOrderAction;
   blockingReason: string | null;
   warning: string | null;
+  journey: OrderJourneyStep[];
+  activeStage: OrderActiveStageResolution;
 };
 
 // Canonical payment-review title remains “Pembayaran sedang diperiksa” for customer-facing consistency.
@@ -53,7 +56,9 @@ export function resolveCustomerOrderPresentation(
     nextStage: stage.nextStage,
     action: customerAction(stage),
     blockingReason: stage.blockingReason,
-    warning: stage.warning
+    warning: stage.warning,
+    journey: buildOrderJourney({ stage, fulfillmentMethod: input.fulfillmentMethod }),
+    activeStage: stage
   };
 }
 

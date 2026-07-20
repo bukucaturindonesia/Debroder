@@ -9,7 +9,7 @@
   inset: 0 auto 0 0;
   z-index: 40;
   display: none;
-  width: 280px;
+  width: 256px;
   border-right: 1px solid rgba(21, 21, 21, 0.12);
 }
 
@@ -19,8 +19,12 @@
 }
 
 .admin-shell-content {
+  width: 100%;
   min-width: 0;
+  max-width: 1600px;
+  margin-inline: auto;
   padding: 16px;
+  box-sizing: border-box;
 }
 
 .admin-shell-mobile-layer {
@@ -132,7 +136,7 @@
   }
 
   .admin-shell-main {
-    margin-left: 280px;
+    margin-left: 256px;
   }
 
   .admin-shell-content {
@@ -184,5 +188,51 @@
 @media (min-width: 1024px) {
   .admin-shell-read-only-banner {
     padding-inline: 32px;
+  }
+}
+
+/* Human-centered responsive safety: content must remain readable without browser zoom. */
+.admin-shell-content,
+.admin-shell-content * {
+  box-sizing: border-box;
+}
+
+.admin-shell-content > *,
+.admin-shell-content :where(main, section, article, form, fieldset, div, dl, dd, nav, header) {
+  min-width: 0;
+}
+
+.admin-shell-content :where(h1, h2, h3, h4, p, dt, dd, label, a, button, span) {
+  overflow-wrap: anywhere;
+}
+
+.admin-shell-content :where(input, select, textarea, button) {
+  max-width: 100%;
+}
+
+.admin-shell-content :where(img, video, canvas, svg) {
+  max-width: 100%;
+}
+
+@media (max-width: 1279px) {
+  .admin-shell-content table {
+    display: block;
+    width: 100%;
+    max-width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+}
+
+@media (max-width: 639px) {
+  .admin-shell-content :where(button, [role="button"]) {
+    white-space: normal;
+  }
+}
+
+@media (min-width: 1024px) and (max-width: 1279px) {
+  .admin-shell-content {
+    padding: 24px;
   }
 }

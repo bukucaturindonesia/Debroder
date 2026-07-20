@@ -38,6 +38,8 @@ type OrderRow = {
   customer_phone: string;
   status: string;
   delivery_method: string;
+  payment_method: string | null;
+  payment_status: string;
   shipping_address: string;
   custom_project_snapshot: unknown;
 };
@@ -113,6 +115,49 @@ function toLocalInput(value: string | null) {
   const date = new Date(value);
   const offset = date.getTimezoneOffset();
   return new Date(date.getTime() - offset * 60_000).toISOString().slice(0, 16);
+}
+
+type GuidedFulfillmentAction =
+  | { kind: "transition"; target: FulfillmentStatus; label: string; instruction: string; next: string }
+  | { kind: "final_check"; label: string; instruction: string; next: string }
+  | { kind: "edit_tracking"; label: string; instruction: string; next: string }
+  | { kind: "pickup_cash"; label: string; instruction: string; next: string }
+  | null;
+
+function resolveGuidedFulfillmentAction(record: FulfillmentRow, order: OrderRow | null): GuidedFulfillmentAction {
+  if (record.archived_at || ["delivered", "picked_up", "cancelled"].includes(record.status)) return null;
+  if (record.status === "preparing") {
+    return { kind: "transition", target: "packing", label: "Persiapan Selesai, Mulai Pengemasan", instruction: "Pastikan seluruh item, ukuran, warna, dan jumlah sudah tersedia. Setelah siap, lanjutkan ke pengemasan.", next: "Pengemasan" };
+  }
+  if (record.status === "packing" && !record.final_verified_at) {
+    return { kind: "final_check", label: "Lakukan Pengecekan Akhir", instruction: "Selesaikan checklist isi paket, penerima, jumlah paket, dan kondisi kemasan sebelum penyerahan.", next: record.method === "pickup" ? "Siap Diambil" : "Siap Dikirim" };
+  }
+  if (record.status === "packing" && record.final_verified_at) {
+    const target = record.method === "pickup" ? "ready_for_pickup" : "ready_to_ship";
+    return { kind: "transition", target, label: record.method === "pickup" ? "Tandai Barang Siap Diambil" : "Tandai Paket Siap Dikirim", instruction: "Pengecekan akhir sudah selesai. Konfirmasi bahwa paket siap masuk ke tahap penyerahan.", next: record.method === "pickup" ? "Serah Terima di Toko" : "Pilih Kurir dan Masukkan Resi" };
+  }
+  if (record.status === "ready_to_ship" && (!record.courier || !record.tracking_number)) {
+    return { kind: "edit_tracking", label: "Isi Kurir & Resi Resmi", instruction: "Pilih kurir dan masukkan atau pindai nomor resi resmi yang diterbitkan kurir. Nomor Pengiriman DEBRODER bukan nomor resi kurir.", next: "Penyerahan ke Kurir" };
+  }
+  if (record.status === "ready_to_ship") {
+    return { kind: "transition", target: "shipped", label: "Tandai Diserahkan ke Kurir", instruction: `Pastikan paket benar-benar telah diserahkan kepada ${record.courier || "kurir"} dengan resi ${record.tracking_number || "yang tersimpan"}.`, next: "Dalam Perjalanan" };
+  }
+  if (record.status === "shipped") {
+    return { kind: "transition", target: "in_transit", label: "Tandai Dalam Perjalanan", instruction: "Perbarui setelah kurir mulai membawa paket menuju pelanggan.", next: "Pesanan Diterima" };
+  }
+  if (record.status === "in_transit") {
+    return { kind: "transition", target: "delivered", label: "Konfirmasi Pesanan Diterima", instruction: "Gunakan setelah status kurir atau bukti serah terima memastikan paket telah diterima.", next: "Selesai" };
+  }
+  if (record.status === "ready_for_pickup" && order?.payment_method === "pay_at_store" && !["paid", "terverifikasi"].includes(order.payment_status)) {
+    return { kind: "pickup_cash", label: "Terima Pembayaran & Serahkan Pesanan", instruction: "Catat penerimaan pembayaran tunai dan serah terima dalam satu tindakan atomik.", next: "Selesai" };
+  }
+  if (record.status === "ready_for_pickup") {
+    return { kind: "transition", target: "picked_up", label: "Konfirmasi Pesanan Sudah Diambil", instruction: "Pastikan identitas/kode pengambilan cocok dan barang benar-benar telah diserahkan kepada pelanggan.", next: "Selesai" };
+  }
+  if (record.status === "problem") {
+    return { kind: "transition", target: "preparing", label: "Kembalikan ke Persiapan", instruction: "Masalah harus dicatat dan diselesaikan. Kembalikan proses ke tahap aman sebelum melanjutkan.", next: "Persiapan Barang" };
+  }
+  return null;
 }
 
 export function FulfillmentDetailAdmin() {
@@ -218,7 +263,7 @@ export function FulfillmentDetailAdmin() {
         : Promise.resolve({ data: [], error: null }),
       supabase
         .from("orders")
-        .select("id,order_number,customer_name,company_name,customer_phone,status,delivery_method,shipping_address,custom_project_snapshot")
+        .select("id,order_number,customer_name,company_name,customer_phone,status,delivery_method,payment_method,payment_status,shipping_address,custom_project_snapshot")
         .eq("id", row.order_id)
         .maybeSingle(),
       supabase.from("profiles").select("id,email,role"),
@@ -344,7 +389,14 @@ export function FulfillmentDetailAdmin() {
     });
     setWorking(false);
     if (result.error) {
-      setNotice({ type: "error", text: "Status pengiriman belum dapat diperbarui. Coba lagi." });
+      const stale = /status|berubah|admin lain|transisi|tidak valid/i.test(result.error.message);
+      setNotice({
+        type: "error",
+        text: stale
+          ? `Tahap pesanan sudah berubah atau tindakan ini tidak lagi tersedia. Data terbaru akan dimuat. (${result.error.message})`
+          : `Status penyerahan belum dapat diperbarui: ${result.error.message}`
+      });
+      await loadData();
       return;
     }
     setTransitionTarget(null);
@@ -352,6 +404,44 @@ export function FulfillmentDetailAdmin() {
     setTransitionReason("");
     setNotice({ type: "success", text: `Status diperbarui menjadi ${FULFILLMENT_STATUS_LABELS[transitionTarget]}.` });
     await loadData();
+  }
+
+  async function completePickupAtStore() {
+    if (!record || record.status !== "ready_for_pickup" || working || !canManage) return;
+    const notes = window.prompt("Catatan penerimaan pembayaran di toko:")?.trim() || "Pembayaran penuh diterima saat pengambilan";
+    const supabase = createSupabaseClient();
+    if (!supabase) return;
+    setWorking(true);
+    setNotice(null);
+    const result = await supabase.rpc("complete_ready_stock_pickup_at_store", {
+      p_fulfillment_id: record.id,
+      p_admin_notes: notes
+    });
+    setWorking(false);
+    if (result.error) {
+      setNotice({ type: "error", text: `Pembayaran dan serah terima belum dapat diselesaikan: ${result.error.message}` });
+      await loadData();
+      return;
+    }
+    setNotice({ type: "success", text: "Pembayaran tunai dan serah terima berhasil dicatat dalam satu proses." });
+    await loadData();
+  }
+
+  function runGuidedAction(action: GuidedFulfillmentAction) {
+    if (!action || working || !canManage) return;
+    if (action.kind === "transition") {
+      setTransitionTarget(action.target);
+      return;
+    }
+    if (action.kind === "final_check") {
+      document.getElementById("final-verification")?.scrollIntoView({ behavior: "smooth", block: "start" });
+      return;
+    }
+    if (action.kind === "edit_tracking") {
+      setEditOpen(true);
+      return;
+    }
+    void completePickupAtStore();
   }
 
   async function uploadProof() {
@@ -508,6 +598,11 @@ export function FulfillmentDetailAdmin() {
   const isCustomOrder = Array.isArray(order?.custom_project_snapshot) && order.custom_project_snapshot.length > 0;
   const finalChecks = finalVerificationChecks(isCustomOrder, record.method);
   const transitions = getFulfillmentTransitions(record.method, record.status).filter((target) => !(record.status === "packing" && !record.final_verified_at && ["ready_to_ship", "ready_for_pickup"].includes(target)));
+  const guidedAction = resolveGuidedFulfillmentAction(record, order);
+  const exceptionTransitions = transitions.filter((target) => {
+    if (guidedAction?.kind === "transition" && guidedAction.target === target) return false;
+    return target === "problem" || target === "cancelled" || record.status === "problem";
+  });
   const filesCanBeRemoved = !record.archived_at
     ? !["delivered", "picked_up", "cancelled"].includes(record.status)
     : canDelete && ["preparing", "cancelled"].includes(record.status);
@@ -575,7 +670,7 @@ export function FulfillmentDetailAdmin() {
           <Data label="Nomor Penerima" value={record.receiver_phone || "-"} />
           <Data label="Jadwal" value={formatFulfillmentDate(record.scheduled_at)} />
           <Data label="Kurir" value={record.courier || "-"} />
-          <Data label="Nomor Resi" value={record.tracking_number || "-"} />
+          <Data label="Nomor Resi Kurir" value={record.tracking_number || "Belum tersedia"} />
           <Data label="Dibuat" value={formatFulfillmentDate(record.created_at)} />
           <div className="sm:col-span-2 lg:col-span-3"><Data label="Tujuan / Lokasi Pickup" value={record.destination || (record.method === "pickup" ? "Ambil di toko" : "-")} /></div>
           <div className="sm:col-span-2 lg:col-span-3"><Data label="Catatan" value={record.notes || "-"} /></div>
@@ -612,36 +707,68 @@ export function FulfillmentDetailAdmin() {
           )
         ) : null}
 
-        {!record.archived_at && transitions.length > 0 ? (
-          <section className="border border-brand-softGray bg-white p-5 sm:p-7">
-            <h2 className="text-xl font-semibold">Aksi Status</h2>
-            <p className="mt-2 text-sm text-brand-charcoal/60">Perubahan status divalidasi oleh database sesuai metode pengiriman atau pickup.</p>
-            <div className="mt-5 flex flex-wrap gap-3">
-              {transitions.map((status) => (
-                <button
-                  key={status}
-                  type="button"
-                  onClick={() => setTransitionTarget(status)}
-                  disabled={!canManage || working}
-                  className={`rounded-full px-5 py-2.5 text-sm font-semibold disabled:opacity-45 ${
-                    ["problem", "cancelled"].includes(status)
-                      ? "border border-red-300 text-red-700"
-                      : "bg-brand-green text-white"
-                  }`}
-                >
-                  {getFulfillmentTransitionLabel(status)}
-                </button>
-              ))}
+        <section id="guided-action" className="scroll-mt-24 border border-brand-softGray bg-white p-5 sm:p-7">
+          <p className="text-xs font-semibold uppercase tracking-[0.14em] text-brand-charcoal/45">Alur Penyerahan Terpandu</p>
+          <div className="mt-3 grid min-w-0 gap-5 lg:grid-cols-[minmax(0,1fr)_minmax(240px,340px)] lg:items-start">
+            <div className="min-w-0">
+              <p className="text-sm font-semibold text-brand-charcoal/55">Tahap saat ini</p>
+              <h2 className="mt-1 break-words text-2xl font-semibold">{FULFILLMENT_STATUS_LABELS[record.status]}</h2>
+              <p className="mt-3 max-w-3xl text-sm leading-7 text-brand-charcoal/65">
+                {guidedAction?.instruction || (record.status === "delivered" || record.status === "picked_up"
+                  ? "Penyerahan telah selesai. Tidak ada tindakan operasional berikutnya."
+                  : record.status === "cancelled"
+                    ? "Penyerahan dibatalkan. Jangan melanjutkan proses pengemasan atau pengiriman."
+                    : "Dokumen ini tidak memiliki tindakan utama baru pada tahap sekarang.")}
+              </p>
             </div>
-          </section>
-        ) : null}
+            <div className="grid min-w-0 gap-3">
+              <Data label="Nomor Pengiriman DEBRODER" value={record.fulfillment_number} />
+              <Data label="Berikutnya" value={guidedAction?.next || "Tidak ada tindakan berikutnya"} />
+            </div>
+          </div>
+
+          {guidedAction ? (
+            <button
+              type="button"
+              onClick={() => runGuidedAction(guidedAction)}
+              disabled={!canManage || working}
+              className="mt-5 min-h-12 w-full rounded-full bg-brand-charcoal px-6 text-sm font-semibold text-white disabled:opacity-45 sm:w-auto"
+            >
+              {working ? "Memproses..." : guidedAction.label}
+            </button>
+          ) : null}
+
+          {!record.archived_at && exceptionTransitions.length > 0 ? (
+            <details className="mt-6 border-t border-brand-softGray pt-5">
+              <summary className="cursor-pointer text-sm font-semibold">Tindakan pengecualian</summary>
+              <p className="mt-2 text-xs leading-5 text-brand-charcoal/55">Gunakan hanya ketika proses normal tidak dapat dilanjutkan. Alasan dan perubahan tetap tercatat dalam audit.</p>
+              <div className="mt-4 flex min-w-0 flex-col gap-3 sm:flex-row sm:flex-wrap">
+                {exceptionTransitions.map((status) => (
+                  <button
+                    key={status}
+                    type="button"
+                    onClick={() => setTransitionTarget(status)}
+                    disabled={!canManage || working}
+                    className={`min-h-11 rounded-full px-5 text-sm font-semibold disabled:opacity-45 ${
+                      ["problem", "cancelled"].includes(status)
+                        ? "border border-red-300 text-red-700"
+                        : "border border-brand-softGray text-brand-charcoal"
+                    }`}
+                  >
+                    {getFulfillmentTransitionLabel(status)}
+                  </button>
+                ))}
+              </div>
+            </details>
+          ) : null}
+        </section>
 
         {(record.status === "packing" || record.final_verified_at) ? (
           <section id="final-verification" className="scroll-mt-24 border border-brand-softGray bg-white p-5 sm:p-7">
             <div className="flex flex-wrap items-start justify-between gap-4"><div><p className="text-xs font-semibold uppercase tracking-[0.12em] text-brand-charcoal/45">{isCustomOrder ? "PESANAN CUSTOM" : "READY STOCK"}</p><h2 className="mt-2 text-xl font-semibold">Pengecekan Akhir</h2><p className="mt-2 max-w-3xl text-sm leading-6 text-brand-charcoal/60">Bandingkan pesanan, isi paket, kondisi kemasan, dan data penerima. {isCustomOrder ? "Hasil QC dan desain aktif juga wajib cocok. " : ""}Pengiriman terkunci sampai semua barang dikonfirmasi.</p></div>{record.final_verified_at ? <span className="rounded-full bg-emerald-50 px-3 py-1 text-xs font-semibold text-brand-green">Selesai {formatFulfillmentDate(record.final_verified_at)}</span> : <span className="rounded-full bg-amber-50 px-3 py-1 text-xs font-semibold text-amber-800">Wajib diselesaikan</span>}</div>
             <div className="mt-5 grid gap-2 sm:grid-cols-2 lg:grid-cols-3">{finalChecks.map(([key, label]) => <label key={key} className="flex min-h-11 items-center gap-3 border border-brand-softGray px-3 text-sm font-semibold"><input type="checkbox" checked={Boolean(finalChecklist[key])} disabled={Boolean(record.final_verified_at) || !canManage} onChange={(event) => setFinalChecklist((current) => ({ ...current, [key]: event.target.checked }))} />{label}</label>)}</div>
             <label className="mt-5 grid gap-2 text-sm font-semibold">Catatan pengecekan akhir<textarea rows={3} value={finalNote} disabled={Boolean(record.final_verified_at) || !canManage} onChange={(event) => setFinalNote(event.target.value)} className="rounded-lg border border-brand-softGray px-4 py-3" /></label>
-            {!record.final_verified_at ? <button type="button" onClick={() => void completeFinalVerification()} disabled={working || !canManage || finalChecks.some(([key]) => !finalChecklist[key])} className="mt-5 min-h-11 rounded-full bg-brand-green px-5 text-sm font-semibold text-white disabled:opacity-45">{working ? "Menyimpan..." : "Konfirmasi Sesuai & Lanjut Kirim"}</button> : <p className="mt-5 text-sm text-brand-charcoal/60">Checklist tersimpan read-only. Perubahan detail paket/penerima pada tahap packing akan membatalkan verifikasi dan mewajibkan pemeriksaan ulang.</p>}
+            {!record.final_verified_at ? <button type="button" onClick={() => void completeFinalVerification()} disabled={working || !canManage || finalChecks.some(([key]) => !finalChecklist[key])} className="mt-5 min-h-11 rounded-full bg-brand-green px-5 text-sm font-semibold text-white disabled:opacity-45">{working ? "Menyimpan..." : "Konfirmasi Pengecekan Akhir"}</button> : <p className="mt-5 text-sm text-brand-charcoal/60">Checklist tersimpan read-only. Perubahan detail paket/penerima pada tahap packing akan membatalkan verifikasi dan mewajibkan pemeriksaan ulang.</p>}
           </section>
         ) : null}
 
@@ -800,7 +927,7 @@ export function FulfillmentDetailAdmin() {
                 </label>
               ) : null}
               <InputField label="Kurir" value={editForm.courier} onChange={(value) => setEditForm({ ...editForm, courier: value })} />
-              <InputField label="Nomor resi" value={editForm.tracking_number} onChange={(value) => setEditForm({ ...editForm, tracking_number: value })} />
+              <InputField label="Nomor resi resmi kurir" value={editForm.tracking_number} onChange={(value) => setEditForm({ ...editForm, tracking_number: value })} />
               <label className="block text-sm font-semibold">
                 Jumlah paket
                 <input type="number" min={1} value={editForm.package_count} onChange={(event) => setEditForm({ ...editForm, package_count: Number(event.target.value) })} className="mt-2 min-h-11 w-full rounded-lg border border-brand-softGray px-4" />

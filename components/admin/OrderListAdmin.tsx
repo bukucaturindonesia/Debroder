@@ -117,10 +117,10 @@ export function OrderListAdmin() {
                     </p>
                   </div>
                   <Link
-                    href={`/admin/orders/${row.id}`}
+                    href={`/admin/orders/${row.id}#guided-workflow`}
                     className="inline-flex min-h-10 items-center justify-center rounded-full bg-brand-charcoal px-5 text-sm font-semibold text-white"
                   >
-                    Lihat Detail Pesanan
+                    Buka Tahap Aktif
                   </Link>
                 </div>
               </article>
