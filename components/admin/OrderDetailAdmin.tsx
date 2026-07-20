@@ -587,8 +587,22 @@ export function OrderDetailAdmin() {
           <p className="text-xs font-semibold uppercase tracking-[0.14em] text-brand-charcoal/45">Dokumen Terkait</p>
           <h2 className="mt-2 text-2xl font-semibold">Akses lanjutan berdasarkan kebutuhan</h2>
           <div className="mt-5 flex min-w-0 flex-col gap-3 sm:flex-row sm:flex-wrap">
-            {canOpenJobOrder ? <Link href={jobOrder ? `/admin/job-orders/${jobOrder.id}` : `/admin/job-orders?order=${order.id}`} className="inline-flex min-h-11 items-center justify-center rounded-full border border-brand-softGray px-5 text-sm font-semibold">Surat Perintah Kerja</Link> : null}
-            {canOpenFulfillment ? <Link href={fulfillment ? `/admin/fulfillments/${fulfillment.id}#guided-action` : `/admin/fulfillments?order=${order.id}`} className="inline-flex min-h-11 items-center justify-center rounded-full border border-brand-softGray px-5 text-sm font-semibold">Pengiriman / Pickup</Link> : null}
+            {canOpenJobOrder ? (
+              <Link
+                href={jobOrder ? `/admin/job-orders/${jobOrder.id}` : `/admin/job-orders?order=${order.id}`}
+                className="inline-flex min-h-11 items-center justify-center rounded-full border border-brand-softGray px-5 text-sm font-semibold"
+              >
+                Surat Perintah Kerja
+              </Link>
+            ) : null}
+            {canOpenFulfillment ? (
+              <Link
+                href={fulfillment ? `/admin/fulfillments/${fulfillment.id}#guided-action` : `/admin/fulfillments?order=${order.id}`}
+                className="inline-flex min-h-11 items-center justify-center rounded-full border border-brand-softGray px-5 text-sm font-semibold"
+              >
+                Pengiriman / Pickup
+              </Link>
+            ) : null}
             {order.quotation_id ? <Link href={`/admin/orders/quotations/${order.quotation_id}`} className="inline-flex min-h-11 items-center justify-center rounded-full border border-brand-softGray px-5 text-sm font-semibold">Penawaran Harga</Link> : null}
             {activeStage?.isTerminal ? <AdminOrderSectionBoundary label="Pesan Ulang"><RepeatOrderDialog orderId={order.id} /></AdminOrderSectionBoundary> : null}
           </div>

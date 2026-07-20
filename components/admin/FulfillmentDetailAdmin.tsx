@@ -137,7 +137,7 @@ function resolveGuidedFulfillmentAction(record: FulfillmentRow, order: OrderRow 
     return { kind: "transition", target, label: record.method === "pickup" ? "Tandai Barang Siap Diambil" : "Tandai Paket Siap Dikirim", instruction: "Pengecekan akhir sudah selesai. Konfirmasi bahwa paket siap masuk ke tahap penyerahan.", next: record.method === "pickup" ? "Serah Terima di Toko" : "Pilih Kurir dan Masukkan Resi" };
   }
   if (record.status === "ready_to_ship" && (!record.courier || !record.tracking_number)) {
-    return { kind: "edit_tracking", label: "Isi Kurir & Resi Resmi", instruction: "Pilih kurir dan masukkan atau pindai nomor resi resmi yang diterbitkan kurir. Nomor pengiriman DEBRODER bukan nomor resi kurir.", next: "Penyerahan ke Kurir" };
+    return { kind: "edit_tracking", label: "Isi Kurir & Resi Resmi", instruction: "Pilih kurir dan masukkan atau pindai nomor resi resmi yang diterbitkan kurir. Nomor Pengiriman DEBRODER bukan nomor resi kurir.", next: "Penyerahan ke Kurir" };
   }
   if (record.status === "ready_to_ship") {
     return { kind: "transition", target: "shipped", label: "Tandai Diserahkan ke Kurir", instruction: `Pastikan paket benar-benar telah diserahkan kepada ${record.courier || "kurir"} dengan resi ${record.tracking_number || "yang tersimpan"}.`, next: "Dalam Perjalanan" };
