@@ -1,0 +1,45 @@
+DEBRODER Batch 2 — Migration C1 Execution Package
+Mode: PREPARATION ONLY / NOT APPLIED
+
+Changed/new files in this package:
+
+1. supabase/migrations/20260721090000_p0_security_critical_legacy_containment_c1.sql
+   Forward-only C1 migration. Revokes anon/authenticated from two exact legacy RPCs,
+   preserves service_role temporarily, and removes only the anonymous order-uploads
+   INSERT policy.
+
+2. sql/01_precheck_c1_read_only.sql
+   Read-only exact object, hash, ACL, policy, bucket, and preservation pre-check.
+
+3. sql/02_postcheck_c1_read_only.sql
+   Read-only ACL, policy, function-body, bucket, object, and canonical RPC post-check.
+
+4. sql/03_emergency_rollback_c1.sql
+   Emergency rollback that restores the previous insecure ACL/policy only after
+   explicit owner approval.
+
+5. docs/BACKUP_RESTORE_CHECKLIST.md
+   Required database, ACL, policy, bucket, and storage-object recovery evidence.
+
+6. docs/STOP_CONDITIONS.md
+   Exact fail-closed conditions that prohibit apply.
+
+7. docs/OWNER_APPLY_INSTRUCTIONS.md
+   Owner-controlled sequence for B1 source, backup, C1 pre-check/apply/post-check.
+
+8. docs/DEPENDENCY_SEQUENCE.md
+   Mandatory dependency order between the B1 source package and C1 migration.
+
+9. CHANGED_FILES_ONLY_MANIFEST.txt
+   This manifest.
+
+10. PACKAGE_CONTENT_SHA256.txt
+    SHA-256 hashes for all other package files.
+
+Explicitly absent:
+- No modified legacy migration.
+- No source application files.
+- No C2/C3/C4 SQL.
+- No missing PIM RPC implementation.
+- No dump containing customer data.
+- No storage object bytes.
