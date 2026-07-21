@@ -77,15 +77,15 @@ describe("Phase 11 database and UI contract", () => {
 
   it("keeps Phase 11 discoverable from navigation and order detail", () => {
     expect(navigation).toContain('href: "/admin/fulfillments"');
-    expect(navigation).toContain("Detail Pengiriman & Pickup");
+    expect(navigation).toContain("Detail Pengiriman");
     expect(orderDetail).toContain("Pengiriman / Pickup");
   });
 
   it("ships list, detail, archive, evidence, and permanent-delete UI", () => {
     expect(listUi).toContain("Siap Diserahkan");
     expect(listUi).toContain("Gudang Arsip");
-    expect(detailUi).toContain("Aksi Status");
-    expect(detailUi).toContain("Upload Bukti");
+    expect(detailUi).toContain("Alur Penyerahan Terpandu");
+    expect(detailUi).toContain("Unggah Bukti");
     expect(detailUi).toContain("Hapus Permanen");
   });
 });

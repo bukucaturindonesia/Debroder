@@ -25,8 +25,8 @@ const paymentTracking = readFileSync(
   "components/admin/PaymentTrackingManager.tsx",
   "utf8"
 );
-const authenticatedActorAcl = readFileSync(
-  "supabase/migrations/20260713201237_payment_authenticated_actor_acl_correction.sql",
+const paymentReviewAcl = readFileSync(
+  "supabase/migrations/20260719140000_payment_verification_and_fulfillment.sql",
   "utf8"
 ).toLowerCase();
 
@@ -68,18 +68,17 @@ describe("Phase 5B payment policy", () => {
 
   it("forwards the authenticated Admin JWT to sensitive payment RPCs", () => {
     expect(paymentAuth).toContain("Authorization: `Bearer ${token}`");
-    expect(verificationRoute).toContain('actor.client.rpc("verify_order_payment"');
-    expect(verificationRoute).toContain('actor.client.rpc("reject_order_payment"');
+    expect(verificationRoute).toContain('actor.client.rpc("review_order_payment"');
+    expect(verificationRoute).not.toContain('actor.client.rpc("verify_order_payment"');
+    expect(verificationRoute).not.toContain('actor.client.rpc("reject_order_payment"');
     expect(requirementRoute).toContain('actor.client.rpc("set_order_payment_requirement"');
     expect(adjustmentRoute).toContain('actor.client.rpc("create_payment_adjustment"');
     expect(adjustmentRoute).toContain('actor.client.rpc("decide_payment_adjustment"');
-    expect(authenticatedActorAcl).toContain(
-      "revoke all on function public.verify_order_payment(uuid,text)"
-    );
-    expect(authenticatedActorAcl).toContain(
-      "grant execute on function public.verify_order_payment(uuid,text)"
-    );
-    expect(authenticatedActorAcl).toContain("to authenticated, service_role");
+    expect(paymentReviewAcl).toContain("revoke all on function public.review_order_payment");
+    expect(paymentReviewAcl).toContain("grant execute on function public.review_order_payment");
+    expect(paymentReviewAcl).toContain("to authenticated,service_role");
+    expect(paymentReviewAcl).toContain("grant execute on function public.verify_order_payment(uuid,text) to service_role");
+    expect(paymentReviewAcl).toContain("grant execute on function public.reject_order_payment(uuid,text) to service_role");
   });
 
   it("shows pending payments before secondary payment configuration", () => {

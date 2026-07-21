@@ -83,7 +83,7 @@ describe("DEBRODER final three admin roles", () => {
     expect(isAdminGuestFullViewerPath("/admin/products")).toBe(false);
 
     const labels = JSON.stringify(getNavigationGroups("admin_guest"));
-    for (const label of ["PIM V2 Dependency", "Maintenance PIM", "Pembayaran", "Laporan", "Role & Permission", "Audit Sistem"]) {
+    for (const label of ["Manajemen Produk Lanjutan", "Pemeliharaan Produk", "Pembayaran", "Laporan", "Pengguna & Hak Akses", "Riwayat Aktivitas"]) {
       expect(labels).toContain(label);
     }
   });
@@ -164,7 +164,7 @@ describe("DEBRODER final three admin roles", () => {
     for (const file of mutationApiFiles) {
       const source = readFileSync(file, "utf8");
       const terminalLegacyRoute = source.includes("status: 410");
-      const protectedRoute = /requirePhase13Actor|requirePaymentActor|requireNotificationActor|requireRepeatOrderActor|isAdminRequest/.test(source);
+      const protectedRoute = /requirePhase13Actor|requirePaymentActor|requireNotificationActor|requireRepeatOrderActor/.test(source);
       expect(terminalLegacyRoute || protectedRoute, `${file} must reject or authorize mutations`).toBe(true);
     }
     expect(productRoute).toContain("adminGuestErrorResponse(error)");

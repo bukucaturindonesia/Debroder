@@ -232,7 +232,7 @@ function CustomProjectSummary({ item }: { item: CartItem }) {
       <div className="mt-4 grid gap-3 border-t border-black/10 pt-4">
         {project.items.map((projectItem) => (
           <div key={projectItem.id}>
-            <p className="font-semibold">{projectItem.productName} · {projectItem.quantity} pcs</p>
+            <p className="font-semibold">{projectItem.productName} · {projectItem.allocations.reduce((sum, allocation) => sum + allocation.quantity, 0)} pcs</p>
             {projectItem.designPackages.flatMap((designPackage) => designPackage.services.map((service) => (
               <p key={`${designPackage.id}:${service.id}`} className="mt-1 text-xs text-black/60">
                 Layanan {service.serviceId}{service.placementId ? ` · Posisi ${service.placementId}` : ""}{service.printSizeId ? ` · Ukuran cetak ${service.printSizeId}` : ""}

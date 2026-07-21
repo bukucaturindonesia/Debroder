@@ -9,7 +9,7 @@ describe("Order confirmation payment link and pickup clarity", () => {
     expect(route).toContain("ensureAutomaticPaymentLink");
     expect(route).toContain("automatic-payment-link-v2");
     expect(route).toContain("resolvePublicPaymentLink(client, row)");
-    expect(route).toMatch(/customQuote: customQuote \?\? null,\s*payment\s*\}/);
+    expect(route).toMatch(/customQuote: customQuote \?\? null,\s*payment,\s*activeStage\s*\}/);
     expect(route).toContain("relativePaymentPath");
   });
 

@@ -1,0 +1,3 @@
+53b4387143578686d64b22a74323a7126e8102a8de9989cac07a0f65e1827249  ./app/admin/inventory-operations/page.tsx
+c2a3a7f4fc0d7054dbb148492a65915ff8db44991ceda7325648c2899b47e27e  ./components/admin/InventoryOperationsAdmin.tsx
+2162f5b0214937ce994dc706b3e4f522b89ff845f03d6131e46b8eeaabbc3d85  ./test/inventory-pickup-order-handoff.test.ts

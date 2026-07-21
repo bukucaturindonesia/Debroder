@@ -44,6 +44,18 @@ type OrderRow = {
   custom_project_snapshot: unknown;
 };
 
+type OrderItemRow = {
+  id: string;
+  product_name: string;
+  variant_name: string | null;
+  color: string | null;
+  size: string | null;
+  sku: string | null;
+  quantity: number;
+  notes: string | null;
+  config_snapshot: Record<string, unknown> | null;
+};
+
 type ProfileRow = {
   id: string;
   email: string | null;
@@ -119,12 +131,14 @@ function toLocalInput(value: string | null) {
 
 type GuidedFulfillmentAction =
   | { kind: "transition"; target: FulfillmentStatus; label: string; instruction: string; next: string }
+  | { kind: "pickup_preparation"; label: string; instruction: string; next: string }
   | { kind: "final_check"; label: string; instruction: string; next: string }
   | { kind: "edit_tracking"; label: string; instruction: string; next: string }
   | { kind: "pickup_cash"; label: string; instruction: string; next: string }
+  | { kind: "proof"; label: string; instruction: string; next: string }
   | null;
 
-function resolveGuidedFulfillmentAction(record: FulfillmentRow, order: OrderRow | null): GuidedFulfillmentAction {
+function resolveGuidedFulfillmentAction(record: FulfillmentRow, order: OrderRow | null, hasHandoverProof: boolean): GuidedFulfillmentAction {
   if (record.archived_at || ["delivered", "picked_up", "cancelled"].includes(record.status)) return null;
   if (record.status === "preparing") {
     return { kind: "transition", target: "packing", label: "Persiapan Selesai, Mulai Pengemasan", instruction: "Pastikan seluruh item, ukuran, warna, dan jumlah sudah tersedia. Setelah siap, lanjutkan ke pengemasan.", next: "Pengemasan" };
@@ -133,8 +147,15 @@ function resolveGuidedFulfillmentAction(record: FulfillmentRow, order: OrderRow 
     return { kind: "final_check", label: "Lakukan Pengecekan Akhir", instruction: "Selesaikan checklist isi paket, penerima, jumlah paket, dan kondisi kemasan sebelum penyerahan.", next: record.method === "pickup" ? "Siap Diambil" : "Siap Dikirim" };
   }
   if (record.status === "packing" && record.final_verified_at) {
-    const target = record.method === "pickup" ? "ready_for_pickup" : "ready_to_ship";
-    return { kind: "transition", target, label: record.method === "pickup" ? "Tandai Barang Siap Diambil" : "Tandai Paket Siap Dikirim", instruction: "Pengecekan akhir sudah selesai. Konfirmasi bahwa paket siap masuk ke tahap penyerahan.", next: record.method === "pickup" ? "Serah Terima di Toko" : "Pilih Kurir dan Masukkan Resi" };
+    if (record.method === "pickup") {
+      return {
+        kind: "pickup_preparation",
+        label: "Buka Persiapan Pickup",
+        instruction: "Pengecekan akhir sudah selesai. Siapkan stok dan lokasi pickup melalui alur operasional sebelum barang ditandai siap diambil.",
+        next: "Persiapan Pickup"
+      };
+    }
+    return { kind: "transition", target: "ready_to_ship", label: "Tandai Paket Siap Dikirim", instruction: "Pengecekan akhir sudah selesai. Konfirmasi bahwa paket siap masuk ke tahap penyerahan.", next: "Pilih Kurir dan Masukkan Resi" };
   }
   if (record.status === "ready_to_ship" && (!record.courier || !record.tracking_number)) {
     return { kind: "edit_tracking", label: "Isi Kurir & Resi Resmi", instruction: "Pilih kurir dan masukkan atau pindai nomor resi resmi yang diterbitkan kurir. Nomor Pengiriman DEBRODER bukan nomor resi kurir.", next: "Penyerahan ke Kurir" };
@@ -146,7 +167,13 @@ function resolveGuidedFulfillmentAction(record: FulfillmentRow, order: OrderRow 
     return { kind: "transition", target: "in_transit", label: "Tandai Dalam Perjalanan", instruction: "Perbarui setelah kurir mulai membawa paket menuju pelanggan.", next: "Pesanan Diterima" };
   }
   if (record.status === "in_transit") {
-    return { kind: "transition", target: "delivered", label: "Konfirmasi Pesanan Diterima", instruction: "Gunakan setelah status kurir atau bukti serah terima memastikan paket telah diterima.", next: "Selesai" };
+    if (!hasHandoverProof) {
+      return { kind: "proof", label: "Unggah Bukti Penerimaan", instruction: "Sebelum pesanan ditandai diterima, unggah bukti penerimaan pelanggan atau bukti serah-terima yang sah.", next: "Konfirmasi Pesanan Diterima" };
+    }
+    return { kind: "transition", target: "delivered", label: "Konfirmasi Pesanan Diterima", instruction: "Bukti penerimaan sudah tersedia. Pastikan paket benar-benar diterima pelanggan sebelum menyelesaikan pesanan.", next: "Selesai" };
+  }
+  if (record.status === "ready_for_pickup" && !hasHandoverProof) {
+    return { kind: "proof", label: "Unggah Bukti Serah Terima", instruction: "Saat pelanggan sudah hadir dan barang akan diserahkan, unggah foto, tanda tangan, atau dokumen serah-terima terlebih dahulu.", next: order?.payment_method === "pay_at_store" ? "Terima Pembayaran & Serahkan Pesanan" : "Konfirmasi Pesanan Sudah Diambil" };
   }
   if (record.status === "ready_for_pickup" && order?.payment_method === "pay_at_store" && !["paid", "terverifikasi"].includes(order.payment_status)) {
     return { kind: "pickup_cash", label: "Terima Pembayaran & Serahkan Pesanan", instruction: "Catat penerimaan pembayaran tunai dan serah terima dalam satu tindakan atomik.", next: "Selesai" };
@@ -174,6 +201,7 @@ export function FulfillmentDetailAdmin() {
   const [history, setHistory] = useState<FulfillmentHistoryRow[]>([]);
   const [revisions, setRevisions] = useState<FulfillmentRevisionRow[]>([]);
   const [workItems, setWorkItems] = useState<WorkItemRow[]>([]);
+  const [orderItems, setOrderItems] = useState<OrderItemRow[]>([]);
   const [order, setOrder] = useState<OrderRow | null>(null);
   const [addressSnapshot, setAddressSnapshot] = useState<AddressSnapshotRow | null>(null);
   const [profiles, setProfiles] = useState<ProfileRow[]>([]);
@@ -196,10 +224,11 @@ export function FulfillmentDetailAdmin() {
   const [transitionTarget, setTransitionTarget] = useState<FulfillmentStatus | null>(null);
   const [transitionNote, setTransitionNote] = useState("");
   const [transitionReason, setTransitionReason] = useState("");
+  const [transitionError, setTransitionError] = useState<string | null>(null);
   const [archiveOpen, setArchiveOpen] = useState(false);
   const [archiveReason, setArchiveReason] = useState("");
   const [uploadFile, setUploadFile] = useState<File | null>(null);
-  const [uploadType, setUploadType] = useState<FulfillmentFileType>("photo");
+  const [uploadType, setUploadType] = useState<FulfillmentFileType>("handover");
   const [deleteConfirmation, setDeleteConfirmation] = useState("");
   const [finalChecklist, setFinalChecklist] = useState<Record<string, boolean>>({});
   const [finalNote, setFinalNote] = useState("");
@@ -231,7 +260,7 @@ export function FulfillmentDetailAdmin() {
     }
 
     const row = recordResult.data as FulfillmentRow;
-    const [profileResult, itemResult, fileResult, historyResult, revisionResult, workResult, orderResult, profileListResult, addressSnapshotResult] = await Promise.all([
+    const [profileResult, itemResult, fileResult, historyResult, revisionResult, workResult, orderItemResult, orderResult, profileListResult, addressSnapshotResult] = await Promise.all([
       userId
         ? supabase.from("profiles").select("role").eq("id", userId).maybeSingle()
         : Promise.resolve({ data: null, error: null }),
@@ -262,6 +291,12 @@ export function FulfillmentDetailAdmin() {
             .eq("job_order_id", row.job_order_id)
         : Promise.resolve({ data: [], error: null }),
       supabase
+        .from("order_items")
+        .select("id,product_name,variant_name,color,size,sku,quantity,notes,config_snapshot")
+        .eq("order_id", row.order_id)
+        .is("archived_at", null)
+        .order("created_at", { ascending: true }),
+      supabase
         .from("orders")
         .select("id,order_number,customer_name,company_name,customer_phone,status,delivery_method,payment_method,payment_status,shipping_address,custom_project_snapshot")
         .eq("id", row.order_id)
@@ -279,7 +314,7 @@ export function FulfillmentDetailAdmin() {
     ]);
 
     setLoading(false);
-    const firstError = itemResult.error || fileResult.error || historyResult.error || revisionResult.error || workResult.error || orderResult.error || addressSnapshotResult.error;
+    const firstError = itemResult.error || fileResult.error || historyResult.error || revisionResult.error || workResult.error || orderItemResult.error || orderResult.error || addressSnapshotResult.error;
     if (firstError) {
       setNotice({ type: "error", text: `Detail penyerahan belum dapat dimuat lengkap: ${firstError.message}` });
     }
@@ -291,6 +326,7 @@ export function FulfillmentDetailAdmin() {
     setHistory((historyResult.data || []) as FulfillmentHistoryRow[]);
     setRevisions((revisionResult.data || []) as FulfillmentRevisionRow[]);
     setWorkItems((workResult.data || []) as WorkItemRow[]);
+    setOrderItems((orderItemResult.data || []) as OrderItemRow[]);
     setOrder((orderResult.data || null) as OrderRow | null);
     setAddressSnapshot((addressSnapshotResult.data || null) as AddressSnapshotRow | null);
     setProfiles((profileListResult.data || []) as ProfileRow[]);
@@ -318,6 +354,30 @@ export function FulfillmentDetailAdmin() {
     for (const item of workItems) map[item.id] = item;
     return map;
   }, [workItems]);
+
+  const orderItemMap = useMemo(() => {
+    const map: Record<string, OrderItemRow> = {};
+    for (const item of orderItems) map[item.id] = item;
+    return map;
+  }, [orderItems]);
+
+  const orderItemSummary = useMemo(() => {
+    const visibleItems = items
+      .map((item) => item.order_item_id ? orderItemMap[item.order_item_id] : null)
+      .filter((item): item is OrderItemRow => Boolean(item));
+    const sourceItems = visibleItems.length ? visibleItems : orderItems;
+    const unique = (values: Array<string | null | undefined>) => Array.from(new Set(values.map((value) => value?.trim()).filter((value): value is string => Boolean(value))));
+    const totalQuantity = sourceItems.reduce((sum, item) => sum + Number(item.quantity || 0), 0);
+    return {
+      items: sourceItems,
+      product: unique(sourceItems.map((item) => item.product_name)).join(", ") || "Data produk belum tersedia",
+      variant: unique(sourceItems.map((item) => item.variant_name)).join(", ") || "Tidak ada varian khusus",
+      color: unique(sourceItems.map((item) => item.color)).join(", ") || "Tidak ada warna khusus",
+      size: unique(sourceItems.map((item) => item.size)).join(", ") || "Tidak ada ukuran khusus",
+      quantity: `${totalQuantity} pcs`,
+      packageContent: sourceItems.map((item) => `${item.product_name} · ${item.variant_name || item.color || "Varian standar"} · ${item.size || "Ukuran standar"} × ${item.quantity}`).join("; ") || "Isi paket belum tersedia"
+    };
+  }, [items, orderItemMap, orderItems]);
 
   const actorMap = useMemo(() => {
     const map: Record<string, string> = {};
@@ -368,7 +428,13 @@ export function FulfillmentDetailAdmin() {
     });
     setWorking(false);
     if (result.error) {
-      setNotice({ type: "error", text: /admin lain/i.test(result.error.message) ? "Data ini telah diperbarui oleh admin lain. Muat ulang kondisi terbaru." : "Pengecekan akhir belum dapat disimpan. Coba lagi." });
+      const message = result.error.message || "Kesalahan tidak diketahui";
+      setNotice({
+        type: "error",
+        text: /admin lain/i.test(message)
+          ? "Data ini telah diperbarui oleh admin lain. Muat ulang kondisi terbaru."
+          : `Pengecekan akhir belum dapat disimpan: ${message}`
+      });
       return;
     }
     setNotice({ type: "success", text: "Pengecekan akhir tersimpan. Pengiriman / pickup sekarang dapat dilanjutkan." });
@@ -378,36 +444,52 @@ export function FulfillmentDetailAdmin() {
   async function transitionStatus() {
     if (!record || !transitionTarget || !canManage || working) return;
     const supabase = createSupabaseClient();
-    if (!supabase) return;
-    setWorking(true);
-    setNotice(null);
-    const result = await supabase.rpc("transition_fulfillment_status", {
-      p_fulfillment_id: record.id,
-      p_to_status: transitionTarget,
-      p_note: transitionNote.trim() || null,
-      p_reason: transitionReason.trim() || null
-    });
-    setWorking(false);
-    if (result.error) {
-      const stale = /status|berubah|admin lain|transisi|tidak valid/i.test(result.error.message);
-      setNotice({
-        type: "error",
-        text: stale
-          ? `Tahap pesanan sudah berubah atau tindakan ini tidak lagi tersedia. Data terbaru akan dimuat. (${result.error.message})`
-          : `Status penyerahan belum dapat diperbarui: ${result.error.message}`
-      });
-      await loadData();
+    if (!supabase) {
+      setTransitionError("Sesi admin tidak tersedia. Muat ulang halaman lalu coba lagi.");
       return;
     }
-    setTransitionTarget(null);
-    setTransitionNote("");
-    setTransitionReason("");
-    setNotice({ type: "success", text: `Status diperbarui menjadi ${FULFILLMENT_STATUS_LABELS[transitionTarget]}.` });
-    await loadData();
+    const target = transitionTarget;
+    setWorking(true);
+    setNotice(null);
+    setTransitionError(null);
+    try {
+      const result = await supabase.rpc("transition_fulfillment_status", {
+        p_fulfillment_id: record.id,
+        p_to_status: target,
+        p_note: transitionNote.trim() || null,
+        p_reason: transitionReason.trim() || null
+      });
+      if (result.error) {
+        const stale = /status|berubah|admin lain|transisi|tidak valid|tidak diizinkan/i.test(result.error.message);
+        setTransitionError(
+          stale
+            ? `Tahap pesanan sudah berubah atau tindakan ini tidak lagi tersedia. Data terbaru telah dimuat. (${result.error.message})`
+            : `Status penyerahan belum dapat diperbarui: ${result.error.message}`
+        );
+        if (stale) await loadData();
+        return;
+      }
+      setTransitionTarget(null);
+      setTransitionNote("");
+      setTransitionReason("");
+      setTransitionError(null);
+      await loadData();
+      setNotice({ type: "success", text: `Status diperbarui menjadi ${FULFILLMENT_STATUS_LABELS[target]}.` });
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "Koneksi ke server terputus.";
+      setTransitionError(`Status penyerahan belum dapat diperbarui: ${message}`);
+    } finally {
+      setWorking(false);
+    }
   }
 
   async function completePickupAtStore() {
     if (!record || record.status !== "ready_for_pickup" || working || !canManage) return;
+    if (!hasHandoverProof) {
+      setNotice({ type: "warning", text: "Unggah bukti serah-terima terlebih dahulu sebelum menerima pembayaran dan menyelesaikan pickup." });
+      document.getElementById("handover-proof")?.scrollIntoView({ behavior: "smooth", block: "start" });
+      return;
+    }
     const notes = window.prompt("Catatan penerimaan pembayaran di toko:")?.trim() || "Pembayaran penuh diterima saat pengambilan";
     const supabase = createSupabaseClient();
     if (!supabase) return;
@@ -428,9 +510,14 @@ export function FulfillmentDetailAdmin() {
   }
 
   function runGuidedAction(action: GuidedFulfillmentAction) {
-    if (!action || working || !canManage) return;
+    if (!action || !record || working || !canManage) return;
     if (action.kind === "transition") {
+      setTransitionError(null);
       setTransitionTarget(action.target);
+      return;
+    }
+    if (action.kind === "pickup_preparation") {
+      router.push(`/admin/inventory-operations?order=${encodeURIComponent(record.order_id)}`);
       return;
     }
     if (action.kind === "final_check") {
@@ -439,6 +526,10 @@ export function FulfillmentDetailAdmin() {
     }
     if (action.kind === "edit_tracking") {
       setEditOpen(true);
+      return;
+    }
+    if (action.kind === "proof") {
+      document.getElementById("handover-proof")?.scrollIntoView({ behavior: "smooth", block: "start" });
       return;
     }
     void completePickupAtStore();
@@ -598,7 +689,8 @@ export function FulfillmentDetailAdmin() {
   const isCustomOrder = Array.isArray(order?.custom_project_snapshot) && order.custom_project_snapshot.length > 0;
   const finalChecks = finalVerificationChecks(isCustomOrder, record.method);
   const transitions = getFulfillmentTransitions(record.method, record.status).filter((target) => !(record.status === "packing" && !record.final_verified_at && ["ready_to_ship", "ready_for_pickup"].includes(target)));
-  const guidedAction = resolveGuidedFulfillmentAction(record, order);
+  const hasHandoverProof = files.some((file) => ["handover", "signature", "photo"].includes(file.file_type));
+  const guidedAction = resolveGuidedFulfillmentAction(record, order, hasHandoverProof);
   const exceptionTransitions = transitions.filter((target) => {
     if (guidedAction?.kind === "transition" && guidedAction.target === target) return false;
     return target === "problem" || target === "cancelled" || record.status === "problem";
@@ -606,6 +698,43 @@ export function FulfillmentDetailAdmin() {
   const filesCanBeRemoved = !record.archived_at
     ? !["delivered", "picked_up", "cancelled"].includes(record.status)
     : canDelete && ["preparing", "cancelled"].includes(record.status);
+
+  const finalCheckValues: Record<string, string> = {
+    order_number: order?.order_number || "Nomor order belum tersedia",
+    customer: order?.customer_name || record.receiver_name || "Nama pelanggan belum tersedia",
+    phone: order?.customer_phone || record.receiver_phone || "Nomor pelanggan belum tersedia",
+    product: orderItemSummary.product,
+    variant: orderItemSummary.variant,
+    color: orderItemSummary.color,
+    size: orderItemSummary.size,
+    quantity: orderItemSummary.quantity,
+    package_content: orderItemSummary.packageContent,
+    package_count: `${record.package_count} paket`,
+    fulfillment_method: FULFILLMENT_METHOD_LABELS[record.method],
+    package_condition: "Periksa fisik: kemasan bersih, kering, tidak rusak, tertutup rapi, dan label sesuai",
+    recipient_address: addressSnapshot?.formatted_address || order?.shipping_address || record.destination || "Alamat penerima belum tersedia",
+    postal_code: addressSnapshot?.postal_code || "Kode pos belum tersedia",
+    method: "Cocokkan dengan metode Custom pada pesanan",
+    design: "Cocokkan dengan desain aktif yang telah disetujui",
+    placement: "Cocokkan posisi desain dengan snapshot pesanan",
+    print_size: "Cocokkan ukuran cetak dengan snapshot pesanan",
+    personalization: "Cocokkan nama/nomor/personalisasi setiap item",
+    qc: "Pastikan hasil QC terakhir berstatus lulus"
+  };
+  const proofUploadActive = !record.archived_at && (
+    (record.method === "pickup" && record.status === "ready_for_pickup")
+    || (record.method === "shipping" && ["ready_to_ship", "shipped", "in_transit"].includes(record.status))
+  );
+  const proofSectionVisible = proofUploadActive || files.length > 0;
+  const proofInstruction = record.method === "pickup"
+    ? "Unggah foto serah-terima, tanda tangan penerima, atau dokumen penerimaan ketika pelanggan sudah hadir. Bukti wajib sebelum pembayaran tunai dan pickup diselesaikan."
+    : "Unggah foto penyerahan ke kurir, tanda tangan, atau bukti penerimaan pelanggan. Bukti wajib sebelum pesanan ditandai selesai.";
+  const proofTypeHelp: Record<FulfillmentFileType, string> = {
+    handover: "Bukti utama serah-terima barang kepada pelanggan atau kurir.",
+    signature: "Tanda tangan penerima atau petugas kurir sebagai bukti penerimaan.",
+    photo: "Foto paket saat diserahkan, termasuk penerima atau petugas kurir bila memungkinkan.",
+    document: "Dokumen pendukung seperti surat jalan atau bukti penerimaan resmi."
+  };
 
   return (
     <main className="text-brand-charcoal">
@@ -747,7 +876,10 @@ export function FulfillmentDetailAdmin() {
                   <button
                     key={status}
                     type="button"
-                    onClick={() => setTransitionTarget(status)}
+                    onClick={() => {
+                      setTransitionError(null);
+                      setTransitionTarget(status);
+                    }}
                     disabled={!canManage || working}
                     className={`min-h-11 rounded-full px-5 text-sm font-semibold disabled:opacity-45 ${
                       ["problem", "cancelled"].includes(status)
@@ -766,7 +898,23 @@ export function FulfillmentDetailAdmin() {
         {(record.status === "packing" || record.final_verified_at) ? (
           <section id="final-verification" className="scroll-mt-24 border border-brand-softGray bg-white p-5 sm:p-7">
             <div className="flex flex-wrap items-start justify-between gap-4"><div><p className="text-xs font-semibold uppercase tracking-[0.12em] text-brand-charcoal/45">{isCustomOrder ? "PESANAN CUSTOM" : "READY STOCK"}</p><h2 className="mt-2 text-xl font-semibold">Pengecekan Akhir</h2><p className="mt-2 max-w-3xl text-sm leading-6 text-brand-charcoal/60">Bandingkan pesanan, isi paket, kondisi kemasan, dan data penerima. {isCustomOrder ? "Hasil QC dan desain aktif juga wajib cocok. " : ""}Pengiriman terkunci sampai semua barang dikonfirmasi.</p></div>{record.final_verified_at ? <span className="rounded-full bg-emerald-50 px-3 py-1 text-xs font-semibold text-brand-green">Selesai {formatFulfillmentDate(record.final_verified_at)}</span> : <span className="rounded-full bg-amber-50 px-3 py-1 text-xs font-semibold text-amber-800">Wajib diselesaikan</span>}</div>
-            <div className="mt-5 grid gap-2 sm:grid-cols-2 lg:grid-cols-3">{finalChecks.map(([key, label]) => <label key={key} className="flex min-h-11 items-center gap-3 border border-brand-softGray px-3 text-sm font-semibold"><input type="checkbox" checked={Boolean(finalChecklist[key])} disabled={Boolean(record.final_verified_at) || !canManage} onChange={(event) => setFinalChecklist((current) => ({ ...current, [key]: event.target.checked }))} />{label}</label>)}</div>
+            <div className="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+              {finalChecks.map(([key, label]) => (
+                <label key={key} className="grid min-h-[104px] cursor-pointer grid-cols-[auto_minmax(0,1fr)] items-start gap-3 border border-brand-softGray bg-brand-offWhite/35 p-4">
+                  <input
+                    type="checkbox"
+                    checked={Boolean(finalChecklist[key])}
+                    disabled={Boolean(record.final_verified_at) || !canManage}
+                    onChange={(event) => setFinalChecklist((current) => ({ ...current, [key]: event.target.checked }))}
+                    className="mt-1 h-4 w-4"
+                  />
+                  <span className="min-w-0">
+                    <span className="block text-xs font-semibold uppercase tracking-[0.12em] text-brand-charcoal/45">{label}</span>
+                    <span className="mt-2 block break-words text-sm font-semibold leading-6 text-brand-charcoal">{finalCheckValues[key] || "Data belum tersedia"}</span>
+                  </span>
+                </label>
+              ))}
+            </div>
             <label className="mt-5 grid gap-2 text-sm font-semibold">Catatan pengecekan akhir<textarea rows={3} value={finalNote} disabled={Boolean(record.final_verified_at) || !canManage} onChange={(event) => setFinalNote(event.target.value)} className="rounded-lg border border-brand-softGray px-4 py-3" /></label>
             {!record.final_verified_at ? <button type="button" onClick={() => void completeFinalVerification()} disabled={working || !canManage || finalChecks.some(([key]) => !finalChecklist[key])} className="mt-5 min-h-11 rounded-full bg-brand-green px-5 text-sm font-semibold text-white disabled:opacity-45">{working ? "Menyimpan..." : "Konfirmasi Pengecekan Akhir"}</button> : <p className="mt-5 text-sm text-brand-charcoal/60">Checklist tersimpan read-only. Perubahan detail paket/penerima pada tahap packing akan membatalkan verifikasi dan mewajibkan pemeriksaan ulang.</p>}
           </section>
@@ -777,11 +925,20 @@ export function FulfillmentDetailAdmin() {
           <div className="mt-5 divide-y divide-brand-softGray border-y border-brand-softGray">
             {items.map((item) => {
               const workItem = item.work_item_id ? workItemMap[item.work_item_id] : null;
+              const orderItem = item.order_item_id ? orderItemMap[item.order_item_id] : null;
               return (
-                <article key={item.id} className="grid gap-3 py-4 sm:grid-cols-[1fr_auto] sm:items-center">
-                  <div>
-                    <p className="font-semibold">{workItem?.work_item_number || "Pekerjaan"}</p>
-                    <p className="mt-1 text-sm text-brand-charcoal/60">{workItem?.title || "Data pekerjaan tidak ditemukan"}</p>
+                <article key={item.id} className="grid gap-3 py-4 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center">
+                  <div className="min-w-0">
+                    <p className="break-words font-semibold">{orderItem?.product_name || workItem?.title || "Item pesanan"}</p>
+                    <p className="mt-1 break-words text-sm leading-6 text-brand-charcoal/60">
+                      {[
+                        orderItem?.variant_name || orderItem?.color,
+                        orderItem?.size,
+                        orderItem?.sku ? `SKU ${orderItem.sku}` : null,
+                        workItem?.work_item_number
+                      ].filter(Boolean).join(" · ") || "Rincian item belum tersedia"}
+                    </p>
+                    {orderItem?.notes ? <p className="mt-1 text-xs text-brand-charcoal/55">Catatan: {orderItem.notes}</p> : null}
                   </div>
                   <p className="font-semibold">{item.quantity} {workItem?.unit || "pcs"}</p>
                 </article>
@@ -790,70 +947,82 @@ export function FulfillmentDetailAdmin() {
           </div>
         </section>
 
-        <section className="border border-brand-softGray bg-white p-5 sm:p-7">
-          <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+        {proofSectionVisible ? (
+          <section id="handover-proof" className="scroll-mt-24 border border-brand-softGray bg-white p-5 sm:p-7">
             <div>
-              <h2 className="text-xl font-semibold">Bukti & Dokumen</h2>
-              <p className="mt-2 text-sm text-brand-charcoal/60">Bukti foto, tanda tangan, atau serah terima wajib tersedia sebelum status selesai.</p>
+              <p className="text-xs font-semibold uppercase tracking-[0.12em] text-brand-charcoal/45">TAHAP SERAH TERIMA</p>
+              <h2 className="mt-2 text-xl font-semibold">{record.method === "pickup" ? "Bukti Serah Terima Pickup" : "Bukti Penyerahan"}</h2>
+              <p className="mt-2 max-w-3xl text-sm leading-6 text-brand-charcoal/60">{proofInstruction}</p>
             </div>
-            {!record.archived_at && !["delivered", "picked_up", "cancelled"].includes(record.status) ? (
-              <div className="grid gap-2 sm:grid-cols-[160px_1fr_auto]">
-                <select
-                  value={uploadType}
-                  onChange={(event) => setUploadType(event.target.value as FulfillmentFileType)}
-                  className="min-h-11 rounded-lg border border-brand-softGray px-3 text-sm"
-                >
-                  {Object.entries(FULFILLMENT_FILE_LABELS).map(([value, label]) => <option key={value} value={value}>{label}</option>)}
-                </select>
-                <input
-                  type="file"
-                  accept="image/png,image/jpeg,image/webp,application/pdf"
-                  onChange={(event) => setUploadFile(event.target.files?.[0] || null)}
-                  className="min-h-11 rounded-lg border border-brand-softGray px-3 py-2 text-sm"
-                />
+
+            {proofUploadActive ? (
+              <div className="mt-5 grid gap-4 border border-brand-softGray bg-brand-offWhite/40 p-4 lg:grid-cols-[180px_minmax(0,1fr)_auto] lg:items-end">
+                <label className="grid gap-2 text-sm font-semibold">
+                  Jenis bukti
+                  <select
+                    value={uploadType}
+                    onChange={(event) => setUploadType(event.target.value as FulfillmentFileType)}
+                    className="min-h-11 rounded-lg border border-brand-softGray bg-white px-3 text-sm"
+                  >
+                    {Object.entries(FULFILLMENT_FILE_LABELS).map(([value, label]) => <option key={value} value={value}>{label}</option>)}
+                  </select>
+                </label>
+                <label className="grid min-w-0 gap-2 text-sm font-semibold">
+                  Pilih file
+                  <input
+                    type="file"
+                    accept="image/png,image/jpeg,image/webp,application/pdf"
+                    onChange={(event) => setUploadFile(event.target.files?.[0] || null)}
+                    className="min-h-11 min-w-0 rounded-lg border border-brand-softGray bg-white px-3 py-2 text-sm"
+                  />
+                </label>
                 <button
                   type="button"
                   onClick={() => void uploadProof()}
                   disabled={!uploadFile || !canManage || working}
-                  className="rounded-full bg-brand-green px-5 py-2.5 text-sm font-semibold text-white disabled:opacity-45"
+                  className="min-h-11 rounded-full bg-brand-green px-5 text-sm font-semibold text-white disabled:opacity-45"
                 >
-                  Unggah Bukti
+                  {working ? "Mengunggah..." : "Unggah Bukti"}
                 </button>
+                <p className="text-xs leading-5 text-brand-charcoal/55 lg:col-span-3">
+                  {proofTypeHelp[uploadType]} Format PNG, JPG, WEBP, atau PDF; maksimal 10 MB.
+                </p>
               </div>
             ) : null}
-          </div>
-          {files.length === 0 ? (
-            <p className="mt-5 border border-dashed border-brand-softGray p-5 text-sm text-brand-charcoal/60">Belum ada bukti.</p>
-          ) : (
-            <div className="mt-5 grid gap-3">
-              {files.map((file) => (
-                <article key={file.id} className="flex flex-col gap-3 border border-brand-softGray p-4 sm:flex-row sm:items-center sm:justify-between">
-                  <div>
-                    <p className="font-semibold">{file.file_name}</p>
-                    <p className="mt-1 text-xs text-brand-charcoal/55">
-                      {FULFILLMENT_FILE_LABELS[file.file_type]} · {formatFulfillmentFileSize(file.size_bytes)} · {formatFulfillmentDate(file.uploaded_at)}
-                    </p>
-                  </div>
-                  <div className="flex flex-wrap gap-2">
-                    <button type="button" onClick={() => void openProof(file)} className="rounded-full border border-brand-softGray px-4 py-2 text-sm font-semibold">
-                      Buka
-                    </button>
-                    {filesCanBeRemoved ? (
-                      <button
-                        type="button"
-                        onClick={() => void removeProof(file)}
-                        disabled={!canManage || working}
-                        className="rounded-full border border-red-300 px-4 py-2 text-sm font-semibold text-red-700 disabled:opacity-45"
-                      >
-                        Hapus
+
+            {files.length === 0 ? (
+              <p className="mt-5 border border-dashed border-brand-softGray p-5 text-sm text-brand-charcoal/60">Belum ada bukti serah-terima yang diunggah.</p>
+            ) : (
+              <div className="mt-5 grid gap-3">
+                {files.map((file) => (
+                  <article key={file.id} className="flex flex-col gap-3 border border-brand-softGray p-4 sm:flex-row sm:items-center sm:justify-between">
+                    <div>
+                      <p className="font-semibold">{file.file_name}</p>
+                      <p className="mt-1 text-xs text-brand-charcoal/55">
+                        {FULFILLMENT_FILE_LABELS[file.file_type]} · {formatFulfillmentFileSize(file.size_bytes)} · {formatFulfillmentDate(file.uploaded_at)}
+                      </p>
+                    </div>
+                    <div className="flex flex-wrap gap-2">
+                      <button type="button" onClick={() => void openProof(file)} className="rounded-full border border-brand-softGray px-4 py-2 text-sm font-semibold">
+                        Buka
                       </button>
-                    ) : null}
-                  </div>
-                </article>
-              ))}
-            </div>
-          )}
-        </section>
+                      {filesCanBeRemoved ? (
+                        <button
+                          type="button"
+                          onClick={() => void removeProof(file)}
+                          disabled={!canManage || working}
+                          className="rounded-full border border-red-300 px-4 py-2 text-sm font-semibold text-red-700 disabled:opacity-45"
+                        >
+                          Hapus
+                        </button>
+                      ) : null}
+                    </div>
+                  </article>
+                ))}
+              </div>
+            )}
+          </section>
+        ) : null}
 
         <section className="grid gap-6 lg:grid-cols-2">
           <div className="border border-brand-softGray bg-white p-5 sm:p-7">
@@ -966,6 +1135,11 @@ export function FulfillmentDetailAdmin() {
               Catatan
               <textarea rows={3} value={transitionNote} onChange={(event) => setTransitionNote(event.target.value)} className="mt-2 w-full rounded-lg border border-brand-softGray px-4 py-3" />
             </label>
+            {transitionError ? (
+              <div role="alert" className="mt-5 border border-red-300 bg-red-50 px-4 py-3 text-sm font-medium text-red-800">
+                {transitionError}
+              </div>
+            ) : null}
             {fulfillmentTransitionNeedsReason(transitionTarget) ? (
               <label className="mt-4 block text-sm font-semibold">
                 Alasan wajib
@@ -981,7 +1155,17 @@ export function FulfillmentDetailAdmin() {
               >
                 {working ? "Memproses..." : "Konfirmasi"}
               </button>
-              <button type="button" onClick={() => setTransitionTarget(null)} disabled={working} className="rounded-full border border-brand-softGray px-6 py-3 text-sm font-semibold">Batal</button>
+              <button
+                type="button"
+                onClick={() => {
+                  setTransitionTarget(null);
+                  setTransitionError(null);
+                }}
+                disabled={working}
+                className="rounded-full border border-brand-softGray px-6 py-3 text-sm font-semibold"
+              >
+                Batal
+              </button>
             </div>
           </section>
         </div>

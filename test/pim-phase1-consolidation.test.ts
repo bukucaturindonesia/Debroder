@@ -16,8 +16,8 @@ const migration = readFileSync(
 
 describe("PIM Phase 1 consolidation", () => {
   it("uses one Product Manager navigation entry and owner-only maintenance", () => {
-    expect(navigation).toContain('label: "Product Manager", href: "/admin/products"');
-    expect(navigation).toContain('label: "Maintenance PIM", href: "/admin/pim-manager"');
+    expect(navigation).toContain('label: "Manajemen Produk", href: "/admin/products"');
+    expect(navigation).toContain('label: "Pemeliharaan Produk", href: "/admin/pim-manager"');
     expect(navigation).not.toContain('label: "PIM V2", href: "/admin/pim-v2"');
   });
 

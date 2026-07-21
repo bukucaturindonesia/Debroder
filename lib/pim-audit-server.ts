@@ -27,6 +27,12 @@ const PAGE_SIZE_DEFAULT = 30;
 const PAGE_SIZE_MAX = 100;
 const DATE_RANGE_MAX_DAYS = 366;
 
+const AUDIT_LIST_SELECT =
+  "id,event_code,event_version,category,operation_status,created_at,actor_id,actor_role,actor_label,source_module,entity_type,entity_id,entity_label,product_id,variant_id,sku,batch_id,request_id,operation_id,duration_ms,event_summary,failure_code" as const;
+
+const AUDIT_DETAIL_SELECT =
+  "id,event_code,event_version,category,operation_status,created_at,actor_id,actor_role,actor_label,source_module,entity_type,entity_id,entity_label,product_id,variant_id,sku,batch_id,request_id,operation_id,duration_ms,event_summary,failure_code,parent_audit_id,metadata,old_value,new_value" as const;
+
 export type PimAuditListFilters = {
   search: string;
   from: string;
@@ -218,33 +224,35 @@ export function parsePimAuditFilters(url: URL): PimAuditListFilters {
 export async function listPimAuditHistory(client: SupabaseClient, filters: PimAuditListFilters) {
   const relatedProductAudits = filters.productId ? await relatedAuditIds(client, "product_id", filters.productId) : [];
   const relatedVariantAudits = filters.variantId ? await relatedAuditIds(client, "variant_id", filters.variantId) : [];
-  let query = client
+  const query = client
     .from("system_audit_log")
-    .select(auditSelect())
+    .select(AUDIT_LIST_SELECT)
     .not("event_code", "is", null)
     .gte("created_at", filters.from)
     .lte("created_at", filters.to);
-  if (filters.actorId) query = query.eq("actor_id", filters.actorId);
-  if (filters.actorRole) query = query.eq("actor_role", filters.actorRole);
-  if (filters.category) query = query.eq("category", filters.category);
-  if (filters.eventCode) query = query.eq("event_code", filters.eventCode);
-  if (filters.status) query = query.eq("operation_status", filters.status);
-  if (filters.sourceModule) query = query.eq("source_module", filters.sourceModule);
-  if (filters.entityType) query = query.eq("entity_type", filters.entityType);
-  if (filters.productId) query = relatedProductAudits.length
-    ? query.or(`product_id.eq.${filters.productId},id.in.(${relatedProductAudits.join(",")})`)
-    : query.eq("product_id", filters.productId);
-  if (filters.variantId) query = relatedVariantAudits.length
-    ? query.or(`variant_id.eq.${filters.variantId},id.in.(${relatedVariantAudits.join(",")})`)
-    : query.eq("variant_id", filters.variantId);
-  if (filters.sku) query = query.eq("sku", filters.sku);
-  if (filters.batchId) query = query.eq("batch_id", filters.batchId);
-  if (filters.requestId) query = query.eq("request_id", filters.requestId);
-  if (filters.operationId) query = query.eq("operation_id", filters.operationId);
-  if (filters.search) query = query.ilike("search_text", `%${filters.search}%`);
+  if (filters.actorId) query.eq("actor_id", filters.actorId);
+  if (filters.actorRole) query.eq("actor_role", filters.actorRole);
+  if (filters.category) query.eq("category", filters.category);
+  if (filters.eventCode) query.eq("event_code", filters.eventCode);
+  if (filters.status) query.eq("operation_status", filters.status);
+  if (filters.sourceModule) query.eq("source_module", filters.sourceModule);
+  if (filters.entityType) query.eq("entity_type", filters.entityType);
+  if (filters.productId) {
+    if (relatedProductAudits.length) query.or(`product_id.eq.${filters.productId},id.in.(${relatedProductAudits.join(",")})`);
+    else query.eq("product_id", filters.productId);
+  }
+  if (filters.variantId) {
+    if (relatedVariantAudits.length) query.or(`variant_id.eq.${filters.variantId},id.in.(${relatedVariantAudits.join(",")})`);
+    else query.eq("variant_id", filters.variantId);
+  }
+  if (filters.sku) query.eq("sku", filters.sku);
+  if (filters.batchId) query.eq("batch_id", filters.batchId);
+  if (filters.requestId) query.eq("request_id", filters.requestId);
+  if (filters.operationId) query.eq("operation_id", filters.operationId);
+  if (filters.search) query.ilike("search_text", `%${filters.search}%`);
   if (filters.cursor) {
     const direction = filters.sort === "newest" ? "lt" : "gt";
-    query = query.or(`created_at.${direction}.${filters.cursor.createdAt},and(created_at.eq.${filters.cursor.createdAt},id.${direction}.${filters.cursor.id})`);
+    query.or(`created_at.${direction}.${filters.cursor.createdAt},and(created_at.eq.${filters.cursor.createdAt},id.${direction}.${filters.cursor.id})`);
   }
   const ascending = filters.sort === "oldest";
   const { data, error } = await query.order("created_at", { ascending }).order("id", { ascending }).limit(filters.pageSize + 1);
@@ -267,21 +275,21 @@ export async function loadPimAuditDetail(client: SupabaseClient, auditId: string
   const id = safeUuid(auditId);
   if (!id) throw new PimAuditServerError(400, "Audit ID tidak valid.", "INVALID_AUDIT_ID");
   const [{ data, error }, changesResult, entitiesResult] = await Promise.all([
-    client.from("system_audit_log").select(`${auditSelect()},parent_audit_id,metadata,old_value,new_value`).eq("id", id).not("event_code", "is", null).maybeSingle(),
+    client.from("system_audit_log").select(AUDIT_DETAIL_SELECT).eq("id", id).not("event_code", "is", null).maybeSingle(),
     client.from("pim_audit_changes").select("field_name,before_value,after_value,before_state,after_state").eq("audit_id", id).order("field_name"),
     client.from("pim_audit_entities").select("entity_type,entity_id,entity_label,product_id,variant_id,sku,result_status,failure_code").eq("audit_id", id).order("created_at").limit(500)
   ]);
   if (error) throw new PimAuditServerError(503, "Gagal memuat detail audit.", "AUDIT_DETAIL_QUERY_FAILED");
   if (!data) throw new PimAuditServerError(404, "Audit tidak ditemukan.", "AUDIT_NOT_FOUND");
   if (changesResult.error || entitiesResult.error) throw new PimAuditServerError(503, "Detail audit belum tersedia.", "AUDIT_CHILD_QUERY_FAILED");
-  const row = mapAuditRow(data as Record<string, unknown>);
+  const row = mapAuditRow(data);
   return {
     ...row,
-    parentAuditId: textOrNull((data as Record<string, unknown>).parent_audit_id),
+    parentAuditId: textOrNull(data.parent_audit_id),
     metadata: {
-      ...record((data as Record<string, unknown>).metadata),
-      beforeSummary: (data as Record<string, unknown>).old_value ?? null,
-      afterSummary: (data as Record<string, unknown>).new_value ?? null
+      ...record(data.metadata),
+      beforeSummary: data.old_value ?? null,
+      afterSummary: data.new_value ?? null
     },
     changes: records(changesResult.data).map((change) => ({
       field: String(change.field_name || ""),
@@ -303,9 +311,6 @@ export async function loadPimAuditDetail(client: SupabaseClient, auditId: string
   };
 }
 
-function auditSelect() {
-  return "id,event_code,event_version,category,operation_status,created_at,actor_id,actor_role,actor_label,source_module,entity_type,entity_id,entity_label,product_id,variant_id,sku,batch_id,request_id,operation_id,duration_ms,event_summary,failure_code";
-}
 
 function mapAuditRow(value: Record<string, unknown>): PimAuditListRow {
   const eventCode = String(value.event_code || "");
@@ -378,12 +383,13 @@ function nullableUuidFilter(value: string | null, label: string) {
   return parsed;
 }
 
-function parseCursor(value: string | null, sort: "newest" | "oldest") {
+function parseCursor(value: string | null, sort: "newest" | "oldest"): PimAuditListFilters["cursor"] {
   if (!value) return null;
   try {
     const decoded = JSON.parse(Buffer.from(value, "base64url").toString("utf8")) as { createdAt?: string; id?: string; sort?: string };
-    if (!decoded.createdAt || Number.isNaN(Date.parse(decoded.createdAt)) || !safeUuid(decoded.id) || decoded.sort !== sort) throw new Error("invalid");
-    return { createdAt: decoded.createdAt, id: decoded.id };
+    const id = safeUuid(decoded.id);
+    if (!decoded.createdAt || Number.isNaN(Date.parse(decoded.createdAt)) || !id || decoded.sort !== sort) throw new Error("invalid");
+    return { createdAt: decoded.createdAt, id };
   } catch {
     throw new PimAuditServerError(400, "Cursor pagination tidak valid.", "INVALID_CURSOR");
   }

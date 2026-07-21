@@ -126,7 +126,7 @@ export function buildExistingMatrixRows(
   return existingRows.map((existing) => {
     const color = colorByVariant.get(existing.variantId);
     const size = existing.sizeId ? sizeById.get(existing.sizeId) : undefined;
-    const row = {
+    const row: VariantMatrixRow = {
       key: existing.id,
       id: existing.id,
       variantId: existing.variantId,
@@ -144,7 +144,7 @@ export function buildExistingMatrixRows(
       status: existing.status,
       sortOrder: existing.sortOrder,
       original: null
-    } satisfies VariantMatrixRow;
+    };
     row.original = snapshotRow(row);
     return row;
   });

@@ -20,6 +20,8 @@ const operationalProps = {
     pricing_status: "final",
     payment_balance: 0,
     payment_effective_total: 150_000,
+    payment_method: "bank_transfer",
+    payment_status: "paid",
     payment_production_eligible: true,
     checkout_source: null,
     whatsapp_confirmed_at: null
@@ -50,13 +52,13 @@ describe("Admin Order Detail React #130 regression", () => {
     expect(detail).not.toMatch(/(?:component|icon)Map\s*\[/i);
   });
 
-  it("blocks this module-integrity regression before production build despite unrelated baseline findings", () => {
+  it("blocks this module-integrity regression before production build with mandatory type and lint validation", () => {
     const config = read("next.config.ts");
     const packageJson = JSON.parse(read("package.json")) as { scripts: Record<string, string> };
-    expect(config).toContain("ignoreBuildErrors");
-    expect(config).toContain("ignoreDuringBuilds");
-    expect(packageJson.scripts.prebuild).toContain("test/admin-order-detail-react130.test.ts");
-    expect(packageJson.scripts.prebuild).toContain("test/admin-order-pricing-workspace.test.ts");
+    expect(config).not.toContain("ignoreBuildErrors");
+    expect(config).not.toContain("ignoreDuringBuilds");
+    expect(packageJson.scripts.verify).toBe("pnpm typecheck && pnpm lint && pnpm test");
+    expect(packageJson.scripts.prebuild).toBe("pnpm verify");
   });
 
   it("selects a stable workspace for Ready Stock, Custom, Jersey, payment-less, and historical orders", () => {

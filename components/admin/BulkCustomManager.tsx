@@ -46,6 +46,8 @@ type Service = {
   requires_upload: boolean;
   requires_notes: boolean;
   is_stackable: boolean;
+  allowed_file_types?: string[] | null;
+  exclusive_group?: string | null;
   sort_order: number;
 };
 
@@ -345,32 +347,53 @@ export function BulkCustomManager() {
     const supabase = createSupabaseClient();
     if (!supabase || !serviceForm) return;
 
-    const payload = {
-      name: serviceForm.name,
-      slug: serviceForm.slug,
-      description: serviceForm.description || null,
-      status: serviceForm.status,
-      pricing_type: serviceForm.pricing_type,
-      base_price: serviceForm.base_price,
-      estimated_min_price: serviceForm.estimated_min_price,
-      estimated_max_price: serviceForm.estimated_max_price,
-      minimum_quantity: Math.max(1, serviceForm.minimum_quantity),
-      maximum_quantity: serviceForm.maximum_quantity,
-      requires_review: serviceForm.requires_review,
-      requires_upload: serviceForm.requires_upload,
-      requires_notes: serviceForm.requires_notes,
-      is_stackable: serviceForm.is_stackable,
-      sort_order: serviceForm.sort_order,
-      updated_at: new Date().toISOString()
-    };
+    const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
+    const token = sessionData.session?.access_token;
+    if (sessionError || !token) {
+      setStatus({ type: "error", text: "Sesi admin telah berakhir. Silakan login kembali." });
+      return;
+    }
 
-    const { error } = await supabase
-      .from("custom_services")
-      .update(payload)
-      .eq("id", serviceForm.id);
+    const response = await fetch("/api/admin/pim-v2/custom-services", {
+      method: "POST",
+      cache: "no-store",
+      headers: {
+        "content-type": "application/json",
+        authorization: `Bearer ${token}`
+      },
+      body: JSON.stringify({
+        services: [
+          {
+            id: serviceForm.id,
+            name: serviceForm.name,
+            slug: serviceForm.slug,
+            description: serviceForm.description || null,
+            status: serviceForm.status,
+            pricingType: serviceForm.pricing_type,
+            basePrice: serviceForm.base_price,
+            estimatedMinPrice: serviceForm.estimated_min_price,
+            estimatedMaxPrice: serviceForm.estimated_max_price,
+            minimumQuantity: Math.max(1, serviceForm.minimum_quantity),
+            maximumQuantity: serviceForm.maximum_quantity,
+            requiresReview: serviceForm.requires_review,
+            requiresUpload: serviceForm.requires_upload,
+            requiresNotes: serviceForm.requires_notes,
+            allowedFileTypes:
+              serviceForm.allowed_file_types ?? ["png", "jpg", "jpeg", "pdf"],
+            isStackable: serviceForm.is_stackable,
+            exclusiveGroup: serviceForm.exclusive_group ?? null,
+            sortOrder: serviceForm.sort_order
+          }
+        ]
+      })
+    });
+    const payload = (await response.json().catch(() => ({}))) as { error?: string };
 
-    if (error) {
-      setStatus({ type: "error", text: "Layanan belum dapat disimpan. Periksa data lalu coba lagi." });
+    if (!response.ok) {
+      setStatus({
+        type: "error",
+        text: payload.error || "Layanan belum dapat disimpan. Periksa data lalu coba lagi."
+      });
       return;
     }
 

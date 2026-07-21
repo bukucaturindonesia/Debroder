@@ -130,7 +130,7 @@ describe("PIM Phase 7 server/UI integration", () => {
     expect(ui).toContain("Riwayat varian");
     expect(ui).toContain("Riwayat batch");
     expect(ui).not.toMatch(/data-admin-mutation|Undo|Auto Fix/);
-    expect(read("components/admin/layout/admin-navigation.ts")).toContain("Audit & Riwayat Aktivitas");
+    expect(read("components/admin/layout/admin-navigation.ts")).toContain("Riwayat Aktivitas");
     expect(read("components/admin/ProductAdmin.tsx")).toContain("Lihat Riwayat");
     expect(read("components/admin/ProductAdmin.tsx")).toContain("Riwayat Varian");
   });

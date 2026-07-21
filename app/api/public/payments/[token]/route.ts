@@ -9,6 +9,46 @@ const ALLOWED_TYPES = new Map([
 ]);
 const MAX_BYTES = 5 * 1024 * 1024;
 type Context = { params: Promise<{ token: string }> };
+type AdminClient = NonNullable<ReturnType<typeof getAdminSupabaseClient>>;
+type PublicPaymentItemRow = {
+  id: string;
+  product_name: string;
+  quantity: number;
+  unit_price: number;
+  subtotal: number;
+  custom_project_id: string | null;
+};
+type PublicPaymentSubmissionRow = {
+  id: string;
+  payment_number: string;
+  status: string;
+  review_outcome: string | null;
+  rejection_reason: string | null;
+  reported_amount: number | null;
+  amount: number;
+  submitted_at: string | null;
+};
+type PublicPaymentMethodRow = {
+  id: string;
+  method_code: string;
+  method_type: string;
+  display_name: string;
+  bank_name: string | null;
+  account_number: string | null;
+  account_holder: string | null;
+  qris_image_url: string | null;
+  instructions: string | null;
+  expires_in_hours: number | null;
+};
+
+async function resolveActiveStage(client: AdminClient, orderId: string) {
+  try {
+    const { data, error } = await client.rpc("resolve_order_active_stage_v1", { p_order_id: orderId });
+    return error ? null : data;
+  } catch {
+    return null;
+  }
+}
 
 async function resolveLink(token: string) {
   const client = getAdminSupabaseClient();
@@ -53,11 +93,12 @@ export async function GET(_request: Request, context: Context) {
         .is("archived_at", null)
         .order("created_at", { ascending: false })
         .limit(10),
-      resolved.client.rpc("resolve_order_active_stage_v1", { p_order_id: order.id })
-        .then(({ data, error }) => error ? null : data)
-        .catch(() => null)
+      resolveActiveStage(resolved.client, order.id)
     ]);
     if (settingsError) throw new Error("Pengaturan pembayaran belum tersedia.");
+    const itemRows = (items ?? []) as PublicPaymentItemRow[];
+    const submissionRows = (submissions ?? []) as PublicPaymentSubmissionRow[];
+    const methodRows = (settings ?? []) as PublicPaymentMethodRow[];
     return Response.json({
       orderNumber: order.order_number,
       customerName: order.customer_name,
@@ -73,16 +114,16 @@ export async function GET(_request: Request, context: Context) {
       requirementMet: Boolean(order.payment_requirement_met),
       expiresAt: resolved.link.expires_at,
       remainingUses: resolved.link.max_uses - resolved.link.used_count,
-      isCustom: (items ?? []).some((item) => Boolean(item.custom_project_id)),
+      isCustom: itemRows.some((item) => Boolean(item.custom_project_id)),
       activeStage,
-      items: (items ?? []).map((item) => ({
+      items: itemRows.map((item) => ({
         id: item.id,
         name: item.product_name,
         quantity: Number(item.quantity),
         unitPrice: Number(item.unit_price),
         subtotal: Number(item.subtotal)
       })),
-      submissions: (submissions ?? []).map((submission) => ({
+      submissions: submissionRows.map((submission) => ({
         id: submission.id,
         paymentNumber: submission.payment_number,
         status: submission.status,
@@ -91,7 +132,7 @@ export async function GET(_request: Request, context: Context) {
         amount: Number(submission.reported_amount ?? submission.amount),
         submittedAt: submission.submitted_at
       })),
-      methods: (settings ?? []).map((setting) => ({
+      methods: methodRows.map((setting) => ({
         id: setting.id,
         code: setting.method_code,
         type: setting.method_type,

@@ -236,12 +236,14 @@ function priceDesignPackage(
     const serviceFinal = (price.unit_price ?? 0) * price.quantity + (price.flat_price ?? 0);
     const estimateMin = (price.estimated_min_price ?? 0) * price.quantity;
     const estimateMax = (price.estimated_max_price ?? price.estimated_min_price ?? 0) * price.quantity;
-    if (!printSizeDeterminesPrice && price.quote_required && service.pricingType !== "estimated") status = "quotation_required";
+    if (price.quote_required && service.pricingType !== "estimated") status = "quotation_required";
     else if (!printSizeDeterminesPrice && service.pricingType === "estimated") status = combineStatus(status, "estimated");
     if (!printSizeDeterminesPrice) {
       finalTotal += serviceFinal;
       estimatedMinTotal += service.pricingType === "estimated" ? estimateMin : serviceFinal;
       estimatedMaxTotal += service.pricingType === "estimated" ? estimateMax : serviceFinal;
+    }
+    if (!printSizeDeterminesPrice || price.quote_required) {
       lines.push({
         key: `service:${designPackage.id}:${selection.id}`,
         label: `${designPackage.name} · ${service.name}`,

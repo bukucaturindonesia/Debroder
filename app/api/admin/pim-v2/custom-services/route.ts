@@ -1,46 +1,39 @@
 import { NextResponse } from "next/server";
-import { isAdminRequest } from "@/lib/admin-auth";
+import {
+  Phase13AuthError,
+  phase13ErrorResponse,
+  requirePhase13Actor
+} from "@/lib/phase13-auth";
+import { getProductManagerCapabilities } from "@/lib/product-manager";
 import type { CustomService, ServicePricingType, ValidationIssue } from "@/lib/types";
-import { getAdminSupabaseClient } from "@/lib/supabase/client";
 
 export async function POST(request: Request) {
-  if (!isAdminRequest(request)) {
-    return NextResponse.json({ error: "Unauthorized.", issues: [] }, { status: 401 });
-  }
+  try {
+    const actor = await requirePhase13Actor(request);
+    if (!getProductManagerCapabilities(actor.role).canEditDraft) {
+      throw new Phase13AuthError(403, "Role ini tidak memiliki akses untuk mengubah katalog layanan.");
+    }
 
-  const body: unknown = await request.json();
-  const services = parseServicesPayload(body);
+    const body: unknown = await request.json();
+    const services = parseServicesPayload(body);
 
-  if (!services) {
-    return NextResponse.json(
-      { error: "Invalid service catalog payload.", issues: [] },
-      { status: 400 }
-    );
-  }
+    if (!services) {
+      return NextResponse.json(
+        { error: "Invalid service catalog payload.", issues: [] },
+        { status: 400, headers: { "cache-control": "private, no-store" } }
+      );
+    }
 
-  const issues = validateServices(services);
-  if (issues.some((issue) => issue.severity === "error")) {
-    return NextResponse.json(
-      { error: "Validation failed.", issues },
-      { status: 422 }
-    );
-  }
+    const issues = validateServices(services);
+    if (issues.some((issue) => issue.severity === "error")) {
+      return NextResponse.json(
+        { error: "Validation failed.", issues },
+        { status: 422, headers: { "cache-control": "private, no-store" } }
+      );
+    }
 
-  const client = getAdminSupabaseClient();
-  if (!client) {
-    return NextResponse.json(
-      {
-        error:
-          "Supabase admin environment is not configured. Set NEXT_PUBLIC_SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY.",
-        issues: []
-      },
-      { status: 503 }
-    );
-  }
-
-  for (const service of services) {
-    const { error } = await client.from("custom_services").upsert(
-      {
+    for (const service of services) {
+      const row = {
         slug: service.slug,
         name: service.name,
         description: service.description,
@@ -58,19 +51,37 @@ export async function POST(request: Request) {
         is_stackable: service.isStackable,
         exclusive_group: service.exclusiveGroup,
         sort_order: service.sortOrder
-      },
-      { onConflict: "slug" }
-    );
+      };
+      const mutation = service.id
+        ? actor.adminClient.from("custom_services").update(row).eq("id", service.id)
+        : actor.adminClient.from("custom_services").upsert(row, { onConflict: "slug" });
+      const { data, error } = await mutation.select("id").maybeSingle();
 
-    if (error) {
-      return NextResponse.json(
-        { error: `Failed to save service ${service.slug}: ${error.message}`, issues: [] },
-        { status: 500 }
-      );
+      if (error || !data) {
+        return NextResponse.json(
+          {
+            error: error
+              ? `Failed to save service ${service.slug}: ${error.message}`
+              : `Service ${service.slug} tidak ditemukan atau tidak dapat diubah.`,
+            issues: []
+          },
+          {
+            status: error ? 500 : 404,
+            headers: { "cache-control": "private, no-store" }
+          }
+        );
+      }
     }
-  }
 
-  return NextResponse.json({ ok: true, issues: [] });
+    return NextResponse.json(
+      { ok: true, issues: [] },
+      { headers: { "cache-control": "private, no-store" } }
+    );
+  } catch (error) {
+    const response = phase13ErrorResponse(error);
+    response.headers.set("cache-control", "private, no-store");
+    return response;
+  }
 }
 
 function parseServicesPayload(value: unknown): CustomService[] | null {
@@ -118,6 +129,10 @@ function validateServices(services: CustomService[]): ValidationIssue[] {
   for (const service of services) {
     if (!service.name.trim()) {
       issues.push(error(`service.${service.id}.name`, "Nama layanan wajib diisi."));
+    }
+
+    if (service.id && !/^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(service.id)) {
+      issues.push(error(`service.${service.id}.id`, "ID layanan tidak valid."));
     }
 
     if (!/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(service.slug)) {
