@@ -543,11 +543,11 @@ async function readProductCategories(): Promise<ProductCategory[]> {
   return (data as ProductCategory[]).map(cleanProductCategory);
 }
 
-async function readProducts(): Promise<Product[]> {
+export async function readProducts(): Promise<Product[]> {
   const supabase = createSupabaseServerClient();
 
   if (!supabase) {
-    return fallbackContent.products;
+    return [];
   }
 
   const { data, error } = await supabase
@@ -556,7 +556,7 @@ async function readProducts(): Promise<Product[]> {
     .eq("status", "active")
     .order("urutan", { ascending: true });
 
-  if (error || !data?.length) return fallbackContent.products;
+  if (error || !data || data.length === 0) return [];
 
   const products = data as Product[];
   const productIds = products.map((product) => product.id).filter(Boolean) as string[];
