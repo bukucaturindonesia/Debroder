@@ -131,6 +131,7 @@ function toLocalInput(value: string | null) {
 
 type GuidedFulfillmentAction =
   | { kind: "transition"; target: FulfillmentStatus; label: string; instruction: string; next: string }
+  | { kind: "pickup_preparation"; label: string; instruction: string; next: string }
   | { kind: "final_check"; label: string; instruction: string; next: string }
   | { kind: "edit_tracking"; label: string; instruction: string; next: string }
   | { kind: "pickup_cash"; label: string; instruction: string; next: string }
@@ -146,8 +147,15 @@ function resolveGuidedFulfillmentAction(record: FulfillmentRow, order: OrderRow 
     return { kind: "final_check", label: "Lakukan Pengecekan Akhir", instruction: "Selesaikan checklist isi paket, penerima, jumlah paket, dan kondisi kemasan sebelum penyerahan.", next: record.method === "pickup" ? "Siap Diambil" : "Siap Dikirim" };
   }
   if (record.status === "packing" && record.final_verified_at) {
-    const target = record.method === "pickup" ? "ready_for_pickup" : "ready_to_ship";
-    return { kind: "transition", target, label: record.method === "pickup" ? "Tandai Barang Siap Diambil" : "Tandai Paket Siap Dikirim", instruction: "Pengecekan akhir sudah selesai. Konfirmasi bahwa paket siap masuk ke tahap penyerahan.", next: record.method === "pickup" ? "Serah Terima di Toko" : "Pilih Kurir dan Masukkan Resi" };
+    if (record.method === "pickup") {
+      return {
+        kind: "pickup_preparation",
+        label: "Buka Persiapan Pickup",
+        instruction: "Pengecekan akhir sudah selesai. Siapkan stok dan lokasi pickup melalui alur operasional sebelum barang ditandai siap diambil.",
+        next: "Persiapan Pickup"
+      };
+    }
+    return { kind: "transition", target: "ready_to_ship", label: "Tandai Paket Siap Dikirim", instruction: "Pengecekan akhir sudah selesai. Konfirmasi bahwa paket siap masuk ke tahap penyerahan.", next: "Pilih Kurir dan Masukkan Resi" };
   }
   if (record.status === "ready_to_ship" && (!record.courier || !record.tracking_number)) {
     return { kind: "edit_tracking", label: "Isi Kurir & Resi Resmi", instruction: "Pilih kurir dan masukkan atau pindai nomor resi resmi yang diterbitkan kurir. Nomor Pengiriman DEBRODER bukan nomor resi kurir.", next: "Penyerahan ke Kurir" };
@@ -216,6 +224,7 @@ export function FulfillmentDetailAdmin() {
   const [transitionTarget, setTransitionTarget] = useState<FulfillmentStatus | null>(null);
   const [transitionNote, setTransitionNote] = useState("");
   const [transitionReason, setTransitionReason] = useState("");
+  const [transitionError, setTransitionError] = useState<string | null>(null);
   const [archiveOpen, setArchiveOpen] = useState(false);
   const [archiveReason, setArchiveReason] = useState("");
   const [uploadFile, setUploadFile] = useState<File | null>(null);
@@ -435,32 +444,43 @@ export function FulfillmentDetailAdmin() {
   async function transitionStatus() {
     if (!record || !transitionTarget || !canManage || working) return;
     const supabase = createSupabaseClient();
-    if (!supabase) return;
-    setWorking(true);
-    setNotice(null);
-    const result = await supabase.rpc("transition_fulfillment_status", {
-      p_fulfillment_id: record.id,
-      p_to_status: transitionTarget,
-      p_note: transitionNote.trim() || null,
-      p_reason: transitionReason.trim() || null
-    });
-    setWorking(false);
-    if (result.error) {
-      const stale = /status|berubah|admin lain|transisi|tidak valid/i.test(result.error.message);
-      setNotice({
-        type: "error",
-        text: stale
-          ? `Tahap pesanan sudah berubah atau tindakan ini tidak lagi tersedia. Data terbaru akan dimuat. (${result.error.message})`
-          : `Status penyerahan belum dapat diperbarui: ${result.error.message}`
-      });
-      await loadData();
+    if (!supabase) {
+      setTransitionError("Sesi admin tidak tersedia. Muat ulang halaman lalu coba lagi.");
       return;
     }
-    setTransitionTarget(null);
-    setTransitionNote("");
-    setTransitionReason("");
-    setNotice({ type: "success", text: `Status diperbarui menjadi ${FULFILLMENT_STATUS_LABELS[transitionTarget]}.` });
-    await loadData();
+    const target = transitionTarget;
+    setWorking(true);
+    setNotice(null);
+    setTransitionError(null);
+    try {
+      const result = await supabase.rpc("transition_fulfillment_status", {
+        p_fulfillment_id: record.id,
+        p_to_status: target,
+        p_note: transitionNote.trim() || null,
+        p_reason: transitionReason.trim() || null
+      });
+      if (result.error) {
+        const stale = /status|berubah|admin lain|transisi|tidak valid|tidak diizinkan/i.test(result.error.message);
+        setTransitionError(
+          stale
+            ? `Tahap pesanan sudah berubah atau tindakan ini tidak lagi tersedia. Data terbaru telah dimuat. (${result.error.message})`
+            : `Status penyerahan belum dapat diperbarui: ${result.error.message}`
+        );
+        if (stale) await loadData();
+        return;
+      }
+      setTransitionTarget(null);
+      setTransitionNote("");
+      setTransitionReason("");
+      setTransitionError(null);
+      await loadData();
+      setNotice({ type: "success", text: `Status diperbarui menjadi ${FULFILLMENT_STATUS_LABELS[target]}.` });
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "Koneksi ke server terputus.";
+      setTransitionError(`Status penyerahan belum dapat diperbarui: ${message}`);
+    } finally {
+      setWorking(false);
+    }
   }
 
   async function completePickupAtStore() {
@@ -492,7 +512,12 @@ export function FulfillmentDetailAdmin() {
   function runGuidedAction(action: GuidedFulfillmentAction) {
     if (!action || working || !canManage) return;
     if (action.kind === "transition") {
+      setTransitionError(null);
       setTransitionTarget(action.target);
+      return;
+    }
+    if (action.kind === "pickup_preparation") {
+      router.push(`/admin/inventory-operations?order=${encodeURIComponent(record.order_id)}`);
       return;
     }
     if (action.kind === "final_check") {
@@ -851,7 +876,10 @@ export function FulfillmentDetailAdmin() {
                   <button
                     key={status}
                     type="button"
-                    onClick={() => setTransitionTarget(status)}
+                    onClick={() => {
+                      setTransitionError(null);
+                      setTransitionTarget(status);
+                    }}
                     disabled={!canManage || working}
                     className={`min-h-11 rounded-full px-5 text-sm font-semibold disabled:opacity-45 ${
                       ["problem", "cancelled"].includes(status)
@@ -1107,6 +1135,11 @@ export function FulfillmentDetailAdmin() {
               Catatan
               <textarea rows={3} value={transitionNote} onChange={(event) => setTransitionNote(event.target.value)} className="mt-2 w-full rounded-lg border border-brand-softGray px-4 py-3" />
             </label>
+            {transitionError ? (
+              <div role="alert" className="mt-5 border border-red-300 bg-red-50 px-4 py-3 text-sm font-medium text-red-800">
+                {transitionError}
+              </div>
+            ) : null}
             {fulfillmentTransitionNeedsReason(transitionTarget) ? (
               <label className="mt-4 block text-sm font-semibold">
                 Alasan wajib
@@ -1122,7 +1155,17 @@ export function FulfillmentDetailAdmin() {
               >
                 {working ? "Memproses..." : "Konfirmasi"}
               </button>
-              <button type="button" onClick={() => setTransitionTarget(null)} disabled={working} className="rounded-full border border-brand-softGray px-6 py-3 text-sm font-semibold">Batal</button>
+              <button
+                type="button"
+                onClick={() => {
+                  setTransitionTarget(null);
+                  setTransitionError(null);
+                }}
+                disabled={working}
+                className="rounded-full border border-brand-softGray px-6 py-3 text-sm font-semibold"
+              >
+                Batal
+              </button>
             </div>
           </section>
         </div>
