@@ -15,33 +15,78 @@ type Preparation = {
   pickup_preparation_items: Array<{ id: string; required_quantity: number; reserved_quantity: number; product_variant_sizes: { sku?: string; size_name?: string } | null }>;
 };
 type Payload = { locations: Location[]; transfers: Transfer[]; preparations: Preparation[]; balances: unknown[]; role: string };
+type InventoryAction = "process_deadlines" | "initialize_pickup" | "create_pickup_transfer" | "receive_transfer" | "mark_pickup_ready" | "complete_handover" | "decide_extension";
+type PreparationIdentity = Pick<Preparation, "order_id" | "status">;
 
-export function InventoryOperationsAdmin() {
+const ORDER_UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+const TERMINAL_PREPARATION_STATUSES = new Set(["handed_over", "cancelled"]);
+
+export function normalizeInventoryOrderId(value: string | null | undefined) {
+  const normalized = value?.trim() ?? "";
+  return ORDER_UUID_PATTERN.test(normalized) ? normalized : "";
+}
+
+export function buildInitializePickupRequest(value: string) {
+  const orderId = normalizeInventoryOrderId(value);
+  return orderId ? { action: "initialize_pickup" as const, orderId } : null;
+}
+
+export function hasActivePickupPreparation(preparations: readonly PreparationIdentity[], orderId: string) {
+  return preparations.some((preparation) => preparation.order_id === orderId && !TERMINAL_PREPARATION_STATUSES.has(preparation.status));
+}
+
+export function inventoryActionSuccessMessage(action: InventoryAction, body: Record<string, unknown>) {
+  if (action === "initialize_pickup") return "Persiapan pickup berhasil dimulai.";
+  if (action === "create_pickup_transfer") return "Transfer stok pickup berhasil dibuat.";
+  if (action === "receive_transfer") return "Transfer stok berhasil diterima.";
+  if (action === "mark_pickup_ready") return "Pickup berhasil ditandai siap diambil.";
+  if (action === "complete_handover") return "Serah terima pickup berhasil diselesaikan.";
+  if (action === "decide_extension") return body.approve === true ? "Perpanjangan pickup berhasil disetujui." : "Perpanjangan pickup berhasil ditolak.";
+  return "Deadline pickup berhasil diproses.";
+}
+
+export function InventoryOperationsAdmin({ initialOrderId = "" }: { initialOrderId?: string }) {
   const [data, setData] = useState<Payload | null>(null);
   const [loading, setLoading] = useState(true);
   const [working, setWorking] = useState("");
   const [notice, setNotice] = useState<{ type: "success" | "error"; text: string } | null>(null);
-  const [orderId, setOrderId] = useState("");
+  const [orderId, setOrderId] = useState(() => normalizeInventoryOrderId(initialOrderId));
 
   const load = useCallback(async () => {
     setLoading(true);
-    try { setData(await operationsApiFetch<Payload>("/api/admin/inventory-operations")); }
-    catch (error) { setNotice({ type: "error", text: error instanceof Error ? error.message : "Operasional stok belum dapat dimuat." }); }
-    finally { setLoading(false); }
+    try {
+      const payload = await operationsApiFetch<Payload>("/api/admin/inventory-operations");
+      setData(payload);
+      return payload;
+    } catch (error) {
+      setNotice({ type: "error", text: error instanceof Error ? error.message : "Operasional stok belum dapat dimuat." });
+      return null;
+    } finally {
+      setLoading(false);
+    }
   }, []);
   useEffect(() => { void load(); }, [load]);
 
-  async function run(action: string, body: Record<string, unknown>, key: string) {
+  async function run(action: InventoryAction, body: Record<string, unknown>, key: string) {
     setWorking(key); setNotice(null);
     try {
       await operationsApiFetch("/api/admin/inventory-operations", { method: "POST", body: JSON.stringify({ action, ...body }) });
-      setNotice({ type: "success", text: "Operasi stok dan pickup berhasil diproses." });
-      await load();
+      const refreshed = await load();
+      if (!refreshed) return;
+      if (action === "initialize_pickup") {
+        const submittedOrderId = normalizeInventoryOrderId(typeof body.orderId === "string" ? body.orderId : "");
+        if (!submittedOrderId || !hasActivePickupPreparation(refreshed.preparations, submittedOrderId)) {
+          setNotice({ type: "error", text: "Persiapan pickup belum ditemukan setelah proses. Muat ulang data dan periksa order yang dipilih." });
+          return;
+        }
+      }
+      setNotice({ type: "success", text: inventoryActionSuccessMessage(action, body) });
     } catch (error) { setNotice({ type: "error", text: error instanceof Error ? error.message : "Operasi belum dapat diproses." }); }
     finally { setWorking(""); }
   }
 
-  const activePreparations = useMemo(() => data?.preparations.filter((row) => !["handed_over", "cancelled"].includes(row.status)) ?? [], [data]);
+  const initializeRequest = buildInitializePickupRequest(orderId);
+  const activePreparations = useMemo(() => data?.preparations.filter((row) => !TERMINAL_PREPARATION_STATUSES.has(row.status)) ?? [], [data]);
   if (loading) return <AdminLoadingState label="Memuat stok lokasi dan pickup..." />;
 
   return <main className="grid gap-6 text-brand-charcoal">
@@ -49,8 +94,8 @@ export function InventoryOperationsAdmin() {
     {notice ? <AdminAlert type={notice.type}>{notice.text}</AdminAlert> : null}
     <section className="border border-brand-softGray bg-white p-5">
       <h2 className="font-semibold">Mulai Persiapan Pickup</h2>
-      <p className="mt-1 text-sm text-brand-charcoal/60">Masukkan ID order dari halaman detail pesanan. Sistem akan menentukan lokasi toko dan kebutuhan stok.</p>
-      <div className="mt-4 flex flex-wrap gap-3"><input value={orderId} onChange={(e)=>setOrderId(e.target.value)} placeholder="UUID order" className="min-h-11 min-w-[280px] flex-1 border border-brand-softGray px-4" /><button data-admin-mutation="true" disabled={!/^[0-9a-f-]{36}$/i.test(orderId)||working==="initialize"} onClick={()=>void run("initialize_pickup",{orderId},"initialize")} className="min-h-11 rounded-full bg-brand-green px-5 text-sm font-semibold text-white disabled:opacity-45">Siapkan Pickup</button></div>
+      <p className="mt-1 text-sm text-brand-charcoal/60">ID order dari halaman detail pesanan akan terisi otomatis. Admin tetap harus menekan Siapkan Pickup untuk memulai proses.</p>
+      <div className="mt-4 flex flex-wrap gap-3"><input value={orderId} onChange={(e)=>setOrderId(e.target.value)} placeholder="UUID order" className="min-h-11 min-w-[280px] flex-1 border border-brand-softGray px-4" /><button data-admin-mutation="true" disabled={!initializeRequest||working==="initialize"} onClick={()=>{const request=buildInitializePickupRequest(orderId);if(request)void run(request.action,{orderId:request.orderId},"initialize");}} className="min-h-11 rounded-full bg-brand-green px-5 text-sm font-semibold text-white disabled:opacity-45">Siapkan Pickup</button></div>
     </section>
     <section className="grid gap-4">
       <h2 className="text-xl font-semibold">Persiapan Aktif</h2>
