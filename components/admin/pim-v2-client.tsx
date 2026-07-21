@@ -12,6 +12,7 @@ import type {
   ValidationIssue
 } from "@/lib/types";
 import { validatePublishProduct } from "@/lib/product-validation";
+import { createSupabaseClient } from "@/lib/supabase";
 
 interface PimV2ClientProps {
   products: Product[];
@@ -20,7 +21,6 @@ interface PimV2ClientProps {
 
 export function PimV2Client({ products, services }: PimV2ClientProps) {
   const [selectedProductId, setSelectedProductId] = useState(products[0]?.id ?? "");
-  const [token, setToken] = useState("");
   const selectedProduct = useMemo(
     () => products.find((product) => product.id === selectedProductId) ?? products[0],
     [products, selectedProductId]
@@ -261,11 +261,16 @@ export function PimV2Client({ products, services }: PimV2ClientProps) {
     }
 
     setStatus("Menyimpan...");
+    const token = await adminAccessToken();
+    if (!token) {
+      setStatus("Sesi admin tidak tersedia. Silakan login kembali.");
+      return;
+    }
     const response = await fetch("/api/admin/pim-v2/products", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        ...(token ? { Authorization: `Bearer ${token}` } : {})
+        Authorization: `Bearer ${token}`
       },
       body: JSON.stringify({ product: draft })
     });
@@ -276,11 +281,16 @@ export function PimV2Client({ products, services }: PimV2ClientProps) {
 
   async function saveServices() {
     setStatus("Menyimpan layanan...");
+    const token = await adminAccessToken();
+    if (!token) {
+      setStatus("Sesi admin tidak tersedia. Silakan login kembali.");
+      return;
+    }
     const response = await fetch("/api/admin/pim-v2/custom-services", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        ...(token ? { Authorization: `Bearer ${token}` } : {})
+        Authorization: `Bearer ${token}`
       },
       body: JSON.stringify({ services: serviceDrafts })
     });
@@ -864,14 +874,6 @@ export function PimV2Client({ products, services }: PimV2ClientProps) {
           </button>
         </section>
 
-        <Field label="Admin token">
-          <input
-            className="text-input"
-            onChange={(event) => setToken(event.target.value)}
-            type="password"
-            value={token}
-          />
-        </Field>
 
         <div className="control-row">
           <button className="primary-button" onClick={saveDraft} type="button">
@@ -892,6 +894,14 @@ export function PimV2Client({ products, services }: PimV2ClientProps) {
       </section>
     </div>
   );
+}
+
+async function adminAccessToken(): Promise<string | null> {
+  const supabase = createSupabaseClient();
+  if (!supabase) return null;
+  const { data, error } = await supabase.auth.getSession();
+  if (error) return null;
+  return data.session?.access_token ?? null;
 }
 
 function Field({

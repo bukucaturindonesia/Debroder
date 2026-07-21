@@ -1,16 +1,19 @@
+import type { SupabaseClient } from "@supabase/supabase-js";
 import type {
   ProductConfigurationSnapshot,
   QuotationDraftListItem,
   QuotationStatus
 } from "@/lib/types";
-import { getAdminSupabaseClient } from "@/lib/supabase/client";
-
-export async function listQuotationDrafts(): Promise<QuotationDraftListItem[]> {
-  const client = getAdminSupabaseClient();
-
-  if (!client) {
-    return [];
-  }
+/**
+ * Compatibility reader for legacy quotation drafts.
+ *
+ * Callers must inject an already-authorized client. This module must never
+ * create a service-role client on its own because doing so would make it easy
+ * for a Server Component to read private quotation data before authorization.
+ */
+export async function listQuotationDrafts(
+  client: SupabaseClient
+): Promise<QuotationDraftListItem[]> {
 
   const { data, error } = await client
     .from("quotation_drafts")

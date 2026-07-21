@@ -164,7 +164,7 @@ describe("DEBRODER final three admin roles", () => {
     for (const file of mutationApiFiles) {
       const source = readFileSync(file, "utf8");
       const terminalLegacyRoute = source.includes("status: 410");
-      const protectedRoute = /requirePhase13Actor|requirePaymentActor|requireNotificationActor|requireRepeatOrderActor|isAdminRequest/.test(source);
+      const protectedRoute = /requirePhase13Actor|requirePaymentActor|requireNotificationActor|requireRepeatOrderActor/.test(source);
       expect(terminalLegacyRoute || protectedRoute, `${file} must reject or authorize mutations`).toBe(true);
     }
     expect(productRoute).toContain("adminGuestErrorResponse(error)");
