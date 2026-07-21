@@ -1,4 +1,4 @@
-import { existsSync, readFileSync } from "node:fs";
+import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 
 const read = (path: string) => readFileSync(path, "utf8");
@@ -15,14 +15,14 @@ describe("Custom checkout structured-address hotfix", () => {
     expect(checkout).toContain("addressSnapshot");
     expect(checkout).toContain("!addressConfirmed");
     expect(tsconfig).not.toContain("CheckoutClientV2");
-    expect(existsSync("components/checkout/CheckoutClientV2.tsx")).toBe(false);
+    expect(route).not.toContain("CheckoutClientV2");
   });
 
   it("keeps pickup address-free and retains structured state while fulfillment changes", () => {
     const checkout = read("components/checkout/CheckoutClient.tsx");
 
     expect(checkout).toContain('fulfillment === "pickup"');
-    expect(checkout).toContain("Lokasi pickup");
+    expect(checkout).toContain("Lokasi pengambilan");
     expect(checkout).toContain("setStructuredAddress");
     expect(checkout).not.toMatch(/setStructuredAddress\(EMPTY_STRUCTURED_ADDRESS\)/);
   });

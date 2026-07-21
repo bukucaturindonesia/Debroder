@@ -61,14 +61,14 @@ describe("Phase 10 QC database and UI contract", () => {
 
   it("keeps Phase 10 discoverable from navigation and Work Item detail", () => {
     expect(navigation).toContain('href: "/admin/quality-control"');
-    expect(navigation).toContain("Detail Quality Control");
-    expect(workItemDetail).toContain("Buka Quality Control");
+    expect(navigation).toContain("Detail Pemeriksaan Kualitas");
+    expect(workItemDetail).toContain("Buka Pemeriksaan Kualitas");
   });
 
   it("ships list and detail managers", () => {
-    expect(listUi).toContain("Quality Control");
+    expect(listUi).toContain("Pemeriksaan Kualitas");
     expect(listUi).toContain("Gudang Arsip");
-    expect(detailUi).toContain("Finalisasi QC");
-    expect(detailUi).toContain("Upload Bukti QC");
+    expect(detailUi).toContain("Selesaikan Pemeriksaan Kualitas");
+    expect(detailUi).toContain("Unggah Bukti Pemeriksaan");
   });
 });

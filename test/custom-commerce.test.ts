@@ -148,6 +148,7 @@ describe("Custom Commerce", () => {
     manual.services[0].basePrice = 0;
     const pricing = priceCustomProject(project(), [manual]);
     expect(pricing.status).toBe("quotation_required");
+    expect(pricing.finalTotal).toBeNull();
     expect(pricing.issues).toEqual([]);
     expect(pricing.lines.find((line) => line.kind === "service")).toMatchObject({ serviceId: ids.service, serviceSlug: "layanan-uji", subtotal: null });
   });
@@ -182,7 +183,7 @@ describe("Custom Commerce", () => {
     const confirmation = readFileSync("components/checkout/OrderConfirmationClient.tsx", "utf8");
     const tracking = readFileSync("components/tracking/GuestOrderTracking.tsx", "utf8");
     expect(admin).toContain("custom_project_snapshot");
-    expect(admin).toContain("Layanan dipilih pada snapshot");
+    expect(admin).toContain("Layanan yang dipilih saat pemesanan");
     expect(admin).toContain("Belum dialokasikan—tidak ikut harga");
     expect(admin).toContain("Pembayaran diblokir sampai harga final");
     expect(confirmation).toContain("Menunggu penetapan harga");

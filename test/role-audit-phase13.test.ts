@@ -55,7 +55,7 @@ describe("Phase 13 role catalog and helpers", () => {
     );
     expect(isAdminRole("designer")).toBe(true);
     expect(isAdminRole("customer")).toBe(false);
-    expect(getRoleLabel("quality_control")).toBe("Quality Control");
+    expect(getRoleLabel("quality_control")).toBe("Pemeriksaan Kualitas");
     expect(isAssignableAdminRole("superadmin")).toBe(true);
     expect(isAssignableAdminRole("admin")).toBe(true);
     expect(isAssignableAdminRole("admin_guest")).toBe(true);
@@ -122,9 +122,9 @@ describe("Phase 13 backend and UI contract", () => {
   });
 
   it("provides loading, empty, error, success, matrix, and append-only history states", () => {
-    expect(accessUi).toContain("Memuat role dan permission");
+    expect(accessUi).toContain("Memuat peran dan hak akses");
     expect(accessUi).toContain("Belum ada profil staf");
-    expect(accessUi).toContain("Permission per Role");
+    expect(accessUi).toContain("Hak Akses per Peran");
     expect(accessUi).toContain('type="success"');
     expect(auditUi).toContain("Memuat audit sistem");
     expect(auditUi).toContain("Audit tidak ditemukan");

@@ -112,10 +112,10 @@ describe("PIM Phase 2 Unified Product Manager", () => {
   });
 
   it("renders a single-route workflow with read-only compatibility and PIM V2 fallback", () => {
-    for (const heading of ["Informasi Produk", "Warna", "Ukuran & SKU", "Harga & Stok", "Gambar", "Review & Publish"]) {
+    for (const heading of ["Informasi Produk", "Warna", "Ukuran & SKU", "Harga & Stok", "Gambar", "Pemeriksaan & Publikasi"]) {
       expect(productUi).toContain(heading);
     }
-    expect(productUi).toContain("Galeri product-root legacy — read-only compatibility");
+    expect(productUi).toContain("Buka Manajemen Produk Lama");
     expect(productUi).toContain('href="/admin/pim-v2"');
     expect(productUi).toContain("MODE LIHAT SAJA");
     expect(legacyRoute).toContain("status: 410");

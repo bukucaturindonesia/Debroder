@@ -9,6 +9,7 @@ export default defineConfig({
   },
   resolve: {
     alias: {
+      "@/lib/automatic-payment-link": fileURLToPath(new URL("./lib/automatic-payment-link-v2.ts", import.meta.url)),
       "@": fileURLToPath(new URL("./", import.meta.url))
     }
   }

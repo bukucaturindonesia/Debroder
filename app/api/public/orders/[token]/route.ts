@@ -44,6 +44,19 @@ function relativePaymentPath(publicUrl: string | null) {
   }
 }
 
+
+async function resolveActiveStage(
+  client: NonNullable<ReturnType<typeof getAdminSupabaseClient>>,
+  orderId: string
+) {
+  try {
+    const { data, error } = await client.rpc("resolve_order_active_stage_v1", { p_order_id: orderId });
+    return error ? null : data;
+  } catch {
+    return null;
+  }
+}
+
 async function resolvePublicPaymentLink(
   client: NonNullable<ReturnType<typeof getAdminSupabaseClient>>,
   order: PublicOrderRow
@@ -108,9 +121,7 @@ export async function GET(_request: Request, context: Context) {
       client.from("order_shipping_quotes").select("version,courier,service,cost,estimate,total_snapshot,status,created_at").eq("order_id", row.id).order("version", { ascending: false }).limit(1).maybeSingle(),
       row.custom_quote_version ? client.from("custom_order_quotation_versions").select("version_number,status,quoted_total,pricing_components,design_version_snapshot,valid_until,sent_at,locked_at").eq("order_id", row.id).eq("version_number", row.custom_quote_version).maybeSingle() : Promise.resolve({ data: null }),
       resolvePublicPaymentLink(client, row),
-      client.rpc("resolve_order_active_stage_v1", { p_order_id: row.id })
-        .then(({ data, error }) => error ? null : data)
-        .catch(() => null)
+      resolveActiveStage(client, row.id)
     ]);
 
     return Response.json({

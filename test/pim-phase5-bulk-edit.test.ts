@@ -77,14 +77,14 @@ describe("PIM Phase 5 server authority, UX, and atomicity", () => {
 
   it("supports cross-page and all-matching selection while resetting stale filters", () => {
     const ui = source("components/admin/BulkEditProductsAdmin.tsx");
-    expect(ui).toContain("Explicit selection lintas halaman");
+    expect(ui).toContain("Pilihan tersimpan lintas halaman");
     expect(ui).toContain("Pilih seluruh");
     expect(ui).toContain("excludedIds");
     expect(ui).toContain("resetSelection");
     expect(ui).toContain("Selection direset karena target atau filter berubah");
     expect(ui).toContain("showModal");
-    expect(ui).toContain("PREVIEW ONLY");
-    expect(ui).toContain("before/after");
+    expect(ui).toContain("Penerapan perubahan dinonaktifkan dalam mode pratinjau");
+    expect(ui).toContain("data sebelum dan sesudah");
   });
 
   it("implements service-role-only atomic RPC, concurrency, idempotency, audit, and rollback", () => {

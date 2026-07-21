@@ -85,13 +85,13 @@ describe("Phase 8 discoverability and lifecycle", () => {
   });
 
   it("exposes create, view, edit, archive, restore, and permanent delete actions", () => {
-    expect(workItemAdmin).toContain("Tambah Work Item");
+    expect(workItemAdmin).toContain("Tambah Pekerjaan");
     expect(workItemAdmin).toContain("Lihat Detail");
     expect(workItemAdmin).toContain("Gudang Arsip");
     expect(workItemAdmin).toContain("Pulihkan");
     expect(workItemAdmin).toContain("Hapus Permanen");
-    expect(workItemDetail).toContain("Edit Work Item");
-    expect(workItemDetail).toContain("Tugaskan Work Item");
+    expect(workItemDetail).toContain("Edit Pekerjaan");
+    expect(workItemDetail).toContain("Tugaskan Pekerjaan");
     expect(workItemDetail).toContain("Tambah Dependensi");
   });
 });

@@ -10,7 +10,7 @@ const migration = fs.readFileSync(migrationPath, "utf8");
 
 const canonicalRows = [
   ...migration.matchAll(
-    /\('([^']+)', '(province|regency|district)', (null|'[^']+'), '([^']+)', '\{\}'::text\[\], true\)/g,
+    /\('([^']+)', '(province|regency|district)', (null|'[^']+'), '((?:[^']|'')+)', '\{\}'::text\[\], true\)/g,
   ),
 ].map((match) => ({
   code: match[1],

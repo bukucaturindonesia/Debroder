@@ -177,8 +177,8 @@ describe("PIM Phase 4 permissions, preview authority, and atomicity contracts", 
     const route = source("app/api/admin/products/bulk-import/route.ts");
     const ui = source("components/admin/BulkImportProductsAdmin.tsx");
     expect(route).not.toMatch(/checkout|reservation|payment|jersey/i);
-    expect(ui).toContain("Create Only");
-    expect(ui).toContain("PREVIEW ONLY");
+    expect(ui).toContain("Buat produk baru · Draft");
+    expect(ui).toContain("Impor dinonaktifkan dalam mode lihat saja");
     expect(ui).toContain("Draft");
   });
 });

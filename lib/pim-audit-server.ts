@@ -218,33 +218,35 @@ export function parsePimAuditFilters(url: URL): PimAuditListFilters {
 export async function listPimAuditHistory(client: SupabaseClient, filters: PimAuditListFilters) {
   const relatedProductAudits = filters.productId ? await relatedAuditIds(client, "product_id", filters.productId) : [];
   const relatedVariantAudits = filters.variantId ? await relatedAuditIds(client, "variant_id", filters.variantId) : [];
-  let query = client
+  const query = client
     .from("system_audit_log")
     .select(auditSelect())
     .not("event_code", "is", null)
     .gte("created_at", filters.from)
     .lte("created_at", filters.to);
-  if (filters.actorId) query = query.eq("actor_id", filters.actorId);
-  if (filters.actorRole) query = query.eq("actor_role", filters.actorRole);
-  if (filters.category) query = query.eq("category", filters.category);
-  if (filters.eventCode) query = query.eq("event_code", filters.eventCode);
-  if (filters.status) query = query.eq("operation_status", filters.status);
-  if (filters.sourceModule) query = query.eq("source_module", filters.sourceModule);
-  if (filters.entityType) query = query.eq("entity_type", filters.entityType);
-  if (filters.productId) query = relatedProductAudits.length
-    ? query.or(`product_id.eq.${filters.productId},id.in.(${relatedProductAudits.join(",")})`)
-    : query.eq("product_id", filters.productId);
-  if (filters.variantId) query = relatedVariantAudits.length
-    ? query.or(`variant_id.eq.${filters.variantId},id.in.(${relatedVariantAudits.join(",")})`)
-    : query.eq("variant_id", filters.variantId);
-  if (filters.sku) query = query.eq("sku", filters.sku);
-  if (filters.batchId) query = query.eq("batch_id", filters.batchId);
-  if (filters.requestId) query = query.eq("request_id", filters.requestId);
-  if (filters.operationId) query = query.eq("operation_id", filters.operationId);
-  if (filters.search) query = query.ilike("search_text", `%${filters.search}%`);
+  if (filters.actorId) query.eq("actor_id", filters.actorId);
+  if (filters.actorRole) query.eq("actor_role", filters.actorRole);
+  if (filters.category) query.eq("category", filters.category);
+  if (filters.eventCode) query.eq("event_code", filters.eventCode);
+  if (filters.status) query.eq("operation_status", filters.status);
+  if (filters.sourceModule) query.eq("source_module", filters.sourceModule);
+  if (filters.entityType) query.eq("entity_type", filters.entityType);
+  if (filters.productId) {
+    if (relatedProductAudits.length) query.or(`product_id.eq.${filters.productId},id.in.(${relatedProductAudits.join(",")})`);
+    else query.eq("product_id", filters.productId);
+  }
+  if (filters.variantId) {
+    if (relatedVariantAudits.length) query.or(`variant_id.eq.${filters.variantId},id.in.(${relatedVariantAudits.join(",")})`);
+    else query.eq("variant_id", filters.variantId);
+  }
+  if (filters.sku) query.eq("sku", filters.sku);
+  if (filters.batchId) query.eq("batch_id", filters.batchId);
+  if (filters.requestId) query.eq("request_id", filters.requestId);
+  if (filters.operationId) query.eq("operation_id", filters.operationId);
+  if (filters.search) query.ilike("search_text", `%${filters.search}%`);
   if (filters.cursor) {
     const direction = filters.sort === "newest" ? "lt" : "gt";
-    query = query.or(`created_at.${direction}.${filters.cursor.createdAt},and(created_at.eq.${filters.cursor.createdAt},id.${direction}.${filters.cursor.id})`);
+    query.or(`created_at.${direction}.${filters.cursor.createdAt},and(created_at.eq.${filters.cursor.createdAt},id.${direction}.${filters.cursor.id})`);
   }
   const ascending = filters.sort === "oldest";
   const { data, error } = await query.order("created_at", { ascending }).order("id", { ascending }).limit(filters.pageSize + 1);
@@ -378,12 +380,13 @@ function nullableUuidFilter(value: string | null, label: string) {
   return parsed;
 }
 
-function parseCursor(value: string | null, sort: "newest" | "oldest") {
+function parseCursor(value: string | null, sort: "newest" | "oldest"): PimAuditListFilters["cursor"] {
   if (!value) return null;
   try {
     const decoded = JSON.parse(Buffer.from(value, "base64url").toString("utf8")) as { createdAt?: string; id?: string; sort?: string };
-    if (!decoded.createdAt || Number.isNaN(Date.parse(decoded.createdAt)) || !safeUuid(decoded.id) || decoded.sort !== sort) throw new Error("invalid");
-    return { createdAt: decoded.createdAt, id: decoded.id };
+    const id = safeUuid(decoded.id);
+    if (!decoded.createdAt || Number.isNaN(Date.parse(decoded.createdAt)) || !id || decoded.sort !== sort) throw new Error("invalid");
+    return { createdAt: decoded.createdAt, id };
   } catch {
     throw new PimAuditServerError(400, "Cursor pagination tidak valid.", "INVALID_CURSOR");
   }

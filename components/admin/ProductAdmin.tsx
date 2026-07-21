@@ -421,14 +421,16 @@ export function ProductAdminPanel() {
             </div>
           </section>
 
-          <VariantMatrixEditor
-            product={selected}
-            payload={payload}
-            readOnly={readOnly}
-            canManage={canManageDependencies}
-            working={working}
-            onSave={(matrix) => runAction({ action: "save_matrix", productId: selected.id, matrix })}
-          />
+          {payload ? (
+            <VariantMatrixEditor
+              product={selected}
+              payload={payload}
+              readOnly={readOnly}
+              canManage={canManageDependencies}
+              working={working}
+              onSave={(matrix) => runAction({ action: "save_matrix", productId: selected.id, matrix })}
+            />
+          ) : null}
 
           <section id="gambar" className="scroll-mt-24 bg-white p-5 sm:p-7">
             <SectionHeader index="05" title="Gambar" description="Kelola maksimal empat jenis gambar per warna. Pratinjau menggunakan rasio 4:5; gambar depan wajib sebelum produk diterbitkan. File di Galeri Media tidak dihapus ketika slot dikosongkan." status={selected.workflow.find((step) => step.key === "images")?.status} />

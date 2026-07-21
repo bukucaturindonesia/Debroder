@@ -11,6 +11,10 @@ const migration = readFileSync(
   "supabase/migrations/20260719140000_payment_verification_and_fulfillment.sql",
   "utf8"
 ).toLowerCase();
+const automaticFulfillment = readFileSync(
+  "supabase/migrations/20260720030000_human_centered_order_experience_p0.sql",
+  "utf8"
+).toLowerCase();
 
 describe("Post-payment order routing", () => {
   it("keeps Ready Stock and Jersey Ready Stock out of forced production", () => {
@@ -21,15 +25,18 @@ describe("Post-payment order routing", () => {
     expect(operations).toContain("READY_STOCK_STAGES");
     expect(operations).toContain("Persiapan & Pemeriksaan Barang");
     expect(operations).toContain("Pengemasan & Pemeriksaan Akhir");
-    expect(commerce).toContain("create_ready_stock_fulfillment");
+    expect(commerce).not.toContain('rpc("create_ready_stock_fulfillment"');
+    expect(automaticFulfillment).toContain("public._ensure_ready_stock_fulfillment_v2");
+    expect(automaticFulfillment).toContain("ensure_ready_stock_fulfillment_order_update");
   });
 
   it("keeps Custom and Jersey Custom on Job Order, production, QC, then fulfillment", () => {
     expect(resolveAdminOrderWorkspaceKind([{ projectId: "custom-1" }])).toBe("custom");
-    expect(custom).toContain("Job Order");
-    expect(custom).toContain("Quality Control");
-    expect(custom).toContain("Fulfillment");
-    expect(orderDetail).toContain("<CustomOrderOperationalWorkspace");
+    expect(custom).toContain("Surat Perintah Kerja");
+    expect(custom).toContain("Pemeriksaan Kualitas");
+    expect(custom).toContain("Pengiriman / Ambil di Toko");
+    expect(orderDetail).toContain("[OrderOperationalWorkspace, CustomOrderOperationalWorkspace].forEach");
+    expect(orderDetail).toContain("<AdminGuidedOrderFlow");
   });
 
   it("preserves Commerce P0 reservation and stock-consumption guards", () => {

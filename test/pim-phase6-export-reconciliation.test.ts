@@ -20,6 +20,10 @@ const categoryId = "44444444-4444-4444-8444-444444444444";
 const colorId = "55555555-5555-4555-8555-555555555555";
 const sizeId = "66666666-6666-4666-8666-666666666666";
 
+function excelBuffer(bytes: Uint8Array) {
+  return Buffer.from(bytes.buffer, bytes.byteOffset, bytes.byteLength);
+}
+
 function snapshot(overrides: Partial<PimPhase6Snapshot> = {}): PimPhase6Snapshot {
   const scope = normalizePimPhase6Scope({ kind: "selected", ids: [productId], excludedIds: [], filters: {} })!;
   return {
@@ -85,7 +89,7 @@ describe("PIM Phase 6 scope and export contract", () => {
       sourceEnvironment: "local", scopeLabel: "Selected Products", filterSummary: "{}", filterHash: "a".repeat(64)
     });
     const workbook = new ExcelJS.Workbook();
-    await workbook.xlsx.load(generated.bytes.buffer.slice(generated.bytes.byteOffset, generated.bytes.byteOffset + generated.bytes.byteLength));
+    await workbook.xlsx.load(excelBuffer(generated.bytes));
     expect(workbook.worksheets.map((sheet) => sheet.name)).toEqual([
       "EXPORT_INFORMATION", "DATA_DICTIONARY", "PRODUCTS", "VARIANTS", "CATEGORY_REFERENCE", "COLOR_MASTER_REFERENCE", "SIZE_MASTER_REFERENCE"
     ]);
@@ -99,8 +103,8 @@ describe("PIM Phase 6 scope and export contract", () => {
       exportId: "export-id", generatedAt: "2026-07-17T10:30:00.000Z", generatedBy: "actor-id", generatedByRole: "owner",
       sourceEnvironment: "local", scopeLabel: "Selected Products", filterSummary: "{}", filterHash: "b".repeat(64)
     });
+    expect(Array.from(generated.bytes.slice(0, 3))).toEqual([0xef, 0xbb, 0xbf]);
     const csv = new TextDecoder().decode(generated.bytes);
-    expect(csv.startsWith("\uFEFF")).toBe(true);
     expect(csv).toContain("export_schema_version");
     expect(csv).toContain(PIM_PHASE6_EXPORT_SCHEMA_VERSION);
     expect(csv).toContain('"000123"');
@@ -175,7 +179,7 @@ describe("PIM Phase 6 reconciliation", () => {
     };
     const xlsx = await generatePimReconciliationReport("xlsx", input);
     const workbook = new ExcelJS.Workbook();
-    await workbook.xlsx.load(xlsx.bytes.buffer.slice(xlsx.bytes.byteOffset, xlsx.bytes.byteOffset + xlsx.bytes.byteLength));
+    await workbook.xlsx.load(excelBuffer(xlsx.bytes));
     expect(workbook.worksheets.map((sheet) => sheet.name)).toEqual(["REPORT_INFORMATION", "SUMMARY", "FINDINGS", "RULE_REGISTRY", "DATA_DICTIONARY"]);
     const csv = new TextDecoder().decode((await generatePimReconciliationReport("csv", input)).bytes);
     expect(csv).toContain("issue_code");
