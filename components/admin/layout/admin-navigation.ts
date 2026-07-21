@@ -221,6 +221,9 @@ function pathAllowedByRole(role: AdminRole, pathname: string) {
 }
 
 export function roleCanAccessPath(role: AdminRole, pathname: string) {
+  if (pathname === "/admin/products/bulk-import") {
+    return hasRole(role, PRODUCT_MANAGER_VIEW_ROLES);
+  }
   if (role === "admin_guest") {
     return pathname.startsWith("/admin") && !pathname.startsWith("/admin/login");
   }
