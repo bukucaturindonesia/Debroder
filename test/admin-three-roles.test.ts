@@ -83,7 +83,7 @@ describe("DEBRODER final three admin roles", () => {
     expect(isAdminGuestFullViewerPath("/admin/products")).toBe(false);
 
     const labels = JSON.stringify(getNavigationGroups("admin_guest"));
-    for (const label of ["PIM V2 Dependency", "Maintenance PIM", "Pembayaran", "Laporan", "Role & Permission", "Audit Sistem"]) {
+    for (const label of ["Manajemen Produk Lanjutan", "Pemeliharaan Produk", "Pembayaran", "Laporan", "Pengguna & Hak Akses", "Riwayat Aktivitas"]) {
       expect(labels).toContain(label);
     }
   });
