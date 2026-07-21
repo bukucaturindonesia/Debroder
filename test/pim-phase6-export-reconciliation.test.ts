@@ -20,8 +20,10 @@ const categoryId = "44444444-4444-4444-8444-444444444444";
 const colorId = "55555555-5555-4555-8555-555555555555";
 const sizeId = "66666666-6666-4666-8666-666666666666";
 
-function excelBuffer(bytes: Uint8Array) {
-  return Buffer.from(bytes.buffer, bytes.byteOffset, bytes.byteLength);
+type ExcelLoadInput = Parameters<ExcelJS.Workbook["xlsx"]["load"]>[0];
+
+function excelBuffer(bytes: Uint8Array): ExcelLoadInput {
+  return Buffer.from(bytes) as unknown as ExcelLoadInput;
 }
 
 function snapshot(overrides: Partial<PimPhase6Snapshot> = {}): PimPhase6Snapshot {

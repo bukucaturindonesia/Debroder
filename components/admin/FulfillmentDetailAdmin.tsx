@@ -510,7 +510,7 @@ export function FulfillmentDetailAdmin() {
   }
 
   function runGuidedAction(action: GuidedFulfillmentAction) {
-    if (!action || working || !canManage) return;
+    if (!action || !record || working || !canManage) return;
     if (action.kind === "transition") {
       setTransitionError(null);
       setTransitionTarget(action.target);

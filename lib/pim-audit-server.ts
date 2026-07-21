@@ -27,6 +27,12 @@ const PAGE_SIZE_DEFAULT = 30;
 const PAGE_SIZE_MAX = 100;
 const DATE_RANGE_MAX_DAYS = 366;
 
+const AUDIT_LIST_SELECT =
+  "id,event_code,event_version,category,operation_status,created_at,actor_id,actor_role,actor_label,source_module,entity_type,entity_id,entity_label,product_id,variant_id,sku,batch_id,request_id,operation_id,duration_ms,event_summary,failure_code" as const;
+
+const AUDIT_DETAIL_SELECT =
+  "id,event_code,event_version,category,operation_status,created_at,actor_id,actor_role,actor_label,source_module,entity_type,entity_id,entity_label,product_id,variant_id,sku,batch_id,request_id,operation_id,duration_ms,event_summary,failure_code,parent_audit_id,metadata,old_value,new_value" as const;
+
 export type PimAuditListFilters = {
   search: string;
   from: string;
@@ -220,7 +226,7 @@ export async function listPimAuditHistory(client: SupabaseClient, filters: PimAu
   const relatedVariantAudits = filters.variantId ? await relatedAuditIds(client, "variant_id", filters.variantId) : [];
   const query = client
     .from("system_audit_log")
-    .select(auditSelect())
+    .select(AUDIT_LIST_SELECT)
     .not("event_code", "is", null)
     .gte("created_at", filters.from)
     .lte("created_at", filters.to);
@@ -269,21 +275,21 @@ export async function loadPimAuditDetail(client: SupabaseClient, auditId: string
   const id = safeUuid(auditId);
   if (!id) throw new PimAuditServerError(400, "Audit ID tidak valid.", "INVALID_AUDIT_ID");
   const [{ data, error }, changesResult, entitiesResult] = await Promise.all([
-    client.from("system_audit_log").select(`${auditSelect()},parent_audit_id,metadata,old_value,new_value`).eq("id", id).not("event_code", "is", null).maybeSingle(),
+    client.from("system_audit_log").select(AUDIT_DETAIL_SELECT).eq("id", id).not("event_code", "is", null).maybeSingle(),
     client.from("pim_audit_changes").select("field_name,before_value,after_value,before_state,after_state").eq("audit_id", id).order("field_name"),
     client.from("pim_audit_entities").select("entity_type,entity_id,entity_label,product_id,variant_id,sku,result_status,failure_code").eq("audit_id", id).order("created_at").limit(500)
   ]);
   if (error) throw new PimAuditServerError(503, "Gagal memuat detail audit.", "AUDIT_DETAIL_QUERY_FAILED");
   if (!data) throw new PimAuditServerError(404, "Audit tidak ditemukan.", "AUDIT_NOT_FOUND");
   if (changesResult.error || entitiesResult.error) throw new PimAuditServerError(503, "Detail audit belum tersedia.", "AUDIT_CHILD_QUERY_FAILED");
-  const row = mapAuditRow(data as Record<string, unknown>);
+  const row = mapAuditRow(data);
   return {
     ...row,
-    parentAuditId: textOrNull((data as Record<string, unknown>).parent_audit_id),
+    parentAuditId: textOrNull(data.parent_audit_id),
     metadata: {
-      ...record((data as Record<string, unknown>).metadata),
-      beforeSummary: (data as Record<string, unknown>).old_value ?? null,
-      afterSummary: (data as Record<string, unknown>).new_value ?? null
+      ...record(data.metadata),
+      beforeSummary: data.old_value ?? null,
+      afterSummary: data.new_value ?? null
     },
     changes: records(changesResult.data).map((change) => ({
       field: String(change.field_name || ""),
@@ -305,9 +311,6 @@ export async function loadPimAuditDetail(client: SupabaseClient, auditId: string
   };
 }
 
-function auditSelect() {
-  return "id,event_code,event_version,category,operation_status,created_at,actor_id,actor_role,actor_label,source_module,entity_type,entity_id,entity_label,product_id,variant_id,sku,batch_id,request_id,operation_id,duration_ms,event_summary,failure_code";
-}
 
 function mapAuditRow(value: Record<string, unknown>): PimAuditListRow {
   const eventCode = String(value.event_code || "");
