@@ -1,12 +1,12 @@
 import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
+import { safeInventoryOperationMessage } from "@/lib/admin-inventory-operation-message";
 import { getProductCardImages } from "@/lib/product-gallery";
 import type { Product } from "@/lib/types";
 import {
   hasActivePickupPreparation,
   isTerminalInventoryOrder
 } from "@/components/admin/InventoryOperationsAdmin";
-import { safeInventoryOperationMessage } from "@/app/api/admin/inventory-operations/route";
 
 const migration = readFileSync(
   "supabase/migrations/20260722194500_p0_hotfix_02_public_media_pickup_idempotency.sql",
@@ -14,6 +14,7 @@ const migration = readFileSync(
 );
 const card = readFileSync("components/PublicProductCard.tsx", "utf8");
 const operationsUi = readFileSync("components/admin/InventoryOperationsAdmin.tsx", "utf8");
+const operationsRoute = readFileSync("app/api/admin/inventory-operations/route.ts", "utf8");
 
 function product(input: Partial<Product> = {}): Product {
   return {
@@ -86,6 +87,13 @@ describe("P0-HOTFIX-02 public media and pickup idempotency", () => {
       { order_id: "order-1", status: "ready_for_pickup", orderStatus: "completed" }
     ], "order-1")).toBe(false);
     expect(operationsUi).toContain("Pesanan ini sudah selesai");
+  });
+
+  it("keeps arbitrary helpers outside the Next.js Route Handler export surface", () => {
+    expect(operationsRoute).toContain(
+      'import { safeInventoryOperationMessage } from "@/lib/admin-inventory-operation-message"'
+    );
+    expect(operationsRoute).not.toContain("export function safeInventoryOperationMessage");
   });
 
   it("returns only allowlisted operational database messages", () => {
