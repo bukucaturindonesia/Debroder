@@ -1,5 +1,5 @@
-import { ProductWorkspaceReadOnlyModule } from "@/components/admin/products/workspace/ProductWorkspaceReadOnlyModule";
+import { ProductMediaPanel } from "@/components/admin/products/workspace/ProductMediaPanel";
 
 export default function ProductMediaPage() {
-  return <ProductWorkspaceReadOnlyModule module="media" />;
+  return <ProductMediaPanel />;
 }

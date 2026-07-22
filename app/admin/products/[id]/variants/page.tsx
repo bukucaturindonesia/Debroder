@@ -1,5 +1,5 @@
-import { ProductWorkspaceReadOnlyModule } from "@/components/admin/products/workspace/ProductWorkspaceReadOnlyModule";
+import { ProductVariantsPanel } from "@/components/admin/products/workspace/ProductVariantsPanel";
 
 export default function ProductVariantsPage() {
-  return <ProductWorkspaceReadOnlyModule module="variants" />;
+  return <ProductVariantsPanel />;
 }

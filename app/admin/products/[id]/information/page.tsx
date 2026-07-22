@@ -1,5 +1,5 @@
-import { ProductWorkspaceReadOnlyModule } from "@/components/admin/products/workspace/ProductWorkspaceReadOnlyModule";
+import { ProductInformationForm } from "@/components/admin/products/workspace/ProductInformationForm";
 
 export default function ProductInformationPage() {
-  return <ProductWorkspaceReadOnlyModule module="information" />;
+  return <ProductInformationForm />;
 }
