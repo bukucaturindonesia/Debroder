@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { AddToCartButton } from "@/components/CartProvider";
 import { ProductImageSwap } from "@/components/ProductImageSwap";
-import { fallbackImages, getProductImage } from "@/lib/fallback-data";
+import { fallbackImages } from "@/lib/fallback-data";
 import { productCardMetadata, productCardPrice } from "@/lib/product-card";
 import { getProductCardImages } from "@/lib/product-gallery";
 import type { Product } from "@/lib/types";
@@ -119,7 +119,7 @@ export function PublicProductCard({
               priceLabel,
               priceValue: priceValue(product),
               href: detailHref,
-              imageUrl: getProductImage(product),
+              imageUrl: cardImages.primary,
               imageAlt: product.image_alt || product.nama
             }}
             className="inline-flex min-h-10 items-center justify-center bg-black px-3 text-sm font-semibold text-white transition hover:bg-black/80"
