@@ -44,8 +44,8 @@ describe("WP-02 Product Workspace read-only shell", () => {
   it("provides reloadable route files and redirects the workspace root", () => {
     expect(workspaceIndex).toContain("redirect(productWorkspacePath(id))");
     expect(existsSync("app/admin/products/[id]/layout.tsx")).toBe(true);
-    for (const module of moduleKeys) {
-      expect(existsSync(`app/admin/products/[id]/${module}/page.tsx`)).toBe(true);
+    for (const moduleKey of moduleKeys) {
+      expect(existsSync(`app/admin/products/[id]/${moduleKey}/page.tsx`)).toBe(true);
     }
   });
 
@@ -88,8 +88,8 @@ describe("WP-02 Product Workspace read-only shell", () => {
     "allows %s to open every canonical workspace route",
     (role: "owner" | "superadmin" | "super_admin" | "admin" | "admin_guest") => {
       expect(roleCanAccessPath(role, `/admin/products/${PRODUCT_ID}`)).toBe(true);
-      for (const module of moduleKeys) {
-        expect(roleCanAccessPath(role, `/admin/products/${PRODUCT_ID}/${module}`)).toBe(true);
+      for (const moduleKey of moduleKeys) {
+        expect(roleCanAccessPath(role, `/admin/products/${PRODUCT_ID}/${moduleKey}`)).toBe(true);
       }
     }
   );
