@@ -46,6 +46,11 @@ import {
   createPimAuditIdentity,
   recordPimAuditEvent
 } from "@/lib/pim-audit-server";
+import {
+  changeProductReviewLifecycle,
+  loadProductReviewPayload,
+  ProductReviewApiError
+} from "@/lib/product-review-server";
 
 export const dynamic = "force-dynamic";
 
@@ -64,6 +69,8 @@ type ProductAction =
 type ActionBody = {
   action?: ProductAction;
   productId?: string;
+  expectedUpdatedAt?: string | null;
+  expectedReviewVersion?: string;
   product?: unknown;
   variant?: unknown;
   sellable?: unknown;
@@ -241,50 +248,102 @@ export async function POST(request: Request) {
 
     requireLifecycleRole(actor.role);
 
-    if (body.action === "validate_publish" || body.action === "publish") {
-      const snapshot = await loadPublishSnapshot(actor.adminClient, productId);
-      const issues = validateProductPublishSnapshot(snapshot);
-      const blockers = issues.filter((issue) => issue.severity === "error");
-      if (body.action === "validate_publish" || blockers.length) {
-        if (body.action === "publish" && blockers.length) {
-          await auditProductMutation({ actor, identity: auditIdentity, eventCode: "PRODUCT_PUBLISH_FAILED", status: "FAILED", entityType: "products", entityId: productId, productId, entityLabel: snapshot.name || "Produk", failureCode: "PUBLISH_VALIDATION_FAILED", metadata: { errorCount: blockers.length } });
-        }
-        return noStoreJson({ ok: blockers.length === 0, productId, issues }, blockers.length ? 422 : 200);
-      }
-
-      const before = await loadAuditRow(actor.adminClient, "products", productId, PRODUCT_AUDIT_FIELDS);
-      const { data, error } = await actor.adminClient
-        .from("products")
-        .update({ status: "active", updated_at: new Date().toISOString() })
-        .eq("id", productId)
-        .eq("status", "draft")
-        .select("id")
-        .maybeSingle();
-      if (error || !data) {
-        console.error("Product publish failed", { code: error?.code });
-        throw new ProductApiError(409, "Produk tidak dapat dipublish. Muat ulang dan periksa status terbaru.");
-      }
-      const after = await loadAuditRow(actor.adminClient, "products", productId, PRODUCT_AUDIT_FIELDS);
-      await auditProductMutation({ actor, identity: auditIdentity, eventCode: "PRODUCT_PUBLISHED", entityType: "products", entityId: productId, entityLabel: String(after?.name || "Produk"), productId, before, after, fields: PRODUCT_AUDIT_FIELDS });
-      return noStoreJson({ ok: true, productId, issues: [], message: "Produk berhasil dipublish." });
+    if (body.action === "validate_publish") {
+      const review = await loadProductReviewPayload(
+        actor.adminClient,
+        actor.role,
+        productId
+      );
+      const issues: ValidationIssue[] = review.issues.map((issue) => ({
+        field: issue.field,
+        message: issue.message,
+        severity: issue.severity
+      }));
+      return noStoreJson({
+        ok: review.counts.blockers === 0,
+        productId,
+        issues
+      }, review.counts.blockers ? 422 : 200);
     }
 
-    if (body.action === "archive") {
-      const before = await loadAuditRow(actor.adminClient, "products", productId, PRODUCT_AUDIT_FIELDS);
-      const { data, error } = await actor.adminClient
-        .from("products")
-        .update({ status: "archived", updated_at: new Date().toISOString() })
-        .eq("id", productId)
-        .eq("status", "active")
-        .select("id")
-        .maybeSingle();
-      if (error || !data) {
-        console.error("Product archive failed", { code: error?.code });
-        throw new ProductApiError(409, "Hanya produk Active yang dapat diarsipkan.");
+    if (body.action === "publish" || body.action === "archive") {
+      if (
+        !Object.prototype.hasOwnProperty.call(body, "expectedUpdatedAt") ||
+        !body.expectedReviewVersion
+      ) {
+        throw new ProductApiError(
+          409,
+          "Compatibility path memerlukan product version dan review version terbaru. Muat ulang data."
+        );
       }
-      const after = await loadAuditRow(actor.adminClient, "products", productId, PRODUCT_AUDIT_FIELDS);
-      await auditProductMutation({ actor, identity: auditIdentity, eventCode: "PRODUCT_ARCHIVED", entityType: "products", entityId: productId, entityLabel: String(after?.name || "Produk"), productId, before, after, fields: PRODUCT_AUDIT_FIELDS });
-      return noStoreJson({ ok: true, productId, message: "Produk diarsipkan tanpa menghapus data." });
+      const expectedUpdatedAt = compatibilityUpdatedAt(
+        body.expectedUpdatedAt
+      );
+      const expectedReviewVersion = compatibilityReviewVersion(
+        body.expectedReviewVersion
+      );
+      try {
+        const result = await changeProductReviewLifecycle({
+          client: actor.adminClient,
+          role: actor.role,
+          productId,
+          action: body.action,
+          expectedUpdatedAt,
+          expectedReviewVersion
+        });
+        const before = { status: result.before.product.status };
+        const after = { status: result.after.product.status };
+        const eventCode = body.action === "publish"
+          ? "PRODUCT_PUBLISHED"
+          : "PRODUCT_ARCHIVED";
+        await auditProductMutation({
+          actor,
+          identity: auditIdentity,
+          eventCode,
+          entityType: "products",
+          entityId: productId,
+          entityLabel: result.after.product.name || "Produk",
+          productId,
+          before,
+          after,
+          fields: ["status"],
+          metadata: {
+            checkpoint: "WP-07",
+            compatibilityPath: true,
+            reviewVersionBefore: result.before.reviewVersion,
+            reviewVersionAfter: result.after.reviewVersion
+          }
+        });
+        return noStoreJson({
+          ok: true,
+          productId,
+          issues: [],
+          message: body.action === "publish"
+            ? "Produk berhasil dipublish."
+            : "Produk diarsipkan tanpa menghapus data."
+        });
+      } catch (error) {
+        if (body.action === "publish") {
+          await auditProductMutation({
+            actor,
+            identity: auditIdentity,
+            eventCode: "PRODUCT_PUBLISH_FAILED",
+            status: "FAILED",
+            entityType: "products",
+            entityId: productId,
+            productId,
+            entityLabel: "Produk",
+            failureCode: error instanceof ProductReviewApiError && error.status === 409
+              ? "PUBLISH_CONFLICT"
+              : "PUBLISH_VALIDATION_FAILED",
+            metadata: {
+              checkpoint: "WP-07",
+              compatibilityPath: true
+            }
+          });
+        }
+        throw error;
+      }
     }
 
     throw new ProductApiError(400, "Aksi Product Manager tidak didukung.");
@@ -1028,6 +1087,15 @@ async function readBody(request: Request): Promise<ActionBody> {
 function cleanId(value: unknown) {
   return typeof value === "string" && /^[0-9a-f-]{36}$/i.test(value) ? value : "";
 }
+function compatibilityUpdatedAt(value: unknown) {
+  if (value === null) return null;
+  if (typeof value === "string" && value.trim()) return value.trim();
+  throw new ProductApiError(400, "Product version compatibility path tidak valid.");
+}
+function compatibilityReviewVersion(value: unknown) {
+  if (typeof value === "string" && /^wp07-[0-9a-f]{8}$/.test(value)) return value;
+  throw new ProductApiError(400, "Review version compatibility path tidak valid.");
+}
 function lifecycle(value: unknown): ProductLifecycle {
   return value === "active" || value === "archived" ? value : "draft";
 }
@@ -1059,7 +1127,11 @@ function productErrorResponse(error: unknown) {
   if (error instanceof VariantMatrixServerError) {
     return noStoreJson({ error: error.message, issues: error.issues }, error.status);
   }
-  if (error instanceof ProductApiError || error instanceof Phase13AuthError) {
+  if (
+    error instanceof ProductApiError ||
+    error instanceof ProductReviewApiError ||
+    error instanceof Phase13AuthError
+  ) {
     return noStoreJson({ error: error.message }, error.status);
   }
   console.error("Product Manager API failed", { error: error instanceof Error ? error.name : "unknown" });

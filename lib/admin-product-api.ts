@@ -1,6 +1,7 @@
 "use client";
 
 import { createSupabaseClient } from "@/lib/supabase";
+import { loadProductReview } from "@/lib/admin-product-review-api";
 import type {
   ProductImageRole,
   ProductLifecycle,
@@ -168,7 +169,7 @@ export function loadProductManager() {
   return requestJson<ProductManagerPayload>();
 }
 
-export function runProductManagerAction(input: {
+export async function runProductManagerAction(input: {
   action: ProductManagerAction;
   productId?: string;
   product?: ProductRootInput;
@@ -177,7 +178,23 @@ export function runProductManagerAction(input: {
   image?: VariantImageInput;
   imageId?: string;
   matrix?: VariantMatrixSaveInput;
+  expectedUpdatedAt?: string | null;
+  expectedReviewVersion?: string;
 }) {
+  let requestInput = input;
+  if (
+    (input.action === "publish" || input.action === "archive") &&
+    input.productId &&
+    (!Object.prototype.hasOwnProperty.call(input, "expectedUpdatedAt") ||
+      !input.expectedReviewVersion)
+  ) {
+    const review = await loadProductReview(input.productId);
+    requestInput = {
+      ...input,
+      expectedUpdatedAt: review.product.updatedAt,
+      expectedReviewVersion: review.reviewVersion
+    };
+  }
   const requestId = crypto.randomUUID();
   return requestJson<{
     ok: boolean;
@@ -190,7 +207,7 @@ export function runProductManagerAction(input: {
     matrixSummary?: VariantMatrixSummary;
   }>({
     method: "POST",
-    body: JSON.stringify(input),
+    body: JSON.stringify(requestInput),
     headers: { "x-request-id": requestId, "x-operation-id": crypto.randomUUID() }
   });
 }
