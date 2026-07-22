@@ -11,7 +11,7 @@ const mainPage = readFileSync("app/admin/products/page.tsx", "utf8");
 const legacyPage = readFileSync("app/admin/products/legacy/page.tsx", "utf8");
 const libraryRoute = readFileSync("app/api/admin/products/library/route.ts", "utf8");
 const libraryUi = readFileSync("components/admin/products/ProductLibrary.tsx", "utf8");
-const legacyEditor = readFileSync("components/admin/ProductAdmin.tsx", "utf8");
+const draftPanel = readFileSync("components/admin/products/ProductDraftCreatePanel.tsx", "utf8");
 
 function query(value = "") {
   return parseProductLibraryQuery(new URLSearchParams(value));
@@ -65,18 +65,19 @@ describe("WP-01 Product Library", () => {
     expect(libraryRoute).not.toContain("export async function POST");
   });
 
-  it("preserves the old editor and opens it with a stable product ID", () => {
-    expect(legacyPage).toContain("ProductAdminPanel");
-    expect(legacyPage).toContain("initialProductId={productId}");
-    expect(legacyPage).toContain('startNew={params.new === "1"}');
-    expect(legacyEditor).toContain("initialProductId = null");
-    expect(legacyEditor).toContain("startNew = false");
-    expect(legacyEditor).toContain("refresh(initialProductRef.current)");
-    expect(libraryUi).toContain("productId=${encodeURIComponent(product.id)}");
+  it("keeps redirect compatibility without rendering the old monolith", () => {
+    expect(legacyPage).toContain("redirect(productWorkspacePath(params.productId))");
+    expect(legacyPage).toContain('params.new === "1"');
+    expect(legacyPage).toContain("ProductDraftCreatePanel");
+    expect(legacyPage).not.toContain("ProductAdminPanel");
+    expect(libraryUi).toContain('/admin/products/legacy?new=1');
+    expect(libraryUi).not.toContain("productId=${encodeURIComponent(product.id)}");
+    expect(draftPanel).toContain('action: "save_draft"');
+    expect(draftPanel).toContain("productWorkspacePath(result.productId)");
   });
 
   it.each(["owner", "superadmin", "super_admin", "admin", "admin_guest"] as const)(
-    "keeps Product Library and legacy editor visible for %s",
+    "keeps Product Library and compatibility route visible for %s",
     (role: "owner" | "superadmin" | "super_admin" | "admin" | "admin_guest") => {
       expect(roleCanAccessPath(role, "/admin/products")).toBe(true);
       expect(roleCanAccessPath(role, "/admin/products/bulk-edit")).toBe(true);

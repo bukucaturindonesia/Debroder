@@ -6,6 +6,7 @@ import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useMemo, useState, type ChangeEvent } from "react";
 import { AdminPageHeader } from "@/components/admin/layout/AdminPageHeader";
 import { loadProductLibrary } from "@/lib/admin-product-library-api";
+import { duplicateProductAsDraft } from "@/lib/admin-product-compatibility-api";
 import {
   parseProductLibraryQuery,
   type ProductLibraryPayload,
@@ -30,6 +31,8 @@ export function ProductLibrary() {
   const [payload, setPayload] = useState<ProductLibraryPayload | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [notice, setNotice] = useState("");
+  const [workingProductId, setWorkingProductId] = useState("");
 
   const updateQuery = useCallback((next: Partial<ProductLibraryQuery>) => {
     const merged = { ...query, ...next };
@@ -44,9 +47,7 @@ export function ProductLibrary() {
     router.replace(serialized ? `${pathname}?${serialized}` : pathname, { scroll: false });
   }, [pathname, query, router]);
 
-  useEffect(() => setSearchText(query.q), [query.q]);
-
-  useEffect(() => {
+  const reload = useCallback(() => {
     const controller = new AbortController();
     setLoading(true);
     setError("");
@@ -60,8 +61,15 @@ export function ProductLibrary() {
       .finally(() => {
         if (!controller.signal.aborted) setLoading(false);
       });
-    return () => controller.abort();
+    return controller;
   }, [query]);
+
+  useEffect(() => setSearchText(query.q), [query.q]);
+
+  useEffect(() => {
+    const controller = reload();
+    return () => controller.abort();
+  }, [reload]);
 
   useEffect(() => {
     if (searchText === query.q) return;
@@ -76,6 +84,25 @@ export function ProductLibrary() {
   const items = payload?.items || [];
   const pagination = payload?.pagination;
 
+  async function duplicateAsDraft(productId: string) {
+    if (!canCreateDraft || workingProductId) return;
+    setWorkingProductId(productId);
+    setNotice("");
+    try {
+      const product = items.find((item) => item.id === productId);
+      if (!product) throw new Error("Produk sumber tidak ditemukan pada halaman ini.");
+      const result = await duplicateProductAsDraft(productId, product.updatedAt);
+      if (!result.productId) throw new Error("ID Draft hasil duplikasi tidak tersedia.");
+      router.push(productWorkspacePath(result.productId));
+    } catch (reason) {
+      setNotice(reason instanceof Error
+        ? reason.message
+        : "Produk belum berhasil diduplikasi sebagai Draft.");
+    } finally {
+      setWorkingProductId("");
+    }
+  }
+
   return (
     <div className="grid gap-6">
       <AdminPageHeader
@@ -89,7 +116,7 @@ export function ProductLibrary() {
             <Link href="/admin/products/bulk-edit" className={secondaryAction}>Edit Massal</Link>
             <Link href="/admin/products/bulk-import" className={secondaryAction}>Impor Produk Massal</Link>
             {canCreateDraft ? (
-              <Link href="/admin/products/legacy?new=1#informasi-produk" className={primaryAction}>
+              <Link href="/admin/products/legacy?new=1" className={primaryAction}>
                 Produk Draft Baru
               </Link>
             ) : null}
@@ -100,6 +127,12 @@ export function ProductLibrary() {
       {readOnly ? (
         <div role="status" className="border border-amber-200 bg-amber-50 px-5 py-4 text-sm font-semibold text-amber-900">
           MODE LIHAT SAJA — Product Library dapat dibuka, tetapi perubahan produk tetap dinonaktifkan.
+        </div>
+      ) : null}
+
+      {notice ? (
+        <div role="status" className="border border-brand-softGray bg-white px-5 py-4 text-sm font-medium">
+          {notice}
         </div>
       ) : null}
 
@@ -217,12 +250,17 @@ export function ProductLibrary() {
                   >
                     {readOnly ? "Lihat Workspace" : "Buka Workspace"}
                   </Link>
-                  <Link
-                    href={`/admin/products/legacy?productId=${encodeURIComponent(product.id)}`}
-                    className={secondaryAction}
-                  >
-                    {readOnly ? "Lihat Editor Lama" : "Editor Lama"}
-                  </Link>
+                  {canCreateDraft ? (
+                    <button
+                      data-admin-mutation="true"
+                      type="button"
+                      disabled={Boolean(workingProductId)}
+                      onClick={() => void duplicateAsDraft(product.id)}
+                      className={secondaryAction}
+                    >
+                      {workingProductId === product.id ? "Menduplikasi..." : "Duplikat sebagai Draft"}
+                    </button>
+                  ) : null}
                   <Link
                     href={`/admin/products/audit-history?productId=${encodeURIComponent(product.id)}`}
                     className={secondaryAction}
@@ -272,14 +310,18 @@ function StatusBadge({ status }: { status: "draft" | "active" | "archived" }) {
     : status === "archived"
       ? "bg-gray-200 text-gray-700"
       : "bg-blue-50 text-blue-800";
-  return <span className={`inline-flex rounded-full px-3 py-1 text-xs font-semibold ${className}`}>{lifecycleLabel(status)}</span>;
+  return (
+    <span className={`inline-flex rounded-full px-3 py-1 text-xs font-semibold ${className}`}>
+      {lifecycleLabel(status)}
+    </span>
+  );
 }
 
 function Summary({ label, value }: { label: string; value: number }) {
-  return <div><p className="font-semibold">{value}</p><p className="mt-1 text-brand-charcoal/50">{label}</p></div>;
+  return <div><span className="block font-semibold">{value}</span><span className="mt-1 block text-brand-charcoal/45">{label}</span></div>;
 }
 
-const controlClass = "mt-2 min-h-11 w-full rounded-lg border border-brand-softGray bg-white px-4 font-normal";
-const primaryAction = "inline-flex min-h-10 items-center justify-center rounded-full bg-brand-charcoal px-4 text-xs font-semibold text-white";
-const secondaryAction = "inline-flex min-h-10 items-center justify-center rounded-full border border-brand-softGray bg-white px-4 text-xs font-semibold text-brand-charcoal";
-const pageButton = "min-h-10 rounded-full border border-brand-softGray px-5 text-sm font-semibold disabled:cursor-not-allowed disabled:opacity-40";
+const controlClass = "mt-2 min-h-11 w-full border border-brand-softGray bg-white px-4 text-sm";
+const primaryAction = "inline-flex min-h-10 items-center rounded-full bg-brand-charcoal px-4 text-xs font-semibold text-white disabled:opacity-45";
+const secondaryAction = "inline-flex min-h-10 items-center rounded-full border border-brand-softGray bg-white px-4 text-xs font-semibold disabled:opacity-45";
+const pageButton = "min-h-10 rounded-full border border-brand-softGray px-5 text-sm font-semibold disabled:cursor-not-allowed disabled:opacity-35";

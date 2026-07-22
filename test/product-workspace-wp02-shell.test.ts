@@ -49,11 +49,13 @@ describe("WP-02 Product Workspace read-only shell", () => {
     }
   });
 
-  it("opens the new workspace from Product Library while retaining the old editor", () => {
+  it("opens the new workspace and keeps legacy URLs as redirects only", () => {
     expect(libraryUi).toContain("productWorkspacePath(product.id)");
     expect(libraryUi).toContain("Buka Workspace");
-    expect(libraryUi).toContain("/admin/products/legacy?productId=");
-    expect(legacyPage).toContain("ProductAdminPanel");
+    expect(libraryUi).not.toContain("/admin/products/legacy?productId=");
+    expect(workspaceShell).not.toContain("/admin/products/legacy?productId=");
+    expect(legacyPage).toContain("redirect(productWorkspacePath(params.productId))");
+    expect(legacyPage).not.toContain("ProductAdminPanel");
   });
 
   it("keeps the shell read-only with loading, missing, invalid, and retry states", () => {

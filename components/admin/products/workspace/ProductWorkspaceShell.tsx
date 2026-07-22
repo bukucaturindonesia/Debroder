@@ -122,20 +122,12 @@ export function ProductWorkspaceShell({
             >
               Kembali ke Product Library
             </Link>
-            <div className="flex flex-wrap gap-2">
-              <Link
-                href={`/admin/products/legacy?productId=${encodeURIComponent(product.id)}`}
-                className="inline-flex min-h-10 items-center rounded-full border border-brand-softGray px-4 text-xs font-semibold"
-              >
-                {readOnly ? "Lihat Editor Lama" : "Editor Lama"}
-              </Link>
-              <Link
-                href={`/admin/products/audit-history?productId=${encodeURIComponent(product.id)}`}
-                className="inline-flex min-h-10 items-center rounded-full border border-brand-softGray px-4 text-xs font-semibold"
-              >
-                Riwayat
-              </Link>
-            </div>
+            <Link
+              href={`/admin/products/audit-history?productId=${encodeURIComponent(product.id)}`}
+              className="inline-flex min-h-10 items-center rounded-full border border-brand-softGray px-4 text-xs font-semibold"
+            >
+              Riwayat
+            </Link>
           </div>
 
           <div className="mt-6 grid gap-5 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-start">

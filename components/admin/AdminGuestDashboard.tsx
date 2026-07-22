@@ -3,33 +3,63 @@
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { AdminPageHeader } from "@/components/admin/layout/AdminPageHeader";
-import { loadProductManager, type ProductManagerPayload } from "@/lib/admin-product-api";
+import { loadProductLibrary } from "@/lib/admin-product-library-api";
+import type { ProductLibraryItem } from "@/lib/product-library";
 
 export function AdminGuestDashboard() {
-  const [payload, setPayload] = useState<ProductManagerPayload | null>(null);
+  const [products, setProducts] = useState<ProductLibraryItem[] | null>(null);
   const [error, setError] = useState("");
 
   useEffect(() => {
     let active = true;
-    loadProductManager()
-      .then((data) => { if (active) setPayload(data); })
-      .catch((loadError) => {
-        if (active) setError(loadError instanceof Error ? loadError.message : "Ringkasan hanya-lihat belum dapat dimuat.");
-      });
-    return () => { active = false; };
+    const controller = new AbortController();
+
+    async function loadSummary() {
+      const first = await loadProductLibrary({
+        q: "",
+        status: "all",
+        categoryId: "",
+        sort: "updated_desc",
+        page: 1,
+        pageSize: 100
+      }, controller.signal);
+      const items = [...first.items];
+      for (let page = 2; page <= first.pagination.totalPages; page += 1) {
+        const next = await loadProductLibrary({
+          ...first.query,
+          page,
+          pageSize: 100
+        }, controller.signal);
+        items.push(...next.items);
+      }
+      if (active) setProducts(items);
+    }
+
+    void loadSummary().catch((loadError: unknown) => {
+      if (active && !controller.signal.aborted) {
+        setError(loadError instanceof Error
+          ? loadError.message
+          : "Ringkasan hanya-lihat belum dapat dimuat.");
+      }
+    });
+
+    return () => {
+      active = false;
+      controller.abort();
+    };
   }, []);
 
   const stats = useMemo(() => {
-    const products = payload?.products || [];
+    const items = products || [];
     return [
-      ["Produk", products.length],
-      ["Draft", products.filter((item) => item.status === "draft").length],
-      ["Aktif", products.filter((item) => item.status === "active").length],
-      ["Diarsipkan", products.filter((item) => item.status === "archived").length],
-      ["Varian warna", products.reduce((sum, item) => sum + item.variantCount, 0)],
-      ["SKU siap jual", products.reduce((sum, item) => sum + item.sellableCount, 0)]
+      ["Produk", items.length],
+      ["Draft", items.filter((item) => item.status === "draft").length],
+      ["Aktif", items.filter((item) => item.status === "active").length],
+      ["Diarsipkan", items.filter((item) => item.status === "archived").length],
+      ["Varian warna", items.reduce((sum, item) => sum + item.variantCount, 0)],
+      ["SKU siap jual", items.reduce((sum, item) => sum + item.sellableCount, 0)]
     ] as const;
-  }, [payload]);
+  }, [products]);
 
   return (
     <div className="grid gap-6">
@@ -45,7 +75,7 @@ export function AdminGuestDashboard() {
         {stats.map(([label, value]) => (
           <article key={label} className="border border-brand-softGray bg-white p-5">
             <p className="text-xs font-semibold uppercase tracking-[0.14em] text-brand-charcoal/45">{label}</p>
-            <p className="mt-3 text-3xl font-semibold">{payload ? value : "—"}</p>
+            <p className="mt-3 text-3xl font-semibold">{products ? value : "—"}</p>
           </article>
         ))}
       </section>
