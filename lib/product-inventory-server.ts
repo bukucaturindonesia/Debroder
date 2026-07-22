@@ -25,6 +25,7 @@ import {
   type ProductInventoryMutationResult,
   type ProductInventoryMutationSummary,
   type ProductInventoryPayload,
+  type ProductInventoryQuantitySummary,
   type ProductInventoryQuery,
   type ProductInventorySaveChange,
   type ProductInventorySelectionRow
@@ -957,9 +958,8 @@ async function recordInventoryAudit(input: {
     metadata: {
       checkpoint: "WP-05",
       module: "inventory",
-      locationId: String(input.location.id),
-      locationCode: String(input.location.code),
-      ...input.summary
+      ...input.summary,
+      locationCode: String(input.location.code)
     },
     entities
   });
@@ -1142,8 +1142,8 @@ function resolveSelectedLocation(
 function summarizeLocations(
   locations: RecordRow[],
   balances: RecordRow[]
-) {
-  const result = new Map<string, ProductInventoryLocation["summary"]>();
+): Map<string, ProductInventoryQuantitySummary> {
+  const result = new Map<string, ProductInventoryQuantitySummary>();
   for (const location of locations) {
     const id = String(location.id);
     result.set(
@@ -1156,8 +1156,10 @@ function summarizeLocations(
   return result;
 }
 
-function summarizeBalanceRows(rows: RecordRow[]) {
-  return rows.reduce(
+function summarizeBalanceRows(
+  rows: RecordRow[]
+): ProductInventoryQuantitySummary {
+  return rows.reduce<ProductInventoryQuantitySummary>(
     (summary, row) => ({
       onHand: summary.onHand + Math.max(
         0,
@@ -1176,7 +1178,7 @@ function summarizeBalanceRows(rows: RecordRow[]) {
   );
 }
 
-function emptySummary() {
+function emptySummary(): ProductInventoryQuantitySummary {
   return { onHand: 0, reserved: 0, available: 0 };
 }
 
