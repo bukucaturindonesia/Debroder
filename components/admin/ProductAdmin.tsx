@@ -2,7 +2,7 @@
 "use client";
 
 import Link from "next/link";
-import { FormEvent, useEffect, useMemo, useState } from "react";
+import { FormEvent, useEffect, useMemo, useRef, useState } from "react";
 import { AdminPageHeader } from "@/components/admin/layout/AdminPageHeader";
 import { VariantMatrixEditor } from "@/components/admin/VariantMatrixEditor";
 import {
@@ -75,7 +75,14 @@ function emptySellable(variantId = ""): SellableSkuInput {
   };
 }
 
-export function ProductAdminPanel() {
+export function ProductAdminPanel({
+  initialProductId = null,
+  startNew = false
+}: {
+  initialProductId?: string | null;
+  startNew?: boolean;
+}) {
+  const initialProductRef = useRef<string | null>(startNew ? null : initialProductId);
   const [payload, setPayload] = useState<ProductManagerPayload | null>(null);
   const [rootForm, setRootForm] = useState<ProductRootInput>({ ...emptyRoot });
   const [selectedProductId, setSelectedProductId] = useState<string | null>(null);
@@ -122,7 +129,7 @@ export function ProductAdminPanel() {
     }
   }
 
-  useEffect(() => { void refresh(); }, []);
+  useEffect(() => { void refresh(initialProductRef.current); }, []);
 
   const visibleProducts = useMemo(() => {
     const needle = query.trim().toLowerCase();
