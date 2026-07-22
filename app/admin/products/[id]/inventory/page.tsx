@@ -1,5 +1,5 @@
-import { ProductWorkspaceReadOnlyModule } from "@/components/admin/products/workspace/ProductWorkspaceReadOnlyModule";
+import { ProductInventoryPanel } from "@/components/admin/products/workspace/ProductInventoryPanel";
 
 export default function ProductInventoryPage() {
-  return <ProductWorkspaceReadOnlyModule module="inventory" />;
+  return <ProductInventoryPanel />;
 }
