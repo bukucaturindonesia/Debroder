@@ -70,7 +70,7 @@ export async function GET(request: Request) {
 
     const productRows = records(productsResult.data);
     const productIds = productRows.map((row) => String(row.id));
-    const dependencyCounts = await loadPageDependencyCounts(actor.adminClient, productIds);
+    const dependencySummary = await loadPageDependencySummary(actor.adminClient, productIds);
     const categories = records(categoriesResult.data)
       .filter((row) => row.is_active !== false && row.status !== "inactive")
       .map((row) => ({ id: String(row.id), name: String(row.name), slug: String(row.slug) }));
@@ -89,10 +89,12 @@ export async function GET(request: Request) {
         categoryName: String(categoryById.get(categoryId || "")?.name || row.kategori || ""),
         basePrice: finiteNumber(row.base_price) || 0,
         sku: typeof row.sku === "string" && row.sku ? row.sku : null,
-        imageUrl: textOrNull(row.image_url) || textOrNull(row.gambar_url),
-        variantCount: dependencyCounts.variantByProduct.get(id) || 0,
-        sellableCount: dependencyCounts.sellableByProduct.get(id) || 0,
-        imageCount: dependencyCounts.imageByProduct.get(id) || 0,
+        imageUrl: dependencySummary.coverByProduct.get(id) ||
+          textOrNull(row.image_url) ||
+          textOrNull(row.gambar_url),
+        variantCount: dependencySummary.variantByProduct.get(id) || 0,
+        sellableCount: dependencySummary.sellableByProduct.get(id) || 0,
+        imageCount: dependencySummary.imageByProduct.get(id) || 0,
         updatedAt: textOrNull(row.updated_at)
       };
     });
@@ -123,30 +125,56 @@ async function requireProductLibraryActor(request: Request) {
   return actor;
 }
 
-async function loadPageDependencyCounts(client: SupabaseClient, productIds: string[]) {
+async function loadPageDependencySummary(client: SupabaseClient, productIds: string[]) {
   const variantByProduct = new Map<string, number>();
   const sellableByProduct = new Map<string, number>();
   const imageByProduct = new Map<string, number>();
-  if (!productIds.length) return { variantByProduct, sellableByProduct, imageByProduct };
+  const coverByProduct = new Map<string, string>();
+  const coverScoreByProduct = new Map<string, number>();
+  if (!productIds.length) {
+    return {
+      variantByProduct,
+      sellableByProduct,
+      imageByProduct,
+      coverByProduct
+    };
+  }
 
   const variants = await selectInChunks(
     client,
     "product_variants",
-    "id,product_id",
+    "id,product_id,status,is_active,is_default,sort_order,image_url",
     "product_id",
     productIds,
     "Ringkasan varian belum dapat dimuat."
   );
   const productByVariant = new Map<string, string>();
+  const variantById = new Map<string, Record<string, unknown>>();
   for (const variant of variants) {
     const variantId = String(variant.id);
     const productId = String(variant.product_id);
     productByVariant.set(variantId, productId);
+    variantById.set(variantId, variant);
     increment(variantByProduct, productId);
+    considerProductCover({
+      productId,
+      imageUrl: textOrNull(variant.image_url),
+      variant,
+      structuredFront: false,
+      coverByProduct,
+      coverScoreByProduct
+    });
   }
 
   const variantIds = [...productByVariant.keys()];
-  if (!variantIds.length) return { variantByProduct, sellableByProduct, imageByProduct };
+  if (!variantIds.length) {
+    return {
+      variantByProduct,
+      sellableByProduct,
+      imageByProduct,
+      coverByProduct
+    };
+  }
 
   const [sellableRows, imageRows] = await Promise.all([
     selectInChunks(
@@ -160,7 +188,7 @@ async function loadPageDependencyCounts(client: SupabaseClient, productIds: stri
     selectInChunks(
       client,
       "product_variant_images",
-      "id,variant_id",
+      "id,variant_id,image_url,image_role,is_cover,sort_order",
       "variant_id",
       variantIds,
       "Ringkasan gambar belum dapat dimuat."
@@ -172,11 +200,59 @@ async function loadPageDependencyCounts(client: SupabaseClient, productIds: stri
     if (productId) increment(sellableByProduct, productId);
   }
   for (const row of imageRows) {
-    const productId = productByVariant.get(String(row.variant_id));
-    if (productId) increment(imageByProduct, productId);
+    const variantId = String(row.variant_id);
+    const productId = productByVariant.get(variantId);
+    if (!productId) continue;
+    increment(imageByProduct, productId);
+    if (!isFrontImage(row)) continue;
+    considerProductCover({
+      productId,
+      imageUrl: textOrNull(row.image_url),
+      variant: variantById.get(variantId) || {},
+      structuredFront: true,
+      coverByProduct,
+      coverScoreByProduct
+    });
   }
 
-  return { variantByProduct, sellableByProduct, imageByProduct };
+  return {
+    variantByProduct,
+    sellableByProduct,
+    imageByProduct,
+    coverByProduct
+  };
+}
+
+function considerProductCover(input: {
+  productId: string;
+  imageUrl: string | null;
+  variant: Record<string, unknown>;
+  structuredFront: boolean;
+  coverByProduct: Map<string, string>;
+  coverScoreByProduct: Map<string, number>;
+}) {
+  if (!input.imageUrl) return;
+  const score = productCoverScore(input.variant, input.structuredFront);
+  const currentScore = input.coverScoreByProduct.get(input.productId);
+  if (currentScore !== undefined && currentScore <= score) return;
+  input.coverScoreByProduct.set(input.productId, score);
+  input.coverByProduct.set(input.productId, input.imageUrl);
+}
+
+function productCoverScore(variant: Record<string, unknown>, structuredFront: boolean) {
+  const inactive = variant.status === "inactive" || variant.is_active === false;
+  const activePenalty = inactive ? 1000 : 0;
+  const sourcePenalty = structuredFront ? 0 : 20;
+  const defaultPenalty = variant.is_default === true ? 0 : 100;
+  const sortOrder = Math.max(0, finiteNumber(variant.sort_order) || 0);
+  return activePenalty + sourcePenalty + defaultPenalty + sortOrder;
+}
+
+function isFrontImage(row: Record<string, unknown>) {
+  if (typeof row.image_role === "string" && row.image_role) {
+    return row.image_role === "front";
+  }
+  return row.is_cover === true || Number(row.sort_order || 0) === 0;
 }
 
 async function selectInChunks(
