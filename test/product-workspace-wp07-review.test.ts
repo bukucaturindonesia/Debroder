@@ -111,7 +111,7 @@ describe("WP-07 Review & Publish", () => {
   it("replaces the read-only shell with the real panel", () => {
     expect(page).toContain("ProductReviewPanel");
     expect(page).not.toContain("ProductWorkspaceReadOnlyModule");
-    expect(panel).toContain("WP-07 REVIEW & PUBLISH");
+    expect(panel).toContain("WP-07 REVIEW &amp; PUBLISH");
   });
 
   it("uses the eight owner-approved grouped readiness sections", () => {
