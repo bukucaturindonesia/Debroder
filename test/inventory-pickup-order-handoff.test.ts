@@ -47,7 +47,8 @@ describe("inventory pickup order handoff", () => {
       inventorySource.indexOf("const initializeRequest")
     );
     expect(runSource).toContain("const refreshed = await load()");
-    expect(runSource).toContain("hasActivePickupPreparation(refreshed.preparations, submittedOrderId)");
+    expect(runSource).toContain("const identities = refreshed.preparations.map");
+    expect(runSource).toContain("hasActivePickupPreparation(identities, submittedOrderId)");
     expect(runSource).toContain("Persiapan pickup belum ditemukan setelah proses");
     expect(runSource.indexOf("hasActivePickupPreparation")).toBeLessThan(runSource.indexOf("inventoryActionSuccessMessage"));
   });
