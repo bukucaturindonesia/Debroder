@@ -3,6 +3,7 @@ import { describe, expect, it } from "vitest";
 import {
   canManageProductInventory,
   draftFromInventoryRow,
+  inventoryModeLabel,
   inventorySaveChanges,
   parseProductInventoryQuery,
   type ProductInventoryPayload,
@@ -153,10 +154,12 @@ describe("WP-05 Location-aware Inventory", () => {
   });
 
   it("implements preview, bulk modes, copy, dirty state, and confirmation", () => {
+    expect(inventoryModeLabel("stock")).toBe("Stok");
+    expect(inventoryModeLabel("price")).toBe("Tambahan Harga");
+    expect(inventoryModeLabel("status")).toBe("Status SKU");
+    expect(inventoryPanel).toContain("inventoryModeLabel(item)");
+
     for (const label of [
-      "Stok",
-      "Tambahan Harga",
-      "Status SKU",
       "Salin dari warna",
       "Tinjau",
       "Konfirmasi simpan",
