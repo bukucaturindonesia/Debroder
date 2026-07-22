@@ -1,5 +1,5 @@
-import { ProductWorkspaceReadOnlyModule } from "@/components/admin/products/workspace/ProductWorkspaceReadOnlyModule";
+import { ProductReviewPanel } from "@/components/admin/products/workspace/ProductReviewPanel";
 
 export default function ProductReviewPage() {
-  return <ProductWorkspaceReadOnlyModule module="review" />;
+  return <ProductReviewPanel />;
 }
