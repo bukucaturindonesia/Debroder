@@ -20,12 +20,18 @@ import {
   PRODUCT_WORKSPACE_MODULES,
   productWorkspaceModuleFromPath,
   productWorkspacePath,
-  type ProductWorkspacePayload
+  type ProductWorkspacePayload,
+  type ProductWorkspaceProduct
 } from "@/lib/product-workspace";
 import { lifecycleLabel } from "@/lib/product-manager";
 import { formatRupiah } from "@/lib/url";
 
-const ProductWorkspaceContext = createContext<ProductWorkspacePayload | null>(null);
+type ProductWorkspaceContextValue = ProductWorkspacePayload & {
+  reloadWorkspace: () => void;
+  updateWorkspaceProduct: (product: ProductWorkspaceProduct) => void;
+};
+
+const ProductWorkspaceContext = createContext<ProductWorkspaceContextValue | null>(null);
 
 export function useProductWorkspace() {
   const value = useContext(ProductWorkspaceContext);
@@ -50,7 +56,16 @@ export function ProductWorkspaceShell({
   const [error, setError] = useState<ProductWorkspaceRequestError | null>(null);
   const [reloadToken, setReloadToken] = useState(0);
 
-  const reload = useCallback(() => setReloadToken((value) => value + 1), []);
+  const reloadWorkspace = useCallback(
+    () => setReloadToken((value) => value + 1),
+    []
+  );
+  const updateWorkspaceProduct = useCallback(
+    (product: ProductWorkspaceProduct) => {
+      setPayload((current) => current ? { ...current, product } : current);
+    },
+    []
+  );
 
   useEffect(() => {
     if (!isValidProductWorkspaceId(productId)) {
@@ -81,16 +96,23 @@ export function ProductWorkspaceShell({
     return () => controller.abort();
   }, [productId, reloadToken]);
 
+  const contextValue = useMemo<ProductWorkspaceContextValue | null>(
+    () => payload
+      ? { ...payload, reloadWorkspace, updateWorkspaceProduct }
+      : null,
+    [payload, reloadWorkspace, updateWorkspaceProduct]
+  );
+
   if (loading) return <ProductWorkspaceLoading />;
-  if (error || !payload) {
-    return <ProductWorkspaceFailure error={error} onRetry={reload} />;
+  if (error || !payload || !contextValue) {
+    return <ProductWorkspaceFailure error={error} onRetry={reloadWorkspace} />;
   }
 
   const product = payload.product;
   const readOnly = payload.role === "admin_guest";
 
   return (
-    <ProductWorkspaceContext.Provider value={payload}>
+    <ProductWorkspaceContext.Provider value={contextValue}>
       <div className="grid gap-6">
         <section className="border border-brand-softGray bg-white p-5 sm:p-7">
           <div className="flex flex-wrap items-center justify-between gap-3">
@@ -144,18 +166,18 @@ export function ProductWorkspaceShell({
           className="overflow-x-auto border border-brand-softGray bg-white p-2"
         >
           <div className="flex min-w-max gap-2">
-            {PRODUCT_WORKSPACE_MODULES.map((module) => {
-              const active = module.key === activeModule;
+            {PRODUCT_WORKSPACE_MODULES.map((workspaceModule) => {
+              const active = workspaceModule.key === activeModule;
               return (
                 <Link
-                  key={module.key}
-                  href={productWorkspacePath(product.id, module.key)}
+                  key={workspaceModule.key}
+                  href={productWorkspacePath(product.id, workspaceModule.key)}
                   aria-current={active ? "page" : undefined}
                   className={active
                     ? "inline-flex min-h-11 items-center rounded-full bg-brand-charcoal px-5 text-sm font-semibold text-white"
                     : "inline-flex min-h-11 items-center rounded-full px-5 text-sm font-semibold text-brand-charcoal hover:bg-brand-offWhite"}
                 >
-                  {module.label}
+                  {workspaceModule.label}
                 </Link>
               );
             })}
