@@ -71,7 +71,7 @@ describe("WP-01 Product Library", () => {
     expect(legacyPage).toContain("ProductDraftCreatePanel");
     expect(legacyPage).not.toContain("ProductAdminPanel");
     expect(libraryUi).toContain('/admin/products/legacy?new=1');
-    expect(libraryUi).not.toContain("productId=${encodeURIComponent(product.id)}");
+    expect(libraryUi).not.toContain("/admin/products/legacy?productId=");
     expect(draftPanel).toContain('action: "save_draft"');
     expect(draftPanel).toContain("productWorkspacePath(result.productId)");
   });
