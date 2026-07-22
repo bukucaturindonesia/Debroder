@@ -13,6 +13,11 @@ import {
   ProductReviewRequestError,
   runProductReviewAction
 } from "@/lib/admin-product-review-api";
+import {
+  ProductLifecycleRequestError,
+  runProductLifecycleAction,
+  type ProductLifecycleMaintenanceAction
+} from "@/lib/admin-product-lifecycle-api";
 import type {
   ProductReviewAction,
   ProductReviewGroup,
@@ -20,11 +25,12 @@ import type {
 } from "@/lib/product-review";
 import { lifecycleLabel } from "@/lib/product-manager";
 
+type PendingLifecycleAction = ProductReviewAction | ProductLifecycleMaintenanceAction;
+
 export function ProductReviewPanel() {
   const {
     product,
-    updateWorkspaceProduct,
-    reloadWorkspace
+    updateWorkspaceProduct
   } = useProductWorkspace();
   const [payload, setPayload] = useState<ProductReviewPayload | null>(null);
   const [loading, setLoading] = useState(true);
@@ -32,7 +38,7 @@ export function ProductReviewPanel() {
   const [loadError, setLoadError] = useState("");
   const [notice, setNotice] = useState("");
   const [conflict, setConflict] = useState(false);
-  const [pendingAction, setPendingAction] = useState<ProductReviewAction | null>(null);
+  const [pendingAction, setPendingAction] = useState<PendingLifecycleAction | null>(null);
   const [reloadToken, setReloadToken] = useState(0);
 
   const reload = useCallback(() => {
@@ -66,9 +72,9 @@ export function ProductReviewPanel() {
   const readyLabel = useMemo(() => {
     if (!payload) return "Memuat readiness";
     if (blockers > 0) return `${blockers} blocker harus diselesaikan`;
-    if (payload.product.status === "draft") return "Siap Publish";
+    if (payload.product.status === "draft") return "Siap Publish atau dapat diarsipkan";
     if (payload.product.status === "active") return "Produk Active — siap Archive bila diperlukan";
-    return "Produk Archived — lifecycle berhenti di status ini";
+    return "Produk Archived — dapat dipulihkan ke Draft";
   }, [blockers, payload]);
 
   async function executeAction() {
@@ -78,22 +84,28 @@ export function ProductReviewPanel() {
     setNotice("");
     setConflict(false);
     try {
-      const result = await runProductReviewAction({
-        productId: product.id,
-        action,
-        expectedUpdatedAt: payload.product.updatedAt,
-        expectedReviewVersion: payload.reviewVersion
-      });
+      const result = action === "archive_draft" || action === "restore"
+        ? await runProductLifecycleAction({
+          productId: product.id,
+          action,
+          expectedUpdatedAt: payload.product.updatedAt
+        })
+        : await runProductReviewAction({
+          productId: product.id,
+          action,
+          expectedUpdatedAt: payload.product.updatedAt,
+          expectedReviewVersion: payload.reviewVersion
+        });
       setPayload(result.payload);
       updateWorkspaceProduct({
         ...product,
         status: result.payload.product.status,
         updatedAt: result.payload.product.updatedAt
       });
-      reloadWorkspace();
       setNotice(result.message);
     } catch (reason) {
-      if (reason instanceof ProductReviewRequestError && reason.status === 409) {
+      const status = requestStatus(reason);
+      if (status === 409) {
         setConflict(true);
         setNotice("Konflik versi: data telah berubah. Muat ulang data terbaru sebelum melanjutkan.");
       } else {
@@ -102,9 +114,7 @@ export function ProductReviewPanel() {
             ? reason.message
             : "Perubahan lifecycle belum berhasil."
         );
-        if (reason instanceof ProductReviewRequestError && reason.status === 422) {
-          reload();
-        }
+        if (status === 422) reload();
       }
     } finally {
       setPendingAction(null);
@@ -127,6 +137,12 @@ export function ProductReviewPanel() {
   }
 
   const readOnly = !payload.capabilities.canPublish && !payload.capabilities.canArchive;
+  const canArchiveDraft = Boolean(
+    payload.capabilities.canArchive && payload.product.status === "draft"
+  );
+  const canRestore = Boolean(
+    payload.capabilities.canArchive && payload.product.status === "archived"
+  );
 
   return (
     <div className="grid gap-6">
@@ -151,7 +167,7 @@ export function ProductReviewPanel() {
 
         {readOnly ? (
           <div className="mt-5 border border-amber-200 bg-amber-50 px-5 py-4 text-sm font-semibold text-amber-900">
-            MODE LIHAT SAJA — Publish dan Archive hanya tersedia untuk Owner atau Super Admin.
+            MODE LIHAT SAJA — Publish, Archive, dan Restore hanya tersedia untuk Owner atau Super Admin.
           </div>
         ) : null}
         {notice ? (
@@ -183,7 +199,7 @@ export function ProductReviewPanel() {
             <p className="text-xs font-semibold uppercase tracking-[0.16em] text-brand-green">LIFECYCLE AUTHORITY</p>
             <h3 className="mt-2 text-xl font-semibold">{lifecycleMessage(payload.product.status)}</h3>
             <p className="mt-2 max-w-2xl text-sm leading-6 text-brand-charcoal/60">
-              Tidak ada hard delete dan tidak ada transisi lain. Server memeriksa capability, lifecycle, readiness, product version, dan review version.
+              Tidak ada delete atau hard delete. Server memeriksa capability, lifecycle, product version, dan review version sebelum perubahan status.
             </p>
           </div>
           <div className="flex flex-wrap gap-2">
@@ -198,6 +214,17 @@ export function ProductReviewPanel() {
                 Publish Draft
               </button>
             ) : null}
+            {canArchiveDraft ? (
+              <button
+                data-admin-mutation="true"
+                type="button"
+                disabled={working}
+                onClick={() => setPendingAction("archive_draft")}
+                className="min-h-11 rounded-full border border-amber-300 px-6 text-sm font-semibold text-amber-900 disabled:opacity-45"
+              >
+                Arsipkan Draft
+              </button>
+            ) : null}
             {payload.canArchiveNow ? (
               <button
                 data-admin-mutation="true"
@@ -207,6 +234,17 @@ export function ProductReviewPanel() {
                 className="min-h-11 rounded-full border border-amber-300 px-6 text-sm font-semibold text-amber-900 disabled:opacity-45"
               >
                 Archive Active
+              </button>
+            ) : null}
+            {canRestore ? (
+              <button
+                data-admin-mutation="true"
+                type="button"
+                disabled={working}
+                onClick={() => setPendingAction("restore")}
+                className="min-h-11 rounded-full border border-brand-green px-6 text-sm font-semibold text-brand-green disabled:opacity-45"
+              >
+                Pulihkan ke Draft
               </button>
             ) : null}
             <button
@@ -302,35 +340,72 @@ function ConfirmationDialog({
   onCancel,
   onConfirm
 }: {
-  action: ProductReviewAction;
+  action: PendingLifecycleAction;
   working: boolean;
   onCancel: () => void;
   onConfirm: () => void;
 }) {
-  const publishing = action === "publish";
+  const copy = lifecycleConfirmationCopy(action);
   return (
     <div className="fixed inset-0 z-50 grid place-items-center bg-black/45 p-4" role="presentation">
       <div role="dialog" aria-modal="true" aria-labelledby="wp07-confirm-title" className="w-full max-w-lg bg-white p-6 shadow-2xl sm:p-8">
         <p className="text-xs font-semibold uppercase tracking-[0.16em] text-brand-green">KONFIRMASI LIFECYCLE</p>
         <h2 id="wp07-confirm-title" className="mt-2 text-2xl font-semibold">
-          {publishing ? "Publish produk ini?" : "Archive produk ini?"}
+          {copy.title}
         </h2>
         <p className="mt-3 text-sm leading-6 text-brand-charcoal/65">
-          {publishing
-            ? "Server akan memuat ulang readiness terbaru lalu hanya mengubah Draft menjadi Active bila seluruh blocker sudah kosong."
-            : "Server hanya akan mengubah Active menjadi Archived. Data produk, SKU, stok, dan media tidak dihapus."}
+          {copy.description}
         </p>
         <div className="mt-6 flex flex-wrap justify-end gap-2">
           <button type="button" disabled={working} onClick={onCancel} className="min-h-11 rounded-full border border-brand-softGray px-5 text-sm font-semibold disabled:opacity-45">
             Batal
           </button>
           <button data-admin-mutation="true" type="button" disabled={working} onClick={onConfirm} className="min-h-11 rounded-full bg-brand-charcoal px-5 text-sm font-semibold text-white disabled:opacity-45">
-            {working ? "Memproses..." : publishing ? "Ya, Publish" : "Ya, Archive"}
+            {working ? "Memproses..." : copy.confirmLabel}
           </button>
         </div>
       </div>
     </div>
   );
+}
+
+function lifecycleConfirmationCopy(action: PendingLifecycleAction) {
+  if (action === "publish") {
+    return {
+      title: "Publish produk ini?",
+      description: "Server akan memuat ulang readiness terbaru lalu hanya mengubah Draft menjadi Active bila seluruh blocker sudah kosong.",
+      confirmLabel: "Ya, Publish"
+    };
+  }
+  if (action === "restore") {
+    return {
+      title: "Pulihkan produk ke Draft?",
+      description: "Produk Archived akan kembali menjadi Draft. Data produk, SKU, stok, dan media tetap utuh dan produk perlu direview sebelum Publish.",
+      confirmLabel: "Ya, Pulihkan"
+    };
+  }
+  if (action === "archive_draft") {
+    return {
+      title: "Arsipkan Draft ini?",
+      description: "Draft akan dipindahkan ke Archived tanpa menghapus produk, SKU, stok, atau media. Produk dapat dipulihkan kembali ke Draft.",
+      confirmLabel: "Ya, Arsipkan Draft"
+    };
+  }
+  return {
+    title: "Archive produk ini?",
+    description: "Server hanya akan mengubah Active menjadi Archived. Data produk, SKU, stok, dan media tidak dihapus.",
+    confirmLabel: "Ya, Archive"
+  };
+}
+
+function requestStatus(reason: unknown) {
+  if (
+    reason instanceof ProductReviewRequestError ||
+    reason instanceof ProductLifecycleRequestError
+  ) {
+    return reason.status;
+  }
+  return null;
 }
 
 function Metric({ label, value }: { label: string; value: string }) {
@@ -343,9 +418,9 @@ function Metric({ label, value }: { label: string; value: string }) {
 }
 
 function lifecycleMessage(status: "draft" | "active" | "archived") {
-  if (status === "draft") return "Draft hanya dapat dipublish menjadi Active.";
-  if (status === "active") return "Active hanya dapat diarsipkan menjadi Archived.";
-  return "Archived adalah status terminal pada WP-07.";
+  if (status === "draft") return "Draft dapat dipublish menjadi Active atau dipindahkan ke Archived.";
+  if (status === "active") return "Active dapat diarsipkan menjadi Archived.";
+  return "Archived dapat dipulihkan kembali menjadi Draft.";
 }
 
 function ReviewLoading() {
