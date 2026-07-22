@@ -220,9 +220,21 @@ function pathAllowedByRole(role: AdminRole, pathname: string) {
   return false;
 }
 
+const PRODUCT_WORKSPACE_PATH_PATTERN = /^\/admin\/products\/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}(?:\/(?:information|variants|inventory|media|review))?$/i;
+
+function isProductWorkspacePath(pathname: string) {
+  return PRODUCT_WORKSPACE_PATH_PATTERN.test(pathname);
+}
+
 export function roleCanAccessPath(role: AdminRole, pathname: string) {
   if (["/admin/products/bulk-import", "/admin/products/bulk-edit", "/admin/products/legacy"].includes(pathname)) {
     return hasRole(role, PRODUCT_MANAGER_VIEW_ROLES);
+  }
+  if (isProductWorkspacePath(pathname)) {
+    return hasRole(role, PRODUCT_MANAGER_VIEW_ROLES);
+  }
+  if (pathname.startsWith("/admin/products/")) {
+    return pathAllowedByRole(role, pathname);
   }
   if (role === "admin_guest") {
     return pathname.startsWith("/admin") && !pathname.startsWith("/admin/login");
@@ -259,6 +271,13 @@ export function getRoleHome(role: AdminRole) {
 }
 
 export function getCurrentNavigationLabel(pathname: string) {
+  if (isProductWorkspacePath(pathname)) {
+    if (pathname.endsWith("/variants")) return "Varian Produk";
+    if (pathname.endsWith("/inventory")) return "Harga & Stok Produk";
+    if (pathname.endsWith("/media")) return "Media Produk";
+    if (pathname.endsWith("/review")) return "Review & Publish Produk";
+    return "Informasi Produk";
+  }
   if (pathname === "/admin/products/export-reconciliation") return "Ekspor & Pencocokan Data";
   if (pathname === "/admin/products/bulk-edit") return "Ubah Banyak Produk";
   if (pathname === "/admin/products/bulk-import") return "Impor Banyak Produk";
@@ -302,6 +321,13 @@ export function getCurrentNavigationLabel(pathname: string) {
 export type AdminBreadcrumbItem = { label: string; href?: string };
 export function getAdminBreadcrumbs(pathname: string): AdminBreadcrumbItem[] {
   if (pathname === "/admin/dashboard" || pathname === "/admin") return [{ label: "Ringkasan" }];
+  if (isProductWorkspacePath(pathname)) {
+    return [
+      { label: "Katalog" },
+      { label: "Manajemen Produk", href: "/admin/products" },
+      { label: getCurrentNavigationLabel(pathname) }
+    ];
+  }
   if (pathname === "/admin/custom-commerce") return [{ label: "Website" }, { label: "CMS / Custom" }];
   if (pathname === "/admin/access-control") return [{ label: "Sistem" }, { label: "Pengguna & Hak Akses" }];
   if (pathname === "/admin/audit-log") return [{ label: "Sistem" }, { label: "Riwayat Aktivitas" }];

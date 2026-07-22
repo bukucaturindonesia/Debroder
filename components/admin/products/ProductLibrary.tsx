@@ -14,6 +14,7 @@ import {
   type ProductLibraryStatus
 } from "@/lib/product-library";
 import { lifecycleLabel } from "@/lib/product-manager";
+import { productWorkspacePath } from "@/lib/product-workspace";
 import { formatRupiah } from "@/lib/url";
 
 export function ProductLibrary() {
@@ -211,10 +212,16 @@ export function ProductLibrary() {
                 </div>
                 <div className="mt-4 flex flex-wrap gap-2">
                   <Link
-                    href={`/admin/products/legacy?productId=${encodeURIComponent(product.id)}`}
+                    href={productWorkspacePath(product.id)}
                     className={primaryAction}
                   >
-                    {readOnly ? "Lihat di Editor Lama" : "Kelola di Editor Lama"}
+                    {readOnly ? "Lihat Workspace" : "Buka Workspace"}
+                  </Link>
+                  <Link
+                    href={`/admin/products/legacy?productId=${encodeURIComponent(product.id)}`}
+                    className={secondaryAction}
+                  >
+                    {readOnly ? "Lihat Editor Lama" : "Editor Lama"}
                   </Link>
                   <Link
                     href={`/admin/products/audit-history?productId=${encodeURIComponent(product.id)}`}
