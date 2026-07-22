@@ -1,4 +1,16 @@
+import { safeInventoryOperationMessage } from "@/lib/admin-inventory-operation-message";
 import { operationsErrorResponse, requireOperationsActor } from "@/lib/operations-auth";
+
+function inventoryOperationErrorResponse(error: unknown) {
+  const safeMessage = safeInventoryOperationMessage(error);
+  if (safeMessage) {
+    return Response.json(
+      { error: safeMessage },
+      { status: 409, headers: { "cache-control": "private, no-store" } }
+    );
+  }
+  return operationsErrorResponse(error);
+}
 
 export async function GET(request: Request) {
   try {
@@ -50,6 +62,6 @@ export async function POST(request: Request) {
     if (response.error) throw response.error;
     return Response.json({ ok: true, result: response.data });
   } catch (error) {
-    return operationsErrorResponse(error);
+    return inventoryOperationErrorResponse(error);
   }
 }

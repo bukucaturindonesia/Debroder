@@ -45,6 +45,8 @@ export const PRODUCT_IMAGE_ROLE_ORDER = {
 
 export type ProductImageRole = keyof typeof PRODUCT_IMAGE_ROLE_ORDER;
 
+type CardVariant = ProductVariant & { is_default?: boolean };
+
 export function productImageRoleFromIndex(index: number): ProductImageRole {
   return (["front", "back", "detail", "lifestyle"] as const)[Math.max(0, Math.min(3, index))];
 }
@@ -55,6 +57,50 @@ function variantImageOrder(image: ProductVariantImage) {
   }
   if (image.is_cover) return -1;
   return Number(image.sort_order || 0);
+}
+
+function isUsableVariant(variant: ProductVariant) {
+  return variant.is_active !== false && variant.status !== "inactive";
+}
+
+function variantPriority(variant: CardVariant) {
+  return [
+    variant.is_default ? 0 : 1,
+    Number.isFinite(Number(variant.sort_order)) ? Number(variant.sort_order) : Number.MAX_SAFE_INTEGER,
+    String(variant.id || variant.slug || variant.variant_name || variant.color_name || "")
+  ] as const;
+}
+
+function compareVariantPriority(left: CardVariant, right: CardVariant) {
+  const a = variantPriority(left);
+  const b = variantPriority(right);
+  return a[0] - b[0] || a[1] - b[1] || String(a[2]).localeCompare(String(b[2]));
+}
+
+function imageRole(image: ProductVariantImage): ProductImageRole {
+  if (image.image_role && image.image_role in PRODUCT_IMAGE_ROLE_ORDER) {
+    return image.image_role as ProductImageRole;
+  }
+  if (image.is_cover) return "front";
+  return productImageRoleFromIndex(Number(image.sort_order || 0));
+}
+
+function roleImage(variant: ProductVariant, role: ProductImageRole) {
+  return [...(variant.variant_images || [])]
+    .filter((image) => Boolean(image.image_url))
+    .sort((a, b) => variantImageOrder(a) - variantImageOrder(b))
+    .find((image) => imageRole(image) === role)
+    ?.image_url || null;
+}
+
+function canonicalCardVariant(product: Product) {
+  const variants = ([...(product.variants || [])] as CardVariant[])
+    .filter(isUsableVariant)
+    .sort(compareVariantPriority);
+
+  return variants.find((variant) => Boolean(roleImage(variant, "front")))
+    || variants.find((variant) => getVariantGalleryImages(variant).length > 0)
+    || null;
 }
 
 export function getVariantGalleryImages(variant?: ProductVariant | null) {
@@ -89,10 +135,18 @@ export function getProductGalleryImages(product: Product, variantImages: string[
 }
 
 export function getProductCardImages(product: Product) {
-  const images = getProductGalleryImages(product);
+  const variant = canonicalCardVariant(product);
+  const rootImages = getProductGalleryImages(product);
+  const primary = variant
+    ? roleImage(variant, "front") || getVariantGalleryImages(variant)[0] || rootImages[0]
+    : rootImages[0];
+  const hover = variant
+    ? roleImage(variant, "back") || getVariantGalleryImages(variant).find((image) => image !== primary) || rootImages[1]
+    : rootImages[1];
+
   return {
-    primary: images[0] || getProductImage(product),
-    hover: images[1] || null
+    primary: primary || getProductImage(product),
+    hover: hover && hover !== primary ? hover : null
   };
 }
 

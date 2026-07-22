@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState, type ChangeEvent } from "react";
 import { AdminPageHeader } from "@/components/admin/layout/AdminPageHeader";
 import { AdminAlert, AdminEmptyState, AdminLoadingState } from "@/components/admin/ui/AdminFeedback";
 import { operationsApiFetch } from "@/lib/admin-operations-api";
@@ -16,10 +16,11 @@ type Preparation = {
 };
 type Payload = { locations: Location[]; transfers: Transfer[]; preparations: Preparation[]; balances: unknown[]; role: string };
 type InventoryAction = "process_deadlines" | "initialize_pickup" | "create_pickup_transfer" | "receive_transfer" | "mark_pickup_ready" | "complete_handover" | "decide_extension";
-type PreparationIdentity = Pick<Preparation, "order_id" | "status">;
+type PreparationIdentity = Pick<Preparation, "order_id" | "status"> & { orderStatus?: string | null };
 
 const ORDER_UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 const TERMINAL_PREPARATION_STATUSES = new Set(["handed_over", "cancelled"]);
+const TERMINAL_ORDER_STATUSES = new Set(["completed", "selesai", "cancelled", "dibatalkan", "expired"]);
 
 export function normalizeInventoryOrderId(value: string | null | undefined) {
   const normalized = value?.trim() ?? "";
@@ -31,8 +32,16 @@ export function buildInitializePickupRequest(value: string) {
   return orderId ? { action: "initialize_pickup" as const, orderId } : null;
 }
 
+export function isTerminalInventoryOrder(status: string | null | undefined) {
+  return TERMINAL_ORDER_STATUSES.has(String(status || "").toLowerCase());
+}
+
 export function hasActivePickupPreparation(preparations: readonly PreparationIdentity[], orderId: string) {
-  return preparations.some((preparation) => preparation.order_id === orderId && !TERMINAL_PREPARATION_STATUSES.has(preparation.status));
+  return preparations.some((preparation) =>
+    preparation.order_id === orderId &&
+    !TERMINAL_PREPARATION_STATUSES.has(preparation.status) &&
+    !isTerminalInventoryOrder(preparation.orderStatus)
+  );
 }
 
 export function inventoryActionSuccessMessage(action: InventoryAction, body: Record<string, unknown>) {
@@ -75,7 +84,12 @@ export function InventoryOperationsAdmin({ initialOrderId = "" }: { initialOrder
       if (!refreshed) return;
       if (action === "initialize_pickup") {
         const submittedOrderId = normalizeInventoryOrderId(typeof body.orderId === "string" ? body.orderId : "");
-        if (!submittedOrderId || !hasActivePickupPreparation(refreshed.preparations, submittedOrderId)) {
+        const identities = refreshed.preparations.map((preparation) => ({
+          order_id: preparation.order_id,
+          status: preparation.status,
+          orderStatus: preparation.orders?.status
+        }));
+        if (!submittedOrderId || !hasActivePickupPreparation(identities, submittedOrderId)) {
           setNotice({ type: "error", text: "Persiapan pickup belum ditemukan setelah proses. Muat ulang data dan periksa order yang dipilih." });
           return;
         }
@@ -86,7 +100,20 @@ export function InventoryOperationsAdmin({ initialOrderId = "" }: { initialOrder
   }
 
   const initializeRequest = buildInitializePickupRequest(orderId);
-  const activePreparations = useMemo(() => data?.preparations.filter((row) => !TERMINAL_PREPARATION_STATUSES.has(row.status)) ?? [], [data]);
+  const selectedPreparation = useMemo(
+    () => data?.preparations.find((row) => row.order_id === orderId) || null,
+    [data, orderId]
+  );
+  const selectedOrderTerminal = Boolean(
+    selectedPreparation && (
+      TERMINAL_PREPARATION_STATUSES.has(selectedPreparation.status) ||
+      isTerminalInventoryOrder(selectedPreparation.orders?.status)
+    )
+  );
+  const activePreparations = useMemo(() => data?.preparations.filter((row) =>
+    !TERMINAL_PREPARATION_STATUSES.has(row.status) &&
+    !isTerminalInventoryOrder(row.orders?.status)
+  ) ?? [], [data]);
   if (loading) return <AdminLoadingState label="Memuat stok lokasi dan pickup..." />;
 
   return <main className="grid gap-6 text-brand-charcoal">
@@ -95,7 +122,8 @@ export function InventoryOperationsAdmin({ initialOrderId = "" }: { initialOrder
     <section className="border border-brand-softGray bg-white p-5">
       <h2 className="font-semibold">Mulai Persiapan Pickup</h2>
       <p className="mt-1 text-sm text-brand-charcoal/60">ID order dari halaman detail pesanan akan terisi otomatis. Admin tetap harus menekan Siapkan Pickup untuk memulai proses.</p>
-      <div className="mt-4 flex flex-wrap gap-3"><input value={orderId} onChange={(e)=>setOrderId(e.target.value)} placeholder="UUID order" className="min-h-11 min-w-[280px] flex-1 border border-brand-softGray px-4" /><button data-admin-mutation="true" disabled={!initializeRequest||working==="initialize"} onClick={()=>{const request=buildInitializePickupRequest(orderId);if(request)void run(request.action,{orderId:request.orderId},"initialize");}} className="min-h-11 rounded-full bg-brand-green px-5 text-sm font-semibold text-white disabled:opacity-45">Siapkan Pickup</button></div>
+      {selectedOrderTerminal ? <AdminAlert type="success">Pesanan ini sudah selesai. Persiapan pickup tidak dapat dibuka kembali.</AdminAlert> : null}
+      <div className="mt-4 flex flex-wrap gap-3"><input value={orderId} onChange={(event: ChangeEvent<HTMLInputElement>)=>setOrderId(event.target.value)} placeholder="UUID order" className="min-h-11 min-w-[280px] flex-1 border border-brand-softGray px-4" /><button data-admin-mutation="true" disabled={!initializeRequest||selectedOrderTerminal||working==="initialize"} onClick={()=>{const request=buildInitializePickupRequest(orderId);if(request)void run(request.action,{orderId:request.orderId},"initialize");}} className="min-h-11 rounded-full bg-brand-green px-5 text-sm font-semibold text-white disabled:opacity-45">{selectedOrderTerminal ? "Pesanan Selesai" : "Siapkan Pickup"}</button></div>
     </section>
     <section className="grid gap-4">
       <h2 className="text-xl font-semibold">Persiapan Aktif</h2>
