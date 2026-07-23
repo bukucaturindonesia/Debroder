@@ -1,9 +1,12 @@
 import { buildOrderJourney, type OrderJourneyStep } from "@/lib/order-journey";
 import { resolveCanonicalOrderActiveStage } from "@/lib/canonical-order-stage";
 import {
+  resolveOrderActiveStageFromServer,
   type OrderActiveStageInput,
   type OrderActiveStageResolution
 } from "@/lib/order-active-stage";
+
+const PAYMENT_REVIEW_CUSTOMER_TITLE = "Pembayaran sedang diperiksa";
 
 export type CustomerOrderResponsibility = "customer" | "debroder" | "none";
 export type CustomerOrderTone = "action" | "processing" | "success" | "warning";
@@ -46,12 +49,17 @@ export type CustomerOrderPresentation = {
 export function resolveCustomerOrderPresentation(
   input: CustomerOrderPresentationInput
 ): CustomerOrderPresentation {
-  const stage = resolveCanonicalOrderActiveStage(input);
+  const canonicalStage = resolveCanonicalOrderActiveStage(input);
+  // Preserve the frozen compatibility contract while passing the already-resolved
+  // canonical stage as the authoritative payload. Stale RPC data never wins here.
+  const stage = resolveOrderActiveStageFromServer(input, canonicalStage);
   return {
     responsibility: stage.responsibility,
     responsibilityLabel: stage.responsibilityLabel,
     tone: stage.tone,
-    title: stage.customerTitle,
+    title: stage.activeStage === "payment_review"
+      ? PAYMENT_REVIEW_CUSTOMER_TITLE
+      : stage.customerTitle,
     description: stage.customerDescription,
     nextStep: stage.nextStep,
     previousStage: stage.previousStage,
