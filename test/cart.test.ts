@@ -62,7 +62,7 @@ describe("v1.0 cart operations", () => {
       return;
     }
 
-    expect(calculateUnitPrice(product, whiteVariant, whiteXxl)).toBe(50000);
+    expect(calculateUnitPrice(product, whiteVariant, whiteXxl)).toBe(47000);
   });
 });
 

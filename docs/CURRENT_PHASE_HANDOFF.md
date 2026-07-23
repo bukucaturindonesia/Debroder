@@ -312,3 +312,39 @@ Status: **COMPLETE — ALL REQUIRED LOCAL GATES PASS**.
 - Migration/database: none created, applied, or required. Supabase remote was not mutated.
 - Git/deployment: changes remain uncommitted; no push, merge, deploy, or P6 work was performed.
 - Next action: owner review of the P5 diff only. Stop after P5.
+
+---
+
+## 2026-07-24 — P7A Pricing Parity
+
+Status: **PASS WITH TWO EXPLICIT P7B BLOCKERS**.
+
+- Scope aktif: executable Ready Stock/Custom pricing parity only. P6 and P7B
+  were not started.
+- Diperiksa: frozen governance and package plan; product/tier/minimum ownership;
+  cart/PDP/revalidation/Custom/checkout price paths; local migrations; live
+  PostgreSQL function definitions and canonical product/tier cohorts.
+- Diubah: one pure Ready Stock policy resolver with canonical error codes;
+  product commerce-mode mapping; fail-closed transaction catalog reads;
+  sellable variant-size adjustment authority; TypeScript and read-only SQL
+  parity fixtures; regression tests and P7A report.
+- Resolved: size-master double adjustment, ignored `tier_scope`, numeric price
+  on quotation tier, and sample fallback in transaction revalidation.
+- Blocked for P7B: live checkout SQL still accepts up to 10,000 units per line
+  with no 500-total guard, and does not evaluate Ready Stock
+  `minimum_quantity`/`quotation_quantity`.
+- Routes changed: no route shape or UI; behavior correction applies to
+  `/api/cart/revalidate` and existing `/api/quotation-drafts` data loading.
+- Migration local/remote/applied/pending: none for P7A. Supabase was queried
+  read-only; no remote mutation occurred.
+- Parity: TypeScript P7A 17/17 PASS; related suite 63/63 PASS; remote read-only
+  SQL fixture 10 vectors / 0 mismatch PASS.
+- Gates: typecheck PASS; lint PASS (0 errors / 34 pre-existing warnings); full
+  tests PASS (75 files / 596 tests); build PASS (110/110 pages).
+- Deployment: none. Commit/push/merge: none.
+- Detail and complete mismatch inputs/outputs:
+  `docs/P7A_PRICING_PARITY_REPORT.md`.
+- Next: owner reviews P7A evidence. P7B blockers remain explicit; this task
+  stops here and does not begin P6 or P7B.
+- GO/NO-GO: **P7A GO UNDER ITS EXIT CRITERIA; P7B DATABASE ENFORCEMENT REMAINS
+  BLOCKED/PENDING**.

@@ -192,3 +192,22 @@ The FROZEN commerce/landing blueprints and official Owner Decisions remain autho
 - Regression coverage rejects service-role names and server-only value imports from client modules, and verifies cart/provider and header/lazy-search boundaries.
 - Verification: typecheck PASS; lint PASS with 0 errors and 35 pre-existing warnings; tests PASS (74 files / 579 tests); production build PASS (110/110 pages).
 - Database/migration status: none created, applied, or required. Deployment: none. P6 has not started.
+
+## P7A Pricing Parity state — 2026-07-24
+
+- P7A executable parity is **PASS WITH TWO EXPLICIT P7B BLOCKERS**.
+- Ready Stock revalidation now uses canonical `sales_mode`, `pricing_mode`, and
+  `tier_scope`; quotation tiers return no numeric checkout price; transaction
+  paths cannot fall back to sample products.
+- Product pricing uses the sellable
+  `product_variant_sizes.price_adjustment`; size-master presentation data is
+  not added as a second transaction adjustment.
+- TypeScript P7A fixtures pass 17/17. The same read-only SQL policy fixture ran
+  against PostgreSQL 17.6 with 10 vectors and zero mismatch. The full suite is
+  75 files / 596 tests; typecheck, lint with zero errors, and production build
+  pass.
+- No migration, remote mutation, historical snapshot rewrite, route/UI change,
+  commit, push, merge, or deployment was performed.
+- P7B still owns additive SQL enforcement for the 100-unit line limit,
+  500-unit total limit, and Ready Stock minimum/quotation thresholds. P6 and
+  P7B were not started in this work.

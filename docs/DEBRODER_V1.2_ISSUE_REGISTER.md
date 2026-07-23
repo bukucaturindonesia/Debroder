@@ -153,3 +153,42 @@
 - Header search eager loading — **CLOSED**. The optional search modal and static search index are emitted as a separate lazy client chunk.
 - Service-role/client import ambiguity — **CLOSED**. Public and admin Supabase factories and environment readers are separated, sensitive modules use `server-only`, and regression tests reject forbidden client value imports and secret-key names.
 - P5 verification — **CLOSED**. Typecheck, lint, 579 tests, and production build pass; no database migration or remote mutation was needed.
+
+## P7A Pricing Parity
+
+### V12-034 — Ready Stock SQL limit parity
+
+- Severity: Transaction integrity gate
+- Status: **BLOCKED — P7B**
+- Detail: OD-07 and TypeScript enforce 50 lines, 100 units per line, and 500
+  units total. The live `create_public_checkout_order` definition enforces 50
+  lines but accepts 1–10,000 units per line and has no 500-unit aggregate
+  guard. No production order was created to test the unsafe quantities. P7B
+  must use an additive Preview-tested migration; the applied migration was not
+  edited.
+
+### V12-035 — Ready Stock minimum/quotation SQL parity
+
+- Severity: Pricing integrity gate
+- Status: **BLOCKED — P7B**
+- Detail: TypeScript policy interprets active product minimum and quotation
+  thresholds, but live Ready Stock checkout SQL does not query
+  `product_minimum_rules`; it only rejects a quote-required price tier. Live
+  data currently has zero active minimum rules, so no affected production row
+  was observed. P7B must align SQL enforcement before those rules become
+  transaction-active.
+
+## Closed in P7A Pricing Parity
+
+- Size-adjustment authority mismatch — **CLOSED**. Transaction pricing now uses
+  only the sellable variant-size adjustment, matching canonical SQL.
+- Ready Stock `tier_scope` mismatch — **CLOSED**. Revalidation loads and applies
+  the canonical scope.
+- Quotation-tier numeric fallback — **CLOSED**. Revalidation returns
+  `quotation_required` with no unit price.
+- Transaction sample fallback — **CLOSED**. Revalidation and quotation-draft
+  data loading fail closed when canonical Supabase data is unavailable.
+- P7A verification — **CLOSED**. TypeScript parity 17/17, related suite 63/63,
+  remote read-only SQL fixture 10/10 with zero mismatch, typecheck, lint
+  (0 errors), full 596-test suite, and production build pass. No database
+  mutation or migration was performed.

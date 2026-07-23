@@ -732,6 +732,9 @@ export type PimProduct = {
   description: string | null;
   status: "draft" | "active" | "archived";
   sku: string | null;
+  salesMode?: "ready_stock" | "custom" | "both";
+  pricingMode?: PricingMode;
+  tierScope?: "none" | "product";
   variants: PimProductVariant[];
   priceTiers: ProductPriceTier[];
   minimumRule: ProductMinimumRule | null;
@@ -924,7 +927,20 @@ export type RevalidationInput = {
 };
 export type RevalidationResult = {
   product_variant_size_id: string;
-  status: "ok" | "unavailable" | "stock_changed" | "price_changed";
+  status:
+    | "ok"
+    | "unavailable"
+    | "stock_changed"
+    | "price_changed"
+    | "quotation_required";
+  error_code:
+    | "PRICING_INPUT_INVALID"
+    | "PRICING_PRODUCT_UNAVAILABLE"
+    | "PRICING_COMMERCE_MODE_MISMATCH"
+    | "PRICING_VARIANT_UNAVAILABLE"
+    | "PRICING_QUOTATION_REQUIRED"
+    | "PRICING_CANONICAL_AMOUNT_INVALID"
+    | null;
   latest_unit_price: number | null;
   stock_available: number;
   message: string | null;

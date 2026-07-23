@@ -35,7 +35,10 @@ export async function POST(request: Request) {
     }))
   );
   const revalidationMessages = revalidationResults
-    .filter((result) => result.status !== "ok")
+    .filter(
+      (result) =>
+        result.status !== "ok" && result.status !== "quotation_required"
+    )
     .map((result) => result.message ?? "Data produk berubah.");
 
   if (revalidationMessages.length > 0) {
@@ -45,7 +48,7 @@ export async function POST(request: Request) {
     );
   }
 
-  const products = await listProducts();
+  const products = await listProducts({ allowFallback: false });
   const product = products.find(
     (candidate) => candidate.id === payload.snapshot.product_id
   );
