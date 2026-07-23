@@ -173,30 +173,33 @@ function isPositiveInteger(value: number) {
   return Number.isSafeInteger(value) && value > 0;
 }
 
-export type PricingParityBlocker = {
+export type PricingParityAlignment = {
   id: "P7A-B01" | "P7A-B02";
-  status: "BLOCKED";
-  ownerPackage: "P7B";
+  status: "RESOLVED";
+  resolvedBy: "P7B";
   authority: string;
-  currentSqlBehavior: string;
+  databaseEnforcement: string;
+  migration: "20260723193533_p7b_policy_database_alignment_v1.sql";
 };
 
-export const PRICING_PARITY_BLOCKERS: readonly PricingParityBlocker[] = [
+export const PRICING_PARITY_ALIGNMENTS: readonly PricingParityAlignment[] = [
   {
     id: "P7A-B01",
-    status: "BLOCKED",
-    ownerPackage: "P7B",
+    status: "RESOLVED",
+    resolvedBy: "P7B",
     authority: "OD-07: 50 lines, 100 units per line, 500 units total",
-    currentSqlBehavior:
-      "create_public_checkout_order limits lines to 50, but accepts 10000 units per line and has no 500-unit aggregate guard"
+    databaseEnforcement:
+      "order_items trigger rejects more than 50 Ready Stock lines, more than 100 units per line, or more than 500 total units",
+    migration: "20260723193533_p7b_policy_database_alignment_v1.sql"
   },
   {
     id: "P7A-B02",
-    status: "BLOCKED",
-    ownerPackage: "P7B",
+    status: "RESOLVED",
+    resolvedBy: "P7B",
     authority:
       "PIM product_minimum_rules and OD-08 quotation interpretation",
-    currentSqlBehavior:
-      "Ready Stock checkout SQL does not evaluate active minimum_quantity or quotation_quantity rules"
+    databaseEnforcement:
+      "deferred order policy trigger evaluates active minimum_quantity and quotation_quantity against aggregate product quantity",
+    migration: "20260723193533_p7b_policy_database_alignment_v1.sql"
   }
 ] as const;

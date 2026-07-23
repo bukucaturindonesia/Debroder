@@ -214,7 +214,8 @@ The FROZEN commerce/landing blueprints and official Owner Decisions remain autho
 
 ## P6 Cart v5 state — 2026-07-24
 
-- P6 is **IMPLEMENTED IN SOURCE — AWAITING OWNER GATE VERIFICATION**.
+- P6 is **PASS** by owner `lanjut` confirmation; commit `684144b` is on the
+  tracked remote branch.
 - Active cart persistence is now a versioned `debroder-cart-v5` envelope using
   canonical `cart-line.v5` discriminants: `ready_stock`,
   `configured_product`, `custom_project`, and `legacy_unsupported`.
@@ -229,7 +230,26 @@ The FROZEN commerce/landing blueprints and official Owner Decisions remain autho
   unsupported legacy lines fail closed.
 - Pricing formulas, historical snapshots, inventory authority, routes, and
   existing Ready Stock/Custom checkout commands were not changed.
-- Verification so far: typecheck PASS; touched-file lint PASS; targeted P6 and
-  related regressions PASS (5 files / 34 tests). Owner full gate is pending.
-- Database/migration: none required or performed. P7B blockers V12-034 and
-  V12-035 remain open and unchanged. No commit, push, merge, or deployment.
+- Verification: owner-confirmed full gate, commit, push, and Preview PASS.
+- Database/migration: none was required for P6. Former blockers V12-034 and
+  V12-035 are now closed by the separate P7B migration.
+
+## P7B Policy & Database Alignment state — 2026-07-24
+
+- P7B is **IMPLEMENTED IN SOURCE — AWAITING OWNER GATE VERIFICATION**.
+- Migration `20260723193533_p7b_policy_database_alignment_v1.sql` is applied
+  to `DEBRODER APPAREL` and present in remote migration history.
+- Ready Stock database enforcement now matches canonical limits: 50 lines,
+  100 units per line, and 500 units total.
+- Active `product_minimum_rules.minimum_quantity` and
+  `quotation_quantity` are evaluated against aggregate product quantity before
+  a public checkout transaction can commit.
+- One checkout mode is enforced by a deferred policy trigger. Existing
+  server-authoritative pricing finalization remains the pricing formula owner.
+- Finalized Ready Stock pricing snapshots and amounts are immutable; existing
+  historical rows were not rewritten.
+- Three P7B trigger functions use `security definer`, empty search path,
+  revoked public/anon/authenticated execution, and service-role-only execute.
+  No RLS policy or inventory authority was changed.
+- Typecheck, touched-file lint, and 42 targeted tests pass. Owner full gate is
+  pending. No commit, push, merge, deployment, or P8A work was performed.

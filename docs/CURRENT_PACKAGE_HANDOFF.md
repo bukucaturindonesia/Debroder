@@ -14,8 +14,9 @@
 - P4 — Category & PDP Isolation: **PASS / handoff tersedia**
 - P5 — Client Boundary Isolation: **PASS**
 - P7A — Pricing Parity: **PASS WITH TWO EXPLICIT P7B BLOCKERS**
-- P6 — Cart v5: **IMPLEMENTED IN SOURCE — AWAITING OWNER GATE VERIFICATION**
-- Package setelah P6: **P7B — Policy & Database Alignment**, hanya setelah owner menyatakan gate P6 PASS.
+- P6 — Cart v5: **PASS**
+- P7B — Policy & Database Alignment: **IMPLEMENTED IN SOURCE — AWAITING OWNER GATE VERIFICATION**
+- Package setelah P7B: **P8A — Size Adjustment Policy Preview**, hanya setelah owner menyatakan gate P7B PASS.
 
 Codex wajib memverifikasi sendiri sebelum mengubah source:
 
@@ -242,28 +243,28 @@ Owner menangani review akhir, commit, push GitHub, dan Vercel Preview, kecuali o
 
 ---
 
-## 10. P6 — Scope Aktif
+## 10. P7B — Scope Aktif
 
-P6 hanya berfokus pada:
+P7B hanya berfokus pada penyelarasan policy canonical dengan schema/database:
 
-- canonical Cart v5 dengan line `ready_stock`, `configured_product`, `custom_project`, dan `legacy_unsupported`;
-- persistence versioned dan migrasi deterministic dari storage cart lama;
-- revalidasi harga/stok Ready Stock yang server-authoritative;
-- stale snapshot, warning, retry, dan checkout fail-closed;
-- batas 50 baris, 100 unit per baris, dan 500 unit total;
-- satu checkout mode per command;
-- regression tests cart dan checkout.
+- minimum quantity dan quotation threshold;
+- checkout mode;
+- pricing snapshot dan server validation;
+- constraint, function, trigger, dan RLS yang relevan;
+- batas Ready Stock 50 baris, 100 unit per baris, dan 500 unit total;
+- historical snapshot tetap immutable.
 
-P6 wajib mempertahankan formula pricing P7A, historical snapshot, route/tampilan
-existing, inventory authority, cart lama melalui migration path, serta checkout
-Ready Stock/Custom yang sudah aktif.
+P7B wajib menyelesaikan blocker V12-034 dan V12-035 secara additive,
+Preview-tested, dan fail-closed tanpa mengubah UI, formula pricing, inventory
+authority, atau historical order/pricing snapshot.
 
-P6 dilarang mengubah formula pricing, hardcode produk/SKU, membuat branch Jersey
-di cart core, mengubah inventory authority, menghapus data cart lama, atau
-memulai P7B.
+P7B dilarang melakukan perubahan destruktif, pelebaran RLS, broad refactor,
+hardcode produk, atau memulai P8A.
 
-Database/migration P6: **tidak diperlukan dan tidak dibuat**. Gap enforcement SQL
-yang sudah terbukti tetap merupakan scope P7B.
+Migration P7B
+`20260723193533_p7b_policy_database_alignment_v1.sql` telah diterapkan dan
+diverifikasi pada project `DEBRODER APPAREL`. Tidak ada historical row,
+inventory authority, atau RLS policy yang diubah.
 
 Status saat ini:
 

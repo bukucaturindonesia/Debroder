@@ -4,7 +4,7 @@ import { sampleProducts } from "@/data/sample-products";
 import { validateMinimumOrder } from "@/lib/bulk-ordering";
 import { calculateCartTierPrice } from "@/lib/cart-tier-pricing";
 import {
-  PRICING_PARITY_BLOCKERS,
+  PRICING_PARITY_ALIGNMENTS,
   resolveReadyStockPricing,
   type ReadyStockPricingInput
 } from "@/lib/pricing-policy";
@@ -236,18 +236,20 @@ describe("P7A executable TypeScript pricing parity", () => {
   });
 });
 
-describe("P7A explicitly classified SQL blockers", () => {
-  it("records each unresolved mismatch under the P7B owner package", () => {
-    expect(PRICING_PARITY_BLOCKERS).toEqual([
+describe("P7A SQL mismatches aligned by P7B", () => {
+  it("records the P7B database resolution for each former blocker", () => {
+    expect(PRICING_PARITY_ALIGNMENTS).toEqual([
       expect.objectContaining({
         id: "P7A-B01",
-        status: "BLOCKED",
-        ownerPackage: "P7B"
+        status: "RESOLVED",
+        resolvedBy: "P7B",
+        migration: "20260723193533_p7b_policy_database_alignment_v1.sql"
       }),
       expect.objectContaining({
         id: "P7A-B02",
-        status: "BLOCKED",
-        ownerPackage: "P7B"
+        status: "RESOLVED",
+        resolvedBy: "P7B",
+        migration: "20260723193533_p7b_policy_database_alignment_v1.sql"
       })
     ]);
   });

@@ -159,24 +159,21 @@
 ### V12-034 — Ready Stock SQL limit parity
 
 - Severity: Transaction integrity gate
-- Status: **BLOCKED — P7B**
+- Status: **CLOSED IN P7B**
 - Detail: OD-07 and TypeScript enforce 50 lines, 100 units per line, and 500
-  units total. The live `create_public_checkout_order` definition enforces 50
-  lines but accepts 1–10,000 units per line and has no 500-unit aggregate
-  guard. No production order was created to test the unsafe quantities. P7B
-  must use an additive Preview-tested migration; the applied migration was not
-  edited.
+  units total. The former live gap was closed by additive migration
+  `20260723193533_p7b_policy_database_alignment_v1.sql`; an immediate database
+  trigger now enforces all three limits without editing the previously applied
+  checkout migration.
 
 ### V12-035 — Ready Stock minimum/quotation SQL parity
 
 - Severity: Pricing integrity gate
-- Status: **BLOCKED — P7B**
-- Detail: TypeScript policy interprets active product minimum and quotation
-  thresholds, but live Ready Stock checkout SQL does not query
-  `product_minimum_rules`; it only rejects a quote-required price tier. Live
-  data currently has zero active minimum rules, so no affected production row
-  was observed. P7B must align SQL enforcement before those rules become
-  transaction-active.
+- Status: **CLOSED IN P7B**
+- Detail: A deferred transaction policy trigger now reads active
+  `product_minimum_rules` and blocks quantities below `minimum_quantity` or at
+  and above `quotation_quantity`. Live data still has zero active rules; no
+  product or historical order row was mutated.
 
 ## Closed in P7A Pricing Parity
 
@@ -198,12 +195,11 @@
 ### V12-036 — P6 owner full-gate verification
 
 - Severity: Package gate
-- Status: **OPEN — SOURCE IMPLEMENTED**
+- Status: **CLOSED — OWNER GATE PASS**
 - Detail: Canonical Cart v5, deterministic legacy migration, discriminated
   lines, limits, stale/retry revalidation behavior, and fail-closed one-mode
-  checkout are implemented. Typecheck, touched-file lint, and the targeted
-  34-test suite pass. Owner must run the required full typecheck, lint, test,
-  build, and git-diff gates before P6 may be declared PASS.
+  checkout passed the owner full gate. Commit `684144b` is present locally and
+  on the tracked remote branch.
 
 ## Closed in P6 Cart v5
 
@@ -217,5 +213,29 @@
   checkout fails closed.
 - Cart limit/mode drift — **CLOSED IN SOURCE**. Shared 50/100/500 constants and
   one checkout mode are enforced in cart mutations, restore/revalidation, and
-  checkout parsing. Database enforcement remains explicitly assigned to
-  V12-034/V12-035 under P7B.
+  checkout parsing. Database enforcement is now closed by V12-034/V12-035.
+
+## P7B Policy & Database Alignment
+
+### V12-037 — P7B owner full-gate verification
+
+- Severity: Package gate
+- Status: **OPEN — SOURCE AND REMOTE MIGRATION IMPLEMENTED**
+- Detail: Migration
+  `20260723193533_p7b_policy_database_alignment_v1.sql` is applied remotely;
+  three triggers, ACL, empty search paths, migration history, and audit marker
+  are verified. Typecheck, touched-file lint, and 42 targeted tests pass.
+  Owner full typecheck/lint/test/build/diff gate remains required before P7B
+  may be declared PASS.
+
+## Closed in P7B Policy & Database Alignment
+
+- V12-034 limit parity — **CLOSED**. Database triggers enforce 50 lines,
+  100 units per Ready Stock line, and 500 total units.
+- V12-035 minimum/quotation parity — **CLOSED**. A deferred database policy
+  trigger evaluates active minimum and quotation thresholds per aggregate
+  product quantity.
+- Checkout mode — **CLOSED**. Ready Stock and Custom cannot commit in one
+  public checkout transaction.
+- Historical pricing snapshot mutation — **CLOSED**. Finalized public Ready
+  Stock pricing snapshots and amounts are guarded as immutable.

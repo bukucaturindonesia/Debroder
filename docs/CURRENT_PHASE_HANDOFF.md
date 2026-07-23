@@ -353,7 +353,7 @@ Status: **PASS WITH TWO EXPLICIT P7B BLOCKERS**.
 
 ## 2026-07-24 — P6 Cart v5
 
-Status: **IMPLEMENTED IN SOURCE — AWAITING OWNER GATE VERIFICATION**.
+Status: **PASS** by owner `lanjut` confirmation.
 
 - Repository/branch/base verified: `DEBRODER`,
   `Batch-1-—-Fondasi-dan-Performa-Halaman`,
@@ -375,8 +375,39 @@ Status: **IMPLEMENTED IN SOURCE — AWAITING OWNER GATE VERIFICATION**.
 - Routes preserved: `/keranjang`, `/checkout`, `/api/cart/revalidate`, and
   `/api/checkout`. No broad visual redesign or pricing/inventory authority
   change.
-- Target verification: typecheck PASS; touched-file lint PASS; P6 and related
-  regression suite PASS (5 files / 34 tests). Full owner gate remains pending.
+- Verification: owner-confirmed full typecheck, lint, test, build, diff, commit,
+  push, and Preview gate PASS.
 - Migration/database: none required, created, applied, or pending for P6. The
   proven SQL limit/minimum gaps stay owned by P7B.
-- Git/deployment: no commit, push, merge, or deployment. P7B was not started.
+- Git/deployment: commit `684144b` is present on the tracked remote branch and
+  Preview passed. No merge or production deployment was authorized.
+
+---
+
+## 2026-07-24 — P7B Policy & Database Alignment
+
+Status: **IMPLEMENTED IN SOURCE — AWAITING OWNER GATE VERIFICATION**.
+
+- Owner command `lanjut` confirmed P6 full gate/commit/push/Preview PASS.
+  Baseline HEAD: `684144b433126057e00e8dbab8021d2d503fbf71`.
+- Live audit reconfirmed P7A-B01/P7A-B02: Ready Stock SQL lacked the 100-unit
+  line/500-unit aggregate limits and did not evaluate active
+  `product_minimum_rules`. Active rules remain zero.
+- Added and remotely applied
+  `20260723193533_p7b_policy_database_alignment_v1.sql`.
+- The database now rejects Ready Stock over 50 lines, over 100 units per line,
+  or over 500 total units; evaluates active product minimum and quotation
+  thresholds against aggregate product quantity; and rejects mixed checkout
+  modes through a deferred transaction policy trigger.
+- Finalized public Ready Stock pricing snapshots, unit price, subtotal, and
+  pricing status are immutable. Existing finalizer/formula, historical rows,
+  inventory authority, UI, and RLS policies were not changed.
+- Remote verification: migration history present; three P7B triggers active;
+  policy trigger deferrable/initially deferred; all three security-definer
+  functions use empty search path and are executable only by `service_role`;
+  one audit marker present; no P7B advisor finding.
+- Local verification: typecheck PASS; touched-file lint PASS; targeted suite
+  PASS (6 files / 42 tests). Full owner gate remains pending.
+- Production-row mutation smoke was not performed after the safety layer
+  rejected it; verification stayed read-only after migration application.
+- No commit, push, merge, UI change, inventory mutation, or P8A work.
