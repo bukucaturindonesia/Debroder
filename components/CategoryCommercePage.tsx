@@ -1,11 +1,8 @@
 import { CategoryCommerceCatalog } from "@/components/CategoryCommerceCatalog";
 import { PageHero, PublicShell } from "@/components/PublicPage";
-import { getPageHeroImage } from "@/lib/fallback-data";
+import type { CatalogPageModel } from "@/lib/catalog-page/model";
 import type { ProductTypeOption } from "@/lib/product-taxonomy";
-import type { PageHeroContent, Product, PublicContent } from "@/lib/types";
 
-type SortValue = "order" | "newest" | "best-selling" | "price-low" | "price-high";
-type LabelValue = "all" | "new" | "promo" | "best";
 
 export type CategoryCommercePageConfig = {
   pageKey: string;
@@ -21,41 +18,31 @@ export type CategoryCommercePageConfig = {
 };
 
 export function CategoryCommercePage({
-  content,
-  products,
-  config,
-  initialColor = "all",
-  initialLabel = "all",
-  initialSort = "order",
-  initialProductType = "all"
+  model,
+  config
 }: {
-  content: PublicContent;
-  products: Product[];
+  model: CatalogPageModel;
   config: CategoryCommercePageConfig;
-  initialColor?: string;
-  initialLabel?: LabelValue;
-  initialSort?: SortValue;
-  initialProductType?: string;
 }) {
-  const pageHero = content.pageHeroes.find((hero) => hero.page_key === config.pageKey) as PageHeroContent | undefined;
+  const { hero, products, filters } = model.data;
 
   return (
     <PublicShell>
       <PageHero
-        label={pageHero?.label}
-        title={pageHero?.title}
-        description={pageHero?.subtitle}
-        imageUrl={getPageHeroImage(pageHero)}
-        mobileImageUrl={pageHero?.mobile_image_url}
-        objectPosition={pageHero?.object_position}
-        mobileObjectPosition={pageHero?.mobile_object_position}
-        objectFit={pageHero?.object_fit}
-        imageZoom={pageHero?.focal_zoom}
-        mobileImageZoom={pageHero?.mobile_focal_zoom}
-        ctaText={pageHero?.primary_cta_label}
-        ctaHref={pageHero?.primary_cta_url}
-        secondaryCtaText={pageHero?.secondary_cta_label}
-        secondaryCtaHref={pageHero?.secondary_cta_url}
+        label={hero.label}
+        title={hero.title}
+        description={hero.description}
+        imageUrl={hero.imageUrl}
+        mobileImageUrl={hero.mobileImageUrl}
+        objectPosition={hero.objectPosition}
+        mobileObjectPosition={hero.mobileObjectPosition}
+        objectFit={hero.objectFit}
+        imageZoom={hero.imageZoom}
+        mobileImageZoom={hero.mobileImageZoom}
+        ctaText={hero.ctaText}
+        ctaHref={hero.ctaHref}
+        secondaryCtaText={hero.secondaryCtaText}
+        secondaryCtaHref={hero.secondaryCtaHref}
         contentPosition="lower"
         breadcrumbs={[{ label: "Beranda", href: "/" }, { label: config.breadcrumbLabel }]}
       />
@@ -69,10 +56,10 @@ export function CategoryCommercePage({
         closingCtaHref={config.closingCtaHref}
         productTypeOptions={config.productTypeOptions}
         typeFilterLabel={config.typeFilterLabel}
-        initialColor={initialColor}
-        initialLabel={initialLabel}
-        initialSort={initialSort}
-        initialProductType={initialProductType}
+        initialColor={filters.color}
+        initialLabel={filters.label}
+        initialSort={filters.sort}
+        initialProductType={filters.productType}
       />
     </PublicShell>
   );

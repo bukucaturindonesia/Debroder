@@ -3,8 +3,7 @@ import { Suspense } from "react";
 import { JerseyCommerceNav } from "@/components/jersey/JerseyCommerceNav";
 import { JerseyShopCatalog } from "@/components/jersey/JerseyShopCatalog";
 import { PublicShell } from "@/components/PublicPage";
-import { productsForCategoryRoute } from "@/lib/product-route-matching";
-import { getPublicContent } from "@/lib/public-data";
+import { getCatalogPageModel } from "@/lib/catalog-page/runtime";
 
 export const metadata: Metadata = {
   title: "Belanja Jersey | DEBRODER",
@@ -13,14 +12,13 @@ export const metadata: Metadata = {
 };
 
 export default async function JerseyShopPage() {
-  const content = await getPublicContent();
-  const products = productsForCategoryRoute(content.products, content.productCategories, "jersey");
+  const model = await getCatalogPageModel({ routeKey: "jersey" });
 
   return (
     <PublicShell theme="jersey-commerce" showHeader={false}>
       <Suspense fallback={<ShopShellSkeleton />}>
         <JerseyCommerceNav />
-        <JerseyShopCatalog products={products} />
+        <JerseyShopCatalog products={model.data.products} />
       </Suspense>
     </PublicShell>
   );
