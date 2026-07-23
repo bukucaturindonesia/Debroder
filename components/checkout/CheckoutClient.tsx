@@ -29,8 +29,10 @@ type CheckoutApiPayload = {
 };
 type RecoveryResult =
   | { kind: "found"; payload: CheckoutApiPayload }
-  | { kind: "missing" | "expired" }
-  | { kind: "unsafe" | "temporary"; message: string; retryAfter: number };
+  | { kind: "missing" }
+  | { kind: "expired" }
+  | { kind: "unsafe"; message: string; retryAfter: number }
+  | { kind: "temporary"; message: string; retryAfter: number };
 
 const RECOVERY_KEY = "debroder-checkout-recovery-v1";
 const RECOVERY_TTL_MS = 2 * 60 * 60 * 1000;
