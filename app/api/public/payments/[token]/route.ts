@@ -40,6 +40,12 @@ type PublicPaymentMethodRow = {
   instructions: string | null;
   expires_in_hours: number | null;
 };
+type PublicPaymentFulfillmentRow = {
+  method: string;
+  status: string;
+  courier: string | null;
+  tracking_number: string | null;
+};
 
 async function resolveActiveStage(client: AdminClient, orderId: string) {
   try {
@@ -74,7 +80,13 @@ export async function GET(_request: Request, context: Context) {
     if (order.pricing_status !== "final" || Number(order.total_amount) <= 0) {
       return Response.json({ code: "PAYMENT_PRICING_NOT_FINAL", error: "Pembayaran belum tersedia sampai harga order ditetapkan final." }, { status: 409 });
     }
-    const [{ data: items }, { data: settings, error: settingsError }, { data: submissions }, activeStage] = await Promise.all([
+    const [
+      { data: items },
+      { data: settings, error: settingsError },
+      { data: submissions },
+      { data: fulfillment },
+      activeStage
+    ] = await Promise.all([
       resolved.client.from("order_items")
         .select("id,product_name,quantity,unit_price,subtotal,custom_project_id")
         .eq("order_id", order.id)
@@ -93,17 +105,29 @@ export async function GET(_request: Request, context: Context) {
         .is("archived_at", null)
         .order("created_at", { ascending: false })
         .limit(10),
+      resolved.client.from("fulfillments")
+        .select("method,status,courier,tracking_number")
+        .eq("order_id", order.id)
+        .is("archived_at", null)
+        .neq("status", "cancelled")
+        .order("created_at", { ascending: false })
+        .limit(1)
+        .maybeSingle(),
       resolveActiveStage(resolved.client, order.id)
     ]);
     if (settingsError) throw new Error("Pengaturan pembayaran belum tersedia.");
     const itemRows = (items ?? []) as PublicPaymentItemRow[];
     const submissionRows = (submissions ?? []) as PublicPaymentSubmissionRow[];
     const methodRows = (settings ?? []) as PublicPaymentMethodRow[];
+    const fulfillmentRow = fulfillment as PublicPaymentFulfillmentRow | null;
     return Response.json({
       orderNumber: order.order_number,
       customerName: order.customer_name,
       orderStatus: order.status,
-      fulfillmentMethod: order.delivery_method,
+      fulfillmentMethod: fulfillmentRow?.method ?? order.delivery_method,
+      fulfillmentStatus: fulfillmentRow?.status ?? null,
+      courier: fulfillmentRow?.courier ?? null,
+      trackingNumber: fulfillmentRow?.tracking_number ?? null,
       paymentMethod: order.payment_method,
       paymentStatus: order.payment_status,
       currency: order.currency,

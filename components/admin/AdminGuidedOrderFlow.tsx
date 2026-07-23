@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { buildOrderJourney } from "@/lib/order-journey";
+import { buildCompactOrderJourney, buildOrderJourney } from "@/lib/order-journey";
 import type { OrderActiveStageResolution, OrderPrimaryAction } from "@/lib/order-active-stage";
 
 export type GuidedOrderDomain = {
@@ -20,7 +20,12 @@ type Props = {
   activeStage: OrderActiveStageResolution;
   jobOrder: GuidedOrderDomain | null;
   qualityControl: (GuidedOrderDomain & { result?: string | null }) | null;
-  fulfillment: (GuidedOrderDomain & { method?: string; final_verified_at?: string | null; tracking_number?: string | null }) | null;
+  fulfillment: (GuidedOrderDomain & {
+    method?: string;
+    final_verified_at?: string | null;
+    tracking_number?: string | null;
+    courier?: string | null;
+  }) | null;
 };
 
 const ACTION_LABELS: Record<Exclude<OrderPrimaryAction, null>, string> = {
@@ -46,83 +51,103 @@ const ACTION_LABELS: Record<Exclude<OrderPrimaryAction, null>, string> = {
 };
 
 export function AdminGuidedOrderFlow({ order, activeStage, jobOrder, qualityControl, fulfillment }: Props) {
-  const journey = buildOrderJourney({ stage: activeStage, fulfillmentMethod: fulfillment?.method ?? order.delivery_method });
+  const fulfillmentMethod = fulfillment?.method ?? order.delivery_method;
+  const compactJourney = buildCompactOrderJourney({ stage: activeStage, fulfillmentMethod });
+  const detailedJourney = buildOrderJourney({ stage: activeStage, fulfillmentMethod });
   const action = resolveAction(order.id, activeStage.primaryAction, jobOrder?.id, fulfillment?.id);
   const terminal = activeStage.isTerminal;
   const terminalPaymentAction = terminal && ["pending", "pending_verification", "menunggu_verifikasi", "rejected", "ditolak"].includes(order.payment_status)
-    ? { href: `/admin/orders/${order.id}#payment`, label: "Selesaikan Pemeriksaan Pembayaran", shortLabel: "Periksa Pembayaran" }
+    ? { href: `/admin/orders/${order.id}?tab=payment#payment`, label: "Selesaikan Pemeriksaan Pembayaran", shortLabel: "Periksa Pembayaran" }
     : null;
   const visibleAction = terminalPaymentAction ?? action;
 
   return (
     <section id="guided-workflow" className="scroll-mt-24 border border-brand-softGray bg-white" aria-labelledby="guided-workflow-title">
-      <div className="border-b border-brand-softGray p-5 sm:p-7">
-        <p className="text-xs font-semibold uppercase tracking-[0.16em] text-brand-charcoal/45">Alur Kerja Terpandu</p>
-        <div className="mt-3 grid min-w-0 gap-5 xl:grid-cols-[minmax(0,1fr)_minmax(280px,380px)] xl:items-start">
+      <div className="p-5 sm:p-7">
+        <div className="grid min-w-0 gap-5 xl:grid-cols-[minmax(0,1fr)_minmax(320px,420px)] xl:items-start">
           <div className="min-w-0">
-            <p className="text-sm font-semibold text-brand-charcoal/55">Tahap saat ini</p>
+            <p className="text-xs font-semibold uppercase tracking-[0.16em] text-brand-charcoal/45">Order Command Center</p>
+            <p className="mt-3 text-sm font-semibold text-brand-charcoal/55">Tahap saat ini</p>
             <h2 id="guided-workflow-title" className="mt-1 break-words text-2xl font-semibold sm:text-3xl">{activeStage.adminStatusLabel}</h2>
             <p className="mt-3 max-w-3xl text-sm leading-7 text-brand-charcoal/65">{adminInstruction(activeStage)}</p>
+
+            {activeStage.blockingReason || activeStage.warning ? (
+              <div className="mt-5 border-l-4 border-amber-500 bg-amber-50 p-4 text-sm text-amber-950">
+                <p className="font-semibold">Yang masih harus diselesaikan</p>
+                <p className="mt-1 leading-6">{activeStage.blockingReason || activeStage.warning}</p>
+              </div>
+            ) : null}
+
+            <div className="mt-5 flex min-w-0 flex-col gap-3 sm:flex-row sm:flex-wrap">
+              {visibleAction && (!terminal || terminalPaymentAction) ? (
+                <Link href={visibleAction.href} className="inline-flex min-h-12 min-w-0 items-center justify-center rounded-full bg-brand-charcoal px-6 text-center text-sm font-semibold text-white transition hover:bg-black/75">
+                  {visibleAction.label}
+                </Link>
+              ) : null}
+              <Link href={`/admin/orders/${order.id}?view=full`} className="inline-flex min-h-12 items-center justify-center rounded-full border border-brand-softGray px-6 text-sm font-semibold">
+                Buka Detail Lengkap
+              </Link>
+            </div>
           </div>
-          <div className="grid min-w-0 gap-3">
+
+          <div className="grid min-w-0 gap-3 sm:grid-cols-2 xl:grid-cols-1">
             <Info label="Penanggung jawab" value={adminResponsibility(activeStage)} />
             <Info label="Berikutnya" value={activeStage.nextStage} />
+            <Info label="Pembayaran" value={humanStatus(order.payment_status)} />
+            <Info label="Fulfillment" value={fulfillment ? humanStatus(fulfillment.status) : "Belum tersedia"} />
           </div>
         </div>
 
-        {activeStage.blockingReason || activeStage.warning ? (
-          <div className="mt-5 border-l-4 border-amber-500 bg-amber-50 p-4 text-sm text-amber-950">
-            <p className="font-semibold">Yang masih harus diselesaikan</p>
-            <p className="mt-1 leading-6">{activeStage.blockingReason || activeStage.warning}</p>
-          </div>
-        ) : null}
-
-        <div className="mt-5 flex min-w-0 flex-col gap-3 sm:flex-row sm:flex-wrap">
-          {visibleAction && (!terminal || terminalPaymentAction) ? (
-            <Link href={visibleAction.href} className="inline-flex min-h-12 min-w-0 items-center justify-center rounded-full bg-brand-charcoal px-6 text-center text-sm font-semibold text-white transition hover:bg-black/75">
-              {visibleAction.label}
-            </Link>
-          ) : null}
-          <a href="#order-details" className="inline-flex min-h-12 items-center justify-center rounded-full border border-brand-softGray px-6 text-sm font-semibold">Lihat Rincian Pesanan</a>
-          <a href="#order-history" className="inline-flex min-h-12 items-center justify-center rounded-full border border-brand-softGray px-6 text-sm font-semibold">Lihat Riwayat</a>
-        </div>
-      </div>
-
-      <div className="p-5 sm:p-7">
-        <div className="mb-5">
-          <h3 className="text-xl font-semibold">Urutan Proses Pesanan</h3>
-          <p className="mt-2 text-sm leading-6 text-brand-charcoal/60">Semua tahap tetap terlihat dan tersusun. Hanya tahap saat ini yang menyediakan tindakan operasional.</p>
-        </div>
-        <ol className="grid gap-3" aria-label="Urutan proses pesanan admin">
-          {journey.map((step) => {
+        <ol className="mt-7 grid gap-2 sm:grid-cols-3 xl:grid-cols-6" aria-label="Tahap utama pesanan admin">
+          {compactJourney.map((step) => {
             const current = step.state === "current" || step.state === "stopped";
             return (
-              <li key={step.id} className={`grid min-w-0 gap-3 border p-4 sm:grid-cols-[44px_minmax(0,1fr)_auto] sm:items-center ${current ? "border-brand-charcoal bg-brand-offWhite" : "border-brand-softGray bg-white"}`} aria-current={current ? "step" : undefined}>
-                <span className={`grid h-10 w-10 place-items-center rounded-full text-sm font-semibold ${step.state === "done" ? "bg-emerald-100 text-emerald-900" : current ? "bg-brand-charcoal text-white" : step.state === "skipped" ? "bg-brand-offWhite text-brand-charcoal/30" : "bg-brand-offWhite text-brand-charcoal/45"}`}>
-                  {step.state === "done" ? "✓" : step.position}
-                </span>
-                <div className="min-w-0">
-                  <div className="flex min-w-0 flex-wrap items-center gap-2">
-                    <p className="break-words font-semibold">{step.label}</p>
-                    <span className={`rounded-full px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.08em] ${step.state === "done" ? "bg-emerald-50 text-emerald-800" : current ? "bg-black text-white" : step.state === "skipped" ? "bg-brand-offWhite text-brand-charcoal/35" : "bg-brand-offWhite text-brand-charcoal/50"}`}>
-                      {step.state === "done" ? "Selesai" : step.state === "current" ? "Sedang Berjalan" : step.state === "stopped" ? "Dihentikan" : step.state === "skipped" ? "Tidak Dilanjutkan" : "Berikutnya"}
-                    </span>
-                  </div>
-                  <p className="mt-1 break-words text-sm leading-6 text-brand-charcoal/60">{step.description}</p>
+              <li key={step.id} className={`min-w-0 border p-3 ${current ? "border-brand-charcoal bg-brand-offWhite" : "border-brand-softGray bg-white"}`} aria-current={current ? "step" : undefined}>
+                <div className="flex items-center gap-2">
+                  <span className={`grid h-7 w-7 shrink-0 place-items-center rounded-full text-xs font-semibold ${step.state === "done" ? "bg-emerald-100 text-emerald-900" : current ? "bg-brand-charcoal text-white" : "bg-brand-offWhite text-brand-charcoal/45"}`}>
+                    {step.state === "done" ? "✓" : step.position}
+                  </span>
+                  <p className="break-words text-xs font-semibold">{step.label}</p>
                 </div>
-                {current && visibleAction && (!terminal || terminalPaymentAction) ? (
-                  <Link href={visibleAction.href} className="inline-flex min-h-10 items-center justify-center rounded-full border border-brand-charcoal px-4 text-xs font-semibold">{visibleAction.shortLabel}</Link>
-                ) : null}
+                <p className="mt-2 text-[10px] font-semibold uppercase tracking-[0.08em] text-brand-charcoal/45">
+                  {step.state === "done" ? "Selesai" : step.state === "current" ? "Sedang Berjalan" : step.state === "stopped" ? "Dihentikan" : step.state === "skipped" ? "Tidak Dilanjutkan" : "Berikutnya"}
+                </p>
               </li>
             );
           })}
         </ol>
 
-        <div className="mt-6 grid min-w-0 gap-3 md:grid-cols-3">
-          <Domain label="Surat Perintah Kerja" value={jobOrder ? humanStatus(jobOrder.status) : "Belum diperlukan"} />
-          <Domain label="Pemeriksaan Kualitas" value={qualityControl ? humanStatus(qualityControl.result ?? qualityControl.status) : "Belum diperlukan"} />
-          <Domain label="Pengiriman / Pickup" value={fulfillment ? humanStatus(fulfillment.status) : activeStage.lifecycleKind === "ready_stock" && !terminal ? "Dibuat otomatis saat syarat terpenuhi" : "Belum diperlukan"} />
-        </div>
+        <details className="group mt-5 border border-brand-softGray bg-brand-offWhite p-4">
+          <summary className="flex cursor-pointer list-none items-center justify-between gap-4 text-sm font-semibold">
+            Lihat seluruh perjalanan dan domain operasional
+            <span className="text-xl leading-none transition group-open:rotate-45" aria-hidden="true">+</span>
+          </summary>
+          <p className="mt-2 text-xs leading-5 text-brand-charcoal/55">Semua tahap tetap terlihat dan tersusun di rincian perjalanan. Halaman utama hanya menonjolkan satu tindakan operasional.</p>
+          <ol className="mt-4 grid gap-3" aria-label="Urutan proses pesanan admin">
+            {detailedJourney.map((step) => {
+              const current = step.state === "current" || step.state === "stopped";
+              return (
+                <li key={step.id} className={`grid min-w-0 gap-3 border p-4 sm:grid-cols-[40px_minmax(0,1fr)_auto] sm:items-center ${current ? "border-brand-charcoal bg-white" : "border-brand-softGray bg-white/75"}`} aria-current={current ? "step" : undefined}>
+                  <span className={`grid h-9 w-9 place-items-center rounded-full text-sm font-semibold ${step.state === "done" ? "bg-emerald-100 text-emerald-900" : current ? "bg-brand-charcoal text-white" : "bg-brand-offWhite text-brand-charcoal/45"}`}>
+                    {step.state === "done" ? "✓" : step.position}
+                  </span>
+                  <div className="min-w-0">
+                    <p className="break-words font-semibold">{step.label}</p>
+                    <p className="mt-1 break-words text-sm leading-6 text-brand-charcoal/60">{step.description}</p>
+                  </div>
+                  <span className="w-fit rounded-full bg-brand-offWhite px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.08em] text-brand-charcoal/55">
+                    {step.state === "done" ? "Selesai" : step.state === "current" ? "Saat Ini" : step.state === "stopped" ? "Dihentikan" : step.state === "skipped" ? "Tidak Dilanjutkan" : "Berikutnya"}
+                  </span>
+                </li>
+              );
+            })}
+          </ol>
+          <div className="mt-4 grid min-w-0 gap-3 md:grid-cols-3">
+            <Domain label="Surat Perintah Kerja" value={jobOrder ? humanStatus(jobOrder.status) : "Belum diperlukan"} />
+            <Domain label="Pemeriksaan Kualitas" value={qualityControl ? humanStatus(qualityControl.result ?? qualityControl.status) : "Belum diperlukan"} />
+            <Domain label="Pengiriman / Pickup" value={fulfillment ? humanStatus(fulfillment.status) : activeStage.lifecycleKind === "ready_stock" && !terminal ? "Dibuat otomatis saat syarat terpenuhi" : "Belum diperlukan"} />
+          </div>
+        </details>
       </div>
     </section>
   );
@@ -130,16 +155,16 @@ export function AdminGuidedOrderFlow({ order, activeStage, jobOrder, qualityCont
 
 function resolveAction(orderId: string, action: OrderPrimaryAction, jobOrderId?: string, fulfillmentId?: string) {
   if (!action) return null;
-  const fulfillmentHref = fulfillmentId ? `/admin/fulfillments/${fulfillmentId}?focus=${action}#guided-action` : `/admin/orders/${orderId}#commerce`;
+  const fulfillmentHref = fulfillmentId ? `/admin/fulfillments/${fulfillmentId}?focus=${action}#guided-action` : `/admin/orders/${orderId}?tab=operations#operations`;
   const hrefs: Record<Exclude<OrderPrimaryAction, null>, string> = {
-    verify_whatsapp: `/admin/orders/${orderId}#commerce`,
-    review_order: `/admin/orders/${orderId}#order-details`,
-    set_shipping_quote: `/admin/orders/${orderId}#commerce`,
-    prepare_quote: `/admin/orders/${orderId}#custom-pricing`,
+    verify_whatsapp: `/admin/orders/${orderId}?tab=operations#operations`,
+    review_order: `/admin/orders/${orderId}?tab=summary#summary`,
+    set_shipping_quote: `/admin/orders/${orderId}?tab=operations#operations`,
+    prepare_quote: `/admin/orders/${orderId}?view=full#custom-pricing`,
     approve_quote: `/admin/orders/${orderId}#guided-workflow`,
     approve_total: `/admin/orders/${orderId}#guided-workflow`,
-    open_payment: `/admin/orders/${orderId}#payment`,
-    review_payment: `/admin/orders/${orderId}#payment`,
+    open_payment: `/admin/orders/${orderId}?tab=payment#payment`,
+    review_payment: `/admin/orders/${orderId}?tab=payment#payment`,
     resubmit_payment: `/admin/orders/${orderId}#guided-workflow`,
     create_job_order: jobOrderId ? `/admin/job-orders/${jobOrderId}` : `/admin/job-orders?order=${orderId}`,
     prepare_goods: fulfillmentHref,
@@ -149,8 +174,8 @@ function resolveAction(orderId: string, action: OrderPrimaryAction, jobOrderId?:
     run_final_check: fulfillmentHref,
     dispatch_order: fulfillmentHref,
     handover_pickup: fulfillmentHref,
-    contact_admin: `/admin/orders/${orderId}#order-history`,
-    track_only: `/admin/orders/${orderId}#order-history`
+    contact_admin: `/admin/orders/${orderId}?tab=history#history`,
+    track_only: `/admin/orders/${orderId}?tab=history#history`
   };
   return { href: hrefs[action], label: ACTION_LABELS[action], shortLabel: shortAction(action) };
 }
@@ -190,5 +215,5 @@ function Info({ label, value }: { label: string; value: string }) {
 }
 
 function Domain({ label, value }: { label: string; value: string }) {
-  return <div className="min-w-0 border border-brand-softGray p-4"><p className="text-xs font-semibold uppercase tracking-[0.1em] text-brand-charcoal/45">{label}</p><p className="mt-2 break-words text-sm font-semibold">{value}</p></div>;
+  return <div className="min-w-0 border border-brand-softGray bg-white p-4"><p className="text-xs font-semibold uppercase tracking-[0.1em] text-brand-charcoal/45">{label}</p><p className="mt-2 break-words text-sm font-semibold">{value}</p></div>;
 }

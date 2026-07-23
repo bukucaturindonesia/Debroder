@@ -4,6 +4,7 @@ import { ProductImageSwap } from "@/components/ProductImageSwap";
 import { fallbackImages } from "@/lib/fallback-data";
 import { productCardMetadata, productCardPrice } from "@/lib/product-card";
 import { getProductCardImages } from "@/lib/product-gallery";
+import { resolvePublicQuickAdd } from "@/lib/public-quick-add";
 import type { Product } from "@/lib/types";
 import { formatRupiah } from "@/lib/url";
 
@@ -14,12 +15,6 @@ function slugify(value: string) {
     .replace(/[\u0300-\u036f]/g, "")
     .replace(/[^a-z0-9]+/g, "-")
     .replace(/^-|-$/g, "");
-}
-
-function priceValue(product: Product) {
-  const value = product.price ?? product.harga ?? product.base_price;
-  if (typeof value === "number") return value;
-  return Number(String(value || "").replace(/[^\d]/g, "")) || undefined;
 }
 
 export function productDetailHref(product: Product) {
@@ -42,6 +37,12 @@ export function PublicProductCard({
   const cardImages = getProductCardImages(product);
   const metadata = productCardMetadata(product);
   const priceLabel = productCardPrice(product);
+  const quickAdd = resolvePublicQuickAdd(product, {
+    detailHref,
+    imageUrl: cardImages.primary,
+    imageAlt: product.image_alt || product.nama,
+    priceLabel
+  });
   const labels = Array.from(
     new Set(
       [
@@ -111,21 +112,29 @@ export function PublicProductCard({
           >
             Detail
           </Link>
-          <AddToCartButton
-            product={{
-              id: product.id || product.slug || product.nama,
-              name: product.nama,
-              category: product.kategori,
-              priceLabel,
-              priceValue: priceValue(product),
-              href: detailHref,
-              imageUrl: cardImages.primary,
-              imageAlt: product.image_alt || product.nama
-            }}
-            className="inline-flex min-h-10 items-center justify-center bg-black px-3 text-sm font-semibold text-white transition hover:bg-black/80"
-          >
-            Tambah
-          </AddToCartButton>
+
+          {quickAdd.mode === "add" ? (
+            <AddToCartButton
+              product={quickAdd.product}
+              className="inline-flex min-h-10 items-center justify-center bg-black px-3 text-sm font-semibold text-white transition hover:bg-black/80"
+            >
+              Tambah
+            </AddToCartButton>
+          ) : quickAdd.mode === "options" ? (
+            <Link
+              href={detailHref}
+              className="inline-flex min-h-10 items-center justify-center bg-black px-3 text-sm font-semibold text-white transition hover:bg-black/80"
+            >
+              Pilih opsi
+            </Link>
+          ) : (
+            <span
+              aria-disabled="true"
+              className="inline-flex min-h-10 cursor-not-allowed items-center justify-center bg-black/10 px-3 text-sm font-semibold text-black/40"
+            >
+              Stok habis
+            </span>
+          )}
         </div>
       ) : null}
     </article>

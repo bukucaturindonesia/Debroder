@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { type FormEvent, type ReactNode, useCallback, useEffect, useState } from "react";
 import { CustomerOrderStatusCard } from "@/components/customer-order/CustomerOrderStatusCard";
+import { CarrierTrackingActions } from "@/components/tracking/CarrierTrackingActions";
 import { contactLinks } from "@/lib/contact";
 import { resolveCustomerOrderPresentation } from "@/lib/customer-order-presentation";
 import type { OrderActiveStageResolution } from "@/lib/order-active-stage";
@@ -105,6 +106,14 @@ export function GuestOrderTracking({
   useEffect(() => {
     if (initialOrderNumber && token) void lookup({ orderNumber: initialOrderNumber, token });
   }, [initialOrderNumber, lookup, token]);
+
+  useEffect(() => {
+    if (!data || isTrackingTerminal(data.order.status, data.order.fulfillmentStatus)) return;
+    const timer = window.setInterval(() => {
+      if (lastCredentials) void lookup(lastCredentials, true);
+    }, 20_000);
+    return () => window.clearInterval(timer);
+  }, [data, lastCredentials, lookup]);
 
   function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -218,9 +227,13 @@ function TrackingDetail({ data, credentials, refreshing, onRefresh }: { data: Tr
           primaryAction={primaryAction}
         >
           {order.trackingNumber ? (
-            <div className="text-sm">
-              <p className="text-xs font-semibold uppercase tracking-[0.12em] text-black/45">Nomor resi</p>
-              <p className="mt-1 font-semibold">{order.trackingNumber}</p>
+            <div className="grid gap-4 text-sm sm:grid-cols-[minmax(0,1fr)_auto] sm:items-end">
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-[0.12em] text-black/45">Pengiriman aktif</p>
+                <p className="mt-1 font-semibold">{order.courier || "Kurir eksternal"}</p>
+                <p className="mt-1 break-all text-black/65">Resi: {order.trackingNumber}</p>
+              </div>
+              <CarrierTrackingActions courier={order.courier} trackingNumber={order.trackingNumber} compact />
             </div>
           ) : null}
         </CustomerOrderStatusCard>
@@ -230,7 +243,7 @@ function TrackingDetail({ data, credentials, refreshing, onRefresh }: { data: Tr
         orderNumber={order.orderNumber}
         credentials={credentials}
         operations={data.customerOperations}
-        terminal={["completed", "selesai", "cancelled", "expired", "picked_up"].includes(order.status)}
+        terminal={isTrackingTerminal(order.status, order.fulfillmentStatus)}
         onChanged={onRefresh}
       />
 
@@ -276,6 +289,11 @@ function TrackingDetail({ data, credentials, refreshing, onRefresh }: { data: Tr
             {order.maskedAddress ? <Info label="Alamat terlindungi" value={order.maskedAddress} /> : null}
             {order.pickupStatus ? <Info label="Status pengambilan" value={readable(order.pickupStatus)} /> : null}
           </dl>
+          {order.trackingNumber ? (
+            <div className="mt-5 border-t border-black/10 pt-4">
+              <CarrierTrackingActions courier={order.courier} trackingNumber={order.trackingNumber} />
+            </div>
+          ) : null}
           {data.shippingQuote ? (
             <div className="mt-5 border-t border-black/10 pt-4 text-sm">
               <p className="font-semibold">Ongkir versi {data.shippingQuote.version}</p>
@@ -308,7 +326,6 @@ function trackingPrimaryAction(action: ReturnType<typeof resolveCustomerOrderPre
   }
   return undefined;
 }
-
 
 function CustomerOperationsPanel({
   orderNumber,
@@ -443,7 +460,8 @@ function readable(value: string) {
     packing: "Sedang dikemas",
     ready_for_pickup: "Siap diambil",
     ready_to_ship: "Siap dikirim",
-    shipped: "Sudah dikirim",
+    shipped: "Diserahkan ke kurir",
+    in_transit: "Dalam perjalanan",
     delivered: "Sudah diterima",
     picked_up: "Sudah diambil",
     completed: "Selesai",
@@ -451,6 +469,11 @@ function readable(value: string) {
     cancelled: "Dibatalkan"
   };
   return labels[value] ?? "Status sedang diperbarui";
+}
+
+function isTrackingTerminal(orderStatus: string, fulfillmentStatus: string | null) {
+  return ["completed", "selesai", "cancelled", "expired", "picked_up"].includes(orderStatus)
+    || ["delivered", "picked_up"].includes(fulfillmentStatus ?? "");
 }
 
 function dateTime(value: string) {
