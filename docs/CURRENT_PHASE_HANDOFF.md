@@ -348,3 +348,35 @@ Status: **PASS WITH TWO EXPLICIT P7B BLOCKERS**.
   stops here and does not begin P6 or P7B.
 - GO/NO-GO: **P7A GO UNDER ITS EXIT CRITERIA; P7B DATABASE ENFORCEMENT REMAINS
   BLOCKED/PENDING**.
+
+---
+
+## 2026-07-24 — P6 Cart v5
+
+Status: **IMPLEMENTED IN SOURCE — AWAITING OWNER GATE VERIFICATION**.
+
+- Repository/branch/base verified: `DEBRODER`,
+  `Batch-1-—-Fondasi-dan-Performa-Halaman`,
+  `d98bd6307dfefe3f46e042bd172991de123237ee`; working tree was clean before P6.
+- P7A evidence verified PASS before source changes. Its pricing formula,
+  historical snapshots, and two explicit P7B SQL blockers remain unchanged.
+- Ownership proven: `components/CartProvider.tsx` owns active add/persist/restore/
+  update/cart display; `/api/cart/revalidate` owns Ready Stock refresh;
+  `components/checkout/CheckoutClient.tsx` and `/api/checkout` own checkout
+  command and server-authoritative final validation.
+- Root cause: the active provider still wrote a plain `debroder-cart-v4` array,
+  inferred line modes heuristically, and did not consume the existing
+  `cart-line.v5` contract/revalidation path. Checkout limits existed at its
+  parser boundary but not at every cart mutation/restore/revalidation boundary.
+- Resolution: versioned Cart v5 envelope, all four discriminated lines,
+  deterministic legacy migration/quarantine, explicit limits, server
+  revalidation with stale snapshot + retry, and one-mode/fail-closed checkout.
+  Legacy storage keys are read but not deleted.
+- Routes preserved: `/keranjang`, `/checkout`, `/api/cart/revalidate`, and
+  `/api/checkout`. No broad visual redesign or pricing/inventory authority
+  change.
+- Target verification: typecheck PASS; touched-file lint PASS; P6 and related
+  regression suite PASS (5 files / 34 tests). Full owner gate remains pending.
+- Migration/database: none required, created, applied, or pending for P6. The
+  proven SQL limit/minimum gaps stay owned by P7B.
+- Git/deployment: no commit, push, merge, or deployment. P7B was not started.

@@ -6,15 +6,16 @@
 ## 1. Status Saat Ini
 
 - Repository: **DEBRODER**
-- Branch kerja: `Batch-1---Fondasi-dan-Performa-Halaman`
+- Branch kerja: `Batch-1-—-Fondasi-dan-Performa-Halaman`
 - P0 — Implementation Baseline: **PASS**
 - P1 — Pure Contract Foundation: **PASS**
 - P2 — Compatibility Adapter: **PASS menurut alur owner**
 - P3 — Public Shell & Page Read Models: **PASS menurut alur owner**
 - P4 — Category & PDP Isolation: **PASS / handoff tersedia**
-- P5 — Client Boundary Isolation: **SEDANG DIKERJAKAN**
-- Package setelah P5: **P7A — Pricing Parity**
-- P6 dilarang dimulai sebelum P7A PASS.
+- P5 — Client Boundary Isolation: **PASS**
+- P7A — Pricing Parity: **PASS WITH TWO EXPLICIT P7B BLOCKERS**
+- P6 — Cart v5: **IMPLEMENTED IN SOURCE — AWAITING OWNER GATE VERIFICATION**
+- Package setelah P6: **P7B — Policy & Database Alignment**, hanya setelah owner menyatakan gate P6 PASS.
 
 Codex wajib memverifikasi sendiri sebelum mengubah source:
 
@@ -241,45 +242,33 @@ Owner menangani review akhir, commit, push GitHub, dan Vercel Preview, kecuali o
 
 ---
 
-## 10. P5 — Scope Aktif
+## 10. P6 — Scope Aktif
 
-P5 hanya berfokus pada:
+P6 hanya berfokus pada:
 
-- memperkecil Client Components;
-- Server Components sebagai default;
-- memindahkan data loading dan logic non-interaktif ke server;
-- mempersempit provider/global state;
-- mencegah secret, service-role, server-only module, dan data access masuk client bundle;
-- lazy-load modul berat hanya bila manfaatnya terbukti;
-- import-boundary dan regression tests.
+- canonical Cart v5 dengan line `ready_stock`, `configured_product`, `custom_project`, dan `legacy_unsupported`;
+- persistence versioned dan migrasi deterministic dari storage cart lama;
+- revalidasi harga/stok Ready Stock yang server-authoritative;
+- stale snapshot, warning, retry, dan checkout fail-closed;
+- batas 50 baris, 100 unit per baris, dan 500 unit total;
+- satu checkout mode per command;
+- regression tests cart dan checkout.
 
-P5 wajib mempertahankan:
+P6 wajib mempertahankan formula pricing P7A, historical snapshot, route/tampilan
+existing, inventory authority, cart lama melalui migration path, serta checkout
+Ready Stock/Custom yang sudah aktif.
 
-- hasil P4;
-- tampilan;
-- route;
-- mobile-first;
-- accessibility;
-- pricing;
-- cart;
-- checkout;
-- business behavior existing.
+P6 dilarang mengubah formula pricing, hardcode produk/SKU, membuat branch Jersey
+di cart core, mengubah inventory authority, menghapus data cart lama, atau
+memulai P7B.
 
-P5 dilarang:
+Database/migration P6: **tidak diperlukan dan tidak dibuat**. Gap enforcement SQL
+yang sudah terbukti tetap merupakan scope P7B.
 
-- broad refactor;
-- mengubah formula pricing;
-- mengubah cart persistence;
-- mengubah checkout;
-- mengubah inventory authority;
-- memulai P6 atau P7A;
-- membuat global manager baru.
-
-Setelah P5 selesai dan seluruh gate PASS:
+Status saat ini:
 
 ```text
-P5 STATUS: PASS
-NEXT AUTHORIZED PACKAGE: belum ada sampai owner memberi izin P7A
+IMPLEMENTED IN SOURCE — AWAITING OWNER GATE VERIFICATION
 ```
 
 ---

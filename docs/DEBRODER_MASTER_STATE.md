@@ -211,3 +211,25 @@ The FROZEN commerce/landing blueprints and official Owner Decisions remain autho
 - P7B still owns additive SQL enforcement for the 100-unit line limit,
   500-unit total limit, and Ready Stock minimum/quotation thresholds. P6 and
   P7B were not started in this work.
+
+## P6 Cart v5 state — 2026-07-24
+
+- P6 is **IMPLEMENTED IN SOURCE — AWAITING OWNER GATE VERIFICATION**.
+- Active cart persistence is now a versioned `debroder-cart-v5` envelope using
+  canonical `cart-line.v5` discriminants: `ready_stock`,
+  `configured_product`, `custom_project`, and `legacy_unsupported`.
+- Legacy v1–v4 storage is migrated deterministically. Transaction-critical
+  fields are never guessed; incomplete data is preserved as
+  `legacy_unsupported`, and legacy keys are not deleted.
+- Ready Stock cart-open and pre-checkout paths use server revalidation.
+  Revalidation failure preserves the last display snapshot, exposes warning
+  and retry, and blocks checkout until a fresh valid result exists.
+- Cart mutations, restore, revalidation API, and checkout parser share the
+  50-line, 100-unit-per-line, and 500-total limits. Mixed checkout modes and
+  unsupported legacy lines fail closed.
+- Pricing formulas, historical snapshots, inventory authority, routes, and
+  existing Ready Stock/Custom checkout commands were not changed.
+- Verification so far: typecheck PASS; touched-file lint PASS; targeted P6 and
+  related regressions PASS (5 files / 34 tests). Owner full gate is pending.
+- Database/migration: none required or performed. P7B blockers V12-034 and
+  V12-035 remain open and unchanged. No commit, push, merge, or deployment.

@@ -192,3 +192,30 @@
   remote read-only SQL fixture 10/10 with zero mismatch, typecheck, lint
   (0 errors), full 596-test suite, and production build pass. No database
   mutation or migration was performed.
+
+## P6 Cart v5
+
+### V12-036 — P6 owner full-gate verification
+
+- Severity: Package gate
+- Status: **OPEN — SOURCE IMPLEMENTED**
+- Detail: Canonical Cart v5, deterministic legacy migration, discriminated
+  lines, limits, stale/retry revalidation behavior, and fail-closed one-mode
+  checkout are implemented. Typecheck, touched-file lint, and the targeted
+  34-test suite pass. Owner must run the required full typecheck, lint, test,
+  build, and git-diff gates before P6 may be declared PASS.
+
+## Closed in P6 Cart v5
+
+- Plain-array cart persistence — **CLOSED IN SOURCE**. Active persistence now
+  writes an explicit v5 envelope while retaining deterministic readers for
+  legacy keys.
+- Unsafe legacy conversion — **CLOSED IN SOURCE**. Missing transaction-critical
+  identity/snapshot data is preserved as `legacy_unsupported`, never guessed.
+- Client-only cart validity — **CLOSED IN SOURCE**. Ready Stock revalidation is
+  server-authoritative; stale display remains visible, retry is explicit, and
+  checkout fails closed.
+- Cart limit/mode drift — **CLOSED IN SOURCE**. Shared 50/100/500 constants and
+  one checkout mode are enforced in cart mutations, restore/revalidation, and
+  checkout parsing. Database enforcement remains explicitly assigned to
+  V12-034/V12-035 under P7B.

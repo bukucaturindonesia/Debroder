@@ -2,10 +2,40 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { createContext, type ReactNode, useContext, useEffect, useMemo, useState } from "react";
+import {
+  createContext,
+  type ReactNode,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useRef,
+  useState
+} from "react";
 import { BrandIcon } from "@/components/BrandIcon";
 import { SafeImage } from "@/components/SafeImage";
 import { repriceCartItemsByProduct } from "@/lib/cart-group-tier-pricing";
+import {
+  applyReadyStockRevalidation,
+  CART_V5_STORAGE_KEY,
+  createConfiguredProductCartItem,
+  createCustomProjectCartItem,
+  createLegacyUnsupportedCartItem,
+  createReadyStockCartItem,
+  ensureCartRoles,
+  getCartCheckoutDecision,
+  LEGACY_CART_STORAGE_KEYS,
+  markReadyStockLinesStale,
+  restoreCartV5,
+  serializeCartV5,
+  validateCartLimits,
+  type CartCheckoutDecision,
+  type CartItem,
+  type CartItemRole,
+  type CartV5Issue,
+  type ReadyStockRevalidationResult
+} from "@/lib/cart-v5";
+import type { ConfiguredProductSnapshot } from "@/lib/contracts";
 import type { CustomProjectSnapshot } from "@/lib/custom-commerce/types";
 import { fallbackImages, pageHeroImageFallbacks } from "@/lib/fallback-data";
 import { formatRupiah } from "@/lib/url";
@@ -34,23 +64,36 @@ export type CartProductInput = {
   customProject?: CustomProjectSnapshot;
 };
 
-type CartItemRole = "primary" | "additional";
-
-export type CartItem = CartProductInput & {
-  cartId: string;
-  role: CartItemRole;
-  quantity: number;
-  color: string;
+export type ConfiguredProductCartInput = {
+  snapshot: ConfiguredProductSnapshot;
+  name: string;
+  category?: string;
+  priceLabel?: string;
+  priceValue?: number;
+  href?: string;
+  imageUrl?: string;
+  imageAlt?: string;
+  color?: string;
   colorHex?: string;
-  size: string;
-  variantId?: string;
-  variantSizeId?: string;
+  size?: string;
   variantName?: string;
-  variantSku?: string;
-  stockLabel?: string;
+  notes?: string;
+};
+
+type CartItemUpdate = {
+  quantity?: number;
+  color?: string;
+  colorHex?: string;
+  size?: string;
+  notes?: string;
   stockAvailable?: number;
-  variantSnapshot?: Record<string, unknown>;
-  notes: string;
+  stockLabel?: string;
+};
+
+export type CartRevalidationOutcome = {
+  ok: boolean;
+  lines: CartItem[];
+  issues: CartV5Issue[];
 };
 
 type CartContextValue = {
@@ -58,11 +101,16 @@ type CartContextValue = {
   itemCount: number;
   isOpen: boolean;
   isLoaded: boolean;
+  isRevalidating: boolean;
+  issues: CartV5Issue[];
+  checkoutDecision: CartCheckoutDecision;
   addItem: (product: CartProductInput, role?: CartItemRole) => void;
-  updateItem: (cartId: string, updates: Partial<CartItem>) => void;
-  removeItem: (cartId: string) => void;
+  addConfiguredProduct: (input: ConfiguredProductCartInput, role?: CartItemRole) => void;
+  updateItem: (lineId: string, updates: CartItemUpdate) => void;
+  removeItem: (lineId: string) => void;
   clearCart: () => void;
   addCustomProject: (project: CustomProjectSnapshot) => void;
+  revalidate: () => Promise<CartRevalidationOutcome>;
   openCart: () => void;
   closeCart: () => void;
   preserveJerseyInteractions: boolean;
@@ -76,8 +124,6 @@ type SearchSuggestion = {
   imageUrl: string;
 };
 
-const storageKey = "debroder-cart-v4";
-const legacyStorageKeys = ["debroder-cart-v3", "debroder-cart-v2", "debroder-cart-v1"];
 const CartContext = createContext<CartContextValue | null>(null);
 
 const defaultColorOptions = [
@@ -188,8 +234,10 @@ function isJerseyConfiguredItem(item: Pick<CartItem, "variantSnapshot">) {
   return item.variantSnapshot?.configurator_type === "jersey";
 }
 
-export function isCustomProjectCartItem(item: Pick<CartItem, "customProject">) {
-  return Boolean(item.customProject?.id && item.customProject.version === 1);
+export function isCustomProjectCartItem(
+  item: Pick<CartItem, "lineType">
+): item is CartItem & { lineType: "custom_project"; customProject: CustomProjectSnapshot } {
+  return item.lineType === "custom_project";
 }
 
 function CustomProjectSummary({ item }: { item: CartItem }) {
@@ -252,6 +300,10 @@ function JerseyConfigSummary({ item }: { item: CartItem }) {
 }
 
 function itemProductSubtotal(item: CartItem) {
+  if (item.lineType === "legacy_unsupported") return 0;
+  if (item.lineType === "custom_project") {
+    return item.customProject?.pricing.finalTotal ?? 0;
+  }
   return itemUnitPrice(item) * item.quantity;
 }
 
@@ -269,36 +321,7 @@ function labelForItem(item: CartItem) {
 }
 
 function ensureRoles(items: CartItem[]) {
-  let hasPrimary = false;
-  const normalizedItems: CartItem[] = items.map((item, index) => {
-    const itemWithoutLegacyServices = { ...(item as CartItem & { services?: unknown }) };
-    delete itemWithoutLegacyServices.services;
-    const quantity = normalizeNumber(Number(item.quantity || 1));
-    const role: CartItemRole = !hasPrimary && (item.role === "primary" || index === 0) ? "primary" : "additional";
-    if (role === "primary") hasPrimary = true;
-    const normalized: CartItem = {
-      ...itemWithoutLegacyServices,
-      role,
-      quantity,
-      color: item.color || "",
-      colorHex: item.colorHex || item.defaultColorHex || "",
-      size: item.size || "",
-      variantId: item.variantId || undefined,
-      variantSizeId: item.variantSizeId || undefined,
-      variantName: item.variantName || undefined,
-      variantSku: item.variantSku || undefined,
-      stockLabel: item.stockLabel || undefined,
-      stockAvailable:
-        typeof item.stockAvailable === "number"
-          ? Math.max(0, Math.floor(item.stockAvailable))
-          : undefined,
-      variantSnapshot: item.variantSnapshot || undefined,
-      notes: item.notes || ""
-    };
-    return normalized;
-  });
-
-  return repriceCartItemsByProduct(normalizedItems);
+  return repriceCartItemsByProduct(ensureCartRoles(items));
 }
 
 function CartIcon() {
@@ -318,6 +341,9 @@ function QuantityControl({ value, onChange, ariaLabel }: { value: number; onChan
 function CartProductHeader({ item, compact = false }: { item: CartItem; compact?: boolean }) {
   const unitPrice = itemUnitPrice(item);
   const subtotal = itemProductSubtotal(item);
+  const displaySku = item.lineType === "ready_stock"
+    ? item.sku
+    : readRecordString(item.variantSnapshot, "sku");
   const cart = useCart();
 
   return (
@@ -331,18 +357,18 @@ function CartProductHeader({ item, compact = false }: { item: CartItem; compact?
             {item.role === "primary" ? <span className="mb-2 inline-flex rounded-full bg-[#e9f4ee] px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.12em] text-[#063d24]">Pesanan Utama</span> : null}
             <h3 className="text-base font-semibold leading-tight sm:text-lg">{item.name}</h3>
             {labelForItem(item) ? <p className="mt-1 text-sm leading-6 text-black/55">{labelForItem(item)}</p> : null}
-            {(item.color || item.size || item.variantSku) ? (
+            {(item.color || item.size || displaySku) ? (
               <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-black/55">
                 {item.color ? <span className="inline-flex items-center gap-1.5"><span className="h-3 w-3 rounded-full border border-black/10" style={{ backgroundColor: item.colorHex || "#d9d9d6" }} />{item.color}</span> : null}
                 {item.size ? <span>Ukuran {item.size}</span> : null}
-                {item.variantSku ? <span>SKU {item.variantSku}</span> : null}
+                {displaySku ? <span>SKU {displaySku}</span> : null}
               </div>
             ) : null}
           </div>
-          <button type="button" className="text-xs font-semibold text-red-700 underline-offset-4 hover:underline" onClick={() => cart.removeItem(item.cartId)}>Hapus</button>
+          <button type="button" className="text-xs font-semibold text-red-700 underline-offset-4 hover:underline" onClick={() => cart.removeItem(item.lineId)}>Hapus</button>
         </div>
         <div className="mt-4 flex flex-wrap items-center justify-between gap-3">
-          {isCustomProjectCartItem(item) ? <p className="rounded-full bg-[#f5f5ef] px-3 py-2 text-xs font-semibold">{item.customProject?.pricing.totalQuantity ?? 0} pcs terkonfigurasi</p> : <QuantityControl value={item.quantity} ariaLabel={`jumlah ${item.name}`} onChange={(quantity) => cart.updateItem(item.cartId, { quantity })} />}
+          {isCustomProjectCartItem(item) ? <p className="rounded-full bg-[#f5f5ef] px-3 py-2 text-xs font-semibold">{item.customProject.pricing.totalQuantity} pcs terkonfigurasi</p> : item.lineType === "legacy_unsupported" ? <p className="rounded-full bg-amber-50 px-3 py-2 text-xs font-semibold text-amber-900">Perlu ditinjau</p> : <QuantityControl value={item.quantity} ariaLabel={`jumlah ${item.name}`} onChange={(quantity) => cart.updateItem(item.lineId, { quantity })} />}
           <div className="text-right text-sm">
             <p className="text-black/50">{isCustomProjectCartItem(item) ? "Total proyek" : unitPrice > 0 ? `${formatRupiah(unitPrice)} / pcs` : "Harga dikonfirmasi"}</p>
             <p className="mt-1 font-semibold">{safeCurrency(subtotal)}</p>
@@ -370,7 +396,7 @@ function ProductDetails({ item }: { item: CartItem }) {
                 title={color.name}
                 aria-label={`Pilih warna ${color.name}`}
                 aria-pressed={selected}
-                onClick={() => cart.updateItem(item.cartId, { color: color.name, colorHex: color.hex })}
+                onClick={() => cart.updateItem(item.lineId, { color: color.name, colorHex: color.hex })}
                 className={`grid h-8 w-8 place-items-center rounded-full transition ${selected ? cart.preserveJerseyInteractions ? "ring-2 ring-[#063d24] ring-offset-2 ring-offset-[#F7F7F4]" : "ring-2 ring-black ring-offset-2 ring-offset-[#F7F7F4]" : "ring-1 ring-black/10 hover:ring-black/25"}`}
               >
                 <span className="h-6 w-6 rounded-full border border-black/10" style={{ backgroundColor: color.hex }} />
@@ -390,7 +416,7 @@ function ProductDetails({ item }: { item: CartItem }) {
                 key={size}
                 type="button"
                 aria-pressed={selected}
-                onClick={() => cart.updateItem(item.cartId, { size })}
+                onClick={() => cart.updateItem(item.lineId, { size })}
                 className={`min-h-9 rounded-full px-3.5 text-xs font-semibold transition ${selected ? "bg-[#111111] text-white" : "bg-white/70 text-black/70 ring-1 ring-black/10 hover:ring-black/25"}`}
               >
                 {size}
@@ -402,7 +428,7 @@ function ProductDetails({ item }: { item: CartItem }) {
 
       <label className="grid gap-2 text-xs font-semibold uppercase tracking-[0.12em] text-black/40">
         Catatan produk
-        <textarea value={item.notes} onChange={(event) => cart.updateItem(item.cartId, { notes: event.target.value })} placeholder="Contoh: mix ukuran, deadline, atau permintaan warna khusus." rows={3} className={`rounded-[18px] border-0 bg-white/70 p-4 text-sm font-normal normal-case leading-6 tracking-normal text-black outline-none ring-1 ring-black/10 transition ${cart.preserveJerseyInteractions ? "focus:ring-[#063d24]/35" : "focus:ring-black/40"}`} />
+        <textarea value={item.notes ?? ""} onChange={(event) => cart.updateItem(item.lineId, { notes: event.target.value })} placeholder="Contoh: mix ukuran, deadline, atau permintaan warna khusus." rows={3} className={`rounded-[18px] border-0 bg-white/70 p-4 text-sm font-normal normal-case leading-6 tracking-normal text-black outline-none ring-1 ring-black/10 transition ${cart.preserveJerseyInteractions ? "focus:ring-[#063d24]/35" : "focus:ring-black/40"}`} />
       </label>
     </div>
   );
@@ -414,9 +440,15 @@ function FullCartItem({ item }: { item: CartItem }) {
   return (
     <article className="rounded-[28px] bg-white/50 p-4 sm:p-6">
       <CartProductHeader item={item} />
+      {item.lineType === "legacy_unsupported" ? (
+        <div className="mt-5 rounded-[18px] border border-amber-300 bg-amber-50 p-4 text-sm leading-6 text-amber-950">
+          <p className="font-semibold">Item lama tidak dapat diproses otomatis.</p>
+          <p>Data asli tetap tersimpan, tetapi item harus dihapus dan ditambahkan kembali dari sumber canonical sebelum checkout.</p>
+        </div>
+      ) : null}
       <CustomProjectSummary item={item} />
       <JerseyConfigSummary item={item} />
-      {!isJersey && !isCustomProject && !item.variantSizeId ? <ProductDetails item={item} /> : null}
+      {!isJersey && !isCustomProject && item.lineType !== "legacy_unsupported" && item.lineType !== "ready_stock" ? <ProductDetails item={item} /> : null}
     </article>
   );
 }
@@ -424,6 +456,7 @@ function FullCartItem({ item }: { item: CartItem }) {
 function CartSummary({ compact = false }: { compact?: boolean }) {
   const cart = useCart();
   const totals = cartTotals(cart.items);
+  const checkoutAllowed = cart.checkoutDecision.allowed;
 
   return (
     <aside className={`rounded-[28px] bg-white/50 ${compact ? "p-4" : "p-5 sm:p-6"}`}>
@@ -443,7 +476,8 @@ function CartSummary({ compact = false }: { compact?: boolean }) {
       <div className="mt-5 rounded-2xl bg-[#f5f5ef] p-4 text-xs leading-6 text-black/58">
         Produk Ready Stock mengikuti harga PIM. Konfigurasi layanan hanya dilakukan melalui Custom Builder.
       </div>
-      <Link href={cart.items.length ? "/checkout" : "#"} className={`mt-5 inline-flex min-h-12 w-full items-center justify-center rounded-full px-5 text-center text-sm font-semibold ${cart.items.length ? cart.preserveJerseyInteractions ? "bg-[#063d24] text-white" : "bg-black text-white hover:bg-black/75" : "pointer-events-none bg-black/10 text-black/35"}`}>
+      {!checkoutAllowed ? <p className="mt-4 text-xs leading-5 text-amber-800">{cart.checkoutDecision.message}</p> : null}
+      <Link href={checkoutAllowed ? "/checkout" : "#"} aria-disabled={!checkoutAllowed} className={`mt-5 inline-flex min-h-12 w-full items-center justify-center rounded-full px-5 text-center text-sm font-semibold ${checkoutAllowed ? cart.preserveJerseyInteractions ? "bg-[#063d24] text-white" : "bg-black text-white hover:bg-black/75" : "pointer-events-none bg-black/10 text-black/35"}`}>
         Lanjut ke Checkout
       </Link>
       {!compact ? <p className="mt-4 text-center text-[11px] leading-5 text-black/45">Guest checkout tersedia. Order dibuat di sistem sebelum pembayaran.</p> : null}
@@ -505,18 +539,19 @@ function FullCartLayout() {
 
   return (
     <>
+      <CartValidationNotice />
       <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_360px] xl:grid-cols-[minmax(0,1fr)_400px]">
         <div>
           <h2 className="mb-5 text-2xl font-semibold tracking-tight">Bag</h2>
           <div className="grid gap-5">
-            {primaryItems.map((item) => <FullCartItem key={item.cartId} item={item} />)}
+            {primaryItems.map((item) => <FullCartItem key={item.lineId} item={item} />)}
             {additionalItems.length ? (
               <section className="grid gap-4">
                 <div>
                   <p className="text-xs font-bold uppercase tracking-[0.14em] text-black/45">Item Tambahan</p>
                   <p className="mt-1 text-sm leading-6 text-black/55">Item tambahan tetap tercatat pada order yang sama.</p>
                 </div>
-                {additionalItems.map((item) => <FullCartItem key={item.cartId} item={item} />)}
+                {additionalItems.map((item) => <FullCartItem key={item.lineId} item={item} />)}
               </section>
             ) : null}
           </div>
@@ -540,6 +575,7 @@ function MiniCartContent() {
 
   return (
     <div className="grid gap-5">
+      <CartValidationNotice compact />
       <section className="rounded-[24px] bg-white/50 p-4">
         <CartProductHeader item={primary} compact />
         {additionalCount > 0 ? <p className="mt-4 rounded-full bg-[#f5f5ef] px-3 py-2 text-xs text-black/60">+ {additionalCount} item tambahan ikut di keranjang.</p> : null}
@@ -556,11 +592,29 @@ function MiniCartContent() {
           </div>
         </div>
         <Link href="/keranjang" onClick={cart.closeCart} className="mt-5 inline-flex min-h-11 w-full items-center justify-center rounded-full border border-black/10 px-5 text-sm font-semibold transition hover:border-black">Lihat Keranjang</Link>
-        <Link href="/checkout" onClick={cart.closeCart} className={`mt-3 inline-flex min-h-11 w-full items-center justify-center rounded-full px-5 text-center text-sm font-semibold text-white ${cart.preserveJerseyInteractions ? "bg-[#063d24]" : "bg-black hover:bg-black/75"}`}>
+        <Link href={cart.checkoutDecision.allowed ? "/checkout" : "#"} aria-disabled={!cart.checkoutDecision.allowed} onClick={cart.checkoutDecision.allowed ? cart.closeCart : undefined} className={`mt-3 inline-flex min-h-11 w-full items-center justify-center rounded-full px-5 text-center text-sm font-semibold ${cart.checkoutDecision.allowed ? `text-white ${cart.preserveJerseyInteractions ? "bg-[#063d24]" : "bg-black hover:bg-black/75"}` : "pointer-events-none bg-black/10 text-black/35"}`}>
           Checkout
         </Link>
+        {!cart.checkoutDecision.allowed ? <p className="mt-3 text-xs leading-5 text-amber-800">{cart.checkoutDecision.message}</p> : null}
       </section>
     </div>
+  );
+}
+
+function CartValidationNotice({ compact = false }: { compact?: boolean }) {
+  const cart = useCart();
+  const visibleIssues = cart.issues.slice(0, compact ? 2 : 5);
+  if (!cart.isRevalidating && visibleIssues.length === 0) return null;
+  return (
+    <section className="mb-5 rounded-[20px] border border-amber-300 bg-amber-50 p-4 text-sm text-amber-950" aria-live="polite">
+      <p className="font-semibold">{cart.isRevalidating ? "Memvalidasi harga dan stok terbaru..." : "Keranjang perlu ditinjau"}</p>
+      {visibleIssues.map((issue, index) => <p key={`${issue.code}:${issue.lineId ?? index}`} className="mt-1 leading-6">{issue.message}</p>)}
+      {!cart.isRevalidating ? (
+        <button type="button" className="mt-3 font-semibold underline underline-offset-4" onClick={() => void cart.revalidate()}>
+          Coba validasi lagi
+        </button>
+      ) : null}
+    </section>
   );
 }
 
@@ -586,31 +640,239 @@ function CartDrawer() {
   );
 }
 
+function issuesFromLines(lines: readonly CartItem[]): CartV5Issue[] {
+  return dedupeIssues(lines.flatMap((line) => {
+    if (line.validation.status === "stale") {
+      return [{ ...line.validation.warning, lineId: line.lineId }];
+    }
+    if (line.validation.status === "invalid") {
+      return [{
+        code: line.validation.code,
+        message: line.validation.message,
+        lineId: line.lineId
+      }];
+    }
+    return [];
+  }));
+}
+
+function dedupeIssues(issues: readonly CartV5Issue[]): CartV5Issue[] {
+  const unique = new Map<string, CartV5Issue>();
+  issues.forEach((issue) => {
+    unique.set(`${issue.code}:${issue.lineId ?? ""}:${issue.message}`, issue);
+  });
+  return [...unique.values()];
+}
+
+function readyStockRevalidationSignature(lines: readonly CartItem[]) {
+  const readyStock = lines.filter((line) => line.lineType === "ready_stock");
+  if (
+    readyStock.length === 0
+    || readyStock.every((line) => line.validation.status === "valid")
+  ) {
+    return "";
+  }
+  return readyStock
+    .map((line) => `${line.lineId}:${line.quantity}`)
+    .sort()
+    .join("|");
+}
+
+function readSnapshotTierId(snapshot?: Readonly<Record<string, unknown>>) {
+  const tier = snapshot?.applied_tier;
+  return readRecordString(tier, "id");
+}
+
+function readRecordString(value: unknown, key: string) {
+  if (!value || typeof value !== "object" || Array.isArray(value)) return null;
+  const field = (value as Record<string, unknown>)[key];
+  return typeof field === "string" && field.trim() ? field.trim() : null;
+}
+
+function isRevalidationPayload(
+  value: unknown
+): value is { items: ReadyStockRevalidationResult[] } {
+  if (!value || typeof value !== "object" || Array.isArray(value)) return false;
+  const items = (value as Record<string, unknown>).items;
+  return Array.isArray(items) && items.every((item) => {
+    if (!item || typeof item !== "object" || Array.isArray(item)) return false;
+    const record = item as Record<string, unknown>;
+    return typeof record.product_variant_size_id === "string"
+      && (
+        record.status === "ok"
+        || record.status === "unavailable"
+        || record.status === "stock_changed"
+        || record.status === "price_changed"
+        || record.status === "quotation_required"
+      )
+      && (record.error_code === null || typeof record.error_code === "string")
+      && (
+        record.latest_unit_price === null
+        || (
+          typeof record.latest_unit_price === "number"
+          && Number.isSafeInteger(record.latest_unit_price)
+          && record.latest_unit_price >= 0
+        )
+      )
+      && typeof record.stock_available === "number"
+      && Number.isSafeInteger(record.stock_available)
+      && record.stock_available >= 0
+      && (record.message === null || typeof record.message === "string");
+  });
+}
+
+function productInputSnapshot(product: CartProductInput): Readonly<Record<string, unknown>> {
+  return {
+    id: product.id,
+    name: product.name,
+    category: product.category,
+    priceLabel: product.priceLabel,
+    priceValue: product.priceValue,
+    href: product.href,
+    imageUrl: product.imageUrl,
+    imageAlt: product.imageAlt,
+    sku: product.sku,
+    defaultColor: product.defaultColor,
+    defaultColorHex: product.defaultColorHex,
+    defaultSize: product.defaultSize,
+    defaultQuantity: product.defaultQuantity,
+    variantId: product.variantId,
+    variantSizeId: product.variantSizeId,
+    variantName: product.variantName,
+    variantSku: product.variantSku,
+    stockLabel: product.stockLabel,
+    stockAvailable: product.stockAvailable,
+    variantSnapshot: product.variantSnapshot,
+    customProject: product.customProject
+  };
+}
+
 export function CartProvider({ children }: { children: ReactNode }) {
   const pathname = usePathname();
   const [items, setItems] = useState<CartItem[]>([]);
   const [isOpen, setIsOpen] = useState(false);
   const [isLoaded, setIsLoaded] = useState(false);
+  const [isRevalidating, setIsRevalidating] = useState(false);
+  const [operationIssues, setOperationIssues] = useState<CartV5Issue[]>([]);
+  const itemsRef = useRef<CartItem[]>([]);
+  const lastAutomaticRevalidation = useRef("");
+
+  const setCartLines = useCallback((lines: CartItem[]) => {
+    itemsRef.current = lines;
+    setItems(lines);
+  }, []);
+
+  const commitMutation = useCallback((updater: (current: CartItem[]) => CartItem[]) => {
+    const candidate = ensureRoles(updater(itemsRef.current));
+    const limit = validateCartLimits(candidate);
+    if (!limit.ok) {
+      setOperationIssues([limit.issue]);
+      return false;
+    }
+    setOperationIssues([]);
+    setCartLines(candidate);
+    return true;
+  }, [setCartLines]);
+
+  const runRevalidation = useCallback(async (
+    sourceLines: CartItem[]
+  ): Promise<CartRevalidationOutcome> => {
+    const readyStock = sourceLines.filter(
+      (line): line is CartItem & { lineType: "ready_stock" } =>
+        line.lineType === "ready_stock"
+    );
+    if (readyStock.length === 0) {
+      const issues = issuesFromLines(sourceLines);
+      setOperationIssues(issues);
+      return { ok: issues.length === 0, lines: sourceLines, issues };
+    }
+
+    setIsRevalidating(true);
+    try {
+      const response = await fetch("/api/cart/revalidate", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({
+          items: readyStock.map((line) => ({
+            product_variant_size_id: line.variantSizeId,
+            product_id: line.productId,
+            quantity: line.quantity,
+            unit_price: itemUnitPrice(line),
+            price_tier_id: readSnapshotTierId(line.variantSnapshot)
+          }))
+        })
+      });
+      if (!response.ok) {
+        throw new Error(`Cart revalidation failed with status ${response.status}.`);
+      }
+      const payload: unknown = await response.json();
+      if (!isRevalidationPayload(payload)) {
+        throw new Error("Cart revalidation returned an invalid payload.");
+      }
+      const applied = applyReadyStockRevalidation(sourceLines, payload.items);
+      const nextLines = ensureCartRoles(applied.lines);
+      const issues = dedupeIssues([...applied.issues, ...issuesFromLines(nextLines)]);
+      setCartLines(nextLines);
+      setOperationIssues(issues);
+      return { ok: applied.readyStockValid, lines: nextLines, issues };
+    } catch {
+      const warning = {
+        code: "CART_REVALIDATION_UNAVAILABLE",
+        message: "Harga dan stok terbaru belum dapat dipastikan. Snapshot terakhir tetap ditampilkan, tetapi checkout diblokir."
+      };
+      const nextLines = markReadyStockLinesStale(sourceLines, warning);
+      const issues = dedupeIssues([warning, ...issuesFromLines(nextLines)]);
+      setCartLines(nextLines);
+      setOperationIssues(issues);
+      return { ok: false, lines: nextLines, issues };
+    } finally {
+      setIsRevalidating(false);
+    }
+  }, [setCartLines]);
 
   useEffect(() => {
     try {
-      const raw = window.localStorage.getItem(storageKey) || legacyStorageKeys.map((key) => window.localStorage.getItem(key)).find(Boolean);
-      if (raw) setItems(ensureRoles(JSON.parse(raw)));
+      const restored = restoreCartV5(
+        window.localStorage.getItem(CART_V5_STORAGE_KEY),
+        LEGACY_CART_STORAGE_KEYS.map((source) => ({
+          version: source.version,
+          raw: window.localStorage.getItem(source.key)
+        }))
+      );
+      setCartLines(ensureRoles([...restored.cart.lines]));
+      setOperationIssues([...restored.issues]);
     } catch {
-      setItems([]);
+      setCartLines([]);
+      setOperationIssues([{
+        code: "CART_STORAGE_UNAVAILABLE",
+        message: "Penyimpanan cart tidak dapat dibaca. Keranjang tetap dapat digunakan selama halaman ini terbuka."
+      }]);
     } finally {
       setIsLoaded(true);
     }
-  }, []);
+  }, [setCartLines]);
 
   useEffect(() => {
     if (!isLoaded) return;
     try {
-      window.localStorage.setItem(storageKey, JSON.stringify(items));
+      window.localStorage.setItem(
+        CART_V5_STORAGE_KEY,
+        serializeCartV5(items)
+      );
     } catch {
       // Cart remains usable in memory if storage is unavailable.
     }
   }, [isLoaded, items]);
+
+  useEffect(() => {
+    if (!isLoaded) return;
+    const activeCartSurface = isOpen || pathname === "/keranjang" || pathname === "/checkout";
+    if (!activeCartSurface) return;
+    const signature = readyStockRevalidationSignature(items);
+    if (!signature || signature === lastAutomaticRevalidation.current) return;
+    lastAutomaticRevalidation.current = signature;
+    void runRevalidation(items);
+  }, [isLoaded, isOpen, items, pathname, runRevalidation]);
 
   useEffect(() => {
     if (!isOpen) return;
@@ -626,69 +888,161 @@ export function CartProvider({ children }: { children: ReactNode }) {
     };
   }, [isOpen]);
 
+  const lineIssues = useMemo(
+    () => dedupeIssues([...operationIssues, ...issuesFromLines(items)]),
+    [items, operationIssues]
+  );
+  const checkoutDecision = useMemo(
+    () => getCartCheckoutDecision(items),
+    [items]
+  );
+
   const value = useMemo<CartContextValue>(() => ({
     items,
     itemCount: items.reduce((total, item) => total + item.quantity, 0),
     isOpen,
     isLoaded,
+    isRevalidating,
+    issues: lineIssues,
+    checkoutDecision,
     addItem: (product, requestedRole) => {
-      setItems((current) => {
-        const duplicateIndex = current.findIndex((item) =>
-          product.variantSizeId
-            ? item.variantSizeId === product.variantSizeId
-            : item.id === product.id &&
-              item.defaultColor === product.defaultColor &&
-              item.defaultSize === product.defaultSize
-        );
+      commitMutation((current) => {
+        const duplicateIndex = product.variantSizeId
+          ? current.findIndex(
+              (item) =>
+                item.lineType === "ready_stock"
+                && item.variantSizeId === product.variantSizeId
+            )
+          : -1;
         if (duplicateIndex >= 0) {
-          return ensureRoles(current.map((item, index) =>
-            index === duplicateIndex
-              ? {
-                  ...item,
-                  quantity: clampToStock(
-                    item.quantity + normalizeNumber(Number(product.defaultQuantity || 1)),
-                    product.stockAvailable ?? item.stockAvailable
-                  ),
-                  stockAvailable: product.stockAvailable ?? item.stockAvailable,
-                  stockLabel: product.stockLabel ?? item.stockLabel,
-                  priceLabel: product.priceLabel ?? item.priceLabel,
-                  priceValue: product.priceValue ?? item.priceValue,
-                  variantSnapshot: product.variantSnapshot ?? item.variantSnapshot
-                }
-              : item
-          ));
+          return current.map((item, index) => {
+            if (index !== duplicateIndex || item.lineType !== "ready_stock") return item;
+            return {
+              ...item,
+              quantity: clampToStock(
+                item.quantity + normalizeNumber(Number(product.defaultQuantity || 1)),
+                product.stockAvailable ?? item.stockAvailable
+              ),
+              stockAvailable: product.stockAvailable ?? item.stockAvailable,
+              stockLabel: product.stockLabel ?? item.stockLabel,
+              priceLabel: product.priceLabel ?? item.priceLabel,
+              priceValue: product.priceValue ?? item.priceValue,
+              variantSnapshot: product.variantSnapshot ?? item.variantSnapshot,
+              validation: { status: "unvalidated" }
+            };
+          });
         }
-        const hasPrimary = current.some((item) => item.role === "primary");
-        const role = requestedRole || (hasPrimary ? "additional" : "primary");
-        return ensureRoles([
-          ...current,
-          {
-            ...product,
-            cartId: createCartId(product),
-            role,
-            quantity: clampToStock(
-              Number(product.defaultQuantity || 1),
-              product.stockAvailable
-            ),
-            color: product.defaultColor || "",
-            colorHex: product.defaultColorHex || "",
-            size: product.defaultSize || "",
-            variantId: product.variantId,
-            variantSizeId: product.variantSizeId,
-            variantName: product.variantName,
-            variantSku: product.variantSku,
-            stockLabel: product.stockLabel,
-            stockAvailable: product.stockAvailable,
-            variantSnapshot: product.variantSnapshot,
-            notes: ""
-          }
-        ]);
+
+        const role = requestedRole || (
+          current.some((item) => item.role === "primary")
+            ? "additional"
+            : "primary"
+        );
+        const lineId = createCartId(product);
+        const display = {
+          title: product.name,
+          ...(product.category ? { subtitle: product.category } : {}),
+          ...(product.imageUrl ? { imageUrl: product.imageUrl } : {}),
+          ...(product.imageAlt ? { imageAlt: product.imageAlt } : {}),
+          ...(product.href ? { href: product.href } : {})
+        };
+        const quantity = clampToStock(
+          Number(product.defaultQuantity || 1),
+          product.stockAvailable
+        );
+        const productId = readRecordString(product.variantSnapshot, "product_id") ?? product.id;
+        const sku = product.variantSku ?? product.sku;
+        const ui = {
+          role,
+          name: product.name,
+          category: product.category,
+          priceLabel: product.priceLabel,
+          priceValue: product.priceValue,
+          href: product.href,
+          imageUrl: product.imageUrl,
+          imageAlt: product.imageAlt,
+          color: product.defaultColor || "",
+          colorHex: product.defaultColorHex,
+          size: product.defaultSize || "",
+          variantName: product.variantName,
+          stockLabel: product.stockLabel,
+          stockAvailable: product.stockAvailable,
+          variantSnapshot: product.variantSnapshot
+        };
+        const next = productId && product.variantId && product.variantSizeId && sku
+          ? createReadyStockCartItem({
+              lineId,
+              quantity,
+              productId,
+              variantId: product.variantId,
+              variantSizeId: product.variantSizeId,
+              sku,
+              display,
+              ui
+            })
+          : createLegacyUnsupportedCartItem({
+              lineId,
+              quantity,
+              legacyStorageVersion: "v5",
+              reasonCode: "cart.canonical_identity_missing",
+              rawLine: productInputSnapshot(product),
+              display,
+              ui
+            });
+        return [...current, next];
       });
       setIsOpen(true);
     },
-    updateItem: (cartId, updates) => {
-      setItems((current) => ensureRoles(current.map((item) => {
-        if (item.cartId !== cartId) return item;
+    addConfiguredProduct: (input, requestedRole) => {
+      commitMutation((current) => {
+        const existing = current.find(
+          (item) =>
+            item.lineType === "configured_product"
+            && item.configurationId === input.snapshot.draft.id
+        );
+        const role = existing?.role ?? requestedRole ?? (
+          current.some((item) => item.role === "primary")
+            ? "additional"
+            : "primary"
+        );
+        const next = createConfiguredProductCartItem({
+          lineId: existing?.lineId ?? `configured:${input.snapshot.snapshotId}`,
+          quantity: input.snapshot.draft.quantity,
+          display: {
+            title: input.name,
+            ...(input.category ? { subtitle: input.category } : {}),
+            ...(input.imageUrl ? { imageUrl: input.imageUrl } : {}),
+            ...(input.imageAlt ? { imageAlt: input.imageAlt } : {}),
+            ...(input.href ? { href: input.href } : {})
+          },
+          configurationSnapshot: input.snapshot,
+          notes: input.notes,
+          ui: {
+            role,
+            name: input.name,
+            category: input.category,
+            priceLabel: input.priceLabel,
+            priceValue: input.priceValue,
+            href: input.href,
+            imageUrl: input.imageUrl,
+            imageAlt: input.imageAlt,
+            color: input.color ?? "",
+            colorHex: input.colorHex,
+            size: input.size ?? "",
+            variantName: input.variantName
+          }
+        });
+        return existing
+          ? current.map((item) => item.lineId === existing.lineId ? next : item)
+          : [...current, next];
+      });
+      setIsOpen(true);
+    },
+    updateItem: (lineId, updates) => {
+      commitMutation((current) => current.map((item) => {
+        if (item.lineId !== lineId) return item;
+        const quantityChanged = updates.quantity !== undefined
+          && updates.quantity !== item.quantity;
         const nextQuantity = clampToStock(
           Number(updates.quantity ?? item.quantity),
           updates.stockAvailable ?? item.stockAvailable
@@ -697,49 +1051,78 @@ export function CartProvider({ children }: { children: ReactNode }) {
           ...item,
           ...updates,
           quantity: nextQuantity,
-          notes: typeof updates.notes === "string" ? updates.notes : item.notes
+          notes: typeof updates.notes === "string" ? updates.notes : item.notes,
+          validation: quantityChanged && item.lineType === "ready_stock"
+            ? { status: "unvalidated" }
+            : item.validation
         };
-      })));
+      }));
     },
-    removeItem: (cartId) => {
-      setItems((current) => ensureRoles(current.filter((item) => item.cartId !== cartId)));
+    removeItem: (lineId) => {
+      commitMutation((current) => current.filter((item) => item.lineId !== lineId));
     },
-    clearCart: () => setItems([]),
+    clearCart: () => {
+      setOperationIssues([]);
+      setCartLines([]);
+    },
     addCustomProject: (project) => {
-      setItems((current) => {
-        const cartId = `custom-project:${project.id}`;
-        const priceValue = project.pricing.status === "final" ? project.pricing.finalTotal ?? undefined : undefined;
+      commitMutation((current) => {
+        const lineId = `custom-project:${project.id}`;
+        const existing = current.find((item) => item.lineId === lineId);
+        const priceValue = project.pricing.status === "final"
+          ? project.pricing.finalTotal ?? undefined
+          : undefined;
         const priceLabel = project.pricing.status === "final"
           ? formatRupiah(project.pricing.finalTotal)
           : project.pricing.status === "estimated"
             ? "Estimasi"
             : "Minta penawaran";
-        const existing = current.find((item) => item.cartId === cartId);
-        const next: CartItem = {
-          id: project.id,
-          name: `Custom Project · ${project.categoryName}`,
-          category: "Custom",
-          priceLabel,
-          priceValue,
-          href: `/custom/${project.categorySlug}`,
-          imageUrl: existing?.imageUrl,
-          imageAlt: project.categoryName,
-          cartId,
-          role: existing?.role ?? (current.some((item) => item.role === "primary") ? "additional" : "primary"),
-          quantity: 1,
-          color: "",
-          size: "",
-          notes: project.note,
-          customProject: project
-        };
-        return ensureRoles(existing ? current.map((item) => item.cartId === cartId ? next : item) : [...current, next]);
+        const next = createCustomProjectCartItem({
+          lineId,
+          project,
+          display: {
+            title: `Custom Project · ${project.categoryName}`,
+            subtitle: "Custom",
+            imageAlt: project.categoryName,
+            href: `/custom/${project.categorySlug}`
+          },
+          ui: {
+            role: existing?.role ?? (
+              current.some((item) => item.role === "primary")
+                ? "additional"
+                : "primary"
+            ),
+            name: `Custom Project · ${project.categoryName}`,
+            category: "Custom",
+            priceLabel,
+            priceValue,
+            href: `/custom/${project.categorySlug}`,
+            imageUrl: existing?.imageUrl,
+            imageAlt: project.categoryName
+          }
+        });
+        return existing
+          ? current.map((item) => item.lineId === lineId ? next : item)
+          : [...current, next];
       });
       setIsOpen(true);
     },
+    revalidate: () => runRevalidation(itemsRef.current),
     openCart: () => setIsOpen(true),
     closeCart: () => setIsOpen(false),
     preserveJerseyInteractions: pathname.startsWith("/jersey")
-  }), [isLoaded, isOpen, items, pathname]);
+  }), [
+    checkoutDecision,
+    commitMutation,
+    isLoaded,
+    isOpen,
+    isRevalidating,
+    items,
+    lineIssues,
+    pathname,
+    runRevalidation,
+    setCartLines
+  ]);
 
   return (
     <CartContext.Provider value={value}>

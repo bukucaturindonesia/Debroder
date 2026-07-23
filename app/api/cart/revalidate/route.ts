@@ -1,6 +1,11 @@
 import { NextResponse } from "next/server";
 import type { RevalidationInput } from "@/lib/types";
 import { revalidateCartItems } from "@/lib/supabase/products";
+import {
+  MAX_CART_LINES,
+  MAX_CART_LINE_QUANTITY,
+  MAX_CART_TOTAL_QUANTITY
+} from "@/lib/cart-v5";
 
 export async function POST(request: Request) {
   const body: unknown = await request.json();
@@ -21,8 +26,11 @@ function parseRevalidationInputs(value: unknown): RevalidationInput[] | null {
   if (!isRecord(value) || !Array.isArray(value.items)) {
     return null;
   }
+  if (value.items.length > MAX_CART_LINES) return null;
 
   const inputs: RevalidationInput[] = [];
+  const variantSizeIds = new Set<string>();
+  let totalQuantity = 0;
 
   for (const item of value.items) {
     if (!isRecord(item)) {
@@ -39,11 +47,18 @@ function parseRevalidationInputs(value: unknown): RevalidationInput[] | null {
       typeof productVariantSizeId !== "string" ||
       typeof quantity !== "number" ||
       !Number.isInteger(quantity) ||
+      quantity < 1 ||
+      quantity > MAX_CART_LINE_QUANTITY ||
       typeof unitPrice !== "number" ||
-      !Number.isInteger(unitPrice)
+      !Number.isSafeInteger(unitPrice) ||
+      unitPrice < 0 ||
+      variantSizeIds.has(productVariantSizeId)
     ) {
       return null;
     }
+    variantSizeIds.add(productVariantSizeId);
+    totalQuantity += quantity;
+    if (totalQuantity > MAX_CART_TOTAL_QUANTITY) return null;
 
     inputs.push({
       product_variant_size_id: productVariantSizeId,
