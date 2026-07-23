@@ -5,7 +5,7 @@ import { usePathname } from "next/navigation";
 import { createContext, type ReactNode, useContext, useEffect, useMemo, useState } from "react";
 import { BrandIcon } from "@/components/BrandIcon";
 import { SafeImage } from "@/components/SafeImage";
-import { calculateCartTierPrice } from "@/lib/cart-tier-pricing";
+import { repriceCartItemsByProduct } from "@/lib/cart-group-tier-pricing";
 import type { CustomProjectSnapshot } from "@/lib/custom-commerce/types";
 import { fallbackImages, pageHeroImageFallbacks } from "@/lib/fallback-data";
 import { formatRupiah } from "@/lib/url";
@@ -175,27 +175,6 @@ function itemUnitPrice(item: Pick<CartItem, "priceValue" | "priceLabel">) {
   return Number(item.priceValue || 0) || parsePrice(item.priceLabel);
 }
 
-function repriceCartItem(item: CartItem): CartItem {
-  const tierPrice = calculateCartTierPrice(item.variantSnapshot, item.quantity);
-  if (!tierPrice) return item;
-
-  return {
-    ...item,
-    priceLabel: tierPrice.quoteRequired
-      ? "Minta penawaran"
-      : formatRupiah(tierPrice.unitPrice),
-    priceValue: tierPrice.quoteRequired ? undefined : tierPrice.unitPrice,
-    variantSnapshot: {
-      ...item.variantSnapshot,
-      selected_quantity: item.quantity,
-      applied_tier: tierPrice.activeTier,
-      quote_required: tierPrice.quoteRequired,
-      unit_price: tierPrice.quoteRequired ? null : tierPrice.unitPrice,
-      subtotal: tierPrice.quoteRequired ? null : tierPrice.subtotal
-    }
-  };
-}
-
 function recordValue(value: unknown): Record<string, unknown> | null {
   return value && typeof value === "object" && !Array.isArray(value) ? value as Record<string, unknown> : null;
 }
@@ -291,13 +270,13 @@ function labelForItem(item: CartItem) {
 
 function ensureRoles(items: CartItem[]) {
   let hasPrimary = false;
-  return items.map((item, index) => {
+  const normalizedItems: CartItem[] = items.map((item, index) => {
     const itemWithoutLegacyServices = { ...(item as CartItem & { services?: unknown }) };
     delete itemWithoutLegacyServices.services;
     const quantity = normalizeNumber(Number(item.quantity || 1));
     const role: CartItemRole = !hasPrimary && (item.role === "primary" || index === 0) ? "primary" : "additional";
     if (role === "primary") hasPrimary = true;
-    const normalized = {
+    const normalized: CartItem = {
       ...itemWithoutLegacyServices,
       role,
       quantity,
@@ -316,8 +295,10 @@ function ensureRoles(items: CartItem[]) {
       variantSnapshot: item.variantSnapshot || undefined,
       notes: item.notes || ""
     };
-    return isCustomProjectCartItem(normalized) ? normalized : repriceCartItem(normalized);
+    return normalized;
   });
+
+  return repriceCartItemsByProduct(normalizedItems);
 }
 
 function CartIcon() {

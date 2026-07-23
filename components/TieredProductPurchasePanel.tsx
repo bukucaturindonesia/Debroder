@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useCart, type CartProductInput } from "@/components/CartProvider";
 import { useOptionalProductVariantGallery } from "@/components/ProductVariantGalleryContext";
+import { cartTierProductKey } from "@/lib/cart-group-tier-pricing";
 import { createSupabaseClient } from "@/lib/supabase";
 import type { ProductVariant, ProductVariantSize } from "@/lib/types";
 import { formatRupiah } from "@/lib/url";
@@ -324,7 +325,15 @@ export function TieredProductPurchasePanel({
     moneyNumber(selectedVariant?.price_adjustment) +
     moneyNumber(selectedVariantSize?.price_adjustment);
 
-  const activeTier = findTier(tiers, quantity);
+  const existingProductQuantity = product.id
+    ? cart.items.reduce(
+        (total, item) =>
+          cartTierProductKey(item) === product.id ? total + item.quantity : total,
+        0
+      )
+    : 0;
+  const pricingQuantity = quantity + existingProductQuantity;
+  const activeTier = findTier(tiers, pricingQuantity);
   const minimumQuantity = minimumRule?.minimum_quantity || 1;
   const belowMinimum = quantity < minimumQuantity;
 
@@ -335,7 +344,7 @@ export function TieredProductPurchasePanel({
 
   const quoteRequired =
     Boolean(activeTier?.quote_required) ||
-    Boolean(quotationQuantity && quantity >= quotationQuantity);
+    Boolean(quotationQuantity && pricingQuantity >= quotationQuantity);
 
   const tierBasePrice =
     activeTier && !activeTier.quote_required && activeTier.unit_price !== null
@@ -359,11 +368,11 @@ export function TieredProductPurchasePanel({
     : belowMinimum
       ? `Minimum order ${minimumQuantity} pcs`
       : quoteRequired
-        ? `Pesanan ${quantity} pcs perlu penawaran khusus`
+        ? `Total ${pricingQuantity} pcs perlu penawaran khusus`
         : activeTier
           ? `Tier grosir ${activeTier.min_quantity}–${
               activeTier.max_quantity ?? "∞"
-            } pcs`
+            } pcs · total produk ${pricingQuantity} pcs`
           : "Harga normal produk";
 
   const guideRows = sizeGuide.length
@@ -401,6 +410,7 @@ export function TieredProductPurchasePanel({
       stockLabel,
       stockAvailable: selectedVariantSize?.stock,
       variantSnapshot: {
+        product_id: product.id,
         variant_id: selectedVariant?.id,
         variant_name: selectedVariant?.variant_name,
         color_name: selectedVariant?.color_name,
@@ -422,6 +432,7 @@ export function TieredProductPurchasePanel({
           sort_order: tier.sort_order
         })),
         selected_quantity: quantity,
+        pricing_quantity: pricingQuantity,
         applied_tier: activeTier
           ? {
               id: activeTier.id,
