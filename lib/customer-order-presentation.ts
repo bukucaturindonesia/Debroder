@@ -1,6 +1,6 @@
 import { buildOrderJourney, type OrderJourneyStep } from "@/lib/order-journey";
+import { resolveCanonicalOrderActiveStage } from "@/lib/canonical-order-stage";
 import {
-  resolveOrderActiveStageFromServer,
   type OrderActiveStageInput,
   type OrderActiveStageResolution
 } from "@/lib/order-active-stage";
@@ -37,13 +37,16 @@ export type CustomerOrderPresentation = {
   warning: string | null;
   journey: OrderJourneyStep[];
   activeStage: OrderActiveStageResolution;
+  fulfillmentMethod: string | null;
 };
 
-// Canonical payment-review title remains “Pembayaran sedang diperiksa” for customer-facing consistency.
+// Browser dan Admin memakai resolver TypeScript yang sama. Nilai RPC lama hanya
+// dianggap payload kompatibilitas dan tidak boleh mengalahkan fakta pembayaran,
+// fulfillment, QC, atau produksi terbaru yang sudah diberikan pada input.
 export function resolveCustomerOrderPresentation(
   input: CustomerOrderPresentationInput
 ): CustomerOrderPresentation {
-  const stage = resolveOrderActiveStageFromServer(input, input.activeStage);
+  const stage = resolveCanonicalOrderActiveStage(input);
   return {
     responsibility: stage.responsibility,
     responsibilityLabel: stage.responsibilityLabel,
@@ -58,7 +61,8 @@ export function resolveCustomerOrderPresentation(
     blockingReason: stage.blockingReason,
     warning: stage.warning,
     journey: buildOrderJourney({ stage, fulfillmentMethod: input.fulfillmentMethod }),
-    activeStage: stage
+    activeStage: stage,
+    fulfillmentMethod: input.fulfillmentMethod ?? null
   };
 }
 

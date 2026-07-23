@@ -39,6 +39,11 @@ type TrackingOrderRow = {
   pricing_status?: string;
 };
 
+type LatestPaymentRow = {
+  status: string | null;
+  review_outcome: string | null;
+};
+
 export async function POST(request: Request) {
   const client = getAdminSupabaseClient();
   if (!client) return safeResponse({ error: "Layanan tracking belum dikonfigurasi." }, 503);
@@ -97,7 +102,7 @@ export async function POST(request: Request) {
     ? await ensureAutomaticPaymentLink(client, order as AutomaticPaymentOrder).catch(() => null)
     : null;
 
-  const [itemsResult, quoteResult, fulfillmentResult, activeStageResult, pickupResult, cancellationResult, refundResult] = await Promise.all([
+  const [itemsResult, quoteResult, fulfillmentResult, latestPaymentResult, activeStageResult, pickupResult, cancellationResult, refundResult] = await Promise.all([
     client.from("order_items")
       .select("id,product_name,variant_name,color,size,sku,quantity,unit_price,subtotal,custom_project_id,pricing_status")
       .eq("order_id", order.id).is("archived_at", null).order("created_at"),
@@ -107,6 +112,10 @@ export async function POST(request: Request) {
     client.from("fulfillments")
       .select("method,status,courier,tracking_number,scheduled_at,ready_at,shipped_at,delivered_at,picked_up_at")
       .eq("order_id", order.id).is("archived_at", null).neq("status", "cancelled")
+      .order("created_at", { ascending: false }).limit(1).maybeSingle(),
+    client.from("order_payments")
+      .select("status,review_outcome")
+      .eq("order_id", order.id).is("archived_at", null)
       .order("created_at", { ascending: false }).limit(1).maybeSingle(),
     client.rpc("resolve_order_active_stage_v1", { p_order_id: order.id }),
     client.from("pickup_preparations")
@@ -125,6 +134,8 @@ export async function POST(request: Request) {
     scheduled_at?: string | null; ready_at?: string | null; shipped_at?: string | null;
     delivered_at?: string | null; picked_up_at?: string | null;
   } | null;
+  const latestPayment = latestPaymentResult.data as LatestPaymentRow | null;
+  const paymentStatus = effectivePaymentStatus(order.payment_status, latestPayment);
   const trackingNumber = fulfillment?.tracking_number ?? null;
 
   return safeResponse({
@@ -135,14 +146,14 @@ export async function POST(request: Request) {
       maskedAddress: order.delivery_method === "shipping" ? maskAddress(order.shipping_address) : null,
       status: order.status,
       statusLabel: customerOrderStatusLabel(order.status),
-      paymentStatus: order.payment_status,
-      paymentStatusLabel: customerPaymentStatusLabel(order.payment_status),
+      paymentStatus,
+      paymentStatusLabel: customerPaymentStatusLabel(paymentStatus),
       subtotal: Number(order.subtotal_amount ?? 0),
       shippingCost: order.shipping_cost === null ? null : Number(order.shipping_cost),
       total: Number(order.total_amount ?? 0),
       amountPaid: Number(order.payment_effective_total ?? 0),
       remainingBalance: Number(order.payment_balance ?? 0),
-      fulfillmentMethod: order.delivery_method,
+      fulfillmentMethod: fulfillment?.method ?? order.delivery_method,
       paymentMethod: order.payment_method,
       courier: fulfillment?.courier ?? order.shipping_courier,
       trackingNumber,
@@ -150,8 +161,8 @@ export async function POST(request: Request) {
       fulfillmentStatus: fulfillment?.status ?? null,
       nextStep: trackingNextStep({
         status: fulfillment?.status ?? order.status,
-        paymentStatus: order.payment_status,
-        fulfillmentMethod: order.delivery_method,
+        paymentStatus,
+        fulfillmentMethod: fulfillment?.method ?? order.delivery_method,
         trackingNumber
       }),
       pricingStatus: order.pricing_status ?? "final",
@@ -178,6 +189,21 @@ export async function POST(request: Request) {
       createdAt: quoteResult.data.created_at
     } : null
   }, 200);
+}
+
+function effectivePaymentStatus(orderStatus: string, latest: LatestPaymentRow | null) {
+  const status = normalized(latest?.status);
+  const outcome = normalized(latest?.review_outcome);
+  if (status === "pending" || outcome === "pending") return "pending_verification";
+  const correction = ["rejected", "ditolak", "funds_not_found", "correction_requested", "correction_required", "needs_correction", "proof_unclear"];
+  if (correction.includes(status) || correction.includes(outcome)) return "rejected";
+  const verified = ["verified", "paid", "terverifikasi"];
+  if (verified.includes(status) || verified.includes(outcome)) return "paid";
+  return orderStatus;
+}
+
+function normalized(value: unknown) {
+  return typeof value === "string" ? value.trim().toLowerCase() : "";
 }
 
 function relativePaymentPath(publicUrl: string | null) {

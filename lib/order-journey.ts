@@ -44,6 +44,15 @@ const CUSTOM_BASE: JourneyDefinition[] = [
   { id: "completed", label: "Selesai", description: "Pesanan telah diterima atau diambil." }
 ];
 
+const COMPACT_BASE: JourneyDefinition[] = [
+  { id: "order", label: "Pesanan Masuk", description: "Pesanan tercatat dan identitas order tersedia." },
+  { id: "verification", label: "Verifikasi & Harga", description: "Data, stok, harga, ongkir, atau penawaran diperiksa." },
+  { id: "payment", label: "Pembayaran", description: "Instruksi, bukti, dan dana masuk diverifikasi." },
+  { id: "operations", label: "Persiapan / Produksi", description: "Barang disiapkan atau pesanan custom diproduksi dan diperiksa." },
+  { id: "handover", label: "Pengiriman / Pickup", description: "Paket diserahkan kepada kurir atau pelanggan." },
+  { id: "completed", label: "Selesai", description: "Pesanan benar-benar diterima atau diambil pelanggan." }
+];
+
 const STAGE_TO_JOURNEY: Record<string, string> = {
   whatsapp_confirmation: "order_created",
   order_review: "order_review",
@@ -68,6 +77,32 @@ const STAGE_TO_JOURNEY: Record<string, string> = {
   completed: "completed",
   cancelled: "order_created",
   expired: "order_created"
+};
+
+const STAGE_TO_COMPACT: Record<string, string> = {
+  whatsapp_confirmation: "order",
+  order_review: "verification",
+  integrity_review: "verification",
+  shipping_quote: "verification",
+  custom_pricing: "verification",
+  customer_approval: "verification",
+  payment_pending: "payment",
+  payment_review: "payment",
+  payment_correction: "payment",
+  payment_balance_due: "payment",
+  job_order_required: "operations",
+  preparing_goods: "operations",
+  production: "operations",
+  quality_control: "operations",
+  packing: "operations",
+  final_check: "operations",
+  final_check_completed: "operations",
+  ready_to_ship: "handover",
+  shipping: "handover",
+  ready_for_pickup: "handover",
+  completed: "completed",
+  cancelled: "order",
+  expired: "order"
 };
 
 export function buildOrderJourney({ stage, fulfillmentMethod }: JourneyInput): OrderJourneyStep[] {
@@ -107,6 +142,36 @@ export function buildOrderJourney({ stage, fulfillmentMethod }: JourneyInput): O
         ? "Barang disiapkan di lokasi pickup lalu diserahkan kepada pelanggan."
         : "Paket diberi resi resmi kurir lalu diserahkan untuk pengiriman."
       : definition.description,
+    state: index < activeIndex ? "done" : index === activeIndex ? "current" : "upcoming",
+    position: index + 1
+  }));
+}
+
+export function buildCompactOrderJourney({ stage, fulfillmentMethod }: JourneyInput): OrderJourneyStep[] {
+  const stopped = stage.activeStage === "cancelled" || stage.activeStage === "expired";
+  const handoverLabel = normalized(fulfillmentMethod) === "pickup" ? "Pickup" : "Pengiriman";
+  const definitions = COMPACT_BASE.map((definition) => definition.id === "handover"
+    ? { ...definition, label: handoverLabel }
+    : definition);
+
+  if (stopped) {
+    const terminalLabel = stage.activeStage === "expired" ? "Kedaluwarsa" : "Dibatalkan";
+    return definitions.map((definition, index) => index === 0
+      ? {
+          ...definition,
+          id: stage.activeStage,
+          label: terminalLabel,
+          description: stage.blockingReason || "Pesanan tidak dilanjutkan.",
+          state: "stopped" as const,
+          position: 1
+        }
+      : { ...definition, state: "skipped" as const, position: index + 1 });
+  }
+
+  const activeId = STAGE_TO_COMPACT[stage.activeStage] ?? "verification";
+  const activeIndex = Math.max(0, definitions.findIndex((definition) => definition.id === activeId));
+  return definitions.map((definition, index) => ({
+    ...definition,
     state: index < activeIndex ? "done" : index === activeIndex ? "current" : "upcoming",
     position: index + 1
   }));

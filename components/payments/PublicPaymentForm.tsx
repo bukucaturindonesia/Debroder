@@ -3,6 +3,7 @@
 import { type FormEvent, type ReactNode, useCallback, useEffect, useState } from "react";
 import { CustomerOrderStatusCard } from "@/components/customer-order/CustomerOrderStatusCard";
 import { PersistentTrackingButton } from "@/components/customer-order/PersistentTrackingButton";
+import { CarrierTrackingActions } from "@/components/tracking/CarrierTrackingActions";
 import { resolveCustomerOrderPresentation } from "@/lib/customer-order-presentation";
 import type { OrderActiveStageResolution } from "@/lib/order-active-stage";
 
@@ -34,6 +35,9 @@ type SafeOrder = {
   customerName: string;
   orderStatus: string;
   fulfillmentMethod: string;
+  fulfillmentStatus: string | null;
+  courier: string | null;
+  trackingNumber: string | null;
   paymentMethod: string;
   paymentStatus: string;
   isCustom: boolean;
@@ -52,6 +56,8 @@ type SafeOrder = {
 
 const CORRECTION_OUTCOMES = new Set(["funds_not_found", "correction_requested", "rejected"]);
 const REVIEW_OUTCOMES = new Set(["pending"]);
+const TERMINAL_ORDER = new Set(["completed", "selesai", "cancelled", "dibatalkan", "expired"]);
+const TERMINAL_FULFILLMENT = new Set(["delivered", "picked_up", "completed", "selesai", "cancelled"]);
 
 function money(value: number) {
   return new Intl.NumberFormat("id-ID", { style: "currency", currency: "IDR", maximumFractionDigits: 0 }).format(value);
@@ -92,7 +98,10 @@ export function PublicPaymentForm({ token }: { token: string }) {
   }, [load]);
 
   useEffect(() => {
-    if (!order || !["pending", "pending_verification", "menunggu_verifikasi"].includes(order.paymentStatus)) return;
+    if (!order) return;
+    const terminal = TERMINAL_ORDER.has(order.orderStatus)
+      || TERMINAL_FULFILLMENT.has(order.fulfillmentStatus ?? "");
+    if (terminal) return;
     const timer = window.setInterval(() => void load(true), 20_000);
     return () => window.clearInterval(timer);
   }, [load, order]);
@@ -150,10 +159,17 @@ export function PublicPaymentForm({ token }: { token: string }) {
   const presentation = resolveCustomerOrderPresentation({
     status: order.orderStatus,
     paymentStatus: presentationPaymentStatus,
+    latestPaymentStatus: latestSubmission?.status ?? presentationPaymentStatus,
+    latestPaymentReviewOutcome: latestSubmission?.outcome ?? null,
+    fulfillmentStatus: order.fulfillmentStatus,
     fulfillmentMethod: order.fulfillmentMethod,
     paymentMethod: order.paymentMethod,
     hasPaymentUrl: true,
     isCustom: order.isCustom,
+    paymentRequirementMet: order.requirementMet,
+    paymentEffectiveTotal: order.effectivePaid,
+    hasVerifiedPayment: order.effectivePaid > 0,
+    trackingNumber: order.trackingNumber,
     activeStage: order.activeStage
   });
   const selectedMethod = order.methods.find((method) => method.id === selectedMethodId) ?? null;
@@ -185,6 +201,12 @@ export function PublicPaymentForm({ token }: { token: string }) {
               <p className="font-semibold">{latestSubmission.paymentNumber}</p>
               <p className="mt-1">Nominal yang dilaporkan: {money(latestSubmission.amount)}</p>
               <p className="mt-1 text-black/60">Anda tidak perlu mengirim bukti lagi selama pemeriksaan berlangsung.</p>
+            </div>
+          ) : null}
+          {order.trackingNumber ? (
+            <div className="mt-4 grid gap-3 border-t border-black/10 pt-4 text-sm">
+              <div><p className="text-xs font-semibold uppercase tracking-[0.12em] text-black/45">Pengiriman</p><p className="mt-1 font-semibold">{order.courier || "Kurir"} · {order.trackingNumber}</p></div>
+              <CarrierTrackingActions courier={order.courier} trackingNumber={order.trackingNumber} compact />
             </div>
           ) : null}
         </CustomerOrderStatusCard>
