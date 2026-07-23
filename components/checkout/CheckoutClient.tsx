@@ -10,17 +10,40 @@ import { EMPTY_STRUCTURED_ADDRESS, StructuredIndonesiaAddress } from "@/componen
 import type { StructuredIndonesiaAddressInput } from "@/lib/indonesia-address";
 
 type StoreOption = { id: string; name: string; address: string; hours: string };
-type CheckoutDraft = { idempotencyKey: string; accessToken: string; confirmationCode: string };
+type CheckoutDraft = {
+  idempotencyKey: string;
+  accessToken: string;
+  confirmationCode: string;
+  createdAt: string;
+  payloadHash?: string;
+};
+type CheckoutApiPayload = {
+  code?: string;
+  error?: string;
+  reference?: string;
+  found?: boolean;
+  confirmationUrl?: string;
+  trackingUrl?: string;
+  trackingToken?: string;
+  orderNumber?: string;
+};
+type RecoveryResult =
+  | { kind: "found"; payload: CheckoutApiPayload }
+  | { kind: "missing" }
+  | { kind: "expired" }
+  | { kind: "unsafe"; message: string; retryAfter: number }
+  | { kind: "temporary"; message: string; retryAfter: number };
 
 const RECOVERY_KEY = "debroder-checkout-recovery-v1";
-type StoredCheckoutDraft = CheckoutDraft & { createdAt: string };
+const RECOVERY_TTL_MS = 2 * 60 * 60 * 1000;
 
 function createDraft(): CheckoutDraft {
   const compact = () => crypto.randomUUID().replace(/-/g, "");
   return {
     idempotencyKey: compact(),
     accessToken: `${compact()}${compact()}`,
-    confirmationCode: compact().slice(0, 8).toUpperCase()
+    confirmationCode: compact().slice(0, 8).toUpperCase(),
+    createdAt: new Date().toISOString()
   };
 }
 
@@ -32,44 +55,54 @@ export function CheckoutClient({ stores }: { stores: StoreOption[] }) {
   const [submitting, setSubmitting] = useState(false);
   const [recovering, setRecovering] = useState(true);
   const [error, setError] = useState("");
+  const [retryAfter, setRetryAfter] = useState(0);
   const [structuredAddress, setStructuredAddress] = useState<StructuredIndonesiaAddressInput>(EMPTY_STRUCTURED_ADDRESS);
   const [formattedStructuredAddress, setFormattedStructuredAddress] = useState("");
   const [addressConfirmed, setAddressConfirmed] = useState(false);
   const readyItems = useMemo(() => cart.items.filter((item) => !isCustomProjectCartItem(item) && item.variantSizeId && Number(item.priceValue) >= 0), [cart.items]);
   const customItems = useMemo(() => cart.items.filter(isCustomProjectCartItem), [cart.items]);
   const unsupportedItems = cart.items.filter((item) => !isCustomProjectCartItem(item) && !item.variantSizeId);
+  const mixedCart = readyItems.length > 0 && customItems.length > 0;
   const subtotal = readyItems.reduce((sum, item) => sum + Number(item.priceValue || 0) * item.quantity, 0)
     + customItems.reduce((sum, item) => sum + Number(item.customProject?.pricing.finalTotal || 0), 0);
+
+  useEffect(() => {
+    if (retryAfter <= 0) return;
+    const timer = window.setInterval(() => {
+      setRetryAfter((value) => Math.max(0, value - 1));
+    }, 1000);
+    return () => window.clearInterval(timer);
+  }, [retryAfter]);
 
   useEffect(() => {
     let active = true;
     async function recover() {
       const stored = readStoredDraft();
-      if (!stored) { if (active) setRecovering(false); return; }
-      draft.current = stored;
-      try {
-        const response = await fetch(`/api/checkout?idempotencyKey=${encodeURIComponent(stored.idempotencyKey)}`, { cache: "no-store" });
-        const payload = await response.json().catch(() => ({})) as { found?: boolean; confirmationUrl?: string; trackingUrl?: string; trackingToken?: string; orderNumber?: string };
-        if (response.ok && payload.found && payload.confirmationUrl) {
-          const trackingToken = payload.trackingToken || stored.accessToken;
-          sessionStorage.setItem(`debroder-order-${trackingToken}`, JSON.stringify({
-            confirmationCode: stored.confirmationCode,
-            orderNumber: payload.orderNumber,
-            trackingUrl: payload.trackingUrl
-          }));
-          sessionStorage.removeItem(RECOVERY_KEY);
-          router.replace(payload.confirmationUrl);
-          return;
-        }
-        if (response.status === 410 || Date.now() - new Date(stored.createdAt).getTime() > 2 * 60 * 60 * 1000) {
-          sessionStorage.removeItem(RECOVERY_KEY);
-          draft.current = null;
-        }
-      } catch {
-        // Keep the draft. A later submit reuses the same idempotency key.
-      } finally {
+      if (!stored) {
         if (active) setRecovering(false);
+        return;
       }
+      draft.current = stored;
+      const result = await recoverStoredCheckout(stored);
+      if (!active) return;
+      if (result.kind === "found") {
+        storeOrderSession(stored, result.payload);
+        sessionStorage.removeItem(RECOVERY_KEY);
+        router.replace(result.payload.confirmationUrl!);
+        return;
+      }
+      if (result.kind === "expired" || (
+        result.kind === "missing"
+        && Date.now() - new Date(stored.createdAt).getTime() > RECOVERY_TTL_MS
+      )) {
+        sessionStorage.removeItem(RECOVERY_KEY);
+        draft.current = null;
+      } else if (result.kind === "unsafe") {
+        setError(result.message);
+      } else if (result.kind === "temporary") {
+        setRetryAfter(result.retryAfter);
+      }
+      setRecovering(false);
     }
     void recover();
     return () => { active = false; };
@@ -77,55 +110,105 @@ export function CheckoutClient({ stores }: { stores: StoreOption[] }) {
 
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    if (submitting || unsupportedItems.length || readyItems.length + customItems.length === 0) return;
+    if (submitting || retryAfter > 0 || unsupportedItems.length || mixedCart || readyItems.length + customItems.length === 0) return;
     if (fulfillment === "shipping" && !addressConfirmed) {
       setError("Konfirmasi alamat terstruktur sebelum membuat order.");
       return;
     }
+
     setSubmitting(true);
     setError("");
     const form = new FormData(event.currentTarget);
-    draft.current ??= readStoredDraft() ?? createDraft();
-    const currentDraft = draft.current;
-    sessionStorage.setItem(RECOVERY_KEY, JSON.stringify({ ...currentDraft, createdAt: new Date().toISOString() } satisfies StoredCheckoutDraft));
+    const businessPayload = {
+      customer: {
+        name: form.get("name"),
+        phone: form.get("phone"),
+        email: form.get("email"),
+        notes: form.get("notes")
+      },
+      fulfillment: {
+        method: fulfillment,
+        address: fulfillment === "shipping" ? formattedStructuredAddress : undefined,
+        addressSnapshot: fulfillment === "shipping" ? structuredAddress : undefined,
+        pickupLocationId: fulfillment === "pickup" ? form.get("pickupLocationId") : undefined,
+        paymentMethod: fulfillment === "pickup" ? form.get("paymentMethod") : "bank_transfer"
+      },
+      items: readyItems
+        .map((item) => ({ variantSizeId: item.variantSizeId, quantity: item.quantity, note: item.notes }))
+        .sort((left, right) => String(left.variantSizeId).localeCompare(String(right.variantSizeId))),
+      customProjects: customItems
+        .map((item) => ({ project: item.customProject }))
+        .sort((left, right) => String(left.project?.id ?? "").localeCompare(String(right.project?.id ?? "")))
+    };
+    const payloadHash = await hashBusinessPayload(businessPayload);
+    let currentDraft = draft.current ?? readStoredDraft() ?? createDraft();
+
+    if (currentDraft.payloadHash && currentDraft.payloadHash !== payloadHash) {
+      const recovery = await recoverStoredCheckout(currentDraft);
+      if (recovery.kind === "found") {
+        storeOrderSession(currentDraft, recovery.payload);
+        sessionStorage.removeItem(RECOVERY_KEY);
+        router.replace(recovery.payload.confirmationUrl!);
+        setSubmitting(false);
+        return;
+      }
+      if (recovery.kind === "missing" || recovery.kind === "expired") {
+        currentDraft = createDraft();
+      } else {
+        setError(recovery.message);
+        if (recovery.kind === "temporary") setRetryAfter(recovery.retryAfter);
+        setSubmitting(false);
+        return;
+      }
+    }
+
+    currentDraft = { ...currentDraft, payloadHash };
+    draft.current = currentDraft;
+    sessionStorage.setItem(RECOVERY_KEY, JSON.stringify(currentDraft));
 
     try {
       const response = await fetch("/api/checkout", {
         method: "POST",
         headers: { "content-type": "application/json" },
-        body: JSON.stringify({
-          ...currentDraft,
-          customer: {
-            name: form.get("name"),
-            phone: form.get("phone"),
-            email: form.get("email"),
-            notes: form.get("notes")
-          },
-          fulfillment: {
-            method: fulfillment,
-            address: fulfillment === "shipping" && customItems.length === 0 ? formattedStructuredAddress : undefined,
-            addressSnapshot: fulfillment === "shipping" && customItems.length > 0 ? structuredAddress : undefined,
-            pickupLocationId: fulfillment === "pickup" ? form.get("pickupLocationId") : undefined,
-            paymentMethod: fulfillment === "pickup" ? form.get("paymentMethod") : "bank_transfer"
-          },
-          items: readyItems.map((item) => ({ variantSizeId: item.variantSizeId, quantity: item.quantity, note: item.notes })),
-          customProjects: customItems.map((item) => ({ project: item.customProject }))
-        })
+        body: JSON.stringify({ ...currentDraft, ...businessPayload })
       });
-      const payload = await response.json() as { confirmationUrl?: string; trackingUrl?: string; trackingToken?: string; orderNumber?: string; error?: string };
-      if (!response.ok || !payload.confirmationUrl) throw new Error("Pesanan belum dapat dibuat. Periksa kembali data Anda lalu coba lagi.");
-      const trackingToken = payload.trackingToken || currentDraft.accessToken;
-      sessionStorage.setItem(`debroder-order-${trackingToken}`, JSON.stringify({
-        confirmationCode: currentDraft.confirmationCode,
-        orderNumber: payload.orderNumber,
-        trackingUrl: payload.trackingUrl
-      }));
+      const payload = await readCheckoutPayload(response);
+      if (!response.ok || !payload.confirmationUrl) {
+        if (payload.code === "CHECKOUT_IDEMPOTENCY_CONFLICT") {
+          const recovery = await recoverStoredCheckout(currentDraft);
+          if (recovery.kind === "found") {
+            storeOrderSession(currentDraft, recovery.payload);
+            sessionStorage.removeItem(RECOVERY_KEY);
+            router.replace(recovery.payload.confirmationUrl!);
+            return;
+          }
+          if (recovery.kind === "missing" || recovery.kind === "expired") {
+            const nextDraft = createDraft();
+            draft.current = nextDraft;
+            sessionStorage.setItem(RECOVERY_KEY, JSON.stringify(nextDraft));
+            setError("Data checkout berubah. Kunci checkout baru sudah disiapkan; periksa data lalu tekan Buat Pesanan kembali.");
+            return;
+          }
+          setError(recovery.message);
+          if (recovery.kind === "temporary") setRetryAfter(recovery.retryAfter);
+          return;
+        }
+
+        const retrySeconds = retryAfterFromResponse(response);
+        if (retrySeconds > 0) setRetryAfter(retrySeconds);
+        const reference = payload.reference ? ` Referensi: ${payload.reference}.` : "";
+        const waiting = retrySeconds > 0 ? ` Coba lagi dalam ${retrySeconds} detik.` : "";
+        setError(`${payload.error || "Pesanan belum dapat dibuat."}${waiting}${reference}`);
+        return;
+      }
+
+      storeOrderSession(currentDraft, payload);
       sessionStorage.removeItem(RECOVERY_KEY);
       customItems.forEach((item) => item.customProject ? removeCustomDraft(item.customProject.id) : undefined);
       cart.clearCart();
       router.push(payload.confirmationUrl);
     } catch (reason) {
-      setError(reason instanceof Error ? reason.message : "Checkout gagal. Keranjang Anda tetap tersimpan.");
+      setError(reason instanceof Error ? reason.message : "Checkout gagal. Keranjang dan kunci pemulihan tetap tersimpan.");
     } finally {
       setSubmitting(false);
     }
@@ -140,6 +223,14 @@ export function CheckoutClient({ stores }: { stores: StoreOption[] }) {
         <p className="text-xs font-semibold uppercase tracking-[0.18em] text-black/45">Checkout Tanpa Akun</p>
         <h1 className="mt-3 text-3xl font-semibold sm:text-5xl">Selesaikan pesanan dengan cepat</h1>
         <p className="mt-3 max-w-2xl text-sm leading-7 text-black/60">Tidak perlu masuk ke akun. Ketersediaan produk siap beli, konfigurasi custom, jumlah minimum, kecocokan layanan, dan harga akan diperiksa kembali saat pesanan dibuat.</p>
+
+        {mixedCart ? (
+          <div className="mt-7 border border-amber-300 bg-amber-50 p-5 text-sm text-amber-950">
+            <p className="font-semibold">Ready Stock dan pesanan Custom harus dipisahkan.</p>
+            <p className="mt-1">Selesaikan salah satu jenis pesanan terlebih dahulu agar stok, produksi, pembayaran, dan pengiriman tidak tercampur.</p>
+            <Link className="mt-3 inline-flex font-semibold underline" href="/keranjang">Atur ulang keranjang</Link>
+          </div>
+        ) : null}
 
         {unsupportedItems.length ? (
           <div className="mt-7 border border-amber-300 bg-amber-50 p-5 text-sm text-amber-950">
@@ -187,8 +278,8 @@ export function CheckoutClient({ stores }: { stores: StoreOption[] }) {
             <div className="mt-5 flex items-center justify-between"><span>Subtotal</span><strong>{formatRupiah(subtotal)}</strong></div>
             <p className="mt-3 text-xs leading-5 text-black/50">{fulfillment === "shipping" ? "Admin akan menambahkan ongkir pada pesanan ini, lalu Anda dapat menyetujui total akhirnya." : "Pengambilan di toko tidak dikenakan ongkir."}</p>
             {error ? <p className="mt-4 border border-red-200 bg-red-50 p-3 text-sm text-red-700">{error}</p> : null}
-            <button type="submit" disabled={submitting || Boolean(unsupportedItems.length) || (fulfillment === "shipping" && !addressConfirmed)} className="mt-5 min-h-12 w-full rounded-full bg-black px-5 font-semibold text-white hover:bg-black/75 disabled:cursor-not-allowed disabled:opacity-45">{submitting ? "Membuat pesanan..." : "Buat Pesanan"}</button>
-            <p className="mt-3 text-center text-[11px] leading-5 text-black/45">Pesanan akan dibuat dengan status belum dibayar. Jika jaringan terputus, coba lagi tanpa menekan tombol berulang kali.</p>
+            <button type="submit" disabled={submitting || retryAfter > 0 || mixedCart || Boolean(unsupportedItems.length) || (fulfillment === "shipping" && !addressConfirmed)} className="mt-5 min-h-12 w-full rounded-full bg-black px-5 font-semibold text-white hover:bg-black/75 disabled:cursor-not-allowed disabled:opacity-45">{submitting ? "Membuat pesanan..." : retryAfter > 0 ? `Coba lagi ${retryAfter} dtk` : "Buat Pesanan"}</button>
+            <p className="mt-3 text-center text-[11px] leading-5 text-black/45">Pesanan menggunakan kunci pemulihan yang sama selama hasil sebelumnya belum diketahui. Jangan membuka checkout baru ketika jaringan terputus.</p>
           </aside>
         </form>
       </div>
@@ -196,13 +287,66 @@ export function CheckoutClient({ stores }: { stores: StoreOption[] }) {
   );
 }
 
-function readStoredDraft(): StoredCheckoutDraft | null {
+async function recoverStoredCheckout(stored: CheckoutDraft): Promise<RecoveryResult> {
+  try {
+    const response = await fetch(`/api/checkout?idempotencyKey=${encodeURIComponent(stored.idempotencyKey)}`, { cache: "no-store" });
+    const payload = await readCheckoutPayload(response);
+    if (response.ok && payload.found && payload.confirmationUrl) return { kind: "found", payload };
+    if (response.status === 404) return { kind: "missing" };
+    if (response.status === 410) return { kind: "expired" };
+    const retryAfter = retryAfterFromResponse(response);
+    if (response.status === 503 || response.status === 429) {
+      return {
+        kind: "temporary",
+        message: payload.error || "Status checkout sebelumnya belum dapat diperiksa. Jangan membuat checkout baru.",
+        retryAfter: retryAfter || 15
+      };
+    }
+    return {
+      kind: "unsafe",
+      message: payload.error || "Checkout sebelumnya tidak dapat dipastikan dengan aman. Hubungi Admin DEBRODER.",
+      retryAfter: 0
+    };
+  } catch {
+    return {
+      kind: "temporary",
+      message: "Jaringan belum dapat memastikan checkout sebelumnya. Kunci lama tetap disimpan untuk mencegah order ganda.",
+      retryAfter: 15
+    };
+  }
+}
+
+async function readCheckoutPayload(response: Response): Promise<CheckoutApiPayload> {
+  return response.json().catch(() => ({})) as Promise<CheckoutApiPayload>;
+}
+
+function retryAfterFromResponse(response: Response) {
+  const value = Number(response.headers.get("retry-after") || 0);
+  return Number.isFinite(value) && value > 0 ? Math.ceil(value) : 0;
+}
+
+async function hashBusinessPayload(value: unknown) {
+  const encoded = new TextEncoder().encode(JSON.stringify(value));
+  const digest = await crypto.subtle.digest("SHA-256", encoded);
+  return Array.from(new Uint8Array(digest), (byte) => byte.toString(16).padStart(2, "0")).join("");
+}
+
+function storeOrderSession(draftValue: CheckoutDraft, payload: CheckoutApiPayload) {
+  const trackingToken = payload.trackingToken || draftValue.accessToken;
+  sessionStorage.setItem(`debroder-order-${trackingToken}`, JSON.stringify({
+    confirmationCode: draftValue.confirmationCode,
+    orderNumber: payload.orderNumber,
+    trackingUrl: payload.trackingUrl
+  }));
+}
+
+function readStoredDraft(): CheckoutDraft | null {
   try {
     const value = sessionStorage.getItem(RECOVERY_KEY);
     if (!value) return null;
-    const parsed = JSON.parse(value) as Partial<StoredCheckoutDraft>;
+    const parsed = JSON.parse(value) as Partial<CheckoutDraft>;
     if (!parsed.idempotencyKey || !parsed.accessToken || !parsed.confirmationCode || !parsed.createdAt) return null;
-    return parsed as StoredCheckoutDraft;
+    return parsed as CheckoutDraft;
   } catch {
     return null;
   }

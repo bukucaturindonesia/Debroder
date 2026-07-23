@@ -28,6 +28,25 @@ function jsonResponse(body: unknown, status: number, headers?: HeadersInit) {
   });
 }
 
+function transientApiError(
+  error: unknown,
+  context: string,
+  definition: { code: string; message: string; status: number },
+  retryAfterSeconds = 15
+) {
+  const response = publicApiErrorResponse(error, context, definition);
+  response.headers.set("retry-after", String(Math.max(1, retryAfterSeconds)));
+  return response;
+}
+
+function hasMixedCheckoutModes(value: unknown) {
+  if (!value || typeof value !== "object" || Array.isArray(value)) return false;
+  const record = value as Record<string, unknown>;
+  return Array.isArray(record.items)
+    && record.items.length > 0
+    && Array.isArray(record.customProjects)
+    && record.customProjects.length > 0;
+}
 
 export async function GET(request: Request) {
   try {
@@ -38,7 +57,11 @@ export async function GET(request: Request) {
     const client = getAdminSupabaseClient();
     const env = getAdminSupabaseEnv();
     if (!client || !env) {
-      return safePublicResponse({ code: "CHECKOUT_UNAVAILABLE", error: "Layanan checkout belum tersedia." }, 503);
+      return safePublicResponse(
+        { code: "CHECKOUT_UNAVAILABLE", error: "Layanan checkout belum tersedia." },
+        503,
+        { "retry-after": "30" }
+      );
     }
     const { data, error } = await client
       .from("orders")
@@ -64,7 +87,7 @@ export async function GET(request: Request) {
       trackingToken
     });
   } catch (error) {
-    return publicApiErrorResponse(error, "checkout recovery", {
+    return transientApiError(error, "checkout recovery", {
       code: "CHECKOUT_RECOVERY_FAILED",
       message: "Checkout lama belum dapat dipulihkan. Coba lagi.",
       status: 503
@@ -78,13 +101,25 @@ export async function POST(request: Request) {
       return jsonResponse({ code: "CHECKOUT_INVALID_REQUEST", error: "Data checkout tidak valid." }, 400);
     }
 
-    const body = parsePublicCheckoutRequest(await readCheckoutJsonBody(request));
+    const rawBody = await readCheckoutJsonBody(request);
+    if (hasMixedCheckoutModes(rawBody)) {
+      return jsonResponse({
+        code: "CHECKOUT_MIXED_CART",
+        error: "Ready Stock dan pesanan Custom harus diselesaikan sebagai pesanan terpisah."
+      }, 409);
+    }
+
+    const body = parsePublicCheckoutRequest(rawBody);
     if (!body) return jsonResponse({ code: "CHECKOUT_INVALID_REQUEST", error: "Data checkout tidak valid." }, 400);
 
     const client = getAdminSupabaseClient();
     const adminEnv = getAdminSupabaseEnv();
     if (!client || !adminEnv) {
-      return jsonResponse({ code: "CHECKOUT_UNAVAILABLE", error: "Layanan checkout belum tersedia." }, 503);
+      return jsonResponse(
+        { code: "CHECKOUT_UNAVAILABLE", error: "Layanan checkout belum tersedia." },
+        503,
+        { "retry-after": "30" }
+      );
     }
 
     const hashes = createCheckoutAbuseHashes(request, body, adminEnv.serviceRoleKey);
@@ -98,7 +133,11 @@ export async function POST(request: Request) {
 
     if (guardError || !guardData) {
       console.error("Checkout abuse guard unavailable", { code: guardError?.code });
-      return jsonResponse({ code: "CHECKOUT_UNAVAILABLE", error: "Layanan checkout belum tersedia." }, 503);
+      return jsonResponse(
+        { code: "CHECKOUT_UNAVAILABLE", error: "Layanan checkout belum tersedia." },
+        503,
+        { "retry-after": "15" }
+      );
     }
 
     const guard = guardData as CheckoutAbuseDecision;
@@ -122,7 +161,11 @@ export async function POST(request: Request) {
       .maybeSingle();
     if (existingOrderError) {
       console.error("Checkout retry lookup failed", { code: existingOrderError.code });
-      return jsonResponse({ code: "CHECKOUT_UNAVAILABLE", error: "Layanan checkout belum tersedia." }, 503);
+      return jsonResponse(
+        { code: "CHECKOUT_UNAVAILABLE", error: "Layanan checkout belum tersedia." },
+        503,
+        { "retry-after": "15" }
+      );
     }
 
     const storedHash = typeof existingOrder?.public_access_token_hash === "string" ? existingOrder.public_access_token_hash : "";
@@ -171,10 +214,8 @@ export async function POST(request: Request) {
         quantity: item.quantity,
         note: item.note ?? ""
       })),
-      ...(pricedProjects.length ? {
-        p_custom_projects: pricedProjects,
-        p_shipping_address_snapshot: body.fulfillment.addressSnapshot ?? null
-      } : {})
+      p_shipping_address_snapshot: body.fulfillment.addressSnapshot ?? null,
+      ...(pricedProjects.length ? { p_custom_projects: pricedProjects } : {})
     };
     const { data, error } = await client.rpc(rpcName, rpcPayload);
 
@@ -186,7 +227,11 @@ export async function POST(request: Request) {
     const result = data as { order_id?: string; order_number?: string; status?: string } | null;
     if (!result?.order_number) {
       console.error("Checkout domain RPC returned incomplete result");
-      return jsonResponse({ code: "CHECKOUT_UNAVAILABLE", error: "Order belum dapat dibuat." }, 503);
+      return jsonResponse(
+        { code: "CHECKOUT_UNAVAILABLE", error: "Order belum dapat dibuat." },
+        503,
+        { "retry-after": "15" }
+      );
     }
 
     return jsonResponse({
@@ -207,7 +252,7 @@ export async function POST(request: Request) {
         error.status
       );
     }
-    return publicApiErrorResponse(error, "checkout creation", {
+    return transientApiError(error, "checkout creation", {
       code: "CHECKOUT_UNAVAILABLE",
       message: "Checkout gagal diproses. Keranjang Anda tetap tersimpan.",
       status: 503
@@ -216,6 +261,12 @@ export async function POST(request: Request) {
 }
 
 function checkoutDomainError(message: string) {
+  if (/Ready Stock dan Custom Project/i.test(message)) {
+    return jsonResponse({
+      code: "CHECKOUT_MIXED_CART",
+      error: "Ready Stock dan pesanan Custom harus diselesaikan sebagai pesanan terpisah."
+    }, 409);
+  }
   if (/stok/i.test(message)) {
     return jsonResponse({ code: "CHECKOUT_STOCK_UNAVAILABLE", error: "Stok salah satu item tidak mencukupi." }, 409);
   }
@@ -225,10 +276,14 @@ function checkoutDomainError(message: string) {
   if (/tidak lagi aktif|quotation|configurator/i.test(message)) {
     return jsonResponse({ code: "CHECKOUT_ITEM_UNAVAILABLE", error: "Salah satu item tidak tersedia untuk checkout langsung." }, 409);
   }
-  if (/quantity|keranjang|pelanggan|whatsapp|email|fulfillment|pickup|pembayaran|alamat|token|kunci checkout/i.test(message)) {
+  if (/quantity|keranjang|pelanggan|whatsapp|email|fulfillment|pickup|pembayaran|alamat|token|kunci checkout|hierarki|kode pos/i.test(message)) {
     return jsonResponse({ code: "CHECKOUT_INVALID_REQUEST", error: "Data checkout tidak valid." }, 400);
   }
-  return jsonResponse({ code: "CHECKOUT_UNAVAILABLE", error: "Order belum dapat dibuat." }, 503);
+  return jsonResponse(
+    { code: "CHECKOUT_UNAVAILABLE", error: "Order belum dapat dibuat." },
+    503,
+    { "retry-after": "15" }
+  );
 }
 
 async function validateProjectUploads(client: NonNullable<ReturnType<typeof getAdminSupabaseClient>>, project: { sessionToken: string; items: Array<{ uploads: Array<{ id: string; storage_path: string }> }> }) {

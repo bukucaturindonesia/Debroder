@@ -77,6 +77,7 @@ export function createCheckoutAbuseHashes(
 }
 
 export function canonicalCheckoutPayload(body: PublicCheckoutRequest) {
+  const snapshot = body.fulfillment.addressSnapshot;
   return JSON.stringify({
     customer: {
       name: body.customer.name,
@@ -87,6 +88,21 @@ export function canonicalCheckoutPayload(body: PublicCheckoutRequest) {
     fulfillment: {
       method: body.fulfillment.method,
       address: body.fulfillment.address ?? null,
+      addressSnapshot: snapshot ? {
+        recipientName: snapshot.recipientName,
+        recipientPhone: snapshot.recipientPhone,
+        provinceId: snapshot.provinceId,
+        regencyId: snapshot.regencyId,
+        districtId: snapshot.districtId,
+        villageId: snapshot.villageId,
+        postalCode: snapshot.postalCode,
+        addressDetail: snapshot.addressDetail,
+        houseNumber: snapshot.houseNumber,
+        rt: snapshot.rt,
+        rw: snapshot.rw,
+        landmark: snapshot.landmark,
+        courierNote: snapshot.courierNote
+      } : null,
       pickupLocationId: body.fulfillment.pickupLocationId ?? null,
       paymentMethod: body.fulfillment.paymentMethod
     },
