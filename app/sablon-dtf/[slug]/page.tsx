@@ -13,7 +13,7 @@ export default async function SablonDtfDetailPage({ params }: { params: Promise<
   const orderUrl = whatsappHref(content.contact.whatsapp_apparel, `Halo DE BRODER, saya ingin bertanya tentang ${service.nama}.`);
 
   return (
-    <PublicShell content={content}>
+    <PublicShell>
       <PageHero
         label="SABLON DTF"
         title={service.nama}

@@ -48,7 +48,7 @@ export default async function CaraOrderPage() {
     .sort((a, b) => a.urutan - b.urutan);
 
   return (
-    <PublicShell content={content}>
+    <PublicShell>
       <PageHero
         label={pageHero?.label}
         title={pageHero?.title}

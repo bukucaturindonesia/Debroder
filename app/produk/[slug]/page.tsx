@@ -160,7 +160,6 @@ export default async function ProductDetailPage({ params }: PageProps) {
 
   return (
     <PublicShell
-      content={content}
       theme={isJersey ? "jersey-commerce" : "default"}
       showHeader={!isJersey}
     >

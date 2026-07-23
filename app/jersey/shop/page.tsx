@@ -17,7 +17,7 @@ export default async function JerseyShopPage() {
   const products = productsForCategoryRoute(content.products, content.productCategories, "jersey");
 
   return (
-    <PublicShell content={content} theme="jersey-commerce" showHeader={false}>
+    <PublicShell theme="jersey-commerce" showHeader={false}>
       <Suspense fallback={<ShopShellSkeleton />}>
         <JerseyCommerceNav />
         <JerseyShopCatalog products={products} />

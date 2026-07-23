@@ -16,7 +16,7 @@ export default async function KemejaPage() {
   const products = productsForCategoryRoute(content.products, content.productCategories, "kemeja");
 
   return (
-    <PublicShell content={content}>
+    <PublicShell>
       <PageHero
         label={pageHero?.label}
         title={pageHero?.title}

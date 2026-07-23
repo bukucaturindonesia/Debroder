@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import { PublicShell } from "@/components/PublicPage";
 import { GuestOrderTracking } from "@/components/tracking/GuestOrderTracking";
-import { getPublicContent } from "@/lib/public-data";
 
 export const metadata: Metadata = {
   title: "Lacak Pesanan | DEBRODER",
@@ -11,6 +10,5 @@ export const metadata: Metadata = {
 };
 
 export default async function TrackOrderPage() {
-  const content = await getPublicContent();
-  return <PublicShell content={content} theme="jersey-commerce"><GuestOrderTracking /></PublicShell>;
+  return <PublicShell theme="jersey-commerce"><GuestOrderTracking /></PublicShell>;
 }

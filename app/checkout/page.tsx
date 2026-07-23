@@ -16,7 +16,7 @@ export default async function CheckoutPage() {
     .map((store) => ({ id: store.id as string, name: store.nama_store, address: store.alamat, hours: store.jam_operasional ?? "" }));
 
   return (
-    <PublicShell content={content} theme="jersey-commerce">
+    <PublicShell theme="jersey-commerce">
       <CheckoutClient stores={stores} />
     </PublicShell>
   );

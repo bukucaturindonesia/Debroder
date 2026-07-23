@@ -26,7 +26,7 @@ export default async function SablonDtfPage() {
   const products = productsForCategoryRoute(content.products, content.productCategories, "sablon-dtf");
 
   return (
-    <PublicShell content={content}>
+    <PublicShell>
       <PageHero
         label={pageHero?.label}
         title={pageHero?.title}

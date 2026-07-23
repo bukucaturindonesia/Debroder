@@ -1,28 +1,10 @@
 import { categoryPath } from "@/lib/product-category-config";
 import { productMatchesRoute, productsForCategoryRoute } from "@/lib/product-route-matching";
+import type { PublicNavigationColorViewModel, PublicNavigationFacetsViewModel } from "@/lib/public-shell/model";
 import type { Product, ProductCategory } from "@/lib/types";
 
-export type PublicNavigationColor = {
-  label: string;
-  value: string;
-};
-
-export type PublicNavigationFacets = {
-  colors: PublicNavigationColor[];
-  categoryColors: Record<"kaos-polos" | "jaket-hoodie", PublicNavigationColor[]>;
-  categories: Array<{ label: string; href: string }>;
-  availability: {
-    readyStock: boolean;
-    custom: boolean;
-    hybrid: boolean;
-  };
-  collections: {
-    new: boolean;
-    best: boolean;
-    popular: boolean;
-    promo: boolean;
-  };
-};
+export type PublicNavigationColor = PublicNavigationColorViewModel;
+export type PublicNavigationFacets = PublicNavigationFacetsViewModel;
 
 const canonicalColors: Record<string, PublicNavigationColor> = {
   black: { label: "Hitam", value: "black" },

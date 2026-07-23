@@ -43,7 +43,7 @@ export default async function KoleksiPage({ searchParams }: KoleksiPageProps) {
   const pageHero = content.pageHeroes.find((hero) => hero.page_key === "koleksi");
 
   return (
-    <PublicShell content={content}>
+    <PublicShell>
       <PageHero
         label={pageHero?.label}
         title={pageHero?.title}

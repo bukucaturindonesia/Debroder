@@ -9,6 +9,7 @@ import { Logo } from "@/components/Logo";
 import { contactLinks } from "@/lib/contact";
 import { jacketTypeOptions, kaosTypeOptions } from "@/lib/product-taxonomy";
 import type { PublicNavigationFacets } from "@/lib/public-navigation";
+import type { PublicShellPromoViewModel } from "@/lib/public-shell/model";
 import { whatsappLinkWithMessage } from "@/lib/url";
 
 const topbarItems = [
@@ -40,7 +41,7 @@ type MegaMenuLink = {
 
 type MegaMenuColumn = {
   title: string;
-  links: MegaMenuLink[];
+  links: readonly MegaMenuLink[];
 };
 
 const legacyCollectionMenu: MegaMenuColumn[] = [
@@ -148,19 +149,27 @@ function buildCollectionMenu(facets: PublicNavigationFacets): MegaMenuColumn[] {
     { visible: facets.availability.custom, label: "Custom", href: "/koleksi?status=custom" },
     { visible: facets.availability.hybrid, label: "Ready Stock + Custom", href: "/koleksi?status=hybrid" }
   ].filter((item) => item.visible).map(({ label, href }) => ({ label, href }));
-
-  return [
+  const columns: MegaMenuColumn[] = [
     {
       title: "Koleksi",
       links: [{ label: "Belanja Semua", href: "/koleksi", highlight: true }, ...curated]
-    },
-    facets.categories.length ? { title: "Belanja Berdasarkan Produk", links: facets.categories } : null,
-    facets.colors.length ? {
+    }
+  ];
+
+  if (facets.categories.length) {
+    columns.push({ title: "Belanja Berdasarkan Produk", links: facets.categories });
+  }
+  if (facets.colors.length) {
+    columns.push({
       title: "Belanja Berdasarkan Warna",
       links: facets.colors.map((color) => ({ label: color.label, href: `/koleksi?color=${color.value}` }))
-    } : null,
-    availability.length ? { title: "Ketersediaan", links: availability } : null
-  ].filter((column): column is MegaMenuColumn => Boolean(column));
+    });
+  }
+  if (availability.length) {
+    columns.push({ title: "Ketersediaan", links: availability });
+  }
+
+  return columns;
 }
 
 function buildCategoryMenu(
@@ -170,7 +179,7 @@ function buildCategoryMenu(
 ): MegaMenuColumn[] {
   const routeKey = route.slice(1) as "kaos-polos" | "jaket-hoodie";
   const typeOptions = routeKey === "kaos-polos" ? kaosTypeOptions : jacketTypeOptions;
-  return [
+  const columns: MegaMenuColumn[] = [
     {
       title: label,
       links: [
@@ -183,12 +192,17 @@ function buildCategoryMenu(
     {
       title: routeKey === "kaos-polos" ? "Tipe Kaos" : "Tipe Jaket",
       links: typeOptions.map((item) => ({ label: item.label, href: `${route}?type=${item.value}` }))
-    },
-    facets.categoryColors[routeKey].length ? {
+    }
+  ];
+
+  if (facets.categoryColors[routeKey].length) {
+    columns.push({
       title: "Belanja Berdasarkan Warna",
       links: facets.categoryColors[routeKey].map((color) => ({ label: color.label, href: `${route}?color=${color.value}` }))
-    } : null
-  ].filter((column): column is MegaMenuColumn => Boolean(column));
+    });
+  }
+
+  return columns;
 }
 
 const searchItems = [
@@ -206,10 +220,16 @@ const searchItems = [
   { title: "Keranjang Belanja", href: "/keranjang", description: "Periksa produk, jumlah, dan rincian harga sebelum checkout.", keywords: ["keranjang", "cart", "pesanan", "checkout"] }
 ];
 
-const whatsappUrl = whatsappLinkWithMessage(
+const fallbackWhatsappUrl = whatsappLinkWithMessage(
   contactLinks.whatsapp,
   "Halo DEBRODER, saya ingin bertanya tentang layanan DEBRODER."
 );
+
+const fallbackPromo: PublicShellPromoViewModel = {
+  message: "Konsultasi desain gratis untuk kebutuhan apparel custom",
+  actionLabel: "Hubungi WhatsApp",
+  actionHref: fallbackWhatsappUrl
+};
 
 function SearchIcon() {
   return <BrandIcon name="search" />;
@@ -385,12 +405,16 @@ export function SiteHeader({
   positionMode = "sticky",
   expandedAtTop = false,
   navigationFacets = emptyNavigationFacets,
-  preserveJerseyOutput = false
+  preserveJerseyOutput = false,
+  whatsappHref = fallbackWhatsappUrl,
+  promo = fallbackPromo
 }: {
   positionMode?: "sticky" | "natural";
   expandedAtTop?: boolean;
   navigationFacets?: PublicNavigationFacets;
   preserveJerseyOutput?: boolean;
+  whatsappHref?: string;
+  promo?: PublicShellPromoViewModel;
 }) {
   const pathname = usePathname();
   const [isOpen, setIsOpen] = useState(false);
@@ -581,7 +605,7 @@ export function SiteHeader({
           <button type="button" className="grid h-10 w-10 place-items-center rounded-full transition hover:bg-[#f5f5f5] xl:hidden" aria-label="Cari" onClick={() => setIsSearchOpen(true)}>
             <SearchIcon />
           </button>
-          <a href={whatsappUrl} className="hidden h-10 w-10 place-items-center rounded-full transition hover:bg-[#f5f5f5] sm:grid" aria-label="Hubungi WhatsApp DEBRODER" target="_blank" rel="noopener noreferrer">
+          <a href={whatsappHref} className="hidden h-10 w-10 place-items-center rounded-full transition hover:bg-[#f5f5f5] sm:grid" aria-label="Hubungi WhatsApp DEBRODER" target="_blank" rel="noopener noreferrer">
             <ChatIcon />
           </a>
           <CartNavButton />
@@ -593,8 +617,8 @@ export function SiteHeader({
 
       <div className={`hidden overflow-hidden bg-[#f5f5f5] text-center transition-[max-height,opacity] duration-200 ease-out lg:block ${expanded ? "visible max-h-[54px] opacity-100" : "invisible max-h-0 opacity-0 pointer-events-none"}`} aria-hidden={!expanded}>
         <div className="flex h-[54px] flex-col items-center justify-center leading-tight">
-          <p className="text-[15px] font-medium">Konsultasi desain gratis untuk kebutuhan apparel custom</p>
-          <a href={whatsappUrl} target="_blank" rel="noopener noreferrer" className="mt-1 text-xs font-semibold underline underline-offset-2 hover:no-underline">Hubungi WhatsApp</a>
+          <p className="text-[15px] font-medium">{promo.message}</p>
+          <a href={promo.actionHref} target="_blank" rel="noopener noreferrer" className="mt-1 text-xs font-semibold underline underline-offset-2 hover:no-underline">{promo.actionLabel}</a>
         </div>
       </div>
 
@@ -637,7 +661,7 @@ export function SiteHeader({
               </Link>
             ))}
           </div>
-          <a href={whatsappUrl} className={`mt-6 inline-flex min-h-12 items-center justify-center rounded-full px-5 text-base font-semibold text-white ${preserveJerseyOutput ? "bg-[#063d24]" : "bg-black hover:bg-black/75"}`} target="_blank" rel="noopener noreferrer">
+          <a href={whatsappHref} className={`mt-6 inline-flex min-h-12 items-center justify-center rounded-full px-5 text-base font-semibold text-white ${preserveJerseyOutput ? "bg-[#063d24]" : "bg-black hover:bg-black/75"}`} target="_blank" rel="noopener noreferrer">
             Konsultasi via WhatsApp
           </a>
         </div>

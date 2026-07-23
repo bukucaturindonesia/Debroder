@@ -11,7 +11,7 @@ import { ResponsivePicture } from "@/components/ResponsivePicture";
 import { ScrollButtons } from "@/components/ScrollButtons";
 import { SiteHeader } from "@/components/SiteHeader";
 import { fallbackImages, getProductImage, getStoreImage } from "@/lib/fallback-data";
-import { buildPublicNavigationFacets } from "@/lib/public-navigation";
+import { getPublicShellPageModel } from "@/lib/public-shell/runtime";
 import { getPublicContent } from "@/lib/public-data";
 import { absoluteUrl, siteConfig } from "@/lib/site";
 import type { HomepageSection, HomepageSectionItem, LandingSection, Product, Service } from "@/lib/types";
@@ -352,7 +352,10 @@ function ManagedHomepageSection({ section, setting, fallbackProducts = [] }: { s
 }
 
 export default async function Home() {
-  const content = await getPublicContent();
+  const [content, shellModel] = await Promise.all([
+    getPublicContent(),
+    getPublicShellPageModel()
+  ]);
   const homeCategories = content.categories.slice(0, 7).map((category) => ({
     name: category.nama_kategori,
     href: `/${category.link_slug.replace(/^\/+/, "") || "koleksi"}`,
@@ -391,7 +394,11 @@ export default async function Home() {
 
   return (
     <main className="public-site min-h-screen bg-white text-[#111]">
-      <SiteHeader navigationFacets={buildPublicNavigationFacets(content.products, content.productCategories)} />
+      <SiteHeader
+        navigationFacets={shellModel.data.header.navigationFacets}
+        whatsappHref={shellModel.data.header.whatsappHref}
+        promo={shellModel.data.header.promo}
+      />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(schema).replace(/</g, "\\u003c") }} />
 
       <LandingSectionSlot setting={landingSection("hero")}>
@@ -556,7 +563,7 @@ export default async function Home() {
         </section>
       </LandingSectionSlot>
 
-      <PublicFooter content={content} variant="dark" />
+      <PublicFooter model={shellModel.data.footer} variant="dark" />
     </main>
   );
 }

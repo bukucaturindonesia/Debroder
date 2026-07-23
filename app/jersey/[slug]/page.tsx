@@ -34,7 +34,7 @@ export default async function JerseyDetailPage({ params }: { params: Promise<{ s
   const gallery = Array.from(new Set([jerseyCategory.gambar_url, ...(jerseyCategory.gallery_urls || [])].filter(Boolean)));
 
   return (
-    <PublicShell content={content}>
+    <PublicShell>
       <PageHero
         label="CUSTOM JERSEY"
         title={jerseyCategory.nama_kategori}

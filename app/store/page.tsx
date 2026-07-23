@@ -21,7 +21,7 @@ export default async function StorePage() {
   const pageHero = content.pageHeroes.find((hero) => hero.page_key === "store");
 
   return (
-    <PublicShell content={content}>
+    <PublicShell>
       <PageHero
         label={pageHero?.label}
         title={pageHero?.title}

@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import { CartPageContent } from "@/components/CartProvider";
 import { PublicShell } from "@/components/PublicPage";
-import { getPublicContent } from "@/lib/public-data";
 
 export const metadata: Metadata = {
   title: "Keranjang Pesanan | DEBRODER",
@@ -10,9 +9,8 @@ export const metadata: Metadata = {
 };
 
 export default async function KeranjangPage() {
-  const content = await getPublicContent();
   return (
-    <PublicShell content={content}>
+    <PublicShell>
       <main className="bg-[#F7F7F4] py-8 sm:py-12">
         <div className="section-shell">
           <div className="mb-8">

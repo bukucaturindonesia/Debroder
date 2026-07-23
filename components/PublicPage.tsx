@@ -13,7 +13,7 @@ import {
   getStoreImage
 } from "@/lib/fallback-data";
 import { getProductCardImages } from "@/lib/product-gallery";
-import { buildPublicNavigationFacets } from "@/lib/public-navigation";
+import { getPublicShellPageModel } from "@/lib/public-shell/runtime";
 import type {
   PageHeroContent,
   Product,
@@ -540,7 +540,7 @@ export function CategoryDetailPage({
   const pageHero = findPageHero(content.pageHeroes, currentSlug);
 
   return (
-    <PublicShell content={content}>
+    <PublicShell>
       <PageHero
         label={pageHero?.label}
         title={pageHero?.title}
@@ -605,31 +605,39 @@ export function CategoryDetailPage({
   );
 }
 
-export function PublicShell({
-  content,
+export async function PublicShell({
   children,
   headerMode = "sticky",
   headerExpandedAtTop = false,
   theme = "default",
   showHeader = true
 }: {
-  content: PublicContent;
   children: ReactNode;
   headerMode?: "sticky" | "natural";
   headerExpandedAtTop?: boolean;
   theme?: "default" | "jersey" | "jersey-commerce";
   showHeader?: boolean;
 }) {
+  const shellModel = await getPublicShellPageModel();
   const jerseyEditorial = theme === "jersey";
   const jerseyCommerce = theme === "jersey-commerce";
-  const navigationFacets = jerseyEditorial ? undefined : buildPublicNavigationFacets(content.products, content.productCategories);
+  const header = shellModel.data.header;
   return (
     <main className={`public-site min-h-screen ${jerseyEditorial ? "jersey-theme bg-[#050505] text-white" : jerseyCommerce ? "jersey-commerce-theme bg-white text-[#111111]" : "bg-brand-offWhite text-brand-charcoal"}`}>
-      {showHeader ? <SiteHeader positionMode={headerMode} expandedAtTop={headerExpandedAtTop} navigationFacets={navigationFacets} preserveJerseyOutput={jerseyEditorial} /> : null}
+      {showHeader ? (
+        <SiteHeader
+          positionMode={headerMode}
+          expandedAtTop={headerExpandedAtTop}
+          navigationFacets={jerseyEditorial ? undefined : header.navigationFacets}
+          preserveJerseyOutput={jerseyEditorial}
+          whatsappHref={header.whatsappHref}
+          promo={header.promo}
+        />
+      ) : null}
       <PageMotion />
       {children}
       <PublicFooter
-        content={content}
+        model={shellModel.data.footer}
         variant={jerseyEditorial ? "dark" : jerseyCommerce ? "default" : "public-dark"}
       />
     </main>

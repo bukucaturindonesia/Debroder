@@ -20,7 +20,7 @@ export default async function JerseyPage() {
     : fallbackCategories.filter((category) => category.category_key === "jersey");
 
   return (
-    <PublicShell content={content} headerMode="natural" headerExpandedAtTop theme="jersey">
+    <PublicShell headerMode="natural" headerExpandedAtTop theme="jersey">
       <JerseyChrome />
       <JerseyExperience content={content} hero={pageHero} categories={categories} />
     </PublicShell>

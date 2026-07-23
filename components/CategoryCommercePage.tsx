@@ -40,7 +40,7 @@ export function CategoryCommercePage({
   const pageHero = content.pageHeroes.find((hero) => hero.page_key === config.pageKey) as PageHeroContent | undefined;
 
   return (
-    <PublicShell content={content}>
+    <PublicShell>
       <PageHero
         label={pageHero?.label}
         title={pageHero?.title}

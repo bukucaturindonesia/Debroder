@@ -23,7 +23,7 @@ export default async function JerseyConfiguratorPage({ searchParams }: { searchP
   const imageUrl = selectedProduct?.image_url || selectedProduct?.gambar_url || jerseyCategory?.gambar_url || fallbackImages.product;
 
   return (
-    <PublicShell content={content} headerMode="natural">
+    <PublicShell headerMode="natural">
       <JerseyChrome />
       <header className="bg-[#111] py-12 text-white sm:py-16">
         <div className="section-shell max-w-5xl">
