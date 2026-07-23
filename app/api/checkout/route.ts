@@ -10,8 +10,8 @@ import { deriveCheckoutTrackingToken } from "@/lib/order-tracking";
 import { listCustomCategoryCatalogsByIds } from "@/lib/custom-commerce/data";
 import { priceCustomProject } from "@/lib/custom-commerce/pricing";
 import type { CustomProjectSnapshot } from "@/lib/custom-commerce/types";
-import { getAdminSupabaseEnv } from "@/lib/env";
-import { getAdminSupabaseClient } from "@/lib/supabase/client";
+import { getAdminSupabaseEnv } from "@/lib/server-env";
+import { getAdminSupabaseClient } from "@/lib/supabase/admin";
 import { publicApiErrorResponse, safePublicResponse } from "@/lib/public-api-error";
 
 function sha256(value: string) {

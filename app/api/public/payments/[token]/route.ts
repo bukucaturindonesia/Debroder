@@ -1,5 +1,5 @@
 import { hashPaymentToken } from "@/lib/payment-token";
-import { getAdminSupabaseClient } from "@/lib/supabase/client";
+import { getAdminSupabaseClient } from "@/lib/supabase/admin";
 import { publicApiErrorResponse } from "@/lib/public-api-error";
 
 const ALLOWED_TYPES = new Map([

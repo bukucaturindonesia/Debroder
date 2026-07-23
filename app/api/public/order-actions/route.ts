@@ -1,6 +1,6 @@
 import { authorizeGuestTracking, normalizeOrderNumber, sha256 } from "@/lib/order-tracking";
 import { publicApiErrorResponse, safePublicResponse } from "@/lib/public-api-error";
-import { getAdminSupabaseClient } from "@/lib/supabase/client";
+import { getAdminSupabaseClient } from "@/lib/supabase/admin";
 
 export const dynamic = "force-dynamic";
 

@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import type { CartItem, ProductConfigurationSnapshot } from "@/lib/types";
 import { validateMinimumOrder } from "@/lib/bulk-ordering";
 import { listCustomServices } from "@/lib/supabase/custom-services";
-import { getAdminSupabaseClient } from "@/lib/supabase/client";
+import { getAdminSupabaseClient } from "@/lib/supabase/admin";
 import { listProducts, revalidateCartItems } from "@/lib/supabase/products";
 
 export async function POST(request: Request) {

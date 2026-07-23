@@ -7,6 +7,7 @@ import { PublicFooter } from "@/components/PublicFooter";
 import { ResponsivePicture } from "@/components/ResponsivePicture";
 import { SafeImage } from "@/components/SafeImage";
 import { SiteHeader } from "@/components/SiteHeader";
+import { StorefrontCartBoundary } from "@/components/storefront/StorefrontCartBoundary";
 import {
   fallbackImages,
   getPageHeroImage,
@@ -623,23 +624,25 @@ export async function PublicShell({
   const jerseyCommerce = theme === "jersey-commerce";
   const header = shellModel.data.header;
   return (
-    <main className={`public-site min-h-screen ${jerseyEditorial ? "jersey-theme bg-[#050505] text-white" : jerseyCommerce ? "jersey-commerce-theme bg-white text-[#111111]" : "bg-brand-offWhite text-brand-charcoal"}`}>
-      {showHeader ? (
-        <SiteHeader
-          positionMode={headerMode}
-          expandedAtTop={headerExpandedAtTop}
-          navigationFacets={jerseyEditorial ? undefined : header.navigationFacets}
-          preserveJerseyOutput={jerseyEditorial}
-          whatsappHref={header.whatsappHref}
-          promo={header.promo}
+    <StorefrontCartBoundary>
+      <main className={`public-site min-h-screen ${jerseyEditorial ? "jersey-theme bg-[#050505] text-white" : jerseyCommerce ? "jersey-commerce-theme bg-white text-[#111111]" : "bg-brand-offWhite text-brand-charcoal"}`}>
+        {showHeader ? (
+          <SiteHeader
+            positionMode={headerMode}
+            expandedAtTop={headerExpandedAtTop}
+            navigationFacets={jerseyEditorial ? undefined : header.navigationFacets}
+            preserveJerseyOutput={jerseyEditorial}
+            whatsappHref={header.whatsappHref}
+            promo={header.promo}
+          />
+        ) : null}
+        <PageMotion />
+        {children}
+        <PublicFooter
+          model={shellModel.data.footer}
+          variant={jerseyEditorial ? "dark" : jerseyCommerce ? "default" : "public-dark"}
         />
-      ) : null}
-      <PageMotion />
-      {children}
-      <PublicFooter
-        model={shellModel.data.footer}
-        variant={jerseyEditorial ? "dark" : jerseyCommerce ? "default" : "public-dark"}
-      />
-    </main>
+      </main>
+    </StorefrontCartBoundary>
   );
 }

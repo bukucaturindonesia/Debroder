@@ -10,6 +10,7 @@ import { PublicStoreLocator } from "@/components/PublicStoreLocator";
 import { ResponsivePicture } from "@/components/ResponsivePicture";
 import { ScrollButtons } from "@/components/ScrollButtons";
 import { SiteHeader } from "@/components/SiteHeader";
+import { StorefrontCartBoundary } from "@/components/storefront/StorefrontCartBoundary";
 import { fallbackImages, getProductImage, getStoreImage } from "@/lib/fallback-data";
 import { getPublicShellPageModel } from "@/lib/public-shell/runtime";
 import { getPublicContent } from "@/lib/public-data";
@@ -393,6 +394,7 @@ export default async function Home() {
   };
 
   return (
+    <StorefrontCartBoundary>
     <main className="public-site min-h-screen bg-white text-[#111]">
       <SiteHeader
         navigationFacets={shellModel.data.header.navigationFacets}
@@ -565,5 +567,6 @@ export default async function Home() {
 
       <PublicFooter model={shellModel.data.footer} variant="dark" />
     </main>
+    </StorefrontCartBoundary>
   );
 }

@@ -1,6 +1,6 @@
 import { createHash } from "node:crypto";
 import { ensureAutomaticPaymentLink } from "@/lib/automatic-payment-link-v2";
-import { getAdminSupabaseClient } from "@/lib/supabase/client";
+import { getAdminSupabaseClient } from "@/lib/supabase/admin";
 import { publicApiErrorResponse } from "@/lib/public-api-error";
 
 type Context = { params: Promise<{ token: string }> };

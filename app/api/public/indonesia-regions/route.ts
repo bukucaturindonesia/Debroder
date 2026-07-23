@@ -1,4 +1,4 @@
-import { getAdminSupabaseClient } from "@/lib/supabase/client";
+import { getAdminSupabaseClient } from "@/lib/supabase/admin";
 import type { IndonesiaRegionLevel } from "@/lib/indonesia-address";
 
 const LEVELS = new Set<IndonesiaRegionLevel>(["province", "regency", "district", "village"]);

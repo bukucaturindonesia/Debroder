@@ -146,3 +146,10 @@
 - Severity: P0 workflow
 - Status: SOURCE IMPLEMENTED / DATABASE PREVIEW REQUIRED
 - Detail: Admin should never create a DEBRODER internal shipment document manually. Migration `20260720030000_human_centered_order_experience_p0.sql` creates it automatically and idempotently when Ready Stock prerequisites are met, excludes Custom/terminal/active-cancellation orders, and preserves courier AWB as a separate field. Apply after Phase 4–13 in Preview and verify idempotency, permissions, backfill, cancellation blocking, and no Custom false positives before production.
+
+## Closed in P5 Client Boundary Isolation
+
+- Global cart-provider leakage — **CLOSED**. `CartProvider` is no longer mounted by the root layout and is limited to storefront compositions. Production manifest inspection confirms its chunk is absent from Admin, payment-token, and order-confirmation routes.
+- Header search eager loading — **CLOSED**. The optional search modal and static search index are emitted as a separate lazy client chunk.
+- Service-role/client import ambiguity — **CLOSED**. Public and admin Supabase factories and environment readers are separated, sensitive modules use `server-only`, and regression tests reject forbidden client value imports and secret-key names.
+- P5 verification — **CLOSED**. Typecheck, lint, 579 tests, and production build pass; no database migration or remote mutation was needed.

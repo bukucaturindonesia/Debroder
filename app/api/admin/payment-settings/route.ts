@@ -1,6 +1,6 @@
 import { paymentErrorResponse, requirePaymentActor } from "@/lib/payment-auth";
 import { isPaymentVerifier } from "@/lib/payments";
-import { getAdminSupabaseClient } from "@/lib/supabase/client";
+import { getAdminSupabaseClient } from "@/lib/supabase/admin";
 
 type SettingInput = {
   id?: unknown;

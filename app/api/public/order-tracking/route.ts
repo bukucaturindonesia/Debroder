@@ -11,7 +11,7 @@ import {
   trackingNextStep
 } from "@/lib/order-tracking";
 import { ensureAutomaticPaymentLink, type AutomaticPaymentOrder } from "@/lib/automatic-payment-link-v2";
-import { getAdminSupabaseClient } from "@/lib/supabase/client";
+import { getAdminSupabaseClient } from "@/lib/supabase/admin";
 
 export const dynamic = "force-dynamic";
 

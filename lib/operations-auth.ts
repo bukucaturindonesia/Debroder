@@ -1,5 +1,5 @@
 import { createClient, type SupabaseClient, type User } from "@supabase/supabase-js";
-import { getAdminSupabaseClient } from "@/lib/supabase/client";
+import { getAdminSupabaseClient } from "@/lib/supabase/admin";
 import { getPublicSupabaseEnv } from "@/lib/env";
 import { adminGuestErrorResponse, assertAdminRequestMethodAllowed } from "@/lib/admin-role-security";
 

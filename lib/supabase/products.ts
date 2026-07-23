@@ -1,3 +1,5 @@
+import "server-only";
+
 import { sampleProducts } from "@/data/sample-products";
 import type {
   PimProduct as Product,

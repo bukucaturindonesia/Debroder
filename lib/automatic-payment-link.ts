@@ -1,6 +1,7 @@
 import { createHmac, randomUUID } from "node:crypto";
 import type { SupabaseClient } from "@supabase/supabase-js";
-import { getAdminSupabaseEnv, getSiteUrl } from "@/lib/env";
+import { getSiteUrl } from "@/lib/env";
+import { getAdminSupabaseEnv } from "@/lib/server-env";
 import { hashPaymentToken } from "@/lib/payment-token";
 
 export type AutomaticPaymentOrder = {

@@ -296,3 +296,19 @@ Status: **SOURCE IMPLEMENTED / STATICALLY VERIFIED / PREVIEW REQUIRED**.
 - Admin responsive safety diperluas: content/grid `min-width:0`, wrapping, responsive header actions, media/form bounds, serta local table scrolling sampai 1279 px agar halaman tidak memerlukan zoom-out.
 - Migration `20260720030000_human_centered_order_experience_p0.sql` membuat Ready Stock fulfillment/internal number otomatis dan idempotent, menolak Custom, terminal order, dan pembatalan aktif, serta melakukan safe backfill melalui helper yang sama.
 - Schema production diperiksa read-only; migration belum diterapkan. Full dependency typecheck/lint/Vitest/build, PostgreSQL compilation, migration Preview, dan browser E2E tetap menjadi gate owner.
+
+---
+
+## 2026-07-24 — P5 Client Boundary Isolation
+
+Status: **COMPLETE — ALL REQUIRED LOCAL GATES PASS**.
+
+- Branch/base: `Batch-1-—-Fondasi-dan-Performa-Halaman` at `7e12e59` before the uncommitted P5 diff.
+- Root cause: cart context was mounted in `app/layout.tsx`, so every route inherited client state; the full search modal/index lived inside the primary header client component; public and service-role Supabase factories shared client-importable modules; server data modules lacked one consistently enforced import boundary.
+- Resolution: scope the unchanged cart provider to storefront compositions, introduce a server header wrapper plus lazy search island, split `server-env`/Supabase admin modules from public modules, add `server-only` guards, and add P5 import-boundary regressions.
+- Build evidence: the cart chunk is present only on storefront route manifests and absent from Admin, `/payment/[token]`, and `/order-confirmation/[token]`; the search modal is emitted as its own 4,214-byte lazy chunk.
+- Routes and behavior: no route, pricing formula, cart persistence, checkout, payment, order, or business-policy change.
+- Gates: `pnpm typecheck` PASS; `pnpm lint` PASS (0 errors, 35 pre-existing warnings); `pnpm test` PASS (74 files / 579 tests); `pnpm build` PASS (110/110 pages).
+- Migration/database: none created, applied, or required. Supabase remote was not mutated.
+- Git/deployment: changes remain uncommitted; no push, merge, deploy, or P6 work was performed.
+- Next action: owner review of the P5 diff only. Stop after P5.

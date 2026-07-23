@@ -1,13 +1,13 @@
+import "server-only";
+
 import { defaultCustomServices } from "@/lib/bulk-ordering";
 import type {
   CustomService,
   ServicePricingRule,
   ServicePricingType
 } from "@/lib/types";
-import {
-  getAdminSupabaseClient,
-  getPublicSupabaseClient
-} from "@/lib/supabase/client";
+import { getAdminSupabaseClient } from "@/lib/supabase/admin";
+import { getPublicSupabaseClient } from "@/lib/supabase/client";
 
 const SERVICE_SELECT = `
   id,

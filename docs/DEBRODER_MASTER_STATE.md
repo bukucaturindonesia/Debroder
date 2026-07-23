@@ -183,3 +183,12 @@ The FROZEN commerce/landing blueprints and official Owner Decisions remain autho
 - Admin fulfillment reads and displays the same immutable snapshot.
 - Status: **IMPLEMENTED / STATIC AUDIT ONLY; BROWSER AND REMOTE DATABASE VERIFICATION REQUIRED**.
 
+## P5 Client Boundary Isolation state — 2026-07-24
+
+- P5 is **IMPLEMENTED AND LOCALLY VERIFIED**. P4 presentation, mobile-first behavior, accessibility contracts, routes, pricing, cart persistence, checkout, and business behavior remain unchanged.
+- The root layout is server-only and no longer mounts cart state globally. The existing cart provider is scoped to public storefront compositions; Admin, payment-token, and order-confirmation routes do not receive its client chunk.
+- The public header now has a server wrapper. Its optional search modal/search index is a separate client module loaded only when opened.
+- Public Supabase access and service-role access are split. Service-role environment access, admin clients, data-access modules, and server mutation modules have explicit `server-only` boundaries.
+- Regression coverage rejects service-role names and server-only value imports from client modules, and verifies cart/provider and header/lazy-search boundaries.
+- Verification: typecheck PASS; lint PASS with 0 errors and 35 pre-existing warnings; tests PASS (74 files / 579 tests); production build PASS (110/110 pages).
+- Database/migration status: none created, applied, or required. Deployment: none. P6 has not started.
