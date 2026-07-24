@@ -334,12 +334,12 @@
 ### V12-042 — P12 owner full-gate verification
 
 - Severity: Package gate
-- Status: **OPEN — SOURCE IMPLEMENTED**
+- Status: **CLOSED — OWNER GATE PASS**
 - Detail: Typed list/detail projections, authenticated server read/command
   boundaries, immutable snapshot preservation, canonical active-stage
   projection, targeted lint, 69 targeted tests, typecheck, production build,
-  and diff check pass. Owner full gate, final diff review, commit/push, and
-  Preview verification remain required before P12 PASS.
+  and diff check pass. Owner confirmed the full gate and clean review before
+  authorizing P13.
 
 ## Closed in P12 source
 
@@ -361,3 +361,31 @@
 - Speculative migration risk — **CLOSED**. Existing schema, foreign keys, RLS,
   and permission definitions are sufficient; no migration or data mutation
   was created.
+
+## P13 Customer Order Read Model & Polling
+
+### V12-043 — P13 owner full-gate verification
+
+- Severity: Package gate
+- Status: **OPEN — SOURCE IMPLEMENTED**
+- Detail: Typed customer projections, server-only whitelisted graph, preserved
+  guest authorization, bounded visibility/network-aware polling, stale
+  snapshot warning/retry, typecheck, touched lint, and 53 targeted tests pass.
+  Owner full typecheck/lint/test/build/diff and final review remain required
+  before P13 PASS.
+
+## Closed in P13 source
+
+- Duplicate customer response ownership — **CLOSED IN SOURCE**. Confirmation
+  and tracking consume shared typed contracts projected on the server.
+- Split customer transaction reads — **CLOSED IN SOURCE**. One whitelisted
+  graph supplies the page-specific order projection.
+- Unbounded polling — **CLOSED IN SOURCE**. Polling stops at terminal state,
+  pauses hidden/offline, resumes safely, backs off, aborts on cleanup, and
+  prevents overlapping requests.
+- Silent stale state — **CLOSED IN SOURCE**. Refresh failure retains the last
+  snapshot but labels it stale and exposes retry.
+- Sensitive customer leakage — **CLOSED IN SOURCE**. Hashes, raw phone/address
+  values, proof paths, admin notes, and raw database rows stay server-side.
+- Speculative migration risk — **CLOSED**. Live schema/index/RLS audit proved
+  existing database support; no migration or data mutation was created.

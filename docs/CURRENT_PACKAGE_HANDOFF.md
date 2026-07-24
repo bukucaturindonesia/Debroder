@@ -21,8 +21,9 @@
 - P9 — Generic Configured Product: **PASS menurut owner**
 - P10 — Jersey Configured Product: **PASS menurut owner**
 - P11 — Workspace Optimization: **PASS menurut owner**
-- P12 — Admin Orders Ownership: **IMPLEMENTED IN SOURCE — AWAITING OWNER GATE VERIFICATION**
-- Package setelah P12: **P13 — Customer Order Read Model & Polling**, hanya setelah owner menyatakan gate P12 PASS.
+- P12 — Admin Orders Ownership: **PASS menurut owner**
+- P13 — Customer Order Read Model & Polling: **IMPLEMENTED IN SOURCE — AWAITING OWNER GATE VERIFICATION**
+- Package setelah P13: **P14**, hanya setelah owner menyatakan gate P13 PASS.
 
 Codex wajib memverifikasi sendiri sebelum mengubah source:
 
@@ -249,34 +250,31 @@ Owner menangani review akhir, commit, push GitHub, dan Vercel Preview, kecuali o
 
 ---
 
-## 10. P12 — Scope Aktif
+## 10. P13 — Scope Aktif
 
-Owner menyatakan seluruh gate P11 clean/PASS dan memberi instruksi `lanjut`.
-P12 mengisolasi ownership Admin Orders tanpa mengubah business behavior.
+Owner menyatakan seluruh gate P12 clean/PASS dan memberi instruksi `lanjut`.
+P13 mengisolasi customer order read model dan polling tanpa mengubah business
+behavior.
 
-P12 telah:
+P13 telah:
 
-- mempertahankan route page sebagai Server Components dan mengirim `orderId`
-  dari route, bukan menjadikan browser sebagai pemilik identitas route;
-- menambah page-owned server use case, data-access `server-only`, dan typed
-  list/detail read model untuk order, item, latest payment, job order, QC,
-  fulfillment, tracking, source snapshot, dan per-line pricing snapshot;
-- mengganti query tabel transaksi langsung pada `OrderListAdmin`,
-  `OrderCommandCenterAdmin`, dan `OrderDetailAdmin` dengan authenticated API
-  ber-permission `order.read`;
-- membaca detail sebagai satu nested database graph dengan field whitelist,
-  lalu memilih record aktif/latest dan menghitung canonical active stage hanya
-  pada server;
-- menjalankan read graph dengan client JWT actor agar RLS granular
-  `payment.read`, `shipping.view`, `production.view`, dan `qc.view` tetap
-  berlaku; service-role tidak dipakai untuk membaca halaman;
-- memindahkan edit delivery, cancel transactional, dan archive dari direct
-  browser RPC ke API command ber-permission `order.edit`;
-- mempertahankan historical snapshots apa adanya, memodelkan status historical
-  item `confirmed` secara eksplisit, dan fail-closed pada pricing status atau
-  nilai transaksi yang tidak dikenali;
-- tidak mengubah pricing formula, cart, checkout, payment rule, fulfillment
-  rule, inventory, schema, RLS, data, atau migration.
+- menambah typed customer-facing read model, pure projector, page-owned server
+  use case, dan data-access `server-only`;
+- membaca order dan child transaction records sebagai satu whitelisted graph,
+  lalu memproyeksikan hanya field pelanggan yang aman;
+- mempertahankan guest token/hash serta verifikasi nomor WhatsApp sebagai
+  boundary authorization; hash, nomor mentah, address mentah, proof path,
+  admin notes, dan raw database row tidak dikirim ke client;
+- menyatukan loading API dan polling untuk confirmation/tracking, dengan
+  interval 30 detik, exponential backoff, tanpa request overlap, pause saat
+  hidden/offline/terminal, serta resume saat focus/visible/online;
+- mempertahankan snapshot terakhir pada refresh failure dan menampilkan stale
+  warning serta retry eksplisit;
+- mempertahankan pembuatan payment link otomatis hanya pada boundary server dan
+  kondisi canonical yang sebelumnya berlaku;
+- menghindari query suspicious-access sebelum authorization pada polling valid;
+- tidak mengubah pricing, cart, checkout, payment/fulfillment rule, inventory,
+  historical snapshot, schema, RLS, data, atau migration.
 
 Status saat ini:
 

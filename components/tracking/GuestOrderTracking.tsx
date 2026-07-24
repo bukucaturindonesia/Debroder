@@ -1,71 +1,22 @@
 "use client";
 
 import Link from "next/link";
-import { type FormEvent, type ReactNode, useCallback, useEffect, useState } from "react";
+import { type FormEvent, type ReactNode, useCallback, useState } from "react";
+import {
+  CustomerOrderReadError,
+  CustomerOrderStaleWarning
+} from "@/components/customer-order/CustomerOrderReadFeedback";
 import { CustomerOrderStatusCard } from "@/components/customer-order/CustomerOrderStatusCard";
+import { useCustomerOrderPolling } from "@/components/customer-order/useCustomerOrderPolling";
 import { CarrierTrackingActions } from "@/components/tracking/CarrierTrackingActions";
 import { contactLinks } from "@/lib/contact";
+import { fetchCustomerOrderTracking } from "@/lib/customer-orders/api";
+import type {
+  CustomerOrderTrackingCredentials,
+  CustomerOrderTrackingReadModel
+} from "@/lib/customer-orders/contracts";
 import { resolveCustomerOrderPresentation } from "@/lib/customer-order-presentation";
-import type { OrderActiveStageResolution } from "@/lib/order-active-stage";
 import { formatRupiah } from "@/lib/url";
-
-type TrackingPayload = {
-  order: {
-    orderNumber: string;
-    createdAt: string;
-    maskedPhone: string;
-    maskedAddress: string | null;
-    status: string;
-    statusLabel: string;
-    paymentStatus: string;
-    paymentStatusLabel: string;
-    subtotal: number;
-    shippingCost: number | null;
-    total: number;
-    amountPaid: number;
-    remainingBalance: number;
-    fulfillmentMethod: string;
-    paymentMethod: string;
-    courier: string | null;
-    trackingNumber: string | null;
-    pickupStatus: string | null;
-    fulfillmentStatus: string | null;
-    nextStep: string;
-    pricingStatus?: string;
-    paymentUrl?: string | null;
-    activeStage?: OrderActiveStageResolution | null;
-  };
-  items: Array<{
-    id: string;
-    product_name: string;
-    variant_name: string | null;
-    color: string;
-    size: string;
-    sku: string | null;
-    quantity: number;
-    unit_price: number;
-    subtotal: number;
-    custom_project_id?: string | null;
-    pricing_status?: string;
-  }>;
-  customerOperations: {
-    cancellation: { id: string; status: string; reason: string; requires_refund: boolean; requested_at: string; decision_reason: string | null } | null;
-    refund: { id: string; refund_number: string; status: string; amount: number; sent_at: string | null; confirmed_at: string | null } | null;
-    pickup: { id: string; status: string; ready_at: string | null; pickup_deadline: string | null; extension_requested_at: string | null; requested_deadline: string | null; expired_at: string | null } | null;
-  };
-  shippingQuote: {
-    version: number;
-    courier: string;
-    service: string;
-    cost: number;
-    estimate: string | null;
-    total: number;
-    status: string;
-    createdAt: string;
-  } | null;
-};
-
-type TrackingCredentials = { orderNumber: string; token?: string; whatsapp?: string };
 
 export function GuestOrderTracking({
   initialOrderNumber = "",
@@ -76,49 +27,30 @@ export function GuestOrderTracking({
 }) {
   const [orderNumber, setOrderNumber] = useState(initialOrderNumber);
   const [whatsapp, setWhatsapp] = useState("");
-  const [data, setData] = useState<TrackingPayload | null>(null);
-  const [loading, setLoading] = useState(Boolean(initialOrderNumber && token));
-  const [error, setError] = useState("");
-  const [lastCredentials, setLastCredentials] = useState<TrackingCredentials | null>(null);
-
-  const lookup = useCallback(async (credentials: TrackingCredentials, quiet = false) => {
-    if (!quiet) setLoading(true);
-    setError("");
-    try {
-      const response = await fetch("/api/public/order-tracking", {
-        method: "POST",
-        headers: { "content-type": "application/json" },
-        cache: "no-store",
-        body: JSON.stringify(credentials)
-      });
-      const payload = await response.json() as TrackingPayload & { error?: string };
-      if (!response.ok) throw new Error(payload.error || "Pesanan belum dapat dilacak. Periksa nomor pesanan dan data penerima lalu coba lagi.");
-      setData(payload);
-      setLastCredentials(credentials);
-    } catch (reason) {
-      if (!quiet) setData(null);
-      setError(reason instanceof Error ? reason.message : "Pesanan belum dapat dilacak.");
-    } finally {
-      if (!quiet) setLoading(false);
-    }
-  }, []);
-
-  useEffect(() => {
-    if (initialOrderNumber && token) void lookup({ orderNumber: initialOrderNumber, token });
-  }, [initialOrderNumber, lookup, token]);
-
-  useEffect(() => {
-    if (!data || isTrackingTerminal(data.order.status, data.order.fulfillmentStatus)) return;
-    const timer = window.setInterval(() => {
-      if (lastCredentials) void lookup(lastCredentials, true);
-    }, 20_000);
-    return () => window.clearInterval(timer);
-  }, [data, lastCredentials, lookup]);
+  const [credentials, setCredentials] = useState<CustomerOrderTrackingCredentials | null>(
+    initialOrderNumber && token
+      ? { orderNumber: initialOrderNumber, token }
+      : null
+  );
+  const load = useCallback((signal: AbortSignal) => {
+    if (!credentials) throw new Error("Data verifikasi tracking belum lengkap.");
+    return fetchCustomerOrderTracking(credentials, signal);
+  }, [credentials]);
+  const {
+    data,
+    loading,
+    refreshing,
+    error,
+    staleWarning,
+    refresh
+  } = useCustomerOrderPolling({ enabled: Boolean(credentials), load });
 
   function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    if (loading) return;
-    void lookup({ orderNumber, whatsapp });
+    if (loading || refreshing) return;
+    const next = { orderNumber, whatsapp };
+    if (sameTrackingCredentials(credentials, next)) void refresh();
+    else setCredentials(next);
   }
 
   return (
@@ -157,36 +89,46 @@ export function GuestOrderTracking({
                 required
               />
             </Field>
-            <button type="submit" disabled={loading} className="min-h-12 self-end rounded-full bg-black px-7 text-sm font-semibold text-white hover:bg-black/75 disabled:opacity-50">
-              {loading ? "Memeriksa..." : "Lacak Pesanan"}
+            <button type="submit" disabled={loading || refreshing} className="min-h-12 self-end rounded-full bg-black px-7 text-sm font-semibold text-white hover:bg-black/75 disabled:opacity-50">
+              {loading || refreshing ? "Memeriksa..." : "Lacak Pesanan"}
             </button>
           </form>
         ) : null}
 
-        {error ? (
-          <div role="alert" className="mt-5 rounded-2xl border border-red-200 bg-red-50 p-4 text-sm text-red-800">
-            <p className="font-semibold">Status belum dapat diperbarui</p>
-            <p className="mt-1 leading-6">{error}</p>
+        {error && !data ? (
+          <div className="mt-5">
+            <CustomerOrderReadError
+              error={error}
+              retrying={refreshing}
+              onRetry={() => void refresh()}
+            />
           </div>
         ) : null}
 
         {loading && !data ? <TrackingSkeleton /> : null}
         {data ? (
-          <TrackingDetail
-            data={data}
-            credentials={lastCredentials}
-            refreshing={loading}
-            onRefresh={() => lastCredentials ? void lookup(lastCredentials) : undefined}
-          />
+          <>
+            <TrackingDetail
+              data={data}
+              credentials={credentials}
+              refreshing={refreshing}
+              onRefresh={() => void refresh()}
+            />
+            <CustomerOrderStaleWarning
+              message={staleWarning}
+              refreshing={refreshing}
+              onRetry={() => void refresh()}
+            />
+          </>
         ) : null}
       </div>
     </section>
   );
 }
 
-function TrackingDetail({ data, credentials, refreshing, onRefresh }: { data: TrackingPayload; credentials: TrackingCredentials | null; refreshing: boolean; onRefresh: () => void }) {
+function TrackingDetail({ data, credentials, refreshing, onRefresh }: { data: CustomerOrderTrackingReadModel; credentials: CustomerOrderTrackingCredentials | null; refreshing: boolean; onRefresh: () => void }) {
   const { order } = data;
-  const isCustom = data.items.some((item) => Boolean(item.custom_project_id));
+  const isCustom = data.items.some((item) => Boolean(item.customProjectId));
   const isPickup = order.fulfillmentMethod === "pickup";
   const activeStatus = order.fulfillmentStatus ?? order.status;
   const presentation = resolveCustomerOrderPresentation({
@@ -195,16 +137,16 @@ function TrackingDetail({ data, credentials, refreshing, onRefresh }: { data: Tr
     fulfillmentStatus: order.fulfillmentStatus,
     fulfillmentMethod: order.fulfillmentMethod,
     paymentMethod: order.paymentMethod,
-    hasPaymentUrl: Boolean(order.paymentUrl),
+    hasPaymentUrl: Boolean(data.payment.url),
     isCustom,
-    activeStage: order.activeStage
+    activeStage: data.activeStage
   });
-  const pricingIsFinal = (order.pricingStatus ?? "final") === "final";
+  const pricingIsFinal = order.pricingStatus === "final";
   const productBaseSubtotal = data.items.reduce((sum, item) => sum + Number(item.subtotal || 0), 0);
   const contactHref = `${contactLinks.whatsapp}?text=${encodeURIComponent(
     `Halo Admin DEBRODER, saya ingin menanyakan status pesanan ${order.orderNumber}.`
   )}`;
-  const primaryAction = trackingPrimaryAction(presentation.action, order.paymentUrl ?? null, contactHref);
+  const primaryAction = trackingPrimaryAction(presentation.action, data.payment.url, contactHref);
   const pickupNotReady = isPickup
     && !["ready_for_pickup", "siap_diambil", "picked_up", "completed", "selesai", "cancelled", "expired"].includes(activeStatus);
 
@@ -243,7 +185,7 @@ function TrackingDetail({ data, credentials, refreshing, onRefresh }: { data: Tr
         orderNumber={order.orderNumber}
         credentials={credentials}
         operations={data.customerOperations}
-        terminal={isTrackingTerminal(order.status, order.fulfillmentStatus)}
+        terminal={data.terminal}
         onChanged={onRefresh}
       />
 
@@ -261,9 +203,9 @@ function TrackingDetail({ data, credentials, refreshing, onRefresh }: { data: Tr
             {data.items.map((item) => (
               <article key={item.id} className="flex justify-between gap-5 py-4 text-sm">
                 <div>
-                  <h3 className="font-semibold">{item.product_name}</h3>
-                  <p className="mt-1 text-black/55">{[item.variant_name || item.color, item.size, item.sku, `${item.quantity} pcs`].filter(Boolean).join(" · ")}</p>
-                  {item.custom_project_id ? <p className="mt-1 text-xs font-semibold text-[#063d24]">Pesanan Custom · {item.pricing_status === "final" ? "Harga final" : "Harga sedang diperiksa"}</p> : null}
+                  <h3 className="font-semibold">{item.productName}</h3>
+                  <p className="mt-1 text-black/55">{[item.variantName || item.color, item.size, item.sku, `${item.quantity} pcs`].filter(Boolean).join(" · ")}</p>
+                  {item.customProjectId ? <p className="mt-1 text-xs font-semibold text-[#063d24]">Pesanan Custom · {item.pricingStatus === "final" ? "Harga final" : "Harga sedang diperiksa"}</p> : null}
                 </div>
                 <strong className="shrink-0">{formatRupiah(Number(item.subtotal))}</strong>
               </article>
@@ -335,8 +277,8 @@ function CustomerOperationsPanel({
   onChanged
 }: {
   orderNumber: string;
-  credentials: TrackingCredentials | null;
-  operations: TrackingPayload["customerOperations"];
+  credentials: CustomerOrderTrackingCredentials | null;
+  operations: CustomerOrderTrackingReadModel["customerOperations"];
   terminal: boolean;
   onChanged: () => void;
 }) {
@@ -362,8 +304,10 @@ function CustomerOperationsPanel({
           requestedDeadline: deadline ? new Date(deadline).toISOString() : undefined
         })
       });
-      const payload = await response.json().catch(() => ({})) as { error?: string };
-      if (!response.ok) throw new Error(payload.error || "Permintaan belum dapat dikirim.");
+      const payload: unknown = await response.json().catch(() => null);
+      if (!response.ok) {
+        throw new Error(apiError(payload, "Permintaan belum dapat dikirim."));
+      }
       setNotice(action === "request_cancellation" ? "Permintaan pembatalan sudah dikirim ke Admin." : "Permintaan perpanjangan pickup sudah dikirim.");
       setMode("");
       setReason("");
@@ -376,7 +320,7 @@ function CustomerOperationsPanel({
     }
   }
 
-  const pickupCanExtend = operations.pickup && ["ready_for_pickup", "no_show"].includes(operations.pickup.status) && !operations.pickup.extension_requested_at;
+  const pickupCanExtend = operations.pickup && ["ready_for_pickup", "no_show"].includes(operations.pickup.status) && !operations.pickup.extensionRequestedAt;
   if (!operations.cancellation && !pickupCanExtend && !operations.refund) return null;
 
   return (
@@ -385,7 +329,7 @@ function CustomerOperationsPanel({
       {operations.cancellation ? (
         <div className="mt-3 rounded-2xl bg-[#f6f5f0] p-4">
           <p className="font-semibold">Permintaan pembatalan: {operations.cancellation.status.replaceAll("_", " ")}</p>
-          <p className="mt-1 text-black/60">{operations.cancellation.requires_refund ? "Pembatalan memerlukan proses refund dana terverifikasi." : operations.cancellation.reason}</p>
+          <p className="mt-1 text-black/60">{operations.cancellation.requiresRefund ? "Pembatalan memerlukan proses refund dana terverifikasi." : operations.cancellation.reason}</p>
         </div>
       ) : !terminal ? (
         <button type="button" onClick={() => setMode(mode === "cancel" ? "" : "cancel")} className="mt-3 min-h-11 rounded-full border border-black/20 px-5 font-semibold">
@@ -395,7 +339,7 @@ function CustomerOperationsPanel({
 
       {operations.refund ? (
         <div className="mt-3 rounded-2xl bg-emerald-50 p-4 text-emerald-950">
-          <p className="font-semibold">Refund {operations.refund.refund_number}</p>
+          <p className="font-semibold">Refund {operations.refund.refundNumber}</p>
           <p className="mt-1">Status: {operations.refund.status.replaceAll("_", " ")} · {formatRupiah(operations.refund.amount)}</p>
         </div>
       ) : null}
@@ -471,9 +415,19 @@ function readable(value: string) {
   return labels[value] ?? "Status sedang diperbarui";
 }
 
-function isTrackingTerminal(orderStatus: string, fulfillmentStatus: string | null) {
-  return ["completed", "selesai", "cancelled", "expired", "picked_up"].includes(orderStatus)
-    || ["delivered", "picked_up"].includes(fulfillmentStatus ?? "");
+function sameTrackingCredentials(
+  left: CustomerOrderTrackingCredentials | null,
+  right: CustomerOrderTrackingCredentials
+) {
+  return left?.orderNumber === right.orderNumber
+    && (left.token ?? "") === (right.token ?? "")
+    && (left.whatsapp ?? "") === (right.whatsapp ?? "");
+}
+
+function apiError(value: unknown, fallback: string) {
+  if (!value || typeof value !== "object" || Array.isArray(value)) return fallback;
+  const record = Object.fromEntries(Object.entries(value));
+  return typeof record.error === "string" ? record.error : fallback;
 }
 
 function dateTime(value: string) {

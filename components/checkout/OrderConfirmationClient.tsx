@@ -2,121 +2,72 @@
 
 import Link from "next/link";
 import { type ReactNode, useCallback, useEffect, useState } from "react";
+import {
+  CustomerOrderReadError,
+  CustomerOrderStaleWarning
+} from "@/components/customer-order/CustomerOrderReadFeedback";
 import { CustomerOrderStatusCard } from "@/components/customer-order/CustomerOrderStatusCard";
 import { PersistentTrackingButton } from "@/components/customer-order/PersistentTrackingButton";
+import { useCustomerOrderPolling } from "@/components/customer-order/useCustomerOrderPolling";
 import { contactLinks } from "@/lib/contact";
+import { fetchCustomerOrderConfirmation } from "@/lib/customer-orders/api";
 import { resolveCustomerOrderPresentation } from "@/lib/customer-order-presentation";
-import type { OrderActiveStageResolution } from "@/lib/order-active-stage";
 import { getOrderStatusLabel } from "@/lib/ui-language";
 import { formatRupiah } from "@/lib/url";
 
-type OrderPayload = {
-  order: {
-    orderNumber: string;
-    customerName: string;
-    maskedPhone: string;
-    status: string;
-    paymentStatus: string;
-    fulfillmentMethod: string;
-    paymentMethod: string;
-    subtotal: number;
-    shippingCost: number | null;
-    shippingCourier: string | null;
-    shippingService: string | null;
-    shippingEstimate: string | null;
-    total: number;
-    whatsappConfirmationExpiresAt: string | null;
-    whatsappConfirmedAt: string | null;
-    reservationExpiresAt: string | null;
-    finalTotalApprovedAt: string | null;
-    trackingTokenExpiresAt: string | null;
-    createdAt: string;
-    pricingStatus?: string;
-    customQuoteStatus?: string | null;
-    customQuoteVersion?: number | null;
-    customQuoteLockedAt?: string | null;
-  };
-  items: Array<{
-    id: string;
-    product_name: string;
-    variant_name: string;
-    color: string;
-    size: string;
-    sku: string;
-    quantity: number;
-    unit_price: number;
-    subtotal: number;
-    custom_project_id?: string | null;
-    pricing_status?: string;
-  }>;
-  customQuote?: {
-    version_number: number;
-    status: string;
-    quoted_total: number;
-    pricing_components: unknown;
-    design_version_snapshot: unknown;
-    valid_until: string;
-    sent_at: string;
-    locked_at: string | null;
-  } | null;
-  payment?: { url: string | null; expiresAt: string | null; unavailableReason: string | null };
-  activeStage?: OrderActiveStageResolution | null;
-};
-
-const TERMINAL_ORDER_STATUSES = new Set(["completed", "selesai", "delivered", "picked_up", "cancelled", "dibatalkan", "expired"]);
-
 export function OrderConfirmationClient({ token }: { token: string }) {
-  const [data, setData] = useState<OrderPayload | null>(null);
   const [confirmationCode, setConfirmationCode] = useState("");
-  const [error, setError] = useState("");
-  const [loading, setLoading] = useState(true);
+  const [actionError, setActionError] = useState("");
   const [approving, setApproving] = useState(false);
   const [trackingCopied, setTrackingCopied] = useState(false);
   const [acknowledged, setAcknowledged] = useState(false);
   const [revisionReason, setRevisionReason] = useState("");
 
-  const load = useCallback(async (quiet = false) => {
-    if (!quiet) setLoading(true);
-    try {
-      const response = await fetch(`/api/public/orders/${encodeURIComponent(token)}`, { cache: "no-store" });
-      const payload = await response.json() as OrderPayload & { error?: string };
-      if (!response.ok) throw new Error(payload.error || "Pesanan tidak tersedia. Periksa kembali tautan yang Anda gunakan.");
-      setData(payload);
-      setError("");
-    } catch (reason) {
-      if (!quiet) setError(reason instanceof Error ? reason.message : "Pesanan tidak tersedia. Periksa kembali tautan yang Anda gunakan.");
-    } finally {
-      if (!quiet) setLoading(false);
-    }
+  const load = useCallback((signal: AbortSignal) => {
+    return fetchCustomerOrderConfirmation(token, signal);
   }, [token]);
+  const {
+    data,
+    loading,
+    refreshing,
+    error,
+    staleWarning,
+    refresh
+  } = useCustomerOrderPolling({ enabled: Boolean(token), load });
 
   useEffect(() => {
     try {
-      const draft = JSON.parse(sessionStorage.getItem(`debroder-order-${token}`) || "{}") as { confirmationCode?: string };
-      setConfirmationCode(draft.confirmationCode ?? "");
+      const value: unknown = JSON.parse(
+        sessionStorage.getItem(`debroder-order-${token}`) || "{}"
+      );
+      const draft = value && typeof value === "object" && !Array.isArray(value)
+        ? Object.fromEntries(Object.entries(value))
+        : {};
+      setConfirmationCode(
+        typeof draft.confirmationCode === "string" ? draft.confirmationCode : ""
+      );
     } catch {
       setConfirmationCode("");
     }
-    void load();
-    const timer = window.setInterval(() => void load(true), 20_000);
-    return () => window.clearInterval(timer);
-  }, [load, token]);
+  }, [token]);
 
   async function approveTotal() {
     if (approving) return;
     setApproving(true);
-    setError("");
+    setActionError("");
     try {
       const response = await fetch(`/api/public/orders/${encodeURIComponent(token)}`, {
         method: "POST",
         headers: { "content-type": "application/json" },
         body: JSON.stringify({ action: "approve_total" })
       });
-      const payload = await response.json() as { error?: string };
-      if (!response.ok) throw new Error(payload.error || "Total pesanan belum dapat disetujui. Coba lagi.");
-      await load(true);
+      const payload: unknown = await response.json().catch(() => null);
+      if (!response.ok) {
+        throw new Error(apiError(payload, "Total pesanan belum dapat disetujui. Coba lagi."));
+      }
+      await refresh();
     } catch (reason) {
-      setError(reason instanceof Error ? reason.message : "Total gagal disetujui.");
+      setActionError(reason instanceof Error ? reason.message : "Total gagal disetujui.");
     } finally {
       setApproving(false);
     }
@@ -125,15 +76,15 @@ export function OrderConfirmationClient({ token }: { token: string }) {
   async function decideCustomQuote(action: "approve_custom_quote" | "request_custom_revision") {
     if (approving) return;
     if (action === "approve_custom_quote" && !acknowledged) {
-      setError("Konfirmasi persetujuan wajib dicentang.");
+      setActionError("Konfirmasi persetujuan wajib dicentang.");
       return;
     }
     if (action === "request_custom_revision" && revisionReason.trim().length < 5) {
-      setError("Tuliskan alasan revisi minimal 5 karakter.");
+      setActionError("Tuliskan alasan revisi minimal 5 karakter.");
       return;
     }
     setApproving(true);
-    setError("");
+    setActionError("");
     try {
       const response = await fetch(`/api/public/orders/${encodeURIComponent(token)}`, {
         method: "POST",
@@ -144,25 +95,37 @@ export function OrderConfirmationClient({ token }: { token: string }) {
           reason: revisionReason.trim()
         })
       });
-      const payload = await response.json() as { error?: string };
-      if (!response.ok) throw new Error(payload.error || "Pilihan penawaran belum dapat disimpan. Coba lagi.");
+      const payload: unknown = await response.json().catch(() => null);
+      if (!response.ok) {
+        throw new Error(apiError(payload, "Pilihan penawaran belum dapat disimpan. Coba lagi."));
+      }
       setRevisionReason("");
-      await load(true);
+      await refresh();
     } catch (reason) {
-      setError(reason instanceof Error ? reason.message : "Keputusan penawaran gagal disimpan.");
+      setActionError(reason instanceof Error ? reason.message : "Keputusan penawaran gagal disimpan.");
     } finally {
       setApproving(false);
     }
   }
 
-  if (loading) return <Shell><p>Memuat pesanan...</p></Shell>;
-  if (error && !data) return <Shell><p className="text-red-700">{error}</p></Shell>;
+  if (loading && !data) return <Shell><p>Memuat pesanan...</p></Shell>;
+  if (error && !data) {
+    return (
+      <Shell>
+        <CustomerOrderReadError
+          error={error}
+          retrying={refreshing}
+          onRetry={() => void refresh()}
+        />
+      </Shell>
+    );
+  }
   if (!data) return null;
 
   const { order } = data;
-  const isCustom = data.items.some((item) => Boolean(item.custom_project_id));
+  const isCustom = data.items.some((item) => Boolean(item.customProjectId));
   const isPickup = order.fulfillmentMethod === "pickup";
-  const paymentUrl = data.payment?.url ?? null;
+  const paymentUrl = data.payment.url;
   const trackingPath = `/track-order/${encodeURIComponent(order.orderNumber)}?token=${encodeURIComponent(token)}`;
   const presentation = resolveCustomerOrderPresentation({
     status: order.status,
@@ -173,9 +136,9 @@ export function OrderConfirmationClient({ token }: { token: string }) {
     isCustom,
     activeStage: data.activeStage
   });
-  const pricingIsFinal = (order.pricingStatus ?? "final") === "final";
+  const pricingIsFinal = order.pricingStatus === "final";
   const productBaseSubtotal = data.items.reduce((sum, item) => sum + Number(item.subtotal || 0), 0);
-  const customQuotePreview = customerQuotePreview(data.customQuote?.pricing_components);
+  const customQuotePreview = customerQuotePreview(data.customQuote?.pricingComponents);
   const verifyWhatsappHref = `${contactLinks.whatsapp}?text=${encodeURIComponent(
     confirmationCode
       ? `Halo DEBRODER, saya ingin verifikasi pesanan ${order.orderNumber}. Kode konfirmasi: ${confirmationCode}. Nomor WhatsApp saya harus dicocokkan dengan data checkout.`
@@ -193,7 +156,7 @@ export function OrderConfirmationClient({ token }: { token: string }) {
       await navigator.clipboard.writeText(`${window.location.origin}${trackingPath}`);
       setTrackingCopied(true);
     } catch {
-      setError("Tautan belum dapat disalin otomatis. Buka halaman pelacakan, lalu salin alamat halaman secara manual.");
+      setActionError("Tautan belum dapat disalin otomatis. Buka halaman pelacakan, lalu salin alamat halaman secara manual.");
     }
   }
 
@@ -240,10 +203,10 @@ export function OrderConfirmationClient({ token }: { token: string }) {
             <div className="text-sm">
               <div className="flex flex-wrap items-center justify-between gap-3">
                 <div>
-                  <p className="font-semibold">Penawaran Custom v{data.customQuote.version_number}</p>
-                  <p className="mt-1 text-black/55">Berlaku sampai {formatDate(data.customQuote.valid_until)}</p>
+                  <p className="font-semibold">Penawaran Custom v{data.customQuote.versionNumber}</p>
+                  <p className="mt-1 text-black/55">Berlaku sampai {formatDate(data.customQuote.validUntil)}</p>
                 </div>
-                <strong className="text-lg">{formatRupiah(Number(data.customQuote.quoted_total))}</strong>
+                <strong className="text-lg">{formatRupiah(Number(data.customQuote.quotedTotal))}</strong>
               </div>
               <details className="mt-4 rounded-2xl border border-black/10 bg-white/70 p-4">
                 <summary className="cursor-pointer font-semibold">Lihat rincian penawaran</summary>
@@ -315,13 +278,19 @@ export function OrderConfirmationClient({ token }: { token: string }) {
             </div>
           ) : null}
 
-          {presentation.action === "pay" && data.payment?.expiresAt ? (
+          {presentation.action === "pay" && data.payment.expiresAt ? (
             <p className="text-xs text-black/55">Tautan pembayaran berlaku sampai {formatDate(data.payment.expiresAt)}.</p>
           ) : null}
         </CustomerOrderStatusCard>
       </div>
 
-      {isPickup && presentation.action !== "pickup" && !TERMINAL_ORDER_STATUSES.has(order.status) ? (
+      <CustomerOrderStaleWarning
+        message={staleWarning}
+        refreshing={refreshing}
+        onRetry={() => void refresh()}
+      />
+
+      {isPickup && presentation.action !== "pickup" && !data.terminal ? (
         <section className="mt-5 rounded-[24px] border border-amber-300 bg-amber-50 p-5 text-sm text-amber-950">
           <p className="font-semibold">Penting sebelum datang ke toko</p>
           <p className="mt-2 leading-6">Jangan datang sebelum menerima konfirmasi dari Admin. Barang Ready Stock mungkin masih berada di lokasi penyimpanan lain, sedang disiapkan, atau perlu dipindahkan ke toko.</p>
@@ -331,7 +300,7 @@ export function OrderConfirmationClient({ token }: { token: string }) {
         </section>
       ) : null}
 
-      {error ? <p className="mt-5 rounded-2xl border border-red-200 bg-red-50 p-4 text-sm text-red-700">{error}</p> : null}
+      {actionError ? <p className="mt-5 rounded-2xl border border-red-200 bg-red-50 p-4 text-sm text-red-700">{actionError}</p> : null}
 
       <div className="mt-6 grid gap-3">
         <Disclosure title="Ringkasan pesanan" summary={`${data.items.length} item · ${pricingIsFinal ? formatRupiah(order.total) : "Harga sedang ditetapkan"}`}>
@@ -339,8 +308,8 @@ export function OrderConfirmationClient({ token }: { token: string }) {
             {data.items.map((item) => (
               <article key={item.id} className="flex justify-between gap-4 py-4 text-sm">
                 <div>
-                  <p className="font-semibold">{item.product_name}</p>
-                  <p className="mt-1 text-black/55">{[item.variant_name || item.color, item.size, item.sku, `${item.quantity} pcs`].filter(Boolean).join(" · ")}</p>
+                  <p className="font-semibold">{item.productName}</p>
+                  <p className="mt-1 text-black/55">{[item.variantName || item.color, item.size, item.sku, `${item.quantity} pcs`].filter(Boolean).join(" · ")}</p>
                 </div>
                 <strong className="shrink-0">{formatRupiah(Number(item.subtotal))}</strong>
               </article>
@@ -444,11 +413,15 @@ function paymentMethodLabel(value: string) {
 }
 
 function customerQuotePreview(value: unknown) {
-  const record = value && typeof value === "object" && !Array.isArray(value) ? value as Record<string, unknown> : null;
+  const record = value && typeof value === "object" && !Array.isArray(value)
+    ? Object.fromEntries(Object.entries(value))
+    : null;
   const productLines = Array.isArray(record?.product_lines) ? record.product_lines : [];
   const editableLines = Array.isArray(record?.editable_lines) ? record.editable_lines : [];
   const lines = [...productLines, ...editableLines].flatMap((candidate, index) => {
-    const line = candidate && typeof candidate === "object" && !Array.isArray(candidate) ? candidate as Record<string, unknown> : null;
+    const line = candidate && typeof candidate === "object" && !Array.isArray(candidate)
+      ? Object.fromEntries(Object.entries(candidate))
+      : null;
     const quantity = integerQuoteValue(line?.quantity);
     const subtotal = integerQuoteValue(line?.subtotal);
     if (!line || quantity === null || subtotal === null) return [];
@@ -470,6 +443,12 @@ function customerQuotePreview(value: unknown) {
 function integerQuoteValue(value: unknown) {
   const numeric = typeof value === "number" ? value : typeof value === "string" && value.trim() ? Number(value) : Number.NaN;
   return Number.isSafeInteger(numeric) ? numeric : null;
+}
+
+function apiError(value: unknown, fallback: string) {
+  if (!value || typeof value !== "object" || Array.isArray(value)) return fallback;
+  const record = Object.fromEntries(Object.entries(value));
+  return typeof record.error === "string" ? record.error : fallback;
 }
 
 function formatDate(value: string) {

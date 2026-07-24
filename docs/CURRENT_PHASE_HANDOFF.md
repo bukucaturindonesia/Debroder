@@ -557,3 +557,40 @@ Status: **IMPLEMENTED IN SOURCE — AWAITING OWNER GATE VERIFICATION**.
 - Deployment/commit/push/merge: none.
 - Next: owner full gate and diff review. P13 remains closed until owner confirms
   P12 PASS.
+
+---
+
+## 2026-07-24 — P13 Customer Order Read Model & Polling
+
+Status: **IMPLEMENTED IN SOURCE — AWAITING OWNER GATE VERIFICATION**.
+
+- Owner confirmed P12 gate clean/PASS. P13 baseline HEAD
+  `b3f7b3c6f5b692e79c66b92386f536b0e1ad85de` was clean on the expected branch.
+- Root cause: confirmation and guest tracking clients owned duplicate response
+  shapes and perpetual polling, while their APIs assembled customer status
+  through separate transaction reads.
+- Added shared typed contracts, pure server projection, `server-only` data
+  access, page-owned use cases, client API boundary, polling policy, reusable
+  polling hook, and explicit error/stale feedback.
+- One whitelisted order graph supplies item snapshots, latest payment,
+  fulfillment/tracking, shipping/custom quotes, pickup, cancellation/refund,
+  job, and QC state. The client receives only the page-specific safe projection.
+- Guest token/hash and WhatsApp verification remain authoritative. Sensitive
+  hashes, raw phone/address values, proof paths, admin notes, and raw database
+  rows do not cross the client boundary.
+- Polling uses a 30-second active interval, bounded exponential backoff,
+  recursive timeout without overlap, AbortController cleanup, terminal stop,
+  hidden/offline pause, and focus/visibility/online resume.
+- Failed refresh retains the last snapshot with an explicit stale warning and
+  retry; first-load authorization, expiry, not-found, rate-limit, and
+  unavailable states remain explicit.
+- Live schema/data audit found 44 orders, 53 items, 22 payments, 17
+  fulfillments, 18 shipping quotes, 10 stock reservations, 3 pickup
+  preparations, and no custom quote/job/QC/cancellation/refund rows. RLS,
+  direct foreign keys, token indexes, and existing fields are sufficient.
+- Database/migration local/remote/applied/pending: none. A migration would be
+  speculative; no schema, RLS, function, data, or historical snapshot changed.
+- Verification run: typecheck PASS; touched-file lint PASS; 6 targeted files /
+  53 tests PASS. Owner full typecheck/lint/test/build/diff gate remains required.
+- Deployment/commit/push/merge: none. P14 remains closed until owner confirms
+  P13 PASS.

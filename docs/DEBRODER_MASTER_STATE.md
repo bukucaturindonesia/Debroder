@@ -339,3 +339,25 @@ The FROZEN commerce/landing blueprints and official Owner Decisions remain autho
 - Verification: typecheck PASS; touched lint PASS; targeted suite PASS
   (8 files / 69 tests); production build PASS (110/110 pages);
   `git diff --check` PASS. Existing repository lint warnings remain unchanged.
+
+## P13 Customer Order Read Model & Polling state — 2026-07-24
+
+- P12 is **PASS** according to the owner gate; baseline P13 HEAD was
+  `b3f7b3c6f5b692e79c66b92386f536b0e1ad85de` on the expected branch with a
+  clean working tree.
+- P13 is **IMPLEMENTED IN SOURCE — AWAITING OWNER GATE VERIFICATION**.
+- Customer confirmation and guest tracking now consume page-specific typed
+  projections from server-owned use cases and `server-only` whitelisted data
+  access rather than duplicate client-owned database response shapes.
+- Token/hash and WhatsApp authorization remain intact. Raw database rows,
+  access hashes, raw contact/address values, proof paths, and admin notes do
+  not enter the customer bundle.
+- Shared polling is bounded, non-overlapping, abortable, visibility/network
+  aware, terminal-aware, and preserves the last snapshot with explicit stale
+  warning and retry after a refresh failure.
+- Live Supabase audit confirmed the current schema, RLS, foreign keys, and
+  token indexes support P13. No migration, database mutation, historical
+  rewrite, pricing/cart/checkout/inventory change, commit, push, or deployment
+  was performed.
+- Verification: typecheck PASS; touched lint PASS; targeted suite PASS
+  (6 files / 53 tests). Owner full gate and diff review remain required.
