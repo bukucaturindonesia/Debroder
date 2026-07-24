@@ -1,21 +1,15 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useMemo, useState } from "react";
-import { createSupabaseClient } from "@/lib/supabase";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import type {
+  AdminOrderListItem,
+  AdminOrderListReadModel
+} from "@/lib/admin-orders/contracts";
+import { phase13ApiFetch } from "@/lib/admin-phase13-api";
 import { getOrderStatusLabel } from "@/lib/ui-language";
 import { AdminPageHeader } from "@/components/admin/layout/AdminPageHeader";
 import { AdminEmptyState, AdminLoadingState } from "@/components/admin/ui/AdminFeedback";
-
-type OrderRow = {
-  id: string;
-  order_number: string;
-  customer_name: string;
-  company_name: string | null;
-  status: string;
-  total_amount: number;
-  created_at: string;
-};
 
 function money(value: number) {
   return new Intl.NumberFormat("id-ID", {
@@ -26,31 +20,27 @@ function money(value: number) {
 }
 
 export function OrderListAdmin() {
-  const [rows, setRows] = useState<OrderRow[]>([]);
+  const [rows, setRows] = useState<AdminOrderListItem[]>([]);
   const [query, setQuery] = useState("");
   const [loading, setLoading] = useState(true);
   const [message, setMessage] = useState("");
 
-  async function loadRows() {
-    const supabase = createSupabaseClient();
-    if (!supabase) return;
+  const loadRows = useCallback(async () => {
     setLoading(true);
-    const { data, error } = await supabase
-      .from("orders")
-      .select("id,order_number,customer_name,company_name,status,total_amount,created_at")
-      .is("archived_at", null)
-      .order("created_at", { ascending: false });
-    setLoading(false);
-    if (error) {
+    setMessage("");
+    try {
+      const readModel = await phase13ApiFetch<AdminOrderListReadModel>("/api/admin/orders");
+      setRows(readModel.orders);
+    } catch {
       setMessage("Daftar pesanan belum berhasil dimuat.");
-      return;
+    } finally {
+      setLoading(false);
     }
-    setRows((data || []) as OrderRow[]);
-  }
+  }, []);
 
   useEffect(() => {
     void loadRows();
-  }, []);
+  }, [loadRows]);
 
   const visible = useMemo(() => {
     const keyword = query.trim().toLowerCase();
@@ -95,8 +85,11 @@ export function OrderListAdmin() {
         </section>
 
         {message ? (
-          <div className="border border-red-200 bg-red-50 p-4 text-sm font-semibold text-red-800">
-            {message}
+          <div className="flex flex-wrap items-center justify-between gap-3 border border-red-200 bg-red-50 p-4 text-sm font-semibold text-red-800">
+            <span>{message}</span>
+            <button type="button" onClick={() => void loadRows()} className="min-h-10 rounded-full border border-red-300 px-4">
+              Coba Lagi
+            </button>
           </div>
         ) : null}
 

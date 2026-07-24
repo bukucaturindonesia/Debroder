@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import type { CustomerUploadRef } from "@/lib/types";
-import { getAdminSupabaseClient } from "@/lib/supabase/client";
+import { getAdminSupabaseClient } from "@/lib/supabase/admin";
 
 const BUCKET_ID = "customer-designs";
 const MAX_FILE_SIZE = 20 * 1024 * 1024;

@@ -1,3 +1,5 @@
+import "server-only";
+
 import { sampleProducts } from "@/data/sample-products";
 import type {
   PimProduct as Product,
@@ -11,7 +13,12 @@ import type {
   RevalidationInput,
   RevalidationResult
 } from "@/lib/types";
-import { calculateTieredUnitPrice } from "@/lib/bulk-ordering";
+import {
+  resolveReadyStockPricing,
+  type ReadyStockPricingErrorCode
+} from "@/lib/pricing-policy";
+import { aggregateAvailableStock } from "@/lib/inventory-authority";
+import { getAdminSupabaseClient } from "@/lib/supabase/admin";
 import { getPublicSupabaseClient } from "@/lib/supabase/client";
 
 const PRODUCT_SELECT = `
@@ -23,6 +30,9 @@ const PRODUCT_SELECT = `
   description,
   status,
   sku,
+  sales_mode,
+  pricing_mode,
+  tier_scope,
   product_price_tiers (
     id,
     product_id,
@@ -106,7 +116,9 @@ export async function listProducts(
     throw new Error(`Failed to load products: ${error.message}`);
   }
 
-  return asRecordArray(data).map(mapProductRow);
+  return applyInventoryAvailability(
+    asRecordArray(data).map(mapProductRow)
+  );
 }
 
 export async function getProductBySlug(
@@ -132,13 +144,15 @@ export async function getProductBySlug(
     throw new Error(`Failed to load product ${slug}: ${error.message}`);
   }
 
-  return isRecord(data) ? mapProductRow(data) : null;
+  return isRecord(data)
+    ? (await applyInventoryAvailability([mapProductRow(data)]))[0] ?? null
+    : null;
 }
 
 export async function revalidateCartItems(
   inputs: RevalidationInput[]
 ): Promise<RevalidationResult[]> {
-  const products = await listProducts();
+  const products = await listProducts({ allowFallback: false });
   const latestItems = inputs.map((input) => ({
     input,
     latest: findVariantSizeById(products, input.product_variant_size_id)
@@ -161,37 +175,59 @@ export async function revalidateCartItems(
       return {
         product_variant_size_id: input.product_variant_size_id,
         status: "unavailable",
+        error_code: "PRICING_PRODUCT_UNAVAILABLE",
         latest_unit_price: null,
         stock_available: 0,
         message: "Kombinasi produk tidak lagi tersedia."
       };
     }
 
-    const latestUnitPrice = calculateTieredUnitPrice(
-      latest.product,
-      latest.variant,
-      latest.variantSize,
-      quantityByProductId.get(latest.product.id) ?? input.quantity
-    );
+    const pricing = resolveReadyStockPricing({
+      quantity: input.quantity,
+      pricingQuantity:
+        quantityByProductId.get(latest.product.id) ?? input.quantity,
+      salesMode: latest.product.salesMode ?? null,
+      pricingMode: latest.product.pricingMode ?? null,
+      tierScope: latest.product.tierScope ?? null,
+      productStatus: latest.product.status,
+      variantStatus: latest.variant.status,
+      variantSizeStatus: latest.variantSize.status,
+      sizeStatus: latest.variantSize.size.status,
+      basePrice: latest.product.basePrice,
+      variantAdjustment: latest.variant.priceAdjustment,
+      variantSizeAdjustment: latest.variantSize.priceAdjustment,
+      tiers: latest.product.priceTiers
+    });
 
-    if (
-      latest.variant.status !== "active" ||
-      latest.variantSize.status !== "active" ||
-      latest.variantSize.size.status !== "active"
-    ) {
+    if (pricing.status === "quotation_required") {
+      return {
+        product_variant_size_id: input.product_variant_size_id,
+        status: "quotation_required",
+        error_code: pricing.code,
+        latest_unit_price: null,
+        stock_available: latest.variantSize.stockQuantity,
+        message: "Jumlah produk memerlukan penawaran harga."
+      };
+    }
+
+    if (pricing.status === "unavailable") {
       return {
         product_variant_size_id: input.product_variant_size_id,
         status: "unavailable",
-        latest_unit_price: latestUnitPrice,
+        error_code: pricing.code,
+        latest_unit_price: null,
         stock_available: latest.variantSize.stockQuantity,
-        message: "Kombinasi produk sudah tidak aktif."
+        message: pricingUnavailableMessage(pricing.code)
       };
     }
+
+    const latestUnitPrice = pricing.unitPrice;
 
     if (input.quantity > latest.variantSize.stockQuantity) {
       return {
         product_variant_size_id: input.product_variant_size_id,
         status: "stock_changed",
+        error_code: null,
         latest_unit_price: latestUnitPrice,
         stock_available: latest.variantSize.stockQuantity,
         message: `Stok ${latest.variant.name} ukuran ${latest.variantSize.size.name} hanya tersisa ${latest.variantSize.stockQuantity} pcs.`
@@ -202,6 +238,7 @@ export async function revalidateCartItems(
       return {
         product_variant_size_id: input.product_variant_size_id,
         status: "price_changed",
+        error_code: null,
         latest_unit_price: latestUnitPrice,
         stock_available: latest.variantSize.stockQuantity,
         message: "Harga produk telah berubah."
@@ -211,6 +248,7 @@ export async function revalidateCartItems(
     return {
       product_variant_size_id: input.product_variant_size_id,
       status: "ok",
+      error_code: null,
       latest_unit_price: latestUnitPrice,
       stock_available: latest.variantSize.stockQuantity,
       message: null
@@ -261,6 +299,9 @@ function mapProductRow(row: Record<string, unknown>): Product {
     description: asNullableString(row.description),
     status: asProductStatus(row.status),
     sku: asNullableString(row.sku),
+    salesMode: asSalesMode(row.sales_mode),
+    pricingMode: asPricingMode(row.pricing_mode),
+    tierScope: asTierScope(row.tier_scope),
     variants,
     priceTiers,
     minimumRule: mapProductMinimumRuleRow(takeFirstRecord(row.product_minimum_rules))
@@ -448,4 +489,115 @@ function asImageRole(value: unknown): ProductVariantImage["imageRole"] {
   }
 
   return "front";
+}
+
+function asSalesMode(value: unknown): Product["salesMode"] {
+  if (value === "ready_stock" || value === "custom" || value === "both") {
+    return value;
+  }
+
+  return undefined;
+}
+
+function asPricingMode(value: unknown): Product["pricingMode"] {
+  if (
+    value === "fixed_price" ||
+    value === "variant_based" ||
+    value === "configurator_based" ||
+    value === "custom_quote"
+  ) {
+    return value;
+  }
+
+  return undefined;
+}
+
+function asTierScope(value: unknown): Product["tierScope"] {
+  if (value === "none" || value === "product") {
+    return value;
+  }
+
+  return undefined;
+}
+
+function pricingUnavailableMessage(code: ReadyStockPricingErrorCode) {
+  switch (code) {
+    case "PRICING_COMMERCE_MODE_MISMATCH":
+      return "Produk tidak tersedia melalui Ready Stock.";
+    case "PRICING_VARIANT_UNAVAILABLE":
+      return "Kombinasi produk sudah tidak aktif.";
+    case "PRICING_CANONICAL_AMOUNT_INVALID":
+      return "Harga canonical produk tidak valid.";
+    default:
+      return "Harga produk tidak dapat divalidasi.";
+  }
+}
+
+async function applyInventoryAvailability(products: Product[]) {
+  const variantSizeIds = products.flatMap((product) =>
+    product.variants.flatMap((variant) =>
+      variant.sizes.map((size) => size.id)
+    )
+  );
+  if (!variantSizeIds.length) return products;
+
+  const client = getAdminSupabaseClient();
+  if (!client) {
+    return projectInventoryAvailability(products, new Map());
+  }
+
+  const rows: Array<{
+    variantSizeId: string;
+    onHand: number;
+    reserved: number;
+  }> = [];
+  for (const ids of chunked(variantSizeIds, 100)) {
+    const { data, error } = await client
+      .from("inventory_balances")
+      .select(
+        "variant_size_id,on_hand_quantity,reserved_quantity,inventory_locations!inner(active,location_type)"
+      )
+      .in("variant_size_id", ids)
+      .eq("inventory_locations.active", true)
+      .neq("inventory_locations.location_type", "legacy");
+    if (error) {
+      throw new Error("Inventory authority is unavailable.");
+    }
+    for (const row of asRecordArray(data)) {
+      rows.push({
+        variantSizeId: asString(row.variant_size_id),
+        onHand: asNumber(row.on_hand_quantity),
+        reserved: asNumber(row.reserved_quantity)
+      });
+    }
+  }
+
+  return projectInventoryAvailability(
+    products,
+    aggregateAvailableStock(rows)
+  );
+}
+
+function projectInventoryAvailability(
+  products: Product[],
+  availability: ReadonlyMap<string, number>
+) {
+  return products.map((product) => ({
+    ...product,
+    variants: product.variants.map((variant) => ({
+      ...variant,
+      sizes: variant.sizes.map((size) => ({
+        ...size,
+        stockQuantity: availability.get(size.id) ?? 0
+      }))
+    }))
+  }));
+}
+
+function chunked<T>(values: readonly T[], size: number) {
+  const result: T[][] = [];
+  for (let index = 0; index < values.length; index += size) {
+    result.push(values.slice(index, index + size));
+  }
+  return result;
 }

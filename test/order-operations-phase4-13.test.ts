@@ -70,7 +70,10 @@ describe("DEBRODER Order Operations Phase 4-13", () => {
 
   it("hardens all public error boundaries without returning raw database errors", () => {
     const helper = read("lib/public-api-error.ts");
-    expect(helper).toContain("reference");
+    const canonical = read("lib/observability/server.ts");
+    expect(helper).toContain("canonicalErrorResponse");
+    expect(canonical).toContain("reference");
+    expect(canonical).toContain("observabilityResponseHeaders");
     expect(helper).toContain("PUBLIC_OPERATION_FAILED");
     for (const path of [
       "app/api/checkout/route.ts",

@@ -9,158 +9,73 @@ import { TieredProductPurchasePanel } from "@/components/TieredProductPurchasePa
 import { ProductVariantGalleryProvider } from "@/components/ProductVariantGalleryContext";
 import { PublicShell } from "@/components/PublicPage";
 import { getProductImage } from "@/lib/fallback-data";
-import { getProductGalleryImages } from "@/lib/product-gallery";
-import {
-  jerseyHasCustomAvailability,
-  jerseyHasReadyStock
-} from "@/lib/jersey-commerce";
-import { productMatchesRoute } from "@/lib/product-route-matching";
-import { getPublicContent } from "@/lib/public-data";
-import { getCustomDestinationForProduct } from "@/lib/custom-commerce/data";
-import type { Product, ProductSizeGuide } from "@/lib/types";
-import { formatRupiah, whatsappLinkWithMessage } from "@/lib/url";
+import { getProductDetailPageModel } from "@/lib/product-detail-page/runtime";
+import { formatRupiah } from "@/lib/url";
 
 type PageProps = { params: Promise<{ slug: string }> };
 
-function sizeGuideRowsFromAdmin(guide?: ProductSizeGuide | null) {
-  if (!guide?.rows?.length) return [];
-
-  return guide.rows.map((row) => {
-    const entries = Object.entries(row).filter(
-      ([, value]) =>
-        value !== null &&
-        value !== undefined &&
-        String(value).trim() !== ""
-    );
-    const labelEntry =
-      entries.find(([key]) => /ukuran|size|nama|label/i.test(key)) ||
-      entries[0];
-    const label = labelEntry ? String(labelEntry[1]) : "Ukuran";
-    const value = entries
-      .filter(([key]) => key !== labelEntry?.[0])
-      .map(([key, value]) => `${key}: ${value}`)
-      .join(", ");
-
-    return value ? `${label}: ${value}` : label;
-  });
-}
-
-function sizeGuideForProduct(product: Product) {
-  const adminRows = sizeGuideRowsFromAdmin(product.size_guide);
-  if (adminRows.length) return adminRows;
-  if (product.size_chart?.length) return product.size_chart;
-
-  const specRows = (product.specifications || []).filter((item) =>
-    /ukuran|size|panjang|lebar|dada|lingkar/i.test(item)
-  );
-  if (specRows.length) return specRows;
-
-  return (product.size_tags || []).map(
-    (size) => `${size}: Sesuaikan dengan panduan ukuran produk ini.`
-  );
-}
-
-function variantColors(product: Product) {
-  const colors = (product.variants || [])
-    .map((variant) => variant.color_name || variant.variant_name)
-    .filter(Boolean) as string[];
-  return colors.length ? colors : product.color_tags;
-}
-
-function variantSizes(product: Product) {
-  const sizes = (product.variants || [])
-    .flatMap((variant) =>
-      (variant.sizes || []).map((size) => size.size_name)
-    )
-    .filter(Boolean);
-
-  return sizes.length
-    ? Array.from(new Set(sizes))
-    : product.size_tags;
-}
-
-export async function generateMetadata({
-  params
-}: PageProps): Promise<Metadata> {
-  const [{ slug }, content] = await Promise.all([
-    params,
-    getPublicContent()
-  ]);
-  const product = content.products.find((item) => item.slug === slug);
-
-  if (!product) {
-    return { title: "Produk tidak ditemukan | DE BRODER" };
-  }
-
-  const title = product.seo_title || `${product.nama} | DE BRODER`;
-  const description =
-    product.seo_description ||
-    product.short_detail ||
-    product.description ||
-    product.deskripsi;
-  const image = product.og_image_url || getProductImage(product);
+export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
+  const { slug } = await params;
+  const model = await getProductDetailPageModel(slug);
+  const metadata = model.metadata;
 
   return {
-    title,
-    description,
-    alternates: {
-      canonical: product.canonical_url || `/produk/${slug}`
-    },
-    openGraph: {
-      title,
-      description,
-      images: image
-        ? [{ url: image, alt: product.image_alt || product.nama }]
-        : []
-    }
+    title: metadata.title,
+    description: metadata.description,
+    alternates: metadata.canonicalPath ? { canonical: metadata.canonicalPath } : undefined,
+    robots: metadata.robots === "noindex_follow"
+      ? { index: false, follow: true }
+      : metadata.robots === "noindex_nofollow"
+        ? { index: false, follow: false }
+        : undefined,
+    openGraph: metadata.socialImage
+      ? {
+          title: metadata.title,
+          description: metadata.description,
+          images: [{ url: metadata.socialImage.src, alt: metadata.socialImage.alt }]
+        }
+      : undefined
   };
 }
 
 export default async function ProductDetailPage({ params }: PageProps) {
-  const [{ slug }, content] = await Promise.all([
-    params,
-    getPublicContent()
-  ]);
-  const product = content.products.find((item) => item.slug === slug);
+  const { slug } = await params;
+  const model = await getProductDetailPageModel(slug);
+  if (model.data.state === "not_found") notFound();
 
-  if (!product) notFound();
+  const {
+    product,
+    relatedProducts,
+    images,
+    focal,
+    whatsappUrl,
+    priceLabel,
+    detailHref,
+    isJersey,
+    hasReadyStock,
+    hasCustomAvailability,
+    showPurchasePanel,
+    customDestination,
+    colors,
+    sizes,
+    sizeGuide
+  } = model.data;
 
-  const images = getProductGalleryImages(product);
-  const focal =
-    product.focal_points?.detail ||
-    product.focal_points?.catalog || {
-      focal_x: Number(product.focal_x ?? 50),
-      focal_y: Number(product.focal_y ?? 50),
-      zoom: Number(product.focal_zoom ?? 1),
-      target_ratio: "4:5"
-    };
-
-  const whatsappUrl = whatsappLinkWithMessage(
-    product.whatsapp_link || content.contact.whatsapp_link || "",
-    `Halo DE BRODER, saya ingin bertanya tentang ${product.nama}.`
-  );
-
-  const priceLabel =
-    formatRupiah(product.price ?? product.harga ?? product.base_price) ||
-    "Hubungi kami";
-  const detailHref = `/produk/${product.slug || slug}`;
-  const isJersey = productMatchesRoute(product, "jersey");
-  const hasReadyStock = jerseyHasReadyStock(product);
-  const hasCustomAvailability = jerseyHasCustomAvailability(product);
-  const showPurchasePanel = !isJersey || hasReadyStock || !hasCustomAvailability;
-  const relatedProducts = isJersey
-    ? []
-    : content.products
-        .filter((item) => item.status_aktif !== false)
-        .filter((item) => (item.id || item.slug || item.nama) !== (product.id || product.slug || product.nama))
-        .filter((item) => !productMatchesRoute(item, "jersey"))
-        .filter((item) => item.kategori === product.kategori)
-        .slice(0, 4);
-  const customDestination = !isJersey && product.id ? await getCustomDestinationForProduct(product.id) : null;
+  if (!product) {
+    return (
+      <PublicShell>
+        <main className="bg-white py-16">
+          <div className="section-shell">
+            <h1 className="text-2xl font-semibold">Produk belum dapat dimuat</h1>
+            <p className="mt-3 text-sm text-black/60">Silakan muat ulang halaman atau coba kembali beberapa saat lagi.</p>
+          </div>
+        </main>
+      </PublicShell>
+    );
+  }
 
   return (
     <PublicShell
-      content={content}
       theme={isJersey ? "jersey-commerce" : "default"}
       showHeader={!isJersey}
     >
@@ -250,9 +165,9 @@ export default async function ProductDetailPage({ params }: PageProps) {
                       imageAlt: product.image_alt || product.nama,
                       sku: product.sku || undefined
                     }}
-                    colors={variantColors(product)}
-                    sizes={variantSizes(product)}
-                    sizeGuide={sizeGuideForProduct(product)}
+                    colors={colors}
+                    sizes={sizes}
+                    sizeGuide={sizeGuide}
                     bulkOrderNote={product.bulk_order_note}
                     whatsappUrl={whatsappUrl}
                     variants={product.variants}

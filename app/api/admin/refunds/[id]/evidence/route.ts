@@ -1,6 +1,6 @@
 import { randomUUID } from "node:crypto";
 import { operationsErrorResponse, requireOperationsActor } from "@/lib/operations-auth";
-import { getAdminSupabaseClient } from "@/lib/supabase/client";
+import { getAdminSupabaseClient } from "@/lib/supabase/admin";
 
 type Context = { params: Promise<{ id: string }> };
 const ALLOWED = new Map([["image/png", "png"], ["image/jpeg", "jpg"], ["application/pdf", "pdf"]]);

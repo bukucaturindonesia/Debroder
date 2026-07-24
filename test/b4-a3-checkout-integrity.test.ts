@@ -54,14 +54,14 @@ describe("B4-A3 Ready Stock checkout integrity", () => {
     expect(parsePublicCheckoutRequest(input)).toBeNull();
   });
 
-  it("rejects mixed Ready Stock and Custom at the client and server boundaries", () => {
+  it("rejects mixed checkout modes at the client and server boundaries", () => {
     const parser = read("lib/commerce-checkout.ts");
     const client = read("components/checkout/CheckoutClient.tsx");
     const route = read("app/api/checkout/route.ts");
 
     expect(parser).toContain("value.items.length > 0 && customProjects.length > 0");
-    expect(client).toContain("const mixedCart");
-    expect(client).toContain("Ready Stock dan pesanan Custom harus dipisahkan");
+    expect(client).toContain("cart.checkoutDecision.allowed");
+    expect(client).toContain("tidak boleh dicampur dalam satu perintah checkout");
     expect(route).toContain("CHECKOUT_MIXED_CART");
   });
 

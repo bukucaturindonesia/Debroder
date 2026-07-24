@@ -9,7 +9,6 @@ import type {
   ServiceAllocation,
   ValidationIssue
 } from "@/lib/types";
-import { calculateUnitPrice } from "@/lib/product-utils";
 
 export const defaultCustomServices: CustomService[] = [
   {
@@ -489,5 +488,5 @@ function createQuoteAllocation(
 }
 
 function getVariantSizeAdjustment(variantSize: ProductVariantSize): number {
-  return variantSize.priceAdjustment + variantSize.size.priceAdjustment;
+  return variantSize.priceAdjustment;
 }

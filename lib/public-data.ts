@@ -26,13 +26,6 @@ import type {
   HomepageSection,
   HomepageSectionItem,
   InstagramBanner,
-  JerseyRequiredService,
-  JerseyPackage,
-  JerseyMaterial,
-  JerseyConfiguratorData,
-  JerseyCollarGroup,
-  JerseyCollar,
-  JerseyAddon,
   LandingPageSettings,
   LandingSection,
   OrderStep,
@@ -258,119 +251,6 @@ async function readOptionalActiveSingle<T extends { id?: string }>(
   return data as T;
 }
 
-
-const fallbackJerseyConfigurator: JerseyConfiguratorData = {
-  packages: [
-    { name: "Atasan Fullprint", slug: "atasan-fullprint", base_price: 100000, description: "Atasan jersey fullprint." },
-    { name: "Setelan Halfprint", slug: "setelan-halfprint", base_price: 120000, description: "Setelan dengan kombinasi area print." },
-    { name: "Setelan Fullprint", slug: "setelan-fullprint", base_price: 130000, description: "Setelan jersey fullprint." }
-  ],
-  materials: [
-    { name: "Milano", slug: "milano", price_adjustment: 0 },
-    { name: "Brazil", slug: "brazil", price_adjustment: 0 },
-    { name: "Benzema", slug: "benzema", price_adjustment: 0 },
-    { name: "Drop Needle", slug: "drop-needle", price_adjustment: 0 },
-    { name: "Emboss Topo", slug: "emboss-topo", price_adjustment: 15000 },
-    { name: "Emboss Straw", slug: "emboss-straw", price_adjustment: 15000 },
-    { name: "Emboss Mixart", slug: "emboss-mixart", price_adjustment: 15000 },
-    { name: "Emboss Monochrome", slug: "emboss-monochrome", price_adjustment: 15000 }
-  ],
-  collarGroups: [
-    { name: "Regular", slug: "regular", sort_order: 10 },
-    { name: "Classic", slug: "classic", sort_order: 20 }
-  ],
-  collars: [
-    { name: "O Neck", slug: "o-neck", group_slug: "regular", group_name: "Regular", price_adjustment: 0 },
-    { name: "V Neck", slug: "v-neck", group_slug: "regular", group_name: "Regular", price_adjustment: 0 },
-    { name: "V Silang", slug: "v-silang", group_slug: "regular", group_name: "Regular", price_adjustment: 0 },
-    { name: "V Silang Tumpul", slug: "v-silang-tumpul", group_slug: "regular", group_name: "Regular", price_adjustment: 0 },
-    { name: "V Tumpul", slug: "v-tumpul", group_slug: "regular", group_name: "Regular", price_adjustment: 0 },
-    { name: "V Narrow", slug: "v-narrow", group_slug: "regular", group_name: "Regular", price_adjustment: 0 },
-    { name: "V Narrow Adidas", slug: "v-narrow-adidas", group_slug: "regular", group_name: "Regular", price_adjustment: 0 },
-    { name: "V Neck Lapisan", slug: "v-neck-lapisan", group_slug: "regular", group_name: "Regular", price_adjustment: 0 },
-    { name: "Wangki Klasik", slug: "wangki-klasik", group_slug: "classic", group_name: "Classic", price_adjustment: 0 },
-    { name: "Wangki Adidas", slug: "wangki-adidas", group_slug: "classic", group_name: "Classic", price_adjustment: 0 },
-    { name: "Wangki Segitiga", slug: "wangki-segitiga", group_slug: "classic", group_name: "Classic", price_adjustment: 0 },
-    { name: "Wangki Tumpul Adidas", slug: "wangki-tumpul-adidas", group_slug: "classic", group_name: "Classic", price_adjustment: 0 },
-    { name: "Wangki Silang Adidas", slug: "wangki-silang-adidas", group_slug: "classic", group_name: "Classic", price_adjustment: 0 },
-    { name: "Wangki Kancing 1", slug: "wangki-kancing-1", group_slug: "classic", group_name: "Classic", price_adjustment: 0 },
-    { name: "Wangki Kancing 2", slug: "wangki-kancing-2", group_slug: "classic", group_name: "Classic", price_adjustment: 0 },
-    { name: "Wangki Klasik O", slug: "wangki-klasik-o", group_slug: "classic", group_name: "Classic", price_adjustment: 0 }
-  ],
-  addons: [
-    { name: "Lengan Panjang", slug: "lengan-panjang", price_adjustment: 10000 },
-    { name: "RIB", slug: "rib", price_adjustment: 5000 }
-  ],
-  requiredServices: [
-    { service_name: "Cetak Sublim", service_slug: "cetak-sublim" }
-  ],
-  settings: {
-    minimum_order_qty: 6,
-    price_formula: "(package_price + material_adjustment + collar_adjustment + addon_total + size_adjustment) * quantity"
-  }
-};
-
-function numberValue(value: number | string | null | undefined, fallback = 0) {
-  if (typeof value === "number" && Number.isFinite(value)) return value;
-  const parsed = Number(String(value || "").replace(/[^\d.-]/g, ""));
-  return Number.isFinite(parsed) ? parsed : fallback;
-}
-
-function readMinimumOrder(settings: Array<{ setting_key: string; setting_value: unknown }>) {
-  const setting = settings.find((item) => item.setting_key === "default_minimum_order");
-  const value = setting?.setting_value as { quantity?: number } | number | undefined;
-  if (typeof value === "number") return Math.max(1, Math.floor(value));
-  if (value && typeof value.quantity === "number") return Math.max(1, Math.floor(value.quantity));
-  return fallbackJerseyConfigurator.settings.minimum_order_qty;
-}
-
-async function readJerseyConfiguratorData(): Promise<JerseyConfiguratorData> {
-  const supabase = createSupabaseServerClient();
-  if (!supabase) return fallbackJerseyConfigurator;
-
-  try {
-    const [packagesResult, materialsResult, groupsResult, collarsResult, addonsResult, servicesResult, settingsResult] = await Promise.all([
-      supabase.from("jersey_packages").select("*").eq("is_active", true).order("sort_order", { ascending: true }),
-      supabase.from("jersey_materials").select("*").eq("is_active", true).order("sort_order", { ascending: true }),
-      supabase.from("jersey_collar_groups").select("*").eq("is_active", true).order("sort_order", { ascending: true }),
-      supabase.from("jersey_collars").select("*").eq("is_active", true).order("sort_order", { ascending: true }),
-      supabase.from("jersey_addons").select("*").eq("is_active", true).order("sort_order", { ascending: true }),
-      supabase.from("jersey_required_services").select("*").eq("is_active", true).order("sort_order", { ascending: true }),
-      supabase.from("jersey_settings").select("*")
-    ]);
-
-    if (packagesResult.error || materialsResult.error || collarsResult.error) {
-      return fallbackJerseyConfigurator;
-    }
-
-    const groups = ((groupsResult.data || []) as JerseyCollarGroup[]);
-    const groupById = new Map(groups.map((group) => [group.id, group]));
-    const collars = ((collarsResult.data || []) as JerseyCollar[]).map((collar) => {
-      const group = collar.group_id ? groupById.get(collar.group_id) : undefined;
-      return {
-        ...collar,
-        group_name: collar.group_name || group?.name || "Regular",
-        group_slug: collar.group_slug || group?.slug || "regular",
-        price_adjustment: numberValue(collar.price_adjustment)
-      };
-    });
-
-    return {
-      packages: ((packagesResult.data || []) as JerseyPackage[]).map((item) => ({ ...item, base_price: numberValue(item.base_price) })),
-      materials: ((materialsResult.data || []) as JerseyMaterial[]).map((item) => ({ ...item, price_adjustment: numberValue(item.price_adjustment) })),
-      collarGroups: groups.length ? groups : fallbackJerseyConfigurator.collarGroups,
-      collars: collars.length ? collars : fallbackJerseyConfigurator.collars,
-      addons: ((addonsResult.data || []) as JerseyAddon[]).map((item) => ({ ...item, price_adjustment: numberValue(item.price_adjustment) })),
-      requiredServices: ((servicesResult.data || []) as JerseyRequiredService[]),
-      settings: {
-        minimum_order_qty: readMinimumOrder((settingsResult.data || []) as Array<{ setting_key: string; setting_value: unknown }>),
-        price_formula: fallbackJerseyConfigurator.settings.price_formula
-      }
-    };
-  } catch {
-    return fallbackJerseyConfigurator;
-  }
-}
 
 const blockedPublicPattern = /\b(express|ekspedisi|pengiriman|distribusi)\b/i;
 const finalPageHeroKeys = [
@@ -1160,8 +1040,7 @@ export async function getPublicContent(): Promise<PublicContent> {
     trustAbout,
     testimonials,
     contact,
-    siteMedia,
-    jerseyConfigurator
+    siteMedia
   ] = await Promise.all([
     readActive<HeroBanner>("hero_banners", [], "urutan", false),
     readOptionalActiveSingle<InstagramBanner>(
@@ -1200,8 +1079,7 @@ export async function getPublicContent(): Promise<PublicContent> {
       fallbackContent.contact,
       true
     ),
-    readSiteMediaDefaults(),
-    readJerseyConfiguratorData()
+    readSiteMediaDefaults()
   ]);
 
   const cleanHeroes = publicHeroes(heroes).map((hero) => ({
@@ -1313,7 +1191,6 @@ export async function getPublicContent(): Promise<PublicContent> {
     contact: cleanContact({
       ...fallbackContent.contact,
       ...contact
-    }),
-    jerseyConfigurator
+    })
   };
 }

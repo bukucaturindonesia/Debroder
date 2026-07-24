@@ -1,5 +1,5 @@
 import { createClient, type SupabaseClient, type User } from "@supabase/supabase-js";
-import { getAdminSupabaseClient } from "@/lib/supabase/client";
+import { getAdminSupabaseClient } from "@/lib/supabase/admin";
 import { getPublicSupabaseEnv } from "@/lib/env";
 import {
   adminGuestErrorResponse,
@@ -7,6 +7,10 @@ import {
 } from "@/lib/admin-role-security";
 import { canCreateRepeatOrder } from "@/lib/repeat-orders";
 import { isAdminRole } from "@/lib/access-control";
+import {
+  canonicalErrorResponse,
+  createServerRequestContext
+} from "@/lib/observability/server";
 
 export type RepeatOrderActor = {
   user: User;
@@ -69,14 +73,35 @@ export async function requireRepeatOrderActor(
   return { user: data.user, role, client, adminClient };
 }
 
-export function repeatOrderErrorResponse(error: unknown): Response {
+export function repeatOrderErrorResponse(error: unknown, request?: Request): Response {
   const guestResponse = adminGuestErrorResponse(error);
   if (guestResponse) return guestResponse;
+  const context = createServerRequestContext(request, "admin repeat order");
   if (error instanceof RepeatOrderAuthError) {
-    return Response.json({ error: error.message }, { status: error.status });
+    return canonicalErrorResponse({
+      error,
+      context,
+      definition: {
+        code: error.status === 401
+          ? "REPEAT_ORDER_AUTHENTICATION_REQUIRED"
+          : error.status === 403
+            ? "REPEAT_ORDER_ACCESS_DENIED"
+            : "REPEAT_ORDER_SERVICE_UNAVAILABLE",
+        message: error.status >= 500
+          ? "Layanan Repeat Order belum tersedia."
+          : error.message,
+        status: error.status
+      },
+      log: error.status >= 500
+    });
   }
-  return Response.json(
-    { error: error instanceof Error ? error.message : "Operasi Repeat Order gagal." },
-    { status: 500 }
-  );
+  return canonicalErrorResponse({
+    error,
+    context,
+    definition: {
+      code: "REPEAT_ORDER_OPERATION_FAILED",
+      message: "Operasi Repeat Order gagal. Coba lagi.",
+      status: 500
+    }
+  });
 }

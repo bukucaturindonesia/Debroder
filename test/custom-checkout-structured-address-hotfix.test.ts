@@ -11,7 +11,9 @@ describe("Custom checkout structured-address hotfix", () => {
 
     expect(route).toContain('from "@/components/checkout/CheckoutClient"');
     expect(checkout).toContain("StructuredIndonesiaAddress");
-    expect(checkout).toContain("customItems.length > 0");
+    expect(checkout).toContain("cart.items.filter(isCustomProjectCartItem)");
+    expect(checkout).toContain("customProjects: customItems");
+    expect(checkout).toContain("project: item.customProject");
     expect(checkout).toContain("addressSnapshot");
     expect(checkout).toContain("!addressConfirmed");
     expect(tsconfig).not.toContain("CheckoutClientV2");

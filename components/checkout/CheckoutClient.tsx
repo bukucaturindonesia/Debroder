@@ -59,12 +59,19 @@ export function CheckoutClient({ stores }: { stores: StoreOption[] }) {
   const [structuredAddress, setStructuredAddress] = useState<StructuredIndonesiaAddressInput>(EMPTY_STRUCTURED_ADDRESS);
   const [formattedStructuredAddress, setFormattedStructuredAddress] = useState("");
   const [addressConfirmed, setAddressConfirmed] = useState(false);
-  const readyItems = useMemo(() => cart.items.filter((item) => !isCustomProjectCartItem(item) && item.variantSizeId && Number(item.priceValue) >= 0), [cart.items]);
+  const readyItems = useMemo(
+    () => cart.items.filter(
+      (item): item is typeof item & { lineType: "ready_stock" } =>
+        item.lineType === "ready_stock"
+    ),
+    [cart.items]
+  );
   const customItems = useMemo(() => cart.items.filter(isCustomProjectCartItem), [cart.items]);
-  const unsupportedItems = cart.items.filter((item) => !isCustomProjectCartItem(item) && !item.variantSizeId);
-  const mixedCart = readyItems.length > 0 && customItems.length > 0;
+  const configuredItems = cart.items.filter((item) => item.lineType === "configured_product");
+  const unsupportedItems = cart.items.filter((item) => item.lineType === "legacy_unsupported");
+  const checkoutBlocked = !cart.checkoutDecision.allowed || configuredItems.length > 0;
   const subtotal = readyItems.reduce((sum, item) => sum + Number(item.priceValue || 0) * item.quantity, 0)
-    + customItems.reduce((sum, item) => sum + Number(item.customProject?.pricing.finalTotal || 0), 0);
+    + customItems.reduce((sum, item) => sum + Number(item.customProject.pricing.finalTotal || 0), 0);
 
   useEffect(() => {
     if (retryAfter <= 0) return;
@@ -110,7 +117,12 @@ export function CheckoutClient({ stores }: { stores: StoreOption[] }) {
 
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    if (submitting || retryAfter > 0 || unsupportedItems.length || mixedCart || readyItems.length + customItems.length === 0) return;
+    if (
+      submitting
+      || retryAfter > 0
+      || checkoutBlocked
+      || readyItems.length + customItems.length === 0
+    ) return;
     if (fulfillment === "shipping" && !addressConfirmed) {
       setError("Konfirmasi alamat terstruktur sebelum membuat order.");
       return;
@@ -119,6 +131,19 @@ export function CheckoutClient({ stores }: { stores: StoreOption[] }) {
     setSubmitting(true);
     setError("");
     const form = new FormData(event.currentTarget);
+    let checkoutReadyItems = readyItems;
+    if (cart.checkoutDecision.allowed && cart.checkoutDecision.mode === "ready_stock") {
+      const validation = await cart.revalidate();
+      if (!validation.ok) {
+        setError("Harga atau stok terbaru belum valid. Tinjau peringatan keranjang lalu coba validasi lagi.");
+        setSubmitting(false);
+        return;
+      }
+      checkoutReadyItems = validation.lines.filter(
+        (item): item is typeof item & { lineType: "ready_stock" } =>
+          item.lineType === "ready_stock"
+      );
+    }
     const businessPayload = {
       customer: {
         name: form.get("name"),
@@ -133,7 +158,7 @@ export function CheckoutClient({ stores }: { stores: StoreOption[] }) {
         pickupLocationId: fulfillment === "pickup" ? form.get("pickupLocationId") : undefined,
         paymentMethod: fulfillment === "pickup" ? form.get("paymentMethod") : "bank_transfer"
       },
-      items: readyItems
+      items: checkoutReadyItems
         .map((item) => ({ variantSizeId: item.variantSizeId, quantity: item.quantity, note: item.notes }))
         .sort((left, right) => String(left.variantSizeId).localeCompare(String(right.variantSizeId))),
       customProjects: customItems
@@ -224,19 +249,27 @@ export function CheckoutClient({ stores }: { stores: StoreOption[] }) {
         <h1 className="mt-3 text-3xl font-semibold sm:text-5xl">Selesaikan pesanan dengan cepat</h1>
         <p className="mt-3 max-w-2xl text-sm leading-7 text-black/60">Tidak perlu masuk ke akun. Ketersediaan produk siap beli, konfigurasi custom, jumlah minimum, kecocokan layanan, dan harga akan diperiksa kembali saat pesanan dibuat.</p>
 
-        {mixedCart ? (
+        {!cart.checkoutDecision.allowed && cart.checkoutDecision.code === "CART_MIXED_CHECKOUT_MODE" ? (
           <div className="mt-7 border border-amber-300 bg-amber-50 p-5 text-sm text-amber-950">
-            <p className="font-semibold">Ready Stock dan pesanan Custom harus dipisahkan.</p>
-            <p className="mt-1">Selesaikan salah satu jenis pesanan terlebih dahulu agar stok, produksi, pembayaran, dan pengiriman tidak tercampur.</p>
+            <p className="font-semibold">Mode pesanan harus dipisahkan.</p>
+            <p className="mt-1">Ready Stock, Configured Product, dan Custom Project tidak boleh dicampur dalam satu perintah checkout.</p>
             <Link className="mt-3 inline-flex font-semibold underline" href="/keranjang">Atur ulang keranjang</Link>
           </div>
         ) : null}
 
         {unsupportedItems.length ? (
           <div className="mt-7 border border-amber-300 bg-amber-50 p-5 text-sm text-amber-950">
-            <p className="font-semibold">Ada produk Jersey custom yang perlu diproses secara terpisah.</p>
-            <p className="mt-1">Proyek custom non-Jersey dapat dilanjutkan di sini. Produk Jersey custom tetap mengikuti konfigurator Jersey.</p>
-            <div className="mt-3 flex gap-3"><Link className="font-semibold underline" href="/keranjang">Ubah keranjang</Link><Link className="font-semibold underline" href="/jersey/configurator">Buka Konfigurator Jersey</Link></div>
+            <p className="font-semibold">Ada item lama yang tidak didukung checkout.</p>
+            <p className="mt-1">Data asli tetap disimpan. Hapus item tersebut dan tambahkan kembali melalui produk atau builder canonical.</p>
+            <Link className="mt-3 inline-flex font-semibold underline" href="/keranjang">Ubah keranjang</Link>
+          </div>
+        ) : null}
+
+        {configuredItems.length ? (
+          <div className="mt-7 border border-amber-300 bg-amber-50 p-5 text-sm text-amber-950">
+            <p className="font-semibold">Configured Product belum memiliki command checkout aktif.</p>
+            <p className="mt-1">Cart v5 mempertahankan konfigurasinya, tetapi command server akan diaktifkan oleh package configured-product yang berwenang.</p>
+            <Link className="mt-3 inline-flex font-semibold underline" href="/keranjang">Kembali ke keranjang</Link>
           </div>
         ) : null}
 
@@ -270,15 +303,15 @@ export function CheckoutClient({ stores }: { stores: StoreOption[] }) {
           <aside className="h-fit rounded-[28px] bg-white p-5 sm:p-6 lg:sticky lg:top-24">
             <h2 className="text-xl font-semibold">Ringkasan pesanan</h2>
             <div className="mt-5 grid gap-4">{readyItems.map((item) => (
-              <div key={item.cartId} className="flex justify-between gap-4 border-b border-black/10 pb-4 text-sm">
-                <div><p className="font-semibold">{item.name}</p><p className="mt-1 text-black/55">{item.variantName || item.color} · {item.size} · {item.variantSku || item.sku} × {item.quantity}</p></div>
+              <div key={item.lineId} className="flex justify-between gap-4 border-b border-black/10 pb-4 text-sm">
+                <div><p className="font-semibold">{item.name}</p><p className="mt-1 text-black/55">{item.variantName || item.color} · {item.size} · {item.sku} × {item.quantity}</p></div>
                 <p className="shrink-0 font-semibold">{formatRupiah(Number(item.priceValue || 0) * item.quantity)}</p>
               </div>
-            ))}{customItems.map((item) => <div key={item.cartId} className="flex justify-between gap-4 border-b border-black/10 pb-4 text-sm"><div><p className="font-semibold">{item.name}</p><p className="mt-1 text-black/55">{item.customProject?.items.length} grup produk · {item.customProject?.pricing.totalQuantity} pcs · {item.customProject?.pricing.status === "final" ? "Harga final" : item.customProject?.pricing.status === "estimated" ? "Estimasi" : "Menunggu pemeriksaan"}</p></div><p className="shrink-0 font-semibold">{item.customProject?.pricing.finalTotal ? formatRupiah(item.customProject.pricing.finalTotal) : "Diperiksa admin"}</p></div>)}</div>
+            ))}{customItems.map((item) => <div key={item.lineId} className="flex justify-between gap-4 border-b border-black/10 pb-4 text-sm"><div><p className="font-semibold">{item.name}</p><p className="mt-1 text-black/55">{item.customProject.items.length} grup produk · {item.customProject.pricing.totalQuantity} pcs · {item.customProject.pricing.status === "final" ? "Harga final" : item.customProject.pricing.status === "estimated" ? "Estimasi" : "Menunggu pemeriksaan"}</p></div><p className="shrink-0 font-semibold">{item.customProject.pricing.finalTotal ? formatRupiah(item.customProject.pricing.finalTotal) : "Diperiksa admin"}</p></div>)}</div>
             <div className="mt-5 flex items-center justify-between"><span>Subtotal</span><strong>{formatRupiah(subtotal)}</strong></div>
             <p className="mt-3 text-xs leading-5 text-black/50">{fulfillment === "shipping" ? "Admin akan menambahkan ongkir pada pesanan ini, lalu Anda dapat menyetujui total akhirnya." : "Pengambilan di toko tidak dikenakan ongkir."}</p>
             {error ? <p className="mt-4 border border-red-200 bg-red-50 p-3 text-sm text-red-700">{error}</p> : null}
-            <button type="submit" disabled={submitting || retryAfter > 0 || mixedCart || Boolean(unsupportedItems.length) || (fulfillment === "shipping" && !addressConfirmed)} className="mt-5 min-h-12 w-full rounded-full bg-black px-5 font-semibold text-white hover:bg-black/75 disabled:cursor-not-allowed disabled:opacity-45">{submitting ? "Membuat pesanan..." : retryAfter > 0 ? `Coba lagi ${retryAfter} dtk` : "Buat Pesanan"}</button>
+            <button type="submit" disabled={submitting || retryAfter > 0 || checkoutBlocked || (fulfillment === "shipping" && !addressConfirmed)} className="mt-5 min-h-12 w-full rounded-full bg-black px-5 font-semibold text-white hover:bg-black/75 disabled:cursor-not-allowed disabled:opacity-45">{submitting ? "Membuat pesanan..." : retryAfter > 0 ? `Coba lagi ${retryAfter} dtk` : "Buat Pesanan"}</button>
             <p className="mt-3 text-center text-[11px] leading-5 text-black/45">Pesanan menggunakan kunci pemulihan yang sama selama hasil sebelumnya belum diketahui. Jangan membuka checkout baru ketika jaringan terputus.</p>
           </aside>
         </form>

@@ -6,11 +6,22 @@ const read = (path: string) => readFileSync(path, "utf8");
 describe("Order confirmation payment link and pickup clarity", () => {
   it("returns an existing or newly ensured payment URL from the public order route", () => {
     const route = read("app/api/public/orders/[token]/route.ts");
-    expect(route).toContain("ensureAutomaticPaymentLink");
-    expect(route).toContain("automatic-payment-link-v2");
-    expect(route).toContain("resolvePublicPaymentLink(client, row)");
-    expect(route).toMatch(/customQuote: customQuote \?\? null,\s*payment,\s*activeStage\s*\}/);
-    expect(route).toContain("relativePaymentPath");
+    const useCase = read("lib/customer-orders/page-use-case.ts");
+    const projector = read("lib/customer-orders/read-model.ts");
+    expect(route).toContain("loadCustomerOrderConfirmationProjection");
+    expect(route).toContain("completeCustomerOrderConfirmationPage");
+    const expiryCheck = route.indexOf("isExpired(projection.authorization");
+    expect(expiryCheck).toBeGreaterThan(-1);
+    expect(expiryCheck).toBeLessThan(
+      route.indexOf("completeCustomerOrderConfirmationPage", expiryCheck)
+    );
+    expect(useCase).toContain("ensureAutomaticPaymentLink");
+    expect(useCase).toContain("automatic-payment-link-v2");
+    expect(useCase).toContain("resolveCustomerOrderPaymentLink");
+    expect(useCase).toContain("relativePaymentPath");
+    expect(projector).toContain("customQuote: projection.customQuote");
+    expect(projector).toContain("payment,");
+    expect(projector).toContain("activeStage: projection.activeStage");
   });
 
   it("renders one active payment CTA without hardcoding bank account data", () => {

@@ -57,7 +57,7 @@ export function getActiveVariantSizes(
 export function getSizePriceAdjustment(
   variantSize: ProductVariantSize
 ): number {
-  return variantSize.priceAdjustment + variantSize.size.priceAdjustment;
+  return variantSize.priceAdjustment;
 }
 
 export function calculateUnitPrice(

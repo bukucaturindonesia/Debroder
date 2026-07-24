@@ -146,3 +146,307 @@
 - Severity: P0 workflow
 - Status: SOURCE IMPLEMENTED / DATABASE PREVIEW REQUIRED
 - Detail: Admin should never create a DEBRODER internal shipment document manually. Migration `20260720030000_human_centered_order_experience_p0.sql` creates it automatically and idempotently when Ready Stock prerequisites are met, excludes Custom/terminal/active-cancellation orders, and preserves courier AWB as a separate field. Apply after Phase 4–13 in Preview and verify idempotency, permissions, backfill, cancellation blocking, and no Custom false positives before production.
+
+## Closed in P5 Client Boundary Isolation
+
+- Global cart-provider leakage — **CLOSED**. `CartProvider` is no longer mounted by the root layout and is limited to storefront compositions. Production manifest inspection confirms its chunk is absent from Admin, payment-token, and order-confirmation routes.
+- Header search eager loading — **CLOSED**. The optional search modal and static search index are emitted as a separate lazy client chunk.
+- Service-role/client import ambiguity — **CLOSED**. Public and admin Supabase factories and environment readers are separated, sensitive modules use `server-only`, and regression tests reject forbidden client value imports and secret-key names.
+- P5 verification — **CLOSED**. Typecheck, lint, 579 tests, and production build pass; no database migration or remote mutation was needed.
+
+## P7A Pricing Parity
+
+### V12-034 — Ready Stock SQL limit parity
+
+- Severity: Transaction integrity gate
+- Status: **CLOSED IN P7B**
+- Detail: OD-07 and TypeScript enforce 50 lines, 100 units per line, and 500
+  units total. The former live gap was closed by additive migration
+  `20260723193533_p7b_policy_database_alignment_v1.sql`; an immediate database
+  trigger now enforces all three limits without editing the previously applied
+  checkout migration.
+
+### V12-035 — Ready Stock minimum/quotation SQL parity
+
+- Severity: Pricing integrity gate
+- Status: **CLOSED IN P7B**
+- Detail: A deferred transaction policy trigger now reads active
+  `product_minimum_rules` and blocks quantities below `minimum_quantity` or at
+  and above `quotation_quantity`. Live data still has zero active rules; no
+  product or historical order row was mutated.
+
+## Closed in P7A Pricing Parity
+
+- Size-adjustment authority mismatch — **CLOSED**. Transaction pricing now uses
+  only the sellable variant-size adjustment, matching canonical SQL.
+- Ready Stock `tier_scope` mismatch — **CLOSED**. Revalidation loads and applies
+  the canonical scope.
+- Quotation-tier numeric fallback — **CLOSED**. Revalidation returns
+  `quotation_required` with no unit price.
+- Transaction sample fallback — **CLOSED**. Revalidation and quotation-draft
+  data loading fail closed when canonical Supabase data is unavailable.
+- P7A verification — **CLOSED**. TypeScript parity 17/17, related suite 63/63,
+  remote read-only SQL fixture 10/10 with zero mismatch, typecheck, lint
+  (0 errors), full 596-test suite, and production build pass. No database
+  mutation or migration was performed.
+
+## P6 Cart v5
+
+### V12-036 — P6 owner full-gate verification
+
+- Severity: Package gate
+- Status: **CLOSED — OWNER GATE PASS**
+- Detail: Canonical Cart v5, deterministic legacy migration, discriminated
+  lines, limits, stale/retry revalidation behavior, and fail-closed one-mode
+  checkout passed the owner full gate. Commit `684144b` is present locally and
+  on the tracked remote branch.
+
+## Closed in P6 Cart v5
+
+- Plain-array cart persistence — **CLOSED IN SOURCE**. Active persistence now
+  writes an explicit v5 envelope while retaining deterministic readers for
+  legacy keys.
+- Unsafe legacy conversion — **CLOSED IN SOURCE**. Missing transaction-critical
+  identity/snapshot data is preserved as `legacy_unsupported`, never guessed.
+- Client-only cart validity — **CLOSED IN SOURCE**. Ready Stock revalidation is
+  server-authoritative; stale display remains visible, retry is explicit, and
+  checkout fails closed.
+- Cart limit/mode drift — **CLOSED IN SOURCE**. Shared 50/100/500 constants and
+  one checkout mode are enforced in cart mutations, restore/revalidation, and
+  checkout parsing. Database enforcement is now closed by V12-034/V12-035.
+
+## P7B Policy & Database Alignment
+
+### V12-037 — P7B owner full-gate verification
+
+- Severity: Package gate
+- Status: **CLOSED — OWNER GATE PASS**
+- Detail: Migration
+  `20260723193533_p7b_policy_database_alignment_v1.sql` is applied remotely;
+  three triggers, ACL, empty search paths, migration history, and audit marker
+  are verified. Typecheck, touched-file lint, and 42 targeted tests pass.
+  Owner `lanjut` confirms the full typecheck/lint/test/build/diff,
+  commit/push, and Preview gate passed.
+
+## Closed in P7B Policy & Database Alignment
+
+- V12-034 limit parity — **CLOSED**. Database triggers enforce 50 lines,
+  100 units per Ready Stock line, and 500 total units.
+- V12-035 minimum/quotation parity — **CLOSED**. A deferred database policy
+  trigger evaluates active minimum and quotation thresholds per aggregate
+  product quantity.
+- Checkout mode — **CLOSED**. Ready Stock and Custom cannot commit in one
+  public checkout transaction.
+- Historical pricing snapshot mutation — **CLOSED**. Finalized public Ready
+  Stock pricing snapshots and amounts are guarded as immutable.
+
+## P8A Size Adjustment Policy Preview
+
+### V12-038 — P8A owner full-gate and row approval
+
+- Severity: Package gate
+- Status: **CLOSED — OWNER GATE AND ROW APPROVAL PASS**
+- Detail: Deterministic TypeScript and read-only Supabase preview agree on
+  1,173 SKU: 860 aligned, 287 pending change, 25 out of policy, one blocked,
+  zero normalized duplicate, and zero proven override. Targeted tests,
+  TypeScript, lint, exact remote preview, 626-test full suite, production
+  build, and git gates pass. Owner `Lanjut` approved the exact 287-row
+  fingerprint for P8B.
+
+### V12-039 — Unlinked Mix Size SKU
+
+- Severity: Data integrity / explicit P8A exclusion
+- Status: **OPEN — BLOCKED FROM P8B**
+- Detail: One draft `Mix Size` sellable SKU has `size_id = NULL`. Its
+  transaction adjustment remains Rp0, but it cannot be mapped safely to the
+  S–4XL policy and is excluded from automatic mutation. Repair or an explicit
+  owner decision requires a separately proven canonical size relationship;
+  P8A does not guess it.
+
+## Closed in P8A Size Adjustment Policy Preview
+
+- Size authority ambiguity — **CLOSED**. Live schema proves
+  `product_variant_sizes.price_adjustment` is transaction authority and
+  `product_size_master` has no price column.
+- Duplicate risk — **CLOSED FOR CURRENT DATA**. Exact and normalized
+  variant-size/SKU checks return zero duplicate rows.
+- Override classification — **CLOSED FOR CURRENT DATA**. No matching price
+  audit event with a non-empty reason exists; override status is NOT PROVEN,
+  never inferred from a mismatch.
+- P8A mutation risk — **CLOSED**. The SQL artifact contains no DML/DDL and the
+  remote verification performed no product mutation or migration.
+
+## P8B Size Adjustment Data Mutation
+
+### V12-040 — P8B owner full-gate verification
+
+- Severity: Package gate
+- Status: **CLOSED — OWNER GATE PASS**
+- Detail: Migration `20260724011535_p8b_size_adjustment_data_mutation_v1.sql`
+  applied the exact approved 287-row cohort. Postcheck proves 1,147 managed
+  SKU with zero mismatch, 287 audit rows in one batch, and the approved
+  fingerprint. Typecheck, touched lint, and 37 targeted tests pass. Owner
+  confirmed full gates, safe diff review, commit `1d4db25`, remote push, and
+  Vercel Preview Ready.
+
+## Closed in P8B Size Adjustment Data Mutation
+
+- Approved cohort drift — **CLOSED**. Migration aborts on changed count,
+  fingerprint, before value, status split, normalized duplicate, missing SKU,
+  or new override evidence.
+- Partial mutation/audit — **CLOSED**. Audit and update occur in one
+  transaction and each must affect exactly 287 rows.
+- Policy-managed mismatch — **CLOSED**. Remote postcheck returns zero mismatch
+  across 1,147 managed SKU.
+- P8A exclusions — **PRESERVED**. XS remains outside policy and unlinked
+  `Mix Size` remains Rp0/blocked; V12-039 stays open for separate canonical
+  data resolution.
+
+## P9 Generic Configured Product
+
+### V12-041 — P9 owner full-gate verification
+
+- Severity: Package gate
+- Status: **OPEN — SOURCE IMPLEMENTED**
+- Detail: Generic definition projection, option/selection validation,
+  amount-free pricing input, server pricing-result verification, immutable
+  snapshot, and configured Cart v5 fail-closed regression tests pass targeted
+  verification. Owner full typecheck/lint/test/build/diff, commit/push, and
+  Preview gate remain required before P9 PASS.
+
+## Closed in P9 source
+
+- Duplicate configured-product authority — **CLOSED IN SOURCE**. Existing
+  `products.config_schema` is reused; product identity, name, active status,
+  commerce mode, minimum, and source version remain canonical columns.
+- Client-trusted configuration — **CLOSED IN SOURCE**. A server-only loader
+  and runtime re-read the definition, validate the draft, fingerprint the
+  canonical input, and reject missing/mismatched pricing authority.
+- Monetary input injection — **CLOSED IN SOURCE**. Configured pricing input
+  carries identifiers and selections only; no price or amount is accepted.
+- Specialized branch leakage — **CLOSED IN SOURCE**. Generic core regression
+  rejects specialized product fields/branches; first consumer remains P10.
+- Speculative migration risk — **CLOSED**. Existing schema is sufficient; no
+  migration/backfill was created and no historical snapshot was mutated.
+
+## P12 Admin Orders Ownership
+
+### V12-042 — P12 owner full-gate verification
+
+- Severity: Package gate
+- Status: **CLOSED — OWNER GATE PASS**
+- Detail: Typed list/detail projections, authenticated server read/command
+  boundaries, immutable snapshot preservation, canonical active-stage
+  projection, targeted lint, 69 targeted tests, typecheck, production build,
+  and diff check pass. Owner confirmed the full gate and clean review before
+  authorizing P13.
+
+## Closed in P12 source
+
+- Browser-owned Admin Order reads — **CLOSED IN SOURCE**. Admin Orders clients
+  no longer select `orders` or `order_items` directly; authenticated server
+  use cases return whitelisted typed models.
+- Cross-role read expansion — **CLOSED IN SOURCE**. Server projections use the
+  actor JWT client rather than service role, preserving payment, shipping,
+  production, and QC RLS in addition to the `order.read` route gate.
+- Split transaction projection — **CLOSED IN SOURCE**. Order, item pricing
+  snapshot, payment, fulfillment/tracking, job order, and QC facts are read in
+  one nested graph and resolved server-side.
+- Direct browser order commands — **CLOSED IN SOURCE**. Delivery edit,
+  transactional cancel, and archive require server `order.edit` before the
+  existing canonical RPC executes.
+- Historical status coercion — **CLOSED IN SOURCE**. Existing item status
+  `confirmed` is modeled explicitly; unknown order pricing states and invalid
+  transaction amounts fail closed.
+- Speculative migration risk — **CLOSED**. Existing schema, foreign keys, RLS,
+  and permission definitions are sufficient; no migration or data mutation
+  was created.
+
+## P13 Customer Order Read Model & Polling
+
+### V12-043 — P13 owner full-gate verification
+
+- Severity: Package gate
+- Status: **CLOSED — OWNER GATE PASS**
+- Detail: Typed customer projections, server-only whitelisted graph, preserved
+  guest authorization, bounded visibility/network-aware polling, stale
+  snapshot warning/retry, typecheck, touched lint, and 53 targeted tests pass.
+  Owner full typecheck/lint/test/build/diff and final review remain required
+  before P13 PASS.
+
+## Closed in P13 source
+
+- Duplicate customer response ownership — **CLOSED IN SOURCE**. Confirmation
+  and tracking consume shared typed contracts projected on the server.
+- Split customer transaction reads — **CLOSED IN SOURCE**. One whitelisted
+  graph supplies the page-specific order projection.
+- Unbounded polling — **CLOSED IN SOURCE**. Polling stops at terminal state,
+  pauses hidden/offline, resumes safely, backs off, aborts on cleanup, and
+  prevents overlapping requests.
+- Silent stale state — **CLOSED IN SOURCE**. Refresh failure retains the last
+  snapshot but labels it stale and exposes retry.
+- Sensitive customer leakage — **CLOSED IN SOURCE**. Hashes, raw phone/address
+  values, proof paths, admin notes, and raw database rows stay server-side.
+- Speculative migration risk — **CLOSED**. Live schema/index/RLS audit proved
+  existing database support; no migration or data mutation was created.
+
+## P14 Error Handling & Observability
+
+### V12-044 — P14 owner full-gate verification
+
+- Severity: Package gate
+- Status: **CLOSED — OWNER GATE PASS**
+- Detail: Canonical error response, request/correlation ID, structured
+  redacted logging, duplicate suppression, explicit silent-failure handling,
+  root error UI, typecheck, lint, and 70 targeted tests pass. Owner full
+  typecheck/lint/test/build/diff and final review remain required before P14
+  PASS.
+
+## Closed in P14 source
+
+- Raw sensitive exception logging — **CLOSED IN SOURCE**. Unknown failures
+  expose only stable public codes/messages/references; logs omit raw messages,
+  stack, contact/address, design/configuration, notes, proof/private paths,
+  tokens, secrets, and credentials.
+- Missing correlation identity — **CLOSED IN SOURCE**. Critical server
+  boundaries propagate validated or generated request/correlation IDs in
+  structured logs and response headers.
+- Duplicate nested error logging — **CLOSED IN SOURCE**. The same error object
+  is emitted once across nested canonical boundaries; the client root boundary
+  does not duplicate server logs.
+- Silent infrastructure failures — **CLOSED IN SOURCE**. Payment/order reads,
+  rate-limit checks, tracking/action audit writes, proof cleanup, and active
+  stage resolution now fail closed or emit explicit structured evidence while
+  preserving transaction semantics.
+- Speculative migration risk — **CLOSED**. Existing runtime and audit schema
+  are sufficient; no migration or database mutation was created.
+
+## P15 Inventory Authority & Stock Ownership
+
+### V12-045 — P15 Supabase migration application and verification
+
+- Severity: Package gate
+- Status: **BLOCKED — ENVIRONMENT TOOL USAGE LIMIT**
+- Detail: Source, migration, verification query, and regression coverage are
+  saved. Typecheck, lint, 54 targeted tests, and diff check pass. Migration
+  runtime validation, application to project `lzennundwqqtyvvcnzbg`,
+  post-migration zero-violation queries, RLS/function ACL checks, and database
+  advisors remain NOT PROVEN. Approval tooling rejected Supabase write/dry-run
+  calls after reaching its usage limit; retry time reported
+  `2026-07-31 00:34`. Resume directly from `CURRENT_PACKAGE_HANDOFF.md`.
+
+## Closed in P15 source
+
+- Split inventory authority — **CLOSED IN SOURCE**. Public stock projection and
+  transaction RPC definitions use location balances as canonical authority.
+- Availability formula ambiguity — **CLOSED IN SOURCE**. Availability is
+  exactly `on_hand - reserved`, guarded against invalid/negative inputs.
+- Unlocated reservation ownership — **CLOSED IN SOURCE**. Reservation rows gain
+  required location ownership; only provable pickup data maps to real stores.
+- Overselling and duplicate stock mutations — **CLOSED IN SOURCE**. Row locks,
+  constraints, ordered allocation, terminal statuses, and idempotent state
+  transitions define reserve/release/deduct/restore.
+- Missing audit trace — **CLOSED IN SOURCE**. Every transition records movement
+  type, reservation, delta, and post-mutation snapshots.
+- Custom implicit inventory use — **CLOSED IN SOURCE**. Inventory applies only
+  when variant-size identity and SKU exactly match canonical catalog mapping.

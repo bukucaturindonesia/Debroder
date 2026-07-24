@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import { PublicShell } from "@/components/PublicPage";
 import { GuestOrderTracking } from "@/components/tracking/GuestOrderTracking";
-import { getPublicContent } from "@/lib/public-data";
 
 export const metadata: Metadata = {
   title: "Detail Pelacakan Pesanan | DEBRODER",
@@ -16,14 +15,13 @@ export default async function TrackOrderDetailPage({
   params: Promise<{ "order-number": string }>;
   searchParams: Promise<{ token?: string | string[] }>;
 }) {
-  const [{ "order-number": orderNumber }, query, content] = await Promise.all([
+  const [{ "order-number": orderNumber }, query] = await Promise.all([
     params,
-    searchParams,
-    getPublicContent()
+    searchParams
   ]);
   const token = Array.isArray(query.token) ? query.token[0] : query.token ?? "";
   return (
-    <PublicShell content={content} theme="jersey-commerce">
+    <PublicShell theme="jersey-commerce">
       <GuestOrderTracking initialOrderNumber={decodeURIComponent(orderNumber)} token={token} />
     </PublicShell>
   );

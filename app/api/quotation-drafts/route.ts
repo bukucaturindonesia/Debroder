@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import type { CartItem, ProductConfigurationSnapshot } from "@/lib/types";
 import { validateMinimumOrder } from "@/lib/bulk-ordering";
 import { listCustomServices } from "@/lib/supabase/custom-services";
-import { getAdminSupabaseClient } from "@/lib/supabase/client";
+import { getAdminSupabaseClient } from "@/lib/supabase/admin";
 import { listProducts, revalidateCartItems } from "@/lib/supabase/products";
 
 export async function POST(request: Request) {
@@ -35,7 +35,10 @@ export async function POST(request: Request) {
     }))
   );
   const revalidationMessages = revalidationResults
-    .filter((result) => result.status !== "ok")
+    .filter(
+      (result) =>
+        result.status !== "ok" && result.status !== "quotation_required"
+    )
     .map((result) => result.message ?? "Data produk berubah.");
 
   if (revalidationMessages.length > 0) {
@@ -45,7 +48,7 @@ export async function POST(request: Request) {
     );
   }
 
-  const products = await listProducts();
+  const products = await listProducts({ allowFallback: false });
   const product = products.find(
     (candidate) => candidate.id === payload.snapshot.product_id
   );

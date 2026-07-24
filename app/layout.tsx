@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import type { ReactNode } from "react";
-import { CartProvider } from "@/components/CartProvider";
 import { siteConfig } from "@/lib/site";
 import "./globals.css";
 
@@ -90,9 +89,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="id">
-      <body>
-        <CartProvider>{children}</CartProvider>
-      </body>
+      <body>{children}</body>
     </html>
   );
 }

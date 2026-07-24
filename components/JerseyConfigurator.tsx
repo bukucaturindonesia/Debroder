@@ -1,51 +1,51 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { resolveJerseyConfiguredProduct } from "@/app/jersey/configurator/actions";
 import { useCart } from "@/components/CartProvider";
 import type {
-  JerseyAddon,
-  JerseyCollar,
-  JerseyConfiguratorData,
-  JerseyMaterial,
-  JerseyPackage,
-  JerseyRequiredService
-} from "@/lib/types";
-import { formatRupiah } from "@/lib/url";
+  ConfiguredOption,
+  ConfiguredOptionGroup,
+  ConfiguredProductDraft
+} from "@/lib/contracts";
+import { CONTRACT_VERSIONS } from "@/lib/contracts";
+import type { JerseyConfiguredProductConsumer } from "@/lib/jersey-configured-product/domain";
 
 type JerseyConfiguratorProps = {
-  config: JerseyConfiguratorData;
-  jerseyName: string;
-  jerseySlug: string;
-  imageUrl?: string;
-  imageAlt?: string;
+  consumer: JerseyConfiguredProductConsumer;
 };
 
 type TeamInfo = {
   teamName: string;
-  playerData: string;
+  sleeveRequirement: string;
+  playerRoster: string;
   designReference: string;
-  designFileName: string;
+  logoRequirement: string;
+  sponsorRequirement: string;
+  nameNumberRequirement: string;
   notes: string;
 };
 
-const sizeOptions = ["S", "M", "L", "XL", "2XL", "3XL", "Mix Size"];
-const sizeAdjustments: Record<string, number> = {
-  "2XL": 5000,
-  "3XL": 10000
+const EMPTY_TEAM_INFO: TeamInfo = {
+  teamName: "",
+  sleeveRequirement: "",
+  playerRoster: "",
+  designReference: "",
+  logoRequirement: "",
+  sponsorRequirement: "",
+  nameNumberRequirement: "",
+  notes: ""
 };
 
-function numeric(value: number | string | null | undefined) {
-  if (typeof value === "number" && Number.isFinite(value)) return value;
-  const parsed = Number(String(value || "").replace(/[^\d.-]/g, ""));
-  return Number.isFinite(parsed) ? parsed : 0;
-}
-
-function priceLabel(value: number | string | null | undefined) {
-  const number = numeric(value);
-  return number > 0 ? `+${formatRupiah(number)}` : "+0";
-}
-
-function StepLabel({ number, title, description }: { number: number; title: string; description?: string }) {
+function StepLabel({
+  number,
+  title,
+  description
+}: {
+  number: number;
+  title: string;
+  description?: string;
+}) {
   return (
     <div>
       <p className="text-xs font-semibold uppercase tracking-[0.16em] text-black/38">Langkah {number}</p>
@@ -55,148 +55,162 @@ function StepLabel({ number, title, description }: { number: number; title: stri
   );
 }
 
-function PackageButton({ item, selected, onClick }: { item: JerseyPackage; selected: boolean; onClick: () => void }) {
+function OptionButton({
+  item,
+  selected,
+  onClick
+}: {
+  item: ConfiguredOption;
+  selected: boolean;
+  onClick: () => void;
+}) {
   return (
     <button
       type="button"
       onClick={onClick}
       aria-pressed={selected}
-      className={`rounded-[24px] p-4 text-left transition ${selected ? "bg-white ring-1 ring-[#063d24]/35" : "bg-white/50 ring-1 ring-black/5 hover:ring-black/14"}`}
+      className={`rounded-[18px] px-4 py-3 text-left transition ${
+        selected
+          ? "bg-[#e9f4ee] ring-1 ring-[#063d24]/30"
+          : "bg-white/60 ring-1 ring-black/7 hover:ring-black/16"
+      }`}
     >
-      <span className="block text-base font-semibold text-brand-charcoal">{item.name}</span>
-      <span className="mt-1 block text-sm font-semibold text-[#063d24]">{formatRupiah(numeric(item.base_price))}</span>
-      {item.description ? <span className="mt-2 block text-xs leading-5 text-black/50">{item.description}</span> : null}
+      <span className="block text-sm font-semibold">{item.label}</span>
+      {item.description ? <span className="mt-1 block text-xs leading-5 text-black/50">{item.description}</span> : null}
     </button>
   );
 }
 
-function SimpleOptionButton({ label, meta, selected, onClick }: { label: string; meta?: string; selected: boolean; onClick: () => void }) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      aria-pressed={selected}
-      className={`min-h-11 rounded-full px-4 text-sm font-semibold transition ${selected ? "bg-[#111111] text-white" : "bg-white/60 text-black/70 ring-1 ring-black/8 hover:ring-black/18"}`}
-    >
-      {label}{meta ? <span className="ml-1 opacity-70">{meta}</span> : null}
-    </button>
-  );
-}
-
-function AddonButton({ item, selected, onClick }: { item: JerseyAddon; selected: boolean; onClick: () => void }) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      aria-pressed={selected}
-      className={`rounded-[18px] px-4 py-3 text-left transition ${selected ? "bg-[#e9f4ee] ring-1 ring-[#063d24]/30" : "bg-white/60 ring-1 ring-black/7 hover:ring-black/16"}`}
-    >
-      <span className="block text-sm font-semibold">{item.name}</span>
-      <span className="mt-1 block text-xs text-black/50">{priceLabel(item.price_adjustment)} / pcs</span>
-    </button>
-  );
-}
-
-function RequiredServices({ services }: { services: JerseyRequiredService[] }) {
-  const visible = services.length ? services : [{ service_name: "Cetak Sublim", service_slug: "cetak-sublim" }];
-  return (
-    <div className="rounded-[24px] bg-white/50 p-4 ring-1 ring-black/5">
-      <p className="text-xs font-semibold uppercase tracking-[0.14em] text-[#063d24]">Layanan wajib</p>
-      <div className="mt-3 flex flex-wrap gap-2">
-        {visible.map((service) => (
-          <span key={service.service_slug} className="rounded-full bg-[#e9f4ee] px-3 py-1.5 text-xs font-semibold text-[#063d24]">
-            {service.service_name}
-          </span>
-        ))}
-      </div>
-      <p className="mt-3 text-xs leading-5 text-black/50">Layanan ini otomatis masuk ke pesanan jersey dan tidak bisa dihapus.</p>
-    </div>
-  );
-}
-
-export function JerseyConfigurator({ config, jerseyName, jerseySlug, imageUrl, imageAlt }: JerseyConfiguratorProps) {
+export function JerseyConfigurator({ consumer }: JerseyConfiguratorProps) {
   const cart = useCart();
-  const packages = config.packages.length ? config.packages : [];
-  const materials = config.materials.length ? config.materials : [];
-  const collars = config.collars.length ? config.collars : [];
-  const addons = config.addons.length ? config.addons : [];
-  const minQty = Math.max(1, Number(config.settings.minimum_order_qty || 6));
+  const definition = consumer.definition;
+  const packageGroup = group(definition.optionGroups, "package");
+  const materialGroup = group(definition.optionGroups, "material");
+  const collarGroup = group(definition.optionGroups, "collar");
+  const addonGroup = group(definition.optionGroups, "addons");
+  const sizeDimension = definition.allocationDimensions.find(
+    (dimension) => dimension.code === "size"
+  );
+  const [packageId, setPackageId] = useState(packageGroup?.options[0]?.id ?? "");
+  const [materialId, setMaterialId] = useState(materialGroup?.options[0]?.id ?? "");
+  const [collarId, setCollarId] = useState(collarGroup?.options[0]?.id ?? "");
+  const [addonIds, setAddonIds] = useState<string[]>([]);
+  const [sizeQuantities, setSizeQuantities] = useState<Record<string, number>>({});
+  const [teamInfo, setTeamInfo] = useState<TeamInfo>(EMPTY_TEAM_INFO);
+  const [submitting, setSubmitting] = useState(false);
+  const [notice, setNotice] = useState("");
 
-  const [packageSlug, setPackageSlug] = useState(packages[0]?.slug || "");
-  const [materialSlug, setMaterialSlug] = useState(materials[0]?.slug || "");
-  const [collarSlug, setCollarSlug] = useState(collars[0]?.slug || "");
-  const [size, setSize] = useState("Mix Size");
-  const [quantity, setQuantity] = useState(minQty);
-  const [selectedAddons, setSelectedAddons] = useState<string[]>([]);
-  const [teamInfo, setTeamInfo] = useState<TeamInfo>({
-    teamName: "",
-    playerData: "",
-    designReference: "",
-    designFileName: "",
-    notes: ""
-  });
+  const quantity = useMemo(
+    () => Object.values(sizeQuantities).reduce((total, value) => total + value, 0),
+    [sizeQuantities]
+  );
+  const selectedPackage = packageGroup?.options.find((item) => item.id === packageId);
+  const selectedMaterial = materialGroup?.options.find((item) => item.id === materialId);
+  const selectedCollar = collarGroup?.options.find((item) => item.id === collarId);
+  const selectedAddons = addonGroup?.options.filter((item) => addonIds.includes(item.id)) ?? [];
+  const requiredTextReady = Object.entries(teamInfo)
+    .filter(([key]) => key !== "notes")
+    .every(([, value]) => value.trim().length > 0);
+  const readyToSubmit = Boolean(
+    packageId
+    && materialId
+    && collarId
+    && quantity >= definition.quantityRules.minimum
+    && quantity <= (definition.quantityRules.maximum ?? quantity)
+    && requiredTextReady
+  );
 
-  const selectedPackage = packages.find((item) => item.slug === packageSlug) || packages[0];
-  const selectedMaterial = materials.find((item) => item.slug === materialSlug) || materials[0];
-  const selectedCollar = collars.find((item) => item.slug === collarSlug) || collars[0];
-  const activeAddons = addons.filter((item) => selectedAddons.includes(item.slug));
-  const safeQty = Math.max(minQty, quantity);
-
-  const price = useMemo(() => {
-    const packagePrice = numeric(selectedPackage?.base_price);
-    const materialAdjustment = numeric(selectedMaterial?.price_adjustment);
-    const collarAdjustment = numeric(selectedCollar?.price_adjustment);
-    const addonTotal = activeAddons.reduce((total, item) => total + numeric(item.price_adjustment), 0);
-    const sizeAdjustment = sizeAdjustments[size] || 0;
-    const unitPrice = packagePrice + materialAdjustment + collarAdjustment + addonTotal + sizeAdjustment;
-    return {
-      packagePrice,
-      materialAdjustment,
-      collarAdjustment,
-      addonTotal,
-      sizeAdjustment,
-      unitPrice,
-      total: unitPrice * safeQty
-    };
-  }, [activeAddons, safeQty, selectedCollar, selectedMaterial, selectedPackage, size]);
-
-  function toggleAddon(slug: string) {
-    setSelectedAddons((current) => current.includes(slug) ? current.filter((item) => item !== slug) : [...current, slug]);
+  function toggleAddon(id: string) {
+    setAddonIds((current) => current.includes(id)
+      ? current.filter((item) => item !== id)
+      : [...current, id]);
   }
 
   function updateTeamInfo(key: keyof TeamInfo, value: string) {
     setTeamInfo((current) => ({ ...current, [key]: value }));
   }
 
-  function addConfiguredJerseyToCart() {
-    const requiredServices = config.requiredServices.length ? config.requiredServices : [{ service_name: "Cetak Sublim", service_slug: "cetak-sublim" }];
-    cart.addItem({
-      id: `jersey-config-${jerseySlug}-${Date.now()}`,
-      name: jerseyName,
-      category: "Jersey Custom",
-      priceLabel: formatRupiah(price.unitPrice),
-      priceValue: price.unitPrice,
-      href: `/jersey/${jerseySlug}`,
-      imageUrl,
-      imageAlt,
-      defaultSize: size,
-      defaultQuantity: safeQty,
-      variantName: [selectedPackage?.name, selectedMaterial?.name, selectedCollar?.name].filter(Boolean).join(" · "),
-      variantSku: "JERSEY-CONFIG",
-      variantSnapshot: {
-        configurator_type: "jersey",
-        package: selectedPackage,
-        material: selectedMaterial,
-        collar: selectedCollar,
-        size,
-        quantity: safeQty,
-        addons: activeAddons,
-        required_services: requiredServices,
-        price_breakdown: price,
-        team_information: teamInfo,
-        minimum_order_qty: minQty
+  function updateSizeQuantity(size: string, rawValue: string) {
+    const parsed = Math.max(0, Math.min(100, Number.parseInt(rawValue || "0", 10) || 0));
+    setSizeQuantities((current) => ({ ...current, [size]: parsed }));
+  }
+
+  async function addConfiguredJerseyToCart() {
+    if (!readyToSubmit || submitting) return;
+    setSubmitting(true);
+    setNotice("");
+    const requestedAt = new Date().toISOString();
+    const configurationId = crypto.randomUUID();
+    const draft: ConfiguredProductDraft = {
+      contractVersion: CONTRACT_VERSIONS.configuredProduct,
+      id: configurationId,
+      definitionId: definition.id,
+      definitionVersion: definition.version,
+      quantity,
+      selections: [
+        selection(packageGroup, [packageId]),
+        selection(materialGroup, [materialId]),
+        selection(collarGroup, [collarId]),
+        selection(addonGroup, addonIds),
+        textSelection(definition.optionGroups, "team_name", teamInfo.teamName),
+        textSelection(definition.optionGroups, "sleeve_requirement", teamInfo.sleeveRequirement),
+        textSelection(definition.optionGroups, "player_roster", teamInfo.playerRoster),
+        textSelection(definition.optionGroups, "design_reference", teamInfo.designReference),
+        textSelection(definition.optionGroups, "logo_requirement", teamInfo.logoRequirement),
+        textSelection(definition.optionGroups, "sponsor_requirement", teamInfo.sponsorRequirement),
+        textSelection(definition.optionGroups, "name_number_requirement", teamInfo.nameNumberRequirement)
+      ].filter((entry) => entry.groupId.length > 0),
+      allocations: Object.entries(sizeQuantities)
+        .filter(([, value]) => value > 0)
+        .map(([size, value]) => ({
+          id: `jersey-size:${size}`,
+          dimensions: { size },
+          quantity: value
+        })),
+      services: definition.serviceRequirements.map((requirement) => ({
+        requirementId: requirement.id,
+        serviceCode: requirement.serviceCode,
+        quantity
+      })),
+      uploads: [],
+      ...(teamInfo.notes.trim() ? { note: teamInfo.notes.trim() } : {}),
+      createdAt: requestedAt,
+      updatedAt: requestedAt
+    };
+
+    try {
+      const result = await resolveJerseyConfiguredProduct({
+        productId: consumer.product.id,
+        draft,
+        requestId: crypto.randomUUID(),
+        snapshotId: crypto.randomUUID(),
+        requestedAt
+      });
+      if (!result.ok) {
+        setNotice(result.error.message);
+        return;
       }
-    });
+
+      cart.addConfiguredProduct({
+        snapshot: result.snapshot,
+        name: consumer.product.name,
+        category: "Jersey Custom",
+        priceLabel: "Menunggu penawaran",
+        href: `/jersey/configurator?product=${encodeURIComponent(consumer.product.slug)}`,
+        imageUrl: consumer.product.imageUrl,
+        imageAlt: consumer.product.imageAlt,
+        size: sizeSummary(sizeQuantities),
+        variantName: [selectedPackage?.label, selectedMaterial?.label, selectedCollar?.label]
+          .filter((value): value is string => Boolean(value))
+          .join(" · "),
+        notes: teamInfo.notes.trim() || undefined
+      });
+      setNotice("Konfigurasi tervalidasi server dan masuk ke keranjang penawaran.");
+    } catch {
+      setNotice("Validasi server belum dapat diselesaikan. Silakan coba lagi.");
+    } finally {
+      setSubmitting(false);
+    }
   }
 
   return (
@@ -204,121 +218,264 @@ export function JerseyConfigurator({ config, jerseyName, jerseySlug, imageUrl, i
       <div className="section-shell">
         <div className="mb-7 max-w-3xl">
           <p className="text-xs font-semibold uppercase tracking-[0.18em] text-brand-charcoal/45">Jersey Configurator</p>
-          <h2 className="mt-2 text-3xl font-semibold tracking-tight text-brand-charcoal sm:text-4xl">Rakit pesanan jersey</h2>
-          <p className="mt-3 text-sm leading-6 text-black/58 sm:text-base sm:leading-7">Pilih paket, bahan, kerah, ukuran, jumlah, dan addon. Estimasi harga berubah langsung sebelum masuk keranjang.</p>
+          <h2 className="mt-2 text-3xl font-semibold tracking-tight text-brand-charcoal sm:text-4xl">Rakit kebutuhan jersey</h2>
+          <p className="mt-3 text-sm leading-6 text-black/58 sm:text-base sm:leading-7">
+            Pilihan akan divalidasi server dan disimpan sebagai snapshot konfigurasi. Harga tidak dihitung di browser dan menunggu penawaran resmi.
+          </p>
         </div>
 
         <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_360px] xl:grid-cols-[minmax(0,1fr)_400px]">
           <div className="grid gap-5">
+            <OptionSection number={1} title="Paket jersey" group={packageGroup} selectedIds={[packageId]} onSelect={setPackageId} />
+            <OptionSection number={2} title="Bahan" group={materialGroup} selectedIds={[materialId]} onSelect={setMaterialId} />
+            <CollarSection group={collarGroup} selectedId={collarId} onSelect={setCollarId} />
+
             <article className="rounded-[28px] bg-white/40 p-4 ring-1 ring-black/5 sm:p-6">
-              <StepLabel number={1} title="Paket jersey" description={`Minimum order ${minQty} pcs. Paket bisa diedit dari Admin PIM V2.`} />
-              <div className="mt-5 grid gap-3 md:grid-cols-3">
-                {packages.map((item) => <PackageButton key={item.slug} item={item} selected={item.slug === selectedPackage?.slug} onClick={() => setPackageSlug(item.slug)} />)}
+              <StepLabel
+                number={4}
+                title="Alokasi ukuran"
+                description={`Isi quantity per ukuran. Minimum total ${definition.quantityRules.minimum} pcs.`}
+              />
+              <div className="mt-5 grid grid-cols-2 gap-3 sm:grid-cols-4">
+                {(sizeDimension?.allowedValues ?? []).map((size) => (
+                  <label key={size} className="grid gap-2 text-xs font-semibold uppercase tracking-[0.12em] text-black/48">
+                    {size}
+                    <input
+                      type="number"
+                      min={0}
+                      max={100}
+                      inputMode="numeric"
+                      value={sizeQuantities[size] ?? 0}
+                      onChange={(event) => updateSizeQuantity(size, event.target.value)}
+                      className="min-h-11 rounded-[16px] border-0 bg-white/70 px-4 text-base font-semibold tracking-normal text-black outline-none ring-1 ring-black/8 focus:ring-[#063d24]/35"
+                    />
+                  </label>
+                ))}
               </div>
+              <p className="mt-4 text-sm font-semibold text-[#063d24]">Total: {quantity} pcs</p>
             </article>
 
             <article className="rounded-[28px] bg-white/40 p-4 ring-1 ring-black/5 sm:p-6">
-              <StepLabel number={2} title="Bahan" description="Bahan emboss otomatis menambah harga sesuai master data." />
-              <div className="mt-5 flex flex-wrap gap-2">
-                {materials.map((item) => <SimpleOptionButton key={item.slug} label={item.name} meta={priceLabel(item.price_adjustment)} selected={item.slug === selectedMaterial?.slug} onClick={() => setMaterialSlug(item.slug)} />)}
-              </div>
-            </article>
-
-            <article className="rounded-[28px] bg-white/40 p-4 ring-1 ring-black/5 sm:p-6">
-              <StepLabel number={3} title="Kerah" description="Pilih model kerah Regular atau Classic sesuai kebutuhan desain." />
-              <div className="mt-5 grid gap-5">
-                {config.collarGroups.map((group) => {
-                  const groupCollars = collars.filter((collar) => (collar.group_slug || "regular") === group.slug);
-                  if (!groupCollars.length) return null;
-                  return (
-                    <div key={group.slug}>
-                      <p className="text-xs font-semibold uppercase tracking-[0.14em] text-black/38">{group.name}</p>
-                      <div className="mt-3 flex flex-wrap gap-2">
-                        {groupCollars.map((item) => <SimpleOptionButton key={item.slug} label={item.name} meta={priceLabel(item.price_adjustment)} selected={item.slug === selectedCollar?.slug} onClick={() => setCollarSlug(item.slug)} />)}
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            </article>
-
-            <article className="rounded-[28px] bg-white/40 p-4 ring-1 ring-black/5 sm:p-6">
-              <StepLabel number={4} title="Ukuran dan jumlah" description="Gunakan Mix Size jika ukuran tiap pemain berbeda." />
-              <div className="mt-5 grid gap-5 md:grid-cols-[1fr_220px]">
-                <div>
-                  <p className="text-xs font-semibold uppercase tracking-[0.14em] text-black/38">Ukuran</p>
-                  <div className="mt-3 flex flex-wrap gap-2">
-                    {sizeOptions.map((item) => <SimpleOptionButton key={item} label={item} meta={sizeAdjustments[item] ? priceLabel(sizeAdjustments[item]) : undefined} selected={size === item} onClick={() => setSize(item)} />)}
-                  </div>
-                </div>
-                <label className="grid gap-2 text-xs font-semibold uppercase tracking-[0.14em] text-black/38">
-                  Jumlah pcs
-                  <input value={quantity} min={minQty} inputMode="numeric" onChange={(event) => setQuantity(Math.max(minQty, Number(event.target.value || minQty)))} className="min-h-12 rounded-full border-0 bg-white/70 px-5 text-base font-semibold tracking-normal text-black outline-none ring-1 ring-black/8 focus:ring-[#063d24]/35" />
-                  <span className="text-[11px] font-medium normal-case tracking-normal text-black/45">Minimum {minQty} pcs</span>
-                </label>
-              </div>
-            </article>
-
-            <article className="rounded-[28px] bg-white/40 p-4 ring-1 ring-black/5 sm:p-6">
-              <StepLabel number={5} title="Addon opsional" description="Tambahan dihitung per pcs dan masuk ke estimasi harga." />
+              <StepLabel number={5} title="Addon opsional" description="Pilih addon yang perlu ditinjau dalam penawaran." />
               <div className="mt-5 grid gap-3 sm:grid-cols-2">
-                {addons.map((item) => <AddonButton key={item.slug} item={item} selected={selectedAddons.includes(item.slug)} onClick={() => toggleAddon(item.slug)} />)}
+                {(addonGroup?.options ?? []).map((item) => (
+                  <OptionButton
+                    key={item.id}
+                    item={item}
+                    selected={addonIds.includes(item.id)}
+                    onClick={() => toggleAddon(item.id)}
+                  />
+                ))}
               </div>
             </article>
 
             <article className="rounded-[28px] bg-white/40 p-4 ring-1 ring-black/5 sm:p-6">
-              <StepLabel number={6} title="Desain dan data tim" description="File desain akan dicatat pada keranjang dan dapat dilanjutkan melalui WhatsApp." />
+              <StepLabel
+                number={6}
+                title="Desain dan data tim"
+                description="Lengkapi kebutuhan transaction-critical. Tautan desain akan ditinjau; upload file langsung belum dianggap tersimpan."
+              />
               <div className="mt-5 grid gap-4">
-                <label className="grid gap-2 text-sm font-semibold text-black/70">Nama tim / komunitas
-                  <input value={teamInfo.teamName} onChange={(event) => updateTeamInfo("teamName", event.target.value)} placeholder="Contoh: Garuda FC" className="min-h-12 rounded-[18px] border-0 bg-white/70 px-4 text-sm font-normal outline-none ring-1 ring-black/8 focus:ring-[#063d24]/35" />
-                </label>
-                <label className="grid gap-2 text-sm font-semibold text-black/70">Link desain / referensi
-                  <input value={teamInfo.designReference} onChange={(event) => updateTeamInfo("designReference", event.target.value)} placeholder="Link Google Drive, Canva, atau catatan desain" className="min-h-12 rounded-[18px] border-0 bg-white/70 px-4 text-sm font-normal outline-none ring-1 ring-black/8 focus:ring-[#063d24]/35" />
-                </label>
-                <label className="grid gap-2 text-sm font-semibold text-black/70">Unggah desain
-                  <input type="file" accept="image/*,.pdf,.ai,.cdr,.psd,.zip" onChange={(event) => updateTeamInfo("designFileName", event.target.files?.[0]?.name || "")} className="rounded-[18px] bg-white/70 px-4 py-3 text-sm font-normal outline-none ring-1 ring-black/8 file:mr-3 file:rounded-full file:border-0 file:bg-[#063d24] file:px-4 file:py-2 file:text-xs file:font-semibold file:text-white" />
-                  {teamInfo.designFileName ? <span className="text-xs font-medium text-black/50">File dipilih: {teamInfo.designFileName}</span> : null}
-                </label>
-                <label className="grid gap-2 text-sm font-semibold text-black/70">Data pemain
-                  <textarea value={teamInfo.playerData} onChange={(event) => updateTeamInfo("playerData", event.target.value)} rows={4} placeholder="Contoh:\n1. Andi - L - No. 10\n2. Fajar - XL - No. 7" className="rounded-[18px] border-0 bg-white/70 p-4 text-sm font-normal leading-6 outline-none ring-1 ring-black/8 focus:ring-[#063d24]/35" />
-                </label>
-                <label className="grid gap-2 text-sm font-semibold text-black/70">Catatan tambahan
-                  <textarea value={teamInfo.notes} onChange={(event) => updateTeamInfo("notes", event.target.value)} rows={3} placeholder="Contoh: deadline, warna dominan, atau arahan khusus." className="rounded-[18px] border-0 bg-white/70 p-4 text-sm font-normal leading-6 outline-none ring-1 ring-black/8 focus:ring-[#063d24]/35" />
-                </label>
+                <TextField label="Nama tim / komunitas" value={teamInfo.teamName} onChange={(value) => updateTeamInfo("teamName", value)} />
+                <TextField label="Kebutuhan lengan" value={teamInfo.sleeveRequirement} onChange={(value) => updateTeamInfo("sleeveRequirement", value)} placeholder="Contoh: pendek, panjang, atau kombinasi" />
+                <TextArea label="Data pemain dan ukuran" value={teamInfo.playerRoster} onChange={(value) => updateTeamInfo("playerRoster", value)} placeholder="Nama pemain, nomor, dan ukuran per orang" />
+                <TextField label="Tautan / referensi desain" value={teamInfo.designReference} onChange={(value) => updateTeamInfo("designReference", value)} placeholder="Tautan privat yang dapat ditinjau tim DEBRODER" />
+                <TextArea label="Kebutuhan logo" value={teamInfo.logoRequirement} onChange={(value) => updateTeamInfo("logoRequirement", value)} />
+                <TextArea label="Kebutuhan sponsor" value={teamInfo.sponsorRequirement} onChange={(value) => updateTeamInfo("sponsorRequirement", value)} />
+                <TextArea label="Kebutuhan nama dan nomor" value={teamInfo.nameNumberRequirement} onChange={(value) => updateTeamInfo("nameNumberRequirement", value)} />
+                <TextArea label="Catatan tambahan (opsional)" value={teamInfo.notes} onChange={(value) => updateTeamInfo("notes", value)} />
               </div>
             </article>
           </div>
 
           <aside className="lg:sticky lg:top-28 lg:self-start">
             <div className="rounded-[30px] bg-white/70 p-5 ring-1 ring-black/6 sm:p-6">
-              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-black/42">Live Price</p>
-              <h3 className="mt-2 text-2xl font-semibold tracking-tight">Estimasi jersey</h3>
+              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-black/42">Status harga</p>
+              <h3 className="mt-2 text-2xl font-semibold tracking-tight">Penawaran diperlukan</h3>
+              <p className="mt-3 text-sm leading-6 text-black/55">
+                Browser tidak menentukan harga final. Admin akan meninjau konfigurasi tervalidasi sebelum penawaran dapat disetujui.
+              </p>
               <div className="mt-5 grid gap-3 text-sm">
-                <div className="flex justify-between gap-4"><span className="text-black/55">Paket</span><span className="font-semibold">{formatRupiah(price.packagePrice)}</span></div>
-                <div className="flex justify-between gap-4"><span className="text-black/55">Bahan</span><span className="font-semibold">{price.materialAdjustment ? formatRupiah(price.materialAdjustment) : "+0"}</span></div>
-                <div className="flex justify-between gap-4"><span className="text-black/55">Kerah</span><span className="font-semibold">{price.collarAdjustment ? formatRupiah(price.collarAdjustment) : "+0"}</span></div>
-                <div className="flex justify-between gap-4"><span className="text-black/55">Addon</span><span className="font-semibold">{price.addonTotal ? formatRupiah(price.addonTotal) : "+0"}</span></div>
-                <div className="flex justify-between gap-4"><span className="text-black/55">Ukuran</span><span className="font-semibold">{price.sizeAdjustment ? formatRupiah(price.sizeAdjustment) : "+0"}</span></div>
-                <div className="border-t border-black/8 pt-3">
-                  <div className="flex justify-between gap-4"><span className="font-semibold">Harga / pcs</span><span className="font-semibold">{formatRupiah(price.unitPrice)}</span></div>
-                  <div className="mt-2 flex justify-between gap-4"><span className="font-semibold">Qty</span><span className="font-semibold">{safeQty} pcs</span></div>
-                </div>
-                <div className="rounded-[22px] bg-[#e9f4ee] p-4">
-                  <div className="flex items-center justify-between gap-4">
-                    <span className="text-sm font-semibold text-[#063d24]">Estimasi Total</span>
-                    <span className="text-2xl font-bold text-[#063d24]">{formatRupiah(price.total)}</span>
-                  </div>
-                </div>
+                <Summary label="Paket" value={selectedPackage?.label} />
+                <Summary label="Bahan" value={selectedMaterial?.label} />
+                <Summary label="Kerah" value={selectedCollar?.label} />
+                <Summary label="Addon" value={selectedAddons.map((item) => item.label).join(", ") || "Tanpa addon"} />
+                <Summary label="Ukuran" value={sizeSummary(sizeQuantities) || "Belum diisi"} />
+                <Summary label="Total" value={`${quantity} pcs`} />
               </div>
-              <RequiredServices services={config.requiredServices} />
-              <button type="button" onClick={addConfiguredJerseyToCart} className="mt-5 inline-flex min-h-12 w-full items-center justify-center rounded-full bg-[#063d24] px-5 text-sm font-semibold text-white transition hover:bg-[#111111]">
-                Masukkan ke Keranjang
+              <div className="mt-5 rounded-[22px] bg-[#e9f4ee] p-4">
+                <p className="text-xs font-semibold uppercase tracking-[0.14em] text-[#063d24]">Layanan wajib</p>
+                <p className="mt-2 text-sm font-semibold text-[#063d24]">
+                  {definition.serviceRequirements.map((item) => item.label).join(", ")}
+                </p>
+              </div>
+              <button
+                type="button"
+                disabled={!readyToSubmit || submitting}
+                onClick={addConfiguredJerseyToCart}
+                className="mt-5 inline-flex min-h-12 w-full items-center justify-center rounded-full bg-[#063d24] px-5 text-sm font-semibold text-white transition hover:bg-[#111111] disabled:cursor-not-allowed disabled:opacity-45"
+              >
+                {submitting ? "Memvalidasi..." : "Masukkan ke Keranjang Penawaran"}
               </button>
-              <p className="mt-4 text-center text-[11px] leading-5 text-black/45">Harga final tetap dikonfirmasi admin lewat WhatsApp setelah desain dan data tim dicek.</p>
+              {notice ? <p role="status" className="mt-4 text-center text-xs leading-5 text-black/58">{notice}</p> : null}
+              <p className="mt-4 text-center text-[11px] leading-5 text-black/45">
+                Konfigurasi quotation-required tidak dapat diproses sebagai checkout berbayar sebelum validasi dan penawaran server terbaru.
+              </p>
             </div>
           </aside>
         </div>
       </div>
     </section>
   );
+}
+
+function OptionSection({
+  number,
+  title,
+  group: optionGroup,
+  selectedIds,
+  onSelect
+}: {
+  number: number;
+  title: string;
+  group?: ConfiguredOptionGroup;
+  selectedIds: readonly string[];
+  onSelect: (id: string) => void;
+}) {
+  return (
+    <article className="rounded-[28px] bg-white/40 p-4 ring-1 ring-black/5 sm:p-6">
+      <StepLabel number={number} title={title} description="Pilihan berasal dari master data aktif." />
+      <div className="mt-5 grid gap-3 md:grid-cols-3">
+        {(optionGroup?.options ?? []).map((item) => (
+          <OptionButton key={item.id} item={item} selected={selectedIds.includes(item.id)} onClick={() => onSelect(item.id)} />
+        ))}
+      </div>
+    </article>
+  );
+}
+
+function CollarSection({
+  group: optionGroup,
+  selectedId,
+  onSelect
+}: {
+  group?: ConfiguredOptionGroup;
+  selectedId: string;
+  onSelect: (id: string) => void;
+}) {
+  const labels = [...new Set((optionGroup?.options ?? []).map(collarGroupLabel))];
+  return (
+    <article className="rounded-[28px] bg-white/40 p-4 ring-1 ring-black/5 sm:p-6">
+      <StepLabel number={3} title="Kerah" description="Model kerah berasal dari master data aktif." />
+      <div className="mt-5 grid gap-5">
+        {labels.map((label) => (
+          <div key={label}>
+            <p className="text-xs font-semibold uppercase tracking-[0.14em] text-black/38">{label}</p>
+            <div className="mt-3 flex flex-wrap gap-2">
+              {(optionGroup?.options ?? [])
+                .filter((item) => collarGroupLabel(item) === label)
+                .map((item) => (
+                  <OptionButton key={item.id} item={item} selected={selectedId === item.id} onClick={() => onSelect(item.id)} />
+                ))}
+            </div>
+          </div>
+        ))}
+      </div>
+    </article>
+  );
+}
+
+function TextField({
+  label,
+  value,
+  onChange,
+  placeholder
+}: {
+  label: string;
+  value: string;
+  onChange: (value: string) => void;
+  placeholder?: string;
+}) {
+  return (
+    <label className="grid gap-2 text-sm font-semibold text-black/70">
+      {label}
+      <input
+        required
+        value={value}
+        onChange={(event) => onChange(event.target.value)}
+        placeholder={placeholder}
+        className="min-h-12 rounded-[18px] border-0 bg-white/70 px-4 text-sm font-normal outline-none ring-1 ring-black/8 focus:ring-[#063d24]/35"
+      />
+    </label>
+  );
+}
+
+function TextArea({
+  label,
+  value,
+  onChange,
+  placeholder
+}: {
+  label: string;
+  value: string;
+  onChange: (value: string) => void;
+  placeholder?: string;
+}) {
+  return (
+    <label className="grid gap-2 text-sm font-semibold text-black/70">
+      {label}
+      <textarea
+        required={!label.includes("opsional")}
+        value={value}
+        onChange={(event) => onChange(event.target.value)}
+        placeholder={placeholder}
+        rows={3}
+        className="rounded-[18px] border-0 bg-white/70 p-4 text-sm font-normal leading-6 outline-none ring-1 ring-black/8 focus:ring-[#063d24]/35"
+      />
+    </label>
+  );
+}
+
+function Summary({ label, value }: { label: string; value?: string }) {
+  return (
+    <div className="flex justify-between gap-4">
+      <span className="text-black/55">{label}</span>
+      <span className="text-right font-semibold">{value || "Belum dipilih"}</span>
+    </div>
+  );
+}
+
+function group(groups: readonly ConfiguredOptionGroup[], code: string) {
+  return groups.find((item) => item.code === code);
+}
+
+function selection(optionGroup: ConfiguredOptionGroup | undefined, optionIds: readonly string[]) {
+  return {
+    groupId: optionGroup?.id ?? "",
+    optionIds
+  };
+}
+
+function textSelection(
+  groups: readonly ConfiguredOptionGroup[],
+  code: string,
+  textValue: string
+) {
+  return {
+    groupId: group(groups, code)?.id ?? "",
+    optionIds: [],
+    textValue: textValue.trim()
+  };
+}
+
+function collarGroupLabel(item: ConfiguredOption) {
+  const value = item.metadata?.groupLabel;
+  return typeof value === "string" && value.trim() ? value : "Kerah";
+}
+
+function sizeSummary(values: Readonly<Record<string, number>>) {
+  return Object.entries(values)
+    .filter(([, quantity]) => quantity > 0)
+    .map(([size, quantity]) => `${size} × ${quantity}`)
+    .join(", ");
 }

@@ -1,11 +1,15 @@
 import { createClient, type SupabaseClient, type User } from "@supabase/supabase-js";
-import { getAdminSupabaseClient } from "@/lib/supabase/client";
+import { getAdminSupabaseClient } from "@/lib/supabase/admin";
 import { getPublicSupabaseEnv } from "@/lib/env";
 import {
   adminGuestErrorResponse,
   assertAdminRequestMethodAllowed
 } from "@/lib/admin-role-security";
 import { isAdminRole } from "@/lib/access-control";
+import {
+  canonicalErrorResponse,
+  createServerRequestContext
+} from "@/lib/observability/server";
 
 export type Phase13Actor = {
   user: User;
@@ -61,14 +65,35 @@ export async function requirePhase13Actor(
   return { user: data.user, role, client, adminClient };
 }
 
-export function phase13ErrorResponse(error: unknown): Response {
+export function phase13ErrorResponse(error: unknown, request?: Request): Response {
   const guestResponse = adminGuestErrorResponse(error);
   if (guestResponse) return guestResponse;
+  const context = createServerRequestContext(request, "admin role and audit");
   if (error instanceof Phase13AuthError) {
-    return Response.json({ error: error.message }, { status: error.status });
+    return canonicalErrorResponse({
+      error,
+      context,
+      definition: {
+        code: error.status === 401
+          ? "ADMIN_AUTHENTICATION_REQUIRED"
+          : error.status === 403
+            ? "ADMIN_ACCESS_DENIED"
+            : "ADMIN_SERVICE_UNAVAILABLE",
+        message: error.status >= 500
+          ? "Layanan panel Admin belum tersedia."
+          : error.message,
+        status: error.status
+      },
+      log: error.status >= 500
+    });
   }
-  return Response.json(
-    { error: error instanceof Error ? error.message : "Operasi Role & Audit gagal." },
-    { status: 500 }
-  );
+  return canonicalErrorResponse({
+    error,
+    context,
+    definition: {
+      code: "ADMIN_OPERATION_FAILED",
+      message: "Operasi Role & Audit gagal. Coba lagi.",
+      status: 500
+    }
+  });
 }

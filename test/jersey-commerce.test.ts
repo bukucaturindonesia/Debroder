@@ -112,7 +112,12 @@ describe("Jersey commerce catalog", () => {
 
   it("keeps Jersey product detail on the universal product route", () => {
     const detail = readFileSync("app/produk/[slug]/page.tsx", "utf8");
-    expect(detail).toContain('productMatchesRoute(product, "jersey")');
+    const domain = readFileSync("lib/product-detail-page/domain.ts", "utf8");
+
+    expect(detail).toContain("getProductDetailPageModel");
+    expect(domain).toContain('productMatchesRoute(product, "jersey")');
+    expect(domain).toContain("jerseyHasReadyStock(product)");
+    expect(domain).toContain("jerseyHasCustomAvailability(product)");
     expect(detail).toContain("JerseyCommerceNav");
     expect(detail).toContain('href="/jersey/configurator"');
     expect(detail).toContain("showBuyNow={isJersey && hasReadyStock}");

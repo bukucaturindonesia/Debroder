@@ -1,13 +1,18 @@
 import type { CustomCheckoutProject } from "@/lib/custom-commerce/types";
 import { parseCustomCheckoutProjects } from "@/lib/custom-commerce/validation";
 import { parseStructuredIndonesiaAddress, type StructuredIndonesiaAddressInput } from "@/lib/indonesia-address";
+import {
+  MAX_CART_LINES,
+  MAX_CART_LINE_QUANTITY,
+  MAX_CART_TOTAL_QUANTITY
+} from "@/lib/cart-v5";
 
 export type CheckoutFulfillmentMethod = "pickup" | "shipping";
 export type CheckoutPaymentMethod = "bank_transfer" | "pay_at_store";
 
-export const MAX_CHECKOUT_ITEMS = 50;
-export const MAX_CHECKOUT_LINE_QUANTITY = 100;
-export const MAX_CHECKOUT_TOTAL_QUANTITY = 500;
+export const MAX_CHECKOUT_ITEMS = MAX_CART_LINES;
+export const MAX_CHECKOUT_LINE_QUANTITY = MAX_CART_LINE_QUANTITY;
+export const MAX_CHECKOUT_TOTAL_QUANTITY = MAX_CART_TOTAL_QUANTITY;
 
 export type PublicCheckoutRequest = {
   idempotencyKey: string;

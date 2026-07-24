@@ -1,10 +1,19 @@
 "use client";
 
 import Link from "next/link";
-import { FormEvent, useEffect, useMemo, useState } from "react";
-import { useParams, useRouter } from "next/navigation";
-import { createSupabaseClient } from "@/lib/supabase";
-import { resolveOrderActiveStageFromServer, type OrderActiveStageResolution } from "@/lib/order-active-stage";
+import { FormEvent, useCallback, useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
+import { phase13ApiFetch } from "@/lib/admin-phase13-api";
+import type {
+  AdminOrderCommand,
+  AdminOrderDetailReadModel,
+  AdminOrderDomainSummary,
+  AdminOrderFulfillmentSummary,
+  AdminOrderQualityControlSummary,
+  AdminOrderReadModelItem,
+  AdminOrderReadModelOrder
+} from "@/lib/admin-orders/contracts";
+import type { OrderActiveStageResolution } from "@/lib/order-active-stage";
 import { AdminPageHeader } from "@/components/admin/layout/AdminPageHeader";
 import { AdminErrorState, AdminLoadingState } from "@/components/admin/ui/AdminFeedback";
 import { PaymentTrackingManager } from "@/components/admin/PaymentTrackingManager";
@@ -30,57 +39,6 @@ import {
 [OrderOperationalWorkspace, CustomOrderOperationalWorkspace].forEach((workspace) => {
   if (typeof workspace !== "function") throw new Error("Admin order workspace export tidak valid");
 });
-
-type Order = {
-  id: string;
-  order_number: string;
-  quotation_id: string | null;
-  customer_name: string;
-  company_name: string | null;
-  customer_phone: string;
-  customer_email: string | null;
-  shipping_address: string;
-  delivery_method: string;
-  customer_notes: string;
-  admin_notes: string;
-  status: string;
-  pricing_status: "final" | "estimated" | "quotation_required";
-  custom_quote_status: string | null;
-  custom_project_snapshot: unknown;
-  subtotal_amount: number;
-  total_amount: number;
-  payment_required_amount: number | null;
-  payment_effective_total: number;
-  payment_production_eligible: boolean;
-  payment_requirement_met: boolean;
-  payment_balance: number;
-  payment_method: string | null;
-  payment_status: string;
-  currency: string;
-  converted_at: string | null;
-  archived_at: string | null;
-  checkout_source: string | null;
-  whatsapp_confirmed_at: string | null;
-};
-
-type Item = {
-  id: string;
-  product_name: string;
-  variant_name: string | null;
-  color: string;
-  size: string;
-  sku: string | null;
-  quantity: number;
-  unit_price: number;
-  subtotal: number;
-  notes: string;
-  config_snapshot: unknown;
-  required_services: unknown;
-  estimated_total: number | null;
-  pricing_status: "final" | "estimated" | "quotation_required";
-  custom_project_id: string | null;
-  custom_project_item_id: string | null;
-};
 
 type SnapshotLine = {
   key: string;
@@ -121,20 +79,15 @@ function money(value: number) {
   }).format(value || 0);
 }
 
-export function OrderDetailAdmin() {
-  const params = useParams<{ id?: string | string[] }>();
+export function OrderDetailAdmin({ orderId }: { orderId: string }) {
   const router = useRouter();
-  const orderId = useMemo(() => {
-    const raw = params?.id;
-    return Array.isArray(raw) ? raw[0] : raw || "";
-  }, [params]);
 
-  const [order, setOrder] = useState<Order | null>(null);
-  const [items, setItems] = useState<Item[]>([]);
-  const [jobOrder, setJobOrder] = useState<{ id: string; status: string; updated_at: string | null } | null>(null);
+  const [order, setOrder] = useState<AdminOrderReadModelOrder | null>(null);
+  const [items, setItems] = useState<AdminOrderReadModelItem[]>([]);
+  const [jobOrder, setJobOrder] = useState<AdminOrderDomainSummary | null>(null);
   const [activeStage, setActiveStage] = useState<OrderActiveStageResolution | null>(null);
-  const [qualityControl, setQualityControl] = useState<{ id: string; status: string; result: string | null; updated_at: string | null } | null>(null);
-  const [fulfillment, setFulfillment] = useState<{ id: string; method: string; status: string; final_verified_at: string | null; tracking_number: string | null; updated_at: string | null } | null>(null);
+  const [qualityControl, setQualityControl] = useState<AdminOrderQualityControlSummary | null>(null);
+  const [fulfillment, setFulfillment] = useState<AdminOrderFulfillmentSummary | null>(null);
   const [loading, setLoading] = useState(true);
   const [working, setWorking] = useState(false);
   const [message, setMessage] = useState("");
@@ -172,84 +125,34 @@ export function OrderDetailAdmin() {
     return () => { window.removeEventListener("beforeunload", beforeUnload); document.removeEventListener("click", interceptLink, true); };
   }, [hasUnsavedChanges]);
 
-  async function loadData() {
-    const supabase = createSupabaseClient();
-    if (!supabase || !orderId) return;
+  const loadData = useCallback(async () => {
+    if (!orderId) return;
     setLoading(true);
-
-    const [orderResult, itemResult, jobResult, fulfillmentResult, paymentResult, activeStageResult] = await Promise.all([
-      supabase
-        .from("orders")
-        .select("id,order_number,quotation_id,customer_name,company_name,customer_phone,customer_email,shipping_address,delivery_method,customer_notes,admin_notes,status,pricing_status,custom_quote_status,custom_project_snapshot,subtotal_amount,total_amount,payment_required_amount,payment_effective_total,payment_balance,payment_method,payment_status,payment_production_eligible,payment_requirement_met,currency,converted_at,archived_at,checkout_source,whatsapp_confirmed_at")
-        .eq("id", orderId)
-        .maybeSingle(),
-      supabase
-        .from("order_items")
-        .select("id,product_name,variant_name,color,size,sku,quantity,unit_price,subtotal,notes,config_snapshot,required_services,estimated_total,pricing_status,custom_project_id,custom_project_item_id")
-        .eq("order_id", orderId)
-        .is("archived_at", null)
-        .order("created_at", { ascending: true }),
-      supabase.from("job_orders").select("id,status,updated_at").eq("order_id", orderId).is("archived_at", null).order("created_at", { ascending: false }).limit(1).maybeSingle(),
-      supabase.from("fulfillments").select("id,method,status,final_verified_at,tracking_number,updated_at").eq("order_id", orderId).is("archived_at", null).neq("status", "cancelled").order("created_at", { ascending: false }).limit(1).maybeSingle(),
-      supabase.from("order_payments").select("status,review_outcome,updated_at").eq("order_id", orderId).is("archived_at", null).order("created_at", { ascending: false }).limit(1).maybeSingle(),
-      supabase.rpc("resolve_order_active_stage_v1", { p_order_id: orderId })
-    ]);
-
-    setLoading(false);
-
-    if (orderResult.error || !orderResult.data) {
+    try {
+      const readModel = await phase13ApiFetch<AdminOrderDetailReadModel>(
+        `/api/admin/orders/${encodeURIComponent(orderId)}`
+      );
+      const row = readModel.order;
+      setOrder(row);
+      setItems(readModel.items);
+      setJobOrder(readModel.job_order);
+      setFulfillment(readModel.fulfillment);
+      setQualityControl(readModel.quality_control);
+      setActiveStage(readModel.active_stage);
+      setShippingAddress(row.shipping_address || "");
+      setDeliveryMethod(row.delivery_method || "pickup");
+      setCustomerNotes(row.customer_notes || "");
+      setAdminNotes(row.admin_notes || "");
+    } catch {
       setOrder(null);
-      return;
+    } finally {
+      setLoading(false);
     }
-
-    const row = orderResult.data as Order;
-    setOrder(row);
-    setItems((itemResult.data || []) as Item[]);
-    const nextJob = jobResult.data as { id: string; status: string; updated_at: string | null } | null;
-    setJobOrder(nextJob);
-    const nextFulfillment = fulfillmentResult.data as { id: string; method: string; status: string; final_verified_at: string | null; tracking_number: string | null; updated_at: string | null } | null;
-    setFulfillment(nextFulfillment);
-    let nextQualityControl: { id: string; status: string; result: string | null; updated_at: string | null } | null = null;
-    if (nextJob?.id) {
-      const qcResult = await supabase.from("qc_records").select("id,status,result,updated_at").eq("job_order_id", nextJob.id).is("archived_at", null).order("created_at", { ascending: false }).limit(1).maybeSingle();
-      nextQualityControl = qcResult.data as { id: string; status: string; result: string | null; updated_at: string | null } | null;
-    }
-    setQualityControl(nextQualityControl);
-    setActiveStage(resolveOrderActiveStageFromServer({
-      orderId: row.id,
-      orderNumber: row.order_number,
-      status: row.status,
-      paymentStatus: row.payment_status,
-      latestPaymentStatus: paymentResult.data?.status ?? null,
-      latestPaymentReviewOutcome: paymentResult.data?.review_outcome ?? null,
-      fulfillmentStatus: nextFulfillment?.status ?? null,
-      fulfillmentMethod: nextFulfillment?.method ?? row.delivery_method,
-      paymentMethod: row.payment_method,
-      pricingStatus: row.pricing_status,
-      customQuoteStatus: row.custom_quote_status,
-      isCustom: resolveAdminOrderWorkspaceKind(row.custom_project_snapshot) === "custom",
-      whatsappConfirmed: Boolean(row.whatsapp_confirmed_at),
-      paymentRequirementMet: row.payment_requirement_met,
-      paymentProductionEligible: row.payment_production_eligible,
-      paymentEffectiveTotal: row.payment_effective_total,
-      hasVerifiedPayment: row.payment_effective_total > 0,
-      hasJobOrder: Boolean(nextJob),
-      jobOrderStatus: nextJob?.status ?? null,
-      qualityControlStatus: nextQualityControl?.result ?? nextQualityControl?.status ?? null,
-      finalVerificationCompleted: Boolean(nextFulfillment?.final_verified_at),
-      trackingNumber: nextFulfillment?.tracking_number ?? null,
-      taskRevision: nextJob?.updated_at ?? paymentResult.data?.updated_at ?? row.status
-    }, activeStageResult.error ? null : activeStageResult.data));
-    setShippingAddress(row.shipping_address || "");
-    setDeliveryMethod(row.delivery_method || "pickup");
-    setCustomerNotes(row.customer_notes || "");
-    setAdminNotes(row.admin_notes || "");
-  }
+  }, [orderId]);
 
   useEffect(() => {
     void loadData();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [orderId]);
+  }, [loadData]);
 
   useEffect(() => {
     if (!order || !compatibilityWarning) return;
@@ -262,24 +165,22 @@ export function OrderDetailAdmin() {
 
   async function persistEdit() {
     if (!order || working || order.status !== "baru") return false;
-    const supabase = createSupabaseClient();
-    if (!supabase) return false;
 
     setWorking(true);
-    const { error } = await supabase.rpc("update_order_delivery_details", {
-      p_order_id: order.id,
-      p_delivery_method: deliveryMethod,
-      p_shipping_address: shippingAddress.trim(),
-      p_customer_notes: customerNotes.trim(),
-      p_admin_notes: adminNotes.trim()
-    });
-
-    setWorking(false);
-
-    if (error) {
+    try {
+      await sendOrderCommand(order.id, {
+        action: "update_delivery",
+        deliveryMethod,
+        shippingAddress,
+        customerNotes,
+        adminNotes
+      });
+    } catch {
       setMessage("Perubahan pesanan gagal disimpan.");
+      setWorking(false);
       return false;
     }
+    setWorking(false);
 
     setEditOpen(false);
     setMessage("Perubahan pesanan berhasil disimpan.");
@@ -300,20 +201,16 @@ export function OrderDetailAdmin() {
 
   async function cancelOrder() {
     if (!order || working || !cancelReason.trim()) return;
-    const supabase = createSupabaseClient();
-    if (!supabase) return;
 
     setWorking(true);
-    const { error } = await supabase.rpc("cancel_order_transactional", {
-      p_order_id: order.id,
-      p_reason: cancelReason.trim()
-    });
-    setWorking(false);
-
-    if (error) {
+    try {
+      await sendOrderCommand(order.id, { action: "cancel", reason: cancelReason });
+    } catch {
       setMessage("Pesanan belum dapat dibatalkan. Periksa status terbaru lalu coba lagi.");
+      setWorking(false);
       return;
     }
+    setWorking(false);
 
     setCancelOpen(false);
     setCancelReason("");
@@ -323,20 +220,19 @@ export function OrderDetailAdmin() {
 
   async function archiveOrder() {
     if (!order || working) return;
-    const supabase = createSupabaseClient();
-    if (!supabase) return;
 
     setWorking(true);
-    const { error } = await supabase.rpc("archive_order", {
-      p_order_id: order.id,
-      p_reason: archiveReason.trim() || null
-    });
-    setWorking(false);
-
-    if (error) {
+    try {
+      await sendOrderCommand(order.id, {
+        action: "archive",
+        reason: archiveReason.trim() || null
+      });
+    } catch {
       setMessage("Pesanan belum dapat dipindahkan ke arsip. Coba lagi.");
+      setWorking(false);
       return;
     }
+    setWorking(false);
 
     router.replace("/admin/orders/archive");
     router.refresh();
@@ -894,4 +790,11 @@ function formatBytes(value: number) {
   if (value < 1024) return `${value} B`;
   if (value < 1024 * 1024) return `${Math.round(value / 1024)} KB`;
   return `${(value / (1024 * 1024)).toFixed(1)} MB`;
+}
+
+async function sendOrderCommand(orderId: string, command: AdminOrderCommand) {
+  await phase13ApiFetch<{ ok: true }>(`/api/admin/orders/${encodeURIComponent(orderId)}`, {
+    method: "PATCH",
+    body: JSON.stringify(command)
+  });
 }

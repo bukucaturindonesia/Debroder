@@ -1,6 +1,6 @@
 import { ensureAutomaticPaymentLink, type AutomaticPaymentOrder } from "@/lib/automatic-payment-link";
 import { paymentErrorResponse, requirePaymentActor } from "@/lib/payment-auth";
-import { getAdminSupabaseClient } from "@/lib/supabase/client";
+import { getAdminSupabaseClient } from "@/lib/supabase/admin";
 
 type Context = { params: Promise<{ id: string }> };
 

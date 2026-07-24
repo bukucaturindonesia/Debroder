@@ -9,6 +9,7 @@ export default defineConfig({
   },
   resolve: {
     alias: {
+      "server-only": fileURLToPath(new URL("./test/support/server-only.ts", import.meta.url)),
       "@/lib/automatic-payment-link": fileURLToPath(new URL("./lib/automatic-payment-link-v2.ts", import.meta.url)),
       "@": fileURLToPath(new URL("./", import.meta.url))
     }

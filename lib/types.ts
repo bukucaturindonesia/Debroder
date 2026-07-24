@@ -616,82 +616,6 @@ export type ProductVariantImage = {
   updated_at?: string;
 };
 
-export type JerseyPackage = {
-  id?: string;
-  name: string;
-  slug: string;
-  base_price: number | string;
-  description?: string;
-  is_active?: boolean;
-  sort_order?: number;
-};
-
-export type JerseyMaterial = {
-  id?: string;
-  name: string;
-  slug: string;
-  price_adjustment: number | string;
-  description?: string;
-  is_active?: boolean;
-  sort_order?: number;
-};
-
-export type JerseyCollarGroup = {
-  id?: string;
-  name: string;
-  slug: string;
-  sort_order?: number;
-  is_active?: boolean;
-};
-
-export type JerseyCollar = {
-  id?: string;
-  group_id?: string | null;
-  group_name?: string | null;
-  group_slug?: string | null;
-  name: string;
-  slug: string;
-  price_adjustment: number | string;
-  image_url?: string | null;
-  icon_url?: string | null;
-  is_active?: boolean;
-  sort_order?: number;
-};
-
-export type JerseyAddon = {
-  id?: string;
-  name: string;
-  slug: string;
-  price_adjustment: number | string;
-  description?: string;
-  is_active?: boolean;
-  sort_order?: number;
-};
-
-export type JerseyRequiredService = {
-  id?: string;
-  service_id?: string | null;
-  service_name: string;
-  service_slug: string;
-  is_active?: boolean;
-  sort_order?: number;
-};
-
-export type JerseyConfiguratorSettings = {
-  minimum_order_qty: number;
-  price_formula?: string;
-};
-
-export type JerseyConfiguratorData = {
-  packages: JerseyPackage[];
-  materials: JerseyMaterial[];
-  collarGroups: JerseyCollarGroup[];
-  collars: JerseyCollar[];
-  addons: JerseyAddon[];
-  requiredServices: JerseyRequiredService[];
-  settings: JerseyConfiguratorSettings;
-};
-
 export type PublicContent = {
   hero: HeroBanner;
   heroes: HeroBanner[];
@@ -713,7 +637,6 @@ export type PublicContent = {
   trustAbout: TrustAboutContent;
   testimonials: Testimonial[];
   contact: ContactSettings;
-  jerseyConfigurator: JerseyConfiguratorData;
 };
 
 // v1.1 ordering/PIM domain. Kept separate from the legacy CMS Product model.
@@ -732,6 +655,9 @@ export type PimProduct = {
   description: string | null;
   status: "draft" | "active" | "archived";
   sku: string | null;
+  salesMode?: "ready_stock" | "custom" | "both";
+  pricingMode?: PricingMode;
+  tierScope?: "none" | "product";
   variants: PimProductVariant[];
   priceTiers: ProductPriceTier[];
   minimumRule: ProductMinimumRule | null;
@@ -924,7 +850,20 @@ export type RevalidationInput = {
 };
 export type RevalidationResult = {
   product_variant_size_id: string;
-  status: "ok" | "unavailable" | "stock_changed" | "price_changed";
+  status:
+    | "ok"
+    | "unavailable"
+    | "stock_changed"
+    | "price_changed"
+    | "quotation_required";
+  error_code:
+    | "PRICING_INPUT_INVALID"
+    | "PRICING_PRODUCT_UNAVAILABLE"
+    | "PRICING_COMMERCE_MODE_MISMATCH"
+    | "PRICING_VARIANT_UNAVAILABLE"
+    | "PRICING_QUOTATION_REQUIRED"
+    | "PRICING_CANONICAL_AMOUNT_INVALID"
+    | null;
   latest_unit_price: number | null;
   stock_available: number;
   message: string | null;

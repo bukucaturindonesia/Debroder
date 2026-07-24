@@ -1,8 +1,7 @@
 import type { Metadata } from "next";
 import { PageHero, PublicShell } from "@/components/PublicPage";
 import { ProductCatalog } from "@/components/ProductCatalog";
-import { productsForCategoryRoute } from "@/lib/product-route-matching";
-import { getPublicContent } from "@/lib/public-data";
+import { getCatalogPageModel } from "@/lib/catalog-page/runtime";
 
 export const metadata: Metadata = {
   title: "Kemeja Custom | DE BRODER",
@@ -11,23 +10,22 @@ export const metadata: Metadata = {
 };
 
 export default async function KemejaPage() {
-  const content = await getPublicContent();
-  const pageHero = content.pageHeroes.find((hero) => hero.page_key === "kemeja");
-  const products = productsForCategoryRoute(content.products, content.productCategories, "kemeja");
+  const model = await getCatalogPageModel({ routeKey: "kemeja" });
+  const { hero, products } = model.data;
 
   return (
-    <PublicShell content={content}>
+    <PublicShell>
       <PageHero
-        label={pageHero?.label}
-        title={pageHero?.title}
-        description={pageHero?.subtitle}
-        imageUrl={pageHero?.image_url}
-        mobileImageUrl={pageHero?.mobile_image_url}
-        objectPosition={pageHero?.object_position}
-        mobileObjectPosition={pageHero?.mobile_object_position}
-        objectFit={pageHero?.object_fit}
-        imageZoom={pageHero?.focal_zoom}
-        mobileImageZoom={pageHero?.mobile_focal_zoom}
+        label={hero.label}
+        title={hero.title}
+        description={hero.description}
+        imageUrl={hero.imageUrl}
+        mobileImageUrl={hero.mobileImageUrl}
+        objectPosition={hero.objectPosition}
+        mobileObjectPosition={hero.mobileObjectPosition}
+        objectFit={hero.objectFit}
+        imageZoom={hero.imageZoom}
+        mobileImageZoom={hero.mobileImageZoom}
         breadcrumbs={[{ label: "Beranda", href: "/" }, { label: "Kemeja" }]}
       />
       <section className="bg-brand-offWhite py-10 sm:py-12">

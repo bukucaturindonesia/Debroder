@@ -1,4 +1,8 @@
-import { randomUUID } from "node:crypto";
+import {
+  canonicalErrorResponse,
+  createServerRequestContext,
+  type ServerRequestContext
+} from "@/lib/observability/server";
 
 export type PublicApiErrorDefinition = {
   code: string;
@@ -15,38 +19,42 @@ const DEFAULT_ERROR: PublicApiErrorDefinition = {
 export function publicApiErrorResponse(
   error: unknown,
   context: string,
-  definition: Partial<PublicApiErrorDefinition> = {}
+  definition: Partial<PublicApiErrorDefinition> = {},
+  requestContext?: Request | ServerRequestContext
 ) {
-  const reference = `ERR-${randomUUID().replace(/-/g, "").slice(0, 12).toUpperCase()}`;
-  const internal = error instanceof Error ? error.message : String(error ?? "unknown");
-  console.error(`[${reference}] ${context}`, { error: internal });
-
   const resolved = { ...DEFAULT_ERROR, ...definition };
-  return Response.json(
-    {
-      code: resolved.code,
-      error: resolved.message,
-      reference
-    },
-    {
-      status: resolved.status,
-      headers: {
-        "cache-control": "private, no-store",
-        "referrer-policy": "no-referrer",
-        "x-content-type-options": "nosniff"
-      }
-    }
-  );
+  const observability = isServerRequestContext(requestContext)
+    ? requestContext
+    : createServerRequestContext(requestContext, context);
+  return canonicalErrorResponse({
+    error,
+    context: observability,
+    definition: resolved
+  });
 }
 
 export function safePublicResponse(body: unknown, status = 200, headers?: HeadersInit) {
+  const resolvedHeaders = new Headers(headers);
+  resolvedHeaders.set(
+    "cache-control",
+    resolvedHeaders.get("cache-control") ?? "private, no-store"
+  );
+  resolvedHeaders.set(
+    "referrer-policy",
+    resolvedHeaders.get("referrer-policy") ?? "no-referrer"
+  );
+  resolvedHeaders.set(
+    "x-content-type-options",
+    resolvedHeaders.get("x-content-type-options") ?? "nosniff"
+  );
   return Response.json(body, {
     status,
-    headers: {
-      "cache-control": "private, no-store",
-      "referrer-policy": "no-referrer",
-      "x-content-type-options": "nosniff",
-      ...headers
-    }
+    headers: resolvedHeaders
   });
+}
+
+function isServerRequestContext(
+  value: Request | ServerRequestContext | undefined
+): value is ServerRequestContext {
+  return Boolean(value && "requestId" in value && "correlationId" in value);
 }

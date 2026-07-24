@@ -2,7 +2,6 @@ import type { Metadata } from "next";
 import { CustomHub } from "@/components/custom/CustomHub";
 import { PublicShell } from "@/components/PublicPage";
 import { listCustomCategories } from "@/lib/custom-commerce/data";
-import { getPublicContent } from "@/lib/public-data";
 
 export const metadata: Metadata = {
   title: "Pesanan Custom | DEBRODER",
@@ -11,6 +10,6 @@ export const metadata: Metadata = {
 };
 
 export default async function CustomPage() {
-  const [content, categories] = await Promise.all([getPublicContent(), listCustomCategories()]);
-  return <PublicShell content={content}><main className="min-h-screen bg-[#f6f5f0]"><CustomHub categories={categories} /></main></PublicShell>;
+  const categories = await listCustomCategories();
+  return <PublicShell><main className="min-h-screen bg-[#f6f5f0]"><CustomHub categories={categories} /></main></PublicShell>;
 }

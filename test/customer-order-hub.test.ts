@@ -64,9 +64,13 @@ describe("Customer Order Hub", () => {
   it("preserves Custom quote payment gates and never creates transfer links for pay-at-store", () => {
     const confirmationRoute = read("app/api/public/orders/[token]/route.ts");
     const trackingRoute = read("app/api/public/order-tracking/route.ts");
-    expect(confirmationRoute).toContain("automatic-payment-link-v2");
-    expect(trackingRoute).toContain("automatic-payment-link-v2");
-    expect(trackingRoute).toContain('order.payment_method === "bank_transfer" && order.status === "awaiting_payment"');
-    expect(trackingRoute).toContain("relativePaymentPath");
+    const useCase = read("lib/customer-orders/page-use-case.ts");
+    expect(confirmationRoute).toContain("loadCustomerOrderConfirmationProjection");
+    expect(confirmationRoute).toContain("completeCustomerOrderConfirmationPage");
+    expect(trackingRoute).toContain("completeCustomerOrderTrackingPage");
+    expect(useCase).toContain("automatic-payment-link-v2");
+    expect(useCase).toContain("ensureAutomaticPaymentLink");
+    expect(useCase).toContain('order.payment_method !== "bank_transfer" || order.status !== "awaiting_payment"');
+    expect(useCase).toContain("relativePaymentPath");
   });
 });
