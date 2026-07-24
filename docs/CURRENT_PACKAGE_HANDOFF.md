@@ -20,8 +20,9 @@
 - P8B — Size Adjustment Data Mutation: **PASS**
 - P9 — Generic Configured Product: **PASS menurut owner**
 - P10 — Jersey Configured Product: **PASS menurut owner**
-- P11 — Workspace Optimization: **IMPLEMENTED IN SOURCE — AWAITING OWNER GATE VERIFICATION**
-- Package setelah P11: **P12 — Admin Orders Ownership**, hanya setelah owner menyatakan gate P11 PASS.
+- P11 — Workspace Optimization: **PASS menurut owner**
+- P12 — Admin Orders Ownership: **IMPLEMENTED IN SOURCE — AWAITING OWNER GATE VERIFICATION**
+- Package setelah P12: **P13 — Customer Order Read Model & Polling**, hanya setelah owner menyatakan gate P12 PASS.
 
 Codex wajib memverifikasi sendiri sebelum mengubah source:
 
@@ -248,26 +249,34 @@ Owner menangani review akhir, commit, push GitHub, dan Vercel Preview, kecuali o
 
 ---
 
-## 10. P11 — Scope Aktif
+## 10. P12 — Scope Aktif
 
-Owner menyatakan seluruh gate P10 clean/PASS dan memberi instruksi `lanjut`.
-P11 mengoptimalkan workspace tanpa mengubah business behavior.
+Owner menyatakan seluruh gate P11 clean/PASS dan memberi instruksi `lanjut`.
+P12 mengisolasi ownership Admin Orders tanpa mengubah business behavior.
 
-P11 telah:
+P12 telah:
 
-- mengganti 12 eager import panel khusus route pada `AdminDashboard` menjadi
-  dynamic import SSR-enabled; production bundle route admin generik turun dari
-  906.011 menjadi 650.829 byte (turun 255.182 byte / sekitar 28%);
-- menghapus `CheckoutClientV2.tsx` yang tidak memiliki consumer dan merupakan
-  implementasi pre-P6; route tetap memakai checkout canonical dengan recovery,
-  Cart v5 decision, dan structured address;
-- menghapus Jersey configurator read model/fallback legacy yang sudah tidak
-  memiliki consumer setelah P10, termasuk tujuh query tambahan pada setiap
-  `getPublicContent()`; P10 Jersey server authority tetap utuh;
-- menambah regression test untuk lazy boundary, canonical checkout, penghapusan
-  loader legacy, dan kelangsungan P10;
-- tidak mengubah pricing, cart, checkout, route, historical snapshot, database,
-  migration, atau business behavior.
+- mempertahankan route page sebagai Server Components dan mengirim `orderId`
+  dari route, bukan menjadikan browser sebagai pemilik identitas route;
+- menambah page-owned server use case, data-access `server-only`, dan typed
+  list/detail read model untuk order, item, latest payment, job order, QC,
+  fulfillment, tracking, source snapshot, dan per-line pricing snapshot;
+- mengganti query tabel transaksi langsung pada `OrderListAdmin`,
+  `OrderCommandCenterAdmin`, dan `OrderDetailAdmin` dengan authenticated API
+  ber-permission `order.read`;
+- membaca detail sebagai satu nested database graph dengan field whitelist,
+  lalu memilih record aktif/latest dan menghitung canonical active stage hanya
+  pada server;
+- menjalankan read graph dengan client JWT actor agar RLS granular
+  `payment.read`, `shipping.view`, `production.view`, dan `qc.view` tetap
+  berlaku; service-role tidak dipakai untuk membaca halaman;
+- memindahkan edit delivery, cancel transactional, dan archive dari direct
+  browser RPC ke API command ber-permission `order.edit`;
+- mempertahankan historical snapshots apa adanya, memodelkan status historical
+  item `confirmed` secara eksplisit, dan fail-closed pada pricing status atau
+  nilai transaksi yang tidak dikenali;
+- tidak mengubah pricing formula, cart, checkout, payment rule, fulfillment
+  rule, inventory, schema, RLS, data, atau migration.
 
 Status saat ini:
 

@@ -184,7 +184,9 @@ describe("Order Integrity & Handoff Foundation Phase 0-3", () => {
     });
     expect(read("lib/customer-order-presentation.ts")).toContain("resolveOrderActiveStageFromServer");
     expect(read("lib/order-tracking.ts")).toContain("resolveOrderActiveStage");
-    expect(read("components/admin/OrderDetailAdmin.tsx")).toContain("resolveOrderActiveStageFromServer");
+    expect(read("lib/admin-orders/read-model.ts")).toContain("resolveCanonicalOrderActiveStage");
+    expect(read("components/admin/OrderDetailAdmin.tsx")).toContain("readModel.active_stage");
+    expect(read("components/admin/OrderDetailAdmin.tsx")).not.toContain('rpc("resolve_order_active_stage_v1"');
   });
 
   it("defines typed task labels and active-state semantics", () => {

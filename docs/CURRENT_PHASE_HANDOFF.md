@@ -520,3 +520,40 @@ Status: **IMPLEMENTED IN SOURCE — AWAITING OWNER GATE VERIFICATION**.
 - Deployment/commit/push/merge: none for P9.
 - Next: owner runs full typecheck/lint/test/build/diff gate. P10 remains closed
   until owner confirms P9 PASS.
+
+---
+
+## 2026-07-24 — P12 Admin Orders Ownership
+
+Status: **IMPLEMENTED IN SOURCE — AWAITING OWNER GATE VERIFICATION**.
+
+- Owner confirmed P11 gate clean/PASS. P12 baseline HEAD
+  `571dffc2050d5d992c6f5196ddd5004189a25d74` was clean on the expected branch.
+- Root cause: Admin Order pages were Server Components, but list/detail client
+  components independently queried transaction tables and resolved the active
+  stage from browser-owned, multi-request state.
+- Added `lib/admin-orders` contracts, pure projection, `server-only` data
+  access, and page use cases. List/detail APIs require `order.read`; mutation
+  commands require `order.edit`.
+- Read projections use the server-side actor JWT client, not service role, so
+  granular `payment.read`, `shipping.view`, `production.view`, and `qc.view`
+  RLS remains authoritative.
+- Detail is loaded as one whitelisted nested graph covering order, item
+  snapshots, latest payment, job/QC, fulfillment, courier tracking, and
+  pricing/source snapshots. The browser only renders the typed result.
+- Full-detail delivery edit, cancel, and archive now cross the server command
+  boundary before invoking existing canonical RPCs.
+- Historical snapshots are read-only. Live historical item status
+  `confirmed` remains explicit; unknown order pricing state or invalid monetary
+  values fail closed.
+- Live Supabase audit found 44 orders, 53 items, 22 payments, 17 fulfillments,
+  0 job orders, and 0 QC records; all scoped tables have RLS and the required
+  child relationships are unambiguous.
+- Database/migration local/remote/applied/pending: none. No row, schema,
+  function, trigger, RLS, pricing, inventory, cart, or checkout mutation.
+- Verification run: typecheck PASS; touched-file lint PASS; 8 targeted files /
+  69 tests PASS; direct Next production build PASS, 110/110 pages;
+  `git diff --check` PASS. Build reports only pre-existing repository warnings.
+- Deployment/commit/push/merge: none.
+- Next: owner full gate and diff review. P13 remains closed until owner confirms
+  P12 PASS.

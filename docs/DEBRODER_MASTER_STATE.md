@@ -314,3 +314,28 @@ The FROZEN commerce/landing blueprints and official Owner Decisions remain autho
   formula change, inventory change, commit, push, merge, or deployment was
   performed.
 - Typecheck, touched lint, targeted P9/Cart/contract tests, and diff check pass.
+
+## P12 Admin Orders Ownership state — 2026-07-24
+
+- P11 is **PASS** according to the owner gate; baseline P12 HEAD was
+  `571dffc2050d5d992c6f5196ddd5004189a25d74` on the expected branch with a
+  clean working tree.
+- P12 is **IMPLEMENTED IN SOURCE — AWAITING OWNER GATE VERIFICATION**.
+- Admin Orders list and detail now read through authenticated server APIs,
+  page-owned use cases, `server-only` data access, and explicit typed read
+  models instead of direct browser table queries.
+- One detail graph projects the order, historical item/source/pricing
+  snapshots, latest payment, job order, QC, fulfillment, and tracking data;
+  canonical active-stage resolution now runs on the server projection.
+- Delivery edit, transactional cancellation, and archive commands require
+  `order.edit` on the server. Read APIs require `order.read`, use the actor JWT
+  client, preserve granular domain RLS, and return only whitelisted fields.
+- Live audit: 44 orders, 53 items, 22 payments, 17 fulfillments, 0 job orders,
+  and 0 QC records. All involved tables have RLS. Canonical child relations
+  each have one unambiguous foreign key.
+- No migration, schema/RLS change, database mutation, historical rewrite,
+  pricing formula change, inventory change, commit, push, or deployment was
+  performed.
+- Verification: typecheck PASS; touched lint PASS; targeted suite PASS
+  (8 files / 69 tests); production build PASS (110/110 pages);
+  `git diff --check` PASS. Existing repository lint warnings remain unchanged.

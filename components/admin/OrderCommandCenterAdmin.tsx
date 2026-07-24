@@ -1,8 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { useCallback, useEffect, useMemo, useState } from "react";
-import { useParams, useRouter, useSearchParams } from "next/navigation";
+import { useCallback, useEffect, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { AdminGuidedOrderFlow } from "@/components/admin/AdminGuidedOrderFlow";
 import { AdminOrderSectionBoundary } from "@/components/admin/AdminOrderSectionBoundary";
 import { CommerceOrderOperations } from "@/components/admin/CommerceOrderOperations";
@@ -14,75 +14,20 @@ import { AdminPageHeader } from "@/components/admin/layout/AdminPageHeader";
 import { AdminErrorState, AdminLoadingState } from "@/components/admin/ui/AdminFeedback";
 import { CarrierTrackingActions } from "@/components/tracking/CarrierTrackingActions";
 import { adminOrderCompatibilityWarning, resolveAdminOrderWorkspaceKind } from "@/lib/admin-order-detail";
-import { resolveCanonicalOrderActiveStage } from "@/lib/canonical-order-stage";
+import { phase13ApiFetch } from "@/lib/admin-phase13-api";
+import type {
+  AdminOrderDetailReadModel,
+  AdminOrderDomainSummary,
+  AdminOrderFulfillmentSummary,
+  AdminOrderPaymentSummary,
+  AdminOrderQualityControlSummary,
+  AdminOrderReadModelItem,
+  AdminOrderReadModelOrder
+} from "@/lib/admin-orders/contracts";
 import type { OrderActiveStageResolution } from "@/lib/order-active-stage";
-import { createSupabaseClient } from "@/lib/supabase";
 import { getOrderStatusLabel, getPricingStatusLabel } from "@/lib/ui-language";
 
 type CommandTab = "summary" | "payment" | "operations" | "fulfillment" | "history";
-
-type Order = {
-  id: string;
-  order_number: string;
-  customer_name: string;
-  company_name: string | null;
-  customer_phone: string;
-  customer_email: string | null;
-  shipping_address: string;
-  delivery_method: string;
-  customer_notes: string;
-  admin_notes: string;
-  status: string;
-  pricing_status: "final" | "estimated" | "quotation_required";
-  custom_quote_status: string | null;
-  custom_project_snapshot: unknown;
-  subtotal_amount: number;
-  total_amount: number;
-  payment_required_amount: number | null;
-  payment_effective_total: number;
-  payment_production_eligible: boolean;
-  payment_requirement_met: boolean;
-  payment_balance: number;
-  payment_method: string | null;
-  payment_status: string;
-  archived_at: string | null;
-  checkout_source: string | null;
-  whatsapp_confirmed_at: string | null;
-};
-
-type Item = {
-  id: string;
-  product_name: string;
-  variant_name: string | null;
-  color: string;
-  size: string;
-  sku: string | null;
-  quantity: number;
-  unit_price: number;
-  subtotal: number;
-  notes: string;
-  pricing_status: string;
-  custom_project_id: string | null;
-};
-
-type Domain = {
-  id: string;
-  status: string;
-  updated_at: string | null;
-};
-
-type Fulfillment = Domain & {
-  method: string;
-  courier: string | null;
-  tracking_number: string | null;
-  final_verified_at: string | null;
-};
-
-type LatestPayment = {
-  status: string;
-  review_outcome: string | null;
-  updated_at: string | null;
-};
 
 const TAB_LABELS: Array<{ key: CommandTab; label: string }> = [
   { key: "summary", label: "Ringkasan" },
@@ -92,132 +37,45 @@ const TAB_LABELS: Array<{ key: CommandTab; label: string }> = [
   { key: "history", label: "Riwayat" }
 ];
 
-export function OrderCommandCenterAdmin() {
-  const params = useParams<{ id?: string | string[] }>();
+export function OrderCommandCenterAdmin({ orderId }: { orderId: string }) {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const orderId = useMemo(() => {
-    const raw = params?.id;
-    return Array.isArray(raw) ? raw[0] : raw || "";
-  }, [params]);
 
   const requestedTab = commandTab(searchParams.get("tab"));
   const [tab, setTab] = useState<CommandTab>(requestedTab ?? "summary");
-  const [order, setOrder] = useState<Order | null>(null);
-  const [items, setItems] = useState<Item[]>([]);
-  const [jobOrder, setJobOrder] = useState<Domain | null>(null);
-  const [qualityControl, setQualityControl] = useState<(Domain & { result: string | null }) | null>(null);
-  const [fulfillment, setFulfillment] = useState<Fulfillment | null>(null);
-  const [latestPayment, setLatestPayment] = useState<LatestPayment | null>(null);
+  const [order, setOrder] = useState<AdminOrderReadModelOrder | null>(null);
+  const [items, setItems] = useState<AdminOrderReadModelItem[]>([]);
+  const [jobOrder, setJobOrder] = useState<AdminOrderDomainSummary | null>(null);
+  const [qualityControl, setQualityControl] = useState<AdminOrderQualityControlSummary | null>(null);
+  const [fulfillment, setFulfillment] = useState<AdminOrderFulfillmentSummary | null>(null);
+  const [latestPayment, setLatestPayment] = useState<AdminOrderPaymentSummary | null>(null);
   const [activeStage, setActiveStage] = useState<OrderActiveStageResolution | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
   const loadData = useCallback(async () => {
-    const supabase = createSupabaseClient();
-    if (!supabase || !orderId) return;
+    if (!orderId) return;
     setLoading(true);
     setError("");
 
-    const [orderResult, itemResult, jobResult, fulfillmentResult, paymentResult] = await Promise.all([
-      supabase
-        .from("orders")
-        .select("id,order_number,customer_name,company_name,customer_phone,customer_email,shipping_address,delivery_method,customer_notes,admin_notes,status,pricing_status,custom_quote_status,custom_project_snapshot,subtotal_amount,total_amount,payment_required_amount,payment_effective_total,payment_balance,payment_method,payment_status,payment_production_eligible,payment_requirement_met,archived_at,checkout_source,whatsapp_confirmed_at")
-        .eq("id", orderId)
-        .maybeSingle(),
-      supabase
-        .from("order_items")
-        .select("id,product_name,variant_name,color,size,sku,quantity,unit_price,subtotal,notes,pricing_status,custom_project_id")
-        .eq("order_id", orderId)
-        .is("archived_at", null)
-        .order("created_at", { ascending: true }),
-      supabase
-        .from("job_orders")
-        .select("id,status,updated_at")
-        .eq("order_id", orderId)
-        .is("archived_at", null)
-        .order("created_at", { ascending: false })
-        .limit(1)
-        .maybeSingle(),
-      supabase
-        .from("fulfillments")
-        .select("id,method,status,courier,tracking_number,final_verified_at,updated_at")
-        .eq("order_id", orderId)
-        .is("archived_at", null)
-        .neq("status", "cancelled")
-        .order("created_at", { ascending: false })
-        .limit(1)
-        .maybeSingle(),
-      supabase
-        .from("order_payments")
-        .select("status,review_outcome,updated_at")
-        .eq("order_id", orderId)
-        .is("archived_at", null)
-        .order("created_at", { ascending: false })
-        .limit(1)
-        .maybeSingle()
-    ]);
-
-    if (orderResult.error || !orderResult.data) {
+    try {
+      const readModel = await phase13ApiFetch<AdminOrderDetailReadModel>(
+        `/api/admin/orders/${encodeURIComponent(orderId)}`
+      );
+      setOrder(readModel.order);
+      setItems(readModel.items);
+      setJobOrder(readModel.job_order);
+      setFulfillment(readModel.fulfillment);
+      setLatestPayment(readModel.latest_payment);
+      setQualityControl(readModel.quality_control);
+      setActiveStage(readModel.active_stage);
+      setTab(requestedTab ?? defaultTab(readModel.active_stage));
+    } catch {
       setOrder(null);
-      setLoading(false);
       setError("Pesanan tidak ditemukan atau belum dapat dimuat.");
-      return;
+    } finally {
+      setLoading(false);
     }
-
-    const row = orderResult.data as Order;
-    const nextJob = jobResult.data as Domain | null;
-    const nextFulfillment = fulfillmentResult.data as Fulfillment | null;
-    const nextPayment = paymentResult.data as LatestPayment | null;
-    let nextQualityControl: (Domain & { result: string | null }) | null = null;
-
-    if (nextJob?.id) {
-      const qcResult = await supabase
-        .from("qc_records")
-        .select("id,status,result,updated_at")
-        .eq("job_order_id", nextJob.id)
-        .is("archived_at", null)
-        .order("created_at", { ascending: false })
-        .limit(1)
-        .maybeSingle();
-      nextQualityControl = qcResult.data as (Domain & { result: string | null }) | null;
-    }
-
-    const nextStage = resolveCanonicalOrderActiveStage({
-      orderId: row.id,
-      orderNumber: row.order_number,
-      status: row.status,
-      paymentStatus: row.payment_status,
-      latestPaymentStatus: nextPayment?.status ?? null,
-      latestPaymentReviewOutcome: nextPayment?.review_outcome ?? null,
-      fulfillmentStatus: nextFulfillment?.status ?? null,
-      fulfillmentMethod: nextFulfillment?.method ?? row.delivery_method,
-      paymentMethod: row.payment_method,
-      pricingStatus: row.pricing_status,
-      customQuoteStatus: row.custom_quote_status,
-      isCustom: resolveAdminOrderWorkspaceKind(row.custom_project_snapshot) === "custom",
-      whatsappConfirmed: Boolean(row.whatsapp_confirmed_at),
-      paymentRequirementMet: row.payment_requirement_met,
-      paymentProductionEligible: row.payment_production_eligible,
-      paymentEffectiveTotal: row.payment_effective_total,
-      hasVerifiedPayment: row.payment_effective_total > 0,
-      hasJobOrder: Boolean(nextJob),
-      jobOrderStatus: nextJob?.status ?? null,
-      qualityControlStatus: nextQualityControl?.result ?? nextQualityControl?.status ?? null,
-      finalVerificationCompleted: Boolean(nextFulfillment?.final_verified_at),
-      trackingNumber: nextFulfillment?.tracking_number ?? null,
-      taskRevision: nextFulfillment?.updated_at ?? nextJob?.updated_at ?? nextPayment?.updated_at ?? row.status
-    });
-
-    setOrder(row);
-    setItems((itemResult.data ?? []) as Item[]);
-    setJobOrder(nextJob);
-    setFulfillment(nextFulfillment);
-    setLatestPayment(nextPayment);
-    setQualityControl(nextQualityControl);
-    setActiveStage(nextStage);
-    setTab(requestedTab ?? defaultTab(nextStage));
-    setLoading(false);
   }, [orderId, requestedTab]);
 
   useEffect(() => {

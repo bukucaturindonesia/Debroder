@@ -139,10 +139,13 @@ describe("B4-O1 Order Command Center and status integrity", () => {
   it("makes the command center default and preserves the full legacy detail", () => {
     const route = read("app/admin/orders/[id]/page.tsx");
     const commandCenter = read("components/admin/OrderCommandCenterAdmin.tsx");
-    expect(route).toContain("<OrderCommandCenterAdmin />");
+    const readModel = read("lib/admin-orders/read-model.ts");
+    expect(route).toContain("<OrderCommandCenterAdmin orderId={id} />");
+    expect(route).toContain("<OrderDetailAdmin orderId={id} />");
     expect(route).toContain('view === "full"');
     expect(commandCenter).toContain('type CommandTab = "summary" | "payment" | "operations" | "fulfillment" | "history"');
-    expect(commandCenter).toContain("resolveCanonicalOrderActiveStage({");
+    expect(commandCenter).toContain("readModel.active_stage");
+    expect(readModel).toContain("resolveCanonicalOrderActiveStage({");
     expect(commandCenter).not.toContain('rpc("resolve_order_active_stage_v1"');
   });
 

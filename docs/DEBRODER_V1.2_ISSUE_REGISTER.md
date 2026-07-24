@@ -328,3 +328,36 @@
   rejects specialized product fields/branches; first consumer remains P10.
 - Speculative migration risk — **CLOSED**. Existing schema is sufficient; no
   migration/backfill was created and no historical snapshot was mutated.
+
+## P12 Admin Orders Ownership
+
+### V12-042 — P12 owner full-gate verification
+
+- Severity: Package gate
+- Status: **OPEN — SOURCE IMPLEMENTED**
+- Detail: Typed list/detail projections, authenticated server read/command
+  boundaries, immutable snapshot preservation, canonical active-stage
+  projection, targeted lint, 69 targeted tests, typecheck, production build,
+  and diff check pass. Owner full gate, final diff review, commit/push, and
+  Preview verification remain required before P12 PASS.
+
+## Closed in P12 source
+
+- Browser-owned Admin Order reads — **CLOSED IN SOURCE**. Admin Orders clients
+  no longer select `orders` or `order_items` directly; authenticated server
+  use cases return whitelisted typed models.
+- Cross-role read expansion — **CLOSED IN SOURCE**. Server projections use the
+  actor JWT client rather than service role, preserving payment, shipping,
+  production, and QC RLS in addition to the `order.read` route gate.
+- Split transaction projection — **CLOSED IN SOURCE**. Order, item pricing
+  snapshot, payment, fulfillment/tracking, job order, and QC facts are read in
+  one nested graph and resolved server-side.
+- Direct browser order commands — **CLOSED IN SOURCE**. Delivery edit,
+  transactional cancel, and archive require server `order.edit` before the
+  existing canonical RPC executes.
+- Historical status coercion — **CLOSED IN SOURCE**. Existing item status
+  `confirmed` is modeled explicitly; unknown order pricing states and invalid
+  transaction amounts fail closed.
+- Speculative migration risk — **CLOSED**. Existing schema, foreign keys, RLS,
+  and permission definitions are sufficient; no migration or data mutation
+  was created.
