@@ -416,7 +416,7 @@ Status: **PASS** by owner `lanjut` confirmation.
 
 ## 2026-07-24 — P8A Size Adjustment Policy Preview
 
-Status: **IMPLEMENTED IN SOURCE — AWAITING OWNER GATE VERIFICATION**.
+Status: **PASS**.
 
 - Owner command `lanjut` confirmed P7B full gate, commit, push, and Preview
   PASS. Baseline HEAD `0b47bb4b6ffbe7e8c867dd3ab8a32d9a2c6f6525` matched
@@ -444,3 +444,40 @@ Status: **IMPLEMENTED IN SOURCE — AWAITING OWNER GATE VERIFICATION**.
   Routes/UI/deployment: none.
 - Next: owner runs full gate and approves/rejects the exact P8A row set.
   P8B remains closed until that approval.
+
+Full owner gate subsequently run by Codex at owner request: typecheck PASS;
+lint PASS with 0 errors / 34 existing warnings; tests PASS 78 files / 626
+tests; production build PASS 110/110 pages; git diff/status/stat/diff PASS.
+Owner instruction `Lanjut` approved the exact 287-row P8A cohort and opened
+P8B.
+
+---
+
+## 2026-07-24 — P8B Size Adjustment Data Mutation
+
+Status: **IMPLEMENTED IN SOURCE — AWAITING OWNER GATE VERIFICATION**.
+
+- Preflight reconfirmed exact P8A fingerprint
+  `c8de001d6a246fe4465873326b7ad634`: 287 rows, all before Rp0,
+  190/76/21 by 2XL/3XL/4XL, 45/242 active/draft, and zero proven override.
+- Additive data migration
+  `20260724011535_p8b_size_adjustment_data_mutation_v1.sql` aborts on any
+  count, fingerprint, before-value, status, duplicate, SKU, or override drift.
+- Exact migration preview executed inside a rollback transaction and left 287
+  candidates / zero P8B audit rows afterward.
+- Migration applied to `DEBRODER APPAREL`; 287 sellable SKU adjustments were
+  updated atomically and 287 before/after audit rows were written in one
+  batch.
+- Postcheck: 1,147 policy-managed SKU, zero mismatch; audit fingerprint exact;
+  final counts S/M/L/XL 215 each, 2XL 190, 3XL 76, 4XL 21.
+- Exclusions preserved: 25 XS remained outside policy; one unlinked `Mix Size`
+  remains Rp0 and blocked from automatic mutation.
+- Historical orders/pricing snapshots, products, color variants, inventory,
+  UI, routes, pricing formula, permanent schema, and RLS were not changed.
+- Local verification: typecheck PASS; touched lint PASS; targeted P7A/P8A/P8B
+  suite PASS, 3 files / 37 tests.
+- Remote migration history contains version `20260724011535`; security and
+  performance advisors contain zero P8B-specific finding.
+- Files: migration, read-only verification SQL, P8B regression test, P8B
+  report, and governance handoff/state/issue updates only.
+- No commit, push, merge, deploy, or P9 work was performed.

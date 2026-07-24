@@ -16,8 +16,9 @@
 - P7A — Pricing Parity: **PASS WITH TWO EXPLICIT P7B BLOCKERS**
 - P6 — Cart v5: **PASS**
 - P7B — Policy & Database Alignment: **PASS menurut owner `lanjut`**
-- P8A — Size Adjustment Policy Preview: **IMPLEMENTED IN SOURCE — AWAITING OWNER GATE VERIFICATION**
-- Package setelah P8A: **P8B — Size Adjustment Data Mutation**, hanya setelah owner menyatakan gate P8A PASS dan menyetujui row preview.
+- P8A — Size Adjustment Policy Preview: **PASS**
+- P8B — Size Adjustment Data Mutation: **IMPLEMENTED IN SOURCE — AWAITING OWNER GATE VERIFICATION**
+- Package setelah P8B: **P9 — Generic Configured Product**, hanya setelah owner menyatakan gate P8B PASS.
 
 Codex wajib memverifikasi sendiri sebelum mengubah source:
 
@@ -244,31 +245,23 @@ Owner menangani review akhir, commit, push GitHub, dan Vercel Preview, kecuali o
 
 ---
 
-## 10. P8A — Scope Aktif
+## 10. P8B — Scope Aktif
 
-P8A hanya membuat preview read-only untuk policy global:
+P8A full gate PASS pada commit remote `022e19e`; instruksi owner `Lanjut`
+menyetujui exact cohort 287 row `PENDING_CHANGE` untuk P8B.
 
-- S–XL = Rp0;
-- 2XL = +Rp10.000;
-- 3XL = +Rp20.000;
-- 4XL = +Rp30.000;
-- before/after, konflik, duplikat, override, dan SKU terdampak.
+P8B telah:
 
-Authority harga transaksi tetap
-`product_variant_sizes.price_adjustment`; `product_size_master` hanya
-authority identitas ukuran. Preview remote menemukan 1.173 SKU: 860 aligned,
-287 pending change, 25 XS di luar policy, satu `Mix Size` blocked karena
-`size_id` kosong, zero normalized duplicate, dan zero proven override.
-
-Artifact:
-
-- `lib/size-adjustment-policy-preview.ts`;
-- `supabase/sql/04_p8a_size_adjustment_preview_read_only.sql`;
-- `test/p8a-size-adjustment-policy-preview.test.ts`;
-- `docs/P8A_SIZE_ADJUSTMENT_POLICY_PREVIEW.md`.
-
-Tidak ada migration atau database mutation pada P8A. P8B belum dimulai dan
-hanya boleh memproses row `PENDING_CHANGE` yang disetujui owner.
+- menerapkan migration
+  `20260724011535_p8b_size_adjustment_data_mutation_v1.sql`;
+- mengubah exact cohort: 190 row 2XL ke Rp10.000, 76 row 3XL ke
+  Rp20.000, dan 21 row 4XL ke Rp30.000;
+- mencatat 287 audit before/after dalam satu batch;
+- memverifikasi fingerprint
+  `c8de001d6a246fe4465873326b7ad634` dan zero managed mismatch;
+- mempertahankan 25 XS dan satu `Mix Size` di luar mutation;
+- tidak mengubah historical order/pricing snapshot, inventory, UI,
+  pricing formula, schema permanent, atau RLS.
 
 Status saat ini:
 

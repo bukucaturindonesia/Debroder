@@ -256,7 +256,7 @@ The FROZEN commerce/landing blueprints and official Owner Decisions remain autho
 
 ## P8A Size Adjustment Policy Preview state — 2026-07-24
 
-- P8A is **IMPLEMENTED IN SOURCE — AWAITING OWNER GATE VERIFICATION**.
+- P8A is **PASS**.
 - Canonical transaction authority is
   `product_variant_sizes.price_adjustment`; `product_size_master` is the
   identity authority and has no price field.
@@ -269,5 +269,22 @@ The FROZEN commerce/landing blueprints and official Owner Decisions remain autho
 - All 287 affected rows currently have Rp0 adjustment: 190 2XL, 76 3XL, and
   21 4XL. Of these, 45 belong to active products and 242 to draft products.
 - Typecheck, touched-file lint, 15 targeted tests, and exact remote read-only
-  preview pass. No migration, database mutation, historical snapshot change,
-  route/UI change, commit, push, merge, deployment, or P8B work occurred.
+  preview pass. Full owner gate also passes: 78 files / 626 tests, lint with
+  zero errors, production build 110/110, and clean git gate.
+
+## P8B Size Adjustment Data Mutation state — 2026-07-24
+
+- P8B is **IMPLEMENTED IN SOURCE — AWAITING OWNER GATE VERIFICATION**.
+- Owner `Lanjut` approved the exact P8A 287-row fingerprint
+  `c8de001d6a246fe4465873326b7ad634`.
+- Migration `20260724011535_p8b_size_adjustment_data_mutation_v1.sql` is
+  applied remotely after an exact rollback preview.
+- Final canonical adjustments are Rp0 for S–XL, Rp10,000 for 190 2XL SKU,
+  Rp20,000 for 76 3XL SKU, and Rp30,000 for 21 4XL SKU.
+- Postcheck proves 1,147 managed SKU with zero mismatch and 287 audit rows in
+  one batch with the approved fingerprint.
+- 25 XS and one unlinked `Mix Size` were not mutated. Historical order and
+  pricing snapshots, inventory, product/color pricing, UI, routes, pricing
+  formula, permanent schema, and RLS remain unchanged.
+- Typecheck, touched lint, and 37 targeted tests pass; no P8B-specific advisor
+  finding exists. Owner full gate is pending. P9 has not started.

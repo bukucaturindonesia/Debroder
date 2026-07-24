@@ -245,12 +245,13 @@
 ### V12-038 — P8A owner full-gate and row approval
 
 - Severity: Package gate
-- Status: **OPEN — SOURCE PREVIEW IMPLEMENTED**
+- Status: **CLOSED — OWNER GATE AND ROW APPROVAL PASS**
 - Detail: Deterministic TypeScript and read-only Supabase preview agree on
   1,173 SKU: 860 aligned, 287 pending change, 25 out of policy, one blocked,
   zero normalized duplicate, and zero proven override. Targeted tests,
-  TypeScript, lint, and exact remote preview pass. Owner full gate and
-  approval/rejection of the 287 row set are required before P8B.
+  TypeScript, lint, exact remote preview, 626-test full suite, production
+  build, and git gates pass. Owner `Lanjut` approved the exact 287-row
+  fingerprint for P8B.
 
 ### V12-039 — Unlinked Mix Size SKU
 
@@ -274,3 +275,28 @@
   never inferred from a mismatch.
 - P8A mutation risk — **CLOSED**. The SQL artifact contains no DML/DDL and the
   remote verification performed no product mutation or migration.
+
+## P8B Size Adjustment Data Mutation
+
+### V12-040 — P8B owner full-gate verification
+
+- Severity: Package gate
+- Status: **OPEN — SOURCE AND REMOTE MUTATION VERIFIED**
+- Detail: Migration `20260724011535_p8b_size_adjustment_data_mutation_v1.sql`
+  applied the exact approved 287-row cohort. Postcheck proves 1,147 managed
+  SKU with zero mismatch, 287 audit rows in one batch, and the approved
+  fingerprint. Typecheck, touched lint, and 37 targeted tests pass. Owner full
+  typecheck/lint/test/build/diff gate remains required before P8B PASS.
+
+## Closed in P8B Size Adjustment Data Mutation
+
+- Approved cohort drift — **CLOSED**. Migration aborts on changed count,
+  fingerprint, before value, status split, normalized duplicate, missing SKU,
+  or new override evidence.
+- Partial mutation/audit — **CLOSED**. Audit and update occur in one
+  transaction and each must affect exactly 287 rows.
+- Policy-managed mismatch — **CLOSED**. Remote postcheck returns zero mismatch
+  across 1,147 managed SKU.
+- P8A exclusions — **PRESERVED**. XS remains outside policy and unlinked
+  `Mix Size` remains Rp0/blocked; V12-039 stays open for separate canonical
+  data resolution.
