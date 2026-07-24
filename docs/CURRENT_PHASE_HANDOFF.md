@@ -386,7 +386,7 @@ Status: **PASS** by owner `lanjut` confirmation.
 
 ## 2026-07-24 — P7B Policy & Database Alignment
 
-Status: **IMPLEMENTED IN SOURCE — AWAITING OWNER GATE VERIFICATION**.
+Status: **PASS** by owner `lanjut` confirmation.
 
 - Owner command `lanjut` confirmed P6 full gate/commit/push/Preview PASS.
   Baseline HEAD: `684144b433126057e00e8dbab8021d2d503fbf71`.
@@ -411,3 +411,36 @@ Status: **IMPLEMENTED IN SOURCE — AWAITING OWNER GATE VERIFICATION**.
 - Production-row mutation smoke was not performed after the safety layer
   rejected it; verification stayed read-only after migration application.
 - No commit, push, merge, UI change, inventory mutation, or P8A work.
+
+---
+
+## 2026-07-24 — P8A Size Adjustment Policy Preview
+
+Status: **IMPLEMENTED IN SOURCE — AWAITING OWNER GATE VERIFICATION**.
+
+- Owner command `lanjut` confirmed P7B full gate, commit, push, and Preview
+  PASS. Baseline HEAD `0b47bb4b6ffbe7e8c867dd3ab8a32d9a2c6f6525` matched
+  the tracked remote branch and the working tree was clean.
+- Authority proven from source and live schema: transaction pricing uses
+  `product_variant_sizes.price_adjustment`; canonical
+  `product_size_master` identifies size and has no price column.
+- Added a deterministic pure preview and read-only SQL artifact for S–XL
+  `Rp0`, 2XL `+Rp10.000`, 3XL `+Rp20.000`, and 4XL `+Rp30.000`.
+- Remote preview result: 1,173 SKU total; 860 aligned; 287 pending owner
+  approval (190 2XL, 76 3XL, 21 4XL); 25 XS out of policy; one `Mix Size`
+  blocked due to missing `size_id`; zero normalized duplicates; zero proven
+  explicit override.
+- Active/draft split among affected rows: 45 active and 242 draft. All 287
+  before adjustments are Rp0. No product row, historical order, snapshot,
+  inventory, RLS, or database schema was changed.
+- Files: `lib/size-adjustment-policy-preview.ts`,
+  `supabase/sql/04_p8a_size_adjustment_preview_read_only.sql`,
+  `test/p8a-size-adjustment-policy-preview.test.ts`, and
+  `docs/P8A_SIZE_ADJUSTMENT_POLICY_PREVIEW.md`.
+- Targeted verification: 15/15 tests PASS; TypeScript PASS; touched-file lint
+  PASS; exact read-only SQL artifact executed against Supabase and returned
+  the counts above.
+- Migration local/remote/applied/pending: none. Database mutation: none.
+  Routes/UI/deployment: none.
+- Next: owner runs full gate and approves/rejects the exact P8A row set.
+  P8B remains closed until that approval.

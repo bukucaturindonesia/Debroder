@@ -236,7 +236,7 @@ The FROZEN commerce/landing blueprints and official Owner Decisions remain autho
 
 ## P7B Policy & Database Alignment state — 2026-07-24
 
-- P7B is **IMPLEMENTED IN SOURCE — AWAITING OWNER GATE VERIFICATION**.
+- P7B is **PASS** by owner `lanjut` confirmation.
 - Migration `20260723193533_p7b_policy_database_alignment_v1.sql` is applied
   to `DEBRODER APPAREL` and present in remote migration history.
 - Ready Stock database enforcement now matches canonical limits: 50 lines,
@@ -252,4 +252,22 @@ The FROZEN commerce/landing blueprints and official Owner Decisions remain autho
   revoked public/anon/authenticated execution, and service-role-only execute.
   No RLS policy or inventory authority was changed.
 - Typecheck, touched-file lint, and 42 targeted tests pass. Owner full gate is
-  pending. No commit, push, merge, deployment, or P8A work was performed.
+  confirmed PASS together with commit, push, and Preview.
+
+## P8A Size Adjustment Policy Preview state — 2026-07-24
+
+- P8A is **IMPLEMENTED IN SOURCE — AWAITING OWNER GATE VERIFICATION**.
+- Canonical transaction authority is
+  `product_variant_sizes.price_adjustment`; `product_size_master` is the
+  identity authority and has no price field.
+- The deterministic global policy is S–XL Rp0, 2XL +Rp10,000,
+  3XL +Rp20,000, and 4XL +Rp30,000. XXL/XXXL/XXXXL are normalized only as
+  aliases; no product, slug, or SKU is hardcoded.
+- Exact live read-only preview: 1,173 SKU; 860 aligned; 287 pending change;
+  25 XS out of policy; one missing size-master link blocked; zero normalized
+  duplicate; zero proven explicit override.
+- All 287 affected rows currently have Rp0 adjustment: 190 2XL, 76 3XL, and
+  21 4XL. Of these, 45 belong to active products and 242 to draft products.
+- Typecheck, touched-file lint, 15 targeted tests, and exact remote read-only
+  preview pass. No migration, database mutation, historical snapshot change,
+  route/UI change, commit, push, merge, deployment, or P8B work occurred.

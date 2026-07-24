@@ -220,13 +220,13 @@
 ### V12-037 — P7B owner full-gate verification
 
 - Severity: Package gate
-- Status: **OPEN — SOURCE AND REMOTE MIGRATION IMPLEMENTED**
+- Status: **CLOSED — OWNER GATE PASS**
 - Detail: Migration
   `20260723193533_p7b_policy_database_alignment_v1.sql` is applied remotely;
   three triggers, ACL, empty search paths, migration history, and audit marker
   are verified. Typecheck, touched-file lint, and 42 targeted tests pass.
-  Owner full typecheck/lint/test/build/diff gate remains required before P7B
-  may be declared PASS.
+  Owner `lanjut` confirms the full typecheck/lint/test/build/diff,
+  commit/push, and Preview gate passed.
 
 ## Closed in P7B Policy & Database Alignment
 
@@ -239,3 +239,38 @@
   public checkout transaction.
 - Historical pricing snapshot mutation — **CLOSED**. Finalized public Ready
   Stock pricing snapshots and amounts are guarded as immutable.
+
+## P8A Size Adjustment Policy Preview
+
+### V12-038 — P8A owner full-gate and row approval
+
+- Severity: Package gate
+- Status: **OPEN — SOURCE PREVIEW IMPLEMENTED**
+- Detail: Deterministic TypeScript and read-only Supabase preview agree on
+  1,173 SKU: 860 aligned, 287 pending change, 25 out of policy, one blocked,
+  zero normalized duplicate, and zero proven override. Targeted tests,
+  TypeScript, lint, and exact remote preview pass. Owner full gate and
+  approval/rejection of the 287 row set are required before P8B.
+
+### V12-039 — Unlinked Mix Size SKU
+
+- Severity: Data integrity / explicit P8A exclusion
+- Status: **OPEN — BLOCKED FROM P8B**
+- Detail: One draft `Mix Size` sellable SKU has `size_id = NULL`. Its
+  transaction adjustment remains Rp0, but it cannot be mapped safely to the
+  S–4XL policy and is excluded from automatic mutation. Repair or an explicit
+  owner decision requires a separately proven canonical size relationship;
+  P8A does not guess it.
+
+## Closed in P8A Size Adjustment Policy Preview
+
+- Size authority ambiguity — **CLOSED**. Live schema proves
+  `product_variant_sizes.price_adjustment` is transaction authority and
+  `product_size_master` has no price column.
+- Duplicate risk — **CLOSED FOR CURRENT DATA**. Exact and normalized
+  variant-size/SKU checks return zero duplicate rows.
+- Override classification — **CLOSED FOR CURRENT DATA**. No matching price
+  audit event with a non-empty reason exists; override status is NOT PROVEN,
+  never inferred from a mismatch.
+- P8A mutation risk — **CLOSED**. The SQL artifact contains no DML/DDL and the
+  remote verification performed no product mutation or migration.

@@ -15,8 +15,9 @@
 - P5 — Client Boundary Isolation: **PASS**
 - P7A — Pricing Parity: **PASS WITH TWO EXPLICIT P7B BLOCKERS**
 - P6 — Cart v5: **PASS**
-- P7B — Policy & Database Alignment: **IMPLEMENTED IN SOURCE — AWAITING OWNER GATE VERIFICATION**
-- Package setelah P7B: **P8A — Size Adjustment Policy Preview**, hanya setelah owner menyatakan gate P7B PASS.
+- P7B — Policy & Database Alignment: **PASS menurut owner `lanjut`**
+- P8A — Size Adjustment Policy Preview: **IMPLEMENTED IN SOURCE — AWAITING OWNER GATE VERIFICATION**
+- Package setelah P8A: **P8B — Size Adjustment Data Mutation**, hanya setelah owner menyatakan gate P8A PASS dan menyetujui row preview.
 
 Codex wajib memverifikasi sendiri sebelum mengubah source:
 
@@ -243,28 +244,31 @@ Owner menangani review akhir, commit, push GitHub, dan Vercel Preview, kecuali o
 
 ---
 
-## 10. P7B — Scope Aktif
+## 10. P8A — Scope Aktif
 
-P7B hanya berfokus pada penyelarasan policy canonical dengan schema/database:
+P8A hanya membuat preview read-only untuk policy global:
 
-- minimum quantity dan quotation threshold;
-- checkout mode;
-- pricing snapshot dan server validation;
-- constraint, function, trigger, dan RLS yang relevan;
-- batas Ready Stock 50 baris, 100 unit per baris, dan 500 unit total;
-- historical snapshot tetap immutable.
+- S–XL = Rp0;
+- 2XL = +Rp10.000;
+- 3XL = +Rp20.000;
+- 4XL = +Rp30.000;
+- before/after, konflik, duplikat, override, dan SKU terdampak.
 
-P7B wajib menyelesaikan blocker V12-034 dan V12-035 secara additive,
-Preview-tested, dan fail-closed tanpa mengubah UI, formula pricing, inventory
-authority, atau historical order/pricing snapshot.
+Authority harga transaksi tetap
+`product_variant_sizes.price_adjustment`; `product_size_master` hanya
+authority identitas ukuran. Preview remote menemukan 1.173 SKU: 860 aligned,
+287 pending change, 25 XS di luar policy, satu `Mix Size` blocked karena
+`size_id` kosong, zero normalized duplicate, dan zero proven override.
 
-P7B dilarang melakukan perubahan destruktif, pelebaran RLS, broad refactor,
-hardcode produk, atau memulai P8A.
+Artifact:
 
-Migration P7B
-`20260723193533_p7b_policy_database_alignment_v1.sql` telah diterapkan dan
-diverifikasi pada project `DEBRODER APPAREL`. Tidak ada historical row,
-inventory authority, atau RLS policy yang diubah.
+- `lib/size-adjustment-policy-preview.ts`;
+- `supabase/sql/04_p8a_size_adjustment_preview_read_only.sql`;
+- `test/p8a-size-adjustment-policy-preview.test.ts`;
+- `docs/P8A_SIZE_ADJUSTMENT_POLICY_PREVIEW.md`.
+
+Tidak ada migration atau database mutation pada P8A. P8B belum dimulai dan
+hanya boleh memproses row `PENDING_CHANGE` yang disetujui owner.
 
 Status saat ini:
 
