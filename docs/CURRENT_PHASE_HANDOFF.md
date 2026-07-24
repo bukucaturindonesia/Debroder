@@ -623,3 +623,31 @@ Status: **IMPLEMENTED IN SOURCE — AWAITING OWNER GATE VERIFICATION**.
   pre-existing warnings; targeted suite PASS (10 files / 70 tests).
 - Deployment/commit/push/merge: none. P15 remains closed until owner confirms
   P14 PASS.
+
+---
+
+## 2026-07-24 — P15 Inventory Authority & Stock Ownership Checkpoint
+
+Status: **CHECKPOINT SAVED — DATABASE APPLICATION BLOCKED**.
+
+- Owner confirmed P14 gate clean/PASS. P15 baseline HEAD
+  `848793819a062ac35c453d3a4ff3a6ba5311d33e` was clean on the expected branch.
+- Canonical inventory source and migration are authored for SKU/variant ×
+  location balances, `available = on_hand - reserved`, transactional and
+  idempotent reserve/release/deduct/restore, negative/oversell prevention,
+  movement audit snapshots, Ready Stock reservation, and exact Custom SKU
+  mapping.
+- Public catalog stock is now projected server-side from active non-legacy
+  location availability and fails closed when authority cannot be loaded.
+- Migration file:
+  `supabase/migrations/20260724041102_p15_inventory_authority_stock_ownership_v1.sql`.
+  Verification SQL:
+  `supabase/sql/06_p15_inventory_authority_verification_read_only.sql`.
+- Local verification: typecheck PASS; lint PASS with zero errors and 32
+  baseline warnings; targeted suite PASS (7 files / 54 tests);
+  `git diff --check` PASS.
+- Migration runtime validation, remote application, post-migration queries,
+  RLS/function ACL checks, and advisors are **NOT PROVEN** because environment
+  approval tooling rejected every Supabase write/dry-run after its usage limit.
+- Resume directly from `docs/CURRENT_PACKAGE_HANDOFF.md`; do not repeat the
+  completed inventory/schema audit. No commit, push, merge, or deploy occurred.

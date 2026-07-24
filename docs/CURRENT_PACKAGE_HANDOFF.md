@@ -23,8 +23,9 @@
 - P11 — Workspace Optimization: **PASS menurut owner**
 - P12 — Admin Orders Ownership: **PASS menurut owner**
 - P13 — Customer Order Read Model & Polling: **PASS menurut owner**
-- P14 — Error Handling & Observability: **IMPLEMENTED IN SOURCE — AWAITING OWNER GATE VERIFICATION**
-- Package setelah P14: **P15 — Inventory Authority & Stock Ownership**, hanya setelah owner menyatakan gate P14 PASS.
+- P14 — Error Handling & Observability: **PASS menurut owner**
+- P15 — Inventory Authority & Stock Ownership: **CHECKPOINT SAVED — DATABASE APPLICATION BLOCKED**
+- Setelah P15: **Final Integration, E2E & Go-Live Readiness Audit**, hanya setelah migration P15 diterapkan, diverifikasi, seluruh gate PASS, dan owner menyatakan gate P15 PASS.
 
 Codex wajib memverifikasi sendiri sebelum mengubah source:
 
@@ -251,45 +252,102 @@ Owner menangani review akhir, commit, push GitHub, dan Vercel Preview, kecuali o
 
 ---
 
-## 10. P14 — Scope Aktif
+## 10. P15 — Checkpoint Aktif
 
-Owner menyatakan seluruh gate P13 clean/PASS dan memberi instruksi `lanjut`.
+Owner menyatakan gate P14 clean/PASS. Baseline P15:
 
-P14 hanya mencakup:
+- branch `Batch-1-—-Fondasi-dan-Performa-Halaman`;
+- HEAD `848793819a062ac35c453d3a4ff3a6ba5311d33e`;
+- working tree bersih sebelum P15.
 
-- canonical error handling;
-- structured server logging;
-- correlation/request ID yang aman;
-- redaction untuk data sensitif;
-- pencegahan duplicate logging dan silent failure;
-- regression coverage untuk boundary tersebut.
-
-P14 wajib mempertahankan seluruh behavior transaksi, route, pricing, cart,
-checkout, payment, fulfillment, inventory, historical snapshot, dan hasil
-package sebelumnya. Analytics/log tidak boleh membawa desain pelanggan, bukti
-pembayaran, alamat penuh, catatan sensitif, private file URL, token, secret,
-atau credential. Kegagalan observability tidak boleh memblokir transaksi.
-
-Status saat ini:
+Status:
 
 ```text
-IMPLEMENTED IN SOURCE — AWAITING OWNER GATE VERIFICATION
+CHECKPOINT SAVED — DATABASE APPLICATION BLOCKED
 ```
 
-Evidence ringkas:
+Yang sudah selesai di source:
 
-- Canonical server error boundary sekarang menghasilkan response aman dengan
-  request/correlation ID dan structured JSON log yang sudah direduksi.
-- Critical checkout, public payment, order action, order confirmation, dan
-  guest tracking boundary tidak lagi memakai raw `console.*`; kegagalan query,
-  audit, cleanup, dan active-stage yang sebelumnya silent sekarang eksplisit.
-- Root application error UI menyediakan pesan aman, referensi digest, retry,
-  dan kembali ke beranda tanpa duplicate client logging.
-- Tidak ada migration/database mutation. Schema audit existing tetap
-  authoritative dan migration P14 akan speculative.
-- Verification Codex: typecheck PASS; lint penuh PASS dengan zero error dan 32
-  baseline warning; targeted suite PASS, 10 files / 70 tests.
-- Commit, push, merge, deployment, dan P15 belum dilakukan.
+- `lib/inventory-authority.ts` menambahkan formula canonical
+  `available = on_hand - reserved`, agregasi availability, dan pemeriksaan
+  mapping SKU eksplisit untuk Custom.
+- `lib/supabase/products.ts` memproyeksikan stock publik dari agregat
+  availability seluruh lokasi aktif non-legacy melalui server-only admin data
+  access; kegagalan authority menjadi stock `0` (fail-closed).
+- Migration
+  `supabase/migrations/20260724041102_p15_inventory_authority_stock_ownership_v1.sql`
+  sudah dibuat. Migration menambahkan ownership reservasi per lokasi,
+  movement snapshots, seed provisional `20` hanya untuk pasangan SKU/lokasi
+  aktif yang belum memiliki balance, serta RPC reserve/release/deduct/restore
+  yang row-locked, transaksional, idempotent, mencegah overselling/stok
+  negatif, dan mengaudit setiap movement. Data stock existing tidak
+  ditimpa. Historical shipping tanpa bukti lokasi dipetakan ke
+  `LEGACY-SYSTEM`, bukan ditebak.
+- Ready Stock diikat ke reservation authority pada order creation. Pickup
+  memakai reservation yang sama sehingga handover tidak melakukan double
+  deduction. Custom hanya menyentuh inventory bila `variant_size_id` dan SKU
+  cocok tepat dengan canonical catalog mapping.
+- Verification query read-only tersedia di
+  `supabase/sql/06_p15_inventory_authority_verification_read_only.sql`.
+- Regression coverage tersedia di `test/p15-inventory-authority.test.ts`.
+
+Evidence database sebelum migration:
+
+- project Supabase `lzennundwqqtyvvcnzbg` sehat;
+- 105 SKU aktif/sellable;
+- lokasi aktif: `LEGACY-SYSTEM`, `STORE LANDAK`, `STORE TELLO`,
+  `STORE PAREPARE`, `STORE PETTARANI`;
+- 1 active reservation / 5 unit dan 9 consumed reservation / 41 unit;
+- tidak ada balance dengan `reserved > on_hand` atau nilai negatif;
+- hanya Pettarani mempunyai active reservation yang lokasinya dapat dibuktikan;
+  historical shipping tidak mempunyai bukti lokasi nyata.
+
+Verification lokal:
+
+- `pnpm typecheck`: **PASS**;
+- `pnpm lint`: **PASS**, zero error dan 32 baseline warning;
+- targeted suite: **PASS**, 7 files / 54 tests;
+- `git diff --check`: **PASS** (hanya warning line-ending existing).
+
+Yang belum selesai / NOT PROVEN:
+
+- runtime SQL/dry-run migration pada PostgreSQL belum dapat dieksekusi;
+- migration belum diterapkan ke project Supabase;
+- verification query, RLS/function ACL check, dan database advisor pasca
+  migration belum dijalankan;
+- karena itu transaction/idempotency database nyata dan P15 end-to-end belum
+  boleh dinyatakan VERIFIED/PASS.
+
+Blocker:
+
+- seluruh remote write/dry-run Supabase setelah source selesai ditolak approval
+  reviewer environment karena usage limit, dengan waktu coba ulang
+  `2026-07-31 00:34`; tidak ada local PostgreSQL/Docker/parser SQL yang tersedia.
+- Ini blocker tool/environment, bukan approval owner. Owner sudah memberi
+  authority untuk migration aman dalam scope P15.
+
+File yang berubah:
+
+- `lib/inventory-authority.ts`;
+- `lib/supabase/products.ts`;
+- `supabase/migrations/20260724041102_p15_inventory_authority_stock_ownership_v1.sql`;
+- `supabase/sql/06_p15_inventory_authority_verification_read_only.sql`;
+- `test/p15-inventory-authority.test.ts`;
+- governance handoff/state/issue files untuk checkpoint ini.
+
+Langkah berikutnya tanpa audit ulang:
+
+1. Jalankan migration di transaction rollback/dry-run terhadap Supabase dan
+   perbaiki hanya error SQL P15 yang terbukti.
+2. Terapkan migration `20260724041102...` ke project
+   `lzennundwqqtyvvcnzbg`.
+3. Jalankan `06_p15_inventory_authority_verification_read_only.sql`; seluruh
+   violation count wajib `0`. Verifikasi RLS, function ACL, movement snapshot,
+   seed missing-pair, dan data historical.
+4. Jalankan database security/performance advisors lalu targeted tests,
+   typecheck, lint, dan owner full gate.
+5. Jangan commit, push, merge, deploy, atau memulai final integration audit
+   sebelum gate P15 dinyatakan PASS oleh owner.
 
 ---
 

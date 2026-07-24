@@ -381,3 +381,25 @@ The FROZEN commerce/landing blueprints and official Owner Decisions remain autho
   merge, or deployment was performed.
 - Verification: typecheck PASS; full lint PASS with zero errors and 32
   baseline warnings; targeted suite PASS (10 files / 70 tests).
+
+## P15 Inventory Authority & Stock Ownership state — 2026-07-24
+
+- P14 is **PASS** according to the owner gate; baseline P15 HEAD was
+  `848793819a062ac35c453d3a4ff3a6ba5311d33e` on the expected branch with a
+  clean working tree.
+- P15 is **CHECKPOINT SAVED — DATABASE APPLICATION BLOCKED**.
+- Canonical availability, exact Custom inventory mapping, server-side public
+  stock projection, location-owned reservations, movement audit snapshots,
+  and the transactional/idempotent reserve/release/deduct/restore migration
+  are implemented in source.
+- Seed policy is deterministic: add provisional 20 only for missing active
+  SKU × active non-legacy location balances; never overwrite real stock.
+  Historical rows without provable real location use `LEGACY-SYSTEM`.
+- Local verification: typecheck PASS; lint PASS with zero errors and 32
+  baseline warnings; targeted suite PASS (7 files / 54 tests); diff check PASS.
+- Migration `20260724041102_p15_inventory_authority_stock_ownership_v1.sql`
+  is not applied. SQL runtime, remote postchecks, RLS/function ACL, advisors,
+  and real database transaction behavior remain NOT PROVEN because the
+  environment approval reviewer reached its usage limit.
+- Resume from `CURRENT_PACKAGE_HANDOFF.md`. No commit, push, merge, or
+  deployment was performed.

@@ -395,7 +395,7 @@
 ### V12-044 — P14 owner full-gate verification
 
 - Severity: Package gate
-- Status: **OPEN — SOURCE IMPLEMENTED**
+- Status: **CLOSED — OWNER GATE PASS**
 - Detail: Canonical error response, request/correlation ID, structured
   redacted logging, duplicate suppression, explicit silent-failure handling,
   root error UI, typecheck, lint, and 70 targeted tests pass. Owner full
@@ -420,3 +420,33 @@
   preserving transaction semantics.
 - Speculative migration risk — **CLOSED**. Existing runtime and audit schema
   are sufficient; no migration or database mutation was created.
+
+## P15 Inventory Authority & Stock Ownership
+
+### V12-045 — P15 Supabase migration application and verification
+
+- Severity: Package gate
+- Status: **BLOCKED — ENVIRONMENT TOOL USAGE LIMIT**
+- Detail: Source, migration, verification query, and regression coverage are
+  saved. Typecheck, lint, 54 targeted tests, and diff check pass. Migration
+  runtime validation, application to project `lzennundwqqtyvvcnzbg`,
+  post-migration zero-violation queries, RLS/function ACL checks, and database
+  advisors remain NOT PROVEN. Approval tooling rejected Supabase write/dry-run
+  calls after reaching its usage limit; retry time reported
+  `2026-07-31 00:34`. Resume directly from `CURRENT_PACKAGE_HANDOFF.md`.
+
+## Closed in P15 source
+
+- Split inventory authority — **CLOSED IN SOURCE**. Public stock projection and
+  transaction RPC definitions use location balances as canonical authority.
+- Availability formula ambiguity — **CLOSED IN SOURCE**. Availability is
+  exactly `on_hand - reserved`, guarded against invalid/negative inputs.
+- Unlocated reservation ownership — **CLOSED IN SOURCE**. Reservation rows gain
+  required location ownership; only provable pickup data maps to real stores.
+- Overselling and duplicate stock mutations — **CLOSED IN SOURCE**. Row locks,
+  constraints, ordered allocation, terminal statuses, and idempotent state
+  transitions define reserve/release/deduct/restore.
+- Missing audit trace — **CLOSED IN SOURCE**. Every transition records movement
+  type, reservation, delta, and post-mutation snapshots.
+- Custom implicit inventory use — **CLOSED IN SOURCE**. Inventory applies only
+  when variant-size identity and SKU exactly match canonical catalog mapping.

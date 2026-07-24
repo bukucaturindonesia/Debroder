@@ -17,6 +17,8 @@ import {
   resolveReadyStockPricing,
   type ReadyStockPricingErrorCode
 } from "@/lib/pricing-policy";
+import { aggregateAvailableStock } from "@/lib/inventory-authority";
+import { getAdminSupabaseClient } from "@/lib/supabase/admin";
 import { getPublicSupabaseClient } from "@/lib/supabase/client";
 
 const PRODUCT_SELECT = `
@@ -114,7 +116,9 @@ export async function listProducts(
     throw new Error(`Failed to load products: ${error.message}`);
   }
 
-  return asRecordArray(data).map(mapProductRow);
+  return applyInventoryAvailability(
+    asRecordArray(data).map(mapProductRow)
+  );
 }
 
 export async function getProductBySlug(
@@ -140,7 +144,9 @@ export async function getProductBySlug(
     throw new Error(`Failed to load product ${slug}: ${error.message}`);
   }
 
-  return isRecord(data) ? mapProductRow(data) : null;
+  return isRecord(data)
+    ? (await applyInventoryAvailability([mapProductRow(data)]))[0] ?? null
+    : null;
 }
 
 export async function revalidateCartItems(
@@ -525,4 +531,73 @@ function pricingUnavailableMessage(code: ReadyStockPricingErrorCode) {
     default:
       return "Harga produk tidak dapat divalidasi.";
   }
+}
+
+async function applyInventoryAvailability(products: Product[]) {
+  const variantSizeIds = products.flatMap((product) =>
+    product.variants.flatMap((variant) =>
+      variant.sizes.map((size) => size.id)
+    )
+  );
+  if (!variantSizeIds.length) return products;
+
+  const client = getAdminSupabaseClient();
+  if (!client) {
+    return projectInventoryAvailability(products, new Map());
+  }
+
+  const rows: Array<{
+    variantSizeId: string;
+    onHand: number;
+    reserved: number;
+  }> = [];
+  for (const ids of chunked(variantSizeIds, 100)) {
+    const { data, error } = await client
+      .from("inventory_balances")
+      .select(
+        "variant_size_id,on_hand_quantity,reserved_quantity,inventory_locations!inner(active,location_type)"
+      )
+      .in("variant_size_id", ids)
+      .eq("inventory_locations.active", true)
+      .neq("inventory_locations.location_type", "legacy");
+    if (error) {
+      throw new Error("Inventory authority is unavailable.");
+    }
+    for (const row of asRecordArray(data)) {
+      rows.push({
+        variantSizeId: asString(row.variant_size_id),
+        onHand: asNumber(row.on_hand_quantity),
+        reserved: asNumber(row.reserved_quantity)
+      });
+    }
+  }
+
+  return projectInventoryAvailability(
+    products,
+    aggregateAvailableStock(rows)
+  );
+}
+
+function projectInventoryAvailability(
+  products: Product[],
+  availability: ReadonlyMap<string, number>
+) {
+  return products.map((product) => ({
+    ...product,
+    variants: product.variants.map((variant) => ({
+      ...variant,
+      sizes: variant.sizes.map((size) => ({
+        ...size,
+        stockQuantity: availability.get(size.id) ?? 0
+      }))
+    }))
+  }));
+}
+
+function chunked<T>(values: readonly T[], size: number) {
+  const result: T[][] = [];
+  for (let index = 0; index < values.length; index += size) {
+    result.push(values.slice(index, index + size));
+  }
+  return result;
 }
