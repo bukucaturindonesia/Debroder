@@ -18,8 +18,9 @@
 - P7B — Policy & Database Alignment: **PASS menurut owner `lanjut`**
 - P8A — Size Adjustment Policy Preview: **PASS**
 - P8B — Size Adjustment Data Mutation: **PASS**
-- P9 — Generic Configured Product: **IMPLEMENTED IN SOURCE — AWAITING OWNER GATE VERIFICATION**
-- Package setelah P9: **P10 — Jersey Configured Product**, hanya setelah owner menyatakan gate P9 PASS.
+- P9 — Generic Configured Product: **PASS menurut owner**
+- P10 — Jersey Configured Product: **IMPLEMENTED IN SOURCE — AWAITING OWNER GATE VERIFICATION**
+- Package setelah P10: **tidak dibuka**. STOP setelah laporan P10.
 
 Codex wajib memverifikasi sendiri sebelum mengubah source:
 
@@ -246,24 +247,29 @@ Owner menangani review akhir, commit, push GitHub, dan Vercel Preview, kecuali o
 
 ---
 
-## 10. P9 — Scope Aktif
+## 10. P10 — Scope Aktif
 
-Owner gate mengonfirmasi P8B full gate, review diff, commit `1d4db25`, push,
-dan Vercel Preview PASS. P9 membangun fondasi configured product generik saja.
+Owner menyatakan seluruh gate P9 PASS dan memberi instruksi `lanjut`. P10
+menghubungkan Jersey sebagai consumer pertama fondasi configured product P9.
 
-P9 telah:
+P10 telah:
 
-- memakai `products.config_schema` yang sudah ada sebagai definition slot,
-  dengan identitas/nama/minimum tetap berasal dari kolom produk canonical;
-- memvalidasi option/selection, compatibility, allocation, service, upload,
-  quantity, version, dan pricing authority secara fail-closed;
-- menghasilkan pricing input tanpa monetary amount, fingerprint SHA-256,
-  serta immutable snapshot dari server runtime;
-- menolak schema legacy/specialized, product nonaktif, definition drift,
-  pricing result mismatch, dan configured Cart v5 tanpa server fingerprint;
-- mempertahankan 14 historical configured order items dan 53 snapshot lama;
-- tidak membuat migration/backfill, tidak mengubah formula pricing, dan tidak
-  mengaktifkan consumer/checkout P10.
+- memetakan master paket, bahan, kerah, addon, layanan, serta ukuran aktif ke
+  definition generik P9 tanpa monetary amount di client;
+- memvalidasi draft melalui Server Action, membentuk fingerprint dan immutable
+  snapshot `quotation_required`, lalu memasukkannya melalui Cart v5
+  `addConfiguredProduct`;
+- menghapus client-side formula, SKU/ID sintetis, fallback transaction data,
+  dan file input yang sebelumnya hanya menyimpan nama file tanpa upload
+  authority;
+- mewajibkan data tim, lengan, pemain, referensi desain, logo, sponsor,
+  nama/nomor, alokasi ukuran, serta layanan wajib untuk seluruh quantity;
+- mempertahankan generic P9 core bebas branch Jersey dan checkout tetap
+  fail-closed sampai ada penawaran server terbaru;
+- tidak membuat migration. Produk live satu-satunya adalah pilot internal
+  `draft/inactive` dengan instruksi database agar tidak dipublikasikan tanpa
+  approval owner eksplisit, sehingga halaman saat ini fail-closed sampai PIM
+  menyediakan produk Jersey `active + custom_quote` yang sah.
 
 Status saat ini:
 

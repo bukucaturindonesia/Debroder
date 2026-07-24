@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { notFound } from "next/navigation";
-import { JerseyConfigurator } from "@/components/JerseyConfigurator";
 import { PageHero, PublicShell } from "@/components/PublicPage";
 import { SafeImage } from "@/components/SafeImage";
 import { fallbackCategories, fallbackImages } from "@/lib/fallback-data";
@@ -44,7 +44,7 @@ export default async function JerseyDetailPage({ params }: { params: Promise<{ s
         objectFit={jerseyCategory.object_fit}
         imageZoom={jerseyCategory.focal_zoom}
         ctaText="Mulai Konfigurasi Jersey"
-        ctaHref="#configurator"
+        ctaHref="/jersey/configurator"
         secondaryCtaText="Belanja Jersey"
         secondaryCtaHref="/jersey/shop"
         breadcrumbs={[{ label: "Beranda", href: "/" }, { label: "Jersey", href: "/jersey" }, { label: jerseyCategory.nama_kategori }]}
@@ -72,13 +72,20 @@ export default async function JerseyDetailPage({ params }: { params: Promise<{ s
         </div>
       </section>
 
-      <JerseyConfigurator
-        config={content.jerseyConfigurator}
-        jerseyName={jerseyCategory.nama_kategori}
-        jerseySlug={slug}
-        imageUrl={jerseyCategory.gambar_url}
-        imageAlt={jerseyCategory.image_alt || jerseyCategory.nama_kategori}
-      />
+      <section id="configurator" className="bg-brand-offWhite py-10 sm:py-12">
+        <div className="section-shell">
+          <div className="rounded-[28px] bg-white/70 p-6 ring-1 ring-black/6 sm:p-8">
+            <p className="text-xs font-semibold uppercase tracking-[0.16em] text-black/42">Jersey Configurator Resmi</p>
+            <h2 className="mt-2 text-2xl font-semibold tracking-tight">Lanjutkan melalui configurator canonical</h2>
+            <p className="mt-3 max-w-2xl text-sm leading-7 text-black/58">
+              Paket, bahan, kerah, alokasi ukuran, data pemain, dan kebutuhan desain divalidasi melalui satu jalur server-authoritative.
+            </p>
+            <Link href="/jersey/configurator" className="mt-5 inline-flex min-h-12 items-center justify-center rounded-full bg-[#063d24] px-6 text-sm font-semibold text-white transition hover:bg-[#111111]">
+              Mulai Konfigurasi Jersey
+            </Link>
+          </div>
+        </div>
+      </section>
 
       {jerseyCategory.faq_items?.length ? (
         <section data-reveal className="bg-brand-offWhite pb-12 sm:pb-16">

@@ -2,9 +2,7 @@ import type { Metadata } from "next";
 import { JerseyConfigurator } from "@/components/JerseyConfigurator";
 import { JerseyChrome } from "@/components/jersey/JerseyChrome";
 import { PublicShell } from "@/components/PublicPage";
-import { fallbackCategories, fallbackImages } from "@/lib/fallback-data";
-import { productsForCategoryRoute } from "@/lib/product-route-matching";
-import { getPublicContent } from "@/lib/public-data";
+import { readJerseyConfiguredProduct } from "@/lib/jersey-configured-product/data-access";
 
 export const metadata: Metadata = {
   title: "Konfigurator Jersey | DEBRODER",
@@ -13,14 +11,10 @@ export const metadata: Metadata = {
 };
 
 export default async function JerseyConfiguratorPage({ searchParams }: { searchParams: Promise<{ product?: string }> }) {
-  const [content, params] = await Promise.all([getPublicContent(), searchParams]);
-  const jerseyProducts = productsForCategoryRoute(content.products, content.productCategories, "jersey");
-  const selectedProduct = jerseyProducts.find((product) => product.slug === params.product) || jerseyProducts[0];
-  const jerseyCategory = content.categories.find((category) => category.category_key === "jersey")
-    || fallbackCategories.find((category) => category.category_key === "jersey");
-  const jerseyName = selectedProduct?.nama || jerseyCategory?.nama_kategori || "Jersey Custom DEBRODER";
-  const jerseySlug = selectedProduct?.slug || jerseyCategory?.slug || "custom";
-  const imageUrl = selectedProduct?.image_url || selectedProduct?.gambar_url || jerseyCategory?.gambar_url || fallbackImages.product;
+  const params = await searchParams;
+  const configuredProduct = await readJerseyConfiguredProduct({
+    ...(params.product ? { productSlug: params.product } : {})
+  });
 
   return (
     <PublicShell headerMode="natural">
@@ -32,13 +26,21 @@ export default async function JerseyConfiguratorPage({ searchParams }: { searchP
           <p className="mt-5 max-w-2xl text-base leading-7 text-white/70">Atur model, bahan, kerah, ukuran, jumlah, logo, sponsor, nama, nomor, dan kebutuhan pemain tanpa berpindah ke form custom generik.</p>
         </div>
       </header>
-      <JerseyConfigurator
-        config={content.jerseyConfigurator}
-        jerseyName={jerseyName}
-        jerseySlug={jerseySlug}
-        imageUrl={imageUrl}
-        imageAlt={selectedProduct?.image_alt || jerseyCategory?.image_alt || jerseyName}
-      />
+      {configuredProduct.status === "ready" ? (
+        <JerseyConfigurator consumer={configuredProduct.consumer} />
+      ) : (
+        <section className="bg-brand-offWhite py-14">
+          <div className="section-shell max-w-3xl">
+            <div className="rounded-[28px] bg-white/70 p-6 ring-1 ring-black/6 sm:p-8">
+              <p className="text-xs font-semibold uppercase tracking-[0.16em] text-black/42">Belum tersedia</p>
+              <h2 className="mt-2 text-2xl font-semibold tracking-tight">Jersey configurator belum dapat digunakan</h2>
+              <p className="mt-3 text-sm leading-7 text-black/58">
+                Produk configured Jersey yang aktif dan berstatus penawaran belum tersedia. Data pengganti tidak digunakan untuk transaksi.
+              </p>
+            </div>
+          </div>
+        </section>
+      )}
     </PublicShell>
   );
 }
