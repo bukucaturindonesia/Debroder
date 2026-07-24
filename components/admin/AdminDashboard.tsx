@@ -1,20 +1,9 @@
 "use client";
 
 import { FormEvent, useEffect, useMemo, useState } from "react";
+import dynamic from "next/dynamic";
 import { usePathname, useRouter } from "next/navigation";
 import { Logo } from "@/components/Logo";
-import { MediaLibraryPanel } from "@/components/admin/MediaLibrary";
-import { SiteMediaSettingsAdmin } from "@/components/admin/SiteMediaSettingsAdmin";
-import { ProductAdminPanel } from "@/components/admin/ProductAdmin";
-import { PimManagerAdmin } from "@/components/admin/PimManagerAdmin";
-import { PimV2Admin } from "@/components/admin/PimV2Admin";
-import { FocalPointEditor } from "@/components/admin/FocalPointEditor";
-import { HomepageSectionsAdmin } from "@/components/admin/HomepageSectionsAdmin";
-import { LandingSectionsAdmin } from "@/components/admin/LandingSectionsAdmin";
-import { LandingSectionEditor } from "@/components/admin/LandingSectionEditor";
-import { CampaignBannerAdmin } from "@/components/admin/CampaignBannerAdmin";
-import { OrderManagementAdmin } from "@/components/admin/OrderManagementAdmin";
-import { WebsiteSettingsAdmin } from "@/components/admin/WebsiteSettingsAdmin";
 import {
   createSupabaseClient,
   isSupabaseConfigured,
@@ -30,6 +19,43 @@ import {
   type CmsStatus,
   type CmsWorkflowMeta
 } from "@/lib/cms-workflow";
+
+const MediaLibraryPanel = dynamic(
+  () => import("@/components/admin/MediaLibrary").then((module) => module.MediaLibraryPanel)
+);
+const SiteMediaSettingsAdmin = dynamic(
+  () => import("@/components/admin/SiteMediaSettingsAdmin").then((module) => module.SiteMediaSettingsAdmin)
+);
+const ProductAdminPanel = dynamic(
+  () => import("@/components/admin/ProductAdmin").then((module) => module.ProductAdminPanel)
+);
+const PimManagerAdmin = dynamic(
+  () => import("@/components/admin/PimManagerAdmin").then((module) => module.PimManagerAdmin)
+);
+const PimV2Admin = dynamic(
+  () => import("@/components/admin/PimV2Admin").then((module) => module.PimV2Admin)
+);
+const FocalPointEditor = dynamic(
+  () => import("@/components/admin/FocalPointEditor").then((module) => module.FocalPointEditor)
+);
+const HomepageSectionsAdmin = dynamic(
+  () => import("@/components/admin/HomepageSectionsAdmin").then((module) => module.HomepageSectionsAdmin)
+);
+const LandingSectionsAdmin = dynamic(
+  () => import("@/components/admin/LandingSectionsAdmin").then((module) => module.LandingSectionsAdmin)
+);
+const LandingSectionEditor = dynamic(
+  () => import("@/components/admin/LandingSectionEditor").then((module) => module.LandingSectionEditor)
+);
+const CampaignBannerAdmin = dynamic(
+  () => import("@/components/admin/CampaignBannerAdmin").then((module) => module.CampaignBannerAdmin)
+);
+const OrderManagementAdmin = dynamic(
+  () => import("@/components/admin/OrderManagementAdmin").then((module) => module.OrderManagementAdmin)
+);
+const WebsiteSettingsAdmin = dynamic(
+  () => import("@/components/admin/WebsiteSettingsAdmin").then((module) => module.WebsiteSettingsAdmin)
+);
 
 type FieldType =
   | "text"

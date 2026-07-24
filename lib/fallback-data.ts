@@ -3,7 +3,6 @@ import type {
   ContactSettings,
   HeroBanner,
   InstagramBanner,
-  JerseyConfiguratorData,
   OrderStep,
   PageHeroContent,
   Product,
@@ -857,57 +856,6 @@ export const fallbackContact: ContactSettings = {
   status_aktif: true
 };
 
-export const fallbackJerseyConfigurator: JerseyConfiguratorData = {
-  packages: [
-    { name: "Atasan Fullprint", slug: "atasan-fullprint", base_price: 100000, description: "Atasan jersey fullprint.", is_active: true, sort_order: 10 },
-    { name: "Setelan Halfprint", slug: "setelan-halfprint", base_price: 120000, description: "Setelan dengan kombinasi area print.", is_active: true, sort_order: 20 },
-    { name: "Setelan Fullprint", slug: "setelan-fullprint", base_price: 130000, description: "Setelan jersey fullprint.", is_active: true, sort_order: 30 }
-  ],
-  materials: [
-    { name: "Milano", slug: "milano", price_adjustment: 0, is_active: true, sort_order: 10 },
-    { name: "Brazil", slug: "brazil", price_adjustment: 0, is_active: true, sort_order: 20 },
-    { name: "Benzema", slug: "benzema", price_adjustment: 0, is_active: true, sort_order: 30 },
-    { name: "Drop Needle", slug: "drop-needle", price_adjustment: 0, is_active: true, sort_order: 40 },
-    { name: "Emboss Topo", slug: "emboss-topo", price_adjustment: 15000, is_active: true, sort_order: 50 },
-    { name: "Emboss Straw", slug: "emboss-straw", price_adjustment: 15000, is_active: true, sort_order: 60 },
-    { name: "Emboss Mixart", slug: "emboss-mixart", price_adjustment: 15000, is_active: true, sort_order: 70 },
-    { name: "Emboss Monochrome", slug: "emboss-monochrome", price_adjustment: 15000, is_active: true, sort_order: 80 }
-  ],
-  collarGroups: [
-    { name: "Regular", slug: "regular", sort_order: 10, is_active: true },
-    { name: "Classic", slug: "classic", sort_order: 20, is_active: true }
-  ],
-  collars: [
-    { name: "O Neck", slug: "o-neck", group_slug: "regular", group_name: "Regular", price_adjustment: 0, is_active: true, sort_order: 10 },
-    { name: "V Neck", slug: "v-neck", group_slug: "regular", group_name: "Regular", price_adjustment: 0, is_active: true, sort_order: 20 },
-    { name: "V Silang", slug: "v-silang", group_slug: "regular", group_name: "Regular", price_adjustment: 0, is_active: true, sort_order: 30 },
-    { name: "V Silang Tumpul", slug: "v-silang-tumpul", group_slug: "regular", group_name: "Regular", price_adjustment: 0, is_active: true, sort_order: 40 },
-    { name: "V Tumpul", slug: "v-tumpul", group_slug: "regular", group_name: "Regular", price_adjustment: 0, is_active: true, sort_order: 50 },
-    { name: "V Narrow", slug: "v-narrow", group_slug: "regular", group_name: "Regular", price_adjustment: 0, is_active: true, sort_order: 60 },
-    { name: "V Narrow Adidas", slug: "v-narrow-adidas", group_slug: "regular", group_name: "Regular", price_adjustment: 0, is_active: true, sort_order: 70 },
-    { name: "V Neck Lapisan", slug: "v-neck-lapisan", group_slug: "regular", group_name: "Regular", price_adjustment: 0, is_active: true, sort_order: 80 },
-    { name: "Wangki Klasik", slug: "wangki-klasik", group_slug: "classic", group_name: "Classic", price_adjustment: 0, is_active: true, sort_order: 90 },
-    { name: "Wangki Adidas", slug: "wangki-adidas", group_slug: "classic", group_name: "Classic", price_adjustment: 0, is_active: true, sort_order: 100 },
-    { name: "Wangki Segitiga", slug: "wangki-segitiga", group_slug: "classic", group_name: "Classic", price_adjustment: 0, is_active: true, sort_order: 110 },
-    { name: "Wangki Tumpul Adidas", slug: "wangki-tumpul-adidas", group_slug: "classic", group_name: "Classic", price_adjustment: 0, is_active: true, sort_order: 120 },
-    { name: "Wangki Silang Adidas", slug: "wangki-silang-adidas", group_slug: "classic", group_name: "Classic", price_adjustment: 0, is_active: true, sort_order: 130 },
-    { name: "Wangki Kancing 1", slug: "wangki-kancing-1", group_slug: "classic", group_name: "Classic", price_adjustment: 0, is_active: true, sort_order: 140 },
-    { name: "Wangki Kancing 2", slug: "wangki-kancing-2", group_slug: "classic", group_name: "Classic", price_adjustment: 0, is_active: true, sort_order: 150 },
-    { name: "Wangki Klasik O", slug: "wangki-klasik-o", group_slug: "classic", group_name: "Classic", price_adjustment: 0, is_active: true, sort_order: 160 }
-  ],
-  addons: [
-    { name: "Lengan Panjang", slug: "lengan-panjang", price_adjustment: 10000, is_active: true, sort_order: 10 },
-    { name: "RIB", slug: "rib", price_adjustment: 5000, is_active: true, sort_order: 20 }
-  ],
-  requiredServices: [
-    { service_name: "Cetak Sublim", service_slug: "cetak-sublim", is_active: true, sort_order: 10 }
-  ],
-  settings: {
-    minimum_order_qty: 6,
-    price_formula: "(package_price + material_adjustment + collar_adjustment + addon_total + size_adjustment) * quantity"
-  }
-};
-
 export const fallbackContent: PublicContent = {
   hero: fallbackHero,
   heroes: fallbackHeroes,
@@ -930,6 +878,5 @@ export const fallbackContent: PublicContent = {
   orderSteps: fallbackOrderSteps,
   trustAbout: fallbackTrustAbout,
   testimonials: fallbackTestimonials,
-  contact: fallbackContact,
-  jerseyConfigurator: fallbackJerseyConfigurator
+  contact: fallbackContact
 };

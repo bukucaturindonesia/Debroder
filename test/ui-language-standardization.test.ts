@@ -69,7 +69,6 @@ describe("standardisasi bahasa UI", () => {
   it("menjaga alur utama bebas dari copy teknis yang telah dilarang", () => {
     const criticalSources = [
       "components/checkout/CheckoutClient.tsx",
-      "components/checkout/CheckoutClientV2.tsx",
       "components/tracking/GuestOrderTracking.tsx",
       "components/admin/OrderDetailAdmin.tsx",
       "components/admin/CustomOrderOperationalWorkspace.tsx",

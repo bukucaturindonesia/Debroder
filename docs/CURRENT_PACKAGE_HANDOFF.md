@@ -19,8 +19,9 @@
 - P8A — Size Adjustment Policy Preview: **PASS**
 - P8B — Size Adjustment Data Mutation: **PASS**
 - P9 — Generic Configured Product: **PASS menurut owner**
-- P10 — Jersey Configured Product: **IMPLEMENTED IN SOURCE — AWAITING OWNER GATE VERIFICATION**
-- Package setelah P10: **tidak dibuka**. STOP setelah laporan P10.
+- P10 — Jersey Configured Product: **PASS menurut owner**
+- P11 — Workspace Optimization: **IMPLEMENTED IN SOURCE — AWAITING OWNER GATE VERIFICATION**
+- Package setelah P11: **P12 — Admin Orders Ownership**, hanya setelah owner menyatakan gate P11 PASS.
 
 Codex wajib memverifikasi sendiri sebelum mengubah source:
 
@@ -247,29 +248,26 @@ Owner menangani review akhir, commit, push GitHub, dan Vercel Preview, kecuali o
 
 ---
 
-## 10. P10 — Scope Aktif
+## 10. P11 — Scope Aktif
 
-Owner menyatakan seluruh gate P9 PASS dan memberi instruksi `lanjut`. P10
-menghubungkan Jersey sebagai consumer pertama fondasi configured product P9.
+Owner menyatakan seluruh gate P10 clean/PASS dan memberi instruksi `lanjut`.
+P11 mengoptimalkan workspace tanpa mengubah business behavior.
 
-P10 telah:
+P11 telah:
 
-- memetakan master paket, bahan, kerah, addon, layanan, serta ukuran aktif ke
-  definition generik P9 tanpa monetary amount di client;
-- memvalidasi draft melalui Server Action, membentuk fingerprint dan immutable
-  snapshot `quotation_required`, lalu memasukkannya melalui Cart v5
-  `addConfiguredProduct`;
-- menghapus client-side formula, SKU/ID sintetis, fallback transaction data,
-  dan file input yang sebelumnya hanya menyimpan nama file tanpa upload
-  authority;
-- mewajibkan data tim, lengan, pemain, referensi desain, logo, sponsor,
-  nama/nomor, alokasi ukuran, serta layanan wajib untuk seluruh quantity;
-- mempertahankan generic P9 core bebas branch Jersey dan checkout tetap
-  fail-closed sampai ada penawaran server terbaru;
-- tidak membuat migration. Produk live satu-satunya adalah pilot internal
-  `draft/inactive` dengan instruksi database agar tidak dipublikasikan tanpa
-  approval owner eksplisit, sehingga halaman saat ini fail-closed sampai PIM
-  menyediakan produk Jersey `active + custom_quote` yang sah.
+- mengganti 12 eager import panel khusus route pada `AdminDashboard` menjadi
+  dynamic import SSR-enabled; production bundle route admin generik turun dari
+  906.011 menjadi 650.829 byte (turun 255.182 byte / sekitar 28%);
+- menghapus `CheckoutClientV2.tsx` yang tidak memiliki consumer dan merupakan
+  implementasi pre-P6; route tetap memakai checkout canonical dengan recovery,
+  Cart v5 decision, dan structured address;
+- menghapus Jersey configurator read model/fallback legacy yang sudah tidak
+  memiliki consumer setelah P10, termasuk tujuh query tambahan pada setiap
+  `getPublicContent()`; P10 Jersey server authority tetap utuh;
+- menambah regression test untuk lazy boundary, canonical checkout, penghapusan
+  loader legacy, dan kelangsungan P10;
+- tidak mengubah pricing, cart, checkout, route, historical snapshot, database,
+  migration, atau business behavior.
 
 Status saat ini:
 
