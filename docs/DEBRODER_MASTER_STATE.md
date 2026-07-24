@@ -274,7 +274,7 @@ The FROZEN commerce/landing blueprints and official Owner Decisions remain autho
 
 ## P8B Size Adjustment Data Mutation state — 2026-07-24
 
-- P8B is **IMPLEMENTED IN SOURCE — AWAITING OWNER GATE VERIFICATION**.
+- P8B is **PASS** by owner gate confirmation.
 - Owner `Lanjut` approved the exact P8A 287-row fingerprint
   `c8de001d6a246fe4465873326b7ad634`.
 - Migration `20260724011535_p8b_size_adjustment_data_mutation_v1.sql` is
@@ -287,4 +287,30 @@ The FROZEN commerce/landing blueprints and official Owner Decisions remain autho
   pricing snapshots, inventory, product/color pricing, UI, routes, pricing
   formula, permanent schema, and RLS remain unchanged.
 - Typecheck, touched lint, and 37 targeted tests pass; no P8B-specific advisor
-  finding exists. Owner full gate is pending. P9 has not started.
+  finding exists. Owner confirmed full gates, diff review, commit `1d4db25`,
+  push, and Vercel Preview Ready.
+
+## P9 Generic Configured Product state — 2026-07-24
+
+- P9 is **IMPLEMENTED IN SOURCE — AWAITING OWNER GATE VERIFICATION**.
+- Generic configured-product authority now projects from the existing
+  `products.config_schema` slot while product identity, active status,
+  commerce mode, minimum quantity, and source version remain owned by
+  canonical product columns.
+- Definition and draft validation cover all five option input types,
+  compatibility rules, allocation totals/dimensions, services, uploads,
+  quantity limits, definition versions, and duplicate/unknown identifiers.
+- Server-only runtime creates amount-free pricing input, deterministic SHA-256
+  fingerprints, validates pricing-authority output, and captures immutable
+  priced or quotation-required snapshots.
+- Cart v5 rejects configured lines lacking server fingerprint or matching
+  pricing/quotation evidence. Existing configured checkout remains inactive;
+  the first specialized consumer is reserved for P10.
+- Live audit found one draft specialized product, zero active generic
+  definition, zero saved configuration rows, 14 historical configured order
+  items, and 53 non-empty historical config snapshots. No existing row was
+  modified.
+- No database migration, backfill, schema/RLS change, route/UI change, pricing
+  formula change, inventory change, commit, push, merge, or deployment was
+  performed.
+- Typecheck, touched lint, targeted P9/Cart/contract tests, and diff check pass.

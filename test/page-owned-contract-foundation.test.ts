@@ -30,6 +30,7 @@ const definition = {
   code: "generic-configured-product",
   name: "Generic Configured Product",
   pricingMode: "quotation_required",
+  quantityRules: { minimum: 1 },
   optionGroups: [],
   compatibilityRules: [],
   allocationDimensions: [],

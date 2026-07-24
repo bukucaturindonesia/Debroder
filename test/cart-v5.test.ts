@@ -91,6 +91,7 @@ function configuredSnapshot(): ConfiguredProductSnapshot {
   return {
     contractVersion: CONTRACT_VERSIONS.configuredProduct,
     snapshotId: "configured-snapshot-1",
+    inputFingerprint: "configured-input-fixture",
     definition: {
       contractVersion: CONTRACT_VERSIONS.configuredProduct,
       id: "definition-1",
@@ -98,6 +99,7 @@ function configuredSnapshot(): ConfiguredProductSnapshot {
       code: "generic-configured",
       name: "Configured Product",
       pricingMode: "server_priced",
+      quantityRules: { minimum: 1 },
       optionGroups: [],
       compatibilityRules: [],
       allocationDimensions: [],
@@ -125,7 +127,10 @@ function configuredSnapshot(): ConfiguredProductSnapshot {
       warnings: [],
       validatedAt: NOW
     },
-    pricing: pricingSnapshot(),
+    pricing: {
+      ...pricingSnapshot(),
+      inputFingerprint: "configured-input-fixture"
+    },
     immutable: true,
     capturedAt: NOW
   };
@@ -423,6 +428,27 @@ describe("P6 Cart v5", () => {
     ])).toEqual({
       allowed: true,
       mode: "configured_product"
+    });
+  });
+
+  it("keeps configured-product checkout fail-closed without a server input fingerprint", () => {
+    const snapshot = configuredSnapshot();
+    delete snapshot.inputFingerprint;
+
+    const line = createConfiguredProductCartItem({
+      lineId: "configured-unverified",
+      quantity: snapshot.draft.quantity,
+      display: { title: "Configured Product" },
+      configurationSnapshot: snapshot
+    });
+
+    expect(line.validation).toMatchObject({
+      status: "invalid",
+      code: "CONFIGURED_PRODUCT_INVALID"
+    });
+    expect(getCartCheckoutDecision([line])).toMatchObject({
+      allowed: false,
+      code: "CART_CONFIGURATION_INVALID"
     });
   });
 

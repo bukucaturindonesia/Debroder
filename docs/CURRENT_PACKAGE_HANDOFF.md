@@ -17,8 +17,9 @@
 - P6 — Cart v5: **PASS**
 - P7B — Policy & Database Alignment: **PASS menurut owner `lanjut`**
 - P8A — Size Adjustment Policy Preview: **PASS**
-- P8B — Size Adjustment Data Mutation: **IMPLEMENTED IN SOURCE — AWAITING OWNER GATE VERIFICATION**
-- Package setelah P8B: **P9 — Generic Configured Product**, hanya setelah owner menyatakan gate P8B PASS.
+- P8B — Size Adjustment Data Mutation: **PASS**
+- P9 — Generic Configured Product: **IMPLEMENTED IN SOURCE — AWAITING OWNER GATE VERIFICATION**
+- Package setelah P9: **P10 — Jersey Configured Product**, hanya setelah owner menyatakan gate P9 PASS.
 
 Codex wajib memverifikasi sendiri sebelum mengubah source:
 
@@ -245,23 +246,24 @@ Owner menangani review akhir, commit, push GitHub, dan Vercel Preview, kecuali o
 
 ---
 
-## 10. P8B — Scope Aktif
+## 10. P9 — Scope Aktif
 
-P8A full gate PASS pada commit remote `022e19e`; instruksi owner `Lanjut`
-menyetujui exact cohort 287 row `PENDING_CHANGE` untuk P8B.
+Owner gate mengonfirmasi P8B full gate, review diff, commit `1d4db25`, push,
+dan Vercel Preview PASS. P9 membangun fondasi configured product generik saja.
 
-P8B telah:
+P9 telah:
 
-- menerapkan migration
-  `20260724011535_p8b_size_adjustment_data_mutation_v1.sql`;
-- mengubah exact cohort: 190 row 2XL ke Rp10.000, 76 row 3XL ke
-  Rp20.000, dan 21 row 4XL ke Rp30.000;
-- mencatat 287 audit before/after dalam satu batch;
-- memverifikasi fingerprint
-  `c8de001d6a246fe4465873326b7ad634` dan zero managed mismatch;
-- mempertahankan 25 XS dan satu `Mix Size` di luar mutation;
-- tidak mengubah historical order/pricing snapshot, inventory, UI,
-  pricing formula, schema permanent, atau RLS.
+- memakai `products.config_schema` yang sudah ada sebagai definition slot,
+  dengan identitas/nama/minimum tetap berasal dari kolom produk canonical;
+- memvalidasi option/selection, compatibility, allocation, service, upload,
+  quantity, version, dan pricing authority secara fail-closed;
+- menghasilkan pricing input tanpa monetary amount, fingerprint SHA-256,
+  serta immutable snapshot dari server runtime;
+- menolak schema legacy/specialized, product nonaktif, definition drift,
+  pricing result mismatch, dan configured Cart v5 tanpa server fingerprint;
+- mempertahankan 14 historical configured order items dan 53 snapshot lama;
+- tidak membuat migration/backfill, tidak mengubah formula pricing, dan tidak
+  mengaktifkan consumer/checkout P10.
 
 Status saat ini:
 

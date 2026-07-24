@@ -281,12 +281,13 @@
 ### V12-040 — P8B owner full-gate verification
 
 - Severity: Package gate
-- Status: **OPEN — SOURCE AND REMOTE MUTATION VERIFIED**
+- Status: **CLOSED — OWNER GATE PASS**
 - Detail: Migration `20260724011535_p8b_size_adjustment_data_mutation_v1.sql`
   applied the exact approved 287-row cohort. Postcheck proves 1,147 managed
   SKU with zero mismatch, 287 audit rows in one batch, and the approved
-  fingerprint. Typecheck, touched lint, and 37 targeted tests pass. Owner full
-  typecheck/lint/test/build/diff gate remains required before P8B PASS.
+  fingerprint. Typecheck, touched lint, and 37 targeted tests pass. Owner
+  confirmed full gates, safe diff review, commit `1d4db25`, remote push, and
+  Vercel Preview Ready.
 
 ## Closed in P8B Size Adjustment Data Mutation
 
@@ -300,3 +301,30 @@
 - P8A exclusions — **PRESERVED**. XS remains outside policy and unlinked
   `Mix Size` remains Rp0/blocked; V12-039 stays open for separate canonical
   data resolution.
+
+## P9 Generic Configured Product
+
+### V12-041 — P9 owner full-gate verification
+
+- Severity: Package gate
+- Status: **OPEN — SOURCE IMPLEMENTED**
+- Detail: Generic definition projection, option/selection validation,
+  amount-free pricing input, server pricing-result verification, immutable
+  snapshot, and configured Cart v5 fail-closed regression tests pass targeted
+  verification. Owner full typecheck/lint/test/build/diff, commit/push, and
+  Preview gate remain required before P9 PASS.
+
+## Closed in P9 source
+
+- Duplicate configured-product authority — **CLOSED IN SOURCE**. Existing
+  `products.config_schema` is reused; product identity, name, active status,
+  commerce mode, minimum, and source version remain canonical columns.
+- Client-trusted configuration — **CLOSED IN SOURCE**. A server-only loader
+  and runtime re-read the definition, validate the draft, fingerprint the
+  canonical input, and reject missing/mismatched pricing authority.
+- Monetary input injection — **CLOSED IN SOURCE**. Configured pricing input
+  carries identifiers and selections only; no price or amount is accepted.
+- Specialized branch leakage — **CLOSED IN SOURCE**. Generic core regression
+  rejects specialized product fields/branches; first consumer remains P10.
+- Speculative migration risk — **CLOSED**. Existing schema is sufficient; no
+  migration/backfill was created and no historical snapshot was mutated.

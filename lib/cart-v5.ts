@@ -94,7 +94,8 @@ export type CartCheckoutDecision =
         | "CART_EMPTY"
         | "CART_LEGACY_UNSUPPORTED"
         | "CART_MIXED_CHECKOUT_MODE"
-        | "CART_REVALIDATION_REQUIRED";
+        | "CART_REVALIDATION_REQUIRED"
+        | "CART_CONFIGURATION_INVALID";
       message: string;
     };
 
@@ -442,6 +443,20 @@ export function getCartCheckoutDecision(lines: readonly CartItem[]): CartCheckou
       message: "Validasi harga dan stok terbaru diperlukan sebelum checkout."
     };
   }
+  if (
+    mode === "configured_product"
+    && lines.some((line) => (
+      line.lineType !== "configured_product"
+      || line.validation.status !== "valid"
+      || !isConfiguredProductCheckoutReady(line)
+    ))
+  ) {
+    return {
+      allowed: false,
+      code: "CART_CONFIGURATION_INVALID",
+      message: "Konfigurasi harus divalidasi ulang oleh server sebelum checkout."
+    };
+  }
 
   return { allowed: true, mode };
 }
@@ -594,6 +609,7 @@ export function createConfiguredProductCartItem(input: {
   notes?: string;
 }): CartItem {
   const snapshot = input.configurationSnapshot;
+  const snapshotReady = isConfiguredProductSnapshotCheckoutReady(snapshot, input.quantity);
   const line: ConfiguredProductCartLine = {
     contractVersion: CONTRACT_VERSIONS.cartLine,
     lineId: input.lineId,
@@ -601,13 +617,13 @@ export function createConfiguredProductCartItem(input: {
     quantity: input.quantity,
     display: input.display,
     displayPricing: snapshot.pricing,
-    validation: snapshot.validation.valid
+    validation: snapshotReady
       ? { status: "valid", validatedAt: snapshot.validation.validatedAt }
       : {
           status: "invalid",
           retryable: true,
           code: snapshot.validation.issues[0]?.code ?? "CONFIGURED_PRODUCT_INVALID",
-          message: snapshot.validation.issues[0]?.message ?? "Konfigurasi belum valid."
+          message: snapshot.validation.issues[0]?.message ?? "Konfigurasi belum divalidasi oleh server."
         },
     ...(input.notes ? { notes: input.notes } : {}),
     definitionId: snapshot.definition.id,
@@ -786,6 +802,36 @@ function isConfiguredProductSnapshot(value: unknown): value is ConfiguredProduct
     && value.draft.definitionVersion === value.definition.version
     && typeof value.validation.valid === "boolean"
     && isIsoDate(value.validation.validatedAt);
+}
+
+function isConfiguredProductCheckoutReady(line: ConfiguredProductCartLine) {
+  return line.quantity === line.configurationSnapshot.draft.quantity
+    && line.definitionId === line.configurationSnapshot.definition.id
+    && line.definitionVersion === line.configurationSnapshot.definition.version
+    && line.configurationId === line.configurationSnapshot.draft.id
+    && isConfiguredProductSnapshotCheckoutReady(line.configurationSnapshot, line.quantity);
+}
+
+function isConfiguredProductSnapshotCheckoutReady(
+  snapshot: ConfiguredProductSnapshot,
+  quantity: number
+) {
+  if (
+    !snapshot.validation.valid
+    || !isNonEmptyString(snapshot.inputFingerprint)
+    || snapshot.draft.quantity !== quantity
+  ) {
+    return false;
+  }
+  if (snapshot.validation.pricingStatus === "quotation_required") {
+    return snapshot.definition.pricingMode === "quotation_required"
+      && snapshot.pricing === null;
+  }
+  return snapshot.validation.pricingStatus === "priced"
+    && snapshot.definition.pricingMode === "server_priced"
+    && snapshot.pricing?.status === "priced"
+    && snapshot.pricing.quantity === quantity
+    && snapshot.pricing.inputFingerprint === snapshot.inputFingerprint;
 }
 
 function migrateUiSnapshot(

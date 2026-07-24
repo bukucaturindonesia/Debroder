@@ -455,7 +455,7 @@ P8B.
 
 ## 2026-07-24 — P8B Size Adjustment Data Mutation
 
-Status: **IMPLEMENTED IN SOURCE — AWAITING OWNER GATE VERIFICATION**.
+Status: **PASS** by owner gate confirmation.
 
 - Preflight reconfirmed exact P8A fingerprint
   `c8de001d6a246fe4465873326b7ad634`: 287 rows, all before Rp0,
@@ -480,4 +480,43 @@ Status: **IMPLEMENTED IN SOURCE — AWAITING OWNER GATE VERIFICATION**.
   performance advisors contain zero P8B-specific finding.
 - Files: migration, read-only verification SQL, P8B regression test, P8B
   report, and governance handoff/state/issue updates only.
-- No commit, push, merge, deploy, or P9 work was performed.
+- Owner confirmed full gates, safe diff review, commit `1d4db25`, remote push,
+  and Vercel Preview Ready without error.
+
+---
+
+## 2026-07-24 — P9 Generic Configured Product
+
+Status: **IMPLEMENTED IN SOURCE — AWAITING OWNER GATE VERIFICATION**.
+
+- Baseline verified clean and synchronized at
+  `1d4db25756d865837b3250b4217a71880b0b8719`.
+- Ownership audit proved `products.config_schema` is the existing canonical
+  definition slot. Product identity, display name, availability,
+  `minimum_order_qty`, commerce mode, and source version remain canonical
+  product-column authority.
+- Live data: one draft specialized configurable product, zero active generic
+  definition, zero saved configurations, 14 historical configured order
+  items, and 53 non-empty historical `order_items.config_snapshot` rows.
+- Added generic definition projection, full option/selection/compatibility/
+  allocation/service/upload validation, deterministic canonical input,
+  SHA-256 fingerprinting, amount-free pricing input, pricing-authority result
+  verification, and deeply frozen immutable snapshot creation.
+- Server runtime fails closed for missing catalog/config schema, inactive or
+  wrong commerce mode, version drift, invalid selection, missing pricing
+  authority, thrown authority, and mismatched pricing output.
+- Cart v5 now requires a valid server input fingerprint and matching pricing
+  snapshot (or explicit quotation-required snapshot) before a configured line
+  can be checkout-eligible. Existing configured checkout remains intentionally
+  inactive until P10.
+- Specialized product fields/branches are prohibited by regression test in
+  the generic core. P10 consumer work was not started.
+- Database/migration: none required, created, applied, or pending. Existing
+  schema is sufficient; backfill or mutation would be speculative. No
+  historical order/snapshot row was changed.
+- Routes/UI/pricing formula/inventory/RLS: unchanged.
+- Verification: typecheck PASS; targeted suite PASS (3 files / 23 tests);
+  touched-file lint PASS; `git diff --check` PASS.
+- Deployment/commit/push/merge: none for P9.
+- Next: owner runs full typecheck/lint/test/build/diff gate. P10 remains closed
+  until owner confirms P9 PASS.

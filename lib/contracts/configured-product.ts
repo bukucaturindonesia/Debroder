@@ -81,6 +81,10 @@ export type ConfiguredProductDefinition = {
   code: string;
   name: string;
   pricingMode: "server_priced" | "quotation_required";
+  quantityRules: {
+    minimum: number;
+    maximum?: number;
+  };
   optionGroups: readonly ConfiguredOptionGroup[];
   compatibilityRules: readonly ConfiguredCompatibilityRule[];
   allocationDimensions: readonly ConfiguredAllocationDimension[];
@@ -141,9 +145,31 @@ export type ConfiguredProductValidation = {
   validatedAt: IsoDateTime;
 };
 
+/**
+ * Canonical pricing input contains identifiers and selections only. Monetary
+ * amounts are deliberately absent because a server pricing authority owns
+ * every configured-product calculation.
+ */
+export type ConfiguredProductPricingInput = {
+  contractVersion: typeof CONTRACT_VERSIONS.configuredProduct;
+  requestId: string;
+  inputFingerprint: string;
+  definitionId: EntityId;
+  definitionVersion: string;
+  configurationId: EntityId;
+  quantity: number;
+  selections: readonly ConfiguredSelection[];
+  allocations: readonly ConfiguredAllocation[];
+  services: readonly ConfiguredServiceSelection[];
+  uploads: readonly Pick<ConfiguredUploadReference, "requirementId" | "uploadId">[];
+  sourceReferences: readonly ContractReference[];
+  requestedAt: IsoDateTime;
+};
+
 export type ConfiguredProductSnapshot = {
   contractVersion: typeof CONTRACT_VERSIONS.configuredProduct;
   snapshotId: EntityId;
+  inputFingerprint?: string;
   definition: ConfiguredProductDefinition;
   draft: ConfiguredProductDraft;
   validation: ConfiguredProductValidation;
