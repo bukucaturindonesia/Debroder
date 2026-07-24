@@ -10,6 +10,10 @@ import {
   isNotificationRole,
   isNotificationSuperAdmin
 } from "@/lib/notifications";
+import {
+  canonicalErrorResponse,
+  createServerRequestContext
+} from "@/lib/observability/server";
 
 export type NotificationActor = {
   user: User;
@@ -87,20 +91,35 @@ export class NotificationAuthError extends Error {
   }
 }
 
-export function notificationErrorResponse(error: unknown): Response {
+export function notificationErrorResponse(error: unknown, request?: Request): Response {
   const guestResponse = adminGuestErrorResponse(error);
   if (guestResponse) return guestResponse;
+  const context = createServerRequestContext(request, "admin notification");
   if (error instanceof NotificationAuthError) {
-    return Response.json({ error: error.message }, { status: error.status });
+    return canonicalErrorResponse({
+      error,
+      context,
+      definition: {
+        code: error.status === 401
+          ? "NOTIFICATION_AUTHENTICATION_REQUIRED"
+          : error.status === 403
+            ? "NOTIFICATION_ACCESS_DENIED"
+            : "NOTIFICATION_SERVICE_UNAVAILABLE",
+        message: error.status >= 500
+          ? "Layanan notifikasi belum tersedia."
+          : error.message,
+        status: error.status
+      },
+      log: error.status >= 500
+    });
   }
-
-  return Response.json(
-    {
-      error:
-        error instanceof Error
-          ? error.message
-          : "Operasi notifikasi gagal karena kesalahan yang tidak diketahui."
+  return canonicalErrorResponse({
+    error,
+    context,
+    definition: {
+      code: "NOTIFICATION_OPERATION_FAILED",
+      message: "Operasi notifikasi gagal. Coba lagi.",
+      status: 500
     },
-    { status: 500 }
-  );
+  });
 }

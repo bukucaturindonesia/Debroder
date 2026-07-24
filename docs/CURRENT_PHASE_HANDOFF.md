@@ -594,3 +594,32 @@ Status: **IMPLEMENTED IN SOURCE — AWAITING OWNER GATE VERIFICATION**.
   53 tests PASS. Owner full typecheck/lint/test/build/diff gate remains required.
 - Deployment/commit/push/merge: none. P14 remains closed until owner confirms
   P13 PASS.
+
+---
+
+## 2026-07-24 — P14 Error Handling & Observability
+
+Status: **IMPLEMENTED IN SOURCE — AWAITING OWNER GATE VERIFICATION**.
+
+- Owner confirmed P13 gate clean/PASS. P14 baseline HEAD
+  `32a8c8e15fb3f5154d44d22aacd303fe42022362` was clean on the expected branch.
+- Root cause: critical commerce boundaries used raw unstructured logging,
+  exposed some unknown Admin exception messages, lacked one canonical
+  request/correlation identity, and silently ignored selected query, audit,
+  cleanup, and active-stage failures.
+- Added server-only canonical request context, structured JSON logging,
+  bounded recursive redaction, duplicate-error suppression, safe canonical
+  error responses, correlation headers, and a root application error UI.
+- Checkout, public payment, order action, confirmation, and guest tracking now
+  distinguish missing records from infrastructure failures and retain
+  existing fail-closed transaction behavior.
+- Privacy regression prevents customer contact/address, design/configuration,
+  notes, proof/private paths, tokens, secrets, credentials, and raw exception
+  messages from observability output.
+- Database/migration local/remote/applied/pending: none. No schema, RLS,
+  transaction data, historical snapshot, pricing, cart, inventory, checkout
+  command, or payment behavior was mutated.
+- Verification run: typecheck PASS; full lint PASS with zero errors and 32
+  pre-existing warnings; targeted suite PASS (10 files / 70 tests).
+- Deployment/commit/push/merge: none. P15 remains closed until owner confirms
+  P14 PASS.

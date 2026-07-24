@@ -15,14 +15,25 @@ import {
   safePublicResponse
 } from "@/lib/public-api-error";
 import { getAdminSupabaseClient } from "@/lib/supabase/admin";
+import {
+  createServerRequestContext,
+  logServerError,
+  observabilityResponseHeaders,
+  type ServerRequestContext
+} from "@/lib/observability/server";
 
 export const dynamic = "force-dynamic";
 
 export async function POST(request: Request) {
+  const observability = createServerRequestContext(
+    request,
+    "customer order tracking read"
+  );
   try {
     const client = getAdminSupabaseClient();
     if (!client) {
       return customerOrderError(
+        observability,
         "CUSTOMER_ORDER_UNAVAILABLE",
         "Layanan tracking belum dikonfigurasi.",
         503
@@ -41,7 +52,8 @@ export async function POST(request: Request) {
         fingerprint,
         orderFingerprint,
         reason: "invalid_order_number",
-        request
+        request,
+        observability
       });
     }
 
@@ -57,25 +69,35 @@ export async function POST(request: Request) {
         fingerprint,
         orderFingerprint,
         reason: authorization.reason,
-        request
+        request,
+        observability
       });
     }
     if (!projection) {
       return customerOrderError(
+        observability,
         "CUSTOMER_ORDER_ACCESS_DENIED",
         "Data tracking tidak cocok atau pesanan tidak tersedia.",
         404
       );
     }
 
-    const readModel = await completeCustomerOrderTrackingPage(client, projection);
-    return safePublicResponse(readModel);
+    const readModel = await completeCustomerOrderTrackingPage(
+      client,
+      projection,
+      observability
+    );
+    return safePublicResponse(
+      readModel,
+      200,
+      observabilityResponseHeaders(observability)
+    );
   } catch (error) {
     return publicApiErrorResponse(error, "customer order tracking read", {
       code: "CUSTOMER_ORDER_UNAVAILABLE",
       message: "Tracking pesanan belum dapat dimuat. Coba lagi.",
       status: 503
-    });
+    }, observability);
   }
 }
 
@@ -85,7 +107,8 @@ async function denyTrackingAccess({
   fingerprint,
   orderFingerprint,
   reason,
-  request
+  request,
+  observability
 }: {
   client: SupabaseClient;
   orderId: string | null;
@@ -93,6 +116,7 @@ async function denyTrackingAccess({
   orderFingerprint: string;
   reason: string;
   request: Request;
+  observability: ServerRequestContext;
 }) {
   const since = new Date(
     Date.now() - TRACKING_RATE_LIMIT_MINUTES * 60_000
@@ -106,6 +130,7 @@ async function denyTrackingAccess({
     .filter("metadata->>fingerprint", "eq", fingerprint);
   if (error) {
     return customerOrderError(
+      observability,
       "CUSTOMER_ORDER_UNAVAILABLE",
       "Perlindungan tracking sedang tidak tersedia. Coba beberapa saat lagi.",
       503
@@ -119,9 +144,11 @@ async function denyTrackingAccess({
       fingerprint,
       orderFingerprint,
       "rate_limited",
-      request
+      request,
+      observability
     );
     return customerOrderError(
+      observability,
       "CUSTOMER_ORDER_RATE_LIMITED",
       "Terlalu banyak percobaan. Coba lagi 15 menit kemudian.",
       429
@@ -134,10 +161,12 @@ async function denyTrackingAccess({
     fingerprint,
     orderFingerprint,
     reason,
-    request
+    request,
+    observability
   );
   if (!audited) {
     return customerOrderError(
+      observability,
       "CUSTOMER_ORDER_UNAVAILABLE",
       "Perlindungan tracking sedang tidak tersedia. Coba beberapa saat lagi.",
       503
@@ -146,12 +175,14 @@ async function denyTrackingAccess({
 
   if (reason === "expired_token") {
     return customerOrderError(
+      observability,
       "CUSTOMER_ORDER_ACCESS_EXPIRED",
       "Tautan tracking telah kedaluwarsa. Gunakan nomor WhatsApp atau minta tautan baru.",
       410
     );
   }
   return customerOrderError(
+    observability,
     "CUSTOMER_ORDER_ACCESS_DENIED",
     "Data tracking tidak cocok atau pesanan tidak tersedia.",
     404
@@ -184,7 +215,8 @@ async function auditDenied(
   fingerprint: string,
   orderFingerprint: string,
   reason: string,
-  request: Request
+  request: Request,
+  observability: ServerRequestContext
 ) {
   const { error } = await client.from("system_audit_log").insert({
     entity_type: "order",
@@ -199,9 +231,26 @@ async function auditDenied(
       order_fingerprint: orderFingerprint
     }
   });
+  if (error) {
+    logServerError(observability, error, {
+      event: "customer_order_tracking.audit_write_failed",
+      entityType: "order",
+      entityId: orderId,
+      reason
+    });
+  }
   return !error;
 }
 
-function customerOrderError(code: string, error: string, status: number) {
-  return safePublicResponse({ code, error }, status);
+function customerOrderError(
+  context: ServerRequestContext,
+  code: string,
+  error: string,
+  status: number
+) {
+  return safePublicResponse(
+    { code, error },
+    status,
+    observabilityResponseHeaders(context)
+  );
 }

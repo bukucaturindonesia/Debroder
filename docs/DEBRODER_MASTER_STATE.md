@@ -361,3 +361,23 @@ The FROZEN commerce/landing blueprints and official Owner Decisions remain autho
   was performed.
 - Verification: typecheck PASS; touched lint PASS; targeted suite PASS
   (6 files / 53 tests). Owner full gate and diff review remain required.
+
+## P14 Error Handling & Observability state — 2026-07-24
+
+- P13 is **PASS** according to the owner gate; baseline P14 HEAD was
+  `32a8c8e15fb3f5154d44d22aacd303fe42022362` on the expected branch with a
+  clean working tree.
+- P14 is **IMPLEMENTED IN SOURCE — AWAITING OWNER GATE VERIFICATION**.
+- Canonical server observability now owns request/correlation IDs, structured
+  JSON events, safe error references/responses, recursive sensitive-data
+  redaction, and duplicate error suppression.
+- Critical checkout, payment, order-action, confirmation, and tracking
+  boundaries no longer use raw logging or silently ignore selected database,
+  audit, cleanup, or active-stage failures.
+- A root error UI presents a safe retryable state without logging the same
+  server failure again in the client.
+- No migration, database mutation, schema/RLS change, transaction behavior
+  change, historical rewrite, pricing/cart/inventory change, commit, push,
+  merge, or deployment was performed.
+- Verification: typecheck PASS; full lint PASS with zero errors and 32
+  baseline warnings; targeted suite PASS (10 files / 70 tests).

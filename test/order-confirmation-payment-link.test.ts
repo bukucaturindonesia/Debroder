@@ -10,8 +10,10 @@ describe("Order confirmation payment link and pickup clarity", () => {
     const projector = read("lib/customer-orders/read-model.ts");
     expect(route).toContain("loadCustomerOrderConfirmationProjection");
     expect(route).toContain("completeCustomerOrderConfirmationPage");
-    expect(route.indexOf("isExpired(projection.authorization")).toBeLessThan(
-      route.indexOf("completeCustomerOrderConfirmationPage(client, projection)")
+    const expiryCheck = route.indexOf("isExpired(projection.authorization");
+    expect(expiryCheck).toBeGreaterThan(-1);
+    expect(expiryCheck).toBeLessThan(
+      route.indexOf("completeCustomerOrderConfirmationPage", expiryCheck)
     );
     expect(useCase).toContain("ensureAutomaticPaymentLink");
     expect(useCase).toContain("automatic-payment-link-v2");

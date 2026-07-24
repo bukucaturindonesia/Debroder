@@ -367,7 +367,7 @@
 ### V12-043 — P13 owner full-gate verification
 
 - Severity: Package gate
-- Status: **OPEN — SOURCE IMPLEMENTED**
+- Status: **CLOSED — OWNER GATE PASS**
 - Detail: Typed customer projections, server-only whitelisted graph, preserved
   guest authorization, bounded visibility/network-aware polling, stale
   snapshot warning/retry, typecheck, touched lint, and 53 targeted tests pass.
@@ -389,3 +389,34 @@
   values, proof paths, admin notes, and raw database rows stay server-side.
 - Speculative migration risk — **CLOSED**. Live schema/index/RLS audit proved
   existing database support; no migration or data mutation was created.
+
+## P14 Error Handling & Observability
+
+### V12-044 — P14 owner full-gate verification
+
+- Severity: Package gate
+- Status: **OPEN — SOURCE IMPLEMENTED**
+- Detail: Canonical error response, request/correlation ID, structured
+  redacted logging, duplicate suppression, explicit silent-failure handling,
+  root error UI, typecheck, lint, and 70 targeted tests pass. Owner full
+  typecheck/lint/test/build/diff and final review remain required before P14
+  PASS.
+
+## Closed in P14 source
+
+- Raw sensitive exception logging — **CLOSED IN SOURCE**. Unknown failures
+  expose only stable public codes/messages/references; logs omit raw messages,
+  stack, contact/address, design/configuration, notes, proof/private paths,
+  tokens, secrets, and credentials.
+- Missing correlation identity — **CLOSED IN SOURCE**. Critical server
+  boundaries propagate validated or generated request/correlation IDs in
+  structured logs and response headers.
+- Duplicate nested error logging — **CLOSED IN SOURCE**. The same error object
+  is emitted once across nested canonical boundaries; the client root boundary
+  does not duplicate server logs.
+- Silent infrastructure failures — **CLOSED IN SOURCE**. Payment/order reads,
+  rate-limit checks, tracking/action audit writes, proof cleanup, and active
+  stage resolution now fail closed or emit explicit structured evidence while
+  preserving transaction semantics.
+- Speculative migration risk — **CLOSED**. Existing runtime and audit schema
+  are sufficient; no migration or database mutation was created.

@@ -22,8 +22,9 @@
 - P10 — Jersey Configured Product: **PASS menurut owner**
 - P11 — Workspace Optimization: **PASS menurut owner**
 - P12 — Admin Orders Ownership: **PASS menurut owner**
-- P13 — Customer Order Read Model & Polling: **IMPLEMENTED IN SOURCE — AWAITING OWNER GATE VERIFICATION**
-- Package setelah P13: **P14**, hanya setelah owner menyatakan gate P13 PASS.
+- P13 — Customer Order Read Model & Polling: **PASS menurut owner**
+- P14 — Error Handling & Observability: **IMPLEMENTED IN SOURCE — AWAITING OWNER GATE VERIFICATION**
+- Package setelah P14: **P15 — Inventory Authority & Stock Ownership**, hanya setelah owner menyatakan gate P14 PASS.
 
 Codex wajib memverifikasi sendiri sebelum mengubah source:
 
@@ -250,37 +251,45 @@ Owner menangani review akhir, commit, push GitHub, dan Vercel Preview, kecuali o
 
 ---
 
-## 10. P13 — Scope Aktif
+## 10. P14 — Scope Aktif
 
-Owner menyatakan seluruh gate P12 clean/PASS dan memberi instruksi `lanjut`.
-P13 mengisolasi customer order read model dan polling tanpa mengubah business
-behavior.
+Owner menyatakan seluruh gate P13 clean/PASS dan memberi instruksi `lanjut`.
 
-P13 telah:
+P14 hanya mencakup:
 
-- menambah typed customer-facing read model, pure projector, page-owned server
-  use case, dan data-access `server-only`;
-- membaca order dan child transaction records sebagai satu whitelisted graph,
-  lalu memproyeksikan hanya field pelanggan yang aman;
-- mempertahankan guest token/hash serta verifikasi nomor WhatsApp sebagai
-  boundary authorization; hash, nomor mentah, address mentah, proof path,
-  admin notes, dan raw database row tidak dikirim ke client;
-- menyatukan loading API dan polling untuk confirmation/tracking, dengan
-  interval 30 detik, exponential backoff, tanpa request overlap, pause saat
-  hidden/offline/terminal, serta resume saat focus/visible/online;
-- mempertahankan snapshot terakhir pada refresh failure dan menampilkan stale
-  warning serta retry eksplisit;
-- mempertahankan pembuatan payment link otomatis hanya pada boundary server dan
-  kondisi canonical yang sebelumnya berlaku;
-- menghindari query suspicious-access sebelum authorization pada polling valid;
-- tidak mengubah pricing, cart, checkout, payment/fulfillment rule, inventory,
-  historical snapshot, schema, RLS, data, atau migration.
+- canonical error handling;
+- structured server logging;
+- correlation/request ID yang aman;
+- redaction untuk data sensitif;
+- pencegahan duplicate logging dan silent failure;
+- regression coverage untuk boundary tersebut.
+
+P14 wajib mempertahankan seluruh behavior transaksi, route, pricing, cart,
+checkout, payment, fulfillment, inventory, historical snapshot, dan hasil
+package sebelumnya. Analytics/log tidak boleh membawa desain pelanggan, bukti
+pembayaran, alamat penuh, catatan sensitif, private file URL, token, secret,
+atau credential. Kegagalan observability tidak boleh memblokir transaksi.
 
 Status saat ini:
 
 ```text
 IMPLEMENTED IN SOURCE — AWAITING OWNER GATE VERIFICATION
 ```
+
+Evidence ringkas:
+
+- Canonical server error boundary sekarang menghasilkan response aman dengan
+  request/correlation ID dan structured JSON log yang sudah direduksi.
+- Critical checkout, public payment, order action, order confirmation, dan
+  guest tracking boundary tidak lagi memakai raw `console.*`; kegagalan query,
+  audit, cleanup, dan active-stage yang sebelumnya silent sekarang eksplisit.
+- Root application error UI menyediakan pesan aman, referensi digest, retry,
+  dan kembali ke beranda tanpa duplicate client logging.
+- Tidak ada migration/database mutation. Schema audit existing tetap
+  authoritative dan migration P14 akan speculative.
+- Verification Codex: typecheck PASS; lint penuh PASS dengan zero error dan 32
+  baseline warning; targeted suite PASS, 10 files / 70 tests.
+- Commit, push, merge, deployment, dan P15 belum dilakukan.
 
 ---
 

@@ -6,6 +6,10 @@ import {
   assertAdminRequestMethodAllowed
 } from "@/lib/admin-role-security";
 import { isPaymentRole } from "@/lib/payments";
+import {
+  canonicalErrorResponse,
+  createServerRequestContext
+} from "@/lib/observability/server";
 
 export type PaymentActor = { user: User; role: string; client: SupabaseClient };
 
@@ -45,14 +49,35 @@ export class PaymentAuthError extends Error {
   }
 }
 
-export function paymentErrorResponse(error: unknown): Response {
+export function paymentErrorResponse(error: unknown, request?: Request): Response {
   const guestResponse = adminGuestErrorResponse(error);
   if (guestResponse) return guestResponse;
+  const context = createServerRequestContext(request, "admin payment");
   if (error instanceof PaymentAuthError) {
-    return Response.json({ error: error.message }, { status: error.status });
+    return canonicalErrorResponse({
+      error,
+      context,
+      definition: {
+        code: error.status === 401
+          ? "PAYMENT_AUTHENTICATION_REQUIRED"
+          : error.status === 403
+            ? "PAYMENT_ACCESS_DENIED"
+            : "PAYMENT_SERVICE_UNAVAILABLE",
+        message: error.status >= 500
+          ? "Layanan pembayaran belum tersedia."
+          : error.message,
+        status: error.status
+      },
+      log: error.status >= 500
+    });
   }
-  return Response.json(
-    { error: error instanceof Error ? error.message : "Operasi pembayaran gagal." },
-    { status: 500 }
-  );
+  return canonicalErrorResponse({
+    error,
+    context,
+    definition: {
+      code: "PAYMENT_OPERATION_FAILED",
+      message: "Operasi pembayaran gagal. Coba lagi.",
+      status: 500
+    }
+  });
 }

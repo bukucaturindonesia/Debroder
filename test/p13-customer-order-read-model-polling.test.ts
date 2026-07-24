@@ -212,8 +212,10 @@ describe("P13 customer order read model and polling", () => {
       trackingRoute.indexOf("denyTrackingAccess({")
     );
     expect(trackingRoute).not.toContain('rpc("resolve_order_active_stage_v1"');
-    expect(confirmationRoute.indexOf("isExpired(projection.authorization")).toBeLessThan(
-      confirmationRoute.indexOf("completeCustomerOrderConfirmationPage(client, projection)")
+    const expiryCheck = confirmationRoute.indexOf("isExpired(projection.authorization");
+    expect(expiryCheck).toBeGreaterThan(-1);
+    expect(expiryCheck).toBeLessThan(
+      confirmationRoute.indexOf("completeCustomerOrderConfirmationPage", expiryCheck)
     );
   });
 });

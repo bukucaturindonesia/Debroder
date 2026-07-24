@@ -1,6 +1,13 @@
 import { hashPaymentToken } from "@/lib/payment-token";
 import { getAdminSupabaseClient } from "@/lib/supabase/admin";
 import { publicApiErrorResponse } from "@/lib/public-api-error";
+import {
+  createServerRequestContext,
+  logServerError,
+  logServerEvent,
+  observabilityResponseHeaders,
+  type ServerRequestContext
+} from "@/lib/observability/server";
 
 const ALLOWED_TYPES = new Map([
   ["image/png", "png"],
@@ -47,11 +54,28 @@ type PublicPaymentFulfillmentRow = {
   tracking_number: string | null;
 };
 
-async function resolveActiveStage(client: AdminClient, orderId: string) {
+async function resolveActiveStage(
+  client: AdminClient,
+  orderId: string,
+  context: ServerRequestContext
+) {
   try {
     const { data, error } = await client.rpc("resolve_order_active_stage_v1", { p_order_id: orderId });
-    return error ? null : data;
-  } catch {
+    if (error) {
+      logServerError(context, error, {
+        event: "public_payment.active_stage_unavailable",
+        entityType: "order",
+        entityId: orderId
+      });
+      return null;
+    }
+    return data;
+  } catch (error) {
+    logServerError(context, error, {
+      event: "public_payment.active_stage_unavailable",
+      entityType: "order",
+      entityId: orderId
+    });
     return null;
   }
 }
@@ -59,32 +83,40 @@ async function resolveActiveStage(client: AdminClient, orderId: string) {
 async function resolveLink(token: string) {
   const client = getAdminSupabaseClient();
   if (!client) throw new Error("Layanan pembayaran belum dikonfigurasi.");
-  const { data: link } = await client.from("payment_submission_links")
+  const { data: link, error } = await client.from("payment_submission_links")
     .select("id,order_id,expires_at,max_uses,used_count,revoked_at,archived_at,created_at")
     .eq("token_hash", hashPaymentToken(token)).maybeSingle();
+  if (error) throw error;
   if (!link || link.revoked_at || link.archived_at
     || new Date(link.expires_at).getTime() <= Date.now()
     || link.used_count >= link.max_uses) return null;
   return { client, link };
 }
 
-export async function GET(_request: Request, context: Context) {
+export async function GET(request: Request, context: Context) {
+  const observability = createServerRequestContext(request, "public payment read");
+  const respond = (body: unknown, status = 200) => paymentResponse(
+    observability,
+    body,
+    status
+  );
   try {
     const { token } = await context.params;
     const resolved = await resolveLink(token);
-    if (!resolved) return Response.json({ error: "Tautan pembayaran tidak aktif atau sudah kedaluwarsa." }, { status: 404 });
+    if (!resolved) return respond({ error: "Tautan pembayaran tidak aktif atau sudah kedaluwarsa." }, 404);
     const { data: order, error } = await resolved.client.from("orders")
       .select("id,order_number,customer_name,status,delivery_method,payment_method,total_amount,payment_effective_total,payment_balance,payment_required_amount,payment_requirement_met,payment_status,currency,pricing_status")
       .eq("id", resolved.link.order_id).is("archived_at", null).maybeSingle();
-    if (error || !order) return Response.json({ error: "Pesanan tidak tersedia." }, { status: 404 });
+    if (error) throw error;
+    if (!order) return respond({ error: "Pesanan tidak tersedia." }, 404);
     if (order.pricing_status !== "final" || Number(order.total_amount) <= 0) {
-      return Response.json({ code: "PAYMENT_PRICING_NOT_FINAL", error: "Pembayaran belum tersedia sampai harga order ditetapkan final." }, { status: 409 });
+      return respond({ code: "PAYMENT_PRICING_NOT_FINAL", error: "Pembayaran belum tersedia sampai harga order ditetapkan final." }, 409);
     }
     const [
-      { data: items },
-      { data: settings, error: settingsError },
-      { data: submissions },
-      { data: fulfillment },
+      itemsResult,
+      settingsResult,
+      submissionsResult,
+      fulfillmentResult,
       activeStage
     ] = await Promise.all([
       resolved.client.from("order_items")
@@ -113,14 +145,24 @@ export async function GET(_request: Request, context: Context) {
         .order("created_at", { ascending: false })
         .limit(1)
         .maybeSingle(),
-      resolveActiveStage(resolved.client, order.id)
+      resolveActiveStage(resolved.client, order.id, observability)
     ]);
-    if (settingsError) throw new Error("Pengaturan pembayaran belum tersedia.");
+    const readError = [
+      itemsResult.error,
+      settingsResult.error,
+      submissionsResult.error,
+      fulfillmentResult.error
+    ].find(Boolean);
+    if (readError) throw readError;
+    const items = itemsResult.data;
+    const settings = settingsResult.data;
+    const submissions = submissionsResult.data;
+    const fulfillment = fulfillmentResult.data;
     const itemRows = (items ?? []) as PublicPaymentItemRow[];
     const submissionRows = (submissions ?? []) as PublicPaymentSubmissionRow[];
     const methodRows = (settings ?? []) as PublicPaymentMethodRow[];
     const fulfillmentRow = fulfillment as PublicPaymentFulfillmentRow | null;
-    return Response.json({
+    return respond({
       orderNumber: order.order_number,
       customerName: order.customer_name,
       orderStatus: order.status,
@@ -174,24 +216,34 @@ export async function GET(_request: Request, context: Context) {
       code: "PAYMENT_LOAD_FAILED",
       message: "Data pembayaran belum dapat dimuat. Coba lagi.",
       status: 500
-    });
+    }, observability);
   }
 }
 
 export async function POST(request: Request, context: Context) {
+  const observability = createServerRequestContext(
+    request,
+    "public payment submission"
+  );
+  const respond = (body: unknown, status = 200) => paymentResponse(
+    observability,
+    body,
+    status
+  );
   let uploadedPath: string | null = null;
   try {
     const { token } = await context.params;
     const resolved = await resolveLink(token);
-    if (!resolved) return Response.json({ error: "Tautan pembayaran tidak aktif atau sudah kedaluwarsa." }, { status: 404 });
+    if (!resolved) return respond({ error: "Tautan pembayaran tidak aktif atau sudah kedaluwarsa." }, 404);
     const { data: payableOrder, error: payableOrderError } = await resolved.client.from("orders")
       .select("pricing_status,total_amount")
       .eq("id", resolved.link.order_id)
       .is("archived_at", null)
       .maybeSingle();
-    if (payableOrderError || !payableOrder) return Response.json({ error: "Pesanan tidak tersedia." }, { status: 404 });
+    if (payableOrderError) throw payableOrderError;
+    if (!payableOrder) return respond({ error: "Pesanan tidak tersedia." }, 404);
     if (payableOrder.pricing_status !== "final" || Number(payableOrder.total_amount) <= 0) {
-      return Response.json({ code: "PAYMENT_PRICING_NOT_FINAL", error: "Pembayaran diblokir sampai harga order ditetapkan final." }, { status: 409 });
+      return respond({ code: "PAYMENT_PRICING_NOT_FINAL", error: "Pembayaran diblokir sampai harga order ditetapkan final." }, 409);
     }
 
     const form = await request.formData();
@@ -204,39 +256,41 @@ export async function POST(request: Request, context: Context) {
     const customerNotes = String(form.get("customerNotes") ?? "").trim();
     const idempotencyKey = String(form.get("idempotencyKey") ?? "").trim();
     const proof = form.get("proof");
-    if (!Number.isSafeInteger(amount) || amount <= 0) return Response.json({ error: "Nominal pembayaran tidak valid." }, { status: 400 });
+    if (!Number.isSafeInteger(amount) || amount <= 0) return respond({ error: "Nominal pembayaran tidak valid." }, 400);
     const paidAtDate = new Date(paidAt);
     if (!paidAt || Number.isNaN(paidAtDate.getTime()) || paidAtDate.getTime() > Date.now() + 86_400_000) {
-      return Response.json({ error: "Tanggal pembayaran tidak valid." }, { status: 400 });
+      return respond({ error: "Tanggal pembayaran tidak valid." }, 400);
     }
-    if (!/^[a-zA-Z0-9_-]{16,100}$/.test(idempotencyKey)) return Response.json({ error: "Kunci pengiriman tidak valid." }, { status: 400 });
+    if (!/^[a-zA-Z0-9_-]{16,100}$/.test(idempotencyKey)) return respond({ error: "Kunci pengiriman tidak valid." }, 400);
     if (!/^[0-9a-f-]{36}$/i.test(paymentMethodId) || senderName.length < 2 || senderName.length > 150 || channelName.length < 2) {
-      return Response.json({ error: "Metode tujuan, nama pengirim, dan bank atau dompet pengirim wajib diisi." }, { status: 400 });
+      return respond({ error: "Metode tujuan, nama pengirim, dan bank atau dompet pengirim wajib diisi." }, 400);
     }
     if (!(proof instanceof File) || proof.size <= 0 || proof.size > MAX_BYTES || !ALLOWED_TYPES.has(proof.type)) {
-      return Response.json({ error: "Bukti wajib PNG, JPG, atau PDF maksimal 5 MB." }, { status: 400 });
+      return respond({ error: "Bukti wajib PNG, JPG, atau PDF maksimal 5 MB." }, 400);
     }
     if (!await hasValidFileSignature(proof)) {
-      return Response.json({ error: "Isi file bukti tidak cocok dengan format yang diizinkan." }, { status: 400 });
+      return respond({ error: "Isi file bukti tidak cocok dengan format yang diizinkan." }, 400);
     }
 
-    const { data: method } = await resolved.client.from("payment_method_settings")
+    const { data: method, error: methodError } = await resolved.client.from("payment_method_settings")
       .select("id")
       .eq("id", paymentMethodId)
       .eq("is_active", true)
       .is("archived_at", null)
       .maybeSingle();
-    if (!method) return Response.json({ error: "Metode pembayaran tidak aktif. Muat ulang halaman." }, { status: 409 });
+    if (methodError) throw methodError;
+    if (!method) return respond({ error: "Metode pembayaran tidak aktif. Muat ulang halaman." }, 409);
 
-    const { data: existing } = await resolved.client.from("order_payments")
+    const { data: existing, error: existingError } = await resolved.client.from("order_payments")
       .select("payment_number,status,order_id,submission_link_id")
       .eq("submission_idempotency_key", idempotencyKey)
       .maybeSingle();
+    if (existingError) throw existingError;
     if (existing) {
       if (existing.order_id !== resolved.link.order_id || existing.submission_link_id !== resolved.link.id) {
-        return Response.json({ error: "Kunci pengiriman telah digunakan pada transaksi lain." }, { status: 409 });
+        return respond({ error: "Kunci pengiriman telah digunakan pada transaksi lain." }, 409);
       }
-      return Response.json({ paymentNumber: existing.payment_number, status: existing.status, idempotent: true });
+      return respond({ paymentNumber: existing.payment_number, status: existing.status, idempotent: true });
     }
 
     const extension = ALLOWED_TYPES.get(proof.type)!;
@@ -267,18 +321,44 @@ export async function POST(request: Request, context: Context) {
     if (error) throw new Error(error.message);
     const row = Array.isArray(data) ? data[0] : data;
     uploadedPath = null;
-    return Response.json({ paymentNumber: row?.payment_number, status: "pending" }, { status: 201 });
+    logServerEvent("info", observability, "public_payment.submitted", {
+      entityType: "payment",
+      entityId: typeof row?.payment_number === "string"
+        ? row.payment_number
+        : null
+    });
+    return respond({ paymentNumber: row?.payment_number, status: "pending" }, 201);
   } catch (error) {
     if (uploadedPath) {
       const client = getAdminSupabaseClient();
-      if (client) await client.storage.from("payment-proofs").remove([uploadedPath]);
+      if (client) {
+        const { error: cleanupError } = await client.storage
+          .from("payment-proofs")
+          .remove([uploadedPath]);
+        if (cleanupError) {
+          logServerError(observability, cleanupError, {
+            event: "public_payment.cleanup_failed"
+          });
+        }
+      }
     }
     return publicApiErrorResponse(error, "public payment submission", {
       code: "PAYMENT_SUBMISSION_FAILED",
       message: "Bukti pembayaran belum dapat dikirim. Data Anda tetap aman; coba lagi.",
       status: 400
-    });
+    }, observability);
   }
+}
+
+function paymentResponse(
+  context: ServerRequestContext,
+  body: unknown,
+  status = 200
+) {
+  return Response.json(body, {
+    status,
+    headers: observabilityResponseHeaders(context)
+  });
 }
 
 async function hasValidFileSignature(file: File) {

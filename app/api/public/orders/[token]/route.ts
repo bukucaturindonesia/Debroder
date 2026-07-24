@@ -7,17 +7,27 @@ import {
   publicApiErrorResponse,
   safePublicResponse
 } from "@/lib/public-api-error";
+import {
+  createServerRequestContext,
+  observabilityResponseHeaders,
+  type ServerRequestContext
+} from "@/lib/observability/server";
 import { getAdminSupabaseClient } from "@/lib/supabase/admin";
 
 type Context = { params: Promise<{ token: string }> };
 
 export const dynamic = "force-dynamic";
 
-export async function GET(_request: Request, context: Context) {
+export async function GET(request: Request, context: Context) {
+  const observability = createServerRequestContext(
+    request,
+    "customer order confirmation read"
+  );
   try {
     const { token } = await context.params;
     if (!validTrackingToken(token)) {
       return customerOrderError(
+        observability,
         "CUSTOMER_ORDER_INVALID_REQUEST",
         "Tautan order tidak valid.",
         400
@@ -27,6 +37,7 @@ export async function GET(_request: Request, context: Context) {
     const client = getAdminSupabaseClient();
     if (!client) {
       return customerOrderError(
+        observability,
         "CUSTOMER_ORDER_UNAVAILABLE",
         "Layanan order belum dikonfigurasi.",
         503
@@ -39,6 +50,7 @@ export async function GET(_request: Request, context: Context) {
     );
     if (!projection) {
       return customerOrderError(
+        observability,
         "CUSTOMER_ORDER_NOT_FOUND",
         "Order tidak ditemukan atau tautan tidak aktif.",
         404
@@ -46,28 +58,42 @@ export async function GET(_request: Request, context: Context) {
     }
     if (isExpired(projection.authorization.public_access_token_expires_at)) {
       return customerOrderError(
+        observability,
         "CUSTOMER_ORDER_ACCESS_EXPIRED",
         "Tautan order sudah kedaluwarsa. Gunakan nomor WhatsApp atau minta tautan baru.",
         410
       );
     }
 
-    const readModel = await completeCustomerOrderConfirmationPage(client, projection);
-    return safePublicResponse(readModel);
+    const readModel = await completeCustomerOrderConfirmationPage(
+      client,
+      projection,
+      observability
+    );
+    return safePublicResponse(
+      readModel,
+      200,
+      observabilityResponseHeaders(observability)
+    );
   } catch (error) {
     return publicApiErrorResponse(error, "customer order confirmation read", {
       code: "CUSTOMER_ORDER_UNAVAILABLE",
       message: "Pesanan belum dapat dimuat. Coba lagi.",
       status: 500
-    });
+    }, observability);
   }
 }
 
 export async function POST(request: Request, context: Context) {
+  const observability = createServerRequestContext(
+    request,
+    "customer order action"
+  );
   try {
     const { token } = await context.params;
     if (!validTrackingToken(token)) {
       return customerOrderError(
+        observability,
         "CUSTOMER_ORDER_INVALID_REQUEST",
         "Tautan order tidak valid.",
         400
@@ -76,6 +102,7 @@ export async function POST(request: Request, context: Context) {
     const body = await readAction(request);
     if (!body) {
       return customerOrderError(
+        observability,
         "CUSTOMER_ORDER_INVALID_REQUEST",
         "Aksi tidak didukung.",
         400
@@ -84,6 +111,7 @@ export async function POST(request: Request, context: Context) {
     const client = getAdminSupabaseClient();
     if (!client) {
       return customerOrderError(
+        observability,
         "CUSTOMER_ORDER_UNAVAILABLE",
         "Layanan order belum dikonfigurasi.",
         503
@@ -104,15 +132,17 @@ export async function POST(request: Request, context: Context) {
       });
     if (error) throw new Error(error.message);
 
-    return safePublicResponse({
-      status: recordText(data, "status") || "awaiting_payment"
-    });
+    return safePublicResponse(
+      { status: recordText(data, "status") || "awaiting_payment" },
+      200,
+      observabilityResponseHeaders(observability)
+    );
   } catch (error) {
     return publicApiErrorResponse(error, "customer order action", {
       code: "CUSTOMER_ORDER_ACTION_FAILED",
       message: "Tindakan pesanan belum dapat diproses. Muat ulang status lalu coba lagi.",
       status: 409
-    });
+    }, observability);
   }
 }
 
@@ -153,6 +183,15 @@ function isExpired(value: string | null) {
   return Number.isFinite(timestamp) && timestamp <= Date.now();
 }
 
-function customerOrderError(code: string, error: string, status: number) {
-  return safePublicResponse({ code, error }, status);
+function customerOrderError(
+  context: ServerRequestContext,
+  code: string,
+  error: string,
+  status: number
+) {
+  return safePublicResponse(
+    { code, error },
+    status,
+    observabilityResponseHeaders(context)
+  );
 }

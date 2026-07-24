@@ -13,6 +13,12 @@ import {
   toCustomerOrderTrackingReadModel,
   type CustomerOrderServerProjection
 } from "@/lib/customer-orders/read-model";
+import {
+  createServerRequestContext,
+  logServerError,
+  logServerEvent,
+  type ServerRequestContext
+} from "@/lib/observability/server";
 
 export async function loadCustomerOrderConfirmationProjection(
   client: SupabaseClient,
@@ -25,9 +31,14 @@ export async function loadCustomerOrderConfirmationProjection(
 
 export async function completeCustomerOrderConfirmationPage(
   client: SupabaseClient,
-  projection: CustomerOrderServerProjection
+  projection: CustomerOrderServerProjection,
+  requestContext?: ServerRequestContext
 ) {
-  const payment = await resolveCustomerOrderPaymentLink(client, projection);
+  const payment = await resolveCustomerOrderPaymentLink(
+    client,
+    projection,
+    requestContext
+  );
   return toCustomerOrderConfirmationReadModel(projection, payment);
 }
 
@@ -42,16 +53,24 @@ export async function loadCustomerOrderTrackingProjection(
 
 export async function completeCustomerOrderTrackingPage(
   client: SupabaseClient,
-  projection: CustomerOrderServerProjection
+  projection: CustomerOrderServerProjection,
+  requestContext?: ServerRequestContext
 ) {
-  const payment = await resolveCustomerOrderPaymentLink(client, projection);
+  const payment = await resolveCustomerOrderPaymentLink(
+    client,
+    projection,
+    requestContext
+  );
   return toCustomerOrderTrackingReadModel(projection, payment);
 }
 
 async function resolveCustomerOrderPaymentLink(
   client: SupabaseClient,
-  projection: CustomerOrderServerProjection
+  projection: CustomerOrderServerProjection,
+  requestContext?: ServerRequestContext
 ): Promise<CustomerOrderPaymentLinkReadModel> {
+  const observability = requestContext
+    ?? createServerRequestContext(null, "customer order payment link");
   const order = projection.paymentLinkOrder;
   if (order.payment_method !== "bank_transfer" || order.status !== "awaiting_payment") {
     return { url: null, expiresAt: null, unavailableReason: null };
@@ -60,14 +79,15 @@ async function resolveCustomerOrderPaymentLink(
   try {
     const result = await ensureAutomaticPaymentLink(client, order);
     return {
-      url: relativePaymentPath(result.publicUrl),
+      url: relativePaymentPath(result.publicUrl, observability),
       expiresAt: result.link?.expires_at ?? null,
       unavailableReason: result.blocker
     };
   } catch (error) {
-    console.error("Customer order payment link unavailable", {
-      orderId: order.id,
-      error: error instanceof Error ? error.name : "unknown"
+    logServerError(observability, error, {
+      event: "customer_order.payment_link_unavailable",
+      entityType: "order",
+      entityId: order.id
     });
     return {
       url: null,
@@ -77,13 +97,17 @@ async function resolveCustomerOrderPaymentLink(
   }
 }
 
-function relativePaymentPath(publicUrl: string | null) {
+function relativePaymentPath(
+  publicUrl: string | null,
+  context: ServerRequestContext
+) {
   if (!publicUrl) return null;
   if (publicUrl.startsWith("/")) return publicUrl;
   try {
     const url = new URL(publicUrl);
     return `${url.pathname}${url.search}${url.hash}`;
   } catch {
+    logServerEvent("warn", context, "customer_order.payment_link_url_invalid");
     return null;
   }
 }
