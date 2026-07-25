@@ -5,14 +5,13 @@ import type { ProductTypeOption } from "@/lib/product-taxonomy";
 
 export type CategoryCommercePageConfig = {
   pageKey: string;
-  pagePath?: string;
+  pagePath: string;
   breadcrumbLabel: string;
-  eyebrow?: string;
-  shortcutLabel?: string;
-  typeDiscoveryTitle?: string;
-  typeDiscoveryDescription?: string;
-  colorDiscoveryTitle?: string;
-  newArrivalsTitle?: string;
+  shortcutLabel: string;
+  typeDiscoveryTitle: string;
+  typeDiscoveryDescription: string;
+  colorDiscoveryTitle: string;
+  newArrivalsTitle: string;
   catalogTitle: string;
   catalogDescription: string;
   closingHeadline: string;
@@ -31,16 +30,6 @@ export function CategoryCommercePage({
   config: CategoryCommercePageConfig;
 }) {
   const { hero, products, filters } = model.data;
-  const pagePath = config.pagePath || `/${config.pageKey}`;
-  const shortcutLabel = config.shortcutLabel || `Navigasi ${config.breadcrumbLabel}`;
-  const typeDiscoveryTitle =
-    config.typeDiscoveryTitle || `Pilih ${config.breadcrumbLabel.toLowerCase()} berdasarkan model`;
-  const typeDiscoveryDescription =
-    config.typeDiscoveryDescription || config.catalogDescription;
-  const colorDiscoveryTitle =
-    config.colorDiscoveryTitle || "Pilih berdasarkan warna";
-  const newArrivalsTitle =
-    config.newArrivalsTitle || "Produk terbaru";
 
   return (
     <PublicShell>
@@ -65,12 +54,12 @@ export function CategoryCommercePage({
         />
         <CategoryCommerceCatalog
           products={products}
-          pagePath={pagePath}
-          shortcutLabel={shortcutLabel}
-          typeDiscoveryTitle={typeDiscoveryTitle}
-          typeDiscoveryDescription={typeDiscoveryDescription}
-          colorDiscoveryTitle={colorDiscoveryTitle}
-          newArrivalsTitle={newArrivalsTitle}
+          pagePath={config.pagePath}
+          shortcutLabel={config.shortcutLabel}
+          typeDiscoveryTitle={config.typeDiscoveryTitle}
+          typeDiscoveryDescription={config.typeDiscoveryDescription}
+          colorDiscoveryTitle={config.colorDiscoveryTitle}
+          newArrivalsTitle={config.newArrivalsTitle}
           title={config.catalogTitle}
           description={config.catalogDescription}
           closingHeadline={config.closingHeadline}

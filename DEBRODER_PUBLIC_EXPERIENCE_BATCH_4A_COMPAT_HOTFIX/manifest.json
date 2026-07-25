@@ -1,0 +1,10 @@
+{
+  "package": "DEBRODER PUBLIC EXPERIENCE BATCH 4A COMPAT HOTFIX",
+  "version": "1.0.0",
+  "target": "components/CategoryCommercePage.tsx",
+  "accepted_hashes": [
+    "1c7fab19f5471e05e960f98f864305e4324fa1963205b1d7294c186b54f64aeb",
+    "0f691ee91e0763713626c9995f213ca6650ef1e7651f38f6ee89d6f159ceff07"
+  ],
+  "new_hash": "0f691ee91e0763713626c9995f213ca6650ef1e7651f38f6ee89d6f159ceff07"
+}

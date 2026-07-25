@@ -1,0 +1,20 @@
+{
+  "package": "DEBRODER PUBLIC EXPERIENCE BATCH 4A",
+  "version": "1.0.0",
+  "old_hashes": {
+    "app/kaos-polos/page.tsx": "8a638baa9226e883eb910b44cf559cba0f164e270f50363ed60dbed5659415be",
+    "app/jaket-hoodie/page.tsx": "96a55f354b53f86b4cd2b15ddef6d3c26bd346eb9989968c349c161a9f3e7f73",
+    "components/CategoryCommercePage.tsx": "2a30f36b1207eaf6f44112b96004bcfcd2708515e337c81f4b45d06376d5b6b0",
+    "components/CategoryCommerceCatalog.tsx": "c9fcfaaeb5e0c4fe4078cb10f9ff80e8230599bef06cd37e4634c5ce0a8f3f18",
+    "components/ProductCatalog.tsx": "490412fa07aeeb3f7ce15642ecd6e4084f2b8d59785bdc439a2d3051e1bfcc1e",
+    "app/globals.css": "850588ce692614beb8315f8c35f7f487bb427f6b6355faa4dd94f07b53627027"
+  },
+  "new_hashes": {
+    "app/kaos-polos/page.tsx": "68510da4baa45c2c69b911c4f276ce3b604b2cc2163ac5510105665195b088b1",
+    "app/jaket-hoodie/page.tsx": "a9f6a6d9ed499690635ad79d8e737d0b64164ec21691ca86df9a0d7dc58170e0",
+    "components/CategoryCommercePage.tsx": "1c7fab19f5471e05e960f98f864305e4324fa1963205b1d7294c186b54f64aeb",
+    "components/CategoryCommerceCatalog.tsx": "f71645e6abbe921a069693d8f2b88ddab83b7c44b98654e2283d34fc12aba0bb",
+    "components/ProductCatalog.tsx": "19c3aac337183bb90a015a171e8f875e31ecf3db6c8a30e6dd441d88d04ada0c",
+    "app/globals.css": "8f43924bcaf8a89a1f8ca0867d33bdced3250d0e1a873b70f5dbbdad6f49b09a"
+  }
+}
