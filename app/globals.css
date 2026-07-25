@@ -1538,173 +1538,705 @@ button,
   }
 }
 
-
 /* =========================================================
-   DEBRODER_LANDING_VISUAL_BATCH_3
-   Store · Cara Order · About · Footer · Mobile polish
-   Homepage-first scope; footer component remains globally consistent.
+   DEBRODER_LANDING_VISUAL_BATCH_3_FINAL_FROZEN
+   FINAL landing order correction · Plain-category rail · About · Footer · Mobile polish
+   Based on DEBRODER PUBLIC EXPERIENCE SYSTEM v1.0.
    ========================================================= */
-.landing-nike .landing-store-shell,
-.landing-nike .landing-about-shell {
+.landing-nike .home-plain-categories {
+  padding-top: var(--home-section-gap) !important;
+}
+
+.landing-nike .plain-category-shell {
+  overflow: hidden;
+}
+
+.landing-nike .plain-category-rail {
+  gap: 12px;
+  overscroll-behavior-inline: contain;
+  scroll-padding-inline: 0;
+}
+
+.landing-nike .plain-category-rail .category-rail-card {
+  flex-basis: 77%;
+}
+
+.landing-nike .home-about {
+  background: #fff;
+}
+
+.landing-nike .about-shell {
   max-width: var(--landing-content-max);
 }
 
-.landing-nike .landing-store-tab {
-  position: relative;
-  border-color: rgba(17, 17, 17, 0.14);
-}
-
-.landing-nike .landing-store-tab::before {
-  position: absolute;
-  left: 0;
-  bottom: -1px;
-  width: 0;
-  height: 2px;
-  background: #111;
-  content: "";
-  transition: width 220ms ease;
-}
-
-.landing-nike .landing-store-tab.is-active::before {
-  width: 100%;
-}
-
-.landing-nike .landing-store-tab.is-active .landing-store-index {
-  color: #111;
-}
-
-.landing-nike .landing-store-address,
-.landing-nike .landing-store-index {
-  color: rgba(17, 17, 17, 0.5);
-}
-
-.landing-nike .landing-store-media,
-.landing-nike .landing-about-visual {
-  border-radius: 0;
-  box-shadow: none;
-}
-
-.landing-nike .landing-store-media img,
-.landing-nike .landing-about-visual :is(img, video) {
-  transition: transform 700ms cubic-bezier(0.22, 1, 0.36, 1);
-}
-
-.landing-nike .landing-order-panel {
-  border-radius: 0;
-  box-shadow: none;
-}
-
-.landing-nike .landing-order-title {
-  max-width: 760px;
-  font-size: clamp(2rem, 5.8vw, 3.25rem);
-  line-height: 1;
-}
-
-.landing-nike .landing-about-title {
-  max-width: 680px;
+.landing-nike .about-title {
   font-family: var(--font-body);
-  font-size: clamp(2.5rem, 7vw, 4.75rem);
+  font-size: clamp(2.4rem, 9vw, 4rem);
   font-weight: 750;
   letter-spacing: -0.055em;
   line-height: 0.94;
 }
 
-.landing-nike .landing-about-body {
-  color: rgba(17, 17, 17, 0.64);
+.landing-nike .about-body {
+  color: #707072;
 }
 
-.landing-nike .landing-about-stat {
+.landing-nike .about-body p {
+  max-width: 62ch;
+}
+
+.landing-nike .about-cta {
+  min-height: 48px;
+}
+
+.landing-nike .about-media,
+.landing-nike .about-proof-grid {
+  background: #f5f5f5;
+}
+
+.landing-nike .about-proof-value {
   color: #111;
+  font-size: clamp(2rem, 6vw, 3.25rem);
+  line-height: 1;
+}
+
+.landing-nike .about-proof-label {
+  color: #707072;
 }
 
 .public-footer-system-v1 {
   box-shadow: none;
 }
 
-.public-footer-system-v1 .section-shell {
-  width: min(1440px, calc(100% - 32px));
+.public-footer-system-v1 .public-footer-grid {
+  align-items: start;
 }
 
-.public-footer-system-v1 .public-footer-links a:hover {
-  text-decoration: underline;
-}
-
-.public-footer-system-v1 .public-footer-column,
 .public-footer-system-v1 .public-footer-brand {
-  min-width: 0;
+  max-width: 20rem;
+}
+
+.public-footer-system-v1 .public-footer-links a {
+  width: fit-content;
+}
+
+.public-footer-system-v1 summary::-webkit-details-marker {
+  display: none;
 }
 
 @media (hover: hover) and (pointer: fine) {
-  .landing-nike .landing-store-media:hover img,
-  .landing-nike .landing-about-visual:hover :is(img, video) {
-    transform: scale(1.008);
+  .public-footer-system-v1 .public-footer-links a:hover {
+    text-decoration: underline;
   }
 }
 
 @media (max-width: 639px) {
-  .landing-nike .landing-store-tabs {
-    margin-inline: calc(var(--landing-page-gutter) * -1);
-    padding-inline: var(--landing-page-gutter);
-    scroll-padding-inline: var(--landing-page-gutter);
+  .landing-nike .landing-section-heading {
+    gap: 12px;
   }
 
-  .landing-nike .landing-store-tab {
-    min-width: 82%;
-    padding-top: 0;
+  .landing-nike .plain-category-rail {
+    gap: 12px;
   }
 
-  .landing-nike .landing-store-actions,
-  .landing-nike .landing-order-actions {
-    width: 100%;
+  .landing-nike .about-shell {
+    gap: 32px;
   }
 
-  .landing-nike .landing-store-actions > *,
-  .landing-nike .landing-order-actions > * {
-    flex: 1 1 100%;
-    width: 100%;
+  .landing-nike .about-title {
+    max-width: 9ch;
   }
 
-  .landing-nike .landing-order-panel {
-    margin-inline: calc(var(--landing-page-gutter) * -1);
+  .landing-nike .about-copy.text-center .about-title,
+  .landing-nike .about-copy.text-right .about-title {
+    max-width: none;
   }
 
-  .landing-nike .landing-about-copy {
-    text-align: left;
-  }
-
-  .landing-nike .landing-about-title {
-    font-size: clamp(2.5rem, 13vw, 3.25rem);
+  .landing-nike .about-proof-item {
+    min-height: 132px;
   }
 
   .public-footer-system-v1 .section-shell {
-    width: calc(100% - 32px);
+    width: min(100% - 32px, 1440px);
   }
 }
 
 @media (min-width: 640px) {
-  .landing-nike .landing-store-tab {
-    min-width: 46%;
+  .landing-nike .plain-category-rail {
+    gap: 16px;
   }
 
-  .public-footer-system-v1 .section-shell {
-    width: min(1440px, calc(100% - 48px));
+  .landing-nike .plain-category-rail .category-rail-card {
+    flex-basis: 44vw;
   }
 }
 
 @media (min-width: 1024px) {
-  .landing-nike .landing-store-tab {
-    min-width: 0;
+  .landing-nike .about-title {
+    font-size: clamp(3.5rem, 4.7vw, 4.75rem);
   }
 
-  .landing-nike .landing-order-panel {
-    min-height: 240px;
+  .landing-nike .plain-category-rail .category-rail-card {
+    flex-basis: calc((100% - 36px) / 3.2);
+  }
+}
+
+
+/* =========================================================
+   DEBRODER_LANDING_BATCH_1_3_PRECISION_FINAL
+   Precision polish derived from the owner-supplied Nike ID
+   offline capture dated 26 July 2026.
+   Scope: public homepage only. No Nike assets or identity.
+   ========================================================= */
+.landing-nike {
+  --landing-content-max: 1440px;
+  --landing-page-gutter: 16px;
+  --home-section-gap: 48px;
+  --home-end-space: 64px;
+  --landing-grid-gap: 12px;
+  color: #111111;
+  background: #ffffff;
+}
+
+.landing-nike > header {
+  border-bottom: 1px solid #e5e5e5;
+  box-shadow: none;
+}
+
+.landing-nike > header nav.section-shell {
+  width: min(var(--landing-content-max), calc(100% - (var(--landing-page-gutter) * 2)));
+  height: 64px;
+}
+
+.landing-nike > header nav .nav-link {
+  font-size: 16px;
+  font-weight: 500;
+}
+
+.landing-nike > header nav button[aria-label="Cari produk"] {
+  width: 160px;
+  height: 40px;
+  border-radius: 999px;
+  background: #f5f5f5;
+}
+
+.landing-nike > header nav button[aria-label="Cari produk"]:hover {
+  background: #e5e5e5;
+}
+
+.landing-nike > header div[class*="top-[78px]"] {
+  top: 64px !important;
+}
+
+.landing-nike > header div[class*="top-[164px]"] {
+  top: 150px !important;
+}
+
+.landing-nike .public-section-frame,
+.landing-nike .public-section-frame--wide,
+.landing-nike .public-section-frame--near-wide,
+.landing-nike .public-section-frame--inset {
+  width: 100% !important;
+  max-width: var(--landing-content-max) !important;
+  padding-inline: var(--landing-page-gutter) !important;
+}
+
+.landing-nike .campaign-shell,
+.landing-nike .benefit-grid {
+  width: min(var(--landing-content-max), calc(100% - (var(--landing-page-gutter) * 2)));
+  max-width: var(--landing-content-max);
+}
+
+.landing-nike .home-section {
+  padding-top: var(--home-section-gap) !important;
+  padding-bottom: 0 !important;
+}
+
+.landing-nike .landing-hero {
+  min-height: 500px;
+  max-height: 760px;
+  background: #111111;
+}
+
+.landing-nike .landing-hero-overlay {
+  background: linear-gradient(
+    0deg,
+    rgba(0, 0, 0, 0.5) 0%,
+    rgba(0, 0, 0, 0.18) 34%,
+    rgba(0, 0, 0, 0.04) 72%,
+    rgba(0, 0, 0, 0) 100%
+  );
+}
+
+.landing-nike .hero-content {
+  max-width: 1120px;
+}
+
+.landing-nike .home-hero-title {
+  max-width: min(94vw, 980px);
+  font-family: var(--font-display);
+  font-size: 48px;
+  font-weight: 700;
+  letter-spacing: -0.025em;
+  line-height: 0.9;
+  text-transform: uppercase;
+}
+
+.landing-nike .hero-subtitle {
+  max-width: 640px;
+  margin-top: 16px;
+  font-size: 16px;
+  line-height: 1.5;
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.landing-nike .hero-actions {
+  margin-top: 24px;
+  gap: 8px;
+}
+
+.landing-nike .hero-actions .cta,
+.landing-nike .landing-campaign-cta,
+.landing-nike .about-cta {
+  min-height: 48px;
+  padding: 12px 24px;
+  border-radius: 999px;
+  font-size: 16px;
+  font-weight: 500;
+  line-height: 1.5;
+}
+
+.landing-nike .landing-hero-controls button,
+.landing-nike .landing-section-heading button {
+  width: 48px;
+  height: 48px;
+  min-width: 48px;
+  min-height: 48px;
+}
+
+.landing-nike .landing-hero-controls button {
+  border-color: rgba(255, 255, 255, 0.34);
+  background: rgba(17, 17, 17, 0.48);
+  backdrop-filter: none;
+}
+
+.landing-nike .trust-strip {
+  border-color: #e5e5e5;
+}
+
+.landing-nike .benefit-grid > div {
+  min-height: 72px;
+  padding-block: 16px;
+  border-color: #e5e5e5;
+}
+
+.landing-nike .benefit-grid h2 {
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 1.5;
+}
+
+.landing-nike .benefit-grid p {
+  font-size: 12px;
+  line-height: 1.5;
+  color: #707072;
+}
+
+.landing-nike .landing-section-heading {
+  min-height: 48px;
+  align-items: center;
+}
+
+.landing-nike .home-section-title {
+  font-family: var(--font-body);
+  font-size: 24px;
+  font-weight: 500;
+  letter-spacing: -0.015em;
+  line-height: 1.2;
+}
+
+.landing-nike .landing-section-heading .public-secondary-copy {
+  max-width: 640px;
+  margin-top: 8px;
+  font-size: 16px;
+  line-height: 1.5;
+  color: #707072;
+}
+
+.landing-nike .landing-section-heading a {
+  font-size: 16px;
+  font-weight: 500;
+  text-underline-offset: 4px;
+}
+
+.landing-nike .featured-media-grid,
+.landing-nike .trending-grid,
+.landing-nike .landing-commerce-rail,
+.landing-nike .landing-category-rail,
+.landing-nike .plain-category-rail {
+  gap: var(--landing-grid-gap);
+}
+
+.landing-nike .landing-editorial-card,
+.landing-nike .landing-campaign-media,
+.landing-nike .category-media,
+.landing-nike .product-image-frame,
+.landing-nike .about-media,
+.landing-nike .about-proof-grid {
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+  background: #f5f5f5;
+}
+
+.landing-nike .landing-editorial-card .editorial-card-image,
+.landing-nike .landing-campaign-media :is(img, video),
+.landing-nike .landing-category-card .category-media img {
+  transition: opacity 500ms ease;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .landing-nike .landing-editorial-card:hover .editorial-card-image,
+  .landing-nike .landing-campaign-media:hover :is(img, video),
+  .landing-nike .landing-category-card:hover .category-media img {
+    transform: none;
+  }
+}
+
+.landing-nike .editorial-card-overlay {
+  background: linear-gradient(
+    to top,
+    rgba(0, 0, 0, 0.52) 0%,
+    rgba(0, 0, 0, 0.18) 38%,
+    rgba(0, 0, 0, 0) 72%
+  );
+}
+
+.landing-nike .editorial-card-content {
+  left: 24px;
+  right: 24px;
+  bottom: 24px;
+}
+
+.landing-nike .editorial-card-label {
+  margin-bottom: 6px;
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 1.5;
+  text-transform: none;
+}
+
+.landing-nike .editorial-card-title {
+  max-width: 95%;
+  font-family: var(--font-body);
+  font-size: 20px;
+  font-weight: 500;
+  letter-spacing: -0.02em;
+  line-height: 1.2;
+}
+
+.landing-nike .editorial-card-cta {
+  min-height: 48px;
+  padding-inline: 24px;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.landing-nike .landing-campaign {
+  padding-top: var(--home-section-gap) !important;
+  padding-bottom: 0;
+}
+
+.landing-nike .landing-campaign-copy {
+  max-width: 920px;
+  padding-top: 32px;
+}
+
+.landing-nike .landing-campaign-copy .campaign-copy-title {
+  font-family: var(--font-display);
+  font-size: 48px;
+  font-weight: 700;
+  letter-spacing: -0.025em;
+  line-height: 0.9;
+  text-transform: uppercase;
+}
+
+.landing-nike .landing-campaign-copy p {
+  max-width: 640px;
+  margin-top: 16px;
+  font-size: 16px;
+  line-height: 1.5;
+  color: #707072;
+}
+
+.landing-nike .landing-campaign-cta {
+  margin-top: 24px;
+}
+
+.landing-nike .landing-commerce-rail,
+.landing-nike .landing-category-rail,
+.landing-nike .plain-category-rail {
+  scroll-padding-inline: 0;
+  overscroll-behavior-inline: contain;
+}
+
+.landing-nike .fresh-drop-card,
+.landing-nike .category-rail-card,
+.landing-nike .plain-category-rail .category-rail-card {
+  flex-basis: 77%;
+}
+
+.landing-nike .home-fresh-drop .public-product-card-body {
+  padding-top: 12px;
+}
+
+.landing-nike .home-fresh-drop .public-product-meta {
+  margin-bottom: 2px;
+  font-size: 14px;
+  line-height: 1.5;
+  color: #707072;
+}
+
+.landing-nike .home-fresh-drop .public-product-name {
+  font-size: 16px;
+  font-weight: 500;
+  line-height: 1.5;
+}
+
+.landing-nike .home-fresh-drop .public-product-price-block {
+  margin-top: 4px;
+}
+
+.landing-nike .home-fresh-drop .public-product-price,
+.landing-nike .home-fresh-drop .public-product-compare-price {
+  font-size: 16px;
+  line-height: 1.5;
+}
+
+.landing-nike .landing-category-card h3,
+.landing-nike .plain-category-rail .category-rail-card h3 {
+  margin-top: 12px;
+  font-size: 16px;
+  font-weight: 500;
+  letter-spacing: 0;
+  line-height: 1.5;
+}
+
+.landing-nike .about-shell {
+  max-width: var(--landing-content-max);
+}
+
+.landing-nike .about-title {
+  font-family: var(--font-display);
+  font-size: 48px;
+  font-weight: 700;
+  letter-spacing: -0.025em;
+  line-height: 0.9;
+  text-transform: uppercase;
+}
+
+.landing-nike .about-body,
+.landing-nike .about-body p {
+  max-width: 62ch;
+  font-size: 16px;
+  line-height: 1.65;
+  color: #707072;
+}
+
+.landing-nike .about-proof-value {
+  font-family: var(--font-display);
+  font-size: 48px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  line-height: 0.9;
+}
+
+.landing-nike .about-proof-label {
+  font-size: 14px;
+  line-height: 1.5;
+  color: #707072;
+}
+
+.landing-nike .public-footer-system-v1 {
+  margin-top: var(--home-end-space);
+  border-top: 1px solid #e5e5e5;
+  box-shadow: none;
+  background: #ffffff;
+}
+
+.landing-nike .public-footer-system-v1 .section-shell {
+  width: min(var(--landing-content-max), calc(100% - (var(--landing-page-gutter) * 2)));
+  padding-block: 48px;
+}
+
+.landing-nike .public-footer-system-v1 .public-footer-logo {
+  width: 152px;
+  max-width: 152px;
+}
+
+.landing-nike .public-footer-system-v1 .public-footer-logo > span {
+  width: 100%;
+  gap: 8px;
+}
+
+.landing-nike .public-footer-system-v1 .public-footer-logo img:first-child {
+  width: 34px !important;
+  height: 34px !important;
+}
+
+.landing-nike .public-footer-system-v1 .public-footer-logo img:last-child {
+  width: 110px !important;
+  height: auto !important;
+}
+
+.landing-nike .public-footer-system-v1 h3,
+.landing-nike .public-footer-system-v1 summary {
+  font-size: 16px;
+  font-weight: 500;
+}
+
+.landing-nike .public-footer-system-v1 .public-footer-links {
+  font-size: 14px;
+  line-height: 1.5;
+  color: #707072;
+}
+
+.landing-nike :is(a, button, input, select, textarea, [tabindex]):focus-visible {
+  outline: 2px solid #1151ff;
+  outline-offset: 3px;
+}
+
+@media (max-width: 599px) {
+  .landing-nike .landing-hero-copy {
+    bottom: 12%;
   }
 
-  .landing-nike .landing-about-shell {
-    min-height: 620px;
+  .landing-nike .landing-section-heading {
+    min-height: 0;
+    align-items: flex-start;
+    gap: 12px;
   }
 
-  .public-footer-system-v1 .section-shell {
-    width: min(1440px, calc(100% - 96px));
+  .landing-nike .trending-grid {
+    grid-auto-columns: 84%;
+  }
+
+  .landing-nike .about-title {
+    max-width: 10ch;
+  }
+}
+
+@media (min-width: 600px) {
+  .landing-nike {
+    --landing-page-gutter: 24px;
+    --home-section-gap: 64px;
+    --home-end-space: 72px;
+  }
+
+  .landing-nike .home-hero-title,
+  .landing-nike .landing-campaign-copy .campaign-copy-title,
+  .landing-nike .about-title {
+    font-size: 64px;
+  }
+
+  .landing-nike .fresh-drop-card,
+  .landing-nike .category-rail-card,
+  .landing-nike .plain-category-rail .category-rail-card {
+    flex-basis: 44vw;
+  }
+
+  .landing-nike .public-footer-system-v1 .section-shell {
+    padding-block: 64px;
+  }
+
+  .landing-nike .public-footer-system-v1 .public-footer-logo {
+    width: 170px;
+    max-width: 170px;
+  }
+
+  .landing-nike .public-footer-system-v1 .public-footer-logo img:first-child {
+    width: 38px !important;
+    height: 38px !important;
+  }
+
+  .landing-nike .public-footer-system-v1 .public-footer-logo img:last-child {
+    width: 122px !important;
+  }
+}
+
+@media (min-width: 960px) {
+  .landing-nike {
+    --landing-page-gutter: 48px;
+    --home-section-gap: 80px;
+    --home-end-space: 80px;
+  }
+
+  .landing-nike .landing-hero {
+    min-height: 600px;
+  }
+
+  .landing-nike .home-hero-title,
+  .landing-nike .landing-campaign-copy .campaign-copy-title,
+  .landing-nike .about-title {
+    font-size: 76px;
+  }
+
+  .landing-nike .hero-subtitle {
+    font-size: 16px;
+  }
+
+  .landing-nike .home-section-title {
+    font-size: 24px;
+  }
+
+  .landing-nike .editorial-card-title {
+    font-size: 24px;
+  }
+
+  .landing-nike .fresh-drop-card,
+  .landing-nike .category-rail-card,
+  .landing-nike .plain-category-rail .category-rail-card {
+    flex-basis: calc((100% - 27px) / 3.2);
+  }
+
+  .landing-nike .public-footer-system-v1 .section-shell {
+    padding-block: 80px;
+  }
+
+  .landing-nike .public-footer-system-v1 .public-footer-logo {
+    width: 180px;
+    max-width: 180px;
+  }
+
+  .landing-nike .public-footer-system-v1 .public-footer-logo img:first-child {
+    width: 40px !important;
+    height: 40px !important;
+  }
+
+  .landing-nike .public-footer-system-v1 .public-footer-logo img:last-child {
+    width: 130px !important;
+  }
+}
+
+@media (min-width: 1440px) {
+  .landing-nike .home-hero-title,
+  .landing-nike .landing-campaign-copy .campaign-copy-title,
+  .landing-nike .about-title {
+    font-size: 88px;
+  }
+
+  .landing-nike .home-section-title {
+    font-size: 28px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .landing-nike *,
+  .landing-nike *::before,
+  .landing-nike *::after {
+    scroll-behavior: auto !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
   }
 }

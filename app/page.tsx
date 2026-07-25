@@ -5,7 +5,6 @@ import { HeroSlider } from "@/components/HeroSlider";
 import { PublicProductCard } from "@/components/PublicProductCard";
 import { PublicFooter } from "@/components/PublicFooter";
 import { PublicSectionFrame } from "@/components/PublicSectionFrame";
-import { PublicStoreLocator } from "@/components/PublicStoreLocator";
 import { ResponsivePicture } from "@/components/ResponsivePicture";
 import { ScrollButtons } from "@/components/ScrollButtons";
 import { SiteHeader } from "@/components/SiteHeader";
@@ -15,7 +14,6 @@ import { getPublicShellPageModel } from "@/lib/public-shell/runtime";
 import { getPublicContent } from "@/lib/public-data";
 import { absoluteUrl, siteConfig } from "@/lib/site";
 import type { HomepageSection, HomepageSectionItem, LandingSection, Product, Service } from "@/lib/types";
-import { whatsappLinkWithMessage } from "@/lib/url";
 
 const benefits = [
   { icon: "clock", title: "Produksi Cepat", detail: "Alur kerja terukur" },
@@ -64,6 +62,10 @@ function cleanCmsText(value?: string | null) {
 
 function hasEditorialText(...values: Array<string | null | undefined>) {
   return values.some((value) => Boolean(cleanCmsText(value)));
+}
+
+function uniqueEditorialItems(items: EditorialItem[]) {
+  return Array.from(new Map(items.map((item) => [item.href, item])).values());
 }
 
 function normalizeAboutParagraphs(value?: string | null) {
@@ -351,6 +353,7 @@ function ManagedHomepageSection({ section, setting, fallbackProducts = [] }: { s
   );
 }
 
+/* DEBRODER_LANDING_VISUAL_BATCH_3_FINAL_FROZEN */
 /* DEBRODER_LANDING_VISUAL_BATCH_2 */
 /* DEBRODER_LANDING_STRUCTURE_V2_APPLIED */
 export default async function Home() {
@@ -369,7 +372,6 @@ export default async function Home() {
     objectPosition: category.object_position
   }));
   const stores = content.stores.filter((item) => item.status_aktif !== false).sort((a, b) => a.urutan - b.urutan).slice(0, 4);
-  const whatsappHref = whatsappLinkWithMessage(content.contact.whatsapp_link || content.contact.whatsapp_utama, "Halo DEBRODER, saya ingin konsultasi kebutuhan apparel.");
   const landingSectionMap = new Map(
     content.landingSections.map((section) => [section.section_key, section])
   );
@@ -381,10 +383,28 @@ export default async function Home() {
   const shopCategoryItems = shopCategorySection
     ? preferredHomepageItems(shopCategorySection).map(editorialPlacement).filter((item): item is EditorialItem => Boolean(item))
     : [];
-  const freshDropFallback = content.products
-    .filter((product) => product.status_aktif !== false)
+  const activeProducts = content.products.filter((product) => product.status_aktif !== false);
+  const freshDropFallback = activeProducts
     .sort((a, b) => Number(Boolean(b.fresh_drop)) - Number(Boolean(a.fresh_drop)) || a.urutan - b.urutan)
     .slice(0, 8);
+  const featuredEditorialItems = featuredSection
+    ? preferredHomepageItems(featuredSection).map(editorialPlacement).filter((item): item is EditorialItem => Boolean(item))
+    : [];
+  const homeCategoryEditorialItems: EditorialItem[] = homeCategories.map((item) => ({
+    ...item,
+    label: "",
+    title: item.name,
+    button: "",
+    href: item.href
+  }));
+  const plainCategoryCandidates = uniqueEditorialItems([
+    ...featuredEditorialItems,
+    ...homeCategoryEditorialItems
+  ]);
+  const plainCategoryMatches = plainCategoryCandidates.filter((item) =>
+    /(kaos|polos|polo|hoodie|crewneck|jaket)/i.test(`${item.title} ${item.label}`)
+  );
+  const plainCategoryItems = (plainCategoryMatches.length ? plainCategoryMatches : plainCategoryCandidates).slice(0, 7);
   const aboutParagraphs = normalizeAboutParagraphs(content.trustAbout.about_body);
   const schema = {
     "@context": "https://schema.org",
@@ -424,9 +444,9 @@ export default async function Home() {
         </section>
       </LandingSectionSlot>
 
-      {featuredSection ? (() => {
-        const setting = landingSection("featured-products");
-        const managedSection = setting?.title ? { ...featuredSection, title: setting.title } : featuredSection;
+      {trendingSection ? (() => {
+        const setting = landingSection("trending");
+        const managedSection = setting?.title ? { ...trendingSection, title: setting.title } : trendingSection;
         return <LandingSectionSlot setting={setting}><ManagedHomepageSection section={managedSection} setting={setting} /></LandingSectionSlot>;
       })() : null}
 
@@ -437,26 +457,6 @@ export default async function Home() {
           fallbackMobileSrc={landingSection("campaign-banners")?.mobile_image_url || content.heroes[0]?.mobile_image_url || content.hero.mobile_image_url || fallbackImages.bannerMobile}
         />
       </LandingSectionSlot>
-
-      {trendingSection ? (() => {
-        const setting = landingSection("trending");
-        const managedSection = setting?.title ? { ...trendingSection, title: setting.title } : trendingSection;
-        return <LandingSectionSlot setting={setting}><ManagedHomepageSection section={managedSection} setting={setting} /></LandingSectionSlot>;
-      })() : null}
-
-      {freshDropSection ? (() => {
-        const setting = landingSection("fresh-drop");
-        const managedSection = setting?.title ? { ...freshDropSection, title: setting.title } : freshDropSection;
-        return <LandingSectionSlot setting={setting}><ManagedHomepageSection section={managedSection} setting={setting} fallbackProducts={freshDropFallback} /></LandingSectionSlot>;
-      })() : freshDropFallback.length ? (
-        <LandingSectionSlot setting={landingSection("fresh-drop")}>
-          <ManagedHomepageSection
-            section={{ id: "fresh-drop-fallback", title: landingSection("fresh-drop")?.title || "Produk Terbaru", slug: "fresh-drops", is_active: true, sort_order: 60, items: [] }}
-            setting={landingSection("fresh-drop")}
-            fallbackProducts={freshDropFallback}
-          />
-        </LandingSectionSlot>
-      ) : null}
 
       <LandingSectionSlot setting={landingSection("services-products")}>
         <section id="shop-category" className="home-section home-categories section-space bg-white">
@@ -479,83 +479,82 @@ export default async function Home() {
             <div id="category-carousel" tabIndex={0} aria-label="Daftar kategori DEBRODER" className="home-bleed-rail public-frame-rail category-carousel landing-category-rail premium-scrollbar mt-4 flex snap-x snap-mandatory overflow-x-auto pb-6 md:mt-6">
               {shopCategoryItems.length ? shopCategoryItems.map((item) => (
                 <CategoryEditorialCard key={`${item.href}-${item.title}`} item={item} />
-              )) : homeCategories.length ? homeCategories.map((item) => (
-                <CategoryEditorialCard
-                  key={item.name}
-                  item={{
-                    ...item,
-                    label: "",
-                    title: item.name,
-                    button: "",
-                    href: item.href
-                  }}
-                />
+              )) : homeCategoryEditorialItems.length ? homeCategoryEditorialItems.map((item) => (
+                <CategoryEditorialCard key={`${item.href}-${item.title}`} item={item} />
               )) : <p className="px-5 py-8 text-sm text-black/55">Belum ada kategori.</p>}
             </div>
           </PublicSectionFrame>
         </section>
       </LandingSectionSlot>
 
-      <LandingSectionSlot setting={landingSection("stores")}>
-        <>
-          <section id="store" className="home-section home-store landing-store section-space bg-white">
-            <PublicSectionFrame variant="near-wide" className="landing-store-shell">
-              <SectionHeading
-                title={landingSection("stores")?.title || "Toko DEBRODER"}
-                description={landingSection("stores")?.subtitle || "Konsultasikan bahan, teknik cetak, dan estimasi produksi langsung bersama tim kami."}
-                textPosition={landingSection("stores")?.text_position}
-                action={<Link href={landingSection("stores")?.cta_url || "/store"} className="hidden text-sm font-semibold hover:underline sm:block">{landingSection("stores")?.cta_label || "Lihat Semua Toko"}</Link>}
-              />
-              <div className="landing-store-content mt-5 md:mt-7">
-                <PublicStoreLocator stores={stores} />
-              </div>
-            </PublicSectionFrame>
-          </section>
+      {freshDropSection ? (() => {
+        const setting = landingSection("fresh-drop");
+        const managedSection = setting?.title ? { ...freshDropSection, title: setting.title } : freshDropSection;
+        return <LandingSectionSlot setting={setting}><ManagedHomepageSection section={managedSection} setting={setting} fallbackProducts={freshDropFallback} /></LandingSectionSlot>;
+      })() : freshDropFallback.length ? (
+        <LandingSectionSlot setting={landingSection("fresh-drop")}>
+          <ManagedHomepageSection
+            section={{ id: "fresh-drop-fallback", title: landingSection("fresh-drop")?.title || "Produk Terbaru", slug: "fresh-drops", is_active: true, sort_order: 60, items: [] }}
+            setting={landingSection("fresh-drop")}
+            fallbackProducts={freshDropFallback}
+          />
+        </LandingSectionSlot>
+      ) : null}
 
-          <section className="home-section home-order landing-order section-space bg-white" aria-labelledby="cara-order-heading">
-            <PublicSectionFrame variant="near-wide">
-              <div className="landing-order-panel flex flex-col gap-7 bg-[#f5f5f5] px-5 py-8 sm:px-8 sm:py-10 lg:flex-row lg:items-end lg:justify-between lg:px-12 lg:py-12">
-                <div className="max-w-3xl">
-                  <p className="landing-order-eyebrow text-sm font-medium text-black/55">Belum yakin harus mulai dari mana?</p>
-                  <h3 id="cara-order-heading" className="landing-order-title mt-2 text-3xl font-medium tracking-[-0.035em] sm:text-4xl">Pesan apparel custom dengan alur yang jelas.</h3>
-                </div>
-                <div className="landing-order-actions flex flex-wrap gap-2">
-                  <Link href="/cara-order" className="inline-flex min-h-12 items-center justify-center rounded-full bg-[#111] px-6 text-sm font-semibold text-white transition hover:bg-black/70">Cara Pemesanan</Link>
-                  <a href={whatsappHref} target="_blank" rel="noopener noreferrer" className="inline-flex min-h-12 items-center justify-center rounded-full border border-black/30 bg-white px-6 text-sm font-semibold text-[#111] transition hover:border-black">Konsultasi WhatsApp</a>
-                </div>
+      {plainCategoryItems.length ? (
+        <LandingSectionSlot setting={landingSection("featured-products")}>
+          <section id="pakaian-polos" className="home-section home-plain-categories section-space bg-white">
+            <PublicSectionFrame variant="near-wide" className="plain-category-shell">
+              <SectionHeading
+                title="Pakaian Polos berdasarkan Kategori"
+                description={landingSection("featured-products")?.subtitle}
+                textPosition={landingSection("featured-products")?.text_position}
+                action={
+                  <div className="flex items-center gap-4">
+                    {landingSection("featured-products")?.cta_label && landingSection("featured-products")?.cta_url ? (
+                      <Link href={landingSection("featured-products")!.cta_url!} className="hidden text-sm font-semibold hover:underline sm:block">
+                        {landingSection("featured-products")!.cta_label}
+                      </Link>
+                    ) : null}
+                    <ScrollButtons containerId="plain-category-carousel" largeTargets />
+                  </div>
+                }
+              />
+              <div id="plain-category-carousel" tabIndex={0} aria-label="Pakaian polos berdasarkan kategori" className="home-bleed-rail public-frame-rail plain-category-rail premium-scrollbar mt-4 flex snap-x snap-mandatory overflow-x-auto pb-6 md:mt-6">
+                {plainCategoryItems.map((item) => (
+                  <CategoryEditorialCard key={`plain-${item.href}-${item.title}`} item={item} />
+                ))}
               </div>
             </PublicSectionFrame>
           </section>
-        </>
-      </LandingSectionSlot>
+        </LandingSectionSlot>
+      ) : null}
 
       <LandingSectionSlot setting={landingSection("about")}>
-        <section id="tentang" className="home-section home-about landing-about section-space bg-white">
-          <PublicSectionFrame variant="near-wide" className="landing-about-shell grid gap-8 md:gap-10 lg:grid-cols-[minmax(0,0.88fr)_minmax(0,1.12fr)] lg:items-center lg:gap-16">
-            <div className={`landing-about-copy ${content.trustAbout.text_position === "center" ? "text-center" : content.trustAbout.text_position === "right" ? "text-right" : ""}`}>
+        <section id="tentang" className="home-section home-about section-space bg-white">
+          <PublicSectionFrame variant="near-wide" className="about-shell grid gap-8 lg:grid-cols-2 lg:items-center lg:gap-14">
+            <div className={`about-copy ${content.trustAbout.text_position === "center" ? "text-center" : content.trustAbout.text_position === "right" ? "text-right" : ""}`}>
               <p className="public-eyebrow">Tentang Kami</p>
-              <h2 className="landing-about-title mt-3 max-w-2xl">TENTANG DEBRODER</h2>
-              <div className="landing-about-body mt-5 max-w-xl space-y-4 text-base leading-7 text-black/65">
-                {aboutParagraphs.map((paragraph, index) => <p key={`${index}-${paragraph}`}>{paragraph}</p>)}
+              <h2 className="home-page-title about-title mt-3 max-w-2xl">TENTANG DEBRODER</h2>
+              <div className="about-body mt-5 max-w-2xl space-y-4 text-base leading-7 text-black/65">
+                {aboutParagraphs.map((paragraph) => <p key={paragraph}>{paragraph}</p>)}
               </div>
-              {content.trustAbout.cta_label && content.trustAbout.cta_url ? <Link href={content.trustAbout.cta_url} className="landing-about-cta mt-7 inline-flex min-h-12 items-center rounded-full bg-[#111] px-6 text-sm font-semibold text-white transition hover:bg-black/70">{content.trustAbout.cta_label}</Link> : null}
+              {content.trustAbout.cta_label && content.trustAbout.cta_url ? <Link href={content.trustAbout.cta_url} className="about-cta mt-7 inline-flex min-h-12 items-center justify-center rounded-full bg-[#111] px-6 text-[15px] font-semibold text-white transition hover:bg-black/70">{content.trustAbout.cta_label}</Link> : null}
             </div>
-            <div className="landing-about-visual">
-              {content.trustAbout.video_url ? (
-                <video src={content.trustAbout.video_url} autoPlay muted loop playsInline className="aspect-[4/3] w-full object-cover" />
-              ) : content.trustAbout.image_url ? (
-                <ResponsivePicture desktopSrc={content.trustAbout.image_url} mobileSrc={content.trustAbout.mobile_image_url || content.trustAbout.image_url} alt="Tentang DEBRODER" className="aspect-[4/3] h-full w-full object-cover" />
-              ) : (
-                <div className="landing-about-stats grid grid-cols-2 border-l border-t border-black/10">
-                  {[["2016", "Berdiri"], ["4", "Toko Aktif"], ["DTF", "& Apparel"], ["ID", "Kirim Indonesia"]].map(([value, label]) => (
-                    <div key={`${value}-${label}`} className="border-b border-r border-black/10 p-6 sm:p-8 lg:p-10">
-                      <p className="landing-about-stat text-3xl font-medium tracking-[-0.04em] text-[#111] sm:text-4xl">{value}</p>
-                      <p className="mt-2 text-sm text-black/50">{label}</p>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
+            {content.trustAbout.video_url ? (
+              <video src={content.trustAbout.video_url} autoPlay muted loop playsInline className="about-media aspect-[4/3] w-full object-cover" />
+            ) : content.trustAbout.image_url ? (
+              <ResponsivePicture desktopSrc={content.trustAbout.image_url} mobileSrc={content.trustAbout.mobile_image_url || content.trustAbout.image_url} alt="Tentang DEBRODER" className="about-media aspect-[4/3] h-full w-full object-cover" />
+            ) : (
+              <div className="about-proof-grid grid grid-cols-2 border-l border-t border-black/10">
+                {[[String(stores.length), "Toko Aktif"], [String(activeProducts.length), "Produk Aktif"], ["DTF", "& Apparel"], ["ID", "Kirim Indonesia"]].map(([value, label]) => (
+                  <div key={`${value}-${label}`} className="about-proof-item border-b border-r border-black/10 p-6 sm:p-8">
+                    <p className="about-proof-value text-3xl font-semibold tracking-[-0.03em] text-[#111]">{value}</p>
+                    <p className="about-proof-label mt-2 text-sm text-black/50">{label}</p>
+                  </div>
+                ))}
+              </div>
+            )}
           </PublicSectionFrame>
         </section>
       </LandingSectionSlot>
