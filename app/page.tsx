@@ -149,7 +149,7 @@ function cardPlacement(item: HomepageSectionItem): ProductItem | null {
 
 function SectionHeading({ title, action, description, textPosition = "left" }: { title: string; action?: ReactNode; description?: string; textPosition?: "left" | "center" | "right" }) {
   return (
-    <div className="flex items-end justify-between gap-4">
+    <div className="landing-section-heading flex items-end justify-between gap-4">
       <div className={`min-w-0 ${textPosition === "center" ? "flex-1 text-center" : textPosition === "right" ? "ml-auto text-right" : ""}`}>
         <h2 className="home-section-title">{title}</h2>
         {description ? <p className="public-secondary-copy mt-2 max-w-2xl text-base leading-6">{description}</p> : null}
@@ -191,11 +191,11 @@ function EditorialCard({
   const shouldShowCopy = hasEditorialText(label, title, button);
 
   const mediaClass = variant === "featured"
-    ? "aspect-[4/5] sm:aspect-[5/4] lg:aspect-auto lg:h-[clamp(520px,62vh,680px)]"
+    ? "aspect-[4/5] sm:aspect-[4/3] lg:aspect-[5/4]"
     : "aspect-[4/5]";
 
   return (
-    <article className={`editorial-card group relative block overflow-hidden bg-[#0a1711] ${mediaClass} ${className}`}>
+    <article className={`editorial-card landing-editorial-card group relative block overflow-hidden bg-[#0a1711] ${mediaClass} ${className}`}>
       <Link href={item.href} aria-label={`Lihat ${title || item.imageAlt}`} className="absolute inset-0 z-10" />
       <ResponsivePicture
         desktopSrc={item.image}
@@ -274,23 +274,23 @@ function ManagedHomepageSection({ section, setting, fallbackProducts = [] }: { s
     if (isFeatured) {
       return (
         <section id={section.slug} className="home-section home-featured section-space bg-white">
-          <PublicSectionFrame variant="wide">
+          <PublicSectionFrame variant="near-wide" className="featured-shell">
             <SectionHeading
               title={section.title}
               description={setting?.subtitle}
               textPosition={setting?.text_position}
               action={configuredCta}
             />
+            <div id={carouselId} className="featured-media-grid mt-4 grid grid-cols-1 gap-3 md:mt-6 lg:grid-cols-2 lg:gap-4">
+              {items.slice(0, 2).map((item, index) => (
+                <EditorialCard
+                  key={sectionItems[index]?.id || `${item.href}-${index}`}
+                  item={item}
+                  variant="featured"
+                />
+              ))}
+            </div>
           </PublicSectionFrame>
-          <div id={carouselId} className="featured-media-grid mt-4 grid grid-cols-1 gap-0 md:mt-6 lg:grid-cols-2">
-            {items.slice(0, 2).map((item, index) => (
-              <EditorialCard
-                key={sectionItems[index]?.id || `${item.href}-${index}`}
-                item={item}
-                variant="featured"
-              />
-            ))}
-          </div>
         </section>
       );
     }
@@ -395,7 +395,7 @@ export default async function Home() {
 
   return (
     <StorefrontCartBoundary>
-    <main className="public-site min-h-screen bg-white text-[#111]">
+    <main className="public-site landing-nike min-h-screen bg-white text-[#111]">
       <SiteHeader
         navigationFacets={shellModel.data.header.navigationFacets}
         whatsappHref={shellModel.data.header.whatsappHref}
