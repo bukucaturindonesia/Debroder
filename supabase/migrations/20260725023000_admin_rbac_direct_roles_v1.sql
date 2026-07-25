@@ -456,13 +456,14 @@ begin
     raise exception 'Alasan perubahan minimal 8 karakter';
   end if;
 
-  select profile_row, lower(coalesce(profile_row.email,''))
-  into target_row, target_email
+  select profile_row.*
+  into target_row
   from public.profiles profile_row
   where profile_row.id = p_profile_id
   for update;
 
   if not found then raise exception 'Profil tidak ditemukan'; end if;
+  target_email := lower(coalesce(target_row.email,''));
   if target_email = 'fahmi@debroder.com'
      or target_row.role in ('owner','superadmin','super_admin') then
     raise exception 'Akun Owner/Super Admin dilindungi';
