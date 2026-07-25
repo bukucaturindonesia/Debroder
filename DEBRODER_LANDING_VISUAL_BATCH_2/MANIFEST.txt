@@ -1,0 +1,13 @@
+DEBRODER Landing Visual Batch 2
+
+Scope:
+- Campaign Banner
+- Fresh Drop
+- Shop by Category
+
+Target files:
+- app/page.tsx
+- app/globals.css
+- components/CampaignBanners.tsx
+
+Tidak melakukan commit, push, deploy, migration, database, admin, checkout, atau perubahan urutan section.

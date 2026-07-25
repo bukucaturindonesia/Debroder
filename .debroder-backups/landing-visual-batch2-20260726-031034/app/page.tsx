@@ -227,9 +227,9 @@ function CategoryEditorialCard({ item }: { item: EditorialItem }) {
   const title = cleanCmsText(item.title) || item.imageAlt;
 
   return (
-    <article className="category-rail-card landing-category-card min-w-0 shrink-0 snap-start">
+    <article className="category-rail-card min-w-0 shrink-0 snap-start">
       <Link href={item.href} className="group block" aria-label={`Lihat kategori ${title}`}>
-        <div className="category-media aspect-[4/5] overflow-hidden bg-[#f2f2f2]">
+        <div className="aspect-[4/5] overflow-hidden bg-[#f2f2f2]">
           <ResponsivePicture
             desktopSrc={item.image}
             mobileSrc={item.mobileImage || item.image}
@@ -325,7 +325,7 @@ function ManagedHomepageSection({ section, setting, fallbackProducts = [] }: { s
 
   return (
     <section id={section.slug} className="home-section home-fresh-drop section-space bg-white">
-      <PublicSectionFrame variant="near-wide" className="fresh-drop-shell">
+      <PublicSectionFrame variant="near-wide">
         <SectionHeading
           title={section.title}
           description={setting?.subtitle}
@@ -337,7 +337,7 @@ function ManagedHomepageSection({ section, setting, fallbackProducts = [] }: { s
             </div>
           }
         />
-        <div id={carouselId} className="home-bleed-rail public-frame-rail fresh-drop-rail landing-commerce-rail no-scrollbar mt-4 flex snap-x snap-mandatory overflow-x-auto md:mt-6">
+        <div id={carouselId} className="home-bleed-rail public-frame-rail fresh-drop-rail no-scrollbar mt-4 flex snap-x snap-mandatory overflow-x-auto md:mt-6">
           {items.map((item, index) => (
             <ProductCard
               key={section.items[index]?.id || item.product.id || item.product.slug || `${item.product.nama}-${index}`}
@@ -351,7 +351,6 @@ function ManagedHomepageSection({ section, setting, fallbackProducts = [] }: { s
   );
 }
 
-/* DEBRODER_LANDING_VISUAL_BATCH_2 */
 /* DEBRODER_LANDING_STRUCTURE_V2_APPLIED */
 export default async function Home() {
   const [content, shellModel] = await Promise.all([
@@ -460,7 +459,7 @@ export default async function Home() {
 
       <LandingSectionSlot setting={landingSection("services-products")}>
         <section id="shop-category" className="home-section home-categories section-space bg-white">
-          <PublicSectionFrame variant="near-wide" className="category-shell">
+          <PublicSectionFrame variant="inset">
             <SectionHeading
               title={landingSection("services-products")?.title || "Belanja Berdasarkan Kategori"}
               description={landingSection("services-products")?.subtitle}
@@ -476,7 +475,7 @@ export default async function Home() {
                 </div>
               }
             />
-            <div id="category-carousel" tabIndex={0} aria-label="Daftar kategori DEBRODER" className="home-bleed-rail public-frame-rail category-carousel landing-category-rail premium-scrollbar mt-4 flex snap-x snap-mandatory overflow-x-auto pb-6 md:mt-6">
+            <div id="category-carousel" tabIndex={0} aria-label="Daftar kategori DEBRODER" className="home-bleed-rail public-frame-rail category-carousel premium-scrollbar mt-4 flex snap-x snap-mandatory overflow-x-auto pb-6 md:mt-6">
               {shopCategoryItems.length ? shopCategoryItems.map((item) => (
                 <CategoryEditorialCard key={`${item.href}-${item.title}`} item={item} />
               )) : homeCategories.length ? homeCategories.map((item) => (
