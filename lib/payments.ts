@@ -4,7 +4,9 @@ export const PAYMENT_ROLES = [
   "super_admin",
   "sales_admin",
   "admin",
-  "finance"
+  "finance",
+  "order_cs_admin",
+  "finance_admin"
 ] as const;
 
 export const PAYMENT_VERIFY_ROLES = [
@@ -12,7 +14,8 @@ export const PAYMENT_VERIFY_ROLES = [
   "superadmin",
   "super_admin",
   "admin",
-  "finance"
+  "finance",
+  "finance_admin"
 ] as const;
 
 export type PaymentRequirementType = "full" | "percentage" | "fixed" | "deposit";

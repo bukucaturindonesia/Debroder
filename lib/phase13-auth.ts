@@ -5,7 +5,15 @@ import {
   adminGuestErrorResponse,
   assertAdminRequestMethodAllowed
 } from "@/lib/admin-role-security";
-import { isAdminRole } from "@/lib/access-control";
+import {
+  isAccountLoginAllowed,
+  isAdminRole,
+  normalizeAccountStatus,
+  type AccountStatus,
+  type AdminRole
+} from "@/lib/access-control";
+import { canonicalRoleCanAccessAdminApi } from "@/lib/admin-canonical-api-access";
+import { assertSingleAdminSession } from "@/lib/admin-session-security";
 import {
   canonicalErrorResponse,
   createServerRequestContext
@@ -13,7 +21,10 @@ import {
 
 export type Phase13Actor = {
   user: User;
-  role: string;
+  role: AdminRole;
+  accountStatus: AccountStatus;
+  primaryStoreId: string | null;
+  allStoreAccess: boolean;
   client: SupabaseClient;
   adminClient: SupabaseClient;
 };
@@ -22,6 +33,10 @@ export class Phase13AuthError extends Error {
   constructor(public readonly status: number, message: string) {
     super(message);
   }
+}
+
+function isSessionRegistrationRequest(request: Request) {
+  return new URL(request.url).pathname === "/api/admin/session";
 }
 
 export async function requirePhase13Actor(
@@ -41,17 +56,40 @@ export async function requirePhase13Actor(
 
   const { data: profile, error: profileError } = await adminClient
     .from("profiles")
-    .select("role")
+    .select("role,account_status,primary_store_id,all_store_access")
     .eq("id", data.user.id)
     .maybeSingle();
+
   const role = typeof profile?.role === "string" ? profile.role.toLowerCase() : "";
+  const accountStatus = normalizeAccountStatus(profile?.account_status);
+
+  if (profileError || !isAdminRole(role)) {
+    throw new Phase13AuthError(403, "Akses panel admin ditolak.");
+  }
+  if (!isAccountLoginAllowed(accountStatus)) {
+    throw new Phase13AuthError(403, `Akun berstatus ${accountStatus} dan tidak dapat digunakan.`);
+  }
+  if (!canonicalRoleCanAccessAdminApi(role, new URL(request.url).pathname)) {
+    throw new Phase13AuthError(403, "Role ini tidak memiliki akses ke modul API tersebut.");
+  }
+
   assertAdminRequestMethodAllowed(role, request.method);
-  if (profileError || !isAdminRole(role)) throw new Phase13AuthError(403, "Akses panel admin ditolak.");
 
   const client = createClient(env.url, env.anonKey, {
     auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false },
     global: { headers: { Authorization: `Bearer ${token}` } }
   });
+
+  if (!isSessionRegistrationRequest(request)) {
+    try {
+      await assertSingleAdminSession(client, token);
+    } catch (sessionError) {
+      throw new Phase13AuthError(
+        403,
+        sessionError instanceof Error ? sessionError.message : "Sesi aktif tidak dapat diverifikasi."
+      );
+    }
+  }
 
   if (permission) {
     const { data: allowed, error: permissionError } = await client.rpc("has_permission", {
@@ -62,7 +100,15 @@ export async function requirePhase13Actor(
     }
   }
 
-  return { user: data.user, role, client, adminClient };
+  return {
+    user: data.user,
+    role,
+    accountStatus,
+    primaryStoreId: typeof profile?.primary_store_id === "string" ? profile.primary_store_id : null,
+    allStoreAccess: profile?.all_store_access === true,
+    client,
+    adminClient
+  };
 }
 
 export function phase13ErrorResponse(error: unknown, request?: Request): Response {

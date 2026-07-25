@@ -14,11 +14,13 @@ export type AdminNavigationLink = {
   roles: readonly AdminRole[];
   exact?: boolean;
 };
+
 export type AdminNavigationNode = AdminNavigationLink | {
   label: string;
   roles: readonly AdminRole[];
   children: readonly AdminNavigationLink[];
 };
+
 export type AdminNavigationGroup = {
   label: string;
   roles: readonly AdminRole[];
@@ -27,24 +29,144 @@ export type AdminNavigationGroup = {
 
 export const FULL_ADMIN_ROLES: readonly AdminRole[] = ["owner", "superadmin", "super_admin", "admin"];
 export const ADMIN_GUEST_ROLES: readonly AdminRole[] = ["admin_guest"];
-export const DASHBOARD_ROLES: readonly AdminRole[] = [...FULL_ADMIN_ROLES, ...ADMIN_GUEST_ROLES];
-export const PRODUCT_MANAGER_VIEW_ROLES: readonly AdminRole[] = [...FULL_ADMIN_ROLES, ...ADMIN_GUEST_ROLES];
-export const QUOTATION_ROLES: readonly AdminRole[] = ["owner", "superadmin", "super_admin", "sales_admin", "admin"];
+
+/** Existing exported contract retained for Product Manager regression coverage. */
+export const PRODUCT_MANAGER_VIEW_ROLES: readonly AdminRole[] = [
+  ...FULL_ADMIN_ROLES,
+  ...ADMIN_GUEST_ROLES
+];
+
+/** Additive canonical access; does not rewrite the existing export above. */
+const PRODUCT_MANAGER_ACCESS_ROLES: readonly AdminRole[] = [
+  ...PRODUCT_MANAGER_VIEW_ROLES,
+  "head_store",
+  "product_content_manager"
+];
+
+/** Existing maintenance contract retained; Head Store is added through the additive access list. */
+export const PRODUCT_MAINTENANCE_ROLES: readonly AdminRole[] = ["owner", "superadmin", "super_admin"];
+const PRODUCT_MAINTENANCE_ACCESS_ROLES: readonly AdminRole[] = [
+  ...PRODUCT_MAINTENANCE_ROLES,
+  "head_store"
+];
+
+const CANONICAL_OPERATIONAL_ROLES: readonly AdminRole[] = [
+  "head_store",
+  "store_admin",
+  "product_content_manager",
+  "order_cs_admin",
+  "finance_admin"
+];
+
+export const DASHBOARD_ROLES: readonly AdminRole[] = [
+  ...FULL_ADMIN_ROLES,
+  ...ADMIN_GUEST_ROLES,
+  ...CANONICAL_OPERATIONAL_ROLES,
+  "sales_admin",
+  "designer",
+  "production_admin",
+  "operator",
+  "finance",
+  "quality_control", "store_staff"
+];
+
+const WEBSITE_ROLES: readonly AdminRole[] = [
+  ...FULL_ADMIN_ROLES,
+  "product_content_manager"
+];
+
+export const QUOTATION_ROLES: readonly AdminRole[] = [
+  ...FULL_ADMIN_ROLES,
+  "head_store",
+  "store_admin",
+  "order_cs_admin",
+  "sales_admin"
+];
 export const QUOTATION_VIEW_ROLES: readonly AdminRole[] = [...QUOTATION_ROLES, "designer"];
 export const REPEAT_ORDER_ROLES: readonly AdminRole[] = QUOTATION_ROLES;
+
 const ALL_STAFF_ROLES: readonly AdminRole[] = ADMIN_ROLES.filter((role) => role !== "admin_guest");
-const ORDER_READ_ROLES: readonly AdminRole[] = ["owner", "superadmin", "super_admin", "admin", "sales_admin", "finance", "production_admin", "quality_control", "store_staff"];
+const ORDER_READ_ROLES: readonly AdminRole[] = [
+  ...FULL_ADMIN_ROLES,
+  "head_store",
+  "store_admin",
+  "order_cs_admin",
+  "finance_admin",
+  "sales_admin",
+  "finance",
+  "production_admin",
+  "quality_control", "store_staff"
+];
 const QUOTATION_READ_ROLES: readonly AdminRole[] = QUOTATION_VIEW_ROLES;
-const PRODUCTION_ROLES: readonly AdminRole[] = ["owner", "superadmin", "super_admin", "admin", "production_admin", "operator"];
-const QC_ROLES: readonly AdminRole[] = ["owner", "superadmin", "super_admin", "admin", "production_admin", "quality_control"];
-const SHIPPING_ROLES: readonly AdminRole[] = ["owner", "superadmin", "super_admin", "admin", "production_admin", "store_staff"];
-const TASK_ROLES: readonly AdminRole[] = ["owner", "superadmin", "super_admin", "admin", "sales_admin", "finance", "production_admin", "operator", "quality_control", "store_staff"];
-const INVENTORY_OPERATION_ROLES: readonly AdminRole[] = ["owner", "superadmin", "super_admin", "admin", "production_admin", "store_staff"];
-const REFUND_ROLES: readonly AdminRole[] = ["owner", "superadmin", "super_admin", "admin", "sales_admin", "finance"];
-const OUTBOX_ROLES: readonly AdminRole[] = ["owner", "superadmin", "super_admin", "admin", "sales_admin", "finance", "store_staff"];
-export const PRODUCT_MAINTENANCE_ROLES: readonly AdminRole[] = ["owner", "superadmin", "super_admin"];
-const ACCESS_READ_ROLES: readonly AdminRole[] = PRODUCT_MAINTENANCE_ROLES;
+const PRODUCTION_MANAGE_ROLES: readonly AdminRole[] = [
+  ...FULL_ADMIN_ROLES,
+  "production_admin",
+  "operator"
+];
+const PRODUCTION_VIEW_ROLES: readonly AdminRole[] = [
+  ...PRODUCTION_MANAGE_ROLES,
+  "head_store",
+  "order_cs_admin"
+];
+const QC_ROLES: readonly AdminRole[] = [
+  ...FULL_ADMIN_ROLES,
+  "production_admin",
+  "quality_control"
+];
+const SHIPPING_ROLES: readonly AdminRole[] = [
+  ...FULL_ADMIN_ROLES,
+  "head_store",
+  "store_admin",
+  "order_cs_admin",
+  "production_admin",
+  "store_staff"
+];
+const TASK_ROLES: readonly AdminRole[] = [
+  ...FULL_ADMIN_ROLES,
+  "head_store",
+  "store_admin",
+  "order_cs_admin",
+  "finance_admin",
+  "sales_admin",
+  "finance",
+  "production_admin",
+  "operator",
+  "quality_control", "store_staff"
+];
+const INVENTORY_OPERATION_ROLES: readonly AdminRole[] = [
+  ...FULL_ADMIN_ROLES,
+  "head_store",
+  "store_admin",
+  "production_admin",
+  "store_staff"
+];
+const PAYMENT_NAV_ROLES: readonly AdminRole[] = [
+  ...FULL_ADMIN_ROLES,
+  "order_cs_admin",
+  "finance_admin",
+  "sales_admin",
+  "finance"
+];
+const REFUND_ROLES: readonly AdminRole[] = [
+  ...FULL_ADMIN_ROLES,
+  "order_cs_admin",
+  "finance_admin",
+  "sales_admin",
+  "finance"
+];
+const OUTBOX_ROLES: readonly AdminRole[] = [
+  ...FULL_ADMIN_ROLES,
+  "head_store",
+  "store_admin",
+  "order_cs_admin",
+  "finance_admin",
+  "sales_admin",
+  "finance",
+  "store_staff"
+];
+const ACCESS_READ_ROLES: readonly AdminRole[] = ["owner", "superadmin", "super_admin"];
 const AUDIT_ROLES: readonly AdminRole[] = ["owner", "superadmin", "super_admin"];
+const ACCOUNT_SECURITY_ROLES: readonly AdminRole[] = ADMIN_ROLES;
 
 export const adminNavigationGroups: readonly AdminNavigationGroup[] = [
   {
@@ -54,28 +176,28 @@ export const adminNavigationGroups: readonly AdminNavigationGroup[] = [
   },
   {
     label: "WEBSITE",
-    roles: FULL_ADMIN_ROLES,
+    roles: WEBSITE_ROLES,
     items: [
-      { label: "CMS / Halaman Utama", href: "/admin/homepage-sections", roles: FULL_ADMIN_ROLES },
-      { label: "CMS / Jersey", href: "/admin/commerce/jersey", roles: FULL_ADMIN_ROLES },
-      { label: "CMS / Custom", href: "/admin/custom-commerce", roles: FULL_ADMIN_ROLES },
-      { label: "Hero Halaman", href: "/admin/page-hero", roles: FULL_ADMIN_ROLES },
-      { label: "Galeri Media", href: "/admin/media", roles: FULL_ADMIN_ROLES },
-      { label: "Gambar Website", href: "/admin/site-media", roles: FULL_ADMIN_ROLES },
-      { label: "Banner Instagram", href: "/admin/banner", roles: FULL_ADMIN_ROLES }
+      { label: "CMS / Halaman Utama", href: "/admin/homepage-sections", roles: WEBSITE_ROLES },
+      { label: "CMS / Jersey", href: "/admin/commerce/jersey", roles: WEBSITE_ROLES },
+      { label: "CMS / Custom", href: "/admin/custom-commerce", roles: WEBSITE_ROLES },
+      { label: "Hero Halaman", href: "/admin/page-hero", roles: WEBSITE_ROLES },
+      { label: "Galeri Media", href: "/admin/media", roles: WEBSITE_ROLES },
+      { label: "Gambar Website", href: "/admin/site-media", roles: WEBSITE_ROLES },
+      { label: "Banner Instagram", href: "/admin/banner", roles: WEBSITE_ROLES }
     ]
   },
   {
     label: "KATALOG",
-    roles: PRODUCT_MANAGER_VIEW_ROLES,
+    roles: PRODUCT_MANAGER_ACCESS_ROLES,
     items: [
-      { label: "Manajemen Produk", href: "/admin/products", roles: PRODUCT_MANAGER_VIEW_ROLES, exact: true },
-      { label: "Riwayat Aktivitas Produk", href: "/admin/products/audit-history", roles: PRODUCT_MANAGER_VIEW_ROLES },
-      { label: "Ekspor & Pencocokan Data", href: "/admin/products/export-reconciliation", roles: PRODUCT_MANAGER_VIEW_ROLES },
-      { label: "Pemeliharaan Produk", href: "/admin/pim-manager", roles: PRODUCT_MAINTENANCE_ROLES },
-      { label: "Kategori / Model", href: "/admin/categories", roles: FULL_ADMIN_ROLES },
-      { label: "Layanan", href: "/admin/services", roles: FULL_ADMIN_ROLES },
-      { label: "Toko / Cabang", href: "/admin/store", roles: FULL_ADMIN_ROLES }
+      { label: "Manajemen Produk", href: "/admin/products", roles: PRODUCT_MANAGER_ACCESS_ROLES, exact: true },
+      { label: "Riwayat Aktivitas Produk", href: "/admin/products/audit-history", roles: PRODUCT_MANAGER_ACCESS_ROLES },
+      { label: "Ekspor & Pencocokan Data", href: "/admin/products/export-reconciliation", roles: PRODUCT_MANAGER_ACCESS_ROLES },
+      { label: "Pemeliharaan Produk", href: "/admin/pim-manager", roles: PRODUCT_MAINTENANCE_ACCESS_ROLES },
+      { label: "Kategori / Model", href: "/admin/categories", roles: PRODUCT_MAINTENANCE_ACCESS_ROLES },
+      { label: "Layanan", href: "/admin/services", roles: ["owner", "superadmin", "super_admin", "admin", "head_store"] },
+      { label: "Toko / Cabang", href: "/admin/store", roles: ["owner", "superadmin", "super_admin", "admin", "head_store"] }
     ]
   },
   {
@@ -87,12 +209,12 @@ export const adminNavigationGroups: readonly AdminNavigationGroup[] = [
       children: [
         { label: "Kotak Tugas", href: "/admin/order-tasks", roles: TASK_ROLES },
         { label: "Pesanan", href: "/admin/orders", roles: ORDER_READ_ROLES, exact: true },
-        { label: "Pembayaran", href: "/admin/payments", roles: REFUND_ROLES },
+        { label: "Pembayaran", href: "/admin/payments", roles: PAYMENT_NAV_ROLES },
         { label: "Pesanan Ulang", href: "/admin/repeat-orders", roles: REPEAT_ORDER_ROLES },
         { label: "Penawaran Harga", href: "/admin/orders/quotations", roles: QUOTATION_READ_ROLES },
-        { label: "Surat Perintah Kerja", href: "/admin/job-orders", roles: PRODUCTION_ROLES },
-        { label: "Daftar Pekerjaan", href: "/admin/work-items", roles: PRODUCTION_ROLES },
-        { label: "Status Produksi", href: "/admin/production", roles: PRODUCTION_ROLES },
+        { label: "Surat Perintah Kerja", href: "/admin/job-orders", roles: PRODUCTION_MANAGE_ROLES },
+        { label: "Daftar Pekerjaan", href: "/admin/work-items", roles: PRODUCTION_MANAGE_ROLES },
+        { label: "Status Produksi", href: "/admin/production", roles: PRODUCTION_VIEW_ROLES },
         { label: "Pemeriksaan Kualitas", href: "/admin/quality-control", roles: QC_ROLES },
         { label: "Pengiriman & Ambil di Toko", href: "/admin/fulfillments", roles: SHIPPING_ROLES },
         { label: "Stok Lokasi & Pickup", href: "/admin/inventory-operations", roles: INVENTORY_OPERATION_ROLES },
@@ -101,6 +223,13 @@ export const adminNavigationGroups: readonly AdminNavigationGroup[] = [
         { label: "Notifikasi", href: "/admin/notifications", roles: ALL_STAFF_ROLES }
       ]
     }]
+  },
+  {
+    label: "AKUN",
+    roles: ACCOUNT_SECURITY_ROLES,
+    items: [
+      { label: "Keamanan Akun", href: "/admin/change-password", roles: ACCOUNT_SECURITY_ROLES }
+    ]
   },
   {
     label: "SISTEM",
@@ -114,6 +243,8 @@ export const adminNavigationGroups: readonly AdminNavigationGroup[] = [
     ]
   }
 ] as const;
+
+/** Existing Admin Guest full-viewer navigation remains intact until that account is removed. */
 const adminGuestNavigationGroups: readonly AdminNavigationGroup[] = [
   {
     label: "RINGKASAN",
@@ -174,23 +305,26 @@ const adminGuestNavigationGroups: readonly AdminNavigationGroup[] = [
     items: [
       { label: "Pengaturan", href: "/admin/website-settings", roles: ADMIN_GUEST_ROLES },
       { label: "Penomoran Dokumen", href: "/admin/document-numbering", roles: ADMIN_GUEST_ROLES },
+      { label: "Keamanan Akun", href: "/admin/change-password", roles: ADMIN_GUEST_ROLES },
       { label: "Pengguna & Hak Akses", href: "/admin/access-control", roles: ADMIN_GUEST_ROLES },
       { label: "Riwayat Aktivitas", href: "/admin/audit-log", roles: ADMIN_GUEST_ROLES }
     ]
   }
 ] as const;
 
-
 export function hasRole(role: AdminRole | null, allowedRoles: readonly AdminRole[]) {
   return role !== null && allowedRoles.includes(role);
 }
+
 export function isNavigationLink(item: AdminNavigationNode): item is AdminNavigationLink {
   return "href" in item;
 }
+
 export function isNavigationActive(pathname: string, link: AdminNavigationLink) {
   if (link.exact) return pathname === link.href;
   return pathname === link.href || pathname.startsWith(`${link.href}/`);
 }
+
 export function getNavigationGroups(role: AdminRole) {
   const groups = role === "admin_guest" ? adminGuestNavigationGroups : adminNavigationGroups;
   return groups
@@ -199,7 +333,9 @@ export function getNavigationGroups(role: AdminRole) {
       ...group,
       items: group.items
         .filter((item) => hasRole(role, item.roles))
-        .map((item) => isNavigationLink(item) ? item : ({ ...item, children: item.children.filter((child) => hasRole(role, child.roles)) }))
+        .map((item) => isNavigationLink(item)
+          ? item
+          : ({ ...item, children: item.children.filter((child) => hasRole(role, child.roles)) }))
         .filter((item) => isNavigationLink(item) || item.children.length > 0)
     }))
     .filter((group) => group.items.length > 0);
@@ -228,40 +364,37 @@ function isProductWorkspacePath(pathname: string) {
 
 export function roleCanAccessPath(role: AdminRole, pathname: string) {
   if (["/admin/products/bulk-import", "/admin/products/bulk-edit", "/admin/products/legacy"].includes(pathname)) {
-    return hasRole(role, PRODUCT_MANAGER_VIEW_ROLES);
+    return hasRole(role, PRODUCT_MANAGER_ACCESS_ROLES);
   }
-  if (isProductWorkspacePath(pathname)) {
-    return hasRole(role, PRODUCT_MANAGER_VIEW_ROLES);
-  }
-  if (pathname.startsWith("/admin/products/")) {
-    return pathAllowedByRole(role, pathname);
-  }
+  if (isProductWorkspacePath(pathname)) return hasRole(role, PRODUCT_MANAGER_ACCESS_ROLES);
+  if (pathname.startsWith("/admin/products/")) return pathAllowedByRole(role, pathname);
+  if (pathname === "/admin/change-password") return hasRole(role, ACCOUNT_SECURITY_ROLES);
   if (role === "admin_guest") {
     return pathname.startsWith("/admin") && !pathname.startsWith("/admin/login");
   }
   if (pathname === "/admin" || pathname === "/admin/dashboard") return hasRole(role, DASHBOARD_ROLES);
-  if (
-    pathname === "/admin/orders/archive" ||
-    /^\/admin\/orders\/[^/]+$/.test(pathname)
-  ) {
+  if (pathname === "/admin/orders/archive" || /^\/admin\/orders\/[^/]+$/.test(pathname)) {
     return hasRole(role, ORDER_READ_ROLES);
   }
   if (pathname === "/admin/notifications/templates" || pathname.startsWith("/admin/notifications/templates/")) {
     return hasRole(role, FULL_ADMIN_ROLES);
   }
-  if (pathname.startsWith("/admin/notifications")) return true;
+  if (pathname.startsWith("/admin/notifications")) return hasRole(role, ALL_STAFF_ROLES);
   if (pathname.startsWith("/admin/order-tasks")) return hasRole(role, TASK_ROLES);
   if (pathname.startsWith("/admin/inventory-operations")) return hasRole(role, INVENTORY_OPERATION_ROLES);
   if (pathname.startsWith("/admin/refunds")) return hasRole(role, REFUND_ROLES);
   if (pathname.startsWith("/admin/customer-outbox")) return hasRole(role, OUTBOX_ROLES);
   if (pathname.startsWith("/admin/operations-health")) return hasRole(role, AUDIT_ROLES);
   if (pathname === "/admin/pim-v2" || pathname.startsWith("/admin/pim-v2/")) {
-    return hasRole(role, PRODUCT_MAINTENANCE_ROLES);
+    return hasRole(role, PRODUCT_MAINTENANCE_ACCESS_ROLES);
   }
   return pathAllowedByRole(role, pathname);
 }
 
 export function getRoleHome(role: AdminRole) {
+  if (role === "product_content_manager") return "/admin/products";
+  if (role === "order_cs_admin") return "/admin/orders";
+  if (role === "finance_admin") return "/admin/payments";
   if (role === "sales_admin" || role === "designer") return "/admin/orders/quotations";
   if (role === "finance") return "/admin/orders";
   if (role === "production_admin" || role === "operator") return "/admin/work-items";
@@ -282,6 +415,7 @@ export function getCurrentNavigationLabel(pathname: string) {
   if (pathname === "/admin/products/bulk-edit") return "Ubah Banyak Produk";
   if (pathname === "/admin/products/bulk-import") return "Impor Banyak Produk";
   if (pathname === "/admin/custom-commerce") return "CMS / Custom";
+  if (pathname === "/admin/change-password") return "Keamanan Akun";
   if (pathname === "/admin/access-control") return "Pengguna & Hak Akses";
   if (pathname === "/admin/payments") return "Pembayaran";
   if (pathname === "/admin/order-tasks") return "Kotak Tugas";
@@ -311,14 +445,22 @@ export function getCurrentNavigationLabel(pathname: string) {
   if (pathname.startsWith("/admin/orders/quotations/")) return "Detail Penawaran Harga";
   if (pathname === "/admin/orders/archive") return "Gudang Arsip Pesanan";
   if (pathname.startsWith("/admin/orders/")) return "Detail Pesanan";
-  for (const group of adminNavigationGroups) for (const item of group.items) {
-    if (isNavigationLink(item)) { if (isNavigationActive(pathname, item)) return item.label; }
-    else for (const child of item.children) if (isNavigationActive(pathname, child)) return child.label;
+  for (const group of adminNavigationGroups) {
+    for (const item of group.items) {
+      if (isNavigationLink(item)) {
+        if (isNavigationActive(pathname, item)) return item.label;
+      } else {
+        for (const child of item.children) {
+          if (isNavigationActive(pathname, child)) return child.label;
+        }
+      }
+    }
   }
   return "Panel Admin";
 }
 
 export type AdminBreadcrumbItem = { label: string; href?: string };
+
 export function getAdminBreadcrumbs(pathname: string): AdminBreadcrumbItem[] {
   if (pathname === "/admin/dashboard" || pathname === "/admin") return [{ label: "Ringkasan" }];
   if (isProductWorkspacePath(pathname)) {
@@ -328,21 +470,47 @@ export function getAdminBreadcrumbs(pathname: string): AdminBreadcrumbItem[] {
       { label: getCurrentNavigationLabel(pathname) }
     ];
   }
+  if (pathname === "/admin/change-password") return [{ label: "Akun" }, { label: "Keamanan Akun" }];
   if (pathname === "/admin/custom-commerce") return [{ label: "Website" }, { label: "CMS / Custom" }];
   if (pathname === "/admin/access-control") return [{ label: "Sistem" }, { label: "Pengguna & Hak Akses" }];
   if (pathname === "/admin/audit-log") return [{ label: "Sistem" }, { label: "Riwayat Aktivitas" }];
   if (pathname === "/admin/repeat-orders") return [{ label: "Pesanan", href: "/admin/orders" }, { label: "Pesanan Ulang" }];
   if (pathname.startsWith("/admin/notifications")) {
-    const crumbs: AdminBreadcrumbItem[] = [{ label: "Operasional" }, { label: "Notifikasi", href: pathname === "/admin/notifications" ? undefined : "/admin/notifications" }];
+    const crumbs: AdminBreadcrumbItem[] = [
+      { label: "Operasional" },
+      { label: "Notifikasi", href: pathname === "/admin/notifications" ? undefined : "/admin/notifications" }
+    ];
     if (pathname === "/admin/notifications/templates") crumbs.push({ label: "Template" });
     else if (pathname === "/admin/notifications/history") crumbs.push({ label: "Riwayat" });
     else if (pathname !== "/admin/notifications") crumbs.push({ label: "Detail Notifikasi" });
     return crumbs;
   }
-  const group = pathname.startsWith("/admin/orders") ? "Pesanan" : pathname.startsWith("/admin/") ? (pathname.match(/job-orders|work-items|production|quality-control|fulfillments/) ? "Operasional" : "Sistem") : "Admin";
+  const group = pathname.startsWith("/admin/orders")
+    ? "Pesanan"
+    : pathname.startsWith("/admin/")
+      ? (pathname.match(/job-orders|work-items|production|quality-control|fulfillments/) ? "Operasional" : "Sistem")
+      : "Admin";
   return [{ label: group }, { label: getCurrentNavigationLabel(pathname) }];
 }
 
 export function isLegacyAdminRoute(pathname: string) {
-  return !(pathname.startsWith("/admin/orders") || pathname.startsWith("/admin/order-tasks") || pathname.startsWith("/admin/inventory-operations") || pathname.startsWith("/admin/refunds") || pathname.startsWith("/admin/customer-outbox") || pathname.startsWith("/admin/operations-health") || pathname.startsWith("/admin/document-numbering") || pathname.startsWith("/admin/job-orders") || pathname.startsWith("/admin/work-items") || pathname.startsWith("/admin/production") || pathname.startsWith("/admin/quality-control") || pathname.startsWith("/admin/fulfillments") || pathname.startsWith("/admin/notifications") || pathname.startsWith("/admin/access-control") || pathname.startsWith("/admin/audit-log") || pathname.startsWith("/admin/repeat-orders") || pathname.startsWith("/admin/custom-commerce"));
+  return !(
+    pathname.startsWith("/admin/orders") ||
+    pathname.startsWith("/admin/order-tasks") ||
+    pathname.startsWith("/admin/inventory-operations") ||
+    pathname.startsWith("/admin/refunds") ||
+    pathname.startsWith("/admin/customer-outbox") ||
+    pathname.startsWith("/admin/operations-health") ||
+    pathname.startsWith("/admin/document-numbering") ||
+    pathname.startsWith("/admin/job-orders") ||
+    pathname.startsWith("/admin/work-items") ||
+    pathname.startsWith("/admin/production") ||
+    pathname.startsWith("/admin/quality-control") ||
+    pathname.startsWith("/admin/fulfillments") ||
+    pathname.startsWith("/admin/notifications") ||
+    pathname.startsWith("/admin/access-control") ||
+    pathname.startsWith("/admin/audit-log") ||
+    pathname.startsWith("/admin/repeat-orders") ||
+    pathname.startsWith("/admin/custom-commerce")
+  );
 }

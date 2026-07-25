@@ -9,14 +9,20 @@ export const NOTIFICATION_ROLES = [
   "operator",
   "finance",
   "quality_control",
-  "store_staff"
+  "store_staff",
+  "head_store",
+  "store_admin",
+  "product_content_manager",
+  "order_cs_admin",
+  "finance_admin"
 ] as const;
 
 export const NOTIFICATION_MANAGER_ROLES = [
   "owner",
   "superadmin",
   "super_admin",
-  "admin"
+  "admin",
+  "order_cs_admin"
 ] as const;
 
 export const NOTIFICATION_SUPER_ADMIN_ROLES = ["superadmin", "super_admin"] as const;

@@ -1,5 +1,10 @@
-import { getRoleLabel, isAdminGuestRole, isAdminRole } from "@/lib/access-control";
-import { roleCanAccessPath } from "@/components/admin/layout/admin-navigation";
+import {
+  getRoleLabel,
+  isAdminGuestRole,
+  isAdminRole
+} from "@/lib/access-control";
+import { getRoleHome, roleCanAccessPath } from "@/components/admin/layout/admin-navigation";
+import { registerSingleAdminSession } from "@/lib/admin-session-security";
 import { phase13ErrorResponse, requirePhase13Actor } from "@/lib/phase13-auth";
 
 export const dynamic = "force-dynamic";
@@ -10,13 +15,20 @@ export async function GET(request: Request) {
     const pathname = safeAdminPath(new URL(request.url).searchParams.get("path"));
     const allowed = isAdminRole(actor.role) && roleCanAccessPath(actor.role, pathname);
 
+    const authorization = request.headers.get("authorization") ?? "";
+    const token = authorization.startsWith("Bearer ") ? authorization.slice(7).trim() : "";
+    await registerSingleAdminSession(actor.client, token);
+
     return Response.json(
       {
         role: actor.role,
         roleLabel: getRoleLabel(actor.role),
+        accountStatus: actor.accountStatus,
+        primaryStoreId: actor.primaryStoreId,
+        allStoreAccess: actor.allStoreAccess,
         readOnly: isAdminGuestRole(actor.role),
         allowed,
-        home: "/admin/dashboard"
+        home: getRoleHome(actor.role)
       },
       {
         status: allowed ? 200 : 403,
@@ -24,7 +36,7 @@ export async function GET(request: Request) {
       }
     );
   } catch (error) {
-    return phase13ErrorResponse(error);
+    return phase13ErrorResponse(error, request);
   }
 }
 

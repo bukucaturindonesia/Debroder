@@ -15,6 +15,11 @@ export const REPEAT_ORDER_CREATE_ROLES: readonly AdminRole[] = [
   "sales_admin"
 ];
 
+export const DIRECT_REPEAT_ORDER_CREATE_ROLES: readonly AdminRole[] = [
+  "head_store",
+  "order_cs_admin"
+];
+
 export type RepeatOrderEligibleStatus = (typeof REPEAT_ORDER_ELIGIBLE_STATUSES)[number];
 
 export type RepeatOrderSource = {
@@ -95,7 +100,8 @@ export type CreateRepeatOrderInput = {
 };
 
 export function canCreateRepeatOrder(role: string | null | undefined): role is AdminRole {
-  return REPEAT_ORDER_CREATE_ROLES.includes(role as AdminRole);
+  return REPEAT_ORDER_CREATE_ROLES.includes(role as AdminRole)
+    || DIRECT_REPEAT_ORDER_CREATE_ROLES.includes(role as AdminRole);
 }
 
 export function validateCreateRepeatOrderInput(value: unknown): {
