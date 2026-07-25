@@ -4,7 +4,6 @@ import { CampaignBanners } from "@/components/CampaignBanners";
 import { HeroSlider } from "@/components/HeroSlider";
 import { PublicProductCard } from "@/components/PublicProductCard";
 import { PublicFooter } from "@/components/PublicFooter";
-import { PublicInstagramBanner } from "@/components/PublicInstagramBanner";
 import { PublicSectionFrame } from "@/components/PublicSectionFrame";
 import { PublicStoreLocator } from "@/components/PublicStoreLocator";
 import { ResponsivePicture } from "@/components/ResponsivePicture";
@@ -352,6 +351,7 @@ function ManagedHomepageSection({ section, setting, fallbackProducts = [] }: { s
   );
 }
 
+/* DEBRODER_LANDING_STRUCTURE_V2_APPLIED */
 export default async function Home() {
   const [content, shellModel] = await Promise.all([
     getPublicContent(),
@@ -429,12 +429,6 @@ export default async function Home() {
         return <LandingSectionSlot setting={setting}><ManagedHomepageSection section={managedSection} setting={setting} /></LandingSectionSlot>;
       })() : null}
 
-      {trendingSection ? (() => {
-        const setting = landingSection("trending");
-        const managedSection = setting?.title ? { ...trendingSection, title: setting.title } : trendingSection;
-        return <LandingSectionSlot setting={setting}><ManagedHomepageSection section={managedSection} setting={setting} /></LandingSectionSlot>;
-      })() : null}
-
       <LandingSectionSlot setting={landingSection("campaign-banners")}>
         <CampaignBanners
           banners={content.campaignBanners}
@@ -442,6 +436,12 @@ export default async function Home() {
           fallbackMobileSrc={landingSection("campaign-banners")?.mobile_image_url || content.heroes[0]?.mobile_image_url || content.hero.mobile_image_url || fallbackImages.bannerMobile}
         />
       </LandingSectionSlot>
+
+      {trendingSection ? (() => {
+        const setting = landingSection("trending");
+        const managedSection = setting?.title ? { ...trendingSection, title: setting.title } : trendingSection;
+        return <LandingSectionSlot setting={setting}><ManagedHomepageSection section={managedSection} setting={setting} /></LandingSectionSlot>;
+      })() : null}
 
       {freshDropSection ? (() => {
         const setting = landingSection("fresh-drop");
@@ -494,14 +494,6 @@ export default async function Home() {
           </PublicSectionFrame>
         </section>
       </LandingSectionSlot>
-
-      {content.instagramBanner?.id ? (
-        <section id="instagram" className="home-section home-instagram section-space bg-white" aria-label="Instagram DEBRODER">
-          <PublicSectionFrame variant="near-wide">
-            <PublicInstagramBanner banner={content.instagramBanner} />
-          </PublicSectionFrame>
-        </section>
-      ) : null}
 
       <LandingSectionSlot setting={landingSection("stores")}>
         <>
@@ -565,7 +557,7 @@ export default async function Home() {
         </section>
       </LandingSectionSlot>
 
-      <PublicFooter model={shellModel.data.footer} variant="dark" />
+      <PublicFooter model={shellModel.data.footer} />
     </main>
     </StorefrontCartBoundary>
   );
