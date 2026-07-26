@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useCart, type CartProductInput } from "@/components/CartProvider";
 import { useOptionalProductVariantGallery } from "@/components/ProductVariantGalleryContext";
+import { ProductDetailDisclosure } from "@/components/product/ProductDetailDisclosure";
 import { cartTierProductKey } from "@/lib/cart-group-tier-pricing";
 import { createSupabaseClient } from "@/lib/supabase";
 import type { ProductVariant, ProductVariantSize } from "@/lib/types";
@@ -407,14 +408,7 @@ export function TieredProductPurchasePanel({
             } pcs · total produk ${pricingQuantity} pcs`
           : "Harga normal produk";
 
-  const guideRows = sizeGuide.length
-    ? sizeGuide
-    : sizeOptions
-        .filter((size) => size !== "Mix Size")
-        .map(
-          (size) =>
-            `${size}: Sesuaikan dengan panduan ukuran produk ini.`
-        );
+  const guideRows = sizeGuide;
 
   function addSelectedToCart() {
     if (belowMinimum || unavailable || interactionLocked.current) return false;
@@ -552,7 +546,8 @@ export function TieredProductPurchasePanel({
 
   return (
     <div className="mt-7 grid gap-6">
-      <section>
+      <fieldset className="min-w-0">
+        <legend className="sr-only">Pilih warna produk</legend>
         <div className="flex items-center justify-between gap-4">
           <p className="text-sm font-semibold text-brand-charcoal">
             Warna:{" "}
@@ -571,24 +566,29 @@ export function TieredProductPurchasePanel({
           {colorOptions.map((option) => {
             const selected = option.name === selectedColor;
             return (
-              <button
+              <label
                 key={option.name}
-                type="button"
                 title={option.name}
-                aria-label={`Pilih warna ${option.name}`}
-                aria-pressed={selected}
-                onClick={() => setSelectedColor(option.name)}
-                className={`grid h-12 w-12 place-items-center rounded-full transition ${
+                className={`grid h-12 w-12 cursor-pointer place-items-center rounded-full outline-none transition focus-within:outline focus-within:outline-2 focus-within:outline-offset-2 focus-within:outline-[#1151ff] ${
                   selected
                     ? "ring-2 ring-black ring-offset-2 ring-offset-[#F7F7F4]"
                     : "ring-1 ring-black/10 hover:ring-black/30"
                 }`}
               >
+                <input
+                  type="radio"
+                  name="product-color"
+                  value={option.name}
+                  checked={selected}
+                  onChange={() => setSelectedColor(option.name)}
+                  aria-label={`Pilih warna ${option.name}`}
+                  className="sr-only"
+                />
                 <span
                   className="h-7 w-7 rounded-full border border-black/10"
                   style={{ backgroundColor: option.hex }}
                 />
-              </button>
+              </label>
             );
           })}
         </div>
@@ -599,9 +599,10 @@ export function TieredProductPurchasePanel({
             <span>{stockLabel}</span>
           </div>
         ) : null}
-      </section>
+      </fieldset>
 
-      <section>
+      <fieldset className="min-w-0">
+        <legend className="sr-only">Pilih ukuran produk</legend>
         <div className="flex items-center justify-between gap-4">
           <p className="text-sm font-semibold text-brand-charcoal">
             Ukuran:{" "}
@@ -609,12 +610,14 @@ export function TieredProductPurchasePanel({
               {selectedSize}
             </span>
           </p>
-          <a
-            href="#panduan-ukuran"
-            className="text-xs font-semibold text-brand-charcoal underline-offset-4 hover:underline"
-          >
-            Panduan Ukuran
-          </a>
+          {guideRows.length ? (
+            <a
+              href="#panduan-ukuran"
+              className="inline-flex min-h-12 items-center text-xs font-semibold text-brand-charcoal underline-offset-4 hover:underline"
+            >
+              Panduan Ukuran
+            </a>
+          ) : null}
         </div>
 
         <div className="mt-3 flex flex-wrap gap-2">
@@ -624,26 +627,34 @@ export function TieredProductPurchasePanel({
             const disabled = sizeIsUnavailable(sizeRecord);
 
             return (
-              <button
+              <label
                 key={size}
-                type="button"
-                aria-pressed={selected}
-                disabled={disabled}
-                onClick={() => setSelectedSize(size)}
-                className={`min-h-12 min-w-12 rounded-full px-4 text-sm font-semibold transition disabled:cursor-not-allowed disabled:opacity-35 ${
+                className={`grid min-h-12 min-w-12 place-items-center rounded-full px-4 text-sm font-semibold outline-none transition focus-within:outline focus-within:outline-2 focus-within:outline-offset-2 focus-within:outline-[#1151ff] ${
+                  disabled ? "cursor-not-allowed opacity-35" : "cursor-pointer"
+                } ${
                   selected
                     ? "bg-brand-charcoal text-white"
                     : "bg-white/70 text-brand-charcoal ring-1 ring-black/10 hover:ring-black/25"
                 }`}
               >
+                <input
+                  type="radio"
+                  name="product-size"
+                  value={size}
+                  checked={selected}
+                  disabled={disabled}
+                  onChange={() => setSelectedSize(size)}
+                  aria-label={`Pilih ukuran ${size}`}
+                  className="sr-only"
+                />
                 {size}
-              </button>
+              </label>
             );
           })}
         </div>
-      </section>
+      </fieldset>
 
-      <section className="grid gap-4 rounded-[22px] bg-white/60 p-4">
+      <section className="grid gap-4 border-y border-[#e5e5e5] py-5">
         {instantServices.length ? (
           <div className="grid gap-3 border-b border-black/10 pb-5">
             <div className="grid gap-2 sm:grid-cols-2" role="group" aria-label="Mode pembelian">
@@ -656,7 +667,7 @@ export function TieredProductPurchasePanel({
                 {instantServices.map((service) => {
                   const selected = selectedServices[service.id];
                   return (
-                    <div key={service.id} className="rounded-2xl border border-black/10 bg-white p-4">
+                    <div key={service.id} className="border-t border-black/10 bg-white pt-4">
                       <label className="flex cursor-pointer items-start gap-3">
                         <input type="checkbox" checked={Boolean(selected)} onChange={() => toggleInstantService(service.id)} className="mt-1 h-5 w-5" />
                         <span className="flex-1">
@@ -821,7 +832,7 @@ export function TieredProductPurchasePanel({
         ) : null}
       </section>
 
-      <section className="rounded-[22px] bg-white/60 p-4">
+      <section className="border-y border-[#e5e5e5] py-5">
         <div className="flex items-start gap-3">
           <span className={`grid h-10 w-10 shrink-0 place-items-center rounded-full text-lg ${monochrome ? "bg-black/[0.06]" : "bg-[#e9f4ee]"}`}>
             👕
@@ -838,34 +849,33 @@ export function TieredProductPurchasePanel({
         </div>
       </section>
 
-      <section
-        id="panduan-ukuran"
-        className="rounded-[22px] bg-white/50 p-4"
-      >
-        <details>
-          <summary className="cursor-pointer list-none text-sm font-semibold text-brand-charcoal">
-            Panduan Ukuran
-          </summary>
-          <div className="mt-4 grid gap-2">
-            {guideRows.map((row, index) => {
-              const [label, ...rest] = row.split(":");
-              return (
-                <div
-                  key={`${row}-${index}`}
-                  className="grid gap-1 rounded-2xl bg-white/70 p-3 text-sm sm:grid-cols-[100px_1fr] sm:gap-4"
-                >
-                  <p className="font-semibold text-brand-charcoal">
-                    {rest.length ? label.trim() : `Panduan ${index + 1}`}
-                  </p>
-                  <p className="text-brand-charcoal/60">
-                    {rest.length ? rest.join(":").trim() : row.trim()}
-                  </p>
-                </div>
-              );
-            })}
-          </div>
-        </details>
-      </section>
+      {guideRows.length ? (
+        <div id="panduan-ukuran" className="border-b border-[#e5e5e5]">
+          <ProductDetailDisclosure
+            id="product-size-guide"
+            title="Panduan Ukuran"
+          >
+            <div className="mt-4 grid gap-2">
+              {guideRows.map((row, index) => {
+                const [label, ...rest] = row.split(":");
+                return (
+                  <div
+                    key={`${row}-${index}`}
+                    className="grid gap-1 border-t border-[#e5e5e5] py-3 text-sm sm:grid-cols-[100px_1fr] sm:gap-4"
+                  >
+                    <p className="font-semibold text-brand-charcoal">
+                      {rest.length ? label.trim() : `Panduan ${index + 1}`}
+                    </p>
+                    <p className="text-brand-charcoal/60">
+                      {rest.length ? rest.join(":").trim() : row.trim()}
+                    </p>
+                  </div>
+                );
+              })}
+            </div>
+          </ProductDetailDisclosure>
+        </div>
+      ) : null}
     </div>
   );
 }
