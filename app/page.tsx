@@ -334,7 +334,7 @@ function ManagedHomepageSection({ section, setting, fallbackProducts = [] }: { s
           textPosition={setting?.text_position}
           action={
             <div className="flex items-center gap-4">
-              {configuredCta || <Link href="/koleksi" className="hidden text-sm font-medium hover:underline sm:block">Lihat Semua Produk</Link>}
+              {configuredCta || <Link href={section.slug === "fresh-drops" ? "/fresh-drop" : "/koleksi"} className="hidden text-sm font-medium hover:underline sm:block">Lihat Semua Produk</Link>}
               <ScrollButtons containerId={carouselId} />
             </div>
           }
@@ -406,6 +406,10 @@ export default async function Home() {
   );
   const plainCategoryItems = (plainCategoryMatches.length ? plainCategoryMatches : plainCategoryCandidates).slice(0, 7);
   const aboutParagraphs = normalizeAboutParagraphs(content.trustAbout.about_body);
+  const heroVisible = landingSection("hero")?.is_visible !== false;
+  const heroHasHeading = heroVisible && content.heroes
+    .filter((hero) => hero.status_aktif !== false)
+    .some((hero, index) => index === 0 && Boolean(cleanCmsText(hero.headline) || cleanCmsText(hero.title)));
   const schema = {
     "@context": "https://schema.org",
     "@graph": [
@@ -423,6 +427,7 @@ export default async function Home() {
         promo={shellModel.data.header.promo}
       />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(schema).replace(/</g, "\\u003c") }} />
+      {!heroHasHeading ? <h1 className="sr-only">DEBRODER</h1> : null}
 
       <LandingSectionSlot setting={landingSection("hero")}>
         <HeroSlider heroes={content.heroes} />
@@ -559,7 +564,7 @@ export default async function Home() {
         </section>
       </LandingSectionSlot>
 
-      <PublicFooter model={shellModel.data.footer} />
+      <PublicFooter model={shellModel.data.footer} variant="public-dark" />
     </main>
     </StorefrontCartBoundary>
   );

@@ -420,4 +420,39 @@ The FROZEN commerce/landing blueprints and official Owner Decisions remain autho
   browser viewports PASS without overflow or runtime error.
 - Active homepage snapshot has no rendered `h1`; this remains an explicit
   homepage-package risk, not a P0 token mutation.
-- P1 is **NOT STARTED** and remains closed pending owner instruction.
+- At the P0 checkpoint, P1 was **NOT STARTED**. The later P1–P12 state below
+  supersedes that checkpoint.
+
+## Public Experience P1–P12 implementation state — 2026-07-26
+
+- P1–P12 are **IMPLEMENTED IN SOURCE — OWNER VERIFICATION PENDING** on branch
+  `LANDING-PAGE-PUBLIC`, baseline HEAD
+  `fc1b8ff6eb1b92b23452b4032098a652fb0bc1eb`.
+- Shared public shell now exposes Fresh Drop, About, canonical search,
+  wishlist/account safe entries, Help, and legal safe routes.
+- Landing received a semantic H1 fallback without changing FROZEN section
+  order. Confirmation now uses the shared public shell.
+- Fresh Drop reads canonical product flags and redirects detail aliases to the
+  universal PDP. About reads existing public CMS/store/testimonial sources.
+- Existing category, PDP, Cart v5, checkout, secure tracking, Custom, and
+  protected Jersey authorities were reused rather than rebuilt.
+- Customer Auth/account persistence, wishlist persistence, release schedule,
+  and approved legal content remain unavailable and are represented only by
+  explicit safe states; **OWNER LEGAL CONTENT REQUIRED**.
+- No pricing, inventory, order, payment, database, migration, Admin, test,
+  commit, push, merge, or deployment change was made.
+- Per the master execution prompt, typecheck, lint, tests, build, browser, and
+  deployment verification were not run. All package acceptance remains owner
+  verification pending. P13 was not started.
+
+## Jersey universal PDP stabilization state — 2026-07-26
+
+- Targeted revision is **IMPLEMENTED IN SOURCE — OWNER RECHECK PENDING**.
+- Canonical product-detail projection now owns the typed purchase capability
+  contract consumed by `/produk/[slug]` and the tiered purchase panel.
+- Targeted `test/jersey-commerce.test.ts` passed: 1 file / 9 tests, including
+  the four required capability cases.
+- Pricing, Cart v5, checkout, Custom transaction behavior, protected Jersey
+  category/shop/configurator, Admin, database, and migrations were unchanged.
+- No full gate, browser verification, commit, push, merge, or deployment was
+  performed for this targeted revision.

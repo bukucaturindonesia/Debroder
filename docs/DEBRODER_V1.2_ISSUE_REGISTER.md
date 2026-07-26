@@ -480,3 +480,68 @@
 - Responsive token regression — **CLOSED AND VERIFIED**. Five viewports show
   correct computed gutters/spacing, no horizontal page overflow, no browser
   errors, and a visible FROZEN focus ring.
+
+## Public Experience P1–P12
+
+### V12-047 — Owner verification for Public Experience P1–P12
+
+- Severity: Package gate
+- Status: **OPEN — OWNER VERIFICATION PENDING**
+- Detail: Source implementation and package handoff are complete. The master
+  execution prompt prohibited agent typecheck, lint, tests, build, browser,
+  screenshots, deployment, and Supabase verification. Owner must review the
+  diff and run the full verification checklist before any PASS claim.
+
+### V12-048 — Official legal content unavailable
+
+- Severity: MAJOR content dependency
+- Status: **OPEN — OWNER LEGAL CONTENT REQUIRED**
+- Evidence: no approved public source for terms, privacy, return, shipping,
+  payment policy, effective date, or legal version was proven.
+- Current safe state: reusable legal layout and routes exist but explicitly do
+  not create legal terms. Checkout does not demand agreement to unpublished
+  policy.
+
+### V12-049 — Customer account and wishlist persistence unavailable
+
+- Severity: DEFERRED foundation dependency
+- Status: **OPEN — SAFE STATE IMPLEMENTED**
+- Evidence: no public customer Auth/account or wishlist datastore was proven;
+  existing Supabase Auth route is Admin-owned.
+- Current safe state: `/login`, `/account`, and `/wishlist` do not create a
+  second backend and route customers to guest tracking/catalog.
+
+### V12-050 — Fresh Drop release schedule metadata not proven
+
+- Severity: DEFERRED content dependency
+- Status: **OPEN — SAFE DATA-ONLY IMPLEMENTATION**
+- Evidence: canonical public product flags support `fresh_drop`/`label_new`,
+  but release date/time/countdown metadata was not proven.
+- Current safe state: `/fresh-drop` shows only canonical flagged products or
+  an explicit empty state. No release claim is fabricated.
+
+## Closed in Public Experience P1–P12 source
+
+- Homepage semantic heading absence — **CLOSED IN SOURCE / NOT VERIFIED**.
+  An accessibility-valid DEBRODER H1 fallback renders only when the active
+  first hero cannot supply its own heading.
+- Footer legal-link aliasing — **CLOSED IN SOURCE / NOT VERIFIED**. Terms and
+  privacy no longer point to the order guide; they use explicit legal routes.
+- Missing standalone About/Search/Help/Fresh Drop routes —
+  **CLOSED IN SOURCE / NOT VERIFIED**. Routes reuse canonical public sources
+  and shared shell components.
+- Duplicate Fresh Drop PDP risk — **CLOSED IN SOURCE / NOT VERIFIED**.
+  `/fresh-drop/[slug]` redirects to `/produk/[slug]`.
+
+### V12-051 — Jersey PDP purchase capability ownership
+
+- Severity: MAJOR regression risk
+- Status: **CLOSED IN SOURCE — OWNER RECHECK PENDING**
+- Root cause: `/produk/[slug]` menghitung ulang Buy Now dari raw availability,
+  sementara product-detail model belum memiliki satu kontrak capability.
+- Resolution: typed pure resolver sekarang menentukan purchase panel, Add to
+  Cart, Buy Now, dan Custom action; PDP serta tiered purchase panel mengonsumsi
+  hasil resolver.
+- Evidence: targeted Jersey suite **PASS (1 file / 9 tests)** dengan matrix
+  Ready Stock, Custom-only, unavailable, dan non-Jersey. Full gates tidak
+  dijalankan dalam targeted revision ini.

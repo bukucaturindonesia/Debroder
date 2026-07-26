@@ -42,6 +42,7 @@ type ProductPurchasePanelProps = {
   bulkOrderNote?: string | null;
   whatsappUrl?: string;
   variants?: ProductVariant[];
+  showAddToCart?: boolean;
   showBuyNow?: boolean;
   monochrome?: boolean;
 };
@@ -173,6 +174,7 @@ export function TieredProductPurchasePanel({
   bulkOrderNote,
   whatsappUrl,
   variants = [],
+  showAddToCart = true,
   showBuyNow = false,
   monochrome = false
 }: ProductPurchasePanelProps) {
@@ -632,23 +634,29 @@ export function TieredProductPurchasePanel({
           </div>
         </div>
 
-        <div className={`grid gap-2 ${showBuyNow ? "sm:grid-cols-2" : ""}`}>
-          <button
-            type="button"
-            disabled={unavailable || belowMinimum || pricingLoading}
-            onClick={addSelectedToCart}
-            className="inline-flex min-h-12 items-center justify-center rounded-full bg-black px-6 text-sm font-semibold text-white transition hover:bg-black/75 disabled:cursor-not-allowed disabled:bg-black/20"
-          >
-            {unavailable
-              ? "Varian Tidak Tersedia"
-              : pricingLoading
-                ? "Memuat Harga..."
-                : belowMinimum
-                  ? `Minimum ${minimumQuantity} pcs`
-                  : quoteRequired
-                    ? "Tambahkan untuk Penawaran"
-                    : "Tambah ke Keranjang"}
-          </button>
+        <div className={`grid gap-2 ${showAddToCart && showBuyNow ? "sm:grid-cols-2" : ""}`}>
+          {showAddToCart ? (
+            <button
+              type="button"
+              disabled={unavailable || belowMinimum || pricingLoading}
+              onClick={addSelectedToCart}
+              className="inline-flex min-h-12 items-center justify-center rounded-full bg-black px-6 text-sm font-semibold text-white transition hover:bg-black/75 disabled:cursor-not-allowed disabled:bg-black/20"
+            >
+              {unavailable
+                ? "Varian Tidak Tersedia"
+                : pricingLoading
+                  ? "Memuat Harga..."
+                  : belowMinimum
+                    ? `Minimum ${minimumQuantity} pcs`
+                    : quoteRequired
+                      ? "Tambahkan untuk Penawaran"
+                      : "Tambah ke Keranjang"}
+            </button>
+          ) : (
+            <p className="flex min-h-12 items-center justify-center rounded-full bg-black/10 px-6 text-center text-sm font-semibold text-black/55">
+              Ready Stock tidak tersedia
+            </p>
+          )}
           {showBuyNow ? (
             <button
               type="button"
@@ -656,7 +664,7 @@ export function TieredProductPurchasePanel({
               onClick={buySelectedNow}
               className="inline-flex min-h-12 items-center justify-center rounded-full border border-black bg-white px-6 text-sm font-semibold text-black transition hover:bg-black hover:text-white disabled:cursor-not-allowed disabled:border-black/20 disabled:text-black/30"
             >
-              Buy Now
+              Beli Sekarang
             </button>
           ) : null}
         </div>

@@ -680,3 +680,46 @@ Status: **VERIFIED IN SOURCE — P1 NOT STARTED**.
   during P0 and were preserved untouched.
 - Commit/push/merge/deploy: none. P1 remains closed until explicit owner
   instruction.
+
+---
+
+## 2026-07-26 — Public Experience P1–P12
+
+Status: **IMPLEMENTATION COMPLETE — OWNER VERIFICATION PENDING**.
+
+- Baseline branch `LANDING-PAGE-PUBLIC`, HEAD
+  `fc1b8ff6eb1b92b23452b4032098a652fb0bc1eb`, clean sebelum batch.
+- P1–P12 were implemented sequentially using the existing public shell,
+  category/PDP, Cart v5, checkout, tracking, Custom, and Jersey authorities.
+- New public routes: `/fresh-drop`, `/fresh-drop/[slug]` redirect,
+  `/tentang`, `/search`, `/login`, `/account`, `/wishlist`, `/help`,
+  `/legal/terms`, and `/legal/privacy`.
+- Homepage H1 fallback, shared confirmation shell, search focus management,
+  48 px header controls, footer navigation, and explicit account/wishlist/legal
+  safe states were added.
+- Pricing, inventory, order, payment, Custom/Jersey transaction behavior,
+  Admin, database, and migrations were not changed.
+- Customer Auth, wishlist persistence, release schedule metadata, and approved
+  legal content remain unavailable. **OWNER LEGAL CONTENT REQUIRED**.
+- Per the execution prompt, typecheck, lint, test, build, browser, Vercel, and
+  Supabase verification were not run. No tests were added.
+- No commit, push, merge, stage, or deploy occurred. Do not start P13.
+- Full package-by-package files, risks, and owner checklist are in
+  `docs/CURRENT_PACKAGE_HANDOFF.md`.
+
+---
+
+## 2026-07-26 — Targeted Jersey Universal PDP Revision
+
+Status: **IMPLEMENTED IN SOURCE — OWNER RECHECK PENDING**.
+
+- Product-detail domain sekarang menjadi satu-satunya resolver typed/pure bagi
+  capability purchase Jersey: panel, Add to Cart, Buy Now, dan Custom action.
+- Universal PDP tidak lagi menghitung Buy Now dari boolean mentah; purchase
+  panel menerima capability hasil canonical projection.
+- Regression test berbasis behavior mencakup Jersey Ready Stock, Custom-only,
+  unavailable, dan non-Jersey Ready Stock. Targeted Jersey suite **PASS
+  (1 file / 9 tests)** melalui direct workspace Vitest shim.
+- Tidak ada perubahan pricing, Cart v5, checkout, Jersey configurator, route,
+  Admin, database, atau migration. Full gates dan deployment tidak dijalankan
+  karena berada di luar instruksi targeted revision.

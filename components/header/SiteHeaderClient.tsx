@@ -17,6 +17,7 @@ const HeaderSearchModal = dynamic(
 );
 
 const topbarItems = [
+  { label: "Fresh Drop", href: "/fresh-drop" },
   { label: "Toko", href: "/store" },
   { label: "Cara Pemesanan", href: "/cara-order" },
   { label: "Lacak Pesanan", href: "/track-order" }
@@ -316,12 +317,23 @@ export function SiteHeaderClient({
   const headerRef = useRef<HTMLElement>(null);
   const collectionTriggerRef = useRef<HTMLButtonElement>(null);
   const mobileMenuTriggerRef = useRef<HTMLButtonElement>(null);
+  const searchTriggerRef = useRef<HTMLButtonElement | null>(null);
   const collectionMenu = useMemo(() => buildCollectionMenu(navigationFacets), [navigationFacets]);
   const currentMegaMenus = useMemo<Record<string, MegaMenuColumn[]>>(() => preserveJerseyOutput ? legacyNavMegaMenus : {
     "Kaos Polos": buildCategoryMenu("Kaos Polos", "/kaos-polos", navigationFacets),
     "Jaket & Hoodie": buildCategoryMenu("Jaket & Hoodie", "/jaket-hoodie", navigationFacets)
   }, [navigationFacets, preserveJerseyOutput]);
   const currentNavItems = preserveJerseyOutput ? navItems : publicNavItems;
+
+  function openSearch(trigger: HTMLButtonElement) {
+    searchTriggerRef.current = trigger;
+    setIsSearchOpen(true);
+  }
+
+  function closeSearch() {
+    setIsSearchOpen(false);
+    window.requestAnimationFrame(() => searchTriggerRef.current?.focus());
+  }
 
   useEffect(() => {
     if (positionMode === "natural" && expandedAtTop) return;
@@ -488,18 +500,24 @@ export function SiteHeaderClient({
         </div>
 
         <div className="flex shrink-0 items-center gap-1 sm:gap-2">
-          <button type="button" className="hidden h-10 w-32 items-center gap-3 rounded-full bg-[#f5f5f5] px-4 text-left text-sm font-medium text-black/55 transition hover:text-black xl:flex" aria-label="Cari produk" onClick={() => setIsSearchOpen(true)}>
+          <button type="button" className="hidden h-12 w-32 items-center gap-3 rounded-full bg-[#f5f5f5] px-4 text-left text-sm font-medium text-black/55 transition hover:text-black 2xl:flex" aria-label="Cari produk" onClick={(event) => openSearch(event.currentTarget)}>
             <SearchIcon />
             <span>Cari</span>
           </button>
-          <button type="button" className="grid h-10 w-10 place-items-center rounded-full transition hover:bg-[#f5f5f5] xl:hidden" aria-label="Cari" onClick={() => setIsSearchOpen(true)}>
+          <button type="button" className="grid h-12 w-12 place-items-center rounded-full transition hover:bg-[#f5f5f5] 2xl:hidden" aria-label="Cari" onClick={(event) => openSearch(event.currentTarget)}>
             <SearchIcon />
           </button>
-          <a href={whatsappHref} className="hidden h-10 w-10 place-items-center rounded-full transition hover:bg-[#f5f5f5] sm:grid" aria-label="Hubungi WhatsApp DEBRODER" target="_blank" rel="noopener noreferrer">
+          <a href={whatsappHref} className="hidden h-12 w-12 place-items-center rounded-full transition hover:bg-[#f5f5f5] sm:grid" aria-label="Hubungi WhatsApp DEBRODER" target="_blank" rel="noopener noreferrer">
             <ChatIcon />
           </a>
+          <Link href="/wishlist" className="hidden h-12 w-12 place-items-center rounded-full transition hover:bg-[#f5f5f5] sm:grid" aria-label="Wishlist">
+            <BrandIcon name="wishlist" />
+          </Link>
+          <Link href="/account" className="hidden h-12 w-12 place-items-center rounded-full transition hover:bg-[#f5f5f5] sm:grid" aria-label="Akun pelanggan">
+            <BrandIcon name="user" />
+          </Link>
           <CartNavButton />
-          <button ref={mobileMenuTriggerRef} type="button" className="relative grid h-10 w-10 place-items-center rounded-full transition hover:bg-[#f5f5f5] lg:hidden" aria-label={isOpen ? "Tutup menu" : "Buka menu"} aria-expanded={isOpen} aria-controls="global-mobile-navigation" onClick={() => setIsOpen((current) => !current)}>
+          <button ref={mobileMenuTriggerRef} type="button" className="relative grid h-12 w-12 place-items-center rounded-full transition hover:bg-[#f5f5f5] lg:hidden" aria-label={isOpen ? "Tutup menu" : "Buka menu"} aria-expanded={isOpen} aria-controls="global-mobile-navigation" onClick={() => setIsOpen((current) => !current)}>
             <BrandIcon name={isOpen ? "close" : "menu"} />
           </button>
         </div>
@@ -550,6 +568,18 @@ export function SiteHeaderClient({
                 <span>{item.label}</span><span aria-hidden="true">›</span>
               </Link>
             ))}
+            <Link href="/account" className="flex min-h-12 items-center justify-between text-base font-medium text-[#111] transition active:bg-black active:text-white focus-visible:bg-black focus-visible:text-white">
+              <span>Akun</span><span aria-hidden="true">›</span>
+            </Link>
+            <Link href="/wishlist" className="flex min-h-12 items-center justify-between text-base font-medium text-[#111] transition active:bg-black active:text-white focus-visible:bg-black focus-visible:text-white">
+              <span>Wishlist</span><span aria-hidden="true">›</span>
+            </Link>
+            <Link href="/help" className="flex min-h-12 items-center justify-between text-base font-medium text-[#111] transition active:bg-black active:text-white focus-visible:bg-black focus-visible:text-white">
+              <span>Pusat Bantuan</span><span aria-hidden="true">›</span>
+            </Link>
+            <Link href="/tentang" className="flex min-h-12 items-center justify-between text-base font-medium text-[#111] transition active:bg-black active:text-white focus-visible:bg-black focus-visible:text-white">
+              <span>Tentang DEBRODER</span><span aria-hidden="true">›</span>
+            </Link>
           </div>
           <a href={whatsappHref} className={`mt-6 inline-flex min-h-12 items-center justify-center rounded-full px-5 text-base font-semibold text-white ${preserveJerseyOutput ? "bg-[#063d24]" : "bg-black hover:bg-black/75"}`} target="_blank" rel="noopener noreferrer">
             Konsultasi via WhatsApp
@@ -558,7 +588,7 @@ export function SiteHeaderClient({
       </div>
 
       {isSearchOpen ? (
-        <HeaderSearchModal onClose={() => setIsSearchOpen(false)} />
+        <HeaderSearchModal onClose={closeSearch} />
       ) : null}
     </header>
   );

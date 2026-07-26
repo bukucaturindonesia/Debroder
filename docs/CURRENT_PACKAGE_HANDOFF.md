@@ -421,6 +421,360 @@ HOLD — P1 MENUNGGU INSTRUKSI OWNER
 
 ---
 
+## 10B. Public Experience P1–P12 — Implementation Batch
+
+Tanggal: 2026-07-26
+
+Baseline:
+
+- branch `LANDING-PAGE-PUBLIC`;
+- HEAD `fc1b8ff6eb1b92b23452b4032098a652fb0bc1eb`;
+- working tree bersih sebelum batch;
+- governance FROZEN, termasuk
+  `# DEBRODER GO LIVE ABOVE NIKE v1.0.txt`, telah dibaca;
+- P0 Design Tokens Global dipertahankan.
+
+Status batch:
+
+```text
+IMPLEMENTATION COMPLETE — OWNER VERIFICATION PENDING
+```
+
+### P1 — Header, Promo Bar, Navigation, dan Footer
+
+Status: **IMPLEMENTED — OWNER VERIFICATION PENDING**
+
+- Shared header dipertahankan; tidak dibuat header kedua.
+- Fresh Drop, wishlist safe entry, account, help, About, search, cart, store,
+  tracking, social, dan legal entry tersambung.
+- Search dialog memperoleh focus trap dan mengembalikan focus ke trigger.
+- Target kontrol header utama dinaikkan ke 48 px.
+- Footer memakai legal route khusus dan About full-page route.
+- Protected Jersey navigation/output tetap menggunakan branch existing.
+
+File:
+
+- `components/header/SiteHeaderClient.tsx`;
+- `components/header/HeaderSearchModal.tsx`;
+- `components/PublicFooter.tsx` (reused, tidak diubah);
+- `components/CartProvider.tsx`;
+- `lib/public-shell/domain.ts`;
+- `lib/icons.ts`;
+- `app/wishlist/page.tsx`.
+
+Owner checks:
+
+- first load, sticky/scroll state, menu desktop/mobile, Escape, focus return,
+  360/390/768/1280/1440 width, Jersey header, footer links, dan semua external
+  contact link.
+
+### P2 — Landing Page
+
+Status: **IMPLEMENTED — OWNER VERIFICATION PENDING**
+
+- Urutan FROZEN existing tidak diubah.
+- Semantic H1 fallback ditambahkan hanya saat active first hero tidak memiliki
+  heading.
+- Fresh Drop rail fallback sekarang menuju `/fresh-drop`.
+- Homepage footer diselaraskan dengan shared public dark footer.
+- Hero, rails, campaign, category, About, CMS/PIM data, dan P0 tokens existing
+  dipertahankan.
+
+File:
+
+- `app/page.tsx`.
+
+Owner checks:
+
+- hero desktop/mobile, slide controls, reduced motion, section order, crop,
+  rail behavior, satu semantic H1, dan CMS empty/degraded states.
+
+### P3 — Category dan Product Listing
+
+Status: **IMPLEMENTED — OWNER VERIFICATION PENDING**
+
+- Existing `CategoryCommercePage`, `CategoryCommerceCatalog`,
+  `ProductCatalog`, dan `PublicProductCard` tetap menjadi reusable authority.
+- Tidak dibuat ProductCard, filter, route kategori, atau product data kedua.
+- Tidak ada source mutation package-specific karena implementation existing
+  sudah memenuhi boundary dan perubahan tambahan akan menjadi broad refactor.
+
+Owner checks:
+
+- seluruh route kategori existing, loading/error/empty state, sorting/filter
+  owner decisions, media ratio, product metadata, dan mobile grid.
+
+### P4 — PDP Ready Stock
+
+Status: **IMPLEMENTED — OWNER VERIFICATION PENDING**
+
+- Universal `/produk/[slug]` dan page-owned PDP existing dipertahankan.
+- Ready Stock sekarang menampilkan jalur `Beli Sekarang` melalui handler
+  existing yang menambahkan line canonical lalu menuju checkout.
+- Product, variant, SKU, stock, tier price, size adjustment, cart line, related
+  product, serta server validation tidak diubah.
+- Tidak dibuat PDP atau pricing resolver kedua.
+
+File:
+
+- `app/produk/[slug]/page.tsx`;
+- `components/TieredProductPurchasePanel.tsx`.
+
+Owner checks:
+
+- gallery, variant/size/quantity, stock/store availability, tier transition,
+  Add to Cart/Buy Now behavior existing, pickup/shipping, related products,
+  dan mobile purchase hierarchy.
+
+### P5 — Cart dan Side Cart
+
+Status: **IMPLEMENTED — OWNER VERIFICATION PENDING**
+
+- Cart v5 provider, storage, migration/quarantine, limits, stale snapshot,
+  retry, revalidation, and one-mode fail-closed checkout dipertahankan.
+- Label `Summary` dan `Bag` diselaraskan menjadi `Ringkasan` dan
+  `Isi Keranjang`.
+- Cart header control mengikuti target 48 px.
+
+File:
+
+- `components/CartProvider.tsx`.
+
+Owner checks:
+
+- mini-cart open/close, add/remove/update quantity, stale/retry state, legacy
+  unsupported state, totals, mode rejection, persistence, dan checkout CTA.
+
+### P6 — Checkout
+
+Status: **IMPLEMENTED — OWNER VERIFICATION PENDING**
+
+- Canonical checkout existing dipertahankan tanpa perubahan transaction logic:
+  structured Indonesian address, fulfillment, server repricing, stock check,
+  idempotency recovery, snapshot, and safe errors.
+- Tidak dibuat checkout, validation, pricing, payment, atau order system kedua.
+- Policy agreement tidak dikarang karena legal content resmi belum tersedia.
+
+Owner checks:
+
+- dependent address fields, pickup/shipping, field errors, recovery/retry,
+  duplicate submit, Ready Stock/Custom separation, summary desktop/mobile,
+  dan order creation.
+
+### P7 — Confirmation dan Guest Order Tracking
+
+Status: **IMPLEMENTED — OWNER VERIFICATION PENDING**
+
+- Confirmation route kini memakai shared public shell sehingga navigation dan
+  footer konsisten.
+- Secure token/WhatsApp authorization, customer-safe projection, polling,
+  stale retry, token behavior, dan tracking APIs tidak diubah.
+
+File:
+
+- `app/order-confirmation/[token]/page.tsx`.
+
+Owner checks:
+
+- valid/invalid/expired token, matching WhatsApp, copy link, payment/order
+  state, fulfillment timeline, offline/hidden polling, dan sensitive-data
+  exposure.
+
+### P8 — Custom Order Experience
+
+Status: **IMPLEMENTED — OWNER VERIFICATION PENDING**
+
+- Existing Custom Hub, Custom Project Builder, draft persistence, progress,
+  summary, validation, upload metadata, Custom cart/checkout, and specialized
+  Jersey route tetap menjadi authority.
+- Tidak dibuat schema, configurator, pricing, upload, atau Custom system kedua.
+- Tidak ada source mutation package-specific untuk mencegah perubahan pada
+  protected Jersey dan transaction behavior.
+
+Owner checks:
+
+- seluruh langkah builder, progress/summary, resume draft, upload, quotation
+  state, mobile CTA, Custom-only checkout, confirmation, and tracking.
+
+### P9 — Fresh Drop dan Coming Soon
+
+Status: **IMPLEMENTED — OWNER VERIFICATION PENDING**
+
+- `/fresh-drop` memakai produk canonical yang memiliki `fresh_drop` atau
+  `label_new`.
+- Empty state aman bila tidak ada produk bertanda sah.
+- `/fresh-drop/[slug]` hanya redirect ke universal `/produk/[slug]`; tidak
+  dibuat PDP kedua.
+- Tidak ada tanggal, jam, countdown, stock, story, product, atau asset yang
+  dikarang.
+
+File:
+
+- `app/fresh-drop/page.tsx`;
+- `app/fresh-drop/[slug]/page.tsx`;
+- `app/page.tsx`;
+- shared header/footer routing files.
+
+Owner checks:
+
+- flag PIM/CMS yang aktif, sort, card actions, empty state, redirect detail,
+  dan behavior ketika release metadata belum tersedia.
+
+### P10 — Tentang DEBRODER
+
+Status: **IMPLEMENTED — OWNER VERIFICATION PENDING**
+
+- `/tentang` menggunakan `trustAbout`, store, image, CTA, dan testimonial dari
+  public content source existing.
+- Bagian yang tidak memiliki bukti resmi tidak ditampilkan.
+- Landing About dan full About memakai source yang sama.
+
+File:
+
+- `app/tentang/page.tsx`;
+- `lib/public-shell/domain.ts`.
+
+Owner checks:
+
+- CMS content/image/CTA, store facts, testimonial approval, empty content,
+  desktop/mobile editorial hierarchy, dan tidak adanya klaim buatan.
+
+### P11 — Search, Login, dan Account
+
+Status: **IMPLEMENTED — OWNER VERIFICATION PENDING**
+
+- `/search` melakukan product-first search terhadap canonical catalog dan
+  menampilkan category matches dari public content source.
+- Query tetap terlihat, modal search tetap lazy, Enter menuju results page,
+  no-result guidance dan keyboard focus structure tersedia.
+- `/login`, `/account`, dan `/wishlist` hanya safe state karena customer Auth,
+  account datastore, dan wishlist persistence belum tersedia.
+- Admin Auth tidak dipakai ulang sebagai customer Auth dan tidak dibuat
+  backend kedua.
+
+File:
+
+- `app/search/page.tsx`;
+- `app/login/page.tsx`;
+- `app/account/page.tsx`;
+- `app/wishlist/page.tsx`;
+- `components/header/HeaderSearchModal.tsx`;
+- `components/header/SiteHeaderClient.tsx`.
+
+Owner checks:
+
+- search product/category accuracy, query keyboard flow, no-result state,
+  mobile layout, safe state copy, and decision whether customer Auth/wishlist
+  belongs to a future authorized package.
+
+### P12 — Halaman Legal dan Bantuan
+
+Status: **IMPLEMENTED — OWNER VERIFICATION PENDING**
+
+- `/help` menghubungkan order guide, tracking, store, dan Custom routes.
+- Reusable legal layout tersedia untuk `/legal/terms` dan `/legal/privacy`.
+- Tidak ada klausul, SLA, refund, shipping, payment, identity, address, date,
+  atau legal version yang dikarang.
+- Legal route memakai explicit safe state.
+
+File:
+
+- `app/help/page.tsx`;
+- `app/legal/terms/page.tsx`;
+- `app/legal/privacy/page.tsx`;
+- `components/legal/LegalContentPending.tsx`;
+- `lib/public-shell/domain.ts`.
+
+Owner checks:
+
+- help route accuracy, legal reading layout, footer links, print/readability,
+  and replacement with approved legal copy.
+
+### Systems preserved
+
+- pricing formula and pricing snapshot;
+- Cart v5 contract/persistence/revalidation;
+- inventory authority and reservations;
+- checkout/order/payment/idempotency;
+- secure tracking authorization/projection/polling;
+- Custom/Jersey configuration and pricing;
+- Admin routes and behavior;
+- P0 design tokens and DEBRODER assets.
+
+### Hardcodes dan canonical replacements
+
+- Tidak ada product, SKU, price, stock, release date/time, company history,
+  testimonial, policy, atau legal clause baru yang di-hardcode.
+- Navigation labels dan route contracts adalah presentation-only.
+- Fresh Drop, About, Search, store, dan testimonials membaca canonical public
+  source existing.
+- Wishlist/account/login tetap safe state; tidak ada persistence palsu.
+
+### Content gaps dan risiko
+
+- **OWNER LEGAL CONTENT REQUIRED** untuk terms, privacy, return, shipping,
+  payment, effective date, version, dan policy agreement.
+- Customer Supabase Auth/account foundation belum tersedia.
+- Wishlist persistence belum tersedia.
+- Release date/time dan Coming Soon metadata belum terbukti pada canonical
+  public source; karena itu tidak ditampilkan.
+- Header width, responsive visual, runtime routes, and all owner acceptance
+  remain **NOT VERIFIED** karena master prompt melarang agent verification.
+
+### Verification
+
+- `pnpm typecheck`: **NOT RUN — prohibited by this execution prompt**;
+- `pnpm lint`: **NOT RUN — prohibited by this execution prompt**;
+- `pnpm test`: **NOT RUN — prohibited by this execution prompt**;
+- `pnpm build`: **NOT RUN — prohibited by this execution prompt**;
+- browser/dev server/screenshots: **NOT RUN — prohibited**;
+- Vercel/deployment: **NOT RUN — prohibited**;
+- Supabase/database/migration: **NOT CHANGED / NOT RUN**;
+- commit/push/merge/stage: **NOT PERFORMED**.
+
+Owner verification checklist:
+
+1. Review `git status --short`, `git diff --stat`, dan seluruh `git diff`.
+2. Jalankan script yang tersedia di `package.json`: `pnpm typecheck`,
+   `pnpm lint`, `pnpm test`, dan `pnpm build`.
+3. Verifikasi P1–P12 pada desktop/mobile, keyboard, reduced motion, loading,
+   empty, error, safe state, and responsive layouts.
+4. Verifikasi Cart/Checkout/Order/Payment/Tracking/Custom regressions dan
+   protected Jersey output.
+5. Review dan supply approved legal content sebelum legal safe state diganti
+   atau policy agreement diwajibkan.
+
+---
+
+## Targeted Revision — Jersey Universal PDP Stabilization (2026-07-26)
+
+Status: **IMPLEMENTED IN SOURCE — OWNER RECHECK PENDING**.
+
+- Root cause: universal PDP menghitung ulang `showBuyNow` dari boolean mentah,
+  sedangkan product-detail model belum memiliki satu kontrak purchase
+  capability. Akibatnya perubahan public experience dapat menggeser perilaku
+  non-Jersey dan test lama hanya mengunci string implementasi.
+- Source: `lib/product-detail-page/model.ts`,
+  `lib/product-detail-page/domain.ts`, `app/produk/[slug]/page.tsx`,
+  `components/TieredProductPurchasePanel.tsx`, dan
+  `test/jersey-commerce.test.ts`.
+- Kontrak typed/pure sekarang memiliki `showPurchasePanel`, `showAddToCart`,
+  `showBuyNow`, dan `showCustomAction`; universal PDP dan purchase panel
+  mengonsumsi kontrak tersebut.
+- Matrix verified: Jersey Ready Stock, Jersey Custom-only, Jersey unavailable,
+  dan non-Jersey Ready Stock.
+- Targeted verification: direct workspace Vitest shim,
+  `test/jersey-commerce.test.ts` — **PASS, 1 file / 9 tests**. Perintah
+  `pnpm.cmd vitest ...` tidak dapat me-resolve executable pada shell Windows
+  ini; shim yang sama dijalankan langsung.
+- Typecheck, lint, full test, build, browser, Vercel: **NOT RUN — outside
+  targeted revision instruction**.
+- Database/Supabase/migration: **NOT CHANGED / NOT RUN**.
+- Jersey category, shop, configurator, pricing, Cart v5, checkout, Custom,
+  Admin, database, dan route canonical tidak diubah.
+
+---
+
 ## 11. Cara Memperbarui File Ini
 
 Setelah setiap package PASS:

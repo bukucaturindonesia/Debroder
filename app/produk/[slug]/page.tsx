@@ -52,9 +52,7 @@ export default async function ProductDetailPage({ params }: PageProps) {
     priceLabel,
     detailHref,
     isJersey,
-    hasReadyStock,
-    hasCustomAvailability,
-    showPurchasePanel,
+    purchaseCapabilities,
     customDestination,
     colors,
     sizes,
@@ -146,7 +144,7 @@ export default async function ProductDetailPage({ params }: PageProps) {
                   Harga akhir berubah otomatis mengikuti jumlah pesanan.
                 </p>
 
-                {showPurchasePanel ? (
+                {purchaseCapabilities.showPurchasePanel ? (
                   <TieredProductPurchasePanel
                     product={{
                       id: product.id || product.slug || product.nama,
@@ -171,7 +169,8 @@ export default async function ProductDetailPage({ params }: PageProps) {
                     bulkOrderNote={product.bulk_order_note}
                     whatsappUrl={whatsappUrl}
                     variants={product.variants}
-                    showBuyNow={isJersey && hasReadyStock}
+                    showAddToCart={purchaseCapabilities.showAddToCart}
+                    showBuyNow={purchaseCapabilities.showBuyNow}
                     monochrome={isJersey}
                   />
                 ) : (
@@ -189,7 +188,7 @@ export default async function ProductDetailPage({ params }: PageProps) {
                   </section>
                 )}
 
-                {isJersey && hasReadyStock && hasCustomAvailability ? (
+                {isJersey && purchaseCapabilities.showBuyNow && purchaseCapabilities.showCustomAction ? (
                   <Link
                     href="/jersey/configurator"
                     className="mt-3 inline-flex min-h-11 items-center text-sm font-semibold text-black underline decoration-1 underline-offset-4 outline-none focus-visible:ring-2 focus-visible:ring-black focus-visible:ring-offset-2"
@@ -198,7 +197,7 @@ export default async function ProductDetailPage({ params }: PageProps) {
                   </Link>
                 ) : null}
 
-                {customDestination ? (
+                {purchaseCapabilities.showCustomAction && customDestination ? (
                   <Link href={customDestination} className="mt-4 inline-flex min-h-11 items-center rounded-full border border-black px-5 text-sm font-semibold transition hover:bg-black hover:text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-black">
                     Custom produk ini
                   </Link>

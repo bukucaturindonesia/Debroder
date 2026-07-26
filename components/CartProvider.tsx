@@ -460,7 +460,7 @@ function CartSummary({ compact = false }: { compact?: boolean }) {
 
   return (
     <aside className={`rounded-[28px] bg-white/50 ${compact ? "p-4" : "p-5 sm:p-6"}`}>
-      <h2 className="text-2xl font-semibold tracking-tight">Summary</h2>
+      <h2 className="text-2xl font-semibold tracking-tight">Ringkasan</h2>
       <div className="mt-6 grid gap-4 text-sm">
         <div className="flex items-center justify-between gap-4">
           <span className="text-black/60">Subtotal Produk</span>
@@ -542,7 +542,7 @@ function FullCartLayout() {
       <CartValidationNotice />
       <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_360px] xl:grid-cols-[minmax(0,1fr)_400px]">
         <div>
-          <h2 className="mb-5 text-2xl font-semibold tracking-tight">Bag</h2>
+          <h2 className="mb-5 text-2xl font-semibold tracking-tight">Isi Keranjang</h2>
           <div className="grid gap-5">
             {primaryItems.map((item) => <FullCartItem key={item.lineId} item={item} />)}
             {additionalItems.length ? (
@@ -1141,7 +1141,7 @@ export function useCart() {
 export function CartNavButton() {
   const { itemCount, openCart, preserveJerseyInteractions } = useCart();
   return (
-    <button type="button" className="relative grid h-10 w-10 place-items-center rounded-full transition hover:bg-[#f5f5ef]" aria-label={`Buka keranjang, ${itemCount} item`} onClick={openCart}>
+    <button type="button" className="relative grid h-12 w-12 place-items-center rounded-full transition hover:bg-[#f5f5ef]" aria-label={`Buka keranjang, ${itemCount} item`} onClick={openCart}>
       <CartIcon />
       {itemCount > 0 ? <span className={`absolute -right-0.5 -top-0.5 grid h-5 min-w-5 place-items-center rounded-full px-1 text-[10px] font-bold text-white ${preserveJerseyInteractions ? "bg-[#063d24]" : "bg-black"}`}>{itemCount}</span> : null}
     </button>

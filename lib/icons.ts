@@ -4,6 +4,7 @@ export const brandIcons = {
   search: "/brand/additional-icons/navigation/search.svg",
   cart: "/brand/additional-icons/navigation/shopping-cart.svg",
   user: "/brand/additional-icons/navigation/user.svg",
+  wishlist: "/brand/additional-icons/commerce/heart.svg",
   chevronDown: "/brand/additional-icons/navigation/arrow-down.svg",
   whatsapp: "/brand/additional-icons/contact/whatsapp.svg",
   instagram: "/brand/additional-icons/contact/instagram.svg",

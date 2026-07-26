@@ -10,6 +10,13 @@ export type ProductDetailFocalViewModel = {
   target_ratio: string;
 };
 
+export type ProductPurchaseCapabilities = Readonly<{
+  showPurchasePanel: boolean;
+  showAddToCart: boolean;
+  showBuyNow: boolean;
+  showCustomAction: boolean;
+}>;
+
 export type ProductDetailPageData = {
   state: ProductDetailPageState;
   product: Product | null;
@@ -22,7 +29,7 @@ export type ProductDetailPageData = {
   isJersey: boolean;
   hasReadyStock: boolean;
   hasCustomAvailability: boolean;
-  showPurchasePanel: boolean;
+  purchaseCapabilities: ProductPurchaseCapabilities;
   customDestination: string | null;
   colors: string[];
   sizes: string[];
