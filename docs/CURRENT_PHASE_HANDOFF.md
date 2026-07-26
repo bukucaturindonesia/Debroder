@@ -861,3 +861,181 @@ PREVIEW VERIFICATION PENDING**.
 - Commit/push/merge/deploy: none. Next action: Owner signs in again so the new
   login registers the canonical session, visually confirms `/admin/dashboard`,
   then verifies Vercel Preview.
+# DEBRODER GLOBAL ADMIN DASHBOARD v1.0 — CURRENT STATUS
+
+## STATUS
+
+VISUAL IMPLEMENTATION:
+SUBSTANTIALLY IMPLEMENTED
+
+DATA INTEGRATION:
+PARTIALLY IMPLEMENTED — HARDCODE/MOCK DATA STILL EXISTS
+
+PRODUCTION READINESS:
+NOT READY
+
+OWNER REVIEW:
+OVERALL VISUAL DIRECTION APPROVED
+
+## OWNER DECISION
+
+Tampilan Dashboard Global secara keseluruhan sudah sesuai dengan arah visual
+yang disetujui owner.
+
+Namun Dashboard Global belum boleh dinyatakan selesai atau production-ready
+karena masih terdapat angka, grafik, daftar pesanan, ringkasan toko, antrean,
+alert, atau presentation data yang masih menggunakan hardcode, mock, fallback,
+placeholder, atau data ilustrasi.
+
+Seluruh hardcode/mock wajib diganti dengan data canonical DEBRODER sebelum
+package Dashboard Global dinyatakan final.
+
+## VISUAL REFERENCE
+
+Gunakan reference Dashboard Global yang telah disetujui owner.
+
+Pertahankan:
+
+- dark premium visual;
+- logo resmi DEBRODER;
+- sidebar;
+- top header;
+- enam KPI;
+- antrean tindakan;
+- grafik tren;
+- donut jenis pesanan;
+- ringkasan per toko;
+- pesanan terbaru;
+- peringatan stok dan PIM;
+- struktur dan urutan layout existing.
+
+Jangan melakukan redesign besar terhadap komposisi yang sudah disetujui owner.
+
+## KNOWN LIMITATION — CRITICAL
+
+Data berikut harus diperiksa dan tidak boleh diasumsikan sudah canonical:
+
+- Nilai Pesanan;
+- Pembayaran Diterima;
+- Sisa Pembayaran;
+- Jumlah Pesanan;
+- Rata-rata Pesanan;
+- Produk Terjual;
+- persentase perbandingan periode;
+- seluruh action queue counts;
+- grafik penjualan dan pembayaran;
+- distribusi jenis pesanan;
+- ringkasan Headstore;
+- ringkasan Tello;
+- ringkasan Landak;
+- ringkasan Pare-pare;
+- Belum Dialokasikan;
+- pesanan terbaru;
+- data pelanggan ilustratif;
+- alert stok dan PIM;
+- notification badge;
+- waktu terakhir diperbarui.
+
+Tidak boleh ada data ilustrasi yang tampil pada production.
+
+## NEXT REVISION SCOPE
+
+Selesaikan revisi Dashboard Global terlebih dahulu dengan fokus:
+
+1. inventarisasi seluruh hardcode/mock/fallback;
+2. pemetaan ke source canonical;
+3. penggantian data ilustrasi dengan server-side read model;
+4. penyelarasan role dan permission;
+5. perbaikan Owner/Super Admin global store scope;
+6. filter Semua Toko dan periode;
+7. click-through setiap kartu dan alert;
+8. loading, empty, partial-error, dan permission state;
+9. responsive dan visual refinement;
+10. targeted tests dan full gate.
+
+## DATA AUTHORITY
+
+Dashboard Global hanya boleh membaca data canonical existing dari domain:
+
+- orders;
+- order_items;
+- payments;
+- stores;
+- fulfillment;
+- pickup;
+- products;
+- variants;
+- variant_sizes;
+- SKU;
+- inventory per toko;
+- service add-on snapshots;
+- Generic Full Custom snapshots;
+- Jersey configuration snapshots;
+- shipping;
+- refund;
+- role dan permission.
+
+Dilarang membuat dashboard datastore kedua.
+
+## IMPLEMENTATION ORDER
+
+Tahap sekarang:
+
+GLOBAL ADMIN DASHBOARD REVISION
+
+Tahap berikutnya setelah Dashboard Global stabil:
+
+1. Pesanan / OMS secara spesifik;
+2. Pembayaran secara spesifik;
+3. Pengiriman, pickup, retur, dan refund;
+4. Produk dan PIM;
+5. Varian, SKU, harga, serta media;
+6. Inventory dan stok per toko;
+7. Layanan Custom Instan;
+8. Full Custom Non-Jersey;
+9. Full Custom Jersey;
+10. CMS;
+11. Pengguna, role, akses, dan keamanan;
+12. laporan serta kebutuhan operasional lainnya.
+
+Jangan masuk ke redesign halaman spesifik sebelum Dashboard Global selesai
+direvisi dan diverifikasi owner.
+
+## COMPLETION CONDITION
+
+Dashboard Global baru boleh dinyatakan selesai apabila:
+
+- tidak ada angka hardcode/mock;
+- tidak ada customer/order ilustratif;
+- semua KPI berasal dari canonical data;
+- semua grafik berasal dari agregasi canonical;
+- semua store summary akurat;
+- semua permission benar;
+- semua action card membuka filter/record yang benar;
+- loading dan empty state tidak menampilkan data palsu;
+- targeted tests PASS;
+- typecheck PASS;
+- lint PASS;
+- tests PASS;
+- build PASS;
+- browser verification selesai;
+- owner menyetujui hasil final.
+
+## CURRENT FINAL STATUS
+
+DEBRODER GLOBAL ADMIN DASHBOARD v1.0
+
+VISUAL:
+OWNER APPROVED — REVISION MAY STILL BE REQUIRED
+
+DATA:
+HARDCODE/MOCK REPLACEMENT REQUIRED
+
+PACKAGE:
+IN PROGRESS
+
+NEXT:
+GLOBAL DASHBOARD CANONICAL DATA AND FINAL REFINEMENT
+
+DO NOT MARK COMPLETE.
+DO NOT START SPECIFIC ADMIN MODULE REDESIGN YET.
