@@ -545,3 +545,18 @@ The FROZEN commerce/landing blueprints and official Owner Decisions remain autho
   existing warnings; full tests 91 files / 706 tests PASS; build 120/120 PASS;
   `git diff --check` PASS.
 - No commit, push, merge, deployment, service-role client, or RLS disable.
+
+## PDP Ready Stock visual/scroll refinement state — 2026-07-26
+
+- Universal `/produk/[slug]` presentation is **IMPLEMENTED AND LOCALLY
+  VERIFIED**: bounded sticky media on desktop, normal-flow purchase/details,
+  vertical thumbnail rail, preserved mobile swipe, and accessible canonical
+  detail disclosures.
+- Product/variant/SKU, pricing, inventory, Instant Custom, Cart v5, checkout,
+  order, database, and migration authorities are unchanged.
+- Evidence: typecheck PASS; lint 0 errors / 32 pre-existing warnings; tests 92
+  files / 710 tests PASS; build 120/120 PASS; seven required browser viewports
+  have no horizontal overflow and the sticky media releases before the footer.
+- Owner visual and Vercel Preview verification remain pending. External owner
+  state moved HEAD from `a606e06` to pushed commit `be2ee66`; Codex executed no
+  commit, push, merge, deploy, or PR command.

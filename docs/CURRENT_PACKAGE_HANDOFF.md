@@ -1136,3 +1136,31 @@ NEXT:
   `order_store_assignments` schema in a new audited source migration;
 - owner defines a canonical low-stock threshold before enabling that count;
 - do not state COMPLETE or GO until those checks are proven.
+
+## PDP Ready Stock — Visual & Scroll Refinement (2026-07-26)
+
+STATUS: **IMPLEMENTED AND LOCALLY VERIFIED — OWNER VISUAL / VERCEL PREVIEW
+VERIFICATION PENDING**
+
+- `/produk/[slug]` now uses bounded desktop sticky media, a normal-flow detail
+  column, vertical thumbnail rail + one canonical 4:5 main image, and the
+  existing mobile swipe gallery below 1024 px.
+- Product description, material/detail, and canonical size guide share one
+  accessible disclosure component; empty/dummy disclosures are hidden.
+- Variant, SKU, tier pricing, inventory, Instant Custom, Cart v5, Add to Cart,
+  Buy Now, checkout, and order contracts are unchanged.
+- Changed source/test: `app/produk/[slug]/page.tsx`,
+  `components/ProductGallery.tsx`,
+  `components/TieredProductPurchasePanel.tsx`,
+  `components/product/ProductDetailDisclosure.tsx`,
+  `test/pdp-ready-stock-visual-scroll.test.ts`.
+- Database/migration/remote writes: none.
+- Gates: typecheck PASS; lint 0 errors / 32 pre-existing warnings; tests 92
+  files / 710 tests PASS; build 120/120 PASS; seven required viewports PASS
+  without horizontal overflow; sticky release does not overlap the footer.
+- Initial HEAD `a606e06`; external owner process committed and pushed the exact
+  source/test batch as `be2ee66` while verification was running. Codex did not
+  execute commit, push, merge, deploy, or PR commands.
+- Pre-existing local development server stopped responding after a timed-out
+  root build attempt. Final build passed from an identical temporary copy; no
+  replacement server was started.

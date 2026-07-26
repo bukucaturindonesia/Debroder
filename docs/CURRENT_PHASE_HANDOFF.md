@@ -1039,3 +1039,24 @@ GLOBAL DASHBOARD CANONICAL DATA AND FINAL REFINEMENT
 
 DO NOT MARK COMPLETE.
 DO NOT START SPECIFIC ADMIN MODULE REDESIGN YET.
+
+## 2026-07-26 — PDP Ready Stock Visual & Scroll Refinement
+
+- Status: **IMPLEMENTED AND LOCALLY VERIFIED — OWNER VISUAL / VERCEL PREVIEW
+  VERIFICATION PENDING**.
+- Universal `/produk/[slug]` remains canonical. Desktop gallery is the bounded
+  sticky column; purchase/details scroll normally. Tablet/mobile use one
+  column and retain the existing swipe gallery.
+- One reusable accessible disclosure now serves description,
+  material/specification, and canonical size-guide content; empty placeholders
+  are not rendered.
+- Commerce authority and database are unchanged. No migration or remote write.
+- Verification: typecheck PASS; lint 0 errors / 32 pre-existing warnings;
+  tests 92/710 PASS; build 120/120 PASS; required seven-viewport browser matrix
+  PASS with no horizontal overflow and no footer overlap.
+- External state: initial HEAD `a606e06`; owner/external process committed and
+  pushed the exact five source/test files as `be2ee66` during verification.
+  Codex did not perform a git write or deployment.
+- The pre-existing development server stopped responding after a root build
+  attempt timed out. Final build passed from an identical temporary source
+  copy; no second/replacement server was launched.

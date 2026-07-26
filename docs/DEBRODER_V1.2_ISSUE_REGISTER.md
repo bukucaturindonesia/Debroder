@@ -708,3 +708,26 @@
   1 assigned store visible, 0 cross-store stores, 0 cross-store orders.
 - Remaining proof: authenticated visual rendering and Vercel Preview require
   Owner review after signing in again. No commit, push, merge, or deploy.
+
+### V12-064 — PDP desktop sticky ownership and progressive detail scroll
+
+- Severity: MAJOR usability / responsive consistency
+- Status: **CLOSED IN SOURCE AND LOCALLY VERIFIED — OWNER PREVIEW REVIEW
+  PENDING**
+- Evidence: the universal PDP rendered a multi-image desktop grid while the
+  right purchase column used `lg:sticky`, the reverse of the owner-frozen
+  Ready Stock scroll model.
+- Root cause: sticky classes were owned by the detail wrapper in
+  `app/produk/[slug]/page.tsx`; `components/ProductGallery.tsx` rendered every
+  desktop image as a two-column grid.
+- Resolution: sticky ownership moved to the bounded media wrapper; desktop
+  gallery now uses vertical thumbnails and one canonical 4:5 active image;
+  detail and size-guide content share one accessible disclosure. Empty/dummy
+  disclosures are suppressed.
+- Regression: `test/pdp-ready-stock-visual-scroll.test.ts`; full 92 files / 710
+  tests PASS; typecheck, lint (0 errors), build 120/120, and seven-viewport
+  browser matrix PASS. Pricing, inventory, Cart v5, checkout, database, and
+  migrations were not changed.
+- External state: owner/external process committed and pushed the exact
+  source/test batch as `be2ee66` while verification was in progress. Codex ran
+  no commit/push/deploy command.
