@@ -77,6 +77,19 @@ export function AdminLogin() {
       return;
     }
 
+    const { data: sessionId, error: sessionIdError } = await supabase.rpc(
+      "current_request_session_id"
+    );
+    const { data: registered, error: registrationError } = typeof sessionId === "string"
+      ? await supabase.rpc("register_admin_session_v1", { p_session_id: sessionId })
+      : { data: null, error: sessionIdError ?? new Error("Session ID tidak tersedia.") };
+    if (sessionIdError || registrationError || registered !== true) {
+      await supabase.auth.signOut();
+      setIsLoading(false);
+      setError("Sesi admin tidak dapat diaktifkan. Silakan masuk kembali.");
+      return;
+    }
+
     const response = await fetch("/api/admin/session?path=%2Fadmin%2Fdashboard", {
       cache: "no-store",
       headers: { authorization: `Bearer ${data.session.access_token}` }

@@ -14,6 +14,7 @@ export async function loadGlobalAdminDashboard(input: {
   client: SupabaseClient;
   role: string;
   displayName: string;
+  storeScopeLocked: boolean;
   query: { period?: string | null; start?: string | null; end?: string | null; store?: string | null };
   now?: Date;
 }) {
@@ -25,7 +26,8 @@ export async function loadGlobalAdminDashboard(input: {
   const queryStart = new Date(currentStart.getTime() - duration).toISOString();
   const raw = await selectGlobalAdminDashboardGraph(input.client, {
     start: queryStart,
-    end: filter.end
+    end: filter.end,
+    storeId: input.storeScopeLocked ? filter.storeId : null
   });
 
   return projectGlobalAdminDashboard({
@@ -35,8 +37,8 @@ export async function loadGlobalAdminDashboard(input: {
     actor: {
       displayName: input.displayName,
       roleLabel: getRoleLabel(input.role),
-      financialVisible: FINANCIAL_ROLES.has(input.role)
+      financialVisible: FINANCIAL_ROLES.has(input.role),
+      storeScopeLocked: input.storeScopeLocked
     }
   });
 }
-

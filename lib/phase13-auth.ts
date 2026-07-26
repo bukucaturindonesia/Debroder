@@ -14,6 +14,8 @@ import {
 export type Phase13Actor = {
   user: User;
   role: string;
+  primaryStoreId: string | null;
+  allStoreAccess: boolean;
   client: SupabaseClient;
   adminClient: SupabaseClient;
 };
@@ -41,7 +43,7 @@ export async function requirePhase13Actor(
 
   const { data: profile, error: profileError } = await adminClient
     .from("profiles")
-    .select("role")
+    .select("role,primary_store_id,all_store_access")
     .eq("id", data.user.id)
     .maybeSingle();
   const role = typeof profile?.role === "string" ? profile.role.toLowerCase() : "";
@@ -53,16 +55,36 @@ export async function requirePhase13Actor(
     global: { headers: { Authorization: `Bearer ${token}` } }
   });
 
+  const { data: activeSession, error: sessionError } = await client.rpc(
+    "is_current_admin_session"
+  );
+  if (sessionError) {
+    throw new Phase13AuthError(503, "Pemeriksaan sesi admin sedang tidak tersedia.");
+  }
+  if (activeSession !== true) {
+    throw new Phase13AuthError(401, "Sesi admin perlu diaktifkan kembali.");
+  }
+
   if (permission) {
     const { data: allowed, error: permissionError } = await client.rpc("has_permission", {
       p_permission_key: permission
     });
-    if (permissionError || allowed !== true) {
+    if (permissionError) {
+      throw new Phase13AuthError(503, "Pemeriksaan permission sedang tidak tersedia.");
+    }
+    if (allowed !== true) {
       throw new Phase13AuthError(403, "Permission tidak mencukupi untuk tindakan ini.");
     }
   }
 
-  return { user: data.user, role, client, adminClient };
+  return {
+    user: data.user,
+    role,
+    primaryStoreId: typeof profile?.primary_store_id === "string" ? profile.primary_store_id : null,
+    allStoreAccess: profile?.all_store_access === true,
+    client,
+    adminClient
+  };
 }
 
 export function phase13ErrorResponse(error: unknown, request?: Request): Response {

@@ -27,7 +27,7 @@ export type AdminNavigationGroup = {
 
 export const FULL_ADMIN_ROLES: readonly AdminRole[] = ["owner", "superadmin", "super_admin", "admin"];
 export const ADMIN_GUEST_ROLES: readonly AdminRole[] = ["admin_guest"];
-export const DASHBOARD_ROLES: readonly AdminRole[] = [...FULL_ADMIN_ROLES, ...ADMIN_GUEST_ROLES];
+export const DASHBOARD_ROLES: readonly AdminRole[] = [...FULL_ADMIN_ROLES, ...ADMIN_GUEST_ROLES, "store_admin"];
 export const PRODUCT_MANAGER_VIEW_ROLES: readonly AdminRole[] = [...FULL_ADMIN_ROLES, ...ADMIN_GUEST_ROLES];
 export const QUOTATION_ROLES: readonly AdminRole[] = ["owner", "superadmin", "super_admin", "sales_admin", "admin"];
 export const QUOTATION_VIEW_ROLES: readonly AdminRole[] = [...QUOTATION_ROLES, "designer"];
@@ -267,6 +267,7 @@ export function getRoleHome(role: AdminRole) {
   if (role === "production_admin" || role === "operator") return "/admin/work-items";
   if (role === "quality_control") return "/admin/quality-control";
   if (role === "store_staff") return "/admin/fulfillments";
+  if (role === "store_admin") return "/admin/dashboard";
   return "/admin/dashboard";
 }
 

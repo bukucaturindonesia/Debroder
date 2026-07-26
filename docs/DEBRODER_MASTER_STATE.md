@@ -520,3 +520,28 @@ The FROZEN commerce/landing blueprints and official Owner Decisions remain autho
   `order_store_assignments` source-migration alignment and a canonical
   low-stock threshold remain owner decisions.
 - Project remains not COMPLETE and not GO.
+
+## Global Dashboard permission blocker correction - 2026-07-26
+
+- Status: **FIXED IN SOURCE AND DATABASE; OWNER AUTHENTICATED VISUAL /
+  VERCEL PREVIEW REVIEW PENDING**.
+- Canonical recent accounts are `superadmin` and `owner`, both with
+  `all_store_access=true`; canonical branch operators use `store_admin` with
+  one `primary_store_id` and no global scope.
+- Root cause: Admin login did not call the remote canonical session
+  registration function. The latest Auth session differed from
+  `profiles.active_session_id`, so `has_permission('order.read')` correctly
+  returned false and the dashboard surfaced a misleading 403.
+- Login now registers the canonical session; the shared guard verifies that
+  session, maps stale/anonymous sessions to 401, keeps real permission denials
+  at 403, and maps permission RPC failures to 503.
+- Migration `20260726090522_global_dashboard_store_scope_restrictive_rls.sql`
+  is applied remotely. Twelve `RESTRICTIVE SELECT` policies close the
+  permissive-policy OR gap for Store Admin.
+- Remote simulation proved `visible_store_count=1`, `cross_store_count=0`, and
+  `cross_store_order_count=0` for Store Admin. Owner/Super Admin keep global
+  scope.
+- Verification: targeted 17/17 PASS; typecheck PASS; lint 0 errors / 32
+  existing warnings; full tests 91 files / 706 tests PASS; build 120/120 PASS;
+  `git diff --check` PASS.
+- No commit, push, merge, deployment, service-role client, or RLS disable.

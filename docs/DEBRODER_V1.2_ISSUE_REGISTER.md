@@ -685,3 +685,26 @@
   clear explanation. It does not hardcode a threshold.
 - Required next action: define and persist the threshold authority before
   enabling the count.
+
+### V12-063 - Global Dashboard canonical session mismatch
+
+- Severity: BLOCKER
+- Status: **CLOSED IN SOURCE AND REMOTE RLS; OWNER VISUAL REVIEW PENDING**
+- Symptom: authenticated Dashboard Global returned "Permission tidak
+  mencukupi" for Owner/Super Admin.
+- Root cause: `components/admin/AdminLogin.tsx` authenticated with Supabase but
+  did not call `register_admin_session_v1`. Latest `auth.sessions.id` therefore
+  differed from `profiles.active_session_id`, while
+  `public.has_permission(text)` requires `is_current_admin_session()`.
+- Secondary security finding: existing store-scope policies were permissive;
+  PostgreSQL OR-combines permissive SELECT policies, so they did not constrain
+  broader module-read policies.
+- Resolution: canonical login registration, active-session guard, correct
+  401/403/503 classification, `store_admin` route/query scope, and applied
+  migration `20260726090522_global_dashboard_store_scope_restrictive_rls.sql`
+  with 12 restrictive SELECT policies.
+- Regression evidence: targeted 17/17; full 91 files / 706 tests; typecheck,
+  lint, build 120/120, and diff check PASS. Remote Store Admin simulation:
+  1 assigned store visible, 0 cross-store stores, 0 cross-store orders.
+- Remaining proof: authenticated visual rendering and Vercel Preview require
+  Owner review after signing in again. No commit, push, merge, or deploy.

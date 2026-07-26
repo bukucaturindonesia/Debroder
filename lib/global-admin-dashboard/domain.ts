@@ -499,7 +499,7 @@ export function projectGlobalAdminDashboard(input: {
   raw: DashboardRawData;
   filter: GlobalDashboardFilter;
   now?: Date;
-  actor: { displayName: string; roleLabel: string; financialVisible: boolean };
+  actor: { displayName: string; roleLabel: string; financialVisible: boolean; storeScopeLocked?: boolean };
 }): GlobalAdminDashboardReadModel {
   const now = input.now ?? new Date();
   const currentStart = new Date(input.filter.start);
@@ -538,7 +538,9 @@ export function projectGlobalAdminDashboard(input: {
       id: text(store.id),
       name: text(store.nama_store) || "Toko",
       active: store.status_aktif !== false && text(store.status) !== "archived"
-    })).filter((store) => store.id),
+    })).filter((store) => store.id && (
+      !input.actor.storeScopeLocked || store.id === input.filter.storeId
+    )),
     kpis: {
       orderValue: aggregateMetric(currentOrderValue, previousOrderValue, financial),
       paymentReceived: aggregateMetric(currentPaymentValue, previousPaymentValue, financial),

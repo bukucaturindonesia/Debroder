@@ -822,3 +822,42 @@ PREVIEW VERIFICATION PENDING**.
 - Canonical low-stock threshold is absent; the dashboard explicitly reports
   unavailable instead of hardcoding a threshold.
 - Commit, push, merge, and deploy: none. Status is not COMPLETE and not GO.
+
+---
+
+## 2026-07-26 - Targeted Global Dashboard permission blocker
+
+Status: **GLOBAL DASHBOARD PERMISSION FIXED - OWNER VISUAL REVIEW AND VERCEL
+PREVIEW VERIFICATION PENDING**.
+
+- Scope checked: account/role/profile scope, sidebar/route authorization,
+  shared admin session and permission guard, dashboard read model, Supabase
+  query scope, and remote RLS.
+- Exact account evidence: latest sign-in was `fahmi@debroder.com`
+  (`superadmin`, global scope); Owner is `owner@debroder.com` (`owner`, global
+  scope). Store Admin profiles have `all_store_access=false` and one assigned
+  `primary_store_id`.
+- Root cause: latest Auth session IDs for Owner/Super Admin did not equal
+  `profiles.active_session_id`; `AdminLogin` never invoked
+  `register_admin_session_v1`. `has_permission('order.read')` therefore failed
+  closed.
+- Source correction: canonical session registration on login, canonical
+  session assertion in `requirePhase13Actor`, explicit 401 redirect to login,
+  403-only authorization failures, 503 permission-runtime failures, dashboard
+  access resolver, Store Admin sidebar/route scope, and store-locked queries.
+- Migration local/remote/applied:
+  `20260726090522_global_dashboard_store_scope_restrictive_rls.sql`; pending:
+  none. It adds restrictive SELECT scope on 12 dashboard transaction/store
+  tables without disabling RLS.
+- Remote verification: 12 policies report `RESTRICTIVE`; Store Admin
+  impersonation transaction (rolled back) returned one visible assigned store,
+  zero cross-store stores, and zero cross-store orders.
+- Tests: targeted 17/17 PASS; typecheck PASS; lint PASS with 0 errors / 32
+  existing warnings; full test PASS 91 files / 706 tests; build PASS 120/120;
+  `git diff --check` PASS.
+- Browser: server existing returned HTTP 200. The available controlled browser
+  had no authenticated admin session, so post-login visual data rendering
+  remains owner review pending; no credentials/session storage were accessed.
+- Commit/push/merge/deploy: none. Next action: Owner signs in again so the new
+  login registers the canonical session, visually confirms `/admin/dashboard`,
+  then verifies Vercel Preview.

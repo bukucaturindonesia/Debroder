@@ -70,6 +70,11 @@ export function AdminShell({ children }: { children: ReactNode }) {
       };
 
       if (!active) return;
+      if (response.status === 401) {
+        await supabase.auth.signOut();
+        router.replace("/admin/login");
+        return;
+      }
 
       if (!isAdminRole(session.role)) {
         setAccessError(session.error || "Akun ini tidak memiliki akses panel admin.");

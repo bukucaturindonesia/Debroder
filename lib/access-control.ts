@@ -10,7 +10,8 @@ export const ADMIN_ROLES = [
   "operator",
   "finance",
   "quality_control",
-  "store_staff"
+  "store_staff",
+  "store_admin"
 ] as const;
 
 export type AdminRole = (typeof ADMIN_ROLES)[number];
@@ -27,7 +28,8 @@ export const ROLE_LABELS: Record<AdminRole, string> = {
   operator: "Operator",
   finance: "Finance",
   quality_control: "Pemeriksaan Kualitas",
-  store_staff: "Store Staff"
+  store_staff: "Store Staff",
+  store_admin: "Store Admin"
 };
 
 export const ROLE_DESCRIPTIONS: Record<AdminRole, string> = {
@@ -42,7 +44,8 @@ export const ROLE_DESCRIPTIONS: Record<AdminRole, string> = {
   operator: "Pekerjaan yang ditugaskan dan pembaruan progres produksi.",
   finance: "Verifikasi pembayaran, koreksi, dan riwayat pembayaran.",
   quality_control: "Pemeriksaan, bukti, hasil QC, dan rework.",
-  store_staff: "Persiapan pengiriman, pickup, resi, dan serah terima."
+  store_staff: "Persiapan pengiriman, pickup, resi, dan serah terima.",
+  store_admin: "Operasional dan Dashboard Global terbatas pada toko yang ditetapkan."
 };
 
 

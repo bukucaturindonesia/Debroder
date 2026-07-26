@@ -25,9 +25,21 @@ async function runQuery(
 
 export async function selectGlobalAdminDashboardGraph(
   client: SupabaseClient,
-  range: { start: string; end: string }
+  range: { start: string; end: string; storeId?: string | null }
 ): Promise<DashboardRawData> {
   const issues: DashboardRawData["issues"] = [];
+  let storesQuery = client
+    .from("stores")
+    .select("id,nama_store,status_aktif,status,urutan")
+    .order("urutan", { ascending: true });
+  let locationsQuery = client
+    .from("inventory_locations")
+    .select("id,store_id,active")
+    .eq("active", true);
+  if (range.storeId) {
+    storesQuery = storesQuery.eq("id", range.storeId);
+    locationsQuery = locationsQuery.eq("store_id", range.storeId);
+  }
   const [orders, stores, inventoryLocations, inventoryBalances, products] = await Promise.all([
     runQuery(
       "orders",
@@ -56,18 +68,12 @@ export async function selectGlobalAdminDashboardGraph(
     ),
     runQuery(
       "stores",
-      client
-        .from("stores")
-        .select("id,nama_store,status_aktif,status,urutan")
-        .order("urutan", { ascending: true }),
+      storesQuery,
       issues
     ),
     runQuery(
       "inventory",
-      client
-        .from("inventory_locations")
-        .select("id,store_id,active")
-        .eq("active", true),
+      locationsQuery,
       issues
     ),
     runQuery(
@@ -213,4 +219,3 @@ export async function selectGlobalAdminDashboardGraph(
     issues
   };
 }
-
