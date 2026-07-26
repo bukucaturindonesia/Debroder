@@ -545,3 +545,73 @@
 - Evidence: targeted Jersey suite **PASS (1 file / 9 tests)** dengan matrix
   Ready Stock, Custom-only, unavailable, dan non-Jersey. Full gates tidak
   dijalankan dalam targeted revision ini.
+
+### V12-052 — Public touch targets below 48 × 48 px
+
+- Severity: MEDIUM
+- Status: **CLOSED AND BROWSER-VERIFIED**
+- Root cause: PDP swatches, size controls, quantity controls, gallery dots,
+  and catalog reset action used 8–44 px interactive boxes.
+- Resolution: interactive boxes now have a minimum 48 × 48 px target while
+  preserving presentation and business behavior.
+
+### V12-053 — Public landmark and cart-dialog accessibility
+
+- Severity: HIGH
+- Status: **CLOSED AND BROWSER-VERIFIED**
+- Root cause: pages nested `main` inside `PublicShell`; closed cart remained
+  exposed, and open cart lacked focus entry/trap/Escape/restoration.
+- Resolution: semantic wrappers corrected; closed cart is hidden/inert and
+  the open dialog implements verified keyboard focus management.
+
+### V12-054 — PDP and Cart used different stock authority
+
+- Severity: HIGH
+- Status: **CLOSED AND REGRESSION-TESTED**
+- Evidence: PDP displayed stock 80 for
+  `DBR-CC24-AUTUMN-ORANGE-S`; Cart v5 revalidation returned canonical
+  available stock 0 and disabled checkout.
+- Root cause: page-owned product read model projected legacy
+  `product_variant_sizes.stock`, while Cart v5 projected active non-legacy
+  `inventory_balances`.
+- Resolution: both paths share canonical inventory availability; missing
+  balance fails closed to 0. Browser now shows `Stok kosong`.
+- Regression: `test/public-product-inventory-parity.test.ts`; targeted
+  inventory suite 2 files / 9 tests PASS.
+
+### V12-055 — Custom Hub build failed on transient public read
+
+- Severity: HIGH build gate
+- Status: **CLOSED AND BUILD-VERIFIED**
+- Evidence: production prerender `/custom` threw `fetch failed`.
+- Resolution: public Custom category read returns the existing explicit safe
+  empty state on unavailable reads. Production build generated 119/119 pages.
+
+### V12-056 — Homepage category link is broken
+
+- Severity: HIGH
+- Status: **OPEN — OWNER CMS CORRECTION REQUIRED**
+- Evidence: active homepage category card links to `/kaos-polo`; existing
+  server returns HTTP 404.
+- Boundary: P13–P15 may not mutate CMS/database or add an unapproved route.
+  Owner must correct the canonical CMS target and rerun integration checks.
+
+### V12-057 — Internal Jersey pilot is publicly active
+
+- Severity: HIGH
+- Status: **OPEN — OWNER PIM CORRECTION REQUIRED**
+- Evidence: homepage/PDP publicly expose `Jersey Custom Pilot`; its canonical
+  description states it is internal and must not be published before owner
+  approval.
+- Boundary: no slug/text hardcode or database mutation was allowed. Owner must
+  unpublish it or replace the record with approved canonical content.
+
+### V12-058 — Public performance target not met
+
+- Severity: MAJOR
+- Status: **OPEN — PREVIEW VERIFICATION REQUIRED**
+- Evidence: local development homepage LCP approximately 13.35 s, CLS 0; INP
+  not proven. Public content and public shell perform separate server read
+  fan-outs.
+- Boundary: no speculative cache or broad read-model rewrite was made without
+  a freshness/invalidation contract. Verify and correct on Preview before GO.

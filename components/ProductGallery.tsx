@@ -83,8 +83,13 @@ export function ProductGallery({ images, alt, focal }: { images: string[]; alt: 
                 onClick={() => scrollToImage(index)}
                 aria-label={`Tampilkan foto ${index + 1}`}
                 aria-current={activeIndex === index ? "true" : undefined}
-                className={`h-2 rounded-full transition-all ${activeIndex === index ? "w-6 bg-brand-charcoal" : "w-2 bg-brand-charcoal/25"}`}
-              />
+                className="grid h-12 w-12 place-items-center rounded-full"
+              >
+                <span
+                  aria-hidden="true"
+                  className={`h-2 rounded-full transition-all ${activeIndex === index ? "w-6 bg-brand-charcoal" : "w-2 bg-brand-charcoal/25"}`}
+                />
+              </button>
             ))}
           </div>
         ) : null}

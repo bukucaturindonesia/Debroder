@@ -575,7 +575,7 @@ export function ProductCatalog({
           <button
             type="button"
             onClick={resetFilters}
-            className="public-secondary-action mt-6 inline-flex min-h-10 items-center justify-center border px-5 text-sm font-semibold"
+            className="public-secondary-action mt-6 inline-flex min-h-12 items-center justify-center border px-5 text-sm font-semibold"
           >
             Reset Filter
           </button>

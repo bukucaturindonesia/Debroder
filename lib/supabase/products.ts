@@ -541,9 +541,21 @@ async function applyInventoryAvailability(products: Product[]) {
   );
   if (!variantSizeIds.length) return products;
 
+  const availability = await readInventoryAvailabilityByVariantSizeIds(
+    variantSizeIds
+  );
+
+  return projectInventoryAvailability(products, availability);
+}
+
+export async function readInventoryAvailabilityByVariantSizeIds(
+  variantSizeIds: readonly string[]
+) {
+  if (!variantSizeIds.length) return new Map<string, number>();
+
   const client = getAdminSupabaseClient();
   if (!client) {
-    return projectInventoryAvailability(products, new Map());
+    return new Map<string, number>();
   }
 
   const rows: Array<{
@@ -572,10 +584,7 @@ async function applyInventoryAvailability(products: Product[]) {
     }
   }
 
-  return projectInventoryAvailability(
-    products,
-    aggregateAvailableStock(rows)
-  );
+  return aggregateAvailableStock(rows);
 }
 
 function projectInventoryAvailability(

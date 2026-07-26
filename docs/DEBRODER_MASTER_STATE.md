@@ -456,3 +456,23 @@ The FROZEN commerce/landing blueprints and official Owner Decisions remain autho
   category/shop/configurator, Admin, database, and migrations were unchanged.
 - No full gate, browser verification, commit, push, merge, or deployment was
   performed for this targeted revision.
+
+## Public Experience P13–P15 final verification state — 2026-07-26
+
+- Final decision: **NO-GO** on branch `LANDING-PAGE-PUBLIC`, initial HEAD
+  `359b8db47357595ffff7e2527e48e45497149efd`.
+- Responsive verification completed at 1440 × 900, 1280 × 800, 768 × 1024,
+  390 × 844, and 360 × 800 across the public route matrix.
+- Proven accessibility defects in touch targets, nested landmarks, and cart
+  dialog focus/visibility behavior are fixed and browser-reverified.
+- Page-owned PDP stock now uses canonical location inventory availability,
+  matching Cart v5 revalidation and preventing legacy stock from enabling an
+  invalid checkout.
+- Custom Hub public-read failure now degrades to its existing explicit safe
+  state; production build completes.
+- Gate evidence: typecheck PASS; lint 0 errors / 32 existing warnings; tests
+  88 files / 683 tests PASS; production build 119/119 pages PASS.
+- Open release blockers: CMS link `/kaos-polo` returns 404; active public PIM
+  product `Jersey Custom Pilot` declares itself internal/not approved; local
+  LCP approximately 13.35 s and Preview performance remains unproven.
+- No database/migration/seed, commit, push, merge, or deployment was performed.

@@ -62,12 +62,12 @@ export default async function ProductDetailPage({ params }: PageProps) {
   if (!product) {
     return (
       <PublicShell>
-        <main className="bg-white py-16">
+        <section className="bg-white py-16">
           <div className="section-shell">
             <h1 className="text-2xl font-semibold">Produk belum dapat dimuat</h1>
             <p className="mt-3 text-sm text-black/60">Silakan muat ulang halaman atau coba kembali beberapa saat lagi.</p>
           </div>
-        </main>
+        </section>
       </PublicShell>
     );
   }
@@ -82,7 +82,7 @@ export default async function ProductDetailPage({ params }: PageProps) {
           <JerseyCommerceNav />
         </Suspense>
       ) : null}
-      <main className={isJersey ? "bg-white py-8 sm:py-12" : "bg-white py-8 sm:py-12 lg:py-16"}>
+      <section className={isJersey ? "bg-white py-8 sm:py-12" : "bg-white py-8 sm:py-12 lg:py-16"}>
         <div className="section-shell">
           <nav
             aria-label="Breadcrumb"
@@ -243,7 +243,7 @@ export default async function ProductDetailPage({ params }: PageProps) {
             </div>
           </ProductVariantGalleryProvider>
         </div>
-      </main>
+      </section>
       {!isJersey && relatedProducts.length ? (
         <section className="bg-white py-12 md:py-16 lg:py-20" aria-labelledby="related-products-title">
           <div className="section-shell">

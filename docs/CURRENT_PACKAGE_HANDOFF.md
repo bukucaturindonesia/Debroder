@@ -784,3 +784,152 @@ Setelah setiap package PASS:
 3. Ganti bagian `Scope Aktif` dengan scope package baru.
 4. Catat migration yang diterapkan jika ada.
 5. Jangan menambah seluruh laporan panjang; simpan hanya keputusan dan bukti paling penting.
+
+---
+
+## Public Experience P13 — Responsive Audit (2026-07-26)
+
+PACKAGE:
+Public Experience P13
+
+STATUS:
+**VERIFIED WITH FIXES**
+
+VIEWPORTS:
+
+- 1440 × 900
+- 1280 × 800
+- 768 × 1024
+- 390 × 844
+- 360 × 800
+
+ROUTES CHECKED:
+
+- 37 public routes returned HTTP 200, including landing, category, universal
+  PDP, cart, checkout, tracking, Custom, Jersey, account/search/help/legal;
+- focused browser checks covered homepage, cart, checkout, tracking, Custom,
+  Jersey, and Ready Stock/Jersey PDP;
+- no document-level horizontal overflow or broken visible image was found.
+
+DEFECTS:
+
+- `P13-ERR-001` — PDP color, size, quantity, gallery-dot, and catalog reset
+  controls were below the required 48 × 48 px touch target.
+
+FIXES:
+
+- controls now expose a minimum 48 × 48 px interactive area without changing
+  pricing, stock, cart, checkout, route, or visual identity.
+
+NEXT ACTION:
+Completed automatically into P14.
+
+## Public Experience P14 — Accessibility, Performance, Visual Regression
+
+PACKAGE:
+Public Experience P14
+
+STATUS:
+**VERIFIED WITH FIXES — PERFORMANCE TARGET NOT MET**
+
+ACCESSIBILITY:
+
+- one main landmark and one relevant H1 verified on focused public routes;
+- search and cart dialog focus, Escape, restoration, and cart focus trap were
+  verified in browser;
+- hidden cart is now `aria-hidden` and `inert`;
+- global focus-visible and reduced-motion contracts are present;
+- representative heading contrast measured 18.88:1; a complete automated
+  contrast sweep was not available.
+
+PERFORMANCE:
+
+- local development homepage: LCP approximately 13.35 s, CLS 0;
+- INP is **NOT PROVEN** because the recorded session had no qualifying
+  interaction;
+- homepage public content and public shell read models both perform Supabase
+  fan-out;
+- no risky caching or broad read-model rewrite was made without a proven
+  freshness/invalidation contract.
+
+VISUAL REGRESSION:
+
+- required viewport screenshots and focused route inspection preserved the
+  P0–P12 layout, Jersey shell, mobile composition, product media, cart,
+  checkout, tracking, Custom, and footer hierarchy;
+- no Nike asset or identity was introduced.
+
+DEFECTS:
+
+- `P14-ERR-001` — nested main landmarks on PDP/cart/Custom;
+- `P14-ERR-002` — closed cart dialog remained exposed;
+- `P14-ERR-003` — cart lacked focus entry/trap/Escape/restoration;
+- `P14-ERR-004` — LCP target not met and INP not proven.
+
+FIXES:
+
+- semantic wrappers corrected;
+- cart dialog accessibility and keyboard behavior corrected;
+- performance risk documented, not hidden by speculative caching.
+
+NEXT ACTION:
+Completed automatically into P15.
+
+## Public Experience P15 — Final Integration and GO/NO-GO
+
+PACKAGE:
+Public Experience P15
+
+STATUS:
+**NO-GO**
+
+FULL GATE:
+
+- typecheck: **PASS**;
+- lint: **PASS with 0 errors / 32 existing warnings**;
+- tests: **PASS — 88 files / 683 tests**;
+- production build: **PASS — 119/119 pages**, executed from an identical
+  temporary source copy so build artifacts did not collide with the
+  owner-managed active development server;
+- `git diff --check`: **PASS**;
+- browser/HTTP: existing server remained responsive; critical route matrix
+  and focused interaction checks completed.
+
+INTEGRATION:
+
+- `P15-ERR-001` fixed: page-owned PDP previously displayed legacy
+  `product_variant_sizes.stock` (80) while Cart v5 revalidated canonical
+  location availability as 0. PDP now reads the same `inventory_balances`
+  authority and fails closed at `Stok kosong`;
+- `P15-ERR-002` fixed: `/custom` production prerender previously threw on a
+  transient public-read failure. It now renders the existing empty state;
+- Cart v5 retained stale snapshot, warning/retry, and disabled checkout when
+  canonical stock was unavailable;
+- pricing formula, snapshots, checkout command, order/payment, tracking,
+  Custom pricing, and Jersey capability resolver were not changed.
+
+SECURITY:
+
+- client-boundary regression passed;
+- no client import of service-role/server-only data access was introduced;
+- checkout pricing and stock remain server-authoritative and fail closed;
+- no database mutation, migration, seed, or remote write occurred.
+
+OUTSTANDING:
+
+- `P15-ERR-003` HIGH — homepage CMS category link `/kaos-polo` returns HTTP
+  404; this batch may not mutate CMS or add an unapproved route;
+- `P15-ERR-004` HIGH — active public PIM product `Jersey Custom Pilot` exposes
+  content stating it is internal and must not be published before owner
+  approval; no slug/content hardcode was added and PIM was not mutated;
+- `P14-ERR-004` — local LCP target remains unmet; Preview performance is not
+  proven;
+- canonical inventory for the two inspected Ready Stock products is 0, so the
+  browser verified safe unavailable/fail-closed behavior but did not create a
+  real order;
+- official legal content, customer Auth, and wishlist persistence remain the
+  previously documented owner dependencies.
+
+NEXT ACTION:
+Owner corrects CMS/PIM publication data and validates Preview performance,
+then reruns P15 release verification. No commit/push/deploy in this batch.

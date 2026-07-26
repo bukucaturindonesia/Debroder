@@ -488,7 +488,7 @@ export function TieredProductPurchasePanel({
                 aria-label={`Pilih warna ${option.name}`}
                 aria-pressed={selected}
                 onClick={() => setSelectedColor(option.name)}
-                className={`grid h-9 w-9 place-items-center rounded-full transition ${
+                className={`grid h-12 w-12 place-items-center rounded-full transition ${
                   selected
                     ? "ring-2 ring-black ring-offset-2 ring-offset-[#F7F7F4]"
                     : "ring-1 ring-black/10 hover:ring-black/30"
@@ -540,7 +540,7 @@ export function TieredProductPurchasePanel({
                 aria-pressed={selected}
                 disabled={disabled}
                 onClick={() => setSelectedSize(size)}
-                className={`min-h-10 rounded-full px-4 text-sm font-semibold transition disabled:cursor-not-allowed disabled:opacity-35 ${
+                className={`min-h-12 min-w-12 rounded-full px-4 text-sm font-semibold transition disabled:cursor-not-allowed disabled:opacity-35 ${
                   selected
                     ? "bg-brand-charcoal text-white"
                     : "bg-white/70 text-brand-charcoal ring-1 ring-black/10 hover:ring-black/25"
@@ -564,10 +564,10 @@ export function TieredProductPurchasePanel({
             </p>
           </div>
 
-          <div className="inline-flex min-h-11 items-center overflow-hidden rounded-full bg-white ring-1 ring-black/10">
+          <div className="inline-flex min-h-12 items-center overflow-hidden rounded-full bg-white ring-1 ring-black/10">
             <button
               type="button"
-              className="grid h-11 w-11 place-items-center text-lg transition hover:bg-black/5"
+              className="grid h-12 w-12 place-items-center text-lg transition hover:bg-black/5"
               onClick={() =>
                 setQuantity((value) => Math.max(1, value - 1))
               }
@@ -582,13 +582,13 @@ export function TieredProductPurchasePanel({
                   sanitizeQuantity(Number(event.target.value || 1))
                 )
               }
-              className="h-11 w-16 bg-transparent text-center text-sm font-semibold outline-none"
+              className="h-12 w-16 bg-transparent text-center text-sm font-semibold outline-none"
               inputMode="numeric"
               aria-label="Jumlah produk"
             />
             <button
               type="button"
-              className="grid h-11 w-11 place-items-center text-lg transition hover:bg-black/5"
+              className="grid h-12 w-12 place-items-center text-lg transition hover:bg-black/5"
               onClick={() => setQuantity((value) => value + 1)}
               aria-label="Tambah jumlah"
             >

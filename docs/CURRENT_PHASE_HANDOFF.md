@@ -723,3 +723,32 @@ Status: **IMPLEMENTED IN SOURCE — OWNER RECHECK PENDING**.
 - Tidak ada perubahan pricing, Cart v5, checkout, Jersey configurator, route,
   Admin, database, atau migration. Full gates dan deployment tidak dijalankan
   karena berada di luar instruksi targeted revision.
+
+---
+
+## 2026-07-26 — Public Experience P13–P15 Final Verification
+
+Status: **NO-GO**.
+
+- P13 verified all required viewports and 37 public routes. One proven
+  touch-target defect was corrected with 48 × 48 px interactive areas.
+- P14 corrected nested landmarks and complete cart-dialog keyboard semantics.
+  Local homepage CLS was 0, but LCP was approximately 13.35 s and INP was not
+  proven; performance remains open.
+- P15 fixed split stock presentation: the page-owned PDP now projects stock
+  from canonical active non-legacy `inventory_balances`, the same authority
+  used by Cart v5 revalidation. Legacy stock 80 no longer enables purchase
+  when canonical available stock is 0.
+- `/custom` now keeps its existing safe empty state when the public category
+  read is unavailable, allowing production prerender to complete.
+- Final gates: typecheck PASS; lint PASS with 0 errors / 32 existing warnings;
+  test PASS (88 files / 683 tests); build PASS (119/119 pages); targeted
+  inventory suite PASS (2 files / 9 tests); targeted Custom suite PASS
+  (2 files / 18 tests).
+- NO-GO blockers are owner-governed content: homepage link `/kaos-polo`
+  returns 404, and active `Jersey Custom Pilot` content explicitly says it is
+  internal/not approved for publication. No CMS/PIM/database mutation was
+  authorized or performed.
+- Database/migration/seed/deployment/commit/push/merge: none.
+- Resume from `docs/CURRENT_PACKAGE_HANDOFF.md`; correct CMS/PIM records,
+  prove Preview performance, and rerun the P15 release check.
