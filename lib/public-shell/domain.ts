@@ -25,10 +25,12 @@ const shopLinks = [
 ] as const;
 
 const helpLinks = [
+  { label: "Pusat Bantuan", href: "/help" },
   { label: "Cara Pemesanan", href: "/cara-order" },
-  { label: "Keranjang", href: "/keranjang" },
+  { label: "Lacak Pesanan", href: "/track-order" },
+  { label: "Akun", href: "/account" },
   { label: "Toko", href: "/store" },
-  { label: "Koleksi", href: "/koleksi" }
+  { label: "Cari", href: "/search" }
 ] as const;
 
 const brandDescription =
@@ -178,7 +180,8 @@ function footerModel(source: PublicShellSource): PublicShellFooterViewModel {
     publicShopLinks: [...shopLinks, { label: "Custom", href: "/custom" }],
     helpLinks,
     companyLinks: [
-      { label: "Tentang DEBRODER", href: "/#tentang" },
+      { label: "Tentang DEBRODER", href: "/tentang" },
+      { label: "Fresh Drop", href: "/fresh-drop" },
       ...stores
         .filter((store) => store.status_aktif)
         .sort((a, b) => a.urutan - b.urutan)
@@ -189,8 +192,8 @@ function footerModel(source: PublicShellSource): PublicShellFooterViewModel {
     socialLinks,
     brandDescription,
     copyrightText: "© 2026 DEBRODER. All rights reserved.",
-    termsLink: { label: "Syarat & Ketentuan", href: "/cara-order" },
-    privacyLink: { label: "Kebijakan Privasi", href: "/cara-order" }
+    termsLink: { label: "Syarat & Ketentuan", href: "/legal/terms" },
+    privacyLink: { label: "Kebijakan Privasi", href: "/legal/privacy" }
   };
 }
 

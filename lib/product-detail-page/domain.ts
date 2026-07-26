@@ -6,8 +6,41 @@ import { productMatchesRoute } from "@/lib/product-route-matching";
 import { projectProductSource } from "@/lib/product-read/domain";
 import type { Product, ProductSizeGuide } from "@/lib/types";
 import { formatRupiah, whatsappLinkWithMessage } from "@/lib/url";
-import type { ProductDetailPageModel } from "./model";
+import type {
+  ProductDetailPageModel,
+  ProductPurchaseCapabilities
+} from "./model";
 import type { ProductDetailPageSource } from "./source";
+
+export type ProductPurchaseCapabilityInput = Readonly<{
+  hasProduct: boolean;
+  isJersey: boolean;
+  hasReadyStock: boolean;
+  hasCustomAvailability: boolean;
+}>;
+
+export function resolveProductPurchaseCapabilities({
+  hasProduct,
+  isJersey,
+  hasReadyStock,
+  hasCustomAvailability
+}: ProductPurchaseCapabilityInput): ProductPurchaseCapabilities {
+  if (!hasProduct) {
+    return {
+      showPurchasePanel: false,
+      showAddToCart: false,
+      showBuyNow: false,
+      showCustomAction: false
+    };
+  }
+
+  return {
+    showPurchasePanel: !isJersey || hasReadyStock || !hasCustomAvailability,
+    showAddToCart: !isJersey || hasReadyStock,
+    showBuyNow: isJersey && hasReadyStock,
+    showCustomAction: hasCustomAvailability
+  };
+}
 
 function sizeGuideRowsFromAdmin(guide?: ProductSizeGuide | null) {
   if (!guide?.rows?.length) return [];
@@ -63,7 +96,12 @@ export function buildProductDetailPageModel(slug: string, source: ProductDetailP
         isJersey: false,
         hasReadyStock: false,
         hasCustomAvailability: false,
-        showPurchasePanel: false,
+        purchaseCapabilities: resolveProductPurchaseCapabilities({
+          hasProduct: false,
+          isJersey: false,
+          hasReadyStock: false,
+          hasCustomAvailability: false
+        }),
         customDestination: null,
         colors: [],
         sizes: [],
@@ -77,6 +115,12 @@ export function buildProductDetailPageModel(slug: string, source: ProductDetailP
   const isJersey = productMatchesRoute(product, "jersey");
   const hasReadyStock = jerseyHasReadyStock(product);
   const hasCustomAvailability = jerseyHasCustomAvailability(product);
+  const purchaseCapabilities = resolveProductPurchaseCapabilities({
+    hasProduct: true,
+    isJersey,
+    hasReadyStock,
+    hasCustomAvailability
+  });
   const allRelated = projectProductSource(source.relatedSource);
   const relatedProducts = isJersey
     ? []
@@ -125,7 +169,7 @@ export function buildProductDetailPageModel(slug: string, source: ProductDetailP
       isJersey,
       hasReadyStock,
       hasCustomAvailability,
-      showPurchasePanel: !isJersey || hasReadyStock || !hasCustomAvailability,
+      purchaseCapabilities,
       customDestination: isJersey ? null : source.customDestination,
       colors: variantColors(product),
       sizes: variantSizes(product),

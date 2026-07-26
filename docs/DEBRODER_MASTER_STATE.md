@@ -403,3 +403,160 @@ The FROZEN commerce/landing blueprints and official Owner Decisions remain autho
   environment approval reviewer reached its usage limit.
 - Resume from `CURRENT_PACKAGE_HANDOFF.md`. No commit, push, merge, or
   deployment was performed.
+
+## Public Experience P0 Design Tokens Global state — 2026-07-26
+
+- P0 is **VERIFIED IN SOURCE** on branch `LANDING-PAGE-PUBLIC` at baseline
+  HEAD `e37a9c4d3a50fe36e3158ea5dae87600206a5ca8`.
+- One canonical frozen contract now owns public color, typography, spacing,
+  width/gutter, radius, shadow, controls, focus, and motion primitives.
+- Public landing/category consumers and Tailwind aliases use the contract;
+  external reference naming, source, assets, fonts, URLs, and identity are
+  absent from production.
+- No route, transaction rule, pricing, inventory, checkout, historical data,
+  Admin behavior, database, or migration changed.
+- Gate evidence: typecheck PASS; lint PASS with 0 error / 32 existing warning;
+  87 test files / 676 tests PASS; production build PASS; five responsive
+  browser viewports PASS without overflow or runtime error.
+- Active homepage snapshot has no rendered `h1`; this remains an explicit
+  homepage-package risk, not a P0 token mutation.
+- At the P0 checkpoint, P1 was **NOT STARTED**. The later P1–P12 state below
+  supersedes that checkpoint.
+
+## Public Experience P1–P12 implementation state — 2026-07-26
+
+- P1–P12 are **IMPLEMENTED IN SOURCE — OWNER VERIFICATION PENDING** on branch
+  `LANDING-PAGE-PUBLIC`, baseline HEAD
+  `fc1b8ff6eb1b92b23452b4032098a652fb0bc1eb`.
+- Shared public shell now exposes Fresh Drop, About, canonical search,
+  wishlist/account safe entries, Help, and legal safe routes.
+- Landing received a semantic H1 fallback without changing FROZEN section
+  order. Confirmation now uses the shared public shell.
+- Fresh Drop reads canonical product flags and redirects detail aliases to the
+  universal PDP. About reads existing public CMS/store/testimonial sources.
+- Existing category, PDP, Cart v5, checkout, secure tracking, Custom, and
+  protected Jersey authorities were reused rather than rebuilt.
+- Customer Auth/account persistence, wishlist persistence, release schedule,
+  and approved legal content remain unavailable and are represented only by
+  explicit safe states; **OWNER LEGAL CONTENT REQUIRED**.
+- No pricing, inventory, order, payment, database, migration, Admin, test,
+  commit, push, merge, or deployment change was made.
+- Per the master execution prompt, typecheck, lint, tests, build, browser, and
+  deployment verification were not run. All package acceptance remains owner
+  verification pending. P13 was not started.
+
+## Jersey universal PDP stabilization state — 2026-07-26
+
+- Targeted revision is **IMPLEMENTED IN SOURCE — OWNER RECHECK PENDING**.
+- Canonical product-detail projection now owns the typed purchase capability
+  contract consumed by `/produk/[slug]` and the tiered purchase panel.
+- Targeted `test/jersey-commerce.test.ts` passed: 1 file / 9 tests, including
+  the four required capability cases.
+- Pricing, Cart v5, checkout, Custom transaction behavior, protected Jersey
+  category/shop/configurator, Admin, database, and migrations were unchanged.
+- No full gate, browser verification, commit, push, merge, or deployment was
+  performed for this targeted revision.
+
+## Public Experience P13–P15 final verification state — 2026-07-26
+
+- Final decision: **NO-GO** on branch `LANDING-PAGE-PUBLIC`, initial HEAD
+  `359b8db47357595ffff7e2527e48e45497149efd`.
+- Responsive verification completed at 1440 × 900, 1280 × 800, 768 × 1024,
+  390 × 844, and 360 × 800 across the public route matrix.
+- Proven accessibility defects in touch targets, nested landmarks, and cart
+  dialog focus/visibility behavior are fixed and browser-reverified.
+- Page-owned PDP stock now uses canonical location inventory availability,
+  matching Cart v5 revalidation and preventing legacy stock from enabling an
+  invalid checkout.
+- Custom Hub public-read failure now degrades to its existing explicit safe
+  state; production build completes.
+- Gate evidence: typecheck PASS; lint 0 errors / 32 existing warnings; tests
+  88 files / 683 tests PASS; production build 119/119 pages PASS.
+- Open release blockers: CMS link `/kaos-polo` returns 404; active public PIM
+  product `Jersey Custom Pilot` declares itself internal/not approved; local
+  LCP approximately 13.35 s and Preview performance remains unproven.
+- No database/migration/seed, commit, push, merge, or deployment was performed.
+
+## Global Ready Stock + Instant Custom Services state - 2026-07-26
+
+- Status: **IMPLEMENTED AND LOCALLY VERIFIED - OWNER REVIEW / VERCEL PREVIEW
+  VERIFICATION REQUIRED** on branch `LANDING-PAGE-PUBLIC`, baseline HEAD
+  `4759c0720886f04e3f21b1355c449fe7d9e67abb`.
+- Universal PDP now keeps Ready Stock, reusable Instant Custom services, and
+  Full Custom Configurator as three explicit paths without changing the
+  canonical product pricing formula.
+- Cart v5 persists service inputs/upload references and its stale display
+  snapshot; server revalidation replaces it with canonical service pricing.
+- Checkout uses a service-role-only transactional RPC, writes immutable
+  product/service snapshots, and feeds existing `order_item_services`.
+- Public product reads use a narrow aggregate inventory RPC when a server
+  service-role client is unavailable; no secret or inventory detail is exposed.
+- Owner-authorized Jersey QA data was aligned to a public experimental product
+  without inventing product specifications or media; `V12-057` is closed.
+- Four package migrations are applied remotely. Verification: targeted 6/6,
+  typecheck, lint (0 errors / 32 existing warnings), 89 files / 689 tests,
+  build 119/119 pages, diff check, and local PDP -> Cart -> Checkout browser
+  behavior all PASS.
+- A real production order was not created, so remote transactional order and
+  downstream fulfillment execution remain **NOT PROVEN**. Existing Supabase
+  advisor findings outside this package remain open.
+- No commit, push, merge, or deployment was performed.
+
+## Global Admin Dashboard v1.0 state — 2026-07-26
+
+- GD-P0–GD-P12 are **IMPLEMENTED AND LOCALLY VERIFIED — OWNER FINAL REVIEW /
+  VERCEL PREVIEW VERIFICATION PENDING** on branch `LANDING-PAGE-PUBLIC`,
+  baseline HEAD `9d711f16c252db2be725abf3d062a2ba3200fe0d`.
+- `/admin` is now a canonical read-only operational overview with server-owned
+  KPI math, verified payments, final refunds, action queues, order types,
+  store summaries, latest orders, and PIM/inventory warnings.
+- Auth remains fail-closed through existing role/session/permission/RLS
+  boundaries; the browser proved anonymous redirect and API 401.
+- Gates: targeted 9/9, typecheck PASS, lint 0 errors / 32 existing warnings,
+  tests 90 files / 698 tests PASS, build 120/120 pages PASS.
+- No pricing, Cart, checkout, inventory mutation, order/payment command,
+  database, migration, public UX, commit, push, merge, or deployment changed.
+- Authenticated visual/viewport and Vercel Preview are not proven. Remote
+  `order_store_assignments` source-migration alignment and a canonical
+  low-stock threshold remain owner decisions.
+- Project remains not COMPLETE and not GO.
+
+## Global Dashboard permission blocker correction - 2026-07-26
+
+- Status: **FIXED IN SOURCE AND DATABASE; OWNER AUTHENTICATED VISUAL /
+  VERCEL PREVIEW REVIEW PENDING**.
+- Canonical recent accounts are `superadmin` and `owner`, both with
+  `all_store_access=true`; canonical branch operators use `store_admin` with
+  one `primary_store_id` and no global scope.
+- Root cause: Admin login did not call the remote canonical session
+  registration function. The latest Auth session differed from
+  `profiles.active_session_id`, so `has_permission('order.read')` correctly
+  returned false and the dashboard surfaced a misleading 403.
+- Login now registers the canonical session; the shared guard verifies that
+  session, maps stale/anonymous sessions to 401, keeps real permission denials
+  at 403, and maps permission RPC failures to 503.
+- Migration `20260726090522_global_dashboard_store_scope_restrictive_rls.sql`
+  is applied remotely. Twelve `RESTRICTIVE SELECT` policies close the
+  permissive-policy OR gap for Store Admin.
+- Remote simulation proved `visible_store_count=1`, `cross_store_count=0`, and
+  `cross_store_order_count=0` for Store Admin. Owner/Super Admin keep global
+  scope.
+- Verification: targeted 17/17 PASS; typecheck PASS; lint 0 errors / 32
+  existing warnings; full tests 91 files / 706 tests PASS; build 120/120 PASS;
+  `git diff --check` PASS.
+- No commit, push, merge, deployment, service-role client, or RLS disable.
+
+## PDP Ready Stock visual/scroll refinement state — 2026-07-26
+
+- Universal `/produk/[slug]` presentation is **IMPLEMENTED AND LOCALLY
+  VERIFIED**: bounded sticky media on desktop, normal-flow purchase/details,
+  vertical thumbnail rail, preserved mobile swipe, and accessible canonical
+  detail disclosures.
+- Product/variant/SKU, pricing, inventory, Instant Custom, Cart v5, checkout,
+  order, database, and migration authorities are unchanged.
+- Evidence: typecheck PASS; lint 0 errors / 32 pre-existing warnings; tests 92
+  files / 710 tests PASS; build 120/120 PASS; seven required browser viewports
+  have no horizontal overflow and the sticky media releases before the footer.
+- Owner visual and Vercel Preview verification remain pending. External owner
+  state moved HEAD from `a606e06` to pushed commit `be2ee66`; Codex executed no
+  commit, push, merge, deploy, or PR command.

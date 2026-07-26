@@ -228,10 +228,13 @@ export function ProductCatalog({
   }, [activeProductType, activeStatus, availableProductTypeOptions, category, color, group, isCategoryCatalog, label, price, products, query, sort]);
 
   useEffect(() => {
-    if (!isCategoryCatalog) return;
     const desktopQuery = window.matchMedia("(min-width: 1024px)");
     const updateColumns = () =>
-      setColumns(catalogColumnsForWidth(desktopQuery.matches ? 1024 : 0));
+      setColumns(
+        isCategoryCatalog
+          ? desktopQuery.matches ? 3 : 2
+          : catalogColumnsForWidth(desktopQuery.matches ? 1024 : 0)
+      );
     updateColumns();
     desktopQuery.addEventListener("change", updateColumns);
     return () => desktopQuery.removeEventListener("change", updateColumns);
@@ -363,7 +366,7 @@ export function ProductCatalog({
   }
 
   const controlClass =
-    "public-control min-h-11 min-w-0 rounded-lg border px-3 text-sm font-medium outline-none";
+    "public-control min-h-12 min-w-0 rounded-full border px-4 text-sm font-medium outline-none";
   const filterControls = () => (
     <>
       {showGroupFilter ? (
@@ -454,7 +457,7 @@ export function ProductCatalog({
   );
 
   return (
-    <div>
+    <div className={isCategoryCatalog ? "category-product-catalog" : ""}>
       {showHeading ? <h2 className="public-section-title">{title}</h2> : null}
 
       <div className={`${showHeading ? "mt-6 " : ""}public-divider border-y bg-white py-4`}>
@@ -472,7 +475,7 @@ export function ProductCatalog({
               aria-expanded={filtersOpen}
               aria-controls="public-catalog-filters"
               onClick={(event) => openFilters(event.currentTarget)}
-              className="public-secondary-action inline-flex min-h-11 items-center justify-center rounded-lg border px-4 text-sm font-semibold"
+              className="public-secondary-action inline-flex min-h-12 items-center justify-center rounded-full border px-5 text-sm font-medium"
             >
               Filter{activeFilterCount ? ` (${activeFilterCount})` : ""}
             </button>
@@ -514,7 +517,7 @@ export function ProductCatalog({
               aria-expanded={filtersOpen}
               aria-controls="public-catalog-filters"
               onClick={(event) => openFilters(event.currentTarget)}
-              className="public-secondary-action inline-flex min-h-11 items-center justify-center rounded-lg border px-4 text-sm font-semibold"
+              className="public-secondary-action inline-flex min-h-12 items-center justify-center rounded-full border px-5 text-sm font-medium"
             >
               Filter{activeFilterCount ? ` (${activeFilterCount})` : ""}
             </button>
@@ -553,7 +556,7 @@ export function ProductCatalog({
       </div>
 
       {visible.length ? (
-        <div className="mt-6 grid grid-cols-2 gap-x-4 gap-y-8 lg:grid-cols-4 lg:gap-x-6 lg:gap-y-10">
+        <div className={`mt-6 grid grid-cols-2 gap-x-3 gap-y-8 sm:gap-x-4 lg:mt-8 ${isCategoryCatalog ? "lg:grid-cols-3 lg:gap-x-4 lg:gap-y-12" : "lg:grid-cols-4 lg:gap-x-6 lg:gap-y-10"}`}>
           {displayedProducts.map((product) => (
             <PublicProductCard
               key={product.id || product.slug || product.nama}
@@ -572,7 +575,7 @@ export function ProductCatalog({
           <button
             type="button"
             onClick={resetFilters}
-            className="public-secondary-action mt-6 inline-flex min-h-10 items-center justify-center border px-5 text-sm font-semibold"
+            className="public-secondary-action mt-6 inline-flex min-h-12 items-center justify-center border px-5 text-sm font-semibold"
           >
             Reset Filter
           </button>
@@ -583,7 +586,7 @@ export function ProductCatalog({
         <div
           aria-label="Memuat produk tambahan"
           aria-live="polite"
-          className="mt-8 grid grid-cols-2 gap-x-4 gap-y-8 lg:grid-cols-4 lg:gap-x-6"
+          className={`mt-8 grid grid-cols-2 gap-x-3 gap-y-8 sm:gap-x-4 ${isCategoryCatalog ? "lg:grid-cols-3 lg:gap-x-4" : "lg:grid-cols-4 lg:gap-x-6"}`}
         >
           {Array.from({ length: columns }, (_, index) => (
             <div key={index} className="animate-pulse">
@@ -601,7 +604,7 @@ export function ProductCatalog({
           <button
             type="button"
             onClick={loadMore}
-            className="public-secondary-action inline-flex min-h-11 items-center justify-center border px-6 text-sm font-semibold transition"
+            className="public-secondary-action inline-flex min-h-12 items-center justify-center rounded-full border px-7 text-sm font-medium transition"
           >
             Lihat Lebih Banyak
           </button>
@@ -650,14 +653,14 @@ export function ProductCatalog({
               <button
                 type="button"
                 onClick={resetFilters}
-                className="public-secondary-action inline-flex min-h-11 items-center justify-center border px-4 text-sm font-semibold"
+                className="public-secondary-action inline-flex min-h-12 items-center justify-center rounded-full border px-4 text-sm font-medium"
               >
                 Reset
               </button>
               <button
                 type="button"
                 onClick={closeFilters}
-                className="inline-flex min-h-11 items-center justify-center bg-black px-4 text-sm font-semibold text-white"
+                className="inline-flex min-h-12 items-center justify-center rounded-full bg-black px-4 text-sm font-medium text-white"
               >
                 Terapkan ({visible.length})
               </button>

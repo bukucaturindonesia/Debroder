@@ -7,12 +7,17 @@ import { ProductGallery } from "@/components/ProductGallery";
 import { PublicProductCard } from "@/components/PublicProductCard";
 import { TieredProductPurchasePanel } from "@/components/TieredProductPurchasePanel";
 import { ProductVariantGalleryProvider } from "@/components/ProductVariantGalleryContext";
+import { ProductDetailDisclosure } from "@/components/product/ProductDetailDisclosure";
 import { PublicShell } from "@/components/PublicPage";
 import { getProductImage } from "@/lib/fallback-data";
 import { getProductDetailPageModel } from "@/lib/product-detail-page/runtime";
 import { formatRupiah } from "@/lib/url";
+import { listInstantServicesForProduct } from "@/lib/instant-custom-data";
 
-type PageProps = { params: Promise<{ slug: string }> };
+type PageProps = {
+  params: Promise<{ slug: string }>;
+  searchParams?: Promise<{ mode?: string }>;
+};
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { slug } = await params;
@@ -38,7 +43,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   };
 }
 
-export default async function ProductDetailPage({ params }: PageProps) {
+export default async function ProductDetailPage({ params, searchParams }: PageProps) {
   const { slug } = await params;
   const model = await getProductDetailPageModel(slug);
   if (model.data.state === "not_found") notFound();
@@ -52,9 +57,7 @@ export default async function ProductDetailPage({ params }: PageProps) {
     priceLabel,
     detailHref,
     isJersey,
-    hasReadyStock,
-    hasCustomAvailability,
-    showPurchasePanel,
+    purchaseCapabilities,
     customDestination,
     colors,
     sizes,
@@ -64,15 +67,21 @@ export default async function ProductDetailPage({ params }: PageProps) {
   if (!product) {
     return (
       <PublicShell>
-        <main className="bg-white py-16">
+        <section className="bg-white py-16">
           <div className="section-shell">
             <h1 className="text-2xl font-semibold">Produk belum dapat dimuat</h1>
             <p className="mt-3 text-sm text-black/60">Silakan muat ulang halaman atau coba kembali beberapa saat lagi.</p>
           </div>
-        </main>
+        </section>
       </PublicShell>
     );
   }
+  const instantServices = product.id && product.product_category_id
+    ? await listInstantServicesForProduct(product.id, product.product_category_id)
+    : [];
+  const requestedMode = (await searchParams)?.mode;
+  const productDescription = (product.description || product.deskripsi || "").trim();
+  const productSpecifications = product.specifications || [];
 
   return (
     <PublicShell
@@ -84,7 +93,10 @@ export default async function ProductDetailPage({ params }: PageProps) {
           <JerseyCommerceNav />
         </Suspense>
       ) : null}
-      <main className={isJersey ? "bg-white py-8 sm:py-12" : "bg-white py-8 sm:py-12 lg:py-16"}>
+      <section
+        data-pdp-primary
+        className={isJersey ? "bg-white py-8 sm:py-12" : "bg-white py-8 sm:py-12 lg:py-16"}
+      >
         <div className="section-shell">
           <nav
             aria-label="Breadcrumb"
@@ -103,14 +115,22 @@ export default async function ProductDetailPage({ params }: PageProps) {
             baseImages={images}
             variants={product.variants || []}
           >
-            <div className="mt-6 grid gap-8 lg:grid-cols-[minmax(0,1.08fr)_minmax(360px,0.72fr)] lg:gap-14">
-              <ProductGallery
-                images={images}
-                alt={product.image_alt || product.nama}
-                focal={focal}
-              />
+            <div className="mt-6 grid items-start gap-8 lg:grid-cols-[minmax(0,1.18fr)_minmax(360px,0.72fr)] lg:gap-10 xl:gap-14">
+              <div
+                data-pdp-sticky-media
+                className="min-w-0 lg:sticky lg:top-24 lg:self-start"
+              >
+                <ProductGallery
+                  images={images}
+                  alt={product.image_alt || product.nama}
+                  focal={focal}
+                />
+              </div>
 
-              <div className={isJersey ? "self-start p-5 sm:p-7 lg:sticky lg:top-24 border-t border-black/10 bg-white" : "self-start lg:sticky lg:top-24"}>
+              <div
+                data-pdp-product-details
+                className={isJersey ? "min-w-0 self-start border-t border-black/10 bg-white p-5 sm:p-7" : "min-w-0 self-start"}
+              >
                 <p className={isJersey ? "text-xs font-semibold uppercase tracking-[.16em] text-brand-charcoal/50" : "public-muted-copy text-[13px] leading-[1.45]"}>
                   {product.kategori}
                   {product.subcategory
@@ -146,7 +166,7 @@ export default async function ProductDetailPage({ params }: PageProps) {
                   Harga akhir berubah otomatis mengikuti jumlah pesanan.
                 </p>
 
-                {showPurchasePanel ? (
+                {purchaseCapabilities.showPurchasePanel ? (
                   <TieredProductPurchasePanel
                     product={{
                       id: product.id || product.slug || product.nama,
@@ -171,8 +191,11 @@ export default async function ProductDetailPage({ params }: PageProps) {
                     bulkOrderNote={product.bulk_order_note}
                     whatsappUrl={whatsappUrl}
                     variants={product.variants}
-                    showBuyNow={isJersey && hasReadyStock}
+                    showAddToCart={purchaseCapabilities.showAddToCart}
+                    showBuyNow={purchaseCapabilities.showBuyNow}
                     monochrome={isJersey}
+                    instantServices={instantServices}
+                    initialInstantMode={requestedMode === "instant"}
                   />
                 ) : (
                   <section className="mt-7 border-y border-black/10 py-6">
@@ -189,62 +212,68 @@ export default async function ProductDetailPage({ params }: PageProps) {
                   </section>
                 )}
 
-                {isJersey && hasReadyStock && hasCustomAvailability ? (
+                {isJersey && purchaseCapabilities.showBuyNow && purchaseCapabilities.showCustomAction ? (
                   <Link
                     href="/jersey/configurator"
                     className="mt-3 inline-flex min-h-11 items-center text-sm font-semibold text-black underline decoration-1 underline-offset-4 outline-none focus-visible:ring-2 focus-visible:ring-black focus-visible:ring-offset-2"
                   >
-                    Atau buat Jersey Custom
+                    Full Custom Jersey melalui Configurator
                   </Link>
                 ) : null}
 
-                {customDestination ? (
+                {purchaseCapabilities.showCustomAction && customDestination ? (
                   <Link href={customDestination} className="mt-4 inline-flex min-h-11 items-center rounded-full border border-black px-5 text-sm font-semibold transition hover:bg-black hover:text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-black">
                     Custom produk ini
                   </Link>
                 ) : null}
 
-                <div className={isJersey ? "mt-8 p-4 border-t border-black/10 bg-white" : "public-divider mt-8 border-t py-6"}>
-                  <h2 className="text-base font-semibold">Deskripsi</h2>
-                  <p className={isJersey ? "mt-3 whitespace-pre-line text-sm leading-7 text-brand-charcoal/60" : "public-secondary-copy mt-3 whitespace-pre-line text-[15px] leading-6 md:text-base"}>
-                    {product.description ||
-                      product.deskripsi ||
-                      "Informasi lengkap produk dapat dikonsultasikan melalui WhatsApp."}
-                  </p>
-                </div>
-
-                {product.specifications?.length ? (
-                  <div className={isJersey ? "mt-4 p-4 border-t border-black/10 bg-white" : "public-divider border-t py-6"}>
-                    <h2 className="text-base font-semibold">
-                      Spesifikasi
-                    </h2>
-                    <dl className="mt-3 divide-y divide-black/5">
-                      {product.specifications.map((item) => {
-                        const [key, ...rest] = item.split(":");
-                        return (
-                          <div
-                            key={item}
-                            className="grid gap-1 py-3 text-sm sm:grid-cols-[120px_1fr] sm:gap-3"
-                          >
-                            <dt className="font-semibold">
-                              {rest.length ? key : "Detail"}
-                            </dt>
-                            <dd className="text-brand-charcoal/60">
-                              {rest.length
-                                ? rest.join(":").trim()
-                                : item}
-                            </dd>
-                          </div>
-                        );
-                      })}
-                    </dl>
+                {productDescription || productSpecifications.length ? (
+                  <div className="mt-8 border-b border-[#e5e5e5]">
+                    <p className="mb-2 text-sm font-semibold text-[#111111]">
+                      Lihat Detail Produk
+                    </p>
+                    {productDescription ? (
+                      <ProductDetailDisclosure
+                        id="product-description"
+                        title="Deskripsi Produk"
+                      >
+                        <p className="whitespace-pre-line">{productDescription}</p>
+                      </ProductDetailDisclosure>
+                    ) : null}
+                    {productSpecifications.length ? (
+                      <ProductDetailDisclosure
+                        id="product-specifications"
+                        title="Material & Detail"
+                      >
+                        <dl className="divide-y divide-[#e5e5e5]">
+                          {productSpecifications.map((item) => {
+                            const [key, ...rest] = item.split(":");
+                            return (
+                              <div
+                                key={item}
+                                className="grid gap-1 py-3 text-sm sm:grid-cols-[120px_1fr] sm:gap-3"
+                              >
+                                <dt className="font-semibold text-[#111111]">
+                                  {rest.length ? key : "Detail"}
+                                </dt>
+                                <dd>
+                                  {rest.length
+                                    ? rest.join(":").trim()
+                                    : item}
+                                </dd>
+                              </div>
+                            );
+                          })}
+                        </dl>
+                      </ProductDetailDisclosure>
+                    ) : null}
                   </div>
                 ) : null}
               </div>
             </div>
           </ProductVariantGalleryProvider>
         </div>
-      </main>
+      </section>
       {!isJersey && relatedProducts.length ? (
         <section className="bg-white py-12 md:py-16 lg:py-20" aria-labelledby="related-products-title">
           <div className="section-shell">

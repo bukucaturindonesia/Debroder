@@ -20,6 +20,7 @@ import {
 import { aggregateAvailableStock } from "@/lib/inventory-authority";
 import { getAdminSupabaseClient } from "@/lib/supabase/admin";
 import { getPublicSupabaseClient } from "@/lib/supabase/client";
+import { repriceInstantServicesForProduct } from "@/lib/instant-custom-data";
 
 const PRODUCT_SELECT = `
   id,
@@ -170,7 +171,7 @@ export async function revalidateCartItems(
     );
   }
 
-  return latestItems.map(({ input, latest }) => {
+  return Promise.all(latestItems.map(async ({ input, latest }) => {
     if (!latest) {
       return {
         product_variant_size_id: input.product_variant_size_id,
@@ -222,6 +223,22 @@ export async function revalidateCartItems(
     }
 
     const latestUnitPrice = pricing.unitPrice;
+    const instantCustom = await repriceInstantServicesForProduct({
+      productId: latest.product.id,
+      productCategoryId: latest.product.productCategoryId,
+      quantity: input.quantity,
+      selections: input.instant_services ?? []
+    });
+    if (!instantCustom.ok) {
+      return {
+        product_variant_size_id: input.product_variant_size_id,
+        status: "unavailable" as const,
+        error_code: "PRICING_PRODUCT_UNAVAILABLE" as const,
+        latest_unit_price: latestUnitPrice,
+        stock_available: latest.variantSize.stockQuantity,
+        message: instantCustom.message
+      };
+    }
 
     if (input.quantity > latest.variantSize.stockQuantity) {
       return {
@@ -251,9 +268,10 @@ export async function revalidateCartItems(
       error_code: null,
       latest_unit_price: latestUnitPrice,
       stock_available: latest.variantSize.stockQuantity,
-      message: null
+      message: null,
+      ...(instantCustom.snapshot ? { instant_custom_snapshot: instantCustom.snapshot } : {})
     };
-  });
+  }));
 }
 
 function findVariantSizeById(
@@ -541,10 +559,20 @@ async function applyInventoryAvailability(products: Product[]) {
   );
   if (!variantSizeIds.length) return products;
 
-  const client = getAdminSupabaseClient();
-  if (!client) {
-    return projectInventoryAvailability(products, new Map());
-  }
+  const availability = await readInventoryAvailabilityByVariantSizeIds(
+    variantSizeIds
+  );
+
+  return projectInventoryAvailability(products, availability);
+}
+
+export async function readInventoryAvailabilityByVariantSizeIds(
+  variantSizeIds: readonly string[]
+) {
+  if (!variantSizeIds.length) return new Map<string, number>();
+
+  const adminClient = getAdminSupabaseClient();
+  const publicClient = getPublicSupabaseClient();
 
   const rows: Array<{
     variantSizeId: string;
@@ -552,30 +580,41 @@ async function applyInventoryAvailability(products: Product[]) {
     reserved: number;
   }> = [];
   for (const ids of chunked(variantSizeIds, 100)) {
-    const { data, error } = await client
-      .from("inventory_balances")
-      .select(
-        "variant_size_id,on_hand_quantity,reserved_quantity,inventory_locations!inner(active,location_type)"
-      )
-      .in("variant_size_id", ids)
-      .eq("inventory_locations.active", true)
-      .neq("inventory_locations.location_type", "legacy");
-    if (error) {
-      throw new Error("Inventory authority is unavailable.");
+    if (adminClient) {
+      const { data, error } = await adminClient
+        .from("inventory_balances")
+        .select(
+          "variant_size_id,on_hand_quantity,reserved_quantity,inventory_locations!inner(active,location_type)"
+        )
+        .in("variant_size_id", ids)
+        .eq("inventory_locations.active", true)
+        .neq("inventory_locations.location_type", "legacy");
+      if (error) throw new Error("Inventory authority is unavailable.");
+      for (const row of asRecordArray(data)) {
+        rows.push({
+          variantSizeId: asString(row.variant_size_id),
+          onHand: asNumber(row.on_hand_quantity),
+          reserved: asNumber(row.reserved_quantity)
+        });
+      }
+      continue;
     }
+    if (!publicClient) throw new Error("Inventory authority is unavailable.");
+    const { data, error } = await publicClient.rpc(
+      "public_ready_stock_availability_v1",
+      { p_variant_size_ids: ids }
+    );
+    if (error) throw new Error("Inventory authority is unavailable.");
     for (const row of asRecordArray(data)) {
       rows.push({
         variantSizeId: asString(row.variant_size_id),
-        onHand: asNumber(row.on_hand_quantity),
-        reserved: asNumber(row.reserved_quantity)
+        onHand: asNumber(row.available),
+        reserved: 0
       });
     }
   }
 
-  return projectInventoryAvailability(
-    products,
-    aggregateAvailableStock(rows)
-  );
+  return aggregateAvailableStock(rows);
 }
 
 function projectInventoryAvailability(

@@ -6,6 +6,11 @@ import {
   MAX_CART_LINE_QUANTITY,
   MAX_CART_TOTAL_QUANTITY
 } from "@/lib/cart-v5";
+import {
+  instantServiceSelectionSchema,
+  type InstantServiceSelection
+} from "@/lib/instant-custom";
+import { z } from "zod";
 
 export type CheckoutFulfillmentMethod = "pickup" | "shipping";
 export type CheckoutPaymentMethod = "bank_transfer" | "pay_at_store";
@@ -35,6 +40,7 @@ export type PublicCheckoutRequest = {
     variantSizeId: string;
     quantity: number;
     note?: string;
+    services?: InstantServiceSelection[];
   }>;
   customProjects: CustomCheckoutProject[];
 };
@@ -84,17 +90,24 @@ export function parsePublicCheckoutRequest(value: unknown): PublicCheckoutReques
     if (!isRecord(item)) return null;
     const variantSizeId = text(item.variantSizeId);
     const quantity = Number(item.quantity);
+    const services = z.array(instantServiceSelectionSchema).max(10).safeParse(item.services ?? []);
     if (
       !/^[0-9a-fA-F-]{36}$/.test(variantSizeId)
       || !Number.isSafeInteger(quantity)
       || quantity < 1
       || quantity > MAX_CHECKOUT_LINE_QUANTITY
+      || !services.success
     ) return null;
     if (variantIds.has(variantSizeId)) return null;
     variantIds.add(variantSizeId);
     totalQuantity += quantity;
     if (totalQuantity > MAX_CHECKOUT_TOTAL_QUANTITY) return null;
-    items.push({ variantSizeId, quantity, note: text(item.note).slice(0, 1000) || undefined });
+    items.push({
+      variantSizeId,
+      quantity,
+      note: text(item.note).slice(0, 1000) || undefined,
+      services: services.data
+    });
   }
 
   return {

@@ -21,6 +21,11 @@ import type {
   CustomProjectPricing,
   CustomProjectSnapshot
 } from "@/lib/custom-commerce/types";
+import {
+  instantServiceSelectionSchema,
+  type InstantCustomSnapshot
+} from "@/lib/instant-custom";
+import { z } from "zod";
 
 export const CART_V5_STORAGE_KEY = "debroder-cart-v5";
 export const CART_V5_VERSION = 5 as const;
@@ -111,6 +116,7 @@ export type ReadyStockRevalidationResult = {
   latest_unit_price: number | null;
   stock_available: number;
   message: string | null;
+  instant_custom_snapshot?: InstantCustomSnapshot;
 };
 
 export type AppliedRevalidation = {
@@ -510,6 +516,9 @@ export function applyReadyStockRevalidation(
     if (result.status === "ok" && result.latest_unit_price !== null) {
       return {
         ...line,
+        ...(result.instant_custom_snapshot
+          ? { instantCustom: result.instant_custom_snapshot }
+          : line.instantCustom ? { instantCustom: line.instantCustom } : {}),
         priceValue: result.latest_unit_price,
         priceLabel: `Rp${result.latest_unit_price.toLocaleString("id-ID")}`,
         stockAvailable: result.stock_available,
@@ -575,6 +584,7 @@ export function createReadyStockCartItem(input: {
     size?: string;
   };
   notes?: string;
+  instantCustom?: InstantCustomSnapshot;
 }): CartItem {
   const line: ReadyStockCartLine = {
     contractVersion: CONTRACT_VERSIONS.cartLine,
@@ -588,7 +598,8 @@ export function createReadyStockCartItem(input: {
     productId: input.productId,
     variantId: input.variantId,
     variantSizeId: input.variantSizeId,
-    sku: input.sku
+    sku: input.sku,
+    ...(input.instantCustom ? { instantCustom: input.instantCustom } : {})
   };
   return {
     ...line,
@@ -598,6 +609,15 @@ export function createReadyStockCartItem(input: {
     color: input.ui.color ?? "",
     size: input.ui.size ?? ""
   };
+}
+
+export function cartItemSubtotal(item: CartItem) {
+  if (item.lineType === "legacy_unsupported") return 0;
+  if (item.lineType === "custom_project") {
+    return item.customProject?.pricing.finalTotal ?? 0;
+  }
+  const productTotal = (Number(item.priceValue) || Number(String(item.priceLabel ?? "").replace(/[^\d]/g, "")) || 0) * item.quantity;
+  return productTotal + (item.lineType === "ready_stock" ? item.instantCustom?.serviceTotal ?? 0 : 0);
 }
 
 export function createConfiguredProductCartItem(input: {
@@ -755,7 +775,8 @@ function isCartItem(value: unknown): value is CartItem {
     return isNonEmptyString(value.productId)
       && isNonEmptyString(value.variantId)
       && isNonEmptyString(value.variantSizeId)
-      && isNonEmptyString(value.sku);
+      && isNonEmptyString(value.sku)
+      && (value.instantCustom === undefined || isInstantCustomSnapshot(value.instantCustom));
   }
 
   if (value.lineType === "configured_product") {
@@ -779,6 +800,32 @@ function isCartItem(value: unknown): value is CartItem {
     && isNonEmptyString(value.legacyStorageVersion)
     && isNonEmptyString(value.reasonCode)
     && isRecord(value.rawLine);
+}
+
+function isInstantCustomSnapshot(value: unknown): value is InstantCustomSnapshot {
+  if (!isRecord(value)) return false;
+  if (
+    value.version !== 1
+    || value.requiresService !== true
+    || !Array.isArray(value.selections)
+    || !Array.isArray(value.pricing)
+    || !Number.isSafeInteger(value.serviceTotal)
+    || Number(value.serviceTotal) < 0
+    || !isIsoDate(value.pricedAt)
+  ) return false;
+  if (!z.array(instantServiceSelectionSchema).max(10).safeParse(value.selections).success) return false;
+  return value.pricing.every((entry) => {
+    if (!isRecord(entry)) return false;
+    return isNonEmptyString(entry.serviceId)
+      && isNonEmptyString(entry.serviceCode)
+      && isNonEmptyString(entry.serviceName)
+      && Number.isSafeInteger(entry.unitPrice)
+      && Number(entry.unitPrice) >= 0
+      && Number.isSafeInteger(entry.chargedQuantity)
+      && Number(entry.chargedQuantity) >= 1
+      && Number.isSafeInteger(entry.total)
+      && Number(entry.total) >= 0;
+  });
 }
 
 function isConfiguredProductSnapshot(value: unknown): value is ConfiguredProductSnapshot {

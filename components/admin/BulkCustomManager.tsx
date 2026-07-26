@@ -2,6 +2,8 @@
 
 import { FormEvent, useEffect, useMemo, useState } from "react";
 import { createSupabaseClient } from "@/lib/supabase";
+import { instantServiceInputFieldSchema } from "@/lib/instant-custom";
+import { z } from "zod";
 
 type Product = {
   id: string;
@@ -49,6 +51,14 @@ type Service = {
   allowed_file_types?: string[] | null;
   exclusive_group?: string | null;
   sort_order: number;
+  input_schema?: Array<{
+    key: string;
+    label: string;
+    type: "text" | "number" | "select" | "textarea";
+    required?: boolean;
+    maxLength?: number;
+    options?: string[];
+  }>;
 };
 
 type ServiceRule = {
@@ -382,7 +392,8 @@ export function BulkCustomManager() {
               serviceForm.allowed_file_types ?? ["png", "jpg", "jpeg", "pdf"],
             isStackable: serviceForm.is_stackable,
             exclusiveGroup: serviceForm.exclusive_group ?? null,
-            sortOrder: serviceForm.sort_order
+            sortOrder: serviceForm.sort_order,
+            inputSchema: serviceForm.input_schema ?? []
           }
         ]
       })
@@ -399,6 +410,23 @@ export function BulkCustomManager() {
 
     setStatus({ type: "success", text: "Layanan custom berhasil disimpan." });
     await loadData();
+  }
+
+  function editServiceInputSchema() {
+    if (!serviceForm) return;
+    const next = window.prompt(
+      "Schema input JSON. Gunakan key, label, type, required, maxLength, dan options bila perlu.",
+      JSON.stringify(serviceForm.input_schema ?? [], null, 2)
+    );
+    if (next === null) return;
+    try {
+      const parsed: unknown = JSON.parse(next);
+      const schema = z.array(instantServiceInputFieldSchema).max(20).parse(parsed);
+      setServiceForm({ ...serviceForm, input_schema: schema });
+      setStatus({ type: "info", text: "Schema input berubah di form. Simpan layanan untuk menerapkannya." });
+    } catch (error) {
+      setStatus({ type: "error", text: error instanceof Error ? error.message : "Schema input tidak valid." });
+    }
   }
 
   async function saveServiceRule(event: FormEvent) {
@@ -830,9 +858,9 @@ export function BulkCustomManager() {
                             className="mt-2 min-h-11 w-full border px-3"
                           >
                             <option value="fixed_per_item">Tetap per item</option>
-                            <option value="flat">Flat</option>
+                            <option value="fixed_per_order">Tetap per order</option>
                             <option value="tiered">Bertingkat</option>
-                            <option value="quotation">Penawaran Harga</option>
+                            <option value="manual_quote">Penawaran Harga</option>
                             <option value="estimated">Estimasi</option>
                           </select>
                         </label>
@@ -951,6 +979,15 @@ export function BulkCustomManager() {
                           />
                           Bisa digabung
                         </label>
+                        <div className="border p-3 text-sm sm:col-span-2">
+                          <p className="font-semibold">Input layanan</p>
+                          <p className="mt-1 text-xs text-black/55">
+                            {(serviceForm.input_schema ?? []).length} field terkonfigurasi. Perubahan divalidasi server saat disimpan.
+                          </p>
+                          <button type="button" onClick={editServiceInputSchema} className="mt-3 min-h-10 rounded-full border px-4 text-xs font-semibold">
+                            Edit schema input
+                          </button>
+                        </div>
                       </div>
                     ) : null}
 

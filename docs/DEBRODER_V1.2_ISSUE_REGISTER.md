@@ -450,3 +450,284 @@
   type, reservation, delta, and post-mutation snapshots.
 - Custom implicit inventory use — **CLOSED IN SOURCE**. Inventory applies only
   when variant-size identity and SKU exactly match canonical catalog mapping.
+
+## Public Experience P0 — Design Tokens Global
+
+### V12-046 — Homepage semantic heading absent in active snapshot
+
+- Severity: MINOR
+- Status: **OPEN — DEFERRED TO HOMEPAGE-OWNED PACKAGE**
+- Evidence: browser verification at five responsive viewports returned
+  meaningful content and `main`, but `document.querySelectorAll("h1").length`
+  was `0` at every viewport.
+- Boundary: P0 owns tokens only. CMS copy and homepage content hierarchy were
+  not changed to avoid scope expansion.
+- Required follow-up: the package that owns homepage content must prove one
+  meaningful visible or accessibility-valid `h1` without duplicating CMS/PIM
+  content truth.
+
+## Closed in Public Experience P0
+
+- Split public token definitions — **CLOSED IN SOURCE**. Frozen public color,
+  type, spacing, content width, gutter, shape, focus, control, and motion
+  primitives have one canonical root contract.
+- Literal category/landing theme drift — **CLOSED IN SOURCE**. Current public
+  consumers map to canonical tokens with compatibility aliases retained for
+  later package migration.
+- External reference class leakage — **CLOSED IN SOURCE**. Production uses a
+  DEBRODER-owned landing scope and regression coverage rejects external
+  reference class/URL markers.
+- Responsive token regression — **CLOSED AND VERIFIED**. Five viewports show
+  correct computed gutters/spacing, no horizontal page overflow, no browser
+  errors, and a visible FROZEN focus ring.
+
+## Public Experience P1–P12
+
+### V12-047 — Owner verification for Public Experience P1–P12
+
+- Severity: Package gate
+- Status: **OPEN — OWNER VERIFICATION PENDING**
+- Detail: Source implementation and package handoff are complete. The master
+  execution prompt prohibited agent typecheck, lint, tests, build, browser,
+  screenshots, deployment, and Supabase verification. Owner must review the
+  diff and run the full verification checklist before any PASS claim.
+
+### V12-048 — Official legal content unavailable
+
+- Severity: MAJOR content dependency
+- Status: **OPEN — OWNER LEGAL CONTENT REQUIRED**
+- Evidence: no approved public source for terms, privacy, return, shipping,
+  payment policy, effective date, or legal version was proven.
+- Current safe state: reusable legal layout and routes exist but explicitly do
+  not create legal terms. Checkout does not demand agreement to unpublished
+  policy.
+
+### V12-049 — Customer account and wishlist persistence unavailable
+
+- Severity: DEFERRED foundation dependency
+- Status: **OPEN — SAFE STATE IMPLEMENTED**
+- Evidence: no public customer Auth/account or wishlist datastore was proven;
+  existing Supabase Auth route is Admin-owned.
+- Current safe state: `/login`, `/account`, and `/wishlist` do not create a
+  second backend and route customers to guest tracking/catalog.
+
+### V12-050 — Fresh Drop release schedule metadata not proven
+
+- Severity: DEFERRED content dependency
+- Status: **OPEN — SAFE DATA-ONLY IMPLEMENTATION**
+- Evidence: canonical public product flags support `fresh_drop`/`label_new`,
+  but release date/time/countdown metadata was not proven.
+- Current safe state: `/fresh-drop` shows only canonical flagged products or
+  an explicit empty state. No release claim is fabricated.
+
+## Closed in Public Experience P1–P12 source
+
+- Homepage semantic heading absence — **CLOSED IN SOURCE / NOT VERIFIED**.
+  An accessibility-valid DEBRODER H1 fallback renders only when the active
+  first hero cannot supply its own heading.
+- Footer legal-link aliasing — **CLOSED IN SOURCE / NOT VERIFIED**. Terms and
+  privacy no longer point to the order guide; they use explicit legal routes.
+- Missing standalone About/Search/Help/Fresh Drop routes —
+  **CLOSED IN SOURCE / NOT VERIFIED**. Routes reuse canonical public sources
+  and shared shell components.
+- Duplicate Fresh Drop PDP risk — **CLOSED IN SOURCE / NOT VERIFIED**.
+  `/fresh-drop/[slug]` redirects to `/produk/[slug]`.
+
+### V12-051 — Jersey PDP purchase capability ownership
+
+- Severity: MAJOR regression risk
+- Status: **CLOSED IN SOURCE — OWNER RECHECK PENDING**
+- Root cause: `/produk/[slug]` menghitung ulang Buy Now dari raw availability,
+  sementara product-detail model belum memiliki satu kontrak capability.
+- Resolution: typed pure resolver sekarang menentukan purchase panel, Add to
+  Cart, Buy Now, dan Custom action; PDP serta tiered purchase panel mengonsumsi
+  hasil resolver.
+- Evidence: targeted Jersey suite **PASS (1 file / 9 tests)** dengan matrix
+  Ready Stock, Custom-only, unavailable, dan non-Jersey. Full gates tidak
+  dijalankan dalam targeted revision ini.
+
+### V12-052 — Public touch targets below 48 × 48 px
+
+- Severity: MEDIUM
+- Status: **CLOSED AND BROWSER-VERIFIED**
+- Root cause: PDP swatches, size controls, quantity controls, gallery dots,
+  and catalog reset action used 8–44 px interactive boxes.
+- Resolution: interactive boxes now have a minimum 48 × 48 px target while
+  preserving presentation and business behavior.
+
+### V12-053 — Public landmark and cart-dialog accessibility
+
+- Severity: HIGH
+- Status: **CLOSED AND BROWSER-VERIFIED**
+- Root cause: pages nested `main` inside `PublicShell`; closed cart remained
+  exposed, and open cart lacked focus entry/trap/Escape/restoration.
+- Resolution: semantic wrappers corrected; closed cart is hidden/inert and
+  the open dialog implements verified keyboard focus management.
+
+### V12-054 — PDP and Cart used different stock authority
+
+- Severity: HIGH
+- Status: **CLOSED AND REGRESSION-TESTED**
+- Evidence: PDP displayed stock 80 for
+  `DBR-CC24-AUTUMN-ORANGE-S`; Cart v5 revalidation returned canonical
+  available stock 0 and disabled checkout.
+- Root cause: page-owned product read model projected legacy
+  `product_variant_sizes.stock`, while Cart v5 projected active non-legacy
+  `inventory_balances`.
+- Resolution: both paths share canonical inventory availability; missing
+  balance fails closed to 0. Browser now shows `Stok kosong`.
+- Regression: `test/public-product-inventory-parity.test.ts`; targeted
+  inventory suite 2 files / 9 tests PASS.
+
+### V12-055 — Custom Hub build failed on transient public read
+
+- Severity: HIGH build gate
+- Status: **CLOSED AND BUILD-VERIFIED**
+- Evidence: production prerender `/custom` threw `fetch failed`.
+- Resolution: public Custom category read returns the existing explicit safe
+  empty state on unavailable reads. Production build generated 119/119 pages.
+
+### V12-056 — Homepage category link is broken
+
+- Severity: HIGH
+- Status: **OPEN — OWNER CMS CORRECTION REQUIRED**
+- Evidence: active homepage category card links to `/kaos-polo`; existing
+  server returns HTTP 404.
+- Boundary: P13–P15 may not mutate CMS/database or add an unapproved route.
+  Owner must correct the canonical CMS target and rerun integration checks.
+
+### V12-057 — Internal Jersey pilot is publicly active
+
+- Severity: HIGH
+- Status: **OPEN — OWNER PIM CORRECTION REQUIRED**
+- Evidence: homepage/PDP publicly expose `Jersey Custom Pilot`; its canonical
+  description states it is internal and must not be published before owner
+  approval.
+- Boundary: no slug/text hardcode or database mutation was allowed. Owner must
+  unpublish it or replace the record with approved canonical content.
+
+### V12-058 — Public performance target not met
+
+- Severity: MAJOR
+- Status: **OPEN — PREVIEW VERIFICATION REQUIRED**
+- Evidence: local development homepage LCP approximately 13.35 s, CLS 0; INP
+  not proven. Public content and public shell perform separate server read
+  fan-outs.
+- Boundary: no speculative cache or broad read-model rewrite was made without
+  a freshness/invalidation contract. Verify and correct on Preview before GO.
+
+### V12-057 update - Internal Jersey pilot publication
+
+- Severity: HIGH
+- Status: **CLOSED - OWNER-AUTHORIZED DATA CORRECTION APPLIED**
+- Evidence: canonical data now renders `Jersey Eksperimental DEBRODER`,
+  exposes the three owner-review paths, and retains the existing canonical
+  SKU, inventory, product ID, and media.
+- Resolution: migration
+  `20260726165000_jersey_experimental_public_copy_correction_v1.sql` removed
+  contradictory internal-only copy; no product, specification, or media was
+  fabricated.
+
+### V12-059 - Instant Custom was not transaction-authoritative
+
+- Severity: HIGH
+- Status: **CLOSED IN SOURCE / STRUCTURE VERIFIED**
+- Root cause: PDP, Cart v5, checkout, order snapshot, and operations had no
+  shared validated service-selection contract.
+- Resolution: reusable service definitions now pass through Cart v5, server
+  repricing, service-role-only checkout, immutable snapshots,
+  `order_item_services`, and Job Order / Work Item guards.
+- Regression: targeted PASS 6/6; full tests PASS 89 files / 689 tests; build
+  PASS. Real remote order/operations execution and Preview remain **NOT
+  PROVEN**.
+
+### V12-060 - Canonical PDP inventory unavailable without service role
+
+- Severity: HIGH
+- Status: **CLOSED AND BROWSER-VERIFIED**
+- Root cause: product reads required an admin client to aggregate canonical
+  balances; the existing local server intentionally had no service-role key
+  and therefore projected zero stock.
+- Resolution: a narrow SECURITY DEFINER RPC exposes only
+  `(variant_size_id, available)` with `available = on_hand - reserved`.
+  Location and movement data remain private.
+- Regression: browser verified canonical Jersey stock 100 and Cart v5
+  revalidation; tests prohibit RLS disabling and service-role leakage.
+
+### V12-061 — Store assignment schema exists remotely without tracked source migration
+
+- Severity: HIGH governance/data-alignment risk
+- Status: **OPEN — OWNER DATABASE ALIGNMENT DECISION REQUIRED**
+- Evidence: remote `public.order_store_assignments` exposes
+  `receiving_store_id`, `production_store_id`, and `pickup_store_id`, and
+  contains rows; repository migration search found no definition or alteration
+  for this table.
+- Impact: Global Admin store summaries can use the remote receiving-store
+  authority, but a fresh environment cannot reproduce it from repository
+  migrations.
+- Containment: no migration or remote mutation was authorized in this
+  package. Dashboard store assignment is a partial module; failure yields
+  unallocated/partial data and never falls back to guessed fields.
+- Required next action: owner authorizes a dedicated read-only alignment audit
+  and, if confirmed, a new additive source migration that matches the existing
+  remote object without rewriting history.
+
+### V12-062 — Canonical low-stock threshold is undefined
+
+- Severity: MEDIUM
+- Status: **OPEN — OWNER POLICY DECISION REQUIRED**
+- Evidence: canonical inventory provides on-hand, reserved, and available
+  quantities, but no proven per-SKU/location or global low-stock threshold was
+  found.
+- Impact: out-of-stock is exact; “stok menipis” cannot be calculated without
+  an invented policy.
+- Containment: Global Admin renders the low-stock count as unavailable with a
+  clear explanation. It does not hardcode a threshold.
+- Required next action: define and persist the threshold authority before
+  enabling the count.
+
+### V12-063 - Global Dashboard canonical session mismatch
+
+- Severity: BLOCKER
+- Status: **CLOSED IN SOURCE AND REMOTE RLS; OWNER VISUAL REVIEW PENDING**
+- Symptom: authenticated Dashboard Global returned "Permission tidak
+  mencukupi" for Owner/Super Admin.
+- Root cause: `components/admin/AdminLogin.tsx` authenticated with Supabase but
+  did not call `register_admin_session_v1`. Latest `auth.sessions.id` therefore
+  differed from `profiles.active_session_id`, while
+  `public.has_permission(text)` requires `is_current_admin_session()`.
+- Secondary security finding: existing store-scope policies were permissive;
+  PostgreSQL OR-combines permissive SELECT policies, so they did not constrain
+  broader module-read policies.
+- Resolution: canonical login registration, active-session guard, correct
+  401/403/503 classification, `store_admin` route/query scope, and applied
+  migration `20260726090522_global_dashboard_store_scope_restrictive_rls.sql`
+  with 12 restrictive SELECT policies.
+- Regression evidence: targeted 17/17; full 91 files / 706 tests; typecheck,
+  lint, build 120/120, and diff check PASS. Remote Store Admin simulation:
+  1 assigned store visible, 0 cross-store stores, 0 cross-store orders.
+- Remaining proof: authenticated visual rendering and Vercel Preview require
+  Owner review after signing in again. No commit, push, merge, or deploy.
+
+### V12-064 — PDP desktop sticky ownership and progressive detail scroll
+
+- Severity: MAJOR usability / responsive consistency
+- Status: **CLOSED IN SOURCE AND LOCALLY VERIFIED — OWNER PREVIEW REVIEW
+  PENDING**
+- Evidence: the universal PDP rendered a multi-image desktop grid while the
+  right purchase column used `lg:sticky`, the reverse of the owner-frozen
+  Ready Stock scroll model.
+- Root cause: sticky classes were owned by the detail wrapper in
+  `app/produk/[slug]/page.tsx`; `components/ProductGallery.tsx` rendered every
+  desktop image as a two-column grid.
+- Resolution: sticky ownership moved to the bounded media wrapper; desktop
+  gallery now uses vertical thumbnails and one canonical 4:5 active image;
+  detail and size-guide content share one accessible disclosure. Empty/dummy
+  disclosures are suppressed.
+- Regression: `test/pdp-ready-stock-visual-scroll.test.ts`; full 92 files / 710
+  tests PASS; typecheck, lint (0 errors), build 120/120, and seven-viewport
+  browser matrix PASS. Pricing, inventory, Cart v5, checkout, database, and
+  migrations were not changed.
+- External state: owner/external process committed and pushed the exact
+  source/test batch as `be2ee66` while verification was in progress. Codex ran
+  no commit/push/deploy command.

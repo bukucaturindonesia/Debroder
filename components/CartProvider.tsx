@@ -17,6 +17,7 @@ import { SafeImage } from "@/components/SafeImage";
 import { repriceCartItemsByProduct } from "@/lib/cart-group-tier-pricing";
 import {
   applyReadyStockRevalidation,
+  cartItemSubtotal,
   CART_V5_STORAGE_KEY,
   createConfiguredProductCartItem,
   createCustomProjectCartItem,
@@ -37,6 +38,7 @@ import {
 } from "@/lib/cart-v5";
 import type { ConfiguredProductSnapshot } from "@/lib/contracts";
 import type { CustomProjectSnapshot } from "@/lib/custom-commerce/types";
+import type { InstantCustomSnapshot } from "@/lib/instant-custom";
 import { fallbackImages, pageHeroImageFallbacks } from "@/lib/fallback-data";
 import { formatRupiah } from "@/lib/url";
 
@@ -62,6 +64,7 @@ export type CartProductInput = {
   stockAvailable?: number;
   variantSnapshot?: Record<string, unknown>;
   customProject?: CustomProjectSnapshot;
+  instantCustom?: InstantCustomSnapshot;
 };
 
 export type ConfiguredProductCartInput = {
@@ -299,16 +302,8 @@ function JerseyConfigSummary({ item }: { item: CartItem }) {
   );
 }
 
-function itemProductSubtotal(item: CartItem) {
-  if (item.lineType === "legacy_unsupported") return 0;
-  if (item.lineType === "custom_project") {
-    return item.customProject?.pricing.finalTotal ?? 0;
-  }
-  return itemUnitPrice(item) * item.quantity;
-}
-
 function cartTotals(items: CartItem[]) {
-  const productSubtotal = items.reduce((total, item) => total + itemProductSubtotal(item), 0);
+  const productSubtotal = items.reduce((total, item) => total + cartItemSubtotal(item), 0);
   return { productSubtotal, normalTotal: productSubtotal };
 }
 
@@ -340,7 +335,7 @@ function QuantityControl({ value, onChange, ariaLabel }: { value: number; onChan
 
 function CartProductHeader({ item, compact = false }: { item: CartItem; compact?: boolean }) {
   const unitPrice = itemUnitPrice(item);
-  const subtotal = itemProductSubtotal(item);
+  const subtotal = cartItemSubtotal(item);
   const displaySku = item.lineType === "ready_stock"
     ? item.sku
     : readRecordString(item.variantSnapshot, "sku");
@@ -362,6 +357,14 @@ function CartProductHeader({ item, compact = false }: { item: CartItem; compact?
                 {item.color ? <span className="inline-flex items-center gap-1.5"><span className="h-3 w-3 rounded-full border border-black/10" style={{ backgroundColor: item.colorHex || "#d9d9d6" }} />{item.color}</span> : null}
                 {item.size ? <span>Ukuran {item.size}</span> : null}
                 {displaySku ? <span>SKU {displaySku}</span> : null}
+              </div>
+            ) : null}
+            {item.lineType === "ready_stock" && item.instantCustom ? (
+              <div className="mt-3 rounded-xl bg-amber-50 p-3 text-xs text-amber-950">
+                <p className="font-bold uppercase tracking-wide">Custom Instan · wajib proses layanan</p>
+                {item.instantCustom.pricing.map((service) => (
+                  <p key={service.serviceId} className="mt-1">{service.serviceName} · {formatRupiah(service.total)}</p>
+                ))}
               </div>
             ) : null}
           </div>
@@ -460,7 +463,7 @@ function CartSummary({ compact = false }: { compact?: boolean }) {
 
   return (
     <aside className={`rounded-[28px] bg-white/50 ${compact ? "p-4" : "p-5 sm:p-6"}`}>
-      <h2 className="text-2xl font-semibold tracking-tight">Summary</h2>
+      <h2 className="text-2xl font-semibold tracking-tight">Ringkasan</h2>
       <div className="mt-6 grid gap-4 text-sm">
         <div className="flex items-center justify-between gap-4">
           <span className="text-black/60">Subtotal Produk</span>
@@ -474,7 +477,7 @@ function CartSummary({ compact = false }: { compact?: boolean }) {
         </div>
       </div>
       <div className="mt-5 rounded-2xl bg-[#f5f5ef] p-4 text-xs leading-6 text-black/58">
-        Produk Ready Stock mengikuti harga PIM. Konfigurasi layanan hanya dilakukan melalui Custom Builder.
+        Produk Ready Stock mengikuti harga PIM. Custom Instan memakai SKU yang sama dan seluruh harga layanan divalidasi ulang oleh server.
       </div>
       {!checkoutAllowed ? <p className="mt-4 text-xs leading-5 text-amber-800">{cart.checkoutDecision.message}</p> : null}
       <Link href={checkoutAllowed ? "/checkout" : "#"} aria-disabled={!checkoutAllowed} className={`mt-5 inline-flex min-h-12 w-full items-center justify-center rounded-full px-5 text-center text-sm font-semibold ${checkoutAllowed ? cart.preserveJerseyInteractions ? "bg-[#063d24] text-white" : "bg-black text-white hover:bg-black/75" : "pointer-events-none bg-black/10 text-black/35"}`}>
@@ -542,7 +545,7 @@ function FullCartLayout() {
       <CartValidationNotice />
       <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_360px] xl:grid-cols-[minmax(0,1fr)_400px]">
         <div>
-          <h2 className="mb-5 text-2xl font-semibold tracking-tight">Bag</h2>
+          <h2 className="mb-5 text-2xl font-semibold tracking-tight">Isi Keranjang</h2>
           <div className="grid gap-5">
             {primaryItems.map((item) => <FullCartItem key={item.lineId} item={item} />)}
             {additionalItems.length ? (
@@ -620,17 +623,73 @@ function CartValidationNotice({ compact = false }: { compact?: boolean }) {
 
 function CartDrawer() {
   const { isOpen, closeCart } = useCart();
+  const drawerRef = useRef<HTMLElement>(null);
+  const closeButtonRef = useRef<HTMLButtonElement>(null);
+  const previousFocusRef = useRef<HTMLElement | null>(null);
+
+  useEffect(() => {
+    if (!isOpen) return;
+
+    previousFocusRef.current = document.activeElement instanceof HTMLElement
+      ? document.activeElement
+      : null;
+    const focusFrame = window.requestAnimationFrame(() => {
+      closeButtonRef.current?.focus();
+    });
+
+    function handleKeyDown(event: KeyboardEvent) {
+      if (event.key === "Escape") {
+        event.preventDefault();
+        closeCart();
+        return;
+      }
+      if (event.key !== "Tab" || !drawerRef.current) return;
+
+      const focusable = Array.from(
+        drawerRef.current.querySelectorAll<HTMLElement>(
+          'a[href],button:not([disabled]),input:not([disabled]),select:not([disabled]),textarea:not([disabled]),[tabindex]:not([tabindex="-1"])'
+        )
+      );
+      if (!focusable.length) return;
+
+      const first = focusable[0];
+      const last = focusable[focusable.length - 1];
+      if (event.shiftKey && document.activeElement === first) {
+        event.preventDefault();
+        last.focus();
+      } else if (!event.shiftKey && document.activeElement === last) {
+        event.preventDefault();
+        first.focus();
+      }
+    }
+
+    document.addEventListener("keydown", handleKeyDown);
+    return () => {
+      window.cancelAnimationFrame(focusFrame);
+      document.removeEventListener("keydown", handleKeyDown);
+      previousFocusRef.current?.focus();
+      previousFocusRef.current = null;
+    };
+  }, [closeCart, isOpen]);
 
   return (
     <>
       <div className={`fixed inset-0 z-[150] bg-black/35 transition ${isOpen ? "visible opacity-100" : "invisible opacity-0"}`} onMouseDown={(event) => event.target === event.currentTarget && closeCart()} />
-      <aside className={`fixed right-0 top-0 z-[160] flex h-dvh w-full max-w-md flex-col bg-[#F7F7F4] shadow-[-18px_0_50px_rgba(0,0,0,0.14)] transition-transform duration-300 ${isOpen ? "translate-x-0" : "translate-x-full"}`} role="dialog" aria-modal="true" aria-label="Keranjang belanja">
+      <aside
+        ref={drawerRef}
+        className={`fixed right-0 top-0 z-[160] flex h-dvh w-full max-w-md flex-col bg-[#F7F7F4] shadow-[-18px_0_50px_rgba(0,0,0,0.14)] transition-transform duration-300 ${isOpen ? "translate-x-0" : "translate-x-full"}`}
+        role="dialog"
+        aria-modal="true"
+        aria-label="Keranjang belanja"
+        aria-hidden={!isOpen}
+        inert={!isOpen}
+      >
         <div className="flex items-center justify-between bg-[#F7F7F4] p-5">
           <div>
             <p className="text-xs font-semibold uppercase tracking-[0.18em] text-black/45">Keranjang</p>
             <h2 className="mt-1 text-2xl font-semibold">Pesanan DEBRODER</h2>
           </div>
-          <button type="button" className="grid h-10 w-10 place-items-center rounded-full border border-black/10 text-xl leading-none transition hover:bg-[#f5f5ef]" aria-label="Tutup keranjang" onClick={closeCart}>×</button>
+          <button ref={closeButtonRef} type="button" className="grid h-12 w-12 place-items-center rounded-full border border-black/10 text-xl leading-none transition hover:bg-[#f5f5ef]" aria-label="Tutup keranjang" onClick={closeCart}>×</button>
         </div>
         <div className="flex-1 overflow-y-auto p-4 sm:p-5">
           <MiniCartContent />
@@ -798,7 +857,8 @@ export function CartProvider({ children }: { children: ReactNode }) {
             product_id: line.productId,
             quantity: line.quantity,
             unit_price: itemUnitPrice(line),
-            price_tier_id: readSnapshotTierId(line.variantSnapshot)
+            price_tier_id: readSnapshotTierId(line.variantSnapshot),
+            instant_services: line.instantCustom?.selections ?? []
           }))
         })
       });
@@ -907,11 +967,13 @@ export function CartProvider({ children }: { children: ReactNode }) {
     checkoutDecision,
     addItem: (product, requestedRole) => {
       commitMutation((current) => {
+        const instantSignature = JSON.stringify(product.instantCustom?.selections ?? []);
         const duplicateIndex = product.variantSizeId
           ? current.findIndex(
               (item) =>
                 item.lineType === "ready_stock"
                 && item.variantSizeId === product.variantSizeId
+                && JSON.stringify(item.instantCustom?.selections ?? []) === instantSignature
             )
           : -1;
         if (duplicateIndex >= 0) {
@@ -928,6 +990,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
               priceLabel: product.priceLabel ?? item.priceLabel,
               priceValue: product.priceValue ?? item.priceValue,
               variantSnapshot: product.variantSnapshot ?? item.variantSnapshot,
+              ...(product.instantCustom ? { instantCustom: product.instantCustom } : {}),
               validation: { status: "unvalidated" }
             };
           });
@@ -977,6 +1040,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
               variantId: product.variantId,
               variantSizeId: product.variantSizeId,
               sku,
+              instantCustom: product.instantCustom,
               display,
               ui
             })
@@ -1141,7 +1205,7 @@ export function useCart() {
 export function CartNavButton() {
   const { itemCount, openCart, preserveJerseyInteractions } = useCart();
   return (
-    <button type="button" className="relative grid h-10 w-10 place-items-center rounded-full transition hover:bg-[#f5f5ef]" aria-label={`Buka keranjang, ${itemCount} item`} onClick={openCart}>
+    <button type="button" className="relative grid h-12 w-12 place-items-center rounded-full transition hover:bg-[#f5f5ef]" aria-label={`Buka keranjang, ${itemCount} item`} onClick={openCart}>
       <CartIcon />
       {itemCount > 0 ? <span className={`absolute -right-0.5 -top-0.5 grid h-5 min-w-5 place-items-center rounded-full px-1 text-[10px] font-bold text-white ${preserveJerseyInteractions ? "bg-[#063d24]" : "bg-black"}`}>{itemCount}</span> : null}
     </button>

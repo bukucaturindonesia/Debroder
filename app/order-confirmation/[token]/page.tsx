@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { OrderConfirmationClient } from "@/components/checkout/OrderConfirmationClient";
+import { PublicShell } from "@/components/PublicPage";
 
 export const metadata: Metadata = {
   title: "Konfirmasi Pesanan | DEBRODER",
@@ -9,5 +10,11 @@ export const metadata: Metadata = {
 
 export default async function OrderConfirmationPage({ params }: { params: Promise<{ token: string }> }) {
   const { token } = await params;
-  return <main className="min-h-screen bg-[#f6f5f0] px-4 py-10 text-[#111]"><OrderConfirmationClient token={token} /></main>;
+  return (
+    <PublicShell theme="jersey-commerce">
+      <section className="min-h-screen bg-[#f6f5f0] px-4 py-10 text-[#111]">
+        <OrderConfirmationClient token={token} />
+      </section>
+    </PublicShell>
+  );
 }

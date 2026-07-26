@@ -1,6 +1,8 @@
 import "server-only";
 
 import { createSupabaseServerClient } from "@/lib/supabase";
+import { readInventoryAvailabilityByVariantSizeIds } from "@/lib/supabase/products";
+import { projectVariantSizeInventoryAvailability } from "./inventory";
 import type {
   ProductReadSlice,
   ProductReadSource,
@@ -100,12 +102,20 @@ async function hydrateProductRelations(products: readonly ProductRow[]): Promise
       .order("is_cover", { ascending: false })
       .order("sort_order", { ascending: true })
   ]);
+  const variantSizes = sizeResult.error || !sizeResult.data
+    ? null
+    : projectVariantSizeInventoryAvailability(
+        sizeResult.data as ProductVariantSizeRow[],
+        await readInventoryAvailabilityByVariantSizeIds(
+          (sizeResult.data as ProductVariantSizeRow[]).map((size) => size.id)
+        )
+      );
 
   return {
     variants: listSlice(variants),
-    variantSizes: sizeResult.error || !sizeResult.data
+    variantSizes: !variantSizes
       ? unavailable([])
-      : listSlice(sizeResult.data as ProductVariantSizeRow[]),
+      : listSlice(variantSizes),
     variantImages: imageResult.error || !imageResult.data
       ? unavailable([])
       : listSlice(imageResult.data as ProductVariantImageRow[]),

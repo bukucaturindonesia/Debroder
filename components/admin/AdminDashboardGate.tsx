@@ -1,10 +1,11 @@
 "use client";
 
-import { AdminDashboard } from "@/components/admin/AdminDashboard";
 import { AdminGuestDashboard } from "@/components/admin/AdminGuestDashboard";
+import { GlobalAdminDashboard } from "@/components/admin/GlobalAdminDashboard";
 import { useAdminAccess } from "@/components/admin/layout/AdminAccessContext";
 
 export function AdminDashboardGate() {
   const { readOnly } = useAdminAccess();
-  return readOnly ? <AdminGuestDashboard /> : <AdminDashboard />;
+  if (readOnly) return <AdminGuestDashboard />;
+  return <GlobalAdminDashboard />;
 }

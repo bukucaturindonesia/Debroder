@@ -4,10 +4,17 @@ import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useCart, type CartProductInput } from "@/components/CartProvider";
 import { useOptionalProductVariantGallery } from "@/components/ProductVariantGalleryContext";
+import { ProductDetailDisclosure } from "@/components/product/ProductDetailDisclosure";
 import { cartTierProductKey } from "@/lib/cart-group-tier-pricing";
 import { createSupabaseClient } from "@/lib/supabase";
 import type { ProductVariant, ProductVariantSize } from "@/lib/types";
 import { formatRupiah } from "@/lib/url";
+import {
+  createInstantCustomSnapshot,
+  priceInstantServices,
+  type InstantServiceDefinition,
+  type InstantServiceSelection
+} from "@/lib/instant-custom";
 
 export type ProductColorOption = {
   name: string;
@@ -42,8 +49,11 @@ type ProductPurchasePanelProps = {
   bulkOrderNote?: string | null;
   whatsappUrl?: string;
   variants?: ProductVariant[];
+  showAddToCart?: boolean;
   showBuyNow?: boolean;
   monochrome?: boolean;
+  instantServices?: InstantServiceDefinition[];
+  initialInstantMode?: boolean;
 };
 
 const baseColors: ProductColorOption[] = [
@@ -173,13 +183,25 @@ export function TieredProductPurchasePanel({
   bulkOrderNote,
   whatsappUrl,
   variants = [],
+  showAddToCart = true,
   showBuyNow = false,
-  monochrome = false
+  monochrome = false,
+  instantServices = [],
+  initialInstantMode = false
 }: ProductPurchasePanelProps) {
   const cart = useCart();
   const router = useRouter();
   const variantGallery = useOptionalProductVariantGallery();
   const interactionLocked = useRef(false);
+  const uploadSessionToken = useRef(`instant_${crypto.randomUUID().replace(/-/g, "")}`);
+  const [instantMode, setInstantMode] = useState(initialInstantMode);
+  const [selectedServices, setSelectedServices] = useState<Record<string, {
+    inputs: Record<string, string>;
+    uploadIds: string[];
+    note: string;
+  }>>({});
+  const [uploadingServiceId, setUploadingServiceId] = useState<string | null>(null);
+  const [serviceError, setServiceError] = useState("");
 
   const [tiers, setTiers] = useState<ProductPriceTier[]>([]);
   const [minimumRule, setMinimumRule] =
@@ -362,6 +384,17 @@ export function TieredProductPurchasePanel({
       : product.priceLabel;
 
   const subtotal = quoteRequired ? 0 : unitPriceValue * quantity;
+  const instantSelections: InstantServiceSelection[] = Object.entries(selectedServices)
+    .map(([serviceId, selection]) => ({
+      serviceId,
+      inputs: selection.inputs,
+      uploadIds: selection.uploadIds,
+      uploadSessionToken: uploadSessionToken.current,
+      note: selection.note || undefined
+    }));
+  const servicePricing = priceInstantServices(instantServices, instantSelections, quantity);
+  const serviceTotal = instantMode && servicePricing.ok ? servicePricing.serviceTotal : 0;
+  const payableSubtotal = subtotal + serviceTotal;
 
   const tierDescription = pricingLoading
     ? "Memuat harga grosir..."
@@ -375,17 +408,17 @@ export function TieredProductPurchasePanel({
             } pcs · total produk ${pricingQuantity} pcs`
           : "Harga normal produk";
 
-  const guideRows = sizeGuide.length
-    ? sizeGuide
-    : sizeOptions
-        .filter((size) => size !== "Mix Size")
-        .map(
-          (size) =>
-            `${size}: Sesuaikan dengan panduan ukuran produk ini.`
-        );
+  const guideRows = sizeGuide;
 
   function addSelectedToCart() {
     if (belowMinimum || unavailable || interactionLocked.current) return false;
+    if (instantMode && (!servicePricing.ok || instantSelections.length === 0 || uploadingServiceId)) {
+      setServiceError(
+        !servicePricing.ok ? servicePricing.message : uploadingServiceId ? "Tunggu upload selesai." : "Pilih minimal satu layanan Custom Instan."
+      );
+      return false;
+    }
+    setServiceError("");
     interactionLocked.current = true;
     window.setTimeout(() => {
       interactionLocked.current = false;
@@ -447,9 +480,62 @@ export function TieredProductPurchasePanel({
         quote_required: quoteRequired,
         unit_price: unitPriceValue || null,
         subtotal: subtotal || null
-      }
+      },
+      ...(instantMode && servicePricing.ok
+        ? { instantCustom: createInstantCustomSnapshot(instantSelections, servicePricing) }
+        : {})
     });
     return true;
+  }
+
+  function toggleInstantService(serviceId: string) {
+    setSelectedServices((current) => {
+      if (current[serviceId]) {
+        const next = { ...current };
+        delete next[serviceId];
+        return next;
+      }
+      return { ...current, [serviceId]: { inputs: {}, uploadIds: [], note: "" } };
+    });
+  }
+
+  function updateInstantService(serviceId: string, patch: Partial<{ inputs: Record<string, string>; note: string }>) {
+    setSelectedServices((current) => ({
+      ...current,
+      [serviceId]: {
+        ...(current[serviceId] ?? { inputs: {}, uploadIds: [], note: "" }),
+        ...patch
+      }
+    }));
+  }
+
+  async function uploadInstantServiceFile(serviceId: string, file?: File) {
+    if (!file) return;
+    setUploadingServiceId(serviceId);
+    setServiceError("");
+    try {
+      const form = new FormData();
+      form.set("file", file);
+      form.set("session_token", uploadSessionToken.current);
+      const response = await fetch("/api/customer-uploads", { method: "POST", body: form });
+      const payload: unknown = await response.json();
+      const upload = payload && typeof payload === "object" && !Array.isArray(payload)
+        ? (payload as { upload?: { id?: unknown } }).upload
+        : undefined;
+      if (!response.ok || typeof upload?.id !== "string") throw new Error("Upload file layanan gagal.");
+      const uploadId = upload.id;
+      setSelectedServices((current) => ({
+        ...current,
+        [serviceId]: {
+          ...(current[serviceId] ?? { inputs: {}, uploadIds: [], note: "" }),
+          uploadIds: [uploadId]
+        }
+      }));
+    } catch (error) {
+      setServiceError(error instanceof Error ? error.message : "Upload file layanan gagal.");
+    } finally {
+      setUploadingServiceId(null);
+    }
   }
 
   function buySelectedNow() {
@@ -460,7 +546,8 @@ export function TieredProductPurchasePanel({
 
   return (
     <div className="mt-7 grid gap-6">
-      <section>
+      <fieldset className="min-w-0">
+        <legend className="sr-only">Pilih warna produk</legend>
         <div className="flex items-center justify-between gap-4">
           <p className="text-sm font-semibold text-brand-charcoal">
             Warna:{" "}
@@ -479,24 +566,29 @@ export function TieredProductPurchasePanel({
           {colorOptions.map((option) => {
             const selected = option.name === selectedColor;
             return (
-              <button
+              <label
                 key={option.name}
-                type="button"
                 title={option.name}
-                aria-label={`Pilih warna ${option.name}`}
-                aria-pressed={selected}
-                onClick={() => setSelectedColor(option.name)}
-                className={`grid h-9 w-9 place-items-center rounded-full transition ${
+                className={`grid h-12 w-12 cursor-pointer place-items-center rounded-full outline-none transition focus-within:outline focus-within:outline-2 focus-within:outline-offset-2 focus-within:outline-[#1151ff] ${
                   selected
                     ? "ring-2 ring-black ring-offset-2 ring-offset-[#F7F7F4]"
                     : "ring-1 ring-black/10 hover:ring-black/30"
                 }`}
               >
+                <input
+                  type="radio"
+                  name="product-color"
+                  value={option.name}
+                  checked={selected}
+                  onChange={() => setSelectedColor(option.name)}
+                  aria-label={`Pilih warna ${option.name}`}
+                  className="sr-only"
+                />
                 <span
                   className="h-7 w-7 rounded-full border border-black/10"
                   style={{ backgroundColor: option.hex }}
                 />
-              </button>
+              </label>
             );
           })}
         </div>
@@ -507,9 +599,10 @@ export function TieredProductPurchasePanel({
             <span>{stockLabel}</span>
           </div>
         ) : null}
-      </section>
+      </fieldset>
 
-      <section>
+      <fieldset className="min-w-0">
+        <legend className="sr-only">Pilih ukuran produk</legend>
         <div className="flex items-center justify-between gap-4">
           <p className="text-sm font-semibold text-brand-charcoal">
             Ukuran:{" "}
@@ -517,12 +610,14 @@ export function TieredProductPurchasePanel({
               {selectedSize}
             </span>
           </p>
-          <a
-            href="#panduan-ukuran"
-            className="text-xs font-semibold text-brand-charcoal underline-offset-4 hover:underline"
-          >
-            Panduan Ukuran
-          </a>
+          {guideRows.length ? (
+            <a
+              href="#panduan-ukuran"
+              className="inline-flex min-h-12 items-center text-xs font-semibold text-brand-charcoal underline-offset-4 hover:underline"
+            >
+              Panduan Ukuran
+            </a>
+          ) : null}
         </div>
 
         <div className="mt-3 flex flex-wrap gap-2">
@@ -532,26 +627,84 @@ export function TieredProductPurchasePanel({
             const disabled = sizeIsUnavailable(sizeRecord);
 
             return (
-              <button
+              <label
                 key={size}
-                type="button"
-                aria-pressed={selected}
-                disabled={disabled}
-                onClick={() => setSelectedSize(size)}
-                className={`min-h-10 rounded-full px-4 text-sm font-semibold transition disabled:cursor-not-allowed disabled:opacity-35 ${
+                className={`grid min-h-12 min-w-12 place-items-center rounded-full px-4 text-sm font-semibold outline-none transition focus-within:outline focus-within:outline-2 focus-within:outline-offset-2 focus-within:outline-[#1151ff] ${
+                  disabled ? "cursor-not-allowed opacity-35" : "cursor-pointer"
+                } ${
                   selected
                     ? "bg-brand-charcoal text-white"
                     : "bg-white/70 text-brand-charcoal ring-1 ring-black/10 hover:ring-black/25"
                 }`}
               >
+                <input
+                  type="radio"
+                  name="product-size"
+                  value={size}
+                  checked={selected}
+                  disabled={disabled}
+                  onChange={() => setSelectedSize(size)}
+                  aria-label={`Pilih ukuran ${size}`}
+                  className="sr-only"
+                />
                 {size}
-              </button>
+              </label>
             );
           })}
         </div>
-      </section>
+      </fieldset>
 
-      <section className="grid gap-4 rounded-[22px] bg-white/60 p-4">
+      <section className="grid gap-4 border-y border-[#e5e5e5] py-5">
+        {instantServices.length ? (
+          <div className="grid gap-3 border-b border-black/10 pb-5">
+            <div className="grid gap-2 sm:grid-cols-2" role="group" aria-label="Mode pembelian">
+              <button type="button" aria-pressed={!instantMode} onClick={() => setInstantMode(false)} className={`min-h-12 rounded-full px-4 text-sm font-semibold ${!instantMode ? "bg-black text-white" : "border border-black/15 bg-white"}`}>Ready Stock</button>
+              <button type="button" aria-pressed={instantMode} onClick={() => setInstantMode(true)} className={`min-h-12 rounded-full px-4 text-sm font-semibold ${instantMode ? "bg-black text-white" : "border border-black/15 bg-white"}`}>Custom Instan</button>
+            </div>
+            {instantMode ? (
+              <div className="grid gap-3">
+                <p className="text-sm leading-6 text-black/60">Gunakan SKU Ready Stock yang dipilih, lalu tambahkan layanan berikut. Harga dikonfirmasi ulang oleh server saat checkout.</p>
+                {instantServices.map((service) => {
+                  const selected = selectedServices[service.id];
+                  return (
+                    <div key={service.id} className="border-t border-black/10 bg-white pt-4">
+                      <label className="flex cursor-pointer items-start gap-3">
+                        <input type="checkbox" checked={Boolean(selected)} onChange={() => toggleInstantService(service.id)} className="mt-1 h-5 w-5" />
+                        <span className="flex-1">
+                          <span className="block font-semibold">{service.name}</span>
+                          <span className="text-xs text-black/55">{service.description || formatRupiah(service.basePrice)}</span>
+                        </span>
+                      </label>
+                      {selected ? (
+                        <div className="mt-4 grid gap-3">
+                          {service.inputSchema.map((field) => (
+                            <label key={field.key} className="grid gap-1 text-sm">
+                              <span className="font-medium">{field.label}{field.required ? " *" : ""}</span>
+                              {field.type === "select" ? (
+                                <select value={selected.inputs[field.key] ?? ""} onChange={(event) => updateInstantService(service.id, { inputs: { ...selected.inputs, [field.key]: event.target.value } })} className="min-h-11 rounded-xl border border-black/15 px-3">
+                                  <option value="">Pilih</option>
+                                  {field.options?.map((option) => <option key={option}>{option}</option>)}
+                                </select>
+                              ) : field.type === "textarea" ? (
+                                <textarea value={selected.inputs[field.key] ?? ""} maxLength={field.maxLength} onChange={(event) => updateInstantService(service.id, { inputs: { ...selected.inputs, [field.key]: event.target.value } })} className="min-h-24 rounded-xl border border-black/15 p-3" />
+                              ) : (
+                                <input type={field.type} value={selected.inputs[field.key] ?? ""} maxLength={field.maxLength} onChange={(event) => updateInstantService(service.id, { inputs: { ...selected.inputs, [field.key]: event.target.value } })} className="min-h-11 rounded-xl border border-black/15 px-3" />
+                              )}
+                            </label>
+                          ))}
+                          {service.requiresNotes ? <textarea aria-label={`Catatan ${service.name}`} placeholder="Catatan layanan *" value={selected.note} onChange={(event) => updateInstantService(service.id, { note: event.target.value })} className="min-h-24 rounded-xl border border-black/15 p-3 text-sm" /> : null}
+                          {service.requiresUpload ? <label className="grid gap-1 text-sm"><span className="font-medium">File desain *</span><input type="file" accept=".ai,.cdr,.eps,.jpeg,.jpg,.pdf,.png,.psd,.svg,.zip" onChange={(event) => void uploadInstantServiceFile(service.id, event.target.files?.[0])} />{selected.uploadIds.length ? <span className="text-xs text-emerald-700">File siap</span> : null}</label> : null}
+                        </div>
+                      ) : null}
+                    </div>
+                  );
+                })}
+                <p className="text-sm font-semibold">Total layanan: {formatRupiah(serviceTotal)}</p>
+                {serviceError ? <p role="alert" className="text-sm text-red-700">{serviceError}</p> : null}
+              </div>
+            ) : null}
+          </div>
+        ) : null}
         <div className="flex flex-wrap items-center justify-between gap-4">
           <div>
             <p className="text-sm font-semibold text-brand-charcoal">
@@ -562,10 +715,10 @@ export function TieredProductPurchasePanel({
             </p>
           </div>
 
-          <div className="inline-flex min-h-11 items-center overflow-hidden rounded-full bg-white ring-1 ring-black/10">
+          <div className="inline-flex min-h-12 items-center overflow-hidden rounded-full bg-white ring-1 ring-black/10">
             <button
               type="button"
-              className="grid h-11 w-11 place-items-center text-lg transition hover:bg-black/5"
+              className="grid h-12 w-12 place-items-center text-lg transition hover:bg-black/5"
               onClick={() =>
                 setQuantity((value) => Math.max(1, value - 1))
               }
@@ -580,13 +733,13 @@ export function TieredProductPurchasePanel({
                   sanitizeQuantity(Number(event.target.value || 1))
                 )
               }
-              className="h-11 w-16 bg-transparent text-center text-sm font-semibold outline-none"
+              className="h-12 w-16 bg-transparent text-center text-sm font-semibold outline-none"
               inputMode="numeric"
               aria-label="Jumlah produk"
             />
             <button
               type="button"
-              className="grid h-11 w-11 place-items-center text-lg transition hover:bg-black/5"
+              className="grid h-12 w-12 place-items-center text-lg transition hover:bg-black/5"
               onClick={() => setQuantity((value) => value + 1)}
               aria-label="Tambah jumlah"
             >
@@ -615,7 +768,7 @@ export function TieredProductPurchasePanel({
                 <p className="mt-2 text-sm">
                   Subtotal:{" "}
                   <span className="font-semibold">
-                    {formatRupiah(subtotal)}
+                    {formatRupiah(payableSubtotal)}
                   </span>
                 </p>
               ) : null}
@@ -632,23 +785,29 @@ export function TieredProductPurchasePanel({
           </div>
         </div>
 
-        <div className={`grid gap-2 ${showBuyNow ? "sm:grid-cols-2" : ""}`}>
-          <button
-            type="button"
-            disabled={unavailable || belowMinimum || pricingLoading}
-            onClick={addSelectedToCart}
-            className="inline-flex min-h-12 items-center justify-center rounded-full bg-black px-6 text-sm font-semibold text-white transition hover:bg-black/75 disabled:cursor-not-allowed disabled:bg-black/20"
-          >
-            {unavailable
-              ? "Varian Tidak Tersedia"
-              : pricingLoading
-                ? "Memuat Harga..."
-                : belowMinimum
-                  ? `Minimum ${minimumQuantity} pcs`
-                  : quoteRequired
-                    ? "Tambahkan untuk Penawaran"
-                    : "Tambah ke Keranjang"}
-          </button>
+        <div className={`grid gap-2 ${showAddToCart && showBuyNow ? "sm:grid-cols-2" : ""}`}>
+          {showAddToCart ? (
+            <button
+              type="button"
+              disabled={unavailable || belowMinimum || pricingLoading}
+              onClick={addSelectedToCart}
+              className="inline-flex min-h-12 items-center justify-center rounded-full bg-black px-6 text-sm font-semibold text-white transition hover:bg-black/75 disabled:cursor-not-allowed disabled:bg-black/20"
+            >
+              {unavailable
+                ? "Varian Tidak Tersedia"
+                : pricingLoading
+                  ? "Memuat Harga..."
+                  : belowMinimum
+                    ? `Minimum ${minimumQuantity} pcs`
+                    : quoteRequired
+                      ? "Tambahkan untuk Penawaran"
+                      : "Tambah ke Keranjang"}
+            </button>
+          ) : (
+            <p className="flex min-h-12 items-center justify-center rounded-full bg-black/10 px-6 text-center text-sm font-semibold text-black/55">
+              Ready Stock tidak tersedia
+            </p>
+          )}
           {showBuyNow ? (
             <button
               type="button"
@@ -656,7 +815,7 @@ export function TieredProductPurchasePanel({
               onClick={buySelectedNow}
               className="inline-flex min-h-12 items-center justify-center rounded-full border border-black bg-white px-6 text-sm font-semibold text-black transition hover:bg-black hover:text-white disabled:cursor-not-allowed disabled:border-black/20 disabled:text-black/30"
             >
-              Buy Now
+              Beli Sekarang
             </button>
           ) : null}
         </div>
@@ -673,7 +832,7 @@ export function TieredProductPurchasePanel({
         ) : null}
       </section>
 
-      <section className="rounded-[22px] bg-white/60 p-4">
+      <section className="border-y border-[#e5e5e5] py-5">
         <div className="flex items-start gap-3">
           <span className={`grid h-10 w-10 shrink-0 place-items-center rounded-full text-lg ${monochrome ? "bg-black/[0.06]" : "bg-[#e9f4ee]"}`}>
             👕
@@ -690,34 +849,33 @@ export function TieredProductPurchasePanel({
         </div>
       </section>
 
-      <section
-        id="panduan-ukuran"
-        className="rounded-[22px] bg-white/50 p-4"
-      >
-        <details>
-          <summary className="cursor-pointer list-none text-sm font-semibold text-brand-charcoal">
-            Panduan Ukuran
-          </summary>
-          <div className="mt-4 grid gap-2">
-            {guideRows.map((row, index) => {
-              const [label, ...rest] = row.split(":");
-              return (
-                <div
-                  key={`${row}-${index}`}
-                  className="grid gap-1 rounded-2xl bg-white/70 p-3 text-sm sm:grid-cols-[100px_1fr] sm:gap-4"
-                >
-                  <p className="font-semibold text-brand-charcoal">
-                    {rest.length ? label.trim() : `Panduan ${index + 1}`}
-                  </p>
-                  <p className="text-brand-charcoal/60">
-                    {rest.length ? rest.join(":").trim() : row.trim()}
-                  </p>
-                </div>
-              );
-            })}
-          </div>
-        </details>
-      </section>
+      {guideRows.length ? (
+        <div id="panduan-ukuran" className="border-b border-[#e5e5e5]">
+          <ProductDetailDisclosure
+            id="product-size-guide"
+            title="Panduan Ukuran"
+          >
+            <div className="mt-4 grid gap-2">
+              {guideRows.map((row, index) => {
+                const [label, ...rest] = row.split(":");
+                return (
+                  <div
+                    key={`${row}-${index}`}
+                    className="grid gap-1 border-t border-[#e5e5e5] py-3 text-sm sm:grid-cols-[100px_1fr] sm:gap-4"
+                  >
+                    <p className="font-semibold text-brand-charcoal">
+                      {rest.length ? label.trim() : `Panduan ${index + 1}`}
+                    </p>
+                    <p className="text-brand-charcoal/60">
+                      {rest.length ? rest.join(":").trim() : row.trim()}
+                    </p>
+                  </div>
+                );
+              })}
+            </div>
+          </ProductDetailDisclosure>
+        </div>
+      ) : null}
     </div>
   );
 }

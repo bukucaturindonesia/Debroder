@@ -22,6 +22,7 @@ const searchItems = [
 
 export function HeaderSearchModal({ onClose }: { onClose: () => void }) {
   const router = useRouter();
+  const dialogRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const [query, setQuery] = useState("");
 
@@ -39,6 +40,22 @@ export function HeaderSearchModal({ onClose }: { onClose: () => void }) {
     const timer = window.setTimeout(() => inputRef.current?.focus(), 40);
     const handleKey = (event: globalThis.KeyboardEvent) => {
       if (event.key === "Escape") onClose();
+      if (event.key !== "Tab" || !dialogRef.current) return;
+      const focusable = Array.from(
+        dialogRef.current.querySelectorAll<HTMLElement>(
+          'a[href], button:not([disabled]), input:not([disabled]), [tabindex]:not([tabindex="-1"])'
+        )
+      );
+      if (!focusable.length) return;
+      const first = focusable[0];
+      const last = focusable[focusable.length - 1];
+      if (event.shiftKey && document.activeElement === first) {
+        event.preventDefault();
+        last.focus();
+      } else if (!event.shiftKey && document.activeElement === last) {
+        event.preventDefault();
+        first.focus();
+      }
     };
     window.addEventListener("keydown", handleKey);
     return () => {
@@ -54,15 +71,15 @@ export function HeaderSearchModal({ onClose }: { onClose: () => void }) {
   }
 
   function handleInputKeyDown(event: KeyboardEvent<HTMLInputElement>) {
-    if (event.key === "Enter" && results[0]) {
+    if (event.key === "Enter" && query.trim()) {
       event.preventDefault();
-      openResult(results[0].href);
+      openResult(`/search?q=${encodeURIComponent(query.trim())}`);
     }
   }
 
   return (
     <div className="fixed inset-0 z-[110] bg-[#050706]/55 px-4 py-5 backdrop-blur-sm" role="dialog" aria-modal="true" aria-label="Pencarian DEBRODER" onMouseDown={(event) => event.target === event.currentTarget && onClose()}>
-      <div className="mx-auto mt-14 max-w-2xl overflow-hidden rounded-lg bg-white">
+      <div ref={dialogRef} className="mx-auto mt-14 max-w-2xl overflow-hidden rounded-lg bg-white">
         <div className="flex items-center gap-3 border-b border-black/10 p-4">
           <BrandIcon name="search" />
           <input
@@ -74,7 +91,7 @@ export function HeaderSearchModal({ onClose }: { onClose: () => void }) {
             placeholder="Cari produk atau layanan"
             className="min-h-11 flex-1 bg-transparent text-base outline-none placeholder:text-black/40"
           />
-          <button type="button" className="grid h-10 w-10 place-items-center rounded-full transition hover:bg-[#f3f3ef]" aria-label="Tutup pencarian" onClick={onClose}>
+          <button type="button" className="grid h-12 w-12 place-items-center rounded-full transition hover:bg-[#f3f3ef]" aria-label="Tutup pencarian" onClick={onClose}>
             <BrandIcon name="close" />
           </button>
         </div>
@@ -91,6 +108,16 @@ export function HeaderSearchModal({ onClose }: { onClose: () => void }) {
           ) : (
             <p className="rounded-md bg-brand-offWhite p-4 text-sm text-black/65">Tidak ada hasil. Coba kata kunci lain.</p>
           )}
+          {query.trim() ? (
+            <button
+              type="button"
+              className="mt-2 flex min-h-12 w-full items-center justify-between rounded-md border border-black/10 px-4 text-left text-sm font-semibold transition hover:border-black"
+              onClick={() => openResult(`/search?q=${encodeURIComponent(query.trim())}`)}
+            >
+              <span>Lihat semua hasil untuk “{query.trim()}”</span>
+              <span aria-hidden="true">→</span>
+            </button>
+          ) : null}
         </div>
       </div>
     </div>

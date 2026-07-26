@@ -98,7 +98,7 @@ export function HeroSlider({ heroes }: { heroes: HeroBanner[] }) {
   return (
     <section
       id="beranda"
-      className="hero-section relative h-[72svh] min-h-[440px] max-h-[620px] w-full overflow-hidden bg-[#04160f] md:h-[72svh] md:min-h-[520px] md:max-h-[720px]"
+      className="hero-section landing-hero relative h-[76svh] min-h-[500px] max-h-[680px] w-full overflow-hidden bg-black md:h-[78svh] md:min-h-[580px] md:max-h-[800px]"
       aria-roledescription="carousel"
       aria-label="Koleksi utama DEBRODER"
       role="region"
@@ -154,9 +154,9 @@ export function HeroSlider({ heroes }: { heroes: HeroBanner[] }) {
               )}
             </div>
 
-            <div className="absolute inset-0 bg-[linear-gradient(0deg,rgba(0,0,0,.44)_0%,rgba(0,0,0,.12)_48%,rgba(0,0,0,.08)_100%)]" />
+            <div className="landing-hero-overlay absolute inset-0 bg-[linear-gradient(0deg,rgba(0,0,0,.50)_0%,rgba(0,0,0,.12)_52%,rgba(0,0,0,.04)_100%)]" />
             {hasCopy ? (
-              <div className="absolute inset-x-0 bottom-[16%] z-10 sm:bottom-[14%] lg:bottom-[13%]">
+              <div className="landing-hero-copy absolute inset-x-0 bottom-[12%] z-10 sm:bottom-[10%] lg:bottom-[9%]">
                 <div className="section-shell">
                   <div className="hero-content mx-auto max-w-[1120px] text-white">
                     {badge ? (
@@ -200,7 +200,7 @@ export function HeroSlider({ heroes }: { heroes: HeroBanner[] }) {
       </div>
 
       {total > 1 ? (
-        <div className="absolute bottom-4 right-4 z-30 flex items-center gap-2 text-white sm:bottom-8 sm:right-8 lg:right-12">
+        <div className="landing-hero-controls absolute bottom-4 right-4 z-30 flex items-center gap-2 text-white sm:bottom-7 sm:right-8 lg:right-12">
           <button type="button" onClick={() => setPaused((current) => !current)} aria-label={paused ? "Putar slider" : "Jeda slider"} className="grid h-11 w-11 place-items-center rounded-full border border-white/30 bg-black/35 backdrop-blur-md transition hover:bg-white hover:text-[#111]">
             <PlayPauseIcon paused={paused} />
           </button>

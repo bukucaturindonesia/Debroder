@@ -70,6 +70,11 @@ export function AdminShell({ children }: { children: ReactNode }) {
       };
 
       if (!active) return;
+      if (response.status === 401) {
+        await supabase.auth.signOut();
+        router.replace("/admin/login");
+        return;
+      }
 
       if (!isAdminRole(session.role)) {
         setAccessError(session.error || "Akun ini tidak memiliki akses panel admin.");
@@ -169,10 +174,15 @@ export function AdminShell({ children }: { children: ReactNode }) {
   }
 
   const legacyRoute = isLegacyAdminRoute(pathname);
+  const globalDashboardRoute = pathname === "/admin" || pathname === "/admin/dashboard";
 
   return (
     <AdminAccessProvider role={role}>
-      <div className="admin-shell-root" data-admin-read-only={role === "admin_guest"}>
+      <div
+        className="admin-shell-root"
+        data-admin-read-only={role === "admin_guest"}
+        data-global-dashboard={globalDashboardRoute ? "true" : "false"}
+      >
       <aside className="admin-shell-desktop-sidebar">
         <AdminSidebar role={role} onLogout={logout} />
       </aside>

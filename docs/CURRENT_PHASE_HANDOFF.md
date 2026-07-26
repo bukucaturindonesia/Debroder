@@ -651,3 +651,412 @@ Status: **CHECKPOINT SAVED — DATABASE APPLICATION BLOCKED**.
   approval tooling rejected every Supabase write/dry-run after its usage limit.
 - Resume directly from `docs/CURRENT_PACKAGE_HANDOFF.md`; do not repeat the
   completed inventory/schema audit. No commit, push, merge, or deploy occurred.
+
+---
+
+## 2026-07-26 — Public Experience P0 Design Tokens Global
+
+Status: **VERIFIED IN SOURCE — P1 NOT STARTED**.
+
+- Baseline branch `LANDING-PAGE-PUBLIC`, HEAD
+  `e37a9c4d3a50fe36e3158ea5dae87600206a5ca8`, clean sebelum P0.
+- Frozen colors, typography stacks, responsive spacing/gutters, 1440 px
+  content max, zero media/card radius, no decorative shadow, pill CTA,
+  48 px controls, focus ring, and motion durations now have one canonical
+  contract with compatibility aliases for later packages.
+- Landing, shared public shell, category commerce, and Tailwind public aliases
+  consume the contract. External reference class naming was removed from
+  production. No external assets, fonts, source, URLs, or identity were copied.
+- No route, CMS/PIM data, Admin, transaction behavior, pricing, inventory,
+  cart, checkout, order, payment, database, or migration changed.
+- Verification: typecheck PASS; lint PASS (0 error / 32 existing warning);
+  test PASS (87 files / 676 tests); build PASS; diff check PASS.
+- Browser PASS at 1440×900, 1280×800, 768×1024, 390×844, and 360×800:
+  HTTP 200, no page overflow, overlay, console/page error; focus ring and
+  responsive computed tokens verified.
+- Open risk: active homepage snapshot has no rendered `h1`; deferred to the
+  homepage-owned package because P0 may not change content hierarchy.
+- Unrelated tracked Batch 4A deletions and untracked Batch 4B archive appeared
+  during P0 and were preserved untouched.
+- Commit/push/merge/deploy: none. P1 remains closed until explicit owner
+  instruction.
+
+---
+
+## 2026-07-26 — Public Experience P1–P12
+
+Status: **IMPLEMENTATION COMPLETE — OWNER VERIFICATION PENDING**.
+
+- Baseline branch `LANDING-PAGE-PUBLIC`, HEAD
+  `fc1b8ff6eb1b92b23452b4032098a652fb0bc1eb`, clean sebelum batch.
+- P1–P12 were implemented sequentially using the existing public shell,
+  category/PDP, Cart v5, checkout, tracking, Custom, and Jersey authorities.
+- New public routes: `/fresh-drop`, `/fresh-drop/[slug]` redirect,
+  `/tentang`, `/search`, `/login`, `/account`, `/wishlist`, `/help`,
+  `/legal/terms`, and `/legal/privacy`.
+- Homepage H1 fallback, shared confirmation shell, search focus management,
+  48 px header controls, footer navigation, and explicit account/wishlist/legal
+  safe states were added.
+- Pricing, inventory, order, payment, Custom/Jersey transaction behavior,
+  Admin, database, and migrations were not changed.
+- Customer Auth, wishlist persistence, release schedule metadata, and approved
+  legal content remain unavailable. **OWNER LEGAL CONTENT REQUIRED**.
+- Per the execution prompt, typecheck, lint, test, build, browser, Vercel, and
+  Supabase verification were not run. No tests were added.
+- No commit, push, merge, stage, or deploy occurred. Do not start P13.
+- Full package-by-package files, risks, and owner checklist are in
+  `docs/CURRENT_PACKAGE_HANDOFF.md`.
+
+---
+
+## 2026-07-26 — Targeted Jersey Universal PDP Revision
+
+Status: **IMPLEMENTED IN SOURCE — OWNER RECHECK PENDING**.
+
+- Product-detail domain sekarang menjadi satu-satunya resolver typed/pure bagi
+  capability purchase Jersey: panel, Add to Cart, Buy Now, dan Custom action.
+- Universal PDP tidak lagi menghitung Buy Now dari boolean mentah; purchase
+  panel menerima capability hasil canonical projection.
+- Regression test berbasis behavior mencakup Jersey Ready Stock, Custom-only,
+  unavailable, dan non-Jersey Ready Stock. Targeted Jersey suite **PASS
+  (1 file / 9 tests)** melalui direct workspace Vitest shim.
+- Tidak ada perubahan pricing, Cart v5, checkout, Jersey configurator, route,
+  Admin, database, atau migration. Full gates dan deployment tidak dijalankan
+  karena berada di luar instruksi targeted revision.
+
+---
+
+## 2026-07-26 — Public Experience P13–P15 Final Verification
+
+Status: **NO-GO**.
+
+- P13 verified all required viewports and 37 public routes. One proven
+  touch-target defect was corrected with 48 × 48 px interactive areas.
+- P14 corrected nested landmarks and complete cart-dialog keyboard semantics.
+  Local homepage CLS was 0, but LCP was approximately 13.35 s and INP was not
+  proven; performance remains open.
+- P15 fixed split stock presentation: the page-owned PDP now projects stock
+  from canonical active non-legacy `inventory_balances`, the same authority
+  used by Cart v5 revalidation. Legacy stock 80 no longer enables purchase
+  when canonical available stock is 0.
+- `/custom` now keeps its existing safe empty state when the public category
+  read is unavailable, allowing production prerender to complete.
+- Final gates: typecheck PASS; lint PASS with 0 errors / 32 existing warnings;
+  test PASS (88 files / 683 tests); build PASS (119/119 pages); targeted
+  inventory suite PASS (2 files / 9 tests); targeted Custom suite PASS
+  (2 files / 18 tests).
+- NO-GO blockers are owner-governed content: homepage link `/kaos-polo`
+  returns 404, and active `Jersey Custom Pilot` content explicitly says it is
+  internal/not approved for publication. No CMS/PIM/database mutation was
+  authorized or performed.
+- Database/migration/seed/deployment/commit/push/merge: none.
+- Resume from `docs/CURRENT_PACKAGE_HANDOFF.md`; correct CMS/PIM records,
+  prove Preview performance, and rerun the P15 release check.
+
+---
+
+## 2026-07-26 - Global Ready Stock + Instant Custom Services
+
+Status: **IMPLEMENTED AND LOCALLY VERIFIED - OWNER REVIEW / VERCEL PREVIEW
+VERIFICATION REQUIRED**.
+
+- Scope: universal PDP modes, reusable Instant Custom services, Cart v5
+  persistence/revalidation, checkout/order snapshots, operations visibility,
+  admin service schema, and canonical public inventory availability.
+- Root causes: no shared service-selection contract; Cart/checkout carried only
+  SKU quantity and product price; local server intentionally lacked a
+  service-role key; owner-approved Jersey QA data retained internal-only copy.
+- Fix: Zod-validated definitions/inputs, server-only catalog and repricing,
+  service-aware Cart v5, service-role-only checkout, immutable snapshots,
+  operations synchronization, narrow aggregate inventory RPC, and explicit
+  Ready Stock / Custom Instan / Full Custom presentation.
+- Routes changed in behavior only: `/produk/[slug]`, `/keranjang`, `/checkout`.
+- Local and remote-applied migrations:
+  `20260726160000_global_ready_stock_instant_custom_v1.sql`,
+  `20260726162000_instant_custom_operations_alignment_v1.sql`,
+  `20260726164000_public_canonical_inventory_availability_v1.sql`, and
+  `20260726165000_jersey_experimental_public_copy_correction_v1.sql`.
+  Project `lzennundwqqtyvvcnzbg`; package migrations pending: none.
+- Database proof: service-bearing order-item trigger exists; instant checkout
+  RPC is executable by `service_role` only; public inventory RPC exposes only
+  variant-size ID and aggregate availability; Jersey is hybrid,
+  variant-priced, and Configurator-backed.
+- Tests: targeted 6/6 PASS; typecheck PASS; lint PASS with 0 errors /
+  32 existing warnings; full tests 89 files / 689 tests PASS; build 119/119
+  pages PASS; `git diff --check` PASS.
+- Browser proof on existing `http://127.0.0.1:3000`: Jersey stock 100;
+  structured “Tambah nama” input; Rp100.000 + Rp10.000 = Rp110.000; cart with
+  an existing Rp45.000 Ready Stock item totals Rp155.000; service remains
+  visible in cart and checkout. No order was submitted.
+- Deployment, commit, push, and merge: none.
+- Remaining: owner source review, Vercel Preview, and controlled remote
+  checkout/order/operations smoke. Real transaction execution is **NOT
+  PROVEN**. Existing advisor findings outside scope were not modified.
+- Final status: not COMPLETE and not GO.
+
+---
+
+## 2026-07-26 — Global Admin Dashboard v1.0 (GD-P0–GD-P12)
+
+Status: **IMPLEMENTED AND LOCALLY VERIFIED — OWNER FINAL REVIEW / VERCEL
+PREVIEW VERIFICATION PENDING**.
+
+- `/admin` and `/admin/dashboard` now render one canonical, read-only Global
+  Admin Dashboard with the approved dark desktop composition and responsive
+  mobile presentation.
+- Typed server-only aggregation owns filters, KPI, verified payment/final
+  refund math, order-type discriminators, action queues, store summaries,
+  latest orders, and PIM/inventory alerts.
+- API access is authenticated, role-gated, permission-checked, RLS-backed,
+  and no-store. Admin Guest continues to use the existing sanitized viewer.
+- Targeted test PASS 9/9; typecheck PASS; lint PASS with 0 errors / 32 existing
+  warnings; full test PASS 90 files / 698 tests; build PASS 120/120 pages;
+  `git diff --check` PASS.
+- Database/migration/seed/mutation: none. Remote schema inspection was
+  read-only.
+- Open proof: authenticated visual/responsive and Vercel Preview are not
+  proven because the available browser had no admin session.
+- Open schema risk: remote `order_store_assignments` is not represented by a
+  repository migration found during this package. Store ownership fails
+  closed to partial/unallocated data rather than being guessed.
+- Canonical low-stock threshold is absent; the dashboard explicitly reports
+  unavailable instead of hardcoding a threshold.
+- Commit, push, merge, and deploy: none. Status is not COMPLETE and not GO.
+
+---
+
+## 2026-07-26 - Targeted Global Dashboard permission blocker
+
+Status: **GLOBAL DASHBOARD PERMISSION FIXED - OWNER VISUAL REVIEW AND VERCEL
+PREVIEW VERIFICATION PENDING**.
+
+- Scope checked: account/role/profile scope, sidebar/route authorization,
+  shared admin session and permission guard, dashboard read model, Supabase
+  query scope, and remote RLS.
+- Exact account evidence: latest sign-in was `fahmi@debroder.com`
+  (`superadmin`, global scope); Owner is `owner@debroder.com` (`owner`, global
+  scope). Store Admin profiles have `all_store_access=false` and one assigned
+  `primary_store_id`.
+- Root cause: latest Auth session IDs for Owner/Super Admin did not equal
+  `profiles.active_session_id`; `AdminLogin` never invoked
+  `register_admin_session_v1`. `has_permission('order.read')` therefore failed
+  closed.
+- Source correction: canonical session registration on login, canonical
+  session assertion in `requirePhase13Actor`, explicit 401 redirect to login,
+  403-only authorization failures, 503 permission-runtime failures, dashboard
+  access resolver, Store Admin sidebar/route scope, and store-locked queries.
+- Migration local/remote/applied:
+  `20260726090522_global_dashboard_store_scope_restrictive_rls.sql`; pending:
+  none. It adds restrictive SELECT scope on 12 dashboard transaction/store
+  tables without disabling RLS.
+- Remote verification: 12 policies report `RESTRICTIVE`; Store Admin
+  impersonation transaction (rolled back) returned one visible assigned store,
+  zero cross-store stores, and zero cross-store orders.
+- Tests: targeted 17/17 PASS; typecheck PASS; lint PASS with 0 errors / 32
+  existing warnings; full test PASS 91 files / 706 tests; build PASS 120/120;
+  `git diff --check` PASS.
+- Browser: server existing returned HTTP 200. The available controlled browser
+  had no authenticated admin session, so post-login visual data rendering
+  remains owner review pending; no credentials/session storage were accessed.
+- Commit/push/merge/deploy: none. Next action: Owner signs in again so the new
+  login registers the canonical session, visually confirms `/admin/dashboard`,
+  then verifies Vercel Preview.
+# DEBRODER GLOBAL ADMIN DASHBOARD v1.0 — CURRENT STATUS
+
+## STATUS
+
+VISUAL IMPLEMENTATION:
+SUBSTANTIALLY IMPLEMENTED
+
+DATA INTEGRATION:
+PARTIALLY IMPLEMENTED — HARDCODE/MOCK DATA STILL EXISTS
+
+PRODUCTION READINESS:
+NOT READY
+
+OWNER REVIEW:
+OVERALL VISUAL DIRECTION APPROVED
+
+## OWNER DECISION
+
+Tampilan Dashboard Global secara keseluruhan sudah sesuai dengan arah visual
+yang disetujui owner.
+
+Namun Dashboard Global belum boleh dinyatakan selesai atau production-ready
+karena masih terdapat angka, grafik, daftar pesanan, ringkasan toko, antrean,
+alert, atau presentation data yang masih menggunakan hardcode, mock, fallback,
+placeholder, atau data ilustrasi.
+
+Seluruh hardcode/mock wajib diganti dengan data canonical DEBRODER sebelum
+package Dashboard Global dinyatakan final.
+
+## VISUAL REFERENCE
+
+Gunakan reference Dashboard Global yang telah disetujui owner.
+
+Pertahankan:
+
+- dark premium visual;
+- logo resmi DEBRODER;
+- sidebar;
+- top header;
+- enam KPI;
+- antrean tindakan;
+- grafik tren;
+- donut jenis pesanan;
+- ringkasan per toko;
+- pesanan terbaru;
+- peringatan stok dan PIM;
+- struktur dan urutan layout existing.
+
+Jangan melakukan redesign besar terhadap komposisi yang sudah disetujui owner.
+
+## KNOWN LIMITATION — CRITICAL
+
+Data berikut harus diperiksa dan tidak boleh diasumsikan sudah canonical:
+
+- Nilai Pesanan;
+- Pembayaran Diterima;
+- Sisa Pembayaran;
+- Jumlah Pesanan;
+- Rata-rata Pesanan;
+- Produk Terjual;
+- persentase perbandingan periode;
+- seluruh action queue counts;
+- grafik penjualan dan pembayaran;
+- distribusi jenis pesanan;
+- ringkasan Headstore;
+- ringkasan Tello;
+- ringkasan Landak;
+- ringkasan Pare-pare;
+- Belum Dialokasikan;
+- pesanan terbaru;
+- data pelanggan ilustratif;
+- alert stok dan PIM;
+- notification badge;
+- waktu terakhir diperbarui.
+
+Tidak boleh ada data ilustrasi yang tampil pada production.
+
+## NEXT REVISION SCOPE
+
+Selesaikan revisi Dashboard Global terlebih dahulu dengan fokus:
+
+1. inventarisasi seluruh hardcode/mock/fallback;
+2. pemetaan ke source canonical;
+3. penggantian data ilustrasi dengan server-side read model;
+4. penyelarasan role dan permission;
+5. perbaikan Owner/Super Admin global store scope;
+6. filter Semua Toko dan periode;
+7. click-through setiap kartu dan alert;
+8. loading, empty, partial-error, dan permission state;
+9. responsive dan visual refinement;
+10. targeted tests dan full gate.
+
+## DATA AUTHORITY
+
+Dashboard Global hanya boleh membaca data canonical existing dari domain:
+
+- orders;
+- order_items;
+- payments;
+- stores;
+- fulfillment;
+- pickup;
+- products;
+- variants;
+- variant_sizes;
+- SKU;
+- inventory per toko;
+- service add-on snapshots;
+- Generic Full Custom snapshots;
+- Jersey configuration snapshots;
+- shipping;
+- refund;
+- role dan permission.
+
+Dilarang membuat dashboard datastore kedua.
+
+## IMPLEMENTATION ORDER
+
+Tahap sekarang:
+
+GLOBAL ADMIN DASHBOARD REVISION
+
+Tahap berikutnya setelah Dashboard Global stabil:
+
+1. Pesanan / OMS secara spesifik;
+2. Pembayaran secara spesifik;
+3. Pengiriman, pickup, retur, dan refund;
+4. Produk dan PIM;
+5. Varian, SKU, harga, serta media;
+6. Inventory dan stok per toko;
+7. Layanan Custom Instan;
+8. Full Custom Non-Jersey;
+9. Full Custom Jersey;
+10. CMS;
+11. Pengguna, role, akses, dan keamanan;
+12. laporan serta kebutuhan operasional lainnya.
+
+Jangan masuk ke redesign halaman spesifik sebelum Dashboard Global selesai
+direvisi dan diverifikasi owner.
+
+## COMPLETION CONDITION
+
+Dashboard Global baru boleh dinyatakan selesai apabila:
+
+- tidak ada angka hardcode/mock;
+- tidak ada customer/order ilustratif;
+- semua KPI berasal dari canonical data;
+- semua grafik berasal dari agregasi canonical;
+- semua store summary akurat;
+- semua permission benar;
+- semua action card membuka filter/record yang benar;
+- loading dan empty state tidak menampilkan data palsu;
+- targeted tests PASS;
+- typecheck PASS;
+- lint PASS;
+- tests PASS;
+- build PASS;
+- browser verification selesai;
+- owner menyetujui hasil final.
+
+## CURRENT FINAL STATUS
+
+DEBRODER GLOBAL ADMIN DASHBOARD v1.0
+
+VISUAL:
+OWNER APPROVED — REVISION MAY STILL BE REQUIRED
+
+DATA:
+HARDCODE/MOCK REPLACEMENT REQUIRED
+
+PACKAGE:
+IN PROGRESS
+
+NEXT:
+GLOBAL DASHBOARD CANONICAL DATA AND FINAL REFINEMENT
+
+DO NOT MARK COMPLETE.
+DO NOT START SPECIFIC ADMIN MODULE REDESIGN YET.
+
+## 2026-07-26 — PDP Ready Stock Visual & Scroll Refinement
+
+- Status: **IMPLEMENTED AND LOCALLY VERIFIED — OWNER VISUAL / VERCEL PREVIEW
+  VERIFICATION PENDING**.
+- Universal `/produk/[slug]` remains canonical. Desktop gallery is the bounded
+  sticky column; purchase/details scroll normally. Tablet/mobile use one
+  column and retain the existing swipe gallery.
+- One reusable accessible disclosure now serves description,
+  material/specification, and canonical size-guide content; empty placeholders
+  are not rendered.
+- Commerce authority and database are unchanged. No migration or remote write.
+- Verification: typecheck PASS; lint 0 errors / 32 pre-existing warnings;
+  tests 92/710 PASS; build 120/120 PASS; required seven-viewport browser matrix
+  PASS with no horizontal overflow and no footer overlap.
+- External state: initial HEAD `a606e06`; owner/external process committed and
+  pushed the exact five source/test files as `be2ee66` during verification.
+  Codex did not perform a git write or deployment.
+- The pre-existing development server stopped responding after a root build
+  attempt timed out. Final build passed from an identical temporary source
+  copy; no second/replacement server was launched.

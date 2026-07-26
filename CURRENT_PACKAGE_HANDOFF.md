@@ -293,3 +293,42 @@ Setelah setiap package PASS:
 3. Ganti bagian `Scope Aktif` dengan scope package baru.
 4. Catat migration yang diterapkan jika ada.
 5. Jangan menambah seluruh laporan panjang; simpan hanya keputusan dan bukti paling penting.
+
+---
+
+## PDP Ready Stock — Visual & Scroll Refinement (2026-07-26)
+
+STATUS: **IMPLEMENTED AND LOCALLY VERIFIED — OWNER VISUAL / VERCEL PREVIEW
+VERIFICATION PENDING**
+
+- Scope: universal `/produk/[slug]` presentation only. Desktop media now owns
+  bounded sticky behavior; the right purchase/details column remains in normal
+  document flow. Tablet/mobile remain a single column.
+- Gallery: one canonical 4:5 desktop media surface, vertical accessible
+  thumbnails, preserved mobile swipe gallery and lightbox.
+- Details: one reusable button disclosure with `aria-expanded`,
+  `aria-controls`, keyboard operation, visible focus, and no empty/dummy
+  description or size-guide content.
+- Commerce preserved: product/variant/SKU, pricing/tier formula, inventory,
+  Instant Custom, Cart v5, Add to Cart, Buy Now, checkout and order behavior
+  were not changed.
+- Files: `app/produk/[slug]/page.tsx`, `components/ProductGallery.tsx`,
+  `components/TieredProductPurchasePanel.tsx`,
+  `components/product/ProductDetailDisclosure.tsx`,
+  `test/pdp-ready-stock-visual-scroll.test.ts`.
+- Database/migration: none created, applied, or pending; no remote mutation.
+- Verification: typecheck PASS; lint PASS (0 errors / 32 pre-existing
+  warnings); tests PASS (92 files / 710 tests); build PASS (120/120 pages);
+  browser PASS at 1536×1024, 1440×900, 1280×800, 1024×768, 768×1024,
+  390×844, and 360×800 with no horizontal overflow.
+- Sticky proof: at desktop scroll phase media computed `position: sticky`,
+  `top: 96px`; disclosure expansion preserved gallery/color/size/quantity;
+  final boundary reported `overlapFooter=false`.
+- Baseline: branch `LANDING-PAGE-PUBLIC`, initial HEAD `a606e06`. During final
+  verification an external owner process committed and pushed the exact five
+  source/test files as `be2ee66` (`detail produk`). Codex did not run commit,
+  push, merge, deploy, or PR commands.
+- Environment note: the pre-existing local server was available for the
+  browser matrix but stopped responding after a root build attempt timed out.
+  The successful final build ran from an identical temporary source copy; no
+  replacement development server was started.

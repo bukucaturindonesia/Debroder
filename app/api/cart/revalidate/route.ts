@@ -6,6 +6,8 @@ import {
   MAX_CART_LINE_QUANTITY,
   MAX_CART_TOTAL_QUANTITY
 } from "@/lib/cart-v5";
+import { z } from "zod";
+import { instantServiceSelectionSchema } from "@/lib/instant-custom";
 
 export async function POST(request: Request) {
   const body: unknown = await request.json();
@@ -42,6 +44,7 @@ function parseRevalidationInputs(value: unknown): RevalidationInput[] | null {
     const unitPrice = item.unit_price;
     const productId = item.product_id;
     const priceTierId = item.price_tier_id;
+    const instantServices = z.array(instantServiceSelectionSchema).max(10).safeParse(item.instant_services ?? []);
 
     if (
       typeof productVariantSizeId !== "string" ||
@@ -53,6 +56,7 @@ function parseRevalidationInputs(value: unknown): RevalidationInput[] | null {
       !Number.isSafeInteger(unitPrice) ||
       unitPrice < 0 ||
       variantSizeIds.has(productVariantSizeId)
+      || !instantServices.success
     ) {
       return null;
     }
@@ -65,7 +69,8 @@ function parseRevalidationInputs(value: unknown): RevalidationInput[] | null {
       quantity,
       unit_price: unitPrice,
       product_id: typeof productId === "string" ? productId : undefined,
-      price_tier_id: typeof priceTierId === "string" ? priceTierId : null
+      price_tier_id: typeof priceTierId === "string" ? priceTierId : null,
+      instant_services: instantServices.data
     });
   }
 

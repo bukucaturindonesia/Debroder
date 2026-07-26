@@ -5,7 +5,35 @@ import {
   requirePhase13Actor
 } from "@/lib/phase13-auth";
 import { getProductManagerCapabilities } from "@/lib/product-manager";
-import type { CustomService, ServicePricingType, ValidationIssue } from "@/lib/types";
+import type { CustomService, ValidationIssue } from "@/lib/types";
+import { z } from "zod";
+import { instantServiceInputFieldSchema } from "@/lib/instant-custom";
+
+const serviceMutationSchema = z.object({
+  id: z.string().uuid().optional(),
+  slug: z.string().regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/),
+  name: z.string().trim().min(1).max(150),
+  description: z.string().trim().max(500).nullable().optional(),
+  status: z.enum(["active", "inactive", "archived"]),
+  pricingType: z.enum(["fixed_per_item", "fixed_per_order", "tiered", "estimated", "manual_quote"]),
+  basePrice: z.number().int().nonnegative(),
+  estimatedMinPrice: z.number().int().nonnegative().nullable().optional(),
+  estimatedMaxPrice: z.number().int().nonnegative().nullable().optional(),
+  minimumQuantity: z.number().int().positive(),
+  maximumQuantity: z.number().int().positive().nullable().optional(),
+  requiresUpload: z.boolean(),
+  requiresNotes: z.boolean(),
+  requiresReview: z.boolean(),
+  allowedFileTypes: z.array(z.string().trim().min(1).max(20)).max(30),
+  isStackable: z.boolean(),
+  exclusiveGroup: z.string().trim().max(100).nullable().optional(),
+  sortOrder: z.number().int(),
+  inputSchema: z.array(instantServiceInputFieldSchema).max(20).default([])
+});
+
+type ParsedCustomService = CustomService & {
+  inputSchema: z.infer<typeof instantServiceInputFieldSchema>[];
+};
 
 export async function POST(request: Request) {
   try {
@@ -50,7 +78,8 @@ export async function POST(request: Request) {
         allowed_file_types: service.allowedFileTypes,
         is_stackable: service.isStackable,
         exclusive_group: service.exclusiveGroup,
-        sort_order: service.sortOrder
+        sort_order: service.sortOrder,
+        input_schema: service.inputSchema
       };
       const mutation = service.id
         ? actor.adminClient.from("custom_services").update(row).eq("id", service.id)
@@ -84,42 +113,22 @@ export async function POST(request: Request) {
   }
 }
 
-function parseServicesPayload(value: unknown): CustomService[] | null {
+function parseServicesPayload(value: unknown): ParsedCustomService[] | null {
   if (!isRecord(value) || !Array.isArray(value.services)) {
     return null;
   }
-
-  const services: CustomService[] = [];
-
-  for (const item of value.services) {
-    if (!isRecord(item)) {
-      return null;
-    }
-
-    services.push({
-      id: readString(item.id),
-      slug: readString(item.slug),
-      name: readString(item.name),
-      description: readNullableString(item.description),
-      status: readStatus(item.status),
-      pricingType: readPricingType(item.pricingType),
-      basePrice: readNumber(item.basePrice),
-      estimatedMinPrice: readNullableNumber(item.estimatedMinPrice),
-      estimatedMaxPrice: readNullableNumber(item.estimatedMaxPrice),
-      minimumQuantity: readNumber(item.minimumQuantity),
-      maximumQuantity: readNullableNumber(item.maximumQuantity),
-      requiresUpload: item.requiresUpload === true,
-      requiresNotes: item.requiresNotes === true,
-      requiresReview: item.requiresReview === true,
-      allowedFileTypes: readStringArray(item.allowedFileTypes),
-      isStackable: item.isStackable === true,
-      exclusiveGroup: readNullableString(item.exclusiveGroup),
-      sortOrder: readNumber(item.sortOrder),
-      pricingRules: []
-    });
-  }
-
-  return services;
+  const parsed = z.array(serviceMutationSchema).max(100).safeParse(value.services);
+  if (!parsed.success) return null;
+  return parsed.data.map((service) => ({
+    ...service,
+    id: service.id ?? "",
+    description: service.description ?? null,
+    estimatedMinPrice: service.estimatedMinPrice ?? null,
+    estimatedMaxPrice: service.estimatedMaxPrice ?? null,
+    maximumQuantity: service.maximumQuantity ?? null,
+    exclusiveGroup: service.exclusiveGroup ?? null,
+    pricingRules: []
+  }));
 }
 
 function validateServices(services: CustomService[]): ValidationIssue[] {
@@ -154,49 +163,6 @@ function validateServices(services: CustomService[]): ValidationIssue[] {
   }
 
   return issues;
-}
-
-function readPricingType(value: unknown): ServicePricingType {
-  if (
-    value === "fixed_per_order" ||
-    value === "tiered" ||
-    value === "estimated" ||
-    value === "manual_quote"
-  ) {
-    return value;
-  }
-
-  return "fixed_per_item";
-}
-
-function readStatus(value: unknown): CustomService["status"] {
-  if (value === "inactive" || value === "archived") {
-    return value;
-  }
-
-  return "active";
-}
-
-function readString(value: unknown): string {
-  return typeof value === "string" ? value : "";
-}
-
-function readNullableString(value: unknown): string | null {
-  return typeof value === "string" && value.trim().length > 0 ? value.trim() : null;
-}
-
-function readNumber(value: unknown): number {
-  return typeof value === "number" && Number.isFinite(value) ? value : 0;
-}
-
-function readNullableNumber(value: unknown): number | null {
-  return typeof value === "number" && Number.isFinite(value) ? value : null;
-}
-
-function readStringArray(value: unknown): string[] {
-  return Array.isArray(value)
-    ? value.filter((item): item is string => typeof item === "string")
-    : ["png", "jpg", "jpeg", "pdf"];
 }
 
 function error(field: string, message: string): ValidationIssue {

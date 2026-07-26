@@ -25,19 +25,32 @@ export default async function KaosPolosPage({ searchParams }: KaosPolosPageProps
     searchParams: searchParams ? await searchParams : {}
   });
 
-  return <CategoryCommercePage
-    model={model}
-    config={{
-      pageKey: "kaos-polos",
-      breadcrumbLabel: "Kaos Polos",
-      eyebrow: "Kategori Kaos Polos",
-      catalogTitle: "Pilih kaos sesuai kebutuhan",
-      catalogDescription: "Temukan tipe, bahan, warna, dan ukuran dari katalog produk DEBRODER.",
-      closingHeadline: "Punya desain sendiri? Lanjutkan ke layanan custom DEBRODER.",
-      closingCtaLabel: "Buat Pesanan Custom",
-      closingCtaHref: model.data.customDestination || "/custom",
-      productTypeOptions: kaosTypeOptions,
-      typeFilterLabel: "Semua tipe kaos"
-    }}
-  />;
+  return (
+    <CategoryCommercePage
+      model={model}
+      config={{
+        pageKey: "kaos-polos",
+        pagePath: "/kaos-polos",
+        breadcrumbLabel: "Kaos Polos",
+        shortcutLabel: "Jelajahi Kaos Polos",
+        typeDiscoveryTitle: "Pilih berdasarkan model",
+        typeDiscoveryDescription: "Temukan potongan dan bahan yang paling sesuai untuk kebutuhan harian, brand, komunitas, atau produksi custom.",
+        colorDiscoveryTitle: "Pilih berdasarkan warna",
+        newArrivalsTitle: "Produk terbaru",
+        catalogTitle: "Semua Kaos Polos",
+        catalogDescription: "Cari berdasarkan tipe, bahan, warna, harga, dan status produk tanpa mengganggu fokus pada katalog.",
+        closingHeadline: "Punya desain sendiri? Lanjutkan ke layanan custom DEBRODER.",
+        closingCtaLabel: "Buat Pesanan Custom",
+        closingCtaHref: model.data.customDestination || "/custom",
+        productTypeOptions: kaosTypeOptions,
+        typeFilterLabel: "Semua tipe kaos",
+        seoLinks: [
+          { label: "Kaos Cotton Combed", href: "/kaos-polos?type=cotton-combed#catalog" },
+          { label: "Kaos Premium", href: "/kaos-polos?type=premium-cotton#catalog" },
+          { label: "Kaos Heavy Weight", href: "/kaos-polos?type=heavyweight#catalog" },
+          { label: "Kaos Polo", href: "/kaos-polos?type=polo#catalog" }
+        ]
+      }}
+    />
+  );
 }

@@ -4,9 +4,7 @@ import { CampaignBanners } from "@/components/CampaignBanners";
 import { HeroSlider } from "@/components/HeroSlider";
 import { PublicProductCard } from "@/components/PublicProductCard";
 import { PublicFooter } from "@/components/PublicFooter";
-import { PublicInstagramBanner } from "@/components/PublicInstagramBanner";
 import { PublicSectionFrame } from "@/components/PublicSectionFrame";
-import { PublicStoreLocator } from "@/components/PublicStoreLocator";
 import { ResponsivePicture } from "@/components/ResponsivePicture";
 import { ScrollButtons } from "@/components/ScrollButtons";
 import { SiteHeader } from "@/components/SiteHeader";
@@ -16,7 +14,6 @@ import { getPublicShellPageModel } from "@/lib/public-shell/runtime";
 import { getPublicContent } from "@/lib/public-data";
 import { absoluteUrl, siteConfig } from "@/lib/site";
 import type { HomepageSection, HomepageSectionItem, LandingSection, Product, Service } from "@/lib/types";
-import { whatsappLinkWithMessage } from "@/lib/url";
 
 const benefits = [
   { icon: "clock", title: "Produksi Cepat", detail: "Alur kerja terukur" },
@@ -65,6 +62,10 @@ function cleanCmsText(value?: string | null) {
 
 function hasEditorialText(...values: Array<string | null | undefined>) {
   return values.some((value) => Boolean(cleanCmsText(value)));
+}
+
+function uniqueEditorialItems(items: EditorialItem[]) {
+  return Array.from(new Map(items.map((item) => [item.href, item])).values());
 }
 
 function normalizeAboutParagraphs(value?: string | null) {
@@ -150,7 +151,7 @@ function cardPlacement(item: HomepageSectionItem): ProductItem | null {
 
 function SectionHeading({ title, action, description, textPosition = "left" }: { title: string; action?: ReactNode; description?: string; textPosition?: "left" | "center" | "right" }) {
   return (
-    <div className="flex items-end justify-between gap-4">
+    <div className="landing-section-heading flex items-end justify-between gap-4">
       <div className={`min-w-0 ${textPosition === "center" ? "flex-1 text-center" : textPosition === "right" ? "ml-auto text-right" : ""}`}>
         <h2 className="home-section-title">{title}</h2>
         {description ? <p className="public-secondary-copy mt-2 max-w-2xl text-base leading-6">{description}</p> : null}
@@ -192,11 +193,11 @@ function EditorialCard({
   const shouldShowCopy = hasEditorialText(label, title, button);
 
   const mediaClass = variant === "featured"
-    ? "aspect-[4/5] sm:aspect-[5/4] lg:aspect-auto lg:h-[clamp(520px,62vh,680px)]"
+    ? "aspect-[4/5] sm:aspect-[4/3] lg:aspect-[5/4]"
     : "aspect-[4/5]";
 
   return (
-    <article className={`editorial-card group relative block overflow-hidden bg-[#0a1711] ${mediaClass} ${className}`}>
+    <article className={`editorial-card landing-editorial-card group relative block overflow-hidden bg-[#0a1711] ${mediaClass} ${className}`}>
       <Link href={item.href} aria-label={`Lihat ${title || item.imageAlt}`} className="absolute inset-0 z-10" />
       <ResponsivePicture
         desktopSrc={item.image}
@@ -228,9 +229,9 @@ function CategoryEditorialCard({ item }: { item: EditorialItem }) {
   const title = cleanCmsText(item.title) || item.imageAlt;
 
   return (
-    <article className="category-rail-card min-w-0 shrink-0 snap-start">
+    <article className="category-rail-card landing-category-card min-w-0 shrink-0 snap-start">
       <Link href={item.href} className="group block" aria-label={`Lihat kategori ${title}`}>
-        <div className="aspect-[4/5] overflow-hidden bg-[#f2f2f2]">
+        <div className="category-media aspect-[4/5] overflow-hidden bg-[#f2f2f2]">
           <ResponsivePicture
             desktopSrc={item.image}
             mobileSrc={item.mobileImage || item.image}
@@ -275,23 +276,23 @@ function ManagedHomepageSection({ section, setting, fallbackProducts = [] }: { s
     if (isFeatured) {
       return (
         <section id={section.slug} className="home-section home-featured section-space bg-white">
-          <PublicSectionFrame variant="wide">
+          <PublicSectionFrame variant="near-wide" className="featured-shell">
             <SectionHeading
               title={section.title}
               description={setting?.subtitle}
               textPosition={setting?.text_position}
               action={configuredCta}
             />
+            <div id={carouselId} className="featured-media-grid mt-4 grid grid-cols-1 gap-3 md:mt-6 lg:grid-cols-2 lg:gap-4">
+              {items.slice(0, 2).map((item, index) => (
+                <EditorialCard
+                  key={sectionItems[index]?.id || `${item.href}-${index}`}
+                  item={item}
+                  variant="featured"
+                />
+              ))}
+            </div>
           </PublicSectionFrame>
-          <div id={carouselId} className="featured-media-grid mt-4 grid grid-cols-1 gap-0 md:mt-6 lg:grid-cols-2">
-            {items.slice(0, 2).map((item, index) => (
-              <EditorialCard
-                key={sectionItems[index]?.id || `${item.href}-${index}`}
-                item={item}
-                variant="featured"
-              />
-            ))}
-          </div>
         </section>
       );
     }
@@ -326,19 +327,19 @@ function ManagedHomepageSection({ section, setting, fallbackProducts = [] }: { s
 
   return (
     <section id={section.slug} className="home-section home-fresh-drop section-space bg-white">
-      <PublicSectionFrame variant="near-wide">
+      <PublicSectionFrame variant="near-wide" className="fresh-drop-shell">
         <SectionHeading
           title={section.title}
           description={setting?.subtitle}
           textPosition={setting?.text_position}
           action={
             <div className="flex items-center gap-4">
-              {configuredCta || <Link href="/koleksi" className="hidden text-sm font-medium hover:underline sm:block">Lihat Semua Produk</Link>}
+              {configuredCta || <Link href={section.slug === "fresh-drops" ? "/fresh-drop" : "/koleksi"} className="hidden text-sm font-medium hover:underline sm:block">Lihat Semua Produk</Link>}
               <ScrollButtons containerId={carouselId} />
             </div>
           }
         />
-        <div id={carouselId} className="home-bleed-rail public-frame-rail fresh-drop-rail no-scrollbar mt-4 flex snap-x snap-mandatory overflow-x-auto md:mt-6">
+        <div id={carouselId} className="home-bleed-rail public-frame-rail fresh-drop-rail landing-commerce-rail no-scrollbar mt-4 flex snap-x snap-mandatory overflow-x-auto md:mt-6">
           {items.map((item, index) => (
             <ProductCard
               key={section.items[index]?.id || item.product.id || item.product.slug || `${item.product.nama}-${index}`}
@@ -352,6 +353,9 @@ function ManagedHomepageSection({ section, setting, fallbackProducts = [] }: { s
   );
 }
 
+/* DEBRODER_LANDING_VISUAL_BATCH_3_FINAL_FROZEN */
+/* DEBRODER_LANDING_VISUAL_BATCH_2 */
+/* DEBRODER_LANDING_STRUCTURE_V2_APPLIED */
 export default async function Home() {
   const [content, shellModel] = await Promise.all([
     getPublicContent(),
@@ -368,7 +372,6 @@ export default async function Home() {
     objectPosition: category.object_position
   }));
   const stores = content.stores.filter((item) => item.status_aktif !== false).sort((a, b) => a.urutan - b.urutan).slice(0, 4);
-  const whatsappHref = whatsappLinkWithMessage(content.contact.whatsapp_link || content.contact.whatsapp_utama, "Halo DEBRODER, saya ingin konsultasi kebutuhan apparel.");
   const landingSectionMap = new Map(
     content.landingSections.map((section) => [section.section_key, section])
   );
@@ -380,11 +383,33 @@ export default async function Home() {
   const shopCategoryItems = shopCategorySection
     ? preferredHomepageItems(shopCategorySection).map(editorialPlacement).filter((item): item is EditorialItem => Boolean(item))
     : [];
-  const freshDropFallback = content.products
-    .filter((product) => product.status_aktif !== false)
+  const activeProducts = content.products.filter((product) => product.status_aktif !== false);
+  const freshDropFallback = activeProducts
     .sort((a, b) => Number(Boolean(b.fresh_drop)) - Number(Boolean(a.fresh_drop)) || a.urutan - b.urutan)
     .slice(0, 8);
+  const featuredEditorialItems = featuredSection
+    ? preferredHomepageItems(featuredSection).map(editorialPlacement).filter((item): item is EditorialItem => Boolean(item))
+    : [];
+  const homeCategoryEditorialItems: EditorialItem[] = homeCategories.map((item) => ({
+    ...item,
+    label: "",
+    title: item.name,
+    button: "",
+    href: item.href
+  }));
+  const plainCategoryCandidates = uniqueEditorialItems([
+    ...featuredEditorialItems,
+    ...homeCategoryEditorialItems
+  ]);
+  const plainCategoryMatches = plainCategoryCandidates.filter((item) =>
+    /(kaos|polos|polo|hoodie|crewneck|jaket)/i.test(`${item.title} ${item.label}`)
+  );
+  const plainCategoryItems = (plainCategoryMatches.length ? plainCategoryMatches : plainCategoryCandidates).slice(0, 7);
   const aboutParagraphs = normalizeAboutParagraphs(content.trustAbout.about_body);
+  const heroVisible = landingSection("hero")?.is_visible !== false;
+  const heroHasHeading = heroVisible && content.heroes
+    .filter((hero) => hero.status_aktif !== false)
+    .some((hero, index) => index === 0 && Boolean(cleanCmsText(hero.headline) || cleanCmsText(hero.title)));
   const schema = {
     "@context": "https://schema.org",
     "@graph": [
@@ -395,13 +420,14 @@ export default async function Home() {
 
   return (
     <StorefrontCartBoundary>
-    <main className="public-site min-h-screen bg-white text-[#111]">
+    <main className="public-site debroder-landing min-h-screen bg-experience-canvas text-experience-ink">
       <SiteHeader
         navigationFacets={shellModel.data.header.navigationFacets}
         whatsappHref={shellModel.data.header.whatsappHref}
         promo={shellModel.data.header.promo}
       />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(schema).replace(/</g, "\\u003c") }} />
+      {!heroHasHeading ? <h1 className="sr-only">DEBRODER</h1> : null}
 
       <LandingSectionSlot setting={landingSection("hero")}>
         <HeroSlider heroes={content.heroes} />
@@ -423,12 +449,6 @@ export default async function Home() {
         </section>
       </LandingSectionSlot>
 
-      {featuredSection ? (() => {
-        const setting = landingSection("featured-products");
-        const managedSection = setting?.title ? { ...featuredSection, title: setting.title } : featuredSection;
-        return <LandingSectionSlot setting={setting}><ManagedHomepageSection section={managedSection} setting={setting} /></LandingSectionSlot>;
-      })() : null}
-
       {trendingSection ? (() => {
         const setting = landingSection("trending");
         const managedSection = setting?.title ? { ...trendingSection, title: setting.title } : trendingSection;
@@ -441,6 +461,35 @@ export default async function Home() {
           fallbackDesktopSrc={landingSection("campaign-banners")?.desktop_image_url || content.heroes[0]?.image_url || content.hero.image_url || fallbackImages.banner}
           fallbackMobileSrc={landingSection("campaign-banners")?.mobile_image_url || content.heroes[0]?.mobile_image_url || content.hero.mobile_image_url || fallbackImages.bannerMobile}
         />
+      </LandingSectionSlot>
+
+      <LandingSectionSlot setting={landingSection("services-products")}>
+        <section id="shop-category" className="home-section home-categories section-space bg-white">
+          <PublicSectionFrame variant="near-wide" className="category-shell">
+            <SectionHeading
+              title={landingSection("services-products")?.title || "Belanja Berdasarkan Kategori"}
+              description={landingSection("services-products")?.subtitle}
+              textPosition={landingSection("services-products")?.text_position}
+              action={
+                <div className="flex items-center gap-4">
+                  {landingSection("services-products")?.cta_label && landingSection("services-products")?.cta_url ? (
+                    <Link href={landingSection("services-products")!.cta_url!} className="hidden text-sm font-semibold hover:underline sm:block">
+                      {landingSection("services-products")!.cta_label}
+                    </Link>
+                  ) : null}
+                  <ScrollButtons containerId="category-carousel" largeTargets />
+                </div>
+              }
+            />
+            <div id="category-carousel" tabIndex={0} aria-label="Daftar kategori DEBRODER" className="home-bleed-rail public-frame-rail category-carousel landing-category-rail premium-scrollbar mt-4 flex snap-x snap-mandatory overflow-x-auto pb-6 md:mt-6">
+              {shopCategoryItems.length ? shopCategoryItems.map((item) => (
+                <CategoryEditorialCard key={`${item.href}-${item.title}`} item={item} />
+              )) : homeCategoryEditorialItems.length ? homeCategoryEditorialItems.map((item) => (
+                <CategoryEditorialCard key={`${item.href}-${item.title}`} item={item} />
+              )) : <p className="px-5 py-8 text-sm text-black/55">Belum ada kategori.</p>}
+            </div>
+          </PublicSectionFrame>
+        </section>
       </LandingSectionSlot>
 
       {freshDropSection ? (() => {
@@ -457,106 +506,56 @@ export default async function Home() {
         </LandingSectionSlot>
       ) : null}
 
-      <LandingSectionSlot setting={landingSection("services-products")}>
-        <section id="shop-category" className="home-section home-categories section-space bg-white">
-          <PublicSectionFrame variant="inset">
-            <SectionHeading
-              title={landingSection("services-products")?.title || "Belanja Berdasarkan Kategori"}
-              description={landingSection("services-products")?.subtitle}
-              textPosition={landingSection("services-products")?.text_position}
-              action={
-                <div className="flex items-center gap-4">
-                  {landingSection("services-products")?.cta_label && landingSection("services-products")?.cta_url ? (
-                    <Link href={landingSection("services-products")!.cta_url!} className="hidden text-sm font-semibold hover:underline sm:block">
-                      {landingSection("services-products")!.cta_label}
-                    </Link>
-                  ) : null}
-                  <ScrollButtons containerId="category-carousel" largeTargets />
-                </div>
-              }
-            />
-            <div id="category-carousel" tabIndex={0} aria-label="Daftar kategori DEBRODER" className="home-bleed-rail public-frame-rail category-carousel premium-scrollbar mt-4 flex snap-x snap-mandatory overflow-x-auto pb-6 md:mt-6">
-              {shopCategoryItems.length ? shopCategoryItems.map((item) => (
-                <CategoryEditorialCard key={`${item.href}-${item.title}`} item={item} />
-              )) : homeCategories.length ? homeCategories.map((item) => (
-                <CategoryEditorialCard
-                  key={item.name}
-                  item={{
-                    ...item,
-                    label: "",
-                    title: item.name,
-                    button: "",
-                    href: item.href
-                  }}
-                />
-              )) : <p className="px-5 py-8 text-sm text-black/55">Belum ada kategori.</p>}
-            </div>
-          </PublicSectionFrame>
-        </section>
-      </LandingSectionSlot>
-
-      {content.instagramBanner?.id ? (
-        <section id="instagram" className="home-section home-instagram section-space bg-white" aria-label="Instagram DEBRODER">
-          <PublicSectionFrame variant="near-wide">
-            <PublicInstagramBanner banner={content.instagramBanner} />
-          </PublicSectionFrame>
-        </section>
-      ) : null}
-
-      <LandingSectionSlot setting={landingSection("stores")}>
-        <>
-          <section id="store" className="home-section home-store section-space bg-white">
-            <PublicSectionFrame variant="inset">
+      {plainCategoryItems.length ? (
+        <LandingSectionSlot setting={landingSection("featured-products")}>
+          <section id="pakaian-polos" className="home-section home-plain-categories section-space bg-white">
+            <PublicSectionFrame variant="near-wide" className="plain-category-shell">
               <SectionHeading
-                title={landingSection("stores")?.title || "Toko DEBRODER"}
-                description={landingSection("stores")?.subtitle || "Konsultasikan bahan, teknik cetak, dan estimasi produksi langsung bersama tim kami."}
-                textPosition={landingSection("stores")?.text_position}
-                action={<Link href={landingSection("stores")?.cta_url || "/store"} className="hidden text-sm font-semibold hover:underline sm:block">{landingSection("stores")?.cta_label || "Lihat Semua Toko"}</Link>}
+                title="Pakaian Polos berdasarkan Kategori"
+                description={landingSection("featured-products")?.subtitle}
+                textPosition={landingSection("featured-products")?.text_position}
+                action={
+                  <div className="flex items-center gap-4">
+                    {landingSection("featured-products")?.cta_label && landingSection("featured-products")?.cta_url ? (
+                      <Link href={landingSection("featured-products")!.cta_url!} className="hidden text-sm font-semibold hover:underline sm:block">
+                        {landingSection("featured-products")!.cta_label}
+                      </Link>
+                    ) : null}
+                    <ScrollButtons containerId="plain-category-carousel" largeTargets />
+                  </div>
+                }
               />
-              <div className="mt-4 md:mt-6">
-                <PublicStoreLocator stores={stores} />
+              <div id="plain-category-carousel" tabIndex={0} aria-label="Pakaian polos berdasarkan kategori" className="home-bleed-rail public-frame-rail plain-category-rail premium-scrollbar mt-4 flex snap-x snap-mandatory overflow-x-auto pb-6 md:mt-6">
+                {plainCategoryItems.map((item) => (
+                  <CategoryEditorialCard key={`plain-${item.href}-${item.title}`} item={item} />
+                ))}
               </div>
             </PublicSectionFrame>
           </section>
-
-          <section className="home-section home-order section-space bg-white" aria-labelledby="cara-order-heading">
-            <PublicSectionFrame variant="inset">
-              <div className="public-divider flex flex-col gap-6 border-y py-6 sm:flex-row sm:items-center sm:justify-between md:py-8">
-                <div>
-                  <p className="text-sm font-medium text-black/55">Belum yakin harus mulai dari mana?</p>
-                  <h3 id="cara-order-heading" className="mt-2 text-2xl font-semibold tracking-[-0.02em] sm:text-3xl">Pesan apparel custom dengan alur yang jelas.</h3>
-                </div>
-                <div className="flex flex-wrap gap-2">
-                  <Link href="/cara-order" className="inline-flex min-h-11 items-center justify-center rounded-full bg-[#111] px-6 text-sm font-semibold text-white transition hover:bg-black/75">Cara Pemesanan</Link>
-                  <a href={whatsappHref} target="_blank" rel="noopener noreferrer" className="inline-flex min-h-11 items-center justify-center rounded-full border border-black/20 px-6 text-sm font-semibold text-[#111] transition hover:border-black">Konsultasi WhatsApp</a>
-                </div>
-              </div>
-            </PublicSectionFrame>
-          </section>
-        </>
-      </LandingSectionSlot>
+        </LandingSectionSlot>
+      ) : null}
 
       <LandingSectionSlot setting={landingSection("about")}>
         <section id="tentang" className="home-section home-about section-space bg-white">
-          <PublicSectionFrame variant="near-wide" className="grid gap-6 md:gap-8 lg:grid-cols-2 lg:items-center lg:gap-10">
-            <div className={content.trustAbout.text_position === "center" ? "text-center" : content.trustAbout.text_position === "right" ? "text-right" : ""}>
+          <PublicSectionFrame variant="near-wide" className="about-shell grid gap-8 lg:grid-cols-2 lg:items-center lg:gap-14">
+            <div className={`about-copy ${content.trustAbout.text_position === "center" ? "text-center" : content.trustAbout.text_position === "right" ? "text-right" : ""}`}>
               <p className="public-eyebrow">Tentang Kami</p>
-              <h2 className="home-page-title mt-2 max-w-2xl">TENTANG DEBRODER</h2>
-              <div className="mt-4 max-w-2xl space-y-4 text-base leading-8 text-black/62">
+              <h2 className="home-page-title about-title mt-3 max-w-2xl">TENTANG DEBRODER</h2>
+              <div className="about-body mt-5 max-w-2xl space-y-4 text-base leading-7 text-black/65">
                 {aboutParagraphs.map((paragraph) => <p key={paragraph}>{paragraph}</p>)}
               </div>
-              {content.trustAbout.cta_label && content.trustAbout.cta_url ? <Link href={content.trustAbout.cta_url} className="mt-6 inline-flex min-h-11 items-center rounded-full bg-[#111] px-6 text-sm font-semibold text-white transition hover:bg-black/75">{content.trustAbout.cta_label}</Link> : null}
+              {content.trustAbout.cta_label && content.trustAbout.cta_url ? <Link href={content.trustAbout.cta_url} className="about-cta mt-7 inline-flex min-h-12 items-center justify-center rounded-full bg-[#111] px-6 text-[15px] font-semibold text-white transition hover:bg-black/70">{content.trustAbout.cta_label}</Link> : null}
             </div>
             {content.trustAbout.video_url ? (
-              <video src={content.trustAbout.video_url} autoPlay muted loop playsInline className="aspect-[4/3] w-full object-cover" />
+              <video src={content.trustAbout.video_url} autoPlay muted loop playsInline className="about-media aspect-[4/3] w-full object-cover" />
             ) : content.trustAbout.image_url ? (
-              <ResponsivePicture desktopSrc={content.trustAbout.image_url} mobileSrc={content.trustAbout.mobile_image_url || content.trustAbout.image_url} alt="Tentang DEBRODER" className="aspect-[4/3] h-full w-full object-cover" />
+              <ResponsivePicture desktopSrc={content.trustAbout.image_url} mobileSrc={content.trustAbout.mobile_image_url || content.trustAbout.image_url} alt="Tentang DEBRODER" className="about-media aspect-[4/3] h-full w-full object-cover" />
             ) : (
-              <div className="grid grid-cols-2 border-l border-t border-black/10">
-                {[["2016", "Berdiri"], ["4", "Toko Aktif"], ["DTF", "& Apparel"], ["ID", "Kirim Indonesia"]].map(([value, label]) => (
-                  <div key={`${value}-${label}`} className="border-b border-r border-black/10 p-6 sm:p-8">
-                    <p className="text-3xl font-semibold tracking-[-0.03em] text-[#063d24]">{value}</p>
-                    <p className="mt-2 text-sm text-black/50">{label}</p>
+              <div className="about-proof-grid grid grid-cols-2 border-l border-t border-black/10">
+                {[[String(stores.length), "Toko Aktif"], [String(activeProducts.length), "Produk Aktif"], ["DTF", "& Apparel"], ["ID", "Kirim Indonesia"]].map(([value, label]) => (
+                  <div key={`${value}-${label}`} className="about-proof-item border-b border-r border-black/10 p-6 sm:p-8">
+                    <p className="about-proof-value text-3xl font-semibold tracking-[-0.03em] text-[#111]">{value}</p>
+                    <p className="about-proof-label mt-2 text-sm text-black/50">{label}</p>
                   </div>
                 ))}
               </div>
@@ -565,7 +564,7 @@ export default async function Home() {
         </section>
       </LandingSectionSlot>
 
-      <PublicFooter model={shellModel.data.footer} variant="dark" />
+      <PublicFooter model={shellModel.data.footer} variant="public-dark" />
     </main>
     </StorefrontCartBoundary>
   );

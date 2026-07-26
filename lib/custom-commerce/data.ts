@@ -37,7 +37,7 @@ export async function listCustomCategories(): Promise<CustomCategory[]> {
     .order("name");
   if (error) {
     if (isMissingCustomSchema(error.code)) return listFallbackCustomCategories();
-    throw new Error(`Failed to load custom categories: ${error.message}`);
+    return [];
   }
 
   const categories = asRecords(data).map(mapCategory).filter(isValidCategory);
@@ -59,7 +59,7 @@ export async function listCustomCategories(): Promise<CustomCategory[]> {
     .eq("products.status_aktif", true);
   if (mappingError) {
     if (isMissingCustomSchema(mappingError.code)) return listFallbackCustomCategories();
-    throw new Error(`Failed to validate custom categories: ${mappingError.message}`);
+    return [];
   }
   const available = new Set(asRecords(mappings).map((row) => string(row.custom_category_id)));
   return categories.filter((category) => category.entryType === "jersey_configurator" || available.has(category.id));

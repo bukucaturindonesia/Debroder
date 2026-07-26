@@ -22,15 +22,16 @@ export function AdminSidebar({
 }) {
   const pathname = usePathname();
   const groups = getNavigationGroups(role);
+  const globalDashboard = pathname === "/admin" || pathname === "/admin/dashboard";
 
   return (
-    <div className="flex h-full flex-col bg-white text-brand-charcoal">
+    <div className={`flex h-full flex-col ${globalDashboard ? "gad-sidebar" : "bg-white text-brand-charcoal"}`}>
       <div className="border-b border-brand-softGray p-5">
         <Link href={getRoleHome(role)} onClick={onNavigate}>
-          <Logo variant="primary-dark" size="md" />
+          <Logo variant={globalDashboard ? "primary-white" : "primary-dark"} size="md" />
         </Link>
         <p className="mt-3 text-xs font-semibold uppercase tracking-[0.18em] text-brand-charcoal/45">
-          Area Kerja Admin
+          {globalDashboard ? "GLOBAL ADMIN" : "Area Kerja Admin"}
         </p>
       </div>
 
@@ -44,7 +45,8 @@ export function AdminSidebar({
               <div className="mt-2 grid gap-1">
                 {group.items.map((item) => {
                   if (isNavigationLink(item)) {
-                    const active = isNavigationActive(pathname, item);
+                    const active = isNavigationActive(pathname, item)
+                      || (pathname === "/admin" && item.href === "/admin/dashboard");
                     return (
                       <Link
                         key={item.href}

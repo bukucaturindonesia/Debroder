@@ -11,5 +11,5 @@ export const metadata: Metadata = {
 
 export default async function CustomPage() {
   const categories = await listCustomCategories();
-  return <PublicShell><main className="min-h-screen bg-[#f6f5f0]"><CustomHub categories={categories} /></main></PublicShell>;
+  return <PublicShell><div className="min-h-screen bg-[#f6f5f0]"><CustomHub categories={categories} /></div></PublicShell>;
 }

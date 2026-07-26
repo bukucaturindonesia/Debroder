@@ -8,6 +8,7 @@ import {
   jerseyHasReadyStock,
   jerseyProductStatus
 } from "@/lib/jersey-commerce";
+import { resolveProductPurchaseCapabilities } from "@/lib/product-detail-page/domain";
 import type { Product } from "@/lib/types";
 
 function product(patch: Partial<Product>): Product {
@@ -113,6 +114,7 @@ describe("Jersey commerce catalog", () => {
   it("keeps Jersey product detail on the universal product route", () => {
     const detail = readFileSync("app/produk/[slug]/page.tsx", "utf8");
     const domain = readFileSync("lib/product-detail-page/domain.ts", "utf8");
+    const jerseyCategory = readFileSync("app/jersey/[slug]/page.tsx", "utf8");
 
     expect(detail).toContain("getProductDetailPageModel");
     expect(domain).toContain('productMatchesRoute(product, "jersey")');
@@ -120,6 +122,76 @@ describe("Jersey commerce catalog", () => {
     expect(domain).toContain("jerseyHasCustomAvailability(product)");
     expect(detail).toContain("JerseyCommerceNav");
     expect(detail).toContain('href="/jersey/configurator"');
-    expect(detail).toContain("showBuyNow={isJersey && hasReadyStock}");
+    expect(detail).toContain("purchaseCapabilities");
+    expect(detail).toContain("showBuyNow={purchaseCapabilities.showBuyNow}");
+    expect(jerseyCategory).toContain("content.categories.find");
+    expect(jerseyCategory).toContain('href="/jersey/configurator"');
+    expect(jerseyCategory).not.toContain("getProductDetailPageModel");
+    expect(jerseyCategory).not.toContain("TieredProductPurchasePanel");
+  });
+
+  it.each([
+    {
+      label: "Jersey Ready Stock",
+      input: {
+        hasProduct: true,
+        isJersey: true,
+        hasReadyStock: true,
+        hasCustomAvailability: false
+      },
+      expected: {
+        showPurchasePanel: true,
+        showAddToCart: true,
+        showBuyNow: true,
+        showCustomAction: false
+      }
+    },
+    {
+      label: "Jersey Custom-only",
+      input: {
+        hasProduct: true,
+        isJersey: true,
+        hasReadyStock: false,
+        hasCustomAvailability: true
+      },
+      expected: {
+        showPurchasePanel: false,
+        showAddToCart: false,
+        showBuyNow: false,
+        showCustomAction: true
+      }
+    },
+    {
+      label: "Jersey unavailable",
+      input: {
+        hasProduct: true,
+        isJersey: true,
+        hasReadyStock: false,
+        hasCustomAvailability: false
+      },
+      expected: {
+        showPurchasePanel: true,
+        showAddToCart: false,
+        showBuyNow: false,
+        showCustomAction: false
+      }
+    },
+    {
+      label: "non-Jersey Ready Stock",
+      input: {
+        hasProduct: true,
+        isJersey: false,
+        hasReadyStock: true,
+        hasCustomAvailability: false
+      },
+      expected: {
+        showPurchasePanel: true,
+        showAddToCart: true,
+        showBuyNow: false,
+        showCustomAction: false
+      }
+    }
+  ])("resolves $label purchase capabilities from canonical state", ({ input, expected }) => {
+    expect(resolveProductPurchaseCapabilities(input)).toEqual(expected);
   });
 });
