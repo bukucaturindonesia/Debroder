@@ -11,8 +11,12 @@ import { PublicShell } from "@/components/PublicPage";
 import { getProductImage } from "@/lib/fallback-data";
 import { getProductDetailPageModel } from "@/lib/product-detail-page/runtime";
 import { formatRupiah } from "@/lib/url";
+import { listInstantServicesForProduct } from "@/lib/instant-custom-data";
 
-type PageProps = { params: Promise<{ slug: string }> };
+type PageProps = {
+  params: Promise<{ slug: string }>;
+  searchParams?: Promise<{ mode?: string }>;
+};
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { slug } = await params;
@@ -38,7 +42,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   };
 }
 
-export default async function ProductDetailPage({ params }: PageProps) {
+export default async function ProductDetailPage({ params, searchParams }: PageProps) {
   const { slug } = await params;
   const model = await getProductDetailPageModel(slug);
   if (model.data.state === "not_found") notFound();
@@ -71,6 +75,10 @@ export default async function ProductDetailPage({ params }: PageProps) {
       </PublicShell>
     );
   }
+  const instantServices = product.id && product.product_category_id
+    ? await listInstantServicesForProduct(product.id, product.product_category_id)
+    : [];
+  const requestedMode = (await searchParams)?.mode;
 
   return (
     <PublicShell
@@ -172,6 +180,8 @@ export default async function ProductDetailPage({ params }: PageProps) {
                     showAddToCart={purchaseCapabilities.showAddToCart}
                     showBuyNow={purchaseCapabilities.showBuyNow}
                     monochrome={isJersey}
+                    instantServices={instantServices}
+                    initialInstantMode={requestedMode === "instant"}
                   />
                 ) : (
                   <section className="mt-7 border-y border-black/10 py-6">
@@ -193,7 +203,7 @@ export default async function ProductDetailPage({ params }: PageProps) {
                     href="/jersey/configurator"
                     className="mt-3 inline-flex min-h-11 items-center text-sm font-semibold text-black underline decoration-1 underline-offset-4 outline-none focus-visible:ring-2 focus-visible:ring-black focus-visible:ring-offset-2"
                   >
-                    Atau buat Jersey Custom
+                    Full Custom Jersey melalui Configurator
                   </Link>
                 ) : null}
 

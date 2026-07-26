@@ -1,6 +1,7 @@
 import type { ConfiguredProductSnapshot } from "./configured-product";
 import type { ContractWarning, EntityId, IsoDateTime } from "./core";
 import type { PricingSnapshot } from "./pricing";
+import type { InstantCustomSnapshot } from "../instant-custom";
 import { CONTRACT_VERSIONS } from "./version";
 
 export const CART_LINE_TYPES = [
@@ -52,6 +53,7 @@ export type ReadyStockCartLine = CartLineBase<"ready_stock"> & {
   variantId: EntityId;
   variantSizeId: EntityId;
   sku: string;
+  instantCustom?: InstantCustomSnapshot;
 };
 
 export type ConfiguredProductCartLine = CartLineBase<"configured_product"> & {

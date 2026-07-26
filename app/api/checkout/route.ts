@@ -229,7 +229,12 @@ export async function POST(request: Request) {
       pricedProjects.push({ ...entry.project, pricing });
     }
 
-    const rpcName = pricedProjects.length ? "create_public_custom_checkout_order" : "create_public_checkout_order";
+    const hasInstantServices = body.items.some((item) => (item.services?.length ?? 0) > 0);
+    const rpcName = pricedProjects.length
+      ? "create_public_custom_checkout_order"
+      : hasInstantServices
+        ? "create_public_instant_checkout_order"
+        : "create_public_checkout_order";
     const rpcPayload = {
       p_idempotency_key: body.idempotencyKey,
       p_access_token_hash: sha256(trackingToken),
@@ -245,7 +250,8 @@ export async function POST(request: Request) {
       p_items: body.items.map((item) => ({
         variant_size_id: item.variantSizeId,
         quantity: item.quantity,
-        note: item.note ?? ""
+        note: item.note ?? "",
+        services: item.services ?? []
       })),
       p_shipping_address_snapshot: body.fulfillment.addressSnapshot ?? null,
       ...(pricedProjects.length ? { p_custom_projects: pricedProjects } : {})
@@ -321,6 +327,9 @@ function checkoutDomainError(
   }
   if (/tidak lagi aktif|quotation|configurator/i.test(message)) {
     return respond({ code: "CHECKOUT_ITEM_UNAVAILABLE", error: "Salah satu item tidak tersedia untuk checkout langsung." }, 409);
+  }
+  if (/layanan|referensi upload|input angka|snapshot/i.test(message)) {
+    return respond({ code: "CHECKOUT_SERVICE_INVALID", error: "Konfigurasi layanan berubah atau belum lengkap. Muat ulang produk dan coba lagi." }, 409);
   }
   if (/quantity|keranjang|pelanggan|whatsapp|email|fulfillment|pickup|pembayaran|alamat|token|kunci checkout|hierarki|kode pos/i.test(message)) {
     return respond({ code: "CHECKOUT_INVALID_REQUEST", error: "Data checkout tidak valid." }, 400);

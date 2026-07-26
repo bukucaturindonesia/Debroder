@@ -847,6 +847,7 @@ export type RevalidationInput = {
   unit_price: number;
   product_id?: string;
   price_tier_id: string | null;
+  instant_services?: import("@/lib/instant-custom").InstantServiceSelection[];
 };
 export type RevalidationResult = {
   product_variant_size_id: string;
@@ -867,6 +868,7 @@ export type RevalidationResult = {
   latest_unit_price: number | null;
   stock_available: number;
   message: string | null;
+  instant_custom_snapshot?: import("@/lib/instant-custom").InstantCustomSnapshot;
 };
 
 export type ProductConfigurationSnapshot = {

@@ -476,3 +476,28 @@ The FROZEN commerce/landing blueprints and official Owner Decisions remain autho
   product `Jersey Custom Pilot` declares itself internal/not approved; local
   LCP approximately 13.35 s and Preview performance remains unproven.
 - No database/migration/seed, commit, push, merge, or deployment was performed.
+
+## Global Ready Stock + Instant Custom Services state - 2026-07-26
+
+- Status: **IMPLEMENTED AND LOCALLY VERIFIED - OWNER REVIEW / VERCEL PREVIEW
+  VERIFICATION REQUIRED** on branch `LANDING-PAGE-PUBLIC`, baseline HEAD
+  `4759c0720886f04e3f21b1355c449fe7d9e67abb`.
+- Universal PDP now keeps Ready Stock, reusable Instant Custom services, and
+  Full Custom Configurator as three explicit paths without changing the
+  canonical product pricing formula.
+- Cart v5 persists service inputs/upload references and its stale display
+  snapshot; server revalidation replaces it with canonical service pricing.
+- Checkout uses a service-role-only transactional RPC, writes immutable
+  product/service snapshots, and feeds existing `order_item_services`.
+- Public product reads use a narrow aggregate inventory RPC when a server
+  service-role client is unavailable; no secret or inventory detail is exposed.
+- Owner-authorized Jersey QA data was aligned to a public experimental product
+  without inventing product specifications or media; `V12-057` is closed.
+- Four package migrations are applied remotely. Verification: targeted 6/6,
+  typecheck, lint (0 errors / 32 existing warnings), 89 files / 689 tests,
+  build 119/119 pages, diff check, and local PDP -> Cart -> Checkout browser
+  behavior all PASS.
+- A real production order was not created, so remote transactional order and
+  downstream fulfillment execution remain **NOT PROVEN**. Existing Supabase
+  advisor findings outside this package remain open.
+- No commit, push, merge, or deployment was performed.

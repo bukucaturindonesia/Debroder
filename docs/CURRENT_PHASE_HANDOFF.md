@@ -752,3 +752,44 @@ Status: **NO-GO**.
 - Database/migration/seed/deployment/commit/push/merge: none.
 - Resume from `docs/CURRENT_PACKAGE_HANDOFF.md`; correct CMS/PIM records,
   prove Preview performance, and rerun the P15 release check.
+
+---
+
+## 2026-07-26 - Global Ready Stock + Instant Custom Services
+
+Status: **IMPLEMENTED AND LOCALLY VERIFIED - OWNER REVIEW / VERCEL PREVIEW
+VERIFICATION REQUIRED**.
+
+- Scope: universal PDP modes, reusable Instant Custom services, Cart v5
+  persistence/revalidation, checkout/order snapshots, operations visibility,
+  admin service schema, and canonical public inventory availability.
+- Root causes: no shared service-selection contract; Cart/checkout carried only
+  SKU quantity and product price; local server intentionally lacked a
+  service-role key; owner-approved Jersey QA data retained internal-only copy.
+- Fix: Zod-validated definitions/inputs, server-only catalog and repricing,
+  service-aware Cart v5, service-role-only checkout, immutable snapshots,
+  operations synchronization, narrow aggregate inventory RPC, and explicit
+  Ready Stock / Custom Instan / Full Custom presentation.
+- Routes changed in behavior only: `/produk/[slug]`, `/keranjang`, `/checkout`.
+- Local and remote-applied migrations:
+  `20260726160000_global_ready_stock_instant_custom_v1.sql`,
+  `20260726162000_instant_custom_operations_alignment_v1.sql`,
+  `20260726164000_public_canonical_inventory_availability_v1.sql`, and
+  `20260726165000_jersey_experimental_public_copy_correction_v1.sql`.
+  Project `lzennundwqqtyvvcnzbg`; package migrations pending: none.
+- Database proof: service-bearing order-item trigger exists; instant checkout
+  RPC is executable by `service_role` only; public inventory RPC exposes only
+  variant-size ID and aggregate availability; Jersey is hybrid,
+  variant-priced, and Configurator-backed.
+- Tests: targeted 6/6 PASS; typecheck PASS; lint PASS with 0 errors /
+  32 existing warnings; full tests 89 files / 689 tests PASS; build 119/119
+  pages PASS; `git diff --check` PASS.
+- Browser proof on existing `http://127.0.0.1:3000`: Jersey stock 100;
+  structured “Tambah nama” input; Rp100.000 + Rp10.000 = Rp110.000; cart with
+  an existing Rp45.000 Ready Stock item totals Rp155.000; service remains
+  visible in cart and checkout. No order was submitted.
+- Deployment, commit, push, and merge: none.
+- Remaining: owner source review, Vercel Preview, and controlled remote
+  checkout/order/operations smoke. Real transaction execution is **NOT
+  PROVEN**. Existing advisor findings outside scope were not modified.
+- Final status: not COMPLETE and not GO.

@@ -17,6 +17,7 @@ import { SafeImage } from "@/components/SafeImage";
 import { repriceCartItemsByProduct } from "@/lib/cart-group-tier-pricing";
 import {
   applyReadyStockRevalidation,
+  cartItemSubtotal,
   CART_V5_STORAGE_KEY,
   createConfiguredProductCartItem,
   createCustomProjectCartItem,
@@ -37,6 +38,7 @@ import {
 } from "@/lib/cart-v5";
 import type { ConfiguredProductSnapshot } from "@/lib/contracts";
 import type { CustomProjectSnapshot } from "@/lib/custom-commerce/types";
+import type { InstantCustomSnapshot } from "@/lib/instant-custom";
 import { fallbackImages, pageHeroImageFallbacks } from "@/lib/fallback-data";
 import { formatRupiah } from "@/lib/url";
 
@@ -62,6 +64,7 @@ export type CartProductInput = {
   stockAvailable?: number;
   variantSnapshot?: Record<string, unknown>;
   customProject?: CustomProjectSnapshot;
+  instantCustom?: InstantCustomSnapshot;
 };
 
 export type ConfiguredProductCartInput = {
@@ -299,16 +302,8 @@ function JerseyConfigSummary({ item }: { item: CartItem }) {
   );
 }
 
-function itemProductSubtotal(item: CartItem) {
-  if (item.lineType === "legacy_unsupported") return 0;
-  if (item.lineType === "custom_project") {
-    return item.customProject?.pricing.finalTotal ?? 0;
-  }
-  return itemUnitPrice(item) * item.quantity;
-}
-
 function cartTotals(items: CartItem[]) {
-  const productSubtotal = items.reduce((total, item) => total + itemProductSubtotal(item), 0);
+  const productSubtotal = items.reduce((total, item) => total + cartItemSubtotal(item), 0);
   return { productSubtotal, normalTotal: productSubtotal };
 }
 
@@ -340,7 +335,7 @@ function QuantityControl({ value, onChange, ariaLabel }: { value: number; onChan
 
 function CartProductHeader({ item, compact = false }: { item: CartItem; compact?: boolean }) {
   const unitPrice = itemUnitPrice(item);
-  const subtotal = itemProductSubtotal(item);
+  const subtotal = cartItemSubtotal(item);
   const displaySku = item.lineType === "ready_stock"
     ? item.sku
     : readRecordString(item.variantSnapshot, "sku");
@@ -362,6 +357,14 @@ function CartProductHeader({ item, compact = false }: { item: CartItem; compact?
                 {item.color ? <span className="inline-flex items-center gap-1.5"><span className="h-3 w-3 rounded-full border border-black/10" style={{ backgroundColor: item.colorHex || "#d9d9d6" }} />{item.color}</span> : null}
                 {item.size ? <span>Ukuran {item.size}</span> : null}
                 {displaySku ? <span>SKU {displaySku}</span> : null}
+              </div>
+            ) : null}
+            {item.lineType === "ready_stock" && item.instantCustom ? (
+              <div className="mt-3 rounded-xl bg-amber-50 p-3 text-xs text-amber-950">
+                <p className="font-bold uppercase tracking-wide">Custom Instan · wajib proses layanan</p>
+                {item.instantCustom.pricing.map((service) => (
+                  <p key={service.serviceId} className="mt-1">{service.serviceName} · {formatRupiah(service.total)}</p>
+                ))}
               </div>
             ) : null}
           </div>
@@ -474,7 +477,7 @@ function CartSummary({ compact = false }: { compact?: boolean }) {
         </div>
       </div>
       <div className="mt-5 rounded-2xl bg-[#f5f5ef] p-4 text-xs leading-6 text-black/58">
-        Produk Ready Stock mengikuti harga PIM. Konfigurasi layanan hanya dilakukan melalui Custom Builder.
+        Produk Ready Stock mengikuti harga PIM. Custom Instan memakai SKU yang sama dan seluruh harga layanan divalidasi ulang oleh server.
       </div>
       {!checkoutAllowed ? <p className="mt-4 text-xs leading-5 text-amber-800">{cart.checkoutDecision.message}</p> : null}
       <Link href={checkoutAllowed ? "/checkout" : "#"} aria-disabled={!checkoutAllowed} className={`mt-5 inline-flex min-h-12 w-full items-center justify-center rounded-full px-5 text-center text-sm font-semibold ${checkoutAllowed ? cart.preserveJerseyInteractions ? "bg-[#063d24] text-white" : "bg-black text-white hover:bg-black/75" : "pointer-events-none bg-black/10 text-black/35"}`}>
@@ -854,7 +857,8 @@ export function CartProvider({ children }: { children: ReactNode }) {
             product_id: line.productId,
             quantity: line.quantity,
             unit_price: itemUnitPrice(line),
-            price_tier_id: readSnapshotTierId(line.variantSnapshot)
+            price_tier_id: readSnapshotTierId(line.variantSnapshot),
+            instant_services: line.instantCustom?.selections ?? []
           }))
         })
       });
@@ -963,11 +967,13 @@ export function CartProvider({ children }: { children: ReactNode }) {
     checkoutDecision,
     addItem: (product, requestedRole) => {
       commitMutation((current) => {
+        const instantSignature = JSON.stringify(product.instantCustom?.selections ?? []);
         const duplicateIndex = product.variantSizeId
           ? current.findIndex(
               (item) =>
                 item.lineType === "ready_stock"
                 && item.variantSizeId === product.variantSizeId
+                && JSON.stringify(item.instantCustom?.selections ?? []) === instantSignature
             )
           : -1;
         if (duplicateIndex >= 0) {
@@ -984,6 +990,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
               priceLabel: product.priceLabel ?? item.priceLabel,
               priceValue: product.priceValue ?? item.priceValue,
               variantSnapshot: product.variantSnapshot ?? item.variantSnapshot,
+              ...(product.instantCustom ? { instantCustom: product.instantCustom } : {}),
               validation: { status: "unvalidated" }
             };
           });
@@ -1033,6 +1040,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
               variantId: product.variantId,
               variantSizeId: product.variantSizeId,
               sku,
+              instantCustom: product.instantCustom,
               display,
               ui
             })

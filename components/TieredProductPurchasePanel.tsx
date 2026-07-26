@@ -8,6 +8,12 @@ import { cartTierProductKey } from "@/lib/cart-group-tier-pricing";
 import { createSupabaseClient } from "@/lib/supabase";
 import type { ProductVariant, ProductVariantSize } from "@/lib/types";
 import { formatRupiah } from "@/lib/url";
+import {
+  createInstantCustomSnapshot,
+  priceInstantServices,
+  type InstantServiceDefinition,
+  type InstantServiceSelection
+} from "@/lib/instant-custom";
 
 export type ProductColorOption = {
   name: string;
@@ -45,6 +51,8 @@ type ProductPurchasePanelProps = {
   showAddToCart?: boolean;
   showBuyNow?: boolean;
   monochrome?: boolean;
+  instantServices?: InstantServiceDefinition[];
+  initialInstantMode?: boolean;
 };
 
 const baseColors: ProductColorOption[] = [
@@ -176,12 +184,23 @@ export function TieredProductPurchasePanel({
   variants = [],
   showAddToCart = true,
   showBuyNow = false,
-  monochrome = false
+  monochrome = false,
+  instantServices = [],
+  initialInstantMode = false
 }: ProductPurchasePanelProps) {
   const cart = useCart();
   const router = useRouter();
   const variantGallery = useOptionalProductVariantGallery();
   const interactionLocked = useRef(false);
+  const uploadSessionToken = useRef(`instant_${crypto.randomUUID().replace(/-/g, "")}`);
+  const [instantMode, setInstantMode] = useState(initialInstantMode);
+  const [selectedServices, setSelectedServices] = useState<Record<string, {
+    inputs: Record<string, string>;
+    uploadIds: string[];
+    note: string;
+  }>>({});
+  const [uploadingServiceId, setUploadingServiceId] = useState<string | null>(null);
+  const [serviceError, setServiceError] = useState("");
 
   const [tiers, setTiers] = useState<ProductPriceTier[]>([]);
   const [minimumRule, setMinimumRule] =
@@ -364,6 +383,17 @@ export function TieredProductPurchasePanel({
       : product.priceLabel;
 
   const subtotal = quoteRequired ? 0 : unitPriceValue * quantity;
+  const instantSelections: InstantServiceSelection[] = Object.entries(selectedServices)
+    .map(([serviceId, selection]) => ({
+      serviceId,
+      inputs: selection.inputs,
+      uploadIds: selection.uploadIds,
+      uploadSessionToken: uploadSessionToken.current,
+      note: selection.note || undefined
+    }));
+  const servicePricing = priceInstantServices(instantServices, instantSelections, quantity);
+  const serviceTotal = instantMode && servicePricing.ok ? servicePricing.serviceTotal : 0;
+  const payableSubtotal = subtotal + serviceTotal;
 
   const tierDescription = pricingLoading
     ? "Memuat harga grosir..."
@@ -388,6 +418,13 @@ export function TieredProductPurchasePanel({
 
   function addSelectedToCart() {
     if (belowMinimum || unavailable || interactionLocked.current) return false;
+    if (instantMode && (!servicePricing.ok || instantSelections.length === 0 || uploadingServiceId)) {
+      setServiceError(
+        !servicePricing.ok ? servicePricing.message : uploadingServiceId ? "Tunggu upload selesai." : "Pilih minimal satu layanan Custom Instan."
+      );
+      return false;
+    }
+    setServiceError("");
     interactionLocked.current = true;
     window.setTimeout(() => {
       interactionLocked.current = false;
@@ -449,9 +486,62 @@ export function TieredProductPurchasePanel({
         quote_required: quoteRequired,
         unit_price: unitPriceValue || null,
         subtotal: subtotal || null
-      }
+      },
+      ...(instantMode && servicePricing.ok
+        ? { instantCustom: createInstantCustomSnapshot(instantSelections, servicePricing) }
+        : {})
     });
     return true;
+  }
+
+  function toggleInstantService(serviceId: string) {
+    setSelectedServices((current) => {
+      if (current[serviceId]) {
+        const next = { ...current };
+        delete next[serviceId];
+        return next;
+      }
+      return { ...current, [serviceId]: { inputs: {}, uploadIds: [], note: "" } };
+    });
+  }
+
+  function updateInstantService(serviceId: string, patch: Partial<{ inputs: Record<string, string>; note: string }>) {
+    setSelectedServices((current) => ({
+      ...current,
+      [serviceId]: {
+        ...(current[serviceId] ?? { inputs: {}, uploadIds: [], note: "" }),
+        ...patch
+      }
+    }));
+  }
+
+  async function uploadInstantServiceFile(serviceId: string, file?: File) {
+    if (!file) return;
+    setUploadingServiceId(serviceId);
+    setServiceError("");
+    try {
+      const form = new FormData();
+      form.set("file", file);
+      form.set("session_token", uploadSessionToken.current);
+      const response = await fetch("/api/customer-uploads", { method: "POST", body: form });
+      const payload: unknown = await response.json();
+      const upload = payload && typeof payload === "object" && !Array.isArray(payload)
+        ? (payload as { upload?: { id?: unknown } }).upload
+        : undefined;
+      if (!response.ok || typeof upload?.id !== "string") throw new Error("Upload file layanan gagal.");
+      const uploadId = upload.id;
+      setSelectedServices((current) => ({
+        ...current,
+        [serviceId]: {
+          ...(current[serviceId] ?? { inputs: {}, uploadIds: [], note: "" }),
+          uploadIds: [uploadId]
+        }
+      }));
+    } catch (error) {
+      setServiceError(error instanceof Error ? error.message : "Upload file layanan gagal.");
+    } finally {
+      setUploadingServiceId(null);
+    }
   }
 
   function buySelectedNow() {
@@ -554,6 +644,56 @@ export function TieredProductPurchasePanel({
       </section>
 
       <section className="grid gap-4 rounded-[22px] bg-white/60 p-4">
+        {instantServices.length ? (
+          <div className="grid gap-3 border-b border-black/10 pb-5">
+            <div className="grid gap-2 sm:grid-cols-2" role="group" aria-label="Mode pembelian">
+              <button type="button" aria-pressed={!instantMode} onClick={() => setInstantMode(false)} className={`min-h-12 rounded-full px-4 text-sm font-semibold ${!instantMode ? "bg-black text-white" : "border border-black/15 bg-white"}`}>Ready Stock</button>
+              <button type="button" aria-pressed={instantMode} onClick={() => setInstantMode(true)} className={`min-h-12 rounded-full px-4 text-sm font-semibold ${instantMode ? "bg-black text-white" : "border border-black/15 bg-white"}`}>Custom Instan</button>
+            </div>
+            {instantMode ? (
+              <div className="grid gap-3">
+                <p className="text-sm leading-6 text-black/60">Gunakan SKU Ready Stock yang dipilih, lalu tambahkan layanan berikut. Harga dikonfirmasi ulang oleh server saat checkout.</p>
+                {instantServices.map((service) => {
+                  const selected = selectedServices[service.id];
+                  return (
+                    <div key={service.id} className="rounded-2xl border border-black/10 bg-white p-4">
+                      <label className="flex cursor-pointer items-start gap-3">
+                        <input type="checkbox" checked={Boolean(selected)} onChange={() => toggleInstantService(service.id)} className="mt-1 h-5 w-5" />
+                        <span className="flex-1">
+                          <span className="block font-semibold">{service.name}</span>
+                          <span className="text-xs text-black/55">{service.description || formatRupiah(service.basePrice)}</span>
+                        </span>
+                      </label>
+                      {selected ? (
+                        <div className="mt-4 grid gap-3">
+                          {service.inputSchema.map((field) => (
+                            <label key={field.key} className="grid gap-1 text-sm">
+                              <span className="font-medium">{field.label}{field.required ? " *" : ""}</span>
+                              {field.type === "select" ? (
+                                <select value={selected.inputs[field.key] ?? ""} onChange={(event) => updateInstantService(service.id, { inputs: { ...selected.inputs, [field.key]: event.target.value } })} className="min-h-11 rounded-xl border border-black/15 px-3">
+                                  <option value="">Pilih</option>
+                                  {field.options?.map((option) => <option key={option}>{option}</option>)}
+                                </select>
+                              ) : field.type === "textarea" ? (
+                                <textarea value={selected.inputs[field.key] ?? ""} maxLength={field.maxLength} onChange={(event) => updateInstantService(service.id, { inputs: { ...selected.inputs, [field.key]: event.target.value } })} className="min-h-24 rounded-xl border border-black/15 p-3" />
+                              ) : (
+                                <input type={field.type} value={selected.inputs[field.key] ?? ""} maxLength={field.maxLength} onChange={(event) => updateInstantService(service.id, { inputs: { ...selected.inputs, [field.key]: event.target.value } })} className="min-h-11 rounded-xl border border-black/15 px-3" />
+                              )}
+                            </label>
+                          ))}
+                          {service.requiresNotes ? <textarea aria-label={`Catatan ${service.name}`} placeholder="Catatan layanan *" value={selected.note} onChange={(event) => updateInstantService(service.id, { note: event.target.value })} className="min-h-24 rounded-xl border border-black/15 p-3 text-sm" /> : null}
+                          {service.requiresUpload ? <label className="grid gap-1 text-sm"><span className="font-medium">File desain *</span><input type="file" accept=".ai,.cdr,.eps,.jpeg,.jpg,.pdf,.png,.psd,.svg,.zip" onChange={(event) => void uploadInstantServiceFile(service.id, event.target.files?.[0])} />{selected.uploadIds.length ? <span className="text-xs text-emerald-700">File siap</span> : null}</label> : null}
+                        </div>
+                      ) : null}
+                    </div>
+                  );
+                })}
+                <p className="text-sm font-semibold">Total layanan: {formatRupiah(serviceTotal)}</p>
+                {serviceError ? <p role="alert" className="text-sm text-red-700">{serviceError}</p> : null}
+              </div>
+            ) : null}
+          </div>
+        ) : null}
         <div className="flex flex-wrap items-center justify-between gap-4">
           <div>
             <p className="text-sm font-semibold text-brand-charcoal">
@@ -617,7 +757,7 @@ export function TieredProductPurchasePanel({
                 <p className="mt-2 text-sm">
                   Subtotal:{" "}
                   <span className="font-semibold">
-                    {formatRupiah(subtotal)}
+                    {formatRupiah(payableSubtotal)}
                   </span>
                 </p>
               ) : null}

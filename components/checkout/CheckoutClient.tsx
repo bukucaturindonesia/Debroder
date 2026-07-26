@@ -8,6 +8,7 @@ import { formatRupiah } from "@/lib/url";
 import { removeCustomDraft } from "@/lib/custom-commerce/draft-storage";
 import { EMPTY_STRUCTURED_ADDRESS, StructuredIndonesiaAddress } from "@/components/checkout/StructuredIndonesiaAddress";
 import type { StructuredIndonesiaAddressInput } from "@/lib/indonesia-address";
+import { cartItemSubtotal } from "@/lib/cart-v5";
 
 type StoreOption = { id: string; name: string; address: string; hours: string };
 type CheckoutDraft = {
@@ -70,7 +71,7 @@ export function CheckoutClient({ stores }: { stores: StoreOption[] }) {
   const configuredItems = cart.items.filter((item) => item.lineType === "configured_product");
   const unsupportedItems = cart.items.filter((item) => item.lineType === "legacy_unsupported");
   const checkoutBlocked = !cart.checkoutDecision.allowed || configuredItems.length > 0;
-  const subtotal = readyItems.reduce((sum, item) => sum + Number(item.priceValue || 0) * item.quantity, 0)
+  const subtotal = readyItems.reduce((sum, item) => sum + cartItemSubtotal(item), 0)
     + customItems.reduce((sum, item) => sum + Number(item.customProject.pricing.finalTotal || 0), 0);
 
   useEffect(() => {
@@ -159,7 +160,12 @@ export function CheckoutClient({ stores }: { stores: StoreOption[] }) {
         paymentMethod: fulfillment === "pickup" ? form.get("paymentMethod") : "bank_transfer"
       },
       items: checkoutReadyItems
-        .map((item) => ({ variantSizeId: item.variantSizeId, quantity: item.quantity, note: item.notes }))
+        .map((item) => ({
+          variantSizeId: item.variantSizeId,
+          quantity: item.quantity,
+          note: item.notes,
+          services: item.instantCustom?.selections ?? []
+        }))
         .sort((left, right) => String(left.variantSizeId).localeCompare(String(right.variantSizeId))),
       customProjects: customItems
         .map((item) => ({ project: item.customProject }))
@@ -304,8 +310,8 @@ export function CheckoutClient({ stores }: { stores: StoreOption[] }) {
             <h2 className="text-xl font-semibold">Ringkasan pesanan</h2>
             <div className="mt-5 grid gap-4">{readyItems.map((item) => (
               <div key={item.lineId} className="flex justify-between gap-4 border-b border-black/10 pb-4 text-sm">
-                <div><p className="font-semibold">{item.name}</p><p className="mt-1 text-black/55">{item.variantName || item.color} · {item.size} · {item.sku} × {item.quantity}</p></div>
-                <p className="shrink-0 font-semibold">{formatRupiah(Number(item.priceValue || 0) * item.quantity)}</p>
+                <div><p className="font-semibold">{item.name}</p><p className="mt-1 text-black/55">{item.variantName || item.color} · {item.size} · {item.sku} × {item.quantity}</p>{item.instantCustom?.pricing.map((service) => <p key={service.serviceId} className="mt-1 text-xs text-amber-800">{service.serviceName} · {formatRupiah(service.total)}</p>)}</div>
+                <p className="shrink-0 font-semibold">{formatRupiah(cartItemSubtotal(item))}</p>
               </div>
             ))}{customItems.map((item) => <div key={item.lineId} className="flex justify-between gap-4 border-b border-black/10 pb-4 text-sm"><div><p className="font-semibold">{item.name}</p><p className="mt-1 text-black/55">{item.customProject.items.length} grup produk · {item.customProject.pricing.totalQuantity} pcs · {item.customProject.pricing.status === "final" ? "Harga final" : item.customProject.pricing.status === "estimated" ? "Estimasi" : "Menunggu pemeriksaan"}</p></div><p className="shrink-0 font-semibold">{item.customProject.pricing.finalTotal ? formatRupiah(item.customProject.pricing.finalTotal) : "Diperiksa admin"}</p></div>)}</div>
             <div className="mt-5 flex items-center justify-between"><span>Subtotal</span><strong>{formatRupiah(subtotal)}</strong></div>

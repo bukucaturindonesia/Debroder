@@ -933,3 +933,101 @@ OUTSTANDING:
 NEXT ACTION:
 Owner corrects CMS/PIM publication data and validates Preview performance,
 then reruns P15 release verification. No commit/push/deploy in this batch.
+
+## Global Ready Stock + Instant Custom Services
+
+STATUS:
+**IMPLEMENTED AND LOCALLY VERIFIED - OWNER REVIEW / VERCEL PREVIEW
+VERIFICATION REQUIRED**
+
+BASELINE:
+
+- branch `LANDING-PAGE-PUBLIC`;
+- HEAD `4759c0720886f04e3f21b1355c449fe7d9e67abb`;
+- clean working tree before package.
+
+IMPLEMENTED:
+
+- reusable validated service definitions, structured input, notes, and private
+  upload references;
+- server-only catalog/repricing;
+- Ready Stock / Custom Instan / Full Custom universal PDP paths;
+- Cart v5 service snapshot, serialization/restore, totals, and revalidation;
+- service-role-only checkout and immutable order snapshots;
+- existing `order_item_services` synchronization and fulfillment bypass guard;
+- narrow public canonical inventory aggregation;
+- admin input-schema editing and order service visibility;
+- owner-authorized Jersey QA public-copy correction.
+
+FILES:
+
+- `app/api/admin/pim-v2/custom-services/route.ts`
+- `app/api/cart/revalidate/route.ts`
+- `app/api/checkout/route.ts`
+- `app/produk/[slug]/page.tsx`
+- `components/CartProvider.tsx`
+- `components/TieredProductPurchasePanel.tsx`
+- `components/admin/BulkCustomManager.tsx`
+- `components/admin/OrderManagementAdmin.tsx`
+- `components/checkout/CheckoutClient.tsx`
+- `lib/cart-v5.ts`
+- `lib/commerce-checkout.ts`
+- `lib/contracts/cart-line.ts`
+- `lib/instant-custom.ts`
+- `lib/instant-custom-data.ts`
+- `lib/supabase/products.ts`
+- `lib/types.ts`
+- `package.json`, `pnpm-lock.yaml`
+- `test/global-ready-stock-instant-custom.test.ts`
+- four migrations listed below
+- four governance/handoff documents.
+
+MIGRATIONS:
+
+- `20260726160000_global_ready_stock_instant_custom_v1.sql` - APPLIED;
+- `20260726162000_instant_custom_operations_alignment_v1.sql` - APPLIED;
+- `20260726164000_public_canonical_inventory_availability_v1.sql` - APPLIED;
+- `20260726165000_jersey_experimental_public_copy_correction_v1.sql` - APPLIED;
+- remote project `lzennundwqqtyvvcnzbg`; package pending: none.
+
+VERIFICATION:
+
+- targeted test PASS, 1 file / 6 tests;
+- typecheck PASS;
+- lint PASS, 0 errors / 32 existing warnings;
+- full tests PASS, 89 files / 689 tests;
+- production build PASS, 119/119 pages;
+- `git diff --check` PASS;
+- existing-server browser PASS for PDP pricing/input, cart persistence/total,
+  checkout summary, Ready Stock + Instant Custom coexistence, and Full Custom
+  link.
+
+DATABASE PROOF:
+
+- four migration names present in remote history;
+- `sync_instant_custom_order_item_services_v1` exists on `order_items`;
+- instant checkout RPC execute: anon false, authenticated false,
+  service_role true;
+- inventory aggregate execute: anon/authenticated/service_role true, output
+  limited to variant-size ID and availability;
+- Jersey: `sales_mode=both`, `pricing_mode=variant_based`,
+  `uses_configurator=true`.
+
+NOT PROVEN / OPEN:
+
+- no production order was created; remote checkout -> order -> reservation ->
+  operations execution is **NOT PROVEN**;
+- Vercel Preview, deployment, and Preview performance were not run;
+- broad pre-existing Supabase advisor findings were not changed;
+- `/kaos-polo`, legal/Auth/wishlist, and existing performance issues remain
+  outside this package.
+
+NEXT:
+
+- owner source/database review;
+- Vercel Preview and controlled transaction smoke before GO;
+- do not start another package implicitly.
+
+GIT / DEPLOYMENT:
+
+- commit none; push none; merge none; deploy none.

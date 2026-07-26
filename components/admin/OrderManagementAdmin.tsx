@@ -40,6 +40,7 @@ type OrderItem = {
   color: string;
   size: string;
   notes: string;
+  required_services?: unknown;
 };
 type Order = {
   id: string;
@@ -97,6 +98,20 @@ function generatedOrderNumber() {
   const date = new Date();
   const stamp = `${date.getFullYear()}${String(date.getMonth() + 1).padStart(2, "0")}${String(date.getDate()).padStart(2, "0")}`;
   return `DBR-${stamp}-${String(Date.now()).slice(-5)}`;
+}
+
+function readRequiredServiceSummaries(value: unknown) {
+  if (!Array.isArray(value)) return [];
+  return value.flatMap((entry, index) => {
+    if (!entry || typeof entry !== "object" || Array.isArray(entry)) return [];
+    const record = entry as Record<string, unknown>;
+    const name = typeof record.service_name === "string" ? record.service_name : "";
+    const total = typeof record.total === "number" && Number.isFinite(record.total) ? record.total : 0;
+    const inputs = record.inputs && typeof record.inputs === "object" && !Array.isArray(record.inputs)
+      ? Object.values(record.inputs as Record<string, unknown>).filter((item): item is string => typeof item === "string" && item.trim().length > 0)
+      : [];
+    return name ? [{ key: `${String(record.service_id ?? index)}:${index}`, name, total, detail: inputs.join(", ") }] : [];
+  });
 }
 
 export function OrderManagementAdmin() {
@@ -387,7 +402,10 @@ export function OrderManagementAdmin() {
             <Field label="Catatan item"><input value={itemNotes} onChange={(event) => setItemNotes(event.target.value)} /></Field>
             <button className="min-h-11 self-end rounded-full bg-brand-charcoal px-5 text-sm font-semibold text-white">Tambah item</button>
           </form>
-          {selectedOrder.items?.length ? <div className="mt-5 grid gap-3">{selectedOrder.items.map((item) => <article key={item.id} className="flex items-center justify-between gap-4 border border-brand-softGray p-4"><div><h3 className="font-semibold">{item.product_name}</h3><p className="mt-1 text-xs text-brand-charcoal/55">{item.quantity} x {formatRupiah(item.unit_price)}{item.color ? ` / Warna: ${item.color}` : ""}{item.size ? ` / Ukuran: ${item.size}` : ""}{item.notes ? ` / ${item.notes}` : ""}</p></div><div className="text-right"><p className="font-semibold">{formatRupiah(item.subtotal)}</p><button type="button" onClick={() => deleteItem(item)} className="mt-2 text-xs font-semibold text-red-700">Hapus</button></div></article>)}</div> : <p className="mt-5 bg-brand-offWhite p-4 text-sm text-brand-charcoal/60">Belum ada item pesanan.</p>}
+          {selectedOrder.items?.length ? <div className="mt-5 grid gap-3">{selectedOrder.items.map((item) => {
+            const requiredServices = readRequiredServiceSummaries(item.required_services);
+            return <article key={item.id} className="flex items-start justify-between gap-4 border border-brand-softGray p-4"><div><h3 className="font-semibold">{item.product_name}</h3><p className="mt-1 text-xs text-brand-charcoal/55">{item.quantity} x {formatRupiah(item.unit_price)}{item.color ? ` / Warna: ${item.color}` : ""}{item.size ? ` / Ukuran: ${item.size}` : ""}{item.notes ? ` / ${item.notes}` : ""}</p>{requiredServices.length ? <div className="mt-3 rounded-lg bg-amber-50 p-3 text-xs text-amber-950"><p className="font-bold uppercase tracking-wide">Wajib proses layanan sebelum fulfillment</p>{requiredServices.map((service) => <p key={service.key} className="mt-1">{service.name} · {formatRupiah(service.total)}{service.detail ? ` · ${service.detail}` : ""}</p>)}</div> : null}</div><div className="text-right"><p className="font-semibold">{formatRupiah(item.subtotal)}</p><button type="button" onClick={() => deleteItem(item)} className="mt-2 text-xs font-semibold text-red-700">Hapus</button></div></article>;
+          })}</div> : <p className="mt-5 bg-brand-offWhite p-4 text-sm text-brand-charcoal/60">Belum ada item pesanan.</p>}
         </div>
 
         <div className="bg-white p-5 sm:p-6"><h2 className="text-xl font-semibold">Riwayat status</h2>{history.length ? <div className="mt-5 grid gap-4">{history.map((entry) => <article key={entry.id} className="border-l-2 border-brand-green pl-4"><p className="text-sm font-semibold">{statusLabel(entry.to_status)}</p><p className="mt-1 text-xs text-brand-charcoal/50">{new Date(entry.created_at).toLocaleString("id-ID")}</p>{entry.note ? <p className="mt-2 text-sm text-brand-charcoal/65">{entry.note}</p> : null}</article>)}</div> : <p className="mt-5 text-sm text-brand-charcoal/60">Belum ada riwayat status.</p>}</div>

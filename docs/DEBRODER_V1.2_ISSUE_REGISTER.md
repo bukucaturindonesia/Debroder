@@ -615,3 +615,41 @@
   fan-outs.
 - Boundary: no speculative cache or broad read-model rewrite was made without
   a freshness/invalidation contract. Verify and correct on Preview before GO.
+
+### V12-057 update - Internal Jersey pilot publication
+
+- Severity: HIGH
+- Status: **CLOSED - OWNER-AUTHORIZED DATA CORRECTION APPLIED**
+- Evidence: canonical data now renders `Jersey Eksperimental DEBRODER`,
+  exposes the three owner-review paths, and retains the existing canonical
+  SKU, inventory, product ID, and media.
+- Resolution: migration
+  `20260726165000_jersey_experimental_public_copy_correction_v1.sql` removed
+  contradictory internal-only copy; no product, specification, or media was
+  fabricated.
+
+### V12-059 - Instant Custom was not transaction-authoritative
+
+- Severity: HIGH
+- Status: **CLOSED IN SOURCE / STRUCTURE VERIFIED**
+- Root cause: PDP, Cart v5, checkout, order snapshot, and operations had no
+  shared validated service-selection contract.
+- Resolution: reusable service definitions now pass through Cart v5, server
+  repricing, service-role-only checkout, immutable snapshots,
+  `order_item_services`, and Job Order / Work Item guards.
+- Regression: targeted PASS 6/6; full tests PASS 89 files / 689 tests; build
+  PASS. Real remote order/operations execution and Preview remain **NOT
+  PROVEN**.
+
+### V12-060 - Canonical PDP inventory unavailable without service role
+
+- Severity: HIGH
+- Status: **CLOSED AND BROWSER-VERIFIED**
+- Root cause: product reads required an admin client to aggregate canonical
+  balances; the existing local server intentionally had no service-role key
+  and therefore projected zero stock.
+- Resolution: a narrow SECURITY DEFINER RPC exposes only
+  `(variant_size_id, available)` with `available = on_hand - reserved`.
+  Location and movement data remain private.
+- Regression: browser verified canonical Jersey stock 100 and Cart v5
+  revalidation; tests prohibit RLS disabling and service-role leakage.
