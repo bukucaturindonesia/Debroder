@@ -20,14 +20,12 @@ export function SiteHeader({
   expandedAtTop = false,
   navigationFacets,
   preserveJerseyOutput = false,
-  whatsappHref = fallbackWhatsappUrl,
   promo = fallbackPromo
 }: {
   positionMode?: "sticky" | "natural";
   expandedAtTop?: boolean;
   navigationFacets?: PublicNavigationFacets;
   preserveJerseyOutput?: boolean;
-  whatsappHref?: string;
   promo?: PublicShellPromoViewModel;
 }) {
   return (
@@ -36,7 +34,6 @@ export function SiteHeader({
       expandedAtTop={expandedAtTop}
       navigationFacets={navigationFacets}
       preserveJerseyOutput={preserveJerseyOutput}
-      whatsappHref={whatsappHref}
       promo={promo}
     />
   );

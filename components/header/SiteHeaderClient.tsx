@@ -214,9 +214,6 @@ function SearchIcon() {
   return <BrandIcon name="search" />;
 }
 
-function ChatIcon() {
-  return <BrandIcon name="whatsapp" />;
-}
 
 function ChevronDownIcon() {
   return <BrandIcon name="chevronDown" className="h-3.5 w-3.5" />;
@@ -297,14 +294,12 @@ export function SiteHeaderClient({
   expandedAtTop = false,
   navigationFacets = emptyNavigationFacets,
   preserveJerseyOutput = false,
-  whatsappHref,
   promo
 }: {
   positionMode?: "sticky" | "natural";
   expandedAtTop?: boolean;
   navigationFacets?: PublicNavigationFacets;
   preserveJerseyOutput?: boolean;
-  whatsappHref: string;
   promo: PublicShellPromoViewModel;
 }) {
   const pathname = usePathname();
@@ -507,9 +502,7 @@ export function SiteHeaderClient({
           <button type="button" className="grid h-12 w-12 place-items-center rounded-full transition hover:bg-[#f5f5f5] 2xl:hidden" aria-label="Cari" onClick={(event) => openSearch(event.currentTarget)}>
             <SearchIcon />
           </button>
-          <a href={whatsappHref} className="hidden h-12 w-12 place-items-center rounded-full transition hover:bg-[#f5f5f5] sm:grid" aria-label="Hubungi WhatsApp DEBRODER" target="_blank" rel="noopener noreferrer">
-            <ChatIcon />
-          </a>
+
           <Link href="/wishlist" className="hidden h-12 w-12 place-items-center rounded-full transition hover:bg-[#f5f5f5] sm:grid" aria-label="Wishlist">
             <BrandIcon name="wishlist" />
           </Link>
@@ -581,9 +574,7 @@ export function SiteHeaderClient({
               <span>Tentang DEBRODER</span><span aria-hidden="true">›</span>
             </Link>
           </div>
-          <a href={whatsappHref} className={`mt-6 inline-flex min-h-12 items-center justify-center rounded-full px-5 text-base font-semibold text-white ${preserveJerseyOutput ? "bg-[#063d24]" : "bg-black hover:bg-black/75"}`} target="_blank" rel="noopener noreferrer">
-            Konsultasi via WhatsApp
-          </a>
+
         </div>
       </div>
 

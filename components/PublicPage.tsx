@@ -632,7 +632,6 @@ export async function PublicShell({
             expandedAtTop={headerExpandedAtTop}
             navigationFacets={jerseyEditorial ? undefined : header.navigationFacets}
             preserveJerseyOutput={jerseyEditorial}
-            whatsappHref={header.whatsappHref}
             promo={header.promo}
           />
         ) : null}
@@ -640,7 +639,7 @@ export async function PublicShell({
         {children}
         <PublicFooter
           model={shellModel.data.footer}
-          variant={jerseyEditorial ? "dark" : jerseyCommerce ? "default" : "public-dark"}
+          variant="public-dark"
         />
       </main>
     </StorefrontCartBoundary>
