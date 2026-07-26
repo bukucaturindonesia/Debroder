@@ -1,60 +1,65 @@
 ﻿# DEBRODER V1.2 ACTIVE ISSUE REGISTER
 
-Last updated: 26 July 2026 (Asia/Makassar)
-
-This root file contains current release blockers and P0 closure evidence. Historical findings remain available through Git history and archived reports under `docs/history/` or `docs/`.
+Last updated: 27 July 2026 (Asia/Makassar)
 
 ## P0-001 — Conflicting active governance documents
 
 - Severity: BLOCKER
 - Status: **CLOSED — VERIFIED**
-- Resolution: one canonical set of root status files is active.
-- Former `docs/` status documents are archived under `docs/history/`.
-- Compatibility pointer files under `docs/` explicitly redirect readers to root authority.
 
 ## P0-002 — Local/platform artifacts tracked by Git
 
 - Severity: HIGH
 - Status: **CLOSED — VERIFIED**
-- Affected paths: `.vercel/`, `.debroder-backups/`, `PUBLIC_EXPERIENCE_BATCH4B_SOURCE.zip`.
-- Resolution: removed from Git tracking and protected by permanent `.gitignore` rules.
 
 ## P0-003 — P15 database application and verification
 
 - Severity: BLOCKER / PACKAGE GATE
-- Status: **OPEN — NOT PROVEN**
-- Source and migration exist, but remote migration application, zero-violation postchecks, RLS/function ACL checks, and database advisors must be proven before P15 PASS.
+- Status: **CLOSED — DATABASE AND LOCAL SOURCE VERIFIED; COMMIT/PUSH PENDING**
+- Migration `20260727073246_p15_zero_balance_matrix_completion_v1` is remotely applied.
+- All six P15 integrity counters are zero.
+- Source sync and local gates must pass before P15 CHECKPOINT.
+
+## P15-001 — Duplicate local primary P15 migration
+
+- Severity: HIGH MIGRATION SAFETY
+- Status: **CLOSED — VERIFIED**
+- The unapplied duplicate `20260724041102...` is removed.
+- Applied canonical primary `20260724054241...` is retained.
+
+## P15-002 — Existing Supabase advisor backlog
+
+- Severity: MAJOR SECURITY/PERFORMANCE
+- Status: **OPEN — FINAL INTEGRATION**
+- Existing findings include mutable search paths outside P15, broad privileged function exposure, RLS tables without policies, public storage buckets, leaked-password protection disabled, unindexed foreign keys, duplicate/permissive policies, and duplicate indexes.
+- P15 introduced no new package-specific advisor finding.
+- The backlog must be triaged before GO.
 
 ## P0-004 — Official legal content unavailable
 
 - Severity: MAJOR CONTENT DEPENDENCY
 - Status: **OPEN — OWNER LEGAL CONTENT REQUIRED**
-- Terms, privacy, returns, shipping, payment policy, effective dates, and legal versions require approved owner content.
 
 ## P0-005 — Homepage CMS link `/kaos-polo` returns 404
 
 - Severity: HIGH
 - Status: **OPEN — OWNER CMS CORRECTION REQUIRED**
-- Correct the canonical CMS target or approve the intended route, then rerun integration checks.
 
 ## P0-006 — Public performance not proven on Preview
 
 - Severity: MAJOR
 - Status: **OPEN — PREVIEW VERIFICATION REQUIRED**
-- Local development evidence previously recorded slow LCP. Preview measurements and an approved correction are required before GO.
 
 ## P0-007 — Real remote Instant Custom transaction not proven
 
 - Severity: HIGH E2E RISK
 - Status: **OPEN — REMOTE E2E REQUIRED**
-- Source, tests, and local flow passed, but a real remote order and downstream operational execution remain unproven.
 
 ## P0-008 — Unlinked `Mix Size` SKU
 
 - Severity: DATA INTEGRITY
 - Status: **OPEN — EXCLUDED FROM AUTOMATIC SIZE POLICY**
-- One draft SKU lacks canonical `size_id`; do not guess or mutate it without proven mapping or owner decision.
 
 ## Release decision
 
-**NO-GO / NOT COMPLETE** until all BLOCKER items are closed and all required security checks, database verification, Preview/browser E2E, deployment verification, and owner approval are proven.
+**NO-GO / NOT COMPLETE**

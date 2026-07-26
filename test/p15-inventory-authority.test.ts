@@ -7,7 +7,7 @@ import {
 } from "@/lib/inventory-authority";
 
 const migration = readFileSync(
-  "supabase/migrations/20260724041102_p15_inventory_authority_stock_ownership_v1.sql",
+  "supabase/migrations/20260724054241_p15_inventory_authority_stock_ownership_v1.sql",
   "utf8"
 );
 const productLoader = readFileSync("lib/supabase/products.ts", "utf8");
