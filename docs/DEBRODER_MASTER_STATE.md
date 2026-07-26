@@ -403,3 +403,21 @@ The FROZEN commerce/landing blueprints and official Owner Decisions remain autho
   environment approval reviewer reached its usage limit.
 - Resume from `CURRENT_PACKAGE_HANDOFF.md`. No commit, push, merge, or
   deployment was performed.
+
+## Public Experience P0 Design Tokens Global state — 2026-07-26
+
+- P0 is **VERIFIED IN SOURCE** on branch `LANDING-PAGE-PUBLIC` at baseline
+  HEAD `e37a9c4d3a50fe36e3158ea5dae87600206a5ca8`.
+- One canonical frozen contract now owns public color, typography, spacing,
+  width/gutter, radius, shadow, controls, focus, and motion primitives.
+- Public landing/category consumers and Tailwind aliases use the contract;
+  external reference naming, source, assets, fonts, URLs, and identity are
+  absent from production.
+- No route, transaction rule, pricing, inventory, checkout, historical data,
+  Admin behavior, database, or migration changed.
+- Gate evidence: typecheck PASS; lint PASS with 0 error / 32 existing warning;
+  87 test files / 676 tests PASS; production build PASS; five responsive
+  browser viewports PASS without overflow or runtime error.
+- Active homepage snapshot has no rendered `h1`; this remains an explicit
+  homepage-package risk, not a P0 token mutation.
+- P1 is **NOT STARTED** and remains closed pending owner instruction.

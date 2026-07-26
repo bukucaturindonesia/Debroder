@@ -3,9 +3,9 @@
 Snapshot: 26 July 2026  
 Repository: `DEBRODER`  
 Branch: `LANDING-PAGE-PUBLIC`  
-HEAD: `0a014c867f4c7127a9e07d75851321c436c8de66`  
+HEAD baseline for Public Experience P0: `e37a9c4d3a50fe36e3158ea5dae87600206a5ca8`
 Baseline working tree before this ledger: clean  
-Branch position: 8 commits ahead of `origin/main`, 0 commits behind
+Branch position: 9 commits ahead of `origin/main`, 0 commits behind
 
 Status vocabulary:
 
@@ -36,7 +36,7 @@ Status vocabulary:
 | PIM Phase 5 — Bulk Edit | `IMPLEMENTED / REMOTE NOT PROVEN` | `app/admin/products/bulk-edit`, `lib/pim-bulk-edit-server.ts` | Pending `20260717093000_pim_phase_5_bulk_edit_atomic.sql` | Static/source verification recorded; remote transaction gate pending | Depends on Phase 4 order and remote transaction verification | Owner/Super Admin final action only; no SKU/slug/name/permanent-delete action |
 | Custom Order + structured address | `IMPLEMENTED / REMOTE AND BROWSER NOT PROVEN` | `components/checkout/CheckoutClient.tsx`, Custom APIs, Admin fulfillment/detail consumers | Pending `20260718180000`, `18181000`, `18182000`, `18182500` sequence | Targeted structured-address hotfix was later fixed; full recorded environment gate remains inconsistent | Migration order, hierarchy data, immutable snapshot, pickup/shipping browser flow and remote schema require proof | Pickup is address-free; shipping uses canonical Indonesian hierarchy; historical snapshots stay immutable |
 | Human-Centered Order Experience P0 | `IMPLEMENTED / PREVIEW NOT PROVEN` | `components/admin/AdminGuidedOrderFlow*`, task/fulfillment consumers | Pending `20260720030000_human_centered_order_experience_p0.sql` and recorded corrections | Static verification recorded | Automatic Ready Stock fulfillment handoff, permissions, idempotency and no-Custom false positive need Preview proof | Admin presents one guided action but never becomes transaction authority |
-| Landing/Public Experience work after P15 | `IMPLEMENTED IN BRANCH / CURRENT GATE NOT RECORDED` | `app/page.tsx`, `app/globals.css`, `components/CampaignBanners.tsx`, `components/HeroSlider.tsx`, `components/PublicFooter.tsx`, category commerce components | None identified | No test/typecheck/lint/build result is recorded for HEAD `0a014c8` | 8 commits ahead of `origin/main`; 35 changed files and about 9,003 insertions; tracked backup/payload/archive artifacts duplicate source; governance handoffs do not record this package | Landing Blueprint owns homepage; visual reference cannot change transaction rules or duplicate CMS/PIM truth |
+| Public Experience P0 — Design Tokens Global | `VERIFIED IN SOURCE`; P1 not started | `app/globals.css`, `app/page.tsx`, `tailwind.config.ts`, `test/public-experience-design-tokens.test.ts`, `docs/DEBRODER_PUBLIC_EXPERIENCE_P0_TOKEN_AUDIT.md` | None | PASS: typecheck; lint 0 error / 32 existing warning; 87 files / 676 tests; build; five browser viewports | Active homepage snapshot has no rendered `h1`; owner/external Batch 4A deletions and Batch 4B archive remain mixed in working tree and are outside P0 | Landing Blueprint owns homepage; FROZEN tokens are canonical; visual reference cannot change transaction rules or duplicate CMS/PIM truth |
 | Nike and Cititex reference archives | `HOLD — UX POLISH ONLY` | External: `D:\nike\nike.rar`, `D:\nike\citi.zip` | None | Not applicable | Saved third-party pages contain copied HTML/assets and must not become production source, product truth, or permission for visual copying | Use only as interaction/layout reference in stage 5; DEBRODER FROZEN identity and content ownership remain authoritative |
 
 ## Open control decisions

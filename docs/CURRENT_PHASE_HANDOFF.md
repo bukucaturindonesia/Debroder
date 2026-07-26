@@ -651,3 +651,32 @@ Status: **CHECKPOINT SAVED — DATABASE APPLICATION BLOCKED**.
   approval tooling rejected every Supabase write/dry-run after its usage limit.
 - Resume directly from `docs/CURRENT_PACKAGE_HANDOFF.md`; do not repeat the
   completed inventory/schema audit. No commit, push, merge, or deploy occurred.
+
+---
+
+## 2026-07-26 — Public Experience P0 Design Tokens Global
+
+Status: **VERIFIED IN SOURCE — P1 NOT STARTED**.
+
+- Baseline branch `LANDING-PAGE-PUBLIC`, HEAD
+  `e37a9c4d3a50fe36e3158ea5dae87600206a5ca8`, clean sebelum P0.
+- Frozen colors, typography stacks, responsive spacing/gutters, 1440 px
+  content max, zero media/card radius, no decorative shadow, pill CTA,
+  48 px controls, focus ring, and motion durations now have one canonical
+  contract with compatibility aliases for later packages.
+- Landing, shared public shell, category commerce, and Tailwind public aliases
+  consume the contract. External reference class naming was removed from
+  production. No external assets, fonts, source, URLs, or identity were copied.
+- No route, CMS/PIM data, Admin, transaction behavior, pricing, inventory,
+  cart, checkout, order, payment, database, or migration changed.
+- Verification: typecheck PASS; lint PASS (0 error / 32 existing warning);
+  test PASS (87 files / 676 tests); build PASS; diff check PASS.
+- Browser PASS at 1440×900, 1280×800, 768×1024, 390×844, and 360×800:
+  HTTP 200, no page overflow, overlay, console/page error; focus ring and
+  responsive computed tokens verified.
+- Open risk: active homepage snapshot has no rendered `h1`; deferred to the
+  homepage-owned package because P0 may not change content hierarchy.
+- Unrelated tracked Batch 4A deletions and untracked Batch 4B archive appeared
+  during P0 and were preserved untouched.
+- Commit/push/merge/deploy: none. P1 remains closed until explicit owner
+  instruction.

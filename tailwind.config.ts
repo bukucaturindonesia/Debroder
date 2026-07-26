@@ -9,6 +9,17 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
+        experience: {
+          canvas: "var(--color-canvas)",
+          ink: "var(--color-ink)",
+          secondary: "var(--color-text-secondary)",
+          soft: "var(--color-surface-soft)",
+          divider: "var(--color-divider-soft)",
+          border: "var(--color-border)",
+          sale: "var(--color-sale-error)",
+          success: "var(--color-success)",
+          focus: "var(--color-info-focus)"
+        },
         brand: {
           black: "#000000",
           white: "#FFFFFF",

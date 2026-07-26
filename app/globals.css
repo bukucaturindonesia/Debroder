@@ -3,20 +3,109 @@
 @tailwind utilities;
 
 :root {
-  --background: #FFFFFF;
-  --foreground: #111111;
+  color-scheme: light;
+
+  /* DEBRODER Public Experience System v1.0 — FINAL FROZEN */
+  --color-canvas: #ffffff;
+  --color-ink: #111111;
+  --color-text-secondary: #707072;
+  --color-surface-soft: #f5f5f5;
+  --color-divider-soft: #e5e5e5;
+  --color-border: #cacacb;
+  --color-sale-error: #d30005;
+  --color-success: #007d48;
+  --color-info-focus: #1151ff;
+  --color-brand-primary: #063d24;
+
   --font-heading: "Barlow Condensed", "Arial Narrow", "Helvetica Neue Condensed", sans-serif;
   --font-display: var(--font-heading);
   --font-body: "Inter", ui-sans-serif, system-ui, -apple-system,
     BlinkMacSystemFont, "Segoe UI", sans-serif;
-  --space-section-mobile: 48px;
-  --space-section-tablet: 64px;
-  --space-section-desktop: 72px;
-  --surface-soft: #f5f5f5;
-  --surface-muted: #efefef;
-  --type-home-hero: clamp(2.125rem, 10vw, 2.625rem);
-  --type-home-section: clamp(1.5rem, 6vw, 1.75rem);
-  --type-home-page: clamp(1.875rem, 8vw, 2.25rem);
+  --font-weight-regular: 400;
+  --font-weight-medium: 500;
+  --font-weight-semibold: 600;
+  --font-weight-bold: 700;
+  --leading-display: 0.92;
+  --leading-body: 1.6;
+
+  --type-hero: clamp(2.625rem, 10vw, 3.25rem);
+  --type-page-title: clamp(1.5rem, 7vw, 1.75rem);
+  --type-section-title: clamp(1.375rem, 5vw, 1.75rem);
+  --type-card-title: clamp(1.125rem, 4vw, 1.375rem);
+  --type-product-title: clamp(1rem, 3vw, 1.25rem);
+  --type-body: 1rem;
+  --type-caption: 0.875rem;
+  --type-utility: 0.75rem;
+  --type-button: clamp(0.875rem, 2vw, 1rem);
+
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --space-10: 40px;
+  --space-12: 48px;
+  --space-16: 64px;
+  --space-20: 80px;
+
+  --content-max: 90rem;
+  --content-gutter: 16px;
+  --section-space: 48px;
+  --section-space-end: 64px;
+  --grid-gap: 12px;
+  --reading-max: 50rem;
+
+  --radius-image: 0;
+  --radius-card: 0;
+  --radius-pill: 999px;
+  --shadow-decorative: none;
+  --divider-width: 1px;
+  --control-min-size: 48px;
+  --focus-ring-width: 2px;
+  --focus-ring-offset: 3px;
+
+  --motion-fast: 150ms;
+  --motion-normal: 220ms;
+  --motion-slow: 350ms;
+  --motion-ease: cubic-bezier(0.2, 0, 0, 1);
+
+  /* Compatibility aliases retained while later packages migrate consumers. */
+  --background: var(--color-canvas);
+  --foreground: var(--color-ink);
+  --surface-soft: var(--color-surface-soft);
+  --surface-muted: var(--color-surface-soft);
+  --space-section-mobile: var(--space-12);
+  --space-section-tablet: var(--space-12);
+  --space-section-desktop: var(--space-20);
+  --type-home-hero: var(--type-hero);
+  --type-home-section: var(--type-section-title);
+  --type-home-page: var(--type-page-title);
+}
+
+@media (min-width: 600px) {
+  :root {
+    --content-gutter: 24px;
+    --section-space: 48px;
+    --section-space-end: 72px;
+    --grid-gap: 16px;
+  }
+}
+
+@media (min-width: 768px) {
+  :root {
+    --type-hero: clamp(3.25rem, 7vw, 4rem);
+    --type-page-title: clamp(1.75rem, 4vw, 2rem);
+  }
+}
+
+@media (min-width: 960px) {
+  :root {
+    --content-gutter: 48px;
+    --section-space: 80px;
+    --section-space-end: 80px;
+    --type-hero: clamp(4.5rem, 6vw, 5.5rem);
+  }
 }
 
 * {
@@ -43,22 +132,24 @@ body {
 /* DEBRODER global canvas: one continuous off-white surface for public pages. */
 html,
 body {
-  background: #FFFFFF;
+  background: var(--color-canvas);
 }
 
 .public-site {
-  background: #FFFFFF;
+  background: var(--color-canvas);
+  color: var(--color-ink);
 }
 
 .public-site section:not(.keep-section-bg),
 .public-site .section-canvas {
-  background-color: #FFFFFF;
+  background-color: var(--color-canvas);
 }
 
 .product-image-frame {
-  background: #f5f5f5;
+  background: var(--color-surface-soft);
   border: 0;
-  box-shadow: none;
+  border-radius: var(--radius-image);
+  box-shadow: var(--shadow-decorative);
 }
 
 @media (hover: hover) and (pointer: fine) {
@@ -77,12 +168,10 @@ body {
 }
 
 .premium-media-surface {
-  background:
-    linear-gradient(135deg, rgba(6, 61, 36, 0.055), transparent 34%),
-    linear-gradient(315deg, rgba(17, 17, 17, 0.04), transparent 42%),
-    #f5f5f5;
+  background: var(--color-surface-soft);
   border: 0;
-  box-shadow: none;
+  border-radius: var(--radius-image);
+  box-shadow: var(--shadow-decorative);
 }
 
 .premium-section-copy {
@@ -111,15 +200,15 @@ body {
 }
 
 .premium-ghost-button:hover {
-  background: #111111;
-  border-color: #111111;
-  color: #ffffff;
+  background: var(--color-ink);
+  border-color: var(--color-ink);
+  color: var(--color-canvas);
 }
 
 .public-site {
   font-family: var(--font-body);
-  font-weight: 400;
-  line-height: 1.45;
+  font-weight: var(--font-weight-regular);
+  line-height: var(--leading-body);
   overflow-x: clip;
 }
 
@@ -151,16 +240,16 @@ body {
 }
 
 .hero-title {
-  font-weight: 800;
-  line-height: 0.95;
-  font-size: clamp(3rem, 8vw, 7rem);
+  font-weight: var(--font-weight-bold);
+  line-height: var(--leading-display);
+  font-size: var(--type-hero);
 }
 
 .section-title {
-  font-weight: 800;
+  font-weight: var(--font-weight-bold);
   line-height: 1;
   letter-spacing: -0.015em;
-  font-size: clamp(2rem, 4vw, 4rem);
+  font-size: var(--type-section-title);
 }
 
 .banner-title {
@@ -170,7 +259,8 @@ body {
 
 .product-title {
   font-family: var(--font-body);
-  font-weight: 600;
+  font-size: var(--type-product-title);
+  font-weight: var(--font-weight-semibold);
 }
 
 .product-price {
@@ -190,18 +280,6 @@ button,
 .cta {
   font-weight: 600;
 }
-
-@media (max-width: 639px) {
-  .hero-title {
-    font-size: clamp(2.75rem, 14vw, 4.5rem);
-    line-height: 0.92;
-  }
-
-  .section-title {
-    font-size: clamp(2rem, 10vw, 3rem);
-  }
-}
-
 
 /* DEBRODER hero copy alignment: centered, compact, and visually balanced. */
 .hero-content {
@@ -263,8 +341,8 @@ button,
 }
 
 .public-site:not(.jersey-theme):not(.jersey-commerce-theme) :where(a, button, input, select, textarea):focus-visible {
-  outline: 2px solid #111111;
-  outline-offset: 3px;
+  outline: var(--focus-ring-width) solid var(--color-info-focus);
+  outline-offset: var(--focus-ring-offset);
 }
 
 .public-site.jersey-theme > header :where(a, button, input, select, textarea):focus-visible {
@@ -324,7 +402,7 @@ button,
 }
 
 .editorial-card-label {
-  color: #ffffff;
+  color: var(--color-canvas);
   font-family: var(--font-body);
   font-size: 11px;
   font-weight: 500;
@@ -334,7 +412,7 @@ button,
 }
 
 .editorial-card-title {
-  color: #ffffff;
+  color: var(--color-canvas);
   display: -webkit-box;
   font-family: var(--font-body);
   font-size: clamp(17px, 5vw, 22px);
@@ -391,8 +469,8 @@ button,
 }
 
 ::selection {
-  background: #174c3c;
-  color: #ffffff;
+  background: var(--color-brand-primary);
+  color: var(--color-canvas);
 }
 
 /* Landing layout frame system: full bleed, editorial shell, and scrolling rails. */
@@ -402,7 +480,7 @@ button,
 }
 
 .section-shell {
-  width: min(1808px, calc(100% - 40px));
+  width: min(var(--content-max), calc(100% - (var(--content-gutter) * 2)));
 }
 
 .public-site:not(.jersey-theme):not(.jersey-commerce-theme) .public-section-frame {
@@ -592,7 +670,7 @@ button,
 
 .public-site:not(.jersey-theme):not(.jersey-commerce-theme) .premium-input,
 .public-site:not(.jersey-theme):not(.jersey-commerce-theme) .public-control {
-  background: #fff;
+  background: var(--color-canvas);
   border-color: var(--public-ink-16);
   color: var(--public-ink-100);
 }
@@ -619,7 +697,7 @@ button,
 .public-site:not(.jersey-theme):not(.jersey-commerce-theme) .public-secondary-action:hover {
   background: var(--public-ink-100);
   border-color: var(--public-ink-100);
-  color: #fff;
+  color: var(--color-canvas);
 }
 
 .public-product-card-link {
@@ -786,7 +864,7 @@ button,
 }
 
 .public-site:not(.jersey-theme):not(.jersey-commerce-theme) .category-carousel:focus-visible {
-  outline: 2px solid #111111;
+  outline: var(--focus-ring-width) solid var(--color-info-focus);
   outline-offset: 4px;
 }
 
@@ -880,8 +958,8 @@ button,
 
 /* Each section owns only its top spacing to prevent doubled whitespace. */
 .public-site {
-  --home-section-gap: 48px;
-  --home-end-space: 48px;
+  --home-section-gap: var(--section-space);
+  --home-end-space: var(--section-space-end);
 }
 
 .public-site .home-section {
@@ -949,26 +1027,26 @@ button,
 
 @media (min-width: 640px) {
   :root {
-    --type-home-hero: clamp(3.25rem, 7vw, 4rem);
-    --type-home-section: clamp(1.75rem, 3.2vw, 2.25rem);
-    --type-home-page: clamp(2.5rem, 5vw, 3rem);
+    --type-home-hero: var(--type-hero);
+    --type-home-section: var(--type-section-title);
+    --type-home-page: var(--type-page-title);
   }
 
   .section-shell {
-    width: min(1808px, calc(100% - 64px));
+    width: min(var(--content-max), calc(100% - (var(--content-gutter) * 2)));
   }
 
   .public-site:not(.jersey-theme):not(.jersey-commerce-theme) .public-section-frame {
-    padding-inline: 32px;
+    padding-inline: var(--content-gutter);
   }
 
   .campaign-shell {
-    width: min(1824px, calc(100% - 48px));
+    width: min(var(--content-max), calc(100% - (var(--content-gutter) * 2)));
   }
 
   .home-bleed-rail {
-    gap: 16px;
-    padding-inline: 32px;
+    gap: var(--grid-gap);
+    padding-inline: var(--content-gutter);
   }
 
   .fresh-drop-card,
@@ -981,20 +1059,20 @@ button,
   }
 
   .public-site {
-    --home-section-gap: 64px;
-    --home-end-space: 64px;
+    --home-section-gap: var(--section-space);
+    --home-end-space: var(--section-space-end);
   }
 }
 
 @media (min-width: 1024px) {
   :root {
-    --type-home-hero: clamp(3.25rem, 4.5vw, 4rem);
-    --type-home-section: clamp(1.75rem, 2.4vw, 2.25rem);
-    --type-home-page: clamp(2.5rem, 3.5vw, 3rem);
+    --type-home-hero: var(--type-hero);
+    --type-home-section: var(--type-section-title);
+    --type-home-page: var(--type-page-title);
   }
 
   .section-shell {
-    width: min(1808px, calc(100% - 96px));
+    width: min(var(--content-max), calc(100% - (var(--content-gutter) * 2)));
   }
 
   .public-site:not(.jersey-theme):not(.jersey-commerce-theme) .public-section-frame {
@@ -1002,11 +1080,11 @@ button,
   }
 
   .campaign-shell {
-    width: min(1824px, calc(100% - 96px));
+    width: min(var(--content-max), calc(100% - (var(--content-gutter) * 2)));
   }
 
   .home-bleed-rail {
-    padding-inline: 48px;
+    padding-inline: var(--content-gutter);
   }
 
   .fresh-drop-card,
@@ -1019,12 +1097,12 @@ button,
   }
 
   .benefit-grid {
-    width: min(1280px, calc(100% - 96px));
+    width: min(var(--content-max), calc(100% - (var(--content-gutter) * 2)));
   }
 
   .public-site {
-    --home-section-gap: 80px;
-    --home-end-space: 80px;
+    --home-section-gap: var(--section-space);
+    --home-end-space: var(--section-space-end);
   }
 }
 
@@ -1045,68 +1123,68 @@ button,
 
 /* =========================================================
    DEBRODER landing refinement — campaign-led retail rhythm
-   Scoped to the public homepage through `.landing-nike`.
+   Scoped to the public homepage through `.debroder-landing`.
    ========================================================= */
-.landing-nike {
+.debroder-landing {
   --landing-content-max: 1600px;
   --landing-page-gutter: 20px;
   --home-section-gap: 56px;
   --home-end-space: 64px;
-  background: #fff;
+  background: var(--color-canvas);
 }
 
-.landing-nike > header {
+.debroder-landing > header {
   border-bottom: 1px solid rgba(17, 17, 17, 0.08);
   box-shadow: 0 1px 0 rgba(17, 17, 17, 0.02);
 }
 
-.landing-nike > header nav.section-shell {
+.debroder-landing > header nav.section-shell {
   width: min(var(--landing-content-max), calc(100% - (var(--landing-page-gutter) * 2)));
   height: 64px;
 }
 
-.landing-nike > header nav .nav-link > span.inline-flex {
+.debroder-landing > header nav .nav-link > span.inline-flex {
   border-radius: 0 !important;
   background: transparent !important;
-  color: #111 !important;
+  color: var(--color-ink) !important;
   padding-inline: 9px !important;
 }
 
-.landing-nike > header nav .nav-link:hover > span.inline-flex,
-.landing-nike > header nav .nav-link:focus-visible > span.inline-flex,
-.landing-nike > header nav button.nav-link:hover > span.inline-flex,
-.landing-nike > header nav button.nav-link:focus-visible > span.inline-flex {
+.debroder-landing > header nav .nav-link:hover > span.inline-flex,
+.debroder-landing > header nav .nav-link:focus-visible > span.inline-flex,
+.debroder-landing > header nav button.nav-link:hover > span.inline-flex,
+.debroder-landing > header nav button.nav-link:focus-visible > span.inline-flex {
   background: transparent !important;
-  color: #111 !important;
+  color: var(--color-ink) !important;
 }
 
-.landing-nike > header nav button[aria-label="Cari produk"] {
+.debroder-landing > header nav button[aria-label="Cari produk"] {
   width: 150px;
-  background: #f5f5f5;
+  background: var(--color-surface-soft);
 }
 
-.landing-nike > header nav button[aria-label="Cari produk"]:hover {
+.debroder-landing > header nav button[aria-label="Cari produk"]:hover {
   background: #e9e9e9;
 }
 
-.landing-nike .public-section-frame,
-.landing-nike .public-section-frame--wide,
-.landing-nike .public-section-frame--near-wide,
-.landing-nike .public-section-frame--inset {
+.debroder-landing .public-section-frame,
+.debroder-landing .public-section-frame--wide,
+.debroder-landing .public-section-frame--near-wide,
+.debroder-landing .public-section-frame--inset {
   width: 100% !important;
   max-width: var(--landing-content-max) !important;
   padding-inline: var(--landing-page-gutter) !important;
 }
 
-.landing-nike .campaign-shell {
+.debroder-landing .campaign-shell {
   width: min(var(--landing-content-max), calc(100% - (var(--landing-page-gutter) * 2)));
 }
 
-.landing-nike .landing-hero {
+.debroder-landing .landing-hero {
   min-height: 500px;
 }
 
-.landing-nike .landing-hero-overlay {
+.debroder-landing .landing-hero-overlay {
   background: linear-gradient(
     0deg,
     rgba(0, 0, 0, 0.54) 0%,
@@ -1116,11 +1194,11 @@ button,
   );
 }
 
-.landing-nike .hero-content {
+.debroder-landing .hero-content {
   max-width: 980px;
 }
 
-.landing-nike .home-hero-title {
+.debroder-landing .home-hero-title {
   max-width: min(92vw, 960px);
   font-size: clamp(2.75rem, 10vw, 4rem);
   font-weight: 800;
@@ -1128,7 +1206,7 @@ button,
   line-height: 0.93;
 }
 
-.landing-nike .hero-subtitle {
+.debroder-landing .hero-subtitle {
   max-width: 560px;
   margin-top: 14px;
   font-size: 15px;
@@ -1136,12 +1214,12 @@ button,
   color: rgba(255, 255, 255, 0.88);
 }
 
-.landing-nike .hero-actions {
+.debroder-landing .hero-actions {
   margin-top: 20px;
   gap: 8px;
 }
 
-.landing-nike .hero-actions .cta {
+.debroder-landing .hero-actions .cta {
   min-height: 44px;
   padding: 11px 22px;
   border-radius: 999px;
@@ -1149,7 +1227,7 @@ button,
   font-weight: 600;
 }
 
-.landing-nike .landing-hero-controls button {
+.debroder-landing .landing-hero-controls button {
   width: 42px;
   height: 42px;
   border-color: rgba(255, 255, 255, 0.34);
@@ -1157,31 +1235,31 @@ button,
   backdrop-filter: blur(8px);
 }
 
-.landing-nike .trust-strip {
+.debroder-landing .trust-strip {
   border-color: rgba(17, 17, 17, 0.1);
 }
 
-.landing-nike .benefit-grid {
+.debroder-landing .benefit-grid {
   max-width: 1280px;
 }
 
-.landing-nike .benefit-grid > div {
+.debroder-landing .benefit-grid > div {
   min-height: 68px;
   padding-block: 14px;
 }
 
-.landing-nike .landing-section-heading {
+.debroder-landing .landing-section-heading {
   min-height: 34px;
 }
 
-.landing-nike .home-section-title {
+.debroder-landing .home-section-title {
   font-size: clamp(1.5rem, 2.2vw, 1.875rem);
   font-weight: 500;
   letter-spacing: -0.03em;
   line-height: 1.05;
 }
 
-.landing-nike .landing-section-heading .public-secondary-copy {
+.debroder-landing .landing-section-heading .public-secondary-copy {
   max-width: 620px;
   margin-top: 8px;
   font-size: 14px;
@@ -1189,33 +1267,33 @@ button,
   color: rgba(17, 17, 17, 0.58);
 }
 
-.landing-nike .landing-section-heading a {
+.debroder-landing .landing-section-heading a {
   font-size: 14px;
   font-weight: 500;
   text-underline-offset: 4px;
 }
 
-.landing-nike .featured-media-grid,
-.landing-nike .trending-grid {
+.debroder-landing .featured-media-grid,
+.debroder-landing .trending-grid {
   gap: 12px;
 }
 
-.landing-nike .landing-editorial-card {
-  background: #f5f5f5;
+.debroder-landing .landing-editorial-card {
+  background: var(--color-surface-soft);
 }
 
-.landing-nike .landing-editorial-card .editorial-card-image {
-  transition-duration: 650ms;
-  transition-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
+.debroder-landing .landing-editorial-card .editorial-card-image {
+  transition-duration: var(--motion-normal);
+  transition-timing-function: var(--motion-ease);
 }
 
 @media (hover: hover) and (pointer: fine) {
-  .landing-nike .landing-editorial-card:hover .editorial-card-image {
+  .debroder-landing .landing-editorial-card:hover .editorial-card-image {
     transform: scale(1.012);
   }
 }
 
-.landing-nike .editorial-card-overlay {
+.debroder-landing .editorial-card-overlay {
   background: linear-gradient(
     to top,
     rgba(0, 0, 0, 0.52) 0%,
@@ -1225,13 +1303,13 @@ button,
   );
 }
 
-.landing-nike .editorial-card-content {
+.debroder-landing .editorial-card-content {
   left: 20px;
   right: 20px;
   bottom: 22px;
 }
 
-.landing-nike .editorial-card-label {
+.debroder-landing .editorial-card-label {
   margin-bottom: 5px;
   font-size: 13px;
   font-weight: 500;
@@ -1239,7 +1317,7 @@ button,
   text-transform: none;
 }
 
-.landing-nike .editorial-card-title {
+.debroder-landing .editorial-card-title {
   max-width: 90%;
   font-size: clamp(1.35rem, 2.4vw, 2.15rem);
   font-weight: 500;
@@ -1247,81 +1325,81 @@ button,
   line-height: 1.02;
 }
 
-.landing-nike .editorial-card-cta {
+.debroder-landing .editorial-card-cta {
   min-height: 40px;
   padding-inline: 18px;
   font-size: 14px;
   font-weight: 600;
 }
 
-.landing-nike .home-bleed-rail {
+.debroder-landing .home-bleed-rail {
   padding-inline: 0;
 }
 
-.landing-nike .fresh-drop-card,
-.landing-nike .category-rail-card {
+.debroder-landing .fresh-drop-card,
+.debroder-landing .category-rail-card {
   flex-basis: 82vw;
 }
 
-.landing-nike .category-rail-card h3 {
+.debroder-landing .category-rail-card h3 {
   margin-top: 12px;
   font-size: 16px;
   font-weight: 500;
 }
 
-.landing-nike .home-order .public-divider {
+.debroder-landing .home-order .public-divider {
   padding-block: 28px;
 }
 
 @media (max-width: 767px) {
-  .landing-nike .landing-hero-copy {
+  .debroder-landing .landing-hero-copy {
     bottom: 11%;
   }
 
-  .landing-nike .landing-hero-controls {
+  .debroder-landing .landing-hero-controls {
     right: 16px;
     bottom: 16px;
   }
 
-  .landing-nike .landing-hero-controls > div {
+  .debroder-landing .landing-hero-controls > div {
     display: none;
   }
 
-  .landing-nike .benefit-grid > div {
+  .debroder-landing .benefit-grid > div {
     min-width: 76vw;
   }
 
-  .landing-nike .landing-section-heading {
+  .debroder-landing .landing-section-heading {
     align-items: flex-start;
   }
 
-  .landing-nike .home-section-title {
+  .debroder-landing .home-section-title {
     font-size: 1.5rem;
   }
 
-  .landing-nike .featured-media-grid {
+  .debroder-landing .featured-media-grid {
     gap: 12px;
   }
 
-  .landing-nike .trending-grid {
+  .debroder-landing .trending-grid {
     grid-auto-columns: 84%;
     gap: 12px;
   }
 }
 
 @media (min-width: 640px) {
-  .landing-nike {
+  .debroder-landing {
     --landing-page-gutter: 32px;
     --home-section-gap: 64px;
     --home-end-space: 72px;
   }
 
-  .landing-nike .fresh-drop-card,
-  .landing-nike .category-rail-card {
+  .debroder-landing .fresh-drop-card,
+  .debroder-landing .category-rail-card {
     flex-basis: 44vw;
   }
 
-  .landing-nike .editorial-card-content {
+  .debroder-landing .editorial-card-content {
     left: 28px;
     right: 28px;
     bottom: 30px;
@@ -1329,45 +1407,45 @@ button,
 }
 
 @media (min-width: 1024px) {
-  .landing-nike {
+  .debroder-landing {
     --landing-page-gutter: 48px;
     --home-section-gap: 72px;
     --home-end-space: 88px;
   }
 
-  .landing-nike > header nav.section-shell {
+  .debroder-landing > header nav.section-shell {
     height: 72px;
   }
 
-  .landing-nike .landing-hero {
+  .debroder-landing .landing-hero {
     min-height: 600px;
   }
 
-  .landing-nike .home-hero-title {
+  .debroder-landing .home-hero-title {
     font-size: clamp(3.75rem, 4.6vw, 5rem);
   }
 
-  .landing-nike .hero-subtitle {
+  .debroder-landing .hero-subtitle {
     font-size: 17px;
     line-height: 1.5;
   }
 
-  .landing-nike .featured-media-grid {
+  .debroder-landing .featured-media-grid {
     gap: 16px;
   }
 
-  .landing-nike .trending-grid {
+  .debroder-landing .trending-grid {
     gap: 14px;
   }
 
-  .landing-nike .fresh-drop-card,
-  .landing-nike .category-rail-card {
+  .debroder-landing .fresh-drop-card,
+  .debroder-landing .category-rail-card {
     flex-basis: min(500px, calc((100vw - 132px) / 3.2));
   }
 }
 
 @media (min-width: 1600px) {
-  .landing-nike {
+  .debroder-landing {
     --landing-page-gutter: 48px;
   }
 }
@@ -1378,29 +1456,29 @@ button,
    Campaign Banner · Fresh Drop · Shop by Category
    Homepage-only scope.
    ========================================================= */
-.landing-nike .landing-campaign {
+.debroder-landing .landing-campaign {
   padding-top: clamp(56px, 6vw, 88px);
   padding-bottom: clamp(60px, 7vw, 96px);
 }
 
-.landing-nike .landing-campaign .campaign-shell {
+.debroder-landing .landing-campaign .campaign-shell {
   width: min(var(--landing-content-max), calc(100% - (var(--landing-page-gutter) * 2)));
 }
 
-.landing-nike .landing-campaign-media {
-  background: #f5f5f5;
+.debroder-landing .landing-campaign-media {
+  background: var(--color-surface-soft);
 }
 
-.landing-nike .landing-campaign-media :is(img, video) {
-  transition: transform 700ms cubic-bezier(0.22, 1, 0.36, 1);
+.debroder-landing .landing-campaign-media :is(img, video) {
+  transition: transform var(--motion-normal) var(--motion-ease);
 }
 
-.landing-nike .landing-campaign-copy {
+.debroder-landing .landing-campaign-copy {
   max-width: 760px;
   padding-top: 30px;
 }
 
-.landing-nike .landing-campaign-copy .campaign-copy-title {
+.debroder-landing .landing-campaign-copy .campaign-copy-title {
   font-family: var(--font-body);
   font-size: clamp(2rem, 6.6vw, 3.4rem);
   font-weight: 700;
@@ -1409,7 +1487,7 @@ button,
   text-transform: none;
 }
 
-.landing-nike .landing-campaign-copy p {
+.debroder-landing .landing-campaign-copy p {
   max-width: 620px;
   margin-top: 14px;
   font-size: 15px;
@@ -1417,7 +1495,7 @@ button,
   color: rgba(17, 17, 17, 0.65);
 }
 
-.landing-nike .landing-campaign-cta {
+.debroder-landing .landing-campaign-cta {
   min-height: 44px;
   margin-top: 22px;
   padding-inline: 22px;
@@ -1425,61 +1503,61 @@ button,
   font-weight: 600;
 }
 
-.landing-nike .fresh-drop-shell,
-.landing-nike .category-shell {
+.debroder-landing .fresh-drop-shell,
+.debroder-landing .category-shell {
   overflow: hidden;
 }
 
-.landing-nike .landing-commerce-rail,
-.landing-nike .landing-category-rail {
+.debroder-landing .landing-commerce-rail,
+.debroder-landing .landing-category-rail {
   gap: 12px;
   scroll-padding-inline: 0;
   overscroll-behavior-inline: contain;
 }
 
-.landing-nike .home-fresh-drop .public-product-card {
-  background: #fff;
+.debroder-landing .home-fresh-drop .public-product-card {
+  background: var(--color-canvas);
 }
 
-.landing-nike .home-fresh-drop .product-image-frame {
+.debroder-landing .home-fresh-drop .product-image-frame {
   aspect-ratio: 4 / 5;
-  background: #f5f5f5;
+  background: var(--color-surface-soft);
 }
 
-.landing-nike .home-fresh-drop .public-product-card-body {
+.debroder-landing .home-fresh-drop .public-product-card-body {
   padding-top: 13px;
 }
 
-.landing-nike .home-fresh-drop .public-product-meta {
+.debroder-landing .home-fresh-drop .public-product-meta {
   margin-bottom: 3px;
   font-size: 13px;
   color: rgba(17, 17, 17, 0.52);
 }
 
-.landing-nike .home-fresh-drop .public-product-name {
+.debroder-landing .home-fresh-drop .public-product-name {
   font-size: 15px;
   font-weight: 500;
   line-height: 1.35;
 }
 
-.landing-nike .home-fresh-drop .public-product-price-block {
+.debroder-landing .home-fresh-drop .public-product-price-block {
   margin-top: 7px;
 }
 
-.landing-nike .home-fresh-drop .public-product-price,
-.landing-nike .home-fresh-drop .public-product-compare-price {
+.debroder-landing .home-fresh-drop .public-product-price,
+.debroder-landing .home-fresh-drop .public-product-compare-price {
   font-size: 14px;
 }
 
-.landing-nike .landing-category-card .category-media {
-  background: #f5f5f5;
+.debroder-landing .landing-category-card .category-media {
+  background: var(--color-surface-soft);
 }
 
-.landing-nike .landing-category-card .category-media img {
-  transition: transform 650ms cubic-bezier(0.22, 1, 0.36, 1);
+.debroder-landing .landing-category-card .category-media img {
+  transition: transform var(--motion-normal) var(--motion-ease);
 }
 
-.landing-nike .landing-category-card h3 {
+.debroder-landing .landing-category-card h3 {
   margin-top: 12px;
   font-size: 15px;
   font-weight: 500;
@@ -1488,52 +1566,52 @@ button,
 }
 
 @media (hover: hover) and (pointer: fine) {
-  .landing-nike .landing-campaign-media:hover :is(img, video) {
+  .debroder-landing .landing-campaign-media:hover :is(img, video) {
     transform: scale(1.008);
   }
 
-  .landing-nike .landing-category-card:hover .category-media img {
+  .debroder-landing .landing-category-card:hover .category-media img {
     transform: scale(1.018);
   }
 }
 
 @media (max-width: 639px) {
-  .landing-nike .landing-campaign .campaign-shell {
+  .debroder-landing .landing-campaign .campaign-shell {
     width: 100%;
   }
 
-  .landing-nike .landing-campaign-copy {
+  .debroder-landing .landing-campaign-copy {
     padding-inline: var(--landing-page-gutter);
   }
 
-  .landing-nike .fresh-drop-card,
-  .landing-nike .category-rail-card {
+  .debroder-landing .fresh-drop-card,
+  .debroder-landing .category-rail-card {
     flex-basis: 77%;
   }
 }
 
 @media (min-width: 640px) {
-  .landing-nike .landing-commerce-rail,
-  .landing-nike .landing-category-rail {
+  .debroder-landing .landing-commerce-rail,
+  .debroder-landing .landing-category-rail {
     gap: 16px;
   }
 
-  .landing-nike .landing-campaign-copy {
+  .debroder-landing .landing-campaign-copy {
     padding-top: 36px;
   }
 }
 
 @media (min-width: 1024px) {
-  .landing-nike .landing-campaign-copy {
+  .debroder-landing .landing-campaign-copy {
     padding-top: 40px;
   }
 
-  .landing-nike .landing-campaign-copy .campaign-copy-title {
+  .debroder-landing .landing-campaign-copy .campaign-copy-title {
     font-size: clamp(2.75rem, 3.6vw, 3.75rem);
   }
 
-  .landing-nike .fresh-drop-card,
-  .landing-nike .category-rail-card {
+  .debroder-landing .fresh-drop-card,
+  .debroder-landing .category-rail-card {
     flex-basis: calc((100% - 36px) / 3.2);
   }
 }
@@ -1543,33 +1621,33 @@ button,
    FINAL landing order correction · Plain-category rail · About · Footer · Mobile polish
    Based on DEBRODER PUBLIC EXPERIENCE SYSTEM v1.0.
    ========================================================= */
-.landing-nike .home-plain-categories {
+.debroder-landing .home-plain-categories {
   padding-top: var(--home-section-gap) !important;
 }
 
-.landing-nike .plain-category-shell {
+.debroder-landing .plain-category-shell {
   overflow: hidden;
 }
 
-.landing-nike .plain-category-rail {
+.debroder-landing .plain-category-rail {
   gap: 12px;
   overscroll-behavior-inline: contain;
   scroll-padding-inline: 0;
 }
 
-.landing-nike .plain-category-rail .category-rail-card {
+.debroder-landing .plain-category-rail .category-rail-card {
   flex-basis: 77%;
 }
 
-.landing-nike .home-about {
-  background: #fff;
+.debroder-landing .home-about {
+  background: var(--color-canvas);
 }
 
-.landing-nike .about-shell {
+.debroder-landing .about-shell {
   max-width: var(--landing-content-max);
 }
 
-.landing-nike .about-title {
+.debroder-landing .about-title {
   font-family: var(--font-body);
   font-size: clamp(2.4rem, 9vw, 4rem);
   font-weight: 750;
@@ -1577,31 +1655,31 @@ button,
   line-height: 0.94;
 }
 
-.landing-nike .about-body {
-  color: #707072;
+.debroder-landing .about-body {
+  color: var(--color-text-secondary);
 }
 
-.landing-nike .about-body p {
+.debroder-landing .about-body p {
   max-width: 62ch;
 }
 
-.landing-nike .about-cta {
+.debroder-landing .about-cta {
   min-height: 48px;
 }
 
-.landing-nike .about-media,
-.landing-nike .about-proof-grid {
-  background: #f5f5f5;
+.debroder-landing .about-media,
+.debroder-landing .about-proof-grid {
+  background: var(--color-surface-soft);
 }
 
-.landing-nike .about-proof-value {
-  color: #111;
+.debroder-landing .about-proof-value {
+  color: var(--color-ink);
   font-size: clamp(2rem, 6vw, 3.25rem);
   line-height: 1;
 }
 
-.landing-nike .about-proof-label {
-  color: #707072;
+.debroder-landing .about-proof-label {
+  color: var(--color-text-secondary);
 }
 
 .public-footer-system-v1 {
@@ -1631,28 +1709,28 @@ button,
 }
 
 @media (max-width: 639px) {
-  .landing-nike .landing-section-heading {
+  .debroder-landing .landing-section-heading {
     gap: 12px;
   }
 
-  .landing-nike .plain-category-rail {
+  .debroder-landing .plain-category-rail {
     gap: 12px;
   }
 
-  .landing-nike .about-shell {
+  .debroder-landing .about-shell {
     gap: 32px;
   }
 
-  .landing-nike .about-title {
+  .debroder-landing .about-title {
     max-width: 9ch;
   }
 
-  .landing-nike .about-copy.text-center .about-title,
-  .landing-nike .about-copy.text-right .about-title {
+  .debroder-landing .about-copy.text-center .about-title,
+  .debroder-landing .about-copy.text-right .about-title {
     max-width: none;
   }
 
-  .landing-nike .about-proof-item {
+  .debroder-landing .about-proof-item {
     min-height: 132px;
   }
 
@@ -1662,21 +1740,21 @@ button,
 }
 
 @media (min-width: 640px) {
-  .landing-nike .plain-category-rail {
+  .debroder-landing .plain-category-rail {
     gap: 16px;
   }
 
-  .landing-nike .plain-category-rail .category-rail-card {
+  .debroder-landing .plain-category-rail .category-rail-card {
     flex-basis: 44vw;
   }
 }
 
 @media (min-width: 1024px) {
-  .landing-nike .about-title {
+  .debroder-landing .about-title {
     font-size: clamp(3.5rem, 4.7vw, 4.75rem);
   }
 
-  .landing-nike .plain-category-rail .category-rail-card {
+  .debroder-landing .plain-category-rail .category-rail-card {
     flex-basis: calc((100% - 36px) / 3.2);
   }
 }
@@ -1688,77 +1766,77 @@ button,
    offline capture dated 26 July 2026.
    Scope: public homepage only. No Nike assets or identity.
    ========================================================= */
-.landing-nike {
-  --landing-content-max: 1440px;
-  --landing-page-gutter: 16px;
-  --home-section-gap: 48px;
-  --home-end-space: 64px;
-  --landing-grid-gap: 12px;
-  color: #111111;
-  background: #ffffff;
+.debroder-landing {
+  --landing-content-max: var(--content-max);
+  --landing-page-gutter: var(--content-gutter);
+  --home-section-gap: var(--section-space);
+  --home-end-space: var(--section-space-end);
+  --landing-grid-gap: var(--grid-gap);
+  color: var(--color-ink);
+  background: var(--color-canvas);
 }
 
-.landing-nike > header {
-  border-bottom: 1px solid #e5e5e5;
-  box-shadow: none;
+.debroder-landing > header {
+  border-bottom: var(--divider-width) solid var(--color-divider-soft);
+  box-shadow: var(--shadow-decorative);
 }
 
-.landing-nike > header nav.section-shell {
+.debroder-landing > header nav.section-shell {
   width: min(var(--landing-content-max), calc(100% - (var(--landing-page-gutter) * 2)));
   height: 64px;
 }
 
-.landing-nike > header nav .nav-link {
+.debroder-landing > header nav .nav-link {
   font-size: 16px;
   font-weight: 500;
 }
 
-.landing-nike > header nav button[aria-label="Cari produk"] {
+.debroder-landing > header nav button[aria-label="Cari produk"] {
   width: 160px;
   height: 40px;
-  border-radius: 999px;
-  background: #f5f5f5;
+  border-radius: var(--radius-pill);
+  background: var(--color-surface-soft);
 }
 
-.landing-nike > header nav button[aria-label="Cari produk"]:hover {
-  background: #e5e5e5;
+.debroder-landing > header nav button[aria-label="Cari produk"]:hover {
+  background: var(--color-divider-soft);
 }
 
-.landing-nike > header div[class*="top-[78px]"] {
+.debroder-landing > header div[class*="top-[78px]"] {
   top: 64px !important;
 }
 
-.landing-nike > header div[class*="top-[164px]"] {
+.debroder-landing > header div[class*="top-[164px]"] {
   top: 150px !important;
 }
 
-.landing-nike .public-section-frame,
-.landing-nike .public-section-frame--wide,
-.landing-nike .public-section-frame--near-wide,
-.landing-nike .public-section-frame--inset {
+.debroder-landing .public-section-frame,
+.debroder-landing .public-section-frame--wide,
+.debroder-landing .public-section-frame--near-wide,
+.debroder-landing .public-section-frame--inset {
   width: 100% !important;
   max-width: var(--landing-content-max) !important;
   padding-inline: var(--landing-page-gutter) !important;
 }
 
-.landing-nike .campaign-shell,
-.landing-nike .benefit-grid {
+.debroder-landing .campaign-shell,
+.debroder-landing .benefit-grid {
   width: min(var(--landing-content-max), calc(100% - (var(--landing-page-gutter) * 2)));
   max-width: var(--landing-content-max);
 }
 
-.landing-nike .home-section {
+.debroder-landing .home-section {
   padding-top: var(--home-section-gap) !important;
   padding-bottom: 0 !important;
 }
 
-.landing-nike .landing-hero {
+.debroder-landing .landing-hero {
   min-height: 500px;
   max-height: 760px;
-  background: #111111;
+  background: var(--color-ink);
 }
 
-.landing-nike .landing-hero-overlay {
+.debroder-landing .landing-hero-overlay {
   background: linear-gradient(
     0deg,
     rgba(0, 0, 0, 0.5) 0%,
@@ -1768,142 +1846,142 @@ button,
   );
 }
 
-.landing-nike .hero-content {
+.debroder-landing .hero-content {
   max-width: 1120px;
 }
 
-.landing-nike .home-hero-title {
+.debroder-landing .home-hero-title {
   max-width: min(94vw, 980px);
   font-family: var(--font-display);
-  font-size: 48px;
-  font-weight: 700;
+  font-size: var(--type-hero);
+  font-weight: var(--font-weight-bold);
   letter-spacing: -0.025em;
   line-height: 0.9;
   text-transform: uppercase;
 }
 
-.landing-nike .hero-subtitle {
+.debroder-landing .hero-subtitle {
   max-width: 640px;
-  margin-top: 16px;
-  font-size: 16px;
+  margin-top: var(--space-4);
+  font-size: var(--type-body);
   line-height: 1.5;
   color: rgba(255, 255, 255, 0.9);
 }
 
-.landing-nike .hero-actions {
-  margin-top: 24px;
-  gap: 8px;
+.debroder-landing .hero-actions {
+  margin-top: var(--space-6);
+  gap: var(--space-2);
 }
 
-.landing-nike .hero-actions .cta,
-.landing-nike .landing-campaign-cta,
-.landing-nike .about-cta {
-  min-height: 48px;
-  padding: 12px 24px;
-  border-radius: 999px;
-  font-size: 16px;
-  font-weight: 500;
+.debroder-landing .hero-actions .cta,
+.debroder-landing .landing-campaign-cta,
+.debroder-landing .about-cta {
+  min-height: var(--control-min-size);
+  padding: var(--space-3) var(--space-6);
+  border-radius: var(--radius-pill);
+  font-size: var(--type-button);
+  font-weight: var(--font-weight-medium);
   line-height: 1.5;
 }
 
-.landing-nike .landing-hero-controls button,
-.landing-nike .landing-section-heading button {
-  width: 48px;
-  height: 48px;
-  min-width: 48px;
-  min-height: 48px;
+.debroder-landing .landing-hero-controls button,
+.debroder-landing .landing-section-heading button {
+  width: var(--control-min-size);
+  height: var(--control-min-size);
+  min-width: var(--control-min-size);
+  min-height: var(--control-min-size);
 }
 
-.landing-nike .landing-hero-controls button {
+.debroder-landing .landing-hero-controls button {
   border-color: rgba(255, 255, 255, 0.34);
   background: rgba(17, 17, 17, 0.48);
   backdrop-filter: none;
 }
 
-.landing-nike .trust-strip {
-  border-color: #e5e5e5;
+.debroder-landing .trust-strip {
+  border-color: var(--color-divider-soft);
 }
 
-.landing-nike .benefit-grid > div {
+.debroder-landing .benefit-grid > div {
   min-height: 72px;
-  padding-block: 16px;
-  border-color: #e5e5e5;
+  padding-block: var(--space-4);
+  border-color: var(--color-divider-soft);
 }
 
-.landing-nike .benefit-grid h2 {
+.debroder-landing .benefit-grid h2 {
   font-size: 14px;
   font-weight: 500;
   line-height: 1.5;
 }
 
-.landing-nike .benefit-grid p {
-  font-size: 12px;
+.debroder-landing .benefit-grid p {
+  font-size: var(--type-utility);
   line-height: 1.5;
-  color: #707072;
+  color: var(--color-text-secondary);
 }
 
-.landing-nike .landing-section-heading {
+.debroder-landing .landing-section-heading {
   min-height: 48px;
   align-items: center;
 }
 
-.landing-nike .home-section-title {
+.debroder-landing .home-section-title {
   font-family: var(--font-body);
-  font-size: 24px;
-  font-weight: 500;
+  font-size: var(--type-section-title);
+  font-weight: var(--font-weight-medium);
   letter-spacing: -0.015em;
   line-height: 1.2;
 }
 
-.landing-nike .landing-section-heading .public-secondary-copy {
+.debroder-landing .landing-section-heading .public-secondary-copy {
   max-width: 640px;
-  margin-top: 8px;
-  font-size: 16px;
+  margin-top: var(--space-2);
+  font-size: var(--type-body);
   line-height: 1.5;
-  color: #707072;
+  color: var(--color-text-secondary);
 }
 
-.landing-nike .landing-section-heading a {
+.debroder-landing .landing-section-heading a {
   font-size: 16px;
   font-weight: 500;
   text-underline-offset: 4px;
 }
 
-.landing-nike .featured-media-grid,
-.landing-nike .trending-grid,
-.landing-nike .landing-commerce-rail,
-.landing-nike .landing-category-rail,
-.landing-nike .plain-category-rail {
+.debroder-landing .featured-media-grid,
+.debroder-landing .trending-grid,
+.debroder-landing .landing-commerce-rail,
+.debroder-landing .landing-category-rail,
+.debroder-landing .plain-category-rail {
   gap: var(--landing-grid-gap);
 }
 
-.landing-nike .landing-editorial-card,
-.landing-nike .landing-campaign-media,
-.landing-nike .category-media,
-.landing-nike .product-image-frame,
-.landing-nike .about-media,
-.landing-nike .about-proof-grid {
+.debroder-landing .landing-editorial-card,
+.debroder-landing .landing-campaign-media,
+.debroder-landing .category-media,
+.debroder-landing .product-image-frame,
+.debroder-landing .about-media,
+.debroder-landing .about-proof-grid {
   border: 0;
-  border-radius: 0;
-  box-shadow: none;
-  background: #f5f5f5;
+  border-radius: var(--radius-image);
+  box-shadow: var(--shadow-decorative);
+  background: var(--color-surface-soft);
 }
 
-.landing-nike .landing-editorial-card .editorial-card-image,
-.landing-nike .landing-campaign-media :is(img, video),
-.landing-nike .landing-category-card .category-media img {
-  transition: opacity 500ms ease;
+.debroder-landing .landing-editorial-card .editorial-card-image,
+.debroder-landing .landing-campaign-media :is(img, video),
+.debroder-landing .landing-category-card .category-media img {
+  transition: opacity var(--motion-normal) var(--motion-ease);
 }
 
 @media (hover: hover) and (pointer: fine) {
-  .landing-nike .landing-editorial-card:hover .editorial-card-image,
-  .landing-nike .landing-campaign-media:hover :is(img, video),
-  .landing-nike .landing-category-card:hover .category-media img {
+  .debroder-landing .landing-editorial-card:hover .editorial-card-image,
+  .debroder-landing .landing-campaign-media:hover :is(img, video),
+  .debroder-landing .landing-category-card:hover .category-media img {
     transform: none;
   }
 }
 
-.landing-nike .editorial-card-overlay {
+.debroder-landing .editorial-card-overlay {
   background: linear-gradient(
     to top,
     rgba(0, 0, 0, 0.52) 0%,
@@ -1912,13 +1990,13 @@ button,
   );
 }
 
-.landing-nike .editorial-card-content {
+.debroder-landing .editorial-card-content {
   left: 24px;
   right: 24px;
   bottom: 24px;
 }
 
-.landing-nike .editorial-card-label {
+.debroder-landing .editorial-card-label {
   margin-bottom: 6px;
   font-size: 14px;
   font-weight: 500;
@@ -1926,7 +2004,7 @@ button,
   text-transform: none;
 }
 
-.landing-nike .editorial-card-title {
+.debroder-landing .editorial-card-title {
   max-width: 95%;
   font-family: var(--font-body);
   font-size: 20px;
@@ -1935,86 +2013,86 @@ button,
   line-height: 1.2;
 }
 
-.landing-nike .editorial-card-cta {
+.debroder-landing .editorial-card-cta {
   min-height: 48px;
   padding-inline: 24px;
   font-size: 14px;
   font-weight: 500;
 }
 
-.landing-nike .landing-campaign {
+.debroder-landing .landing-campaign {
   padding-top: var(--home-section-gap) !important;
   padding-bottom: 0;
 }
 
-.landing-nike .landing-campaign-copy {
+.debroder-landing .landing-campaign-copy {
   max-width: 920px;
   padding-top: 32px;
 }
 
-.landing-nike .landing-campaign-copy .campaign-copy-title {
+.debroder-landing .landing-campaign-copy .campaign-copy-title {
   font-family: var(--font-display);
-  font-size: 48px;
-  font-weight: 700;
+  font-size: var(--type-hero);
+  font-weight: var(--font-weight-bold);
   letter-spacing: -0.025em;
   line-height: 0.9;
   text-transform: uppercase;
 }
 
-.landing-nike .landing-campaign-copy p {
+.debroder-landing .landing-campaign-copy p {
   max-width: 640px;
-  margin-top: 16px;
-  font-size: 16px;
+  margin-top: var(--space-4);
+  font-size: var(--type-body);
   line-height: 1.5;
-  color: #707072;
+  color: var(--color-text-secondary);
 }
 
-.landing-nike .landing-campaign-cta {
+.debroder-landing .landing-campaign-cta {
   margin-top: 24px;
 }
 
-.landing-nike .landing-commerce-rail,
-.landing-nike .landing-category-rail,
-.landing-nike .plain-category-rail {
+.debroder-landing .landing-commerce-rail,
+.debroder-landing .landing-category-rail,
+.debroder-landing .plain-category-rail {
   scroll-padding-inline: 0;
   overscroll-behavior-inline: contain;
 }
 
-.landing-nike .fresh-drop-card,
-.landing-nike .category-rail-card,
-.landing-nike .plain-category-rail .category-rail-card {
+.debroder-landing .fresh-drop-card,
+.debroder-landing .category-rail-card,
+.debroder-landing .plain-category-rail .category-rail-card {
   flex-basis: 77%;
 }
 
-.landing-nike .home-fresh-drop .public-product-card-body {
+.debroder-landing .home-fresh-drop .public-product-card-body {
   padding-top: 12px;
 }
 
-.landing-nike .home-fresh-drop .public-product-meta {
+.debroder-landing .home-fresh-drop .public-product-meta {
   margin-bottom: 2px;
-  font-size: 14px;
+  font-size: var(--type-caption);
   line-height: 1.5;
-  color: #707072;
+  color: var(--color-text-secondary);
 }
 
-.landing-nike .home-fresh-drop .public-product-name {
-  font-size: 16px;
-  font-weight: 500;
+.debroder-landing .home-fresh-drop .public-product-name {
+  font-size: var(--type-product-title);
+  font-weight: var(--font-weight-medium);
   line-height: 1.5;
 }
 
-.landing-nike .home-fresh-drop .public-product-price-block {
+.debroder-landing .home-fresh-drop .public-product-price-block {
   margin-top: 4px;
 }
 
-.landing-nike .home-fresh-drop .public-product-price,
-.landing-nike .home-fresh-drop .public-product-compare-price {
+.debroder-landing .home-fresh-drop .public-product-price,
+.debroder-landing .home-fresh-drop .public-product-compare-price {
   font-size: 16px;
   line-height: 1.5;
 }
 
-.landing-nike .landing-category-card h3,
-.landing-nike .plain-category-rail .category-rail-card h3 {
+.debroder-landing .landing-category-card h3,
+.debroder-landing .plain-category-rail .category-rail-card h3 {
   margin-top: 12px;
   font-size: 16px;
   font-weight: 500;
@@ -2022,218 +2100,206 @@ button,
   line-height: 1.5;
 }
 
-.landing-nike .about-shell {
+.debroder-landing .about-shell {
   max-width: var(--landing-content-max);
 }
 
-.landing-nike .about-title {
+.debroder-landing .about-title {
   font-family: var(--font-display);
-  font-size: 48px;
-  font-weight: 700;
+  font-size: var(--type-hero);
+  font-weight: var(--font-weight-bold);
   letter-spacing: -0.025em;
   line-height: 0.9;
   text-transform: uppercase;
 }
 
-.landing-nike .about-body,
-.landing-nike .about-body p {
+.debroder-landing .about-body,
+.debroder-landing .about-body p {
   max-width: 62ch;
-  font-size: 16px;
+  font-size: var(--type-body);
   line-height: 1.65;
-  color: #707072;
+  color: var(--color-text-secondary);
 }
 
-.landing-nike .about-proof-value {
+.debroder-landing .about-proof-value {
   font-family: var(--font-display);
-  font-size: 48px;
-  font-weight: 700;
+  font-size: var(--type-hero);
+  font-weight: var(--font-weight-bold);
   letter-spacing: -0.02em;
   line-height: 0.9;
 }
 
-.landing-nike .about-proof-label {
-  font-size: 14px;
+.debroder-landing .about-proof-label {
+  font-size: var(--type-caption);
   line-height: 1.5;
-  color: #707072;
+  color: var(--color-text-secondary);
 }
 
-.landing-nike .public-footer-system-v1 {
+.debroder-landing .public-footer-system-v1 {
   margin-top: var(--home-end-space);
-  border-top: 1px solid #e5e5e5;
-  box-shadow: none;
-  background: #ffffff;
+  border-top: var(--divider-width) solid var(--color-divider-soft);
+  box-shadow: var(--shadow-decorative);
+  background: var(--color-canvas);
 }
 
-.landing-nike .public-footer-system-v1 .section-shell {
+.debroder-landing .public-footer-system-v1 .section-shell {
   width: min(var(--landing-content-max), calc(100% - (var(--landing-page-gutter) * 2)));
   padding-block: 48px;
 }
 
-.landing-nike .public-footer-system-v1 .public-footer-logo {
+.debroder-landing .public-footer-system-v1 .public-footer-logo {
   width: 152px;
   max-width: 152px;
 }
 
-.landing-nike .public-footer-system-v1 .public-footer-logo > span {
+.debroder-landing .public-footer-system-v1 .public-footer-logo > span {
   width: 100%;
   gap: 8px;
 }
 
-.landing-nike .public-footer-system-v1 .public-footer-logo img:first-child {
+.debroder-landing .public-footer-system-v1 .public-footer-logo img:first-child {
   width: 34px !important;
   height: 34px !important;
 }
 
-.landing-nike .public-footer-system-v1 .public-footer-logo img:last-child {
+.debroder-landing .public-footer-system-v1 .public-footer-logo img:last-child {
   width: 110px !important;
   height: auto !important;
 }
 
-.landing-nike .public-footer-system-v1 h3,
-.landing-nike .public-footer-system-v1 summary {
+.debroder-landing .public-footer-system-v1 h3,
+.debroder-landing .public-footer-system-v1 summary {
   font-size: 16px;
   font-weight: 500;
 }
 
-.landing-nike .public-footer-system-v1 .public-footer-links {
-  font-size: 14px;
+.debroder-landing .public-footer-system-v1 .public-footer-links {
+  font-size: var(--type-caption);
   line-height: 1.5;
-  color: #707072;
+  color: var(--color-text-secondary);
 }
 
-.landing-nike :is(a, button, input, select, textarea, [tabindex]):focus-visible {
-  outline: 2px solid #1151ff;
-  outline-offset: 3px;
+.debroder-landing :is(a, button, input, select, textarea, [tabindex]):focus-visible {
+  outline: var(--focus-ring-width) solid var(--color-info-focus);
+  outline-offset: var(--focus-ring-offset);
 }
 
 @media (max-width: 599px) {
-  .landing-nike .landing-hero-copy {
+  .debroder-landing .landing-hero-copy {
     bottom: 12%;
   }
 
-  .landing-nike .landing-section-heading {
+  .debroder-landing .landing-section-heading {
     min-height: 0;
     align-items: flex-start;
     gap: 12px;
   }
 
-  .landing-nike .trending-grid {
+  .debroder-landing .trending-grid {
     grid-auto-columns: 84%;
   }
 
-  .landing-nike .about-title {
+  .debroder-landing .about-title {
     max-width: 10ch;
   }
 }
 
 @media (min-width: 600px) {
-  .landing-nike {
-    --landing-page-gutter: 24px;
-    --home-section-gap: 64px;
-    --home-end-space: 72px;
+  .debroder-landing .home-hero-title,
+  .debroder-landing .landing-campaign-copy .campaign-copy-title,
+  .debroder-landing .about-title {
+    font-size: var(--type-hero);
   }
 
-  .landing-nike .home-hero-title,
-  .landing-nike .landing-campaign-copy .campaign-copy-title,
-  .landing-nike .about-title {
-    font-size: 64px;
-  }
-
-  .landing-nike .fresh-drop-card,
-  .landing-nike .category-rail-card,
-  .landing-nike .plain-category-rail .category-rail-card {
+  .debroder-landing .fresh-drop-card,
+  .debroder-landing .category-rail-card,
+  .debroder-landing .plain-category-rail .category-rail-card {
     flex-basis: 44vw;
   }
 
-  .landing-nike .public-footer-system-v1 .section-shell {
+  .debroder-landing .public-footer-system-v1 .section-shell {
     padding-block: 64px;
   }
 
-  .landing-nike .public-footer-system-v1 .public-footer-logo {
+  .debroder-landing .public-footer-system-v1 .public-footer-logo {
     width: 170px;
     max-width: 170px;
   }
 
-  .landing-nike .public-footer-system-v1 .public-footer-logo img:first-child {
+  .debroder-landing .public-footer-system-v1 .public-footer-logo img:first-child {
     width: 38px !important;
     height: 38px !important;
   }
 
-  .landing-nike .public-footer-system-v1 .public-footer-logo img:last-child {
+  .debroder-landing .public-footer-system-v1 .public-footer-logo img:last-child {
     width: 122px !important;
   }
 }
 
 @media (min-width: 960px) {
-  .landing-nike {
-    --landing-page-gutter: 48px;
-    --home-section-gap: 80px;
-    --home-end-space: 80px;
-  }
-
-  .landing-nike .landing-hero {
+  .debroder-landing .landing-hero {
     min-height: 600px;
   }
 
-  .landing-nike .home-hero-title,
-  .landing-nike .landing-campaign-copy .campaign-copy-title,
-  .landing-nike .about-title {
-    font-size: 76px;
+  .debroder-landing .home-hero-title,
+  .debroder-landing .landing-campaign-copy .campaign-copy-title,
+  .debroder-landing .about-title {
+    font-size: var(--type-hero);
   }
 
-  .landing-nike .hero-subtitle {
+  .debroder-landing .hero-subtitle {
     font-size: 16px;
   }
 
-  .landing-nike .home-section-title {
+  .debroder-landing .home-section-title {
     font-size: 24px;
   }
 
-  .landing-nike .editorial-card-title {
+  .debroder-landing .editorial-card-title {
     font-size: 24px;
   }
 
-  .landing-nike .fresh-drop-card,
-  .landing-nike .category-rail-card,
-  .landing-nike .plain-category-rail .category-rail-card {
+  .debroder-landing .fresh-drop-card,
+  .debroder-landing .category-rail-card,
+  .debroder-landing .plain-category-rail .category-rail-card {
     flex-basis: calc((100% - 27px) / 3.2);
   }
 
-  .landing-nike .public-footer-system-v1 .section-shell {
+  .debroder-landing .public-footer-system-v1 .section-shell {
     padding-block: 80px;
   }
 
-  .landing-nike .public-footer-system-v1 .public-footer-logo {
+  .debroder-landing .public-footer-system-v1 .public-footer-logo {
     width: 180px;
     max-width: 180px;
   }
 
-  .landing-nike .public-footer-system-v1 .public-footer-logo img:first-child {
+  .debroder-landing .public-footer-system-v1 .public-footer-logo img:first-child {
     width: 40px !important;
     height: 40px !important;
   }
 
-  .landing-nike .public-footer-system-v1 .public-footer-logo img:last-child {
+  .debroder-landing .public-footer-system-v1 .public-footer-logo img:last-child {
     width: 130px !important;
   }
 }
 
 @media (min-width: 1440px) {
-  .landing-nike .home-hero-title,
-  .landing-nike .landing-campaign-copy .campaign-copy-title,
-  .landing-nike .about-title {
-    font-size: 88px;
+  .debroder-landing .home-hero-title,
+  .debroder-landing .landing-campaign-copy .campaign-copy-title,
+  .debroder-landing .about-title {
+    font-size: var(--type-hero);
   }
 
-  .landing-nike .home-section-title {
+  .debroder-landing .home-section-title {
     font-size: 28px;
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .landing-nike *,
-  .landing-nike *::before,
-  .landing-nike *::after {
+  .debroder-landing *,
+  .debroder-landing *::before,
+  .debroder-landing *::after {
     scroll-behavior: auto !important;
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
@@ -2244,17 +2310,17 @@ button,
 
 /* DEBRODER PUBLIC EXPERIENCE BATCH 4A — CATEGORY + PRODUCT LISTING */
 .category-commerce-v1 {
-  --category-canvas: #ffffff;
-  --category-ink: #111111;
-  --category-muted: #707072;
-  --category-soft: #f5f5f5;
-  --category-divider: #e5e5e5;
+  --category-canvas: var(--color-canvas);
+  --category-ink: var(--color-ink);
+  --category-muted: var(--color-text-secondary);
+  --category-soft: var(--color-surface-soft);
+  --category-divider: var(--color-divider-soft);
   background: var(--category-canvas);
   color: var(--category-ink);
 }
 
 .category-commerce-v1 .section-shell {
-  width: min(100%, 1440px);
+  width: min(100%, var(--content-max));
 }
 
 .category-commerce-v1 .category-shortcut-nav {
@@ -2287,7 +2353,7 @@ button,
 .category-commerce-v1 .category-type-media img {
   height: 100%;
   width: 100%;
-  transition: transform 220ms ease;
+  transition: transform var(--motion-normal) var(--motion-ease);
 }
 
 .category-commerce-v1 .category-color-link,
@@ -2297,29 +2363,29 @@ button,
 }
 
 .category-commerce-v1 .category-color-link:hover {
-  background: #ffffff;
+  background: var(--category-canvas);
 }
 
 .category-commerce-v1 .category-product-catalog .public-control {
-  border-color: #cacacb;
-  background: #f5f5f5;
-  color: #111111;
+  border-color: var(--color-border);
+  background: var(--category-soft);
+  color: var(--category-ink);
 }
 
 .category-commerce-v1 .category-product-catalog .public-control:hover {
-  border-color: #707072;
+  border-color: var(--category-muted);
 }
 
 .category-commerce-v1 .category-product-catalog .public-control:focus {
-  border-color: #111111;
-  background: #ffffff;
-  box-shadow: 0 0 0 2px #1151ff;
+  border-color: var(--category-ink);
+  background: var(--category-canvas);
+  box-shadow: 0 0 0 var(--focus-ring-width) var(--color-info-focus);
 }
 
 .category-commerce-v1 .category-product-catalog .public-secondary-action {
-  border-color: #cacacb;
-  background: #ffffff;
-  color: #111111;
+  border-color: var(--color-border);
+  background: var(--category-canvas);
+  color: var(--category-ink);
 }
 
 .category-commerce-v1 .category-product-catalog .public-product-card,
@@ -2341,8 +2407,8 @@ button,
 
 .category-commerce-v1 .category-product-catalog .public-product-meta,
 .category-commerce-v1 .category-product-rail-card .public-product-meta {
-  color: #707072;
-  font-size: 14px;
+  color: var(--category-muted);
+  font-size: var(--type-caption);
   line-height: 1.5;
 }
 

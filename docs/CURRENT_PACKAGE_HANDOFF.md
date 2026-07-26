@@ -351,6 +351,76 @@ Langkah berikutnya tanpa audit ulang:
 
 ---
 
+## 10A. Public Experience P0 — Design Tokens Global
+
+Tanggal: 2026-07-26
+
+Scope aktif: P0 Design Tokens Global saja
+
+Status: **VERIFIED IN SOURCE — P1 NOT STARTED**
+
+Baseline:
+
+- branch `LANDING-PAGE-PUBLIC`;
+- HEAD `e37a9c4d3a50fe36e3158ea5dae87600206a5ca8`;
+- working tree bersih pada awal P0;
+- selama pekerjaan, penghapusan tracked package Batch 4A dan archive Batch 4B
+  muncul sebagai perubahan owner/external; perubahan tersebut tidak disentuh
+  atau dimasukkan ke scope P0.
+
+Yang diperiksa dan diubah:
+
+- governance wajib, frozen Public Experience System, implementasi public
+  existing, dan archive visual reference `D:\nike\nike.rar`;
+- kontrak canonical warna, type, spacing, container, gutter, radius, shadow,
+  focus, control size, dan motion di `app/globals.css`;
+- landing, shared public shell, category commerce, dan Tailwind public aliases
+  dihubungkan ke token canonical;
+- class scope referensi eksternal diganti dengan class DEBRODER;
+- regression test dan laporan audit P0 ditambahkan.
+
+File P0:
+
+- `app/globals.css`;
+- `app/page.tsx`;
+- `tailwind.config.ts`;
+- `test/public-experience-design-tokens.test.ts`;
+- `docs/DEBRODER_PUBLIC_EXPERIENCE_P0_TOKEN_AUDIT.md`;
+- governance handoff/state/issue/ledger.
+
+Route berubah: tidak ada.
+
+Database/migration local/remote/applied/pending: tidak ada.
+
+Commit/push/merge/deploy: tidak dilakukan.
+
+Verification:
+
+- `pnpm typecheck`: **PASS**;
+- `pnpm lint`: **PASS**, 0 error / 32 warning existing;
+- `pnpm test`: **PASS**, 87 file / 676 test;
+- `pnpm build`: **PASS**;
+- `git diff --check`: **PASS**, warning line-ending existing saja;
+- browser homepage 1440×900, 1280×800, 768×1024, 390×844, 360×800:
+  **PASS** — HTTP 200, tanpa overflow horizontal, error overlay, console/page
+  error; focus ring dan computed responsive tokens sesuai kontrak.
+
+Risiko terbuka:
+
+- active homepage snapshot tidak merender elemen `h1`; tidak diperbaiki pada
+  P0 karena ownership konten/hierarchy berada pada package homepage;
+- perubahan owner/external Batch 4A/4B tetap ada di working tree dan wajib
+  dipisahkan saat review/staging.
+
+Status gate:
+
+```text
+GO — P0 DESIGN TOKENS GLOBAL SAJA
+HOLD — P1 MENUNGGU INSTRUKSI OWNER
+```
+
+---
+
 ## 11. Cara Memperbarui File Ini
 
 Setelah setiap package PASS:

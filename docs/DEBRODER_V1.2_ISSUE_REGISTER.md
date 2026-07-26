@@ -450,3 +450,33 @@
   type, reservation, delta, and post-mutation snapshots.
 - Custom implicit inventory use — **CLOSED IN SOURCE**. Inventory applies only
   when variant-size identity and SKU exactly match canonical catalog mapping.
+
+## Public Experience P0 — Design Tokens Global
+
+### V12-046 — Homepage semantic heading absent in active snapshot
+
+- Severity: MINOR
+- Status: **OPEN — DEFERRED TO HOMEPAGE-OWNED PACKAGE**
+- Evidence: browser verification at five responsive viewports returned
+  meaningful content and `main`, but `document.querySelectorAll("h1").length`
+  was `0` at every viewport.
+- Boundary: P0 owns tokens only. CMS copy and homepage content hierarchy were
+  not changed to avoid scope expansion.
+- Required follow-up: the package that owns homepage content must prove one
+  meaningful visible or accessibility-valid `h1` without duplicating CMS/PIM
+  content truth.
+
+## Closed in Public Experience P0
+
+- Split public token definitions — **CLOSED IN SOURCE**. Frozen public color,
+  type, spacing, content width, gutter, shape, focus, control, and motion
+  primitives have one canonical root contract.
+- Literal category/landing theme drift — **CLOSED IN SOURCE**. Current public
+  consumers map to canonical tokens with compatibility aliases retained for
+  later package migration.
+- External reference class leakage — **CLOSED IN SOURCE**. Production uses a
+  DEBRODER-owned landing scope and regression coverage rejects external
+  reference class/URL markers.
+- Responsive token regression — **CLOSED AND VERIFIED**. Five viewports show
+  correct computed gutters/spacing, no horizontal page overflow, no browser
+  errors, and a visible FROZEN focus ring.

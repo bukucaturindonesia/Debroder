@@ -416,7 +416,7 @@ export default async function Home() {
 
   return (
     <StorefrontCartBoundary>
-    <main className="public-site landing-nike min-h-screen bg-white text-[#111]">
+    <main className="public-site debroder-landing min-h-screen bg-experience-canvas text-experience-ink">
       <SiteHeader
         navigationFacets={shellModel.data.header.navigationFacets}
         whatsappHref={shellModel.data.header.whatsappHref}
