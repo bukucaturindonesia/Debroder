@@ -8,3 +8,8 @@ dist/
 pnpm-debug.log*
 *.tsbuildinfo
 dev-server*.log
+
+# Local platform metadata, source backups, and delivery bundles
+.vercel/
+.debroder-backups/
+*.zip
