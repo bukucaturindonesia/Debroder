@@ -28,7 +28,7 @@ export function AdminHeader({
             className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-brand-softGray text-lg font-semibold lg:hidden"
             aria-label="Buka menu admin"
           >
-            ☰
+            &#9776;
           </button>
           <div className="min-w-0">
             <AdminBreadcrumb />

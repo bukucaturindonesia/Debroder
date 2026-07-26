@@ -793,3 +793,32 @@ VERIFICATION REQUIRED**.
   checkout/order/operations smoke. Real transaction execution is **NOT
   PROVEN**. Existing advisor findings outside scope were not modified.
 - Final status: not COMPLETE and not GO.
+
+---
+
+## 2026-07-26 — Global Admin Dashboard v1.0 (GD-P0–GD-P12)
+
+Status: **IMPLEMENTED AND LOCALLY VERIFIED — OWNER FINAL REVIEW / VERCEL
+PREVIEW VERIFICATION PENDING**.
+
+- `/admin` and `/admin/dashboard` now render one canonical, read-only Global
+  Admin Dashboard with the approved dark desktop composition and responsive
+  mobile presentation.
+- Typed server-only aggregation owns filters, KPI, verified payment/final
+  refund math, order-type discriminators, action queues, store summaries,
+  latest orders, and PIM/inventory alerts.
+- API access is authenticated, role-gated, permission-checked, RLS-backed,
+  and no-store. Admin Guest continues to use the existing sanitized viewer.
+- Targeted test PASS 9/9; typecheck PASS; lint PASS with 0 errors / 32 existing
+  warnings; full test PASS 90 files / 698 tests; build PASS 120/120 pages;
+  `git diff --check` PASS.
+- Database/migration/seed/mutation: none. Remote schema inspection was
+  read-only.
+- Open proof: authenticated visual/responsive and Vercel Preview are not
+  proven because the available browser had no admin session.
+- Open schema risk: remote `order_store_assignments` is not represented by a
+  repository migration found during this package. Store ownership fails
+  closed to partial/unallocated data rather than being guessed.
+- Canonical low-stock threshold is absent; the dashboard explicitly reports
+  unavailable instead of hardcoding a threshold.
+- Commit, push, merge, and deploy: none. Status is not COMPLETE and not GO.

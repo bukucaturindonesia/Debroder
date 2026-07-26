@@ -501,3 +501,22 @@ The FROZEN commerce/landing blueprints and official Owner Decisions remain autho
   downstream fulfillment execution remain **NOT PROVEN**. Existing Supabase
   advisor findings outside this package remain open.
 - No commit, push, merge, or deployment was performed.
+
+## Global Admin Dashboard v1.0 state — 2026-07-26
+
+- GD-P0–GD-P12 are **IMPLEMENTED AND LOCALLY VERIFIED — OWNER FINAL REVIEW /
+  VERCEL PREVIEW VERIFICATION PENDING** on branch `LANDING-PAGE-PUBLIC`,
+  baseline HEAD `9d711f16c252db2be725abf3d062a2ba3200fe0d`.
+- `/admin` is now a canonical read-only operational overview with server-owned
+  KPI math, verified payments, final refunds, action queues, order types,
+  store summaries, latest orders, and PIM/inventory warnings.
+- Auth remains fail-closed through existing role/session/permission/RLS
+  boundaries; the browser proved anonymous redirect and API 401.
+- Gates: targeted 9/9, typecheck PASS, lint 0 errors / 32 existing warnings,
+  tests 90 files / 698 tests PASS, build 120/120 pages PASS.
+- No pricing, Cart, checkout, inventory mutation, order/payment command,
+  database, migration, public UX, commit, push, merge, or deployment changed.
+- Authenticated visual/viewport and Vercel Preview are not proven. Remote
+  `order_store_assignments` source-migration alignment and a canonical
+  low-stock threshold remain owner decisions.
+- Project remains not COMPLETE and not GO.

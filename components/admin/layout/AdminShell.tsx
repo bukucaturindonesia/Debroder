@@ -169,10 +169,15 @@ export function AdminShell({ children }: { children: ReactNode }) {
   }
 
   const legacyRoute = isLegacyAdminRoute(pathname);
+  const globalDashboardRoute = pathname === "/admin" || pathname === "/admin/dashboard";
 
   return (
     <AdminAccessProvider role={role}>
-      <div className="admin-shell-root" data-admin-read-only={role === "admin_guest"}>
+      <div
+        className="admin-shell-root"
+        data-admin-read-only={role === "admin_guest"}
+        data-global-dashboard={globalDashboardRoute ? "true" : "false"}
+      >
       <aside className="admin-shell-desktop-sidebar">
         <AdminSidebar role={role} onLogout={logout} />
       </aside>

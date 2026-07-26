@@ -1031,3 +1031,108 @@ NEXT:
 GIT / DEPLOYMENT:
 
 - commit none; push none; merge none; deploy none.
+
+## Global Admin Dashboard v1.0 — GD-P0–GD-P12
+
+DATE: 2026-07-26
+
+STATUS:
+**IMPLEMENTED AND LOCALLY VERIFIED — OWNER FINAL REVIEW / VERCEL PREVIEW
+VERIFICATION PENDING**
+
+BASELINE:
+
+- branch `LANDING-PAGE-PUBLIC`;
+- HEAD `9d711f16c252db2be725abf3d062a2ba3200fe0d`;
+- working tree clean before package.
+
+IMPLEMENTED:
+
+- `/admin` and `/admin/dashboard` now use the Global Admin Dashboard while the
+  existing Admin Guest full viewer remains isolated;
+- premium dark dashboard composition follows the approved reference:
+  dashboard-only sidebar treatment, header/filter row, six KPI cards, ten
+  action queues, SVG trend, canonical order-type donut, store summaries,
+  latest orders, and PIM/inventory warnings;
+- a typed server-only read-model and data-access layer aggregate canonical
+  orders, order items, verified payments, final refunds, production, QC,
+  fulfillment, stores, and inventory without N+1 requests;
+- server-validated Makassar ranges support today, 7 days, 30 days, and a
+  maximum 90-day custom range; store scope accepts UUID only;
+- financial data is limited to owner/superadmin/super_admin/admin. The API is
+  protected by `requirePhase13Actor(..., "order.read")`, role-gated,
+  RLS-backed, and `private, no-store`;
+- cancelled/expired/void/failed order states do not enter commercial KPI;
+  payment uses only verified amount; refund subtraction uses only sent or
+  confirmed canonical cases;
+- Ready Stock, Instant Custom, Configured Product, Custom Project, and legacy
+  classification use snapshot/discriminator fields, never product name, slug,
+  SKU text, or category-name matching;
+- module failures degrade to explicit partial-data notices. No synthetic
+  counts or demo identities are rendered.
+
+FILES:
+
+- `app/admin/global-dashboard.css`
+- `app/admin/layout.tsx`
+- `app/admin/page.tsx`
+- `app/api/admin/global-dashboard/route.ts`
+- `components/admin/AdminDashboardGate.tsx`
+- `components/admin/GlobalAdminDashboard.tsx`
+- `components/admin/layout/AdminHeader.tsx`
+- `components/admin/layout/AdminShell.tsx`
+- `components/admin/layout/AdminSidebar.tsx`
+- `lib/global-admin-dashboard/contracts.ts`
+- `lib/global-admin-dashboard/data-access.ts`
+- `lib/global-admin-dashboard/domain.ts`
+- `lib/global-admin-dashboard/page-use-case.ts`
+- `test/global-admin-dashboard.test.ts`
+- governance/handoff documents.
+
+DATABASE / MIGRATION:
+
+- migration created: none;
+- remote mutation: none;
+- migration applied: none;
+- migration pending for this package: none;
+- remote schema and status constraints were inspected read-only;
+- open alignment risk: remote `order_store_assignments` exists and has data,
+  but no source migration defining it was found in the repository. The
+  dashboard treats an unavailable store-assignment module as partial data and
+  does not infer ownership from unrelated fields.
+
+VERIFICATION:
+
+- targeted Global Admin test: PASS, 1 file / 9 tests;
+- `pnpm typecheck`: PASS;
+- `pnpm lint`: PASS, 0 errors / 32 pre-existing warnings;
+- `pnpm test`: PASS, 90 files / 698 tests;
+- `pnpm build`: PASS, 120/120 pages;
+- `git diff --check`: PASS;
+- existing server `http://127.0.0.1:3000/admin`: HTTP 200;
+- anonymous browser route correctly redirects to `/admin/login`;
+- anonymous dashboard API correctly returns HTTP 401;
+- authenticated dashboard visual, complete responsive viewport matrix, and
+  Vercel Preview are **NOT PROVEN** because the browser session had no admin
+  authentication and no credential bypass was permitted.
+
+EXPLICIT SAFE LIMIT:
+
+- low-stock count is not fabricated. `inventory_balances.available_quantity`
+  proves out-of-stock, but no canonical low-stock threshold authority exists;
+  the UI therefore shows an unavailable value with an explanation.
+
+UNCHANGED:
+
+- pricing formula and historical snapshots;
+- Cart v5, checkout, order/payment commands, inventory mutations, fulfillment,
+  CMS/PIM source ownership, and all public routes/behavior;
+- no commit, push, merge, deployment, seed, or database write.
+
+NEXT:
+
+- owner signs in and performs final visual/responsive review on Vercel Preview;
+- owner decides whether to formalize the existing remote
+  `order_store_assignments` schema in a new audited source migration;
+- owner defines a canonical low-stock threshold before enabling that count;
+- do not state COMPLETE or GO until those checks are proven.

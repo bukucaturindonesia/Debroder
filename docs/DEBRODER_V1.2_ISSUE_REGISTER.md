@@ -653,3 +653,35 @@
   Location and movement data remain private.
 - Regression: browser verified canonical Jersey stock 100 and Cart v5
   revalidation; tests prohibit RLS disabling and service-role leakage.
+
+### V12-061 — Store assignment schema exists remotely without tracked source migration
+
+- Severity: HIGH governance/data-alignment risk
+- Status: **OPEN — OWNER DATABASE ALIGNMENT DECISION REQUIRED**
+- Evidence: remote `public.order_store_assignments` exposes
+  `receiving_store_id`, `production_store_id`, and `pickup_store_id`, and
+  contains rows; repository migration search found no definition or alteration
+  for this table.
+- Impact: Global Admin store summaries can use the remote receiving-store
+  authority, but a fresh environment cannot reproduce it from repository
+  migrations.
+- Containment: no migration or remote mutation was authorized in this
+  package. Dashboard store assignment is a partial module; failure yields
+  unallocated/partial data and never falls back to guessed fields.
+- Required next action: owner authorizes a dedicated read-only alignment audit
+  and, if confirmed, a new additive source migration that matches the existing
+  remote object without rewriting history.
+
+### V12-062 — Canonical low-stock threshold is undefined
+
+- Severity: MEDIUM
+- Status: **OPEN — OWNER POLICY DECISION REQUIRED**
+- Evidence: canonical inventory provides on-hand, reserved, and available
+  quantities, but no proven per-SKU/location or global low-stock threshold was
+  found.
+- Impact: out-of-stock is exact; “stok menipis” cannot be calculated without
+  an invented policy.
+- Containment: Global Admin renders the low-stock count as unavailable with a
+  clear explanation. It does not hardcode a threshold.
+- Required next action: define and persist the threshold authority before
+  enabling the count.
