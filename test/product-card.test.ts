@@ -2,7 +2,8 @@ import { describe, expect, it } from "vitest";
 import {
   productCardColors,
   productCardMetadata,
-  productCardPrice
+  productCardPrice,
+  productCommerceBadges
 } from "@/lib/product-card";
 import type { Product } from "@/lib/types";
 
@@ -69,5 +70,38 @@ describe("product card presentation data", () => {
     ).toBe("Harga setelah konfigurasi");
     expect(productCardPrice(product({ price_label: "Rp 45.000–Rp 50.000" }))).toBe("");
     expect(productCardPrice(product({ price: null, price_label: null }))).toBe("");
+  });
+
+  it("derives canonical commerce badges from PIM sales mode and inventory", () => {
+    expect(
+      productCommerceBadges(
+        product({
+          sales_mode: "both",
+          stock: 100,
+          label_new: true
+        })
+      )
+    ).toEqual(["Ready Stock + Custom", "New"]);
+
+    expect(
+      productCommerceBadges(
+        product({
+          sales_mode: "ready_stock",
+          variants: [{
+            product_id: "p",
+            color_name: "Hitam",
+            is_active: true,
+            sort_order: 1,
+            sizes: [{
+              variant_id: "v",
+              size_name: "M",
+              stock: 0,
+              is_active: true,
+              sort_order: 1
+            }]
+          }]
+        })
+      )
+    ).toEqual(["Ready Stock", "Sold Out"]);
   });
 });

@@ -63,3 +63,24 @@ Existing legal, CMS route, Preview performance, remote transaction E2E, data-int
 - Commit, push, deployment, and remote migration application:
   **NOT PERFORMED**
 - Package decision: **PARTIALLY VERIFIED / NO-GO**
+
+---
+
+## 7. Canonical Product Data V1 execution — 29 July 2026
+
+- Branch/HEAD preflight: `UI-UX-001` / `28780ef6c85f1ee8ddf4d959334cc9a6b7f7367b`
+- Supabase project: `lzennundwqqtyvvcnzbg`
+- Remote migrations applied: `canonical_trial_pricing_v1` and
+  `canonical_product_data_publication_readiness_v1`
+- Canonical records verified: `12` products + `3` services
+- Valid physical sellables / at canonical stock `100`: `662` / `662`
+- Duplicate sellable SKU/opening movement: `0` / `0`
+- Public active state: `2` physical products, `0` Jersey products, `1` service
+- Products/Jersey missing proven primary image: `9`
+- Focused regression: **PASS — 4 files / 23 tests**
+- Final typecheck: **FAIL** because an existing `ProductRow` fixture permits
+  `sales_mode: undefined`
+- Lint, mandatory targeted Custom test, full test, build, and runtime:
+  **NOT RUN after Cycle 2 stop condition**
+- Package decision: **BLOCKED WITH EVIDENCE / NO-GO**
+- Commit, push, deploy: **NOT PERFORMED**

@@ -2,6 +2,10 @@ import { categoryPath } from "@/lib/product-category-config";
 import { productMatchesRoute, productsForCategoryRoute } from "@/lib/product-route-matching";
 import type { PublicNavigationColorViewModel, PublicNavigationFacetsViewModel } from "@/lib/public-shell/model";
 import type { Product, ProductCategory } from "@/lib/types";
+import {
+  productAllowsCustomOrder,
+  productAllowsReadyStock
+} from "@/lib/jersey-commerce";
 
 export type PublicNavigationColor = PublicNavigationColorViewModel;
 export type PublicNavigationFacets = PublicNavigationFacetsViewModel;
@@ -84,20 +88,8 @@ function canonicalColorValue(value: string) {
 }
 
 function availability(product: Product) {
-  const variantStock = (product.variants || []).reduce(
-    (total, variant) => total + (variant.sizes || [])
-      .filter((size) => (size.status || (size.is_active === false ? "inactive" : "active")) === "active")
-      .reduce((sum, size) => sum + Math.max(0, Number(size.stock_quantity ?? size.stock ?? 0)), 0),
-    0
-  );
-  const readyStock = Math.max(0, Number(product.stock || 0)) > 0 || variantStock > 0;
-  const custom = Boolean(
-    product.uses_configurator
-    || product.product_type === "configurable_product"
-    || product.product_type === "production_service"
-    || product.pricing_mode === "configurator_based"
-    || product.pricing_mode === "custom_quote"
-  );
+  const readyStock = productAllowsReadyStock(product);
+  const custom = productAllowsCustomOrder(product);
   return { readyStock, custom };
 }
 

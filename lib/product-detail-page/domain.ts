@@ -1,6 +1,9 @@
 import { CONTRACT_VERSIONS } from "@/lib/contracts/version";
 import { getProductImage } from "@/lib/fallback-data";
-import { jerseyHasCustomAvailability, jerseyHasReadyStock } from "@/lib/jersey-commerce";
+import {
+  productAllowsCustomOrder,
+  productAllowsReadyStock
+} from "@/lib/jersey-commerce";
 import { getProductGalleryImages } from "@/lib/product-gallery";
 import { productMatchesRoute } from "@/lib/product-route-matching";
 import { projectProductSource } from "@/lib/product-read/domain";
@@ -35,9 +38,9 @@ export function resolveProductPurchaseCapabilities({
   }
 
   return {
-    showPurchasePanel: !isJersey || hasReadyStock || !hasCustomAvailability,
-    showAddToCart: !isJersey || hasReadyStock,
-    showBuyNow: isJersey && hasReadyStock,
+    showPurchasePanel: hasReadyStock,
+    showAddToCart: hasReadyStock,
+    showBuyNow: hasReadyStock,
     showCustomAction: hasCustomAvailability
   };
 }
@@ -113,8 +116,8 @@ export function buildProductDetailPageModel(slug: string, source: ProductDetailP
   }
 
   const isJersey = productMatchesRoute(product, "jersey");
-  const hasReadyStock = jerseyHasReadyStock(product);
-  const hasCustomAvailability = jerseyHasCustomAvailability(product);
+  const hasReadyStock = productAllowsReadyStock(product);
+  const hasCustomAvailability = productAllowsCustomOrder(product);
   const purchaseCapabilities = resolveProductPurchaseCapabilities({
     hasProduct: true,
     isJersey,

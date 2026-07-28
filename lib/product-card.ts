@@ -1,5 +1,9 @@
 import type { Product } from "@/lib/types";
 import { formatRupiah } from "@/lib/url";
+import {
+  productAllowsCustomOrder,
+  productAllowsReadyStock
+} from "@/lib/jersey-commerce";
 
 function cleanText(value: string | null | undefined) {
   const text = value?.trim();
@@ -51,6 +55,40 @@ export function productCardMetadata(product: Product) {
   const colorCount = productCardColors(product).length;
   const parts = [category, colorCount ? `${colorCount} warna` : ""].filter(Boolean);
   return parts.join(" · ");
+}
+
+export function productCommerceBadges(product: Product) {
+  const readyStock = productAllowsReadyStock(product);
+  const custom = productAllowsCustomOrder(product);
+  const primary = readyStock && custom
+    ? "Ready Stock + Custom"
+    : readyStock
+      ? "Ready Stock"
+      : custom
+        ? "Custom Available"
+        : "";
+
+  const activeSizes = (product.variants || [])
+    .filter((variant) => variant.is_active !== false)
+    .flatMap((variant) =>
+      (variant.sizes || []).filter((size) => size.is_active !== false)
+    );
+  const soldOut = readyStock
+    && (
+      activeSizes.length
+        ? activeSizes.every((size) => Number(size.stock_quantity ?? size.stock ?? 0) <= 0)
+        : typeof product.stock === "number" && product.stock <= 0
+    );
+  const pimSecondary = ["Sold Out", "Coming Soon", "Low Stock", "New"].includes(
+    cleanText(product.badge)
+  )
+    ? cleanText(product.badge)
+    : "";
+  const secondary = soldOut
+    ? "Sold Out"
+    : pimSecondary || (product.label_new ? "New" : "");
+
+  return uniqueLabels([primary, secondary]);
 }
 
 export function productCardHasPriceVariation(product: Product) {

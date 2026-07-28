@@ -1,6 +1,7 @@
 export type ProductType = "standard_product" | "configurable_product" | "production_service";
 
 export type PricingMode = "fixed_price" | "variant_based" | "configurator_based" | "custom_quote";
+export type SalesMode = "ready_stock" | "custom" | "both";
 
 export type CmsStatus = "draft" | "scheduled" | "published" | "archived";
 
@@ -92,6 +93,8 @@ export type Product = {
   size_guide_id?: string | null;
   product_type?: ProductType;
   pricing_mode?: PricingMode;
+  sales_mode?: SalesMode;
+  tier_scope?: "none" | "product" | "variant" | "category";
   sku?: string | null;
   has_variants?: boolean;
   uses_configurator?: boolean;

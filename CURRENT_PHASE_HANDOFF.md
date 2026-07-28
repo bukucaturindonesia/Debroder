@@ -111,3 +111,68 @@ commit/push/deploy.
 
 **FINAL STATUS: IMPLEMENTED LOCALLY; PARTIALLY VERIFIED; NOT DEPLOYED;
 NOT COMPLETE; NO-GO**
+
+---
+
+# HANDOFF UPDATE — 29 JULY 2026
+
+## Current phase and status
+
+**Canonical Product Data, Public Catalog, Complete PDP & Direct Checkout V1**
+
+- Execution cycles: **2 OF 2**
+- Database execution: **PASS**
+- Publish readiness/runtime: **BLOCKED**
+- Final gate: **STOPPED ON TYPECHECK FAILURE**
+- GO/NO-GO: **NO-GO**
+
+## Work inspected and changed
+
+- carried PIM `sales_mode` through the canonical product read model
+- made Ready Stock Add to Cart/Buy Now and Custom/Jersey CTA eligibility
+  follow PIM sales mode
+- added canonical data-driven commerce badges and Jersey Configurator URLs
+  with `product=[slug]`
+- added canonical identity, copy, SEO, size pricing, and idempotent opening
+  inventory migration
+- changed route behavior only at `/produk/[slug]`; `/koleksi` remains canonical
+- did not change checkout, numbering, RLS, ACL, security functions, global
+  shell, or unrelated Admin/Jersey/Custom modules
+
+## Database and migration
+
+- Supabase project: `lzennundwqqtyvvcnzbg`
+- Applied: `canonical_trial_pricing_v1` and
+  `canonical_product_data_publication_readiness_v1`
+- Verified records: `12` products and `3` services
+- Valid physical sellables / at aggregate active nonlegacy stock `100`:
+  `662` / `662`
+- Duplicate sellable SKU / duplicate idempotent opening movement: `0` / `0`
+- Historical orders/payments, numbering, RLS, ACL changed: **NO**
+
+## Verification actually run
+
+- focused product/CTA/badge regression: **PASS — 4 files / 23 tests**
+- database postcheck: **PASS**
+- `git diff --check`: **PASS**, with Windows LF→CRLF notices only
+- `pnpm.cmd typecheck`: **FAIL**
+  - `test/page-owned-category-pdp-isolation.test.ts:10`
+  - fixture permits `sales_mode: undefined`; canonical `ProductRow` requires
+    `ready_stock | custom | both | null`
+- lint, mandatory targeted Custom test, full test, build, browser/runtime:
+  **NOT RUN after the Cycle 2 stop condition**
+- deployment: **NOT PERFORMED**
+
+## Remaining blockers and next action
+
+- Cycle 3 is prohibited; the fixture mismatch remains unresolved.
+- Only `2` physical products and `0` Jersey products are public-active.
+- Missing proven primary image:
+  `3600-soft-tee`, `72y00-youth`, `8100-polo`, `bomber-jacket`,
+  `jersey-futsal-custom`, `jersey-sepak-bola-custom`, `pullover-hooded`,
+  `windbreaker`, and `zip-hooded`.
+- The `89` ambiguous source images remain unactivated.
+- Per-product catalog/PDP/cart/checkout/order/payment runtime remains required.
+
+**FINAL STATUS: BLOCKED WITH EVIDENCE; DATABASE PARTIALLY IMPLEMENTED;
+NOT DEPLOYED; NOT COMPLETE; NO-GO**

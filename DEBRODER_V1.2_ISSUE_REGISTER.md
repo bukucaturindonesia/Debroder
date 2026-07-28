@@ -87,3 +87,30 @@ Last updated: 28 July 2026 (Asia/Makassar)
 ## Release decision
 
 **NO-GO / NOT COMPLETE**
+
+## PRODUCT-001 — Canonical product publication and runtime gate
+
+- Severity: **BLOCKER**
+- Status: **OPEN — DATABASE EXECUTED; PUBLICATION/RUNTIME INCOMPLETE**
+- Remote canonical identity/price/content migrations are applied.
+- `12` product records and `3` service records match canonical names/prices.
+- All `662` valid physical sellables have aggregate active nonlegacy stock
+  exactly `100`; duplicate SKU and opening movements are zero.
+- Only `2` physical products and `0` Jersey products are public-active.
+- Nine product/Jersey records lack a proven primary image.
+- Per-product runtime matrix is not verified.
+
+## PRODUCT-002 — ProductRow sales-mode fixture mismatch
+
+- Severity: **BUILD BLOCKER**
+- Status: **OPEN — CYCLE LIMIT REACHED**
+- `pnpm.cmd typecheck` fails at
+  `test/page-owned-category-pdp-isolation.test.ts:10`.
+- The fixture permits `sales_mode: undefined`, while canonical `ProductRow`
+  requires `ready_stock | custom | both | null`.
+- No Cycle 3 correction was made.
+
+## PRICE-001 update — 29 July 2026
+
+- Status: **CLOSED — REMOTE APPLICATION VERIFIED**
+- `canonical_trial_pricing_v1` is present in remote migration history.

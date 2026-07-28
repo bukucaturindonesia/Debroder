@@ -147,6 +147,8 @@ function projectProductRow(row: ProductRow, variants: ProductVariant[], sizeGuid
     size_guide_id: row.size_guide_id,
     product_type: row.product_type || undefined,
     pricing_mode: row.pricing_mode || undefined,
+    sales_mode: row.sales_mode || undefined,
+    tier_scope: row.tier_scope || undefined,
     sku: row.sku,
     has_variants: Boolean(row.has_variants || variants.length),
     uses_configurator: Boolean(row.uses_configurator),

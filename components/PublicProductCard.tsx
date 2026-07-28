@@ -1,7 +1,11 @@
 import Link from "next/link";
 import { ProductImageSwap } from "@/components/ProductImageSwap";
 import { fallbackImages } from "@/lib/fallback-data";
-import { productCardMetadata, productCardPrice } from "@/lib/product-card";
+import {
+  productCardMetadata,
+  productCardPrice,
+  productCommerceBadges
+} from "@/lib/product-card";
 import { getProductCardImages } from "@/lib/product-gallery";
 import { resolvePublicQuickAdd } from "@/lib/public-quick-add";
 import type { Product } from "@/lib/types";
@@ -39,16 +43,7 @@ export function PublicProductCard({
   const quickAdd = resolvePublicQuickAdd(product, {
     imageUrl: cardImages.primary
   });
-  const labels = Array.from(
-    new Set(
-      [
-        product.badge,
-        product.label_new && "New",
-        product.label_promo && "Promo",
-        product.label_best_seller && "Terlaris"
-      ].filter(Boolean)
-    )
-  ) as string[];
+  const labels = productCommerceBadges(product);
 
   return (
     <article className={`public-product-card min-w-0 ${className}`.trim()}>

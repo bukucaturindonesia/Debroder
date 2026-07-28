@@ -27,6 +27,7 @@ function product(patch: Partial<Product>): Product {
     size_tags: ["M", "L"],
     urutan: 10,
     status_aktif: true,
+    sales_mode: "ready_stock",
     ...patch
   };
 }
@@ -43,7 +44,8 @@ describe("Jersey commerce catalog", () => {
         size_tags: ["XL"],
         price: 225_000,
         stock: 0,
-        uses_configurator: true
+        uses_configurator: true,
+        sales_mode: "custom"
       })
     ];
     const options = jerseyFilterOptions(products);
@@ -87,8 +89,8 @@ describe("Jersey commerce catalog", () => {
 
   it("derives Ready Stock and Custom status without CMS product data", () => {
     const ready = product({ stock: 4 });
-    const custom = product({ stock: 0, uses_configurator: true });
-    const hybrid = product({ stock: 7, uses_configurator: true });
+    const custom = product({ stock: 0, uses_configurator: true, sales_mode: "custom" });
+    const hybrid = product({ stock: 7, uses_configurator: true, sales_mode: "both" });
 
     expect(jerseyHasReadyStock(ready)).toBe(true);
     expect(jerseyHasCustomAvailability(custom)).toBe(true);
@@ -119,10 +121,11 @@ describe("Jersey commerce catalog", () => {
 
     expect(detail).toContain("getProductDetailPageModel");
     expect(domain).toContain('productMatchesRoute(product, "jersey")');
-    expect(domain).toContain("jerseyHasReadyStock(product)");
-    expect(domain).toContain("jerseyHasCustomAvailability(product)");
+    expect(domain).toContain("productAllowsReadyStock(product)");
+    expect(domain).toContain("productAllowsCustomOrder(product)");
     expect(detail).toContain("JerseyCommerceNav");
-    expect(detail).toContain('href="/jersey/configurator"');
+    expect(detail).toContain("jerseyConfiguratorHref");
+    expect(detail).toContain("?product=");
     expect(detail).toContain("purchaseCapabilities");
     expect(detail).toContain("showBuyNow={purchaseCapabilities.showBuyNow}");
     expect(jerseyCategory).toContain("content.categories.find");
@@ -171,7 +174,7 @@ describe("Jersey commerce catalog", () => {
         hasCustomAvailability: false
       },
       expected: {
-        showPurchasePanel: true,
+        showPurchasePanel: false,
         showAddToCart: false,
         showBuyNow: false,
         showCustomAction: false
@@ -188,7 +191,7 @@ describe("Jersey commerce catalog", () => {
       expected: {
         showPurchasePanel: true,
         showAddToCart: true,
-        showBuyNow: false,
+        showBuyNow: true,
         showCustomAction: false
       }
     }

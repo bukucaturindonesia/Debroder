@@ -70,8 +70,8 @@ describe("public navigation facets", () => {
   });
 
   it("matches shareable collection color and availability filters", () => {
-    const ready = product({ color_tags: ["RED"], stock: 3 });
-    const custom = product({ color_tags: ["merah"], pricing_mode: "custom_quote" });
+    const ready = product({ color_tags: ["RED"], stock: 3, sales_mode: "ready_stock" });
+    const custom = product({ color_tags: ["merah"], pricing_mode: "custom_quote", sales_mode: "custom" });
 
     expect(productMatchesNavigationColor(ready, "red")).toBe(true);
     expect(productMatchesNavigationColor(custom, "red")).toBe(true);

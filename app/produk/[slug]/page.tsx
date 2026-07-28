@@ -10,6 +10,7 @@ import { ProductVariantGalleryProvider } from "@/components/ProductVariantGaller
 import { ProductDetailDisclosure } from "@/components/product/ProductDetailDisclosure";
 import { PublicShell } from "@/components/PublicPage";
 import { getProductImage } from "@/lib/fallback-data";
+import { productCommerceBadges } from "@/lib/product-card";
 import { getProductDetailPageModel } from "@/lib/product-detail-page/runtime";
 import { listInstantServicesForProduct } from "@/lib/instant-custom-data";
 
@@ -80,6 +81,8 @@ export default async function ProductDetailPage({ params, searchParams }: PagePr
   const requestedMode = (await searchParams)?.mode;
   const productDescription = (product.description || product.deskripsi || "").trim();
   const productSpecifications = product.specifications || [];
+  const commerceBadges = productCommerceBadges(product);
+  const jerseyConfiguratorHref = `/jersey/configurator?product=${encodeURIComponent(product.slug || slug)}`;
 
   return (
     <PublicShell
@@ -139,6 +142,16 @@ export default async function ProductDetailPage({ params, searchParams }: PagePr
                   {product.nama}
                 </h1>
 
+                {commerceBadges.length ? (
+                  <div className="mt-4 flex flex-wrap gap-2" aria-label="Status produk">
+                    {commerceBadges.map((badge) => (
+                      <span key={badge} className="public-product-badge bg-brand-offWhite px-2.5 py-1">
+                        {badge}
+                      </span>
+                    ))}
+                  </div>
+                ) : null}
+
                 {product.short_detail ? (
                   <p className={isJersey ? "mt-4 max-w-xl text-base leading-7 text-brand-charcoal/60 sm:text-lg" : "public-secondary-copy mt-4 max-w-xl text-[15px] leading-6 md:text-base"}>
                     {product.short_detail}
@@ -172,33 +185,50 @@ export default async function ProductDetailPage({ params, searchParams }: PagePr
                     instantServices={instantServices}
                     initialInstantMode={requestedMode === "instant"}
                   />
-                ) : (
+                ) : isJersey ? (
                   <section className="mt-7 border-y border-black/10 py-6">
                     <h2 className="text-xl font-bold">Jersey Custom</h2>
                     <p className="mt-2 text-sm leading-6 text-black/60">
                       Produk ini disiapkan melalui Jersey Configurator agar model, bahan, warna, logo, nama, nomor, dan jumlah pemain tercatat dalam satu alur.
                     </p>
                     <Link
-                      href="/jersey/configurator"
+                      href={jerseyConfiguratorHref}
                       className="mt-5 inline-flex min-h-12 items-center justify-center rounded-full bg-black px-6 text-sm font-semibold text-white outline-none transition hover:bg-black/75 focus-visible:ring-2 focus-visible:ring-black focus-visible:ring-offset-2"
                     >
-                      Mulai Konfigurasi Jersey
+                      Mulai Desain Jersey
                     </Link>
                   </section>
+                ) : customDestination ? (
+                  <section className="mt-7 border-y border-black/10 py-6">
+                    <h2 className="text-xl font-bold">Pesanan Custom</h2>
+                    <p className="mt-2 text-sm leading-6 text-black/60">
+                      Pilih detail kebutuhan Anda melalui alur Custom agar spesifikasi pesanan tercatat dengan jelas.
+                    </p>
+                    <Link
+                      href={customDestination}
+                      className="mt-5 inline-flex min-h-12 items-center justify-center rounded-full bg-black px-6 text-sm font-semibold text-white outline-none transition hover:bg-black/75 focus-visible:ring-2 focus-visible:ring-black focus-visible:ring-offset-2"
+                    >
+                      Mulai Custom
+                    </Link>
+                  </section>
+                ) : (
+                  <p className="mt-7 border-y border-black/10 py-6 text-sm text-black/60">
+                    Produk ini belum dapat dipesan. Silakan kembali ke Koleksi dan pilih produk lain.
+                  </p>
                 )}
 
-                {isJersey && purchaseCapabilities.showBuyNow && purchaseCapabilities.showCustomAction ? (
+                {isJersey && purchaseCapabilities.showPurchasePanel && purchaseCapabilities.showCustomAction ? (
                   <Link
-                    href="/jersey/configurator"
+                    href={jerseyConfiguratorHref}
                     className="mt-3 inline-flex min-h-11 items-center text-sm font-semibold text-black underline decoration-1 underline-offset-4 outline-none focus-visible:ring-2 focus-visible:ring-black focus-visible:ring-offset-2"
                   >
-                    Full Custom Jersey melalui Configurator
+                    Mulai Desain Jersey
                   </Link>
                 ) : null}
 
                 {purchaseCapabilities.showCustomAction && customDestination ? (
                   <Link href={customDestination} className="mt-4 inline-flex min-h-11 items-center rounded-full border border-black px-5 text-sm font-semibold transition hover:bg-black hover:text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-black">
-                    Custom produk ini
+                    Buat Custom
                   </Link>
                 ) : null}
 
