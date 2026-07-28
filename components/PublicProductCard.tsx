@@ -1,5 +1,4 @@
 import Link from "next/link";
-import { AddToCartButton } from "@/components/CartProvider";
 import { ProductImageSwap } from "@/components/ProductImageSwap";
 import { fallbackImages } from "@/lib/fallback-data";
 import { productCardMetadata, productCardPrice } from "@/lib/product-card";
@@ -38,10 +37,7 @@ export function PublicProductCard({
   const metadata = productCardMetadata(product);
   const priceLabel = productCardPrice(product);
   const quickAdd = resolvePublicQuickAdd(product, {
-    detailHref,
-    imageUrl: cardImages.primary,
-    imageAlt: product.image_alt || product.nama,
-    priceLabel
+    imageUrl: cardImages.primary
   });
   const labels = Array.from(
     new Set(
@@ -94,7 +90,7 @@ export function PublicProductCard({
           {priceLabel ? (
             <div className="public-product-price-block">
               <p className="public-product-price">{priceLabel}</p>
-              {product.compare_price ? (
+              {product.compare_price && /^Rp\b/i.test(priceLabel) ? (
                 <p className="public-product-compare-price line-through">
                   {formatRupiah(product.compare_price)}
                 </p>
@@ -113,14 +109,7 @@ export function PublicProductCard({
             Detail
           </Link>
 
-          {quickAdd.mode === "add" ? (
-            <AddToCartButton
-              product={quickAdd.product}
-              className="inline-flex min-h-10 items-center justify-center bg-black px-3 text-sm font-semibold text-white transition hover:bg-black/80"
-            >
-              Tambah
-            </AddToCartButton>
-          ) : quickAdd.mode === "options" ? (
+          {quickAdd.mode === "options" ? (
             <Link
               href={detailHref}
               className="inline-flex min-h-10 items-center justify-center bg-black px-3 text-sm font-semibold text-white transition hover:bg-black/80"

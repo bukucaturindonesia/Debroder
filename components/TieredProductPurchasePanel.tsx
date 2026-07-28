@@ -6,12 +6,10 @@ import { useCart, type CartProductInput } from "@/components/CartProvider";
 import { useOptionalProductVariantGallery } from "@/components/ProductVariantGalleryContext";
 import { ProductDetailDisclosure } from "@/components/product/ProductDetailDisclosure";
 import { cartTierProductKey } from "@/lib/cart-group-tier-pricing";
-import { createSupabaseClient } from "@/lib/supabase";
 import type { ProductVariant, ProductVariantSize } from "@/lib/types";
 import { formatRupiah } from "@/lib/url";
 import {
-  createInstantCustomSnapshot,
-  priceInstantServices,
+  type InstantCustomSnapshot,
   type InstantServiceDefinition,
   type InstantServiceSelection
 } from "@/lib/instant-custom";
@@ -21,25 +19,45 @@ export type ProductColorOption = {
   hex: string;
 };
 
-type ProductPriceTier = {
-  id: string;
-  product_id: string;
-  min_quantity: number;
-  max_quantity: number | null;
-  unit_price: number | null;
-  quote_required: boolean;
-  status: string;
-  sort_order: number;
-};
-
-type ProductMinimumRule = {
-  id: string;
-  product_id: string;
-  minimum_quantity: number;
-  minimum_for_tier_quantity: number | null;
-  quotation_quantity: number | null;
-  status: string;
-};
+type ReadyStockPricingResponse =
+  | {
+      status: "priced";
+      code: null;
+      productId: string;
+      productCategoryId: string;
+      variantId: string;
+      variantSizeId: string;
+      sku: string;
+      quantity: number;
+      pricingQuantity: number;
+      minimumQuantity: number;
+      quotationQuantity: number | null;
+      stockAvailable: number;
+      unitPrice: number;
+      productSubtotal: number;
+      serviceTotal: number;
+      total: number;
+      tier: { id: string; minQuantity: number; maxQuantity: number | null } | null;
+      instantCustomSnapshot?: InstantCustomSnapshot;
+      message: null;
+    }
+  | {
+      status: "quotation_required" | "unavailable";
+      code: string;
+      productId: string;
+      variantSizeId: string;
+      quantity: number;
+      pricingQuantity: number;
+      minimumQuantity: number;
+      quotationQuantity: number | null;
+      stockAvailable: number;
+      unitPrice: null;
+      productSubtotal: null;
+      serviceTotal: null;
+      total: null;
+      tier: null;
+      message: string;
+    };
 
 type ProductPurchasePanelProps = {
   product: CartProductInput;
@@ -88,12 +106,6 @@ function slugify(value: string) {
     .replace(/[\u0300-\u036f]/g, "")
     .replace(/[^a-z0-9]+/g, "-")
     .replace(/^-|-$/g, "");
-}
-
-function moneyNumber(value?: string | number | null) {
-  if (typeof value === "number" && Number.isFinite(value)) return value;
-  const parsed = Number(String(value || "").replace(/[^\d-]/g, ""));
-  return Number.isFinite(parsed) ? parsed : 0;
 }
 
 function colorHex(value: string) {
@@ -166,15 +178,6 @@ function sizeIsUnavailable(size?: ProductVariantSize) {
   return Boolean(size && Number(size.stock) <= 0);
 }
 
-function findTier(tiers: ProductPriceTier[], quantity: number) {
-  return tiers.find(
-    (tier) =>
-      tier.status === "active" &&
-      quantity >= tier.min_quantity &&
-      (tier.max_quantity === null || quantity <= tier.max_quantity)
-  );
-}
-
 export function TieredProductPurchasePanel({
   product,
   colors = [],
@@ -203,10 +206,12 @@ export function TieredProductPurchasePanel({
   const [uploadingServiceId, setUploadingServiceId] = useState<string | null>(null);
   const [serviceError, setServiceError] = useState("");
 
-  const [tiers, setTiers] = useState<ProductPriceTier[]>([]);
-  const [minimumRule, setMinimumRule] =
-    useState<ProductMinimumRule | null>(null);
-  const [pricingLoading, setPricingLoading] = useState(true);
+  const [pricingResult, setPricingResult] = useState<{
+    requestKey: string;
+    value: ReadyStockPricingResponse;
+  } | null>(null);
+  const [pricingLoading, setPricingLoading] = useState(false);
+  const [pricingError, setPricingError] = useState("");
 
   const activeVariants = useMemo(
     () => variants.filter((variant) => variant.is_active !== false),
@@ -254,57 +259,6 @@ export function TieredProductPurchasePanel({
   const [quantity, setQuantity] = useState(1);
 
   useEffect(() => {
-    const productId = product.id;
-    let cancelled = false;
-
-    async function loadPricing() {
-      setPricingLoading(true);
-
-      const db = createSupabaseClient();
-
-      if (!db || !productId) {
-        if (!cancelled) setPricingLoading(false);
-        return;
-      }
-
-      const [tierResult, minimumResult] = await Promise.all([
-        db
-          .from("product_price_tiers")
-          .select(
-            "id,product_id,min_quantity,max_quantity,unit_price,quote_required,status,sort_order"
-          )
-          .eq("product_id", productId)
-          .eq("status", "active")
-          .order("min_quantity", { ascending: true }),
-        db
-          .from("product_minimum_rules")
-          .select(
-            "id,product_id,minimum_quantity,minimum_for_tier_quantity,quotation_quantity,status"
-          )
-          .eq("product_id", productId)
-          .eq("status", "active")
-          .maybeSingle()
-      ]);
-
-      if (cancelled) return;
-
-      setTiers((tierResult.data || []) as ProductPriceTier[]);
-      setMinimumRule(
-        minimumResult.data
-          ? (minimumResult.data as ProductMinimumRule)
-          : null
-      );
-      setPricingLoading(false);
-    }
-
-    void loadPricing();
-
-    return () => {
-      cancelled = true;
-    };
-  }, [product.id]);
-
-  useEffect(() => {
     if (!colorOptions.some((option) => option.name === selectedColor)) {
       setSelectedColor(colorOptions[0]?.name || "Hitam");
     }
@@ -320,32 +274,7 @@ export function TieredProductPurchasePanel({
     variantGallery?.selectVariant(selectedVariant?.id || null);
   }, [selectedVariant?.id, variantGallery]);
 
-  useEffect(() => {
-    const minimum = minimumRule?.minimum_quantity || 1;
-    if (minimum > 1) {
-      setQuantity((current) => (current < minimum ? minimum : current));
-    }
-  }, [minimumRule?.minimum_quantity]);
-
   const selectedVariantSize = findSize(selectedVariant, selectedSize);
-  const unavailable = sizeIsUnavailable(selectedVariantSize);
-  const stockLabel = selectedVariantSize
-    ? selectedVariantSize.stock > 0
-      ? `Stok ${selectedVariantSize.stock}`
-      : "Stok kosong"
-    : hasVariants
-      ? "Stok mengikuti varian"
-      : "Siap dikonfirmasi";
-
-  const selectedSku =
-    selectedVariantSize?.sku || selectedVariant?.sku || product.sku;
-
-  const baseProductPrice = moneyNumber(
-    product.priceValue || product.priceLabel
-  );
-  const variantAdjustment =
-    moneyNumber(selectedVariant?.price_adjustment) +
-    moneyNumber(selectedVariantSize?.price_adjustment);
 
   const existingProductQuantity = product.id
     ? cart.items.reduce(
@@ -355,67 +284,110 @@ export function TieredProductPurchasePanel({
       )
     : 0;
   const pricingQuantity = quantity + existingProductQuantity;
-  const activeTier = findTier(tiers, pricingQuantity);
-  const minimumQuantity = minimumRule?.minimum_quantity || 1;
-  const belowMinimum = quantity < minimumQuantity;
-
-  const quotationQuantity =
-    minimumRule?.quotation_quantity ||
-    tiers.find((tier) => tier.quote_required)?.min_quantity ||
-    null;
-
-  const quoteRequired =
-    Boolean(activeTier?.quote_required) ||
-    Boolean(quotationQuantity && pricingQuantity >= quotationQuantity);
-
-  const tierBasePrice =
-    activeTier && !activeTier.quote_required && activeTier.unit_price !== null
-      ? Number(activeTier.unit_price)
-      : baseProductPrice;
-
-  const unitPriceValue = quoteRequired
-    ? 0
-    : tierBasePrice + variantAdjustment;
-
-  const unitPriceLabel = quoteRequired
-    ? "Minta penawaran"
-    : unitPriceValue > 0
-      ? formatRupiah(unitPriceValue)
-      : product.priceLabel;
-
-  const subtotal = quoteRequired ? 0 : unitPriceValue * quantity;
-  const instantSelections: InstantServiceSelection[] = Object.entries(selectedServices)
-    .map(([serviceId, selection]) => ({
+  const instantSelections: InstantServiceSelection[] = useMemo(() =>
+    Object.entries(selectedServices).map(([serviceId, selection]) => ({
       serviceId,
       inputs: selection.inputs,
       uploadIds: selection.uploadIds,
       uploadSessionToken: uploadSessionToken.current,
       note: selection.note || undefined
-    }));
-  const servicePricing = priceInstantServices(instantServices, instantSelections, quantity);
-  const serviceTotal = instantMode && servicePricing.ok ? servicePricing.serviceTotal : 0;
-  const payableSubtotal = subtotal + serviceTotal;
+    })), [selectedServices]);
+  const pricingRequest = useMemo(() => ({
+    productId: product.id ?? "",
+    variantSizeId: selectedVariantSize?.id ?? "",
+    quantity,
+    pricingQuantity,
+    instantServices: instantMode ? instantSelections : []
+  }), [instantMode, instantSelections, pricingQuantity, product.id, quantity, selectedVariantSize?.id]);
+  const pricingRequestKey = useMemo(() => JSON.stringify(pricingRequest), [pricingRequest]);
+  const pricing = pricingResult?.requestKey === pricingRequestKey
+    ? pricingResult.value
+    : null;
 
+  useEffect(() => {
+    if (!pricingRequest.productId || !pricingRequest.variantSizeId) {
+      setPricingResult(null);
+      setPricingLoading(false);
+      setPricingError("");
+      return;
+    }
+
+    setPricingResult(null);
+    setPricingLoading(true);
+    setPricingError("");
+    const controller = new AbortController();
+    const timer = window.setTimeout(async () => {
+      try {
+        const response = await fetch("/api/pricing/ready-stock", {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          cache: "no-store",
+          signal: controller.signal,
+          body: pricingRequestKey
+        });
+        const payload = await response.json() as ReadyStockPricingResponse;
+        if (
+          !payload
+          || !["priced", "quotation_required", "unavailable"].includes(payload.status)
+          || payload.productId !== pricingRequest.productId
+          || payload.variantSizeId !== pricingRequest.variantSizeId
+          || payload.quantity !== pricingRequest.quantity
+          || payload.pricingQuantity !== pricingRequest.pricingQuantity
+        ) {
+          throw new Error("Respons harga tidak sesuai dengan konfigurasi aktif.");
+        }
+        setPricingResult({ requestKey: pricingRequestKey, value: payload });
+        if (payload.status === "unavailable") setPricingError(payload.message);
+      } catch (error) {
+        if (controller.signal.aborted) return;
+        setPricingResult(null);
+        setPricingError(error instanceof Error ? error.message : "Harga belum dapat divalidasi.");
+      } finally {
+        if (!controller.signal.aborted) setPricingLoading(false);
+      }
+    }, 180);
+
+    return () => {
+      window.clearTimeout(timer);
+      controller.abort();
+    };
+  }, [pricingRequest, pricingRequestKey]);
+
+  const minimumQuantity = pricing?.minimumQuantity ?? 1;
+  const belowMinimum = quantity < minimumQuantity;
+  const quoteRequired = pricing?.status === "quotation_required";
+  const exactPricing = pricing?.status === "priced" ? pricing : null;
+  const unavailable = sizeIsUnavailable(selectedVariantSize) || pricing?.status === "unavailable";
+  const stockAvailable = pricing?.stockAvailable ?? selectedVariantSize?.stock ?? 0;
+  const stockLabel = stockAvailable > 0 ? `Stok ${stockAvailable}` : "Stok kosong";
+  const selectedSku = exactPricing?.sku ?? selectedVariantSize?.sku ?? selectedVariant?.sku ?? product.sku;
+  const unitPriceLabel = exactPricing
+    ? formatRupiah(exactPricing.unitPrice)
+    : quoteRequired
+      ? "Penawaran resmi"
+      : pricingLoading
+        ? "Memvalidasi harga..."
+        : "Pilih konfigurasi";
+  const serviceTotal = exactPricing?.serviceTotal ?? 0;
+  const payableSubtotal = exactPricing?.total ?? 0;
   const tierDescription = pricingLoading
-    ? "Memuat harga grosir..."
+    ? "Sistem sedang menghitung harga pasti"
     : belowMinimum
       ? `Minimum order ${minimumQuantity} pcs`
       : quoteRequired
-        ? `Total ${pricingQuantity} pcs perlu penawaran khusus`
-        : activeTier
-          ? `Tier grosir ${activeTier.min_quantity}–${
-              activeTier.max_quantity ?? "∞"
-            } pcs · total produk ${pricingQuantity} pcs`
-          : "Harga normal produk";
+        ? pricing.message
+        : exactPricing?.tier
+          ? `Harga pasti tier ${exactPricing.tier.minQuantity}-${exactPricing.tier.maxQuantity ?? "seterusnya"} pcs`
+          : exactPricing
+            ? "Harga pasti berdasarkan konfigurasi aktif"
+            : "Pilih varian, ukuran, dan jumlah untuk melihat harga pasti";
 
   const guideRows = sizeGuide;
 
   function addSelectedToCart() {
-    if (belowMinimum || unavailable || interactionLocked.current) return false;
-    if (instantMode && (!servicePricing.ok || instantSelections.length === 0 || uploadingServiceId)) {
-      setServiceError(
-        !servicePricing.ok ? servicePricing.message : uploadingServiceId ? "Tunggu upload selesai." : "Pilih minimal satu layanan Custom Instan."
-      );
+    if (!exactPricing || belowMinimum || unavailable || pricingLoading || interactionLocked.current) return false;
+    if (instantMode && (instantSelections.length === 0 || uploadingServiceId)) {
+      setServiceError(uploadingServiceId ? "Tunggu upload selesai." : "Pilih minimal satu layanan Custom Instan.");
       return false;
     }
     setServiceError("");
@@ -426,63 +398,37 @@ export function TieredProductPurchasePanel({
 
     cart.addItem({
       ...product,
-      priceLabel: unitPriceLabel,
-      priceValue: unitPriceValue || undefined,
+      priceLabel: formatRupiah(exactPricing.unitPrice),
+      priceValue: exactPricing.unitPrice,
       imageUrl: variantCoverImage(selectedVariant) || product.imageUrl,
       defaultColor: selectedColor,
-      defaultColorHex: colorOptions.find(
-        (option) => option.name === selectedColor
-      )?.hex,
+      defaultColorHex: colorOptions.find((option) => option.name === selectedColor)?.hex,
       defaultSize: selectedSize,
       defaultQuantity: quantity,
-      variantId: selectedVariant?.id,
-      variantSizeId: selectedVariantSize?.id,
-      variantName:
-        selectedVariant?.variant_name || selectedVariant?.color_name,
-      variantSku: selectedSku || undefined,
+      variantId: exactPricing.variantId,
+      variantSizeId: exactPricing.variantSizeId,
+      variantName: selectedVariant?.variant_name || selectedVariant?.color_name,
+      variantSku: exactPricing.sku,
       stockLabel,
-      stockAvailable: selectedVariantSize?.stock,
+      stockAvailable: exactPricing.stockAvailable,
       variantSnapshot: {
-        product_id: product.id,
-        variant_id: selectedVariant?.id,
-        variant_name: selectedVariant?.variant_name,
-        color_name: selectedVariant?.color_name,
-        color_hex: selectedVariant?.color_hex,
-        size_id: selectedVariantSize?.id,
-        size_name: selectedVariantSize?.size_name,
-        sku: selectedSku,
-        stock: selectedVariantSize?.stock,
-        base_product_price: baseProductPrice,
-        variant_adjustment: variantAdjustment,
-        pricing_tiers: tiers.map((tier) => ({
-          id: tier.id,
-          product_id: tier.product_id,
-          min_quantity: tier.min_quantity,
-          max_quantity: tier.max_quantity,
-          unit_price: tier.unit_price,
-          quote_required: tier.quote_required,
-          status: tier.status,
-          sort_order: tier.sort_order
-        })),
+        pricing_source: "server_canonical",
+        product_id: exactPricing.productId,
+        product_category_id: exactPricing.productCategoryId,
+        variant_id: exactPricing.variantId,
+        size_id: exactPricing.variantSizeId,
+        sku: exactPricing.sku,
         selected_quantity: quantity,
-        pricing_quantity: pricingQuantity,
-        applied_tier: activeTier
-          ? {
-              id: activeTier.id,
-              min_quantity: activeTier.min_quantity,
-              max_quantity: activeTier.max_quantity,
-              unit_price: activeTier.unit_price,
-              quote_required: activeTier.quote_required
-            }
-          : null,
-        minimum_order_qty: minimumQuantity,
-        quotation_quantity: quotationQuantity,
-        quote_required: quoteRequired,
-        unit_price: unitPriceValue || null,
-        subtotal: subtotal || null
+        pricing_quantity: exactPricing.pricingQuantity,
+        applied_tier: exactPricing.tier,
+        minimum_order_qty: exactPricing.minimumQuantity,
+        quotation_quantity: exactPricing.quotationQuantity,
+        quote_required: false,
+        unit_price: exactPricing.unitPrice,
+        subtotal: exactPricing.productSubtotal
       },
-      ...(instantMode && servicePricing.ok
-        ? { instantCustom: createInstantCustomSnapshot(instantSelections, servicePricing) }
+      ...(exactPricing.instantCustomSnapshot
+        ? { instantCustom: exactPricing.instantCustomSnapshot }
         : {})
     });
     return true;
@@ -672,7 +618,7 @@ export function TieredProductPurchasePanel({
                         <input type="checkbox" checked={Boolean(selected)} onChange={() => toggleInstantService(service.id)} className="mt-1 h-5 w-5" />
                         <span className="flex-1">
                           <span className="block font-semibold">{service.name}</span>
-                          <span className="text-xs text-black/55">{service.description || formatRupiah(service.basePrice)}</span>
+                          <span className="text-xs text-black/55">{service.description || "Harga pasti dihitung setelah konfigurasi."}</span>
                         </span>
                       </label>
                       {selected ? (
@@ -699,7 +645,7 @@ export function TieredProductPurchasePanel({
                     </div>
                   );
                 })}
-                <p className="text-sm font-semibold">Total layanan: {formatRupiah(serviceTotal)}</p>
+                {exactPricing && instantMode ? <p className="text-sm font-semibold">Total layanan: {formatRupiah(serviceTotal)}</p> : null}
                 {serviceError ? <p role="alert" className="text-sm text-red-700">{serviceError}</p> : null}
               </div>
             ) : null}
@@ -764,7 +710,7 @@ export function TieredProductPurchasePanel({
               <p className="text-xs font-bold uppercase tracking-[0.12em]">
                 {tierDescription}
               </p>
-              {!quoteRequired && !belowMinimum ? (
+              {exactPricing && !belowMinimum ? (
                 <p className="mt-2 text-sm">
                   Subtotal:{" "}
                   <span className="font-semibold">
@@ -776,20 +722,21 @@ export function TieredProductPurchasePanel({
 
             <div className="text-right">
               <p className="text-xl font-semibold">
-                {unitPriceLabel || "Konfirmasi admin"}
+                {unitPriceLabel}
               </p>
-              {!quoteRequired ? (
+              {exactPricing ? (
                 <p className="text-xs opacity-70">/ pcs</p>
               ) : null}
             </div>
           </div>
         </div>
+        {pricingError ? <p role="alert" className="text-sm text-red-700">{pricingError}</p> : null}
 
         <div className={`grid gap-2 ${showAddToCart && showBuyNow ? "sm:grid-cols-2" : ""}`}>
           {showAddToCart ? (
             <button
               type="button"
-              disabled={unavailable || belowMinimum || pricingLoading}
+              disabled={unavailable || belowMinimum || pricingLoading || !exactPricing}
               onClick={addSelectedToCart}
               className="inline-flex min-h-12 items-center justify-center rounded-full bg-black px-6 text-sm font-semibold text-white transition hover:bg-black/75 disabled:cursor-not-allowed disabled:bg-black/20"
             >
@@ -800,8 +747,10 @@ export function TieredProductPurchasePanel({
                   : belowMinimum
                     ? `Minimum ${minimumQuantity} pcs`
                     : quoteRequired
-                      ? "Tambahkan untuk Penawaran"
-                      : "Tambah ke Keranjang"}
+                      ? "Lanjut melalui konsultasi"
+                      : pricingError
+                        ? "Harga belum tersedia"
+                        : "Tambah ke Keranjang"}
             </button>
           ) : (
             <p className="flex min-h-12 items-center justify-center rounded-full bg-black/10 px-6 text-center text-sm font-semibold text-black/55">
@@ -811,7 +760,7 @@ export function TieredProductPurchasePanel({
           {showBuyNow ? (
             <button
               type="button"
-              disabled={unavailable || belowMinimum || pricingLoading}
+              disabled={unavailable || belowMinimum || pricingLoading || !exactPricing}
               onClick={buySelectedNow}
               className="inline-flex min-h-12 items-center justify-center rounded-full border border-black bg-white px-6 text-sm font-semibold text-black transition hover:bg-black hover:text-white disabled:cursor-not-allowed disabled:border-black/20 disabled:text-black/30"
             >

@@ -11,7 +11,6 @@ import { ProductDetailDisclosure } from "@/components/product/ProductDetailDiscl
 import { PublicShell } from "@/components/PublicPage";
 import { getProductImage } from "@/lib/fallback-data";
 import { getProductDetailPageModel } from "@/lib/product-detail-page/runtime";
-import { formatRupiah } from "@/lib/url";
 import { listInstantServicesForProduct } from "@/lib/instant-custom-data";
 
 type PageProps = {
@@ -54,7 +53,6 @@ export default async function ProductDetailPage({ params, searchParams }: PagePr
     images,
     focal,
     whatsappUrl,
-    priceLabel,
     detailHref,
     isJersey,
     purchaseCapabilities,
@@ -148,38 +146,16 @@ export default async function ProductDetailPage({ params, searchParams }: PagePr
                   </p>
                 ) : null}
 
-                <div className="mt-5 flex flex-wrap items-baseline gap-3">
-                  <p className={isJersey ? "text-xl font-semibold sm:text-2xl" : "text-[17px] font-semibold leading-6 md:text-lg"}>
-                    {priceLabel}
-                  </p>
-                  <span className="text-sm text-brand-charcoal/50">
-                    / pcs harga awal
-                  </span>
-                  {product.compare_price ? (
-                    <p className="text-base text-brand-charcoal/40 line-through">
-                      {formatRupiah(product.compare_price)}
-                    </p>
-                  ) : null}
-                </div>
-
-                <p className={isJersey ? "mt-2 text-sm leading-6 text-brand-charcoal/55" : "public-muted-copy mt-2 text-sm leading-6"}>
-                  Harga akhir berubah otomatis mengikuti jumlah pesanan.
+                <p className={isJersey ? "mt-5 text-sm leading-6 text-brand-charcoal/55" : "public-muted-copy mt-5 text-sm leading-6"}>
+                  Harga pasti tampil setelah varian, ukuran, jumlah, dan layanan tervalidasi oleh server.
                 </p>
 
                 {purchaseCapabilities.showPurchasePanel ? (
                   <TieredProductPurchasePanel
                     product={{
-                      id: product.id || product.slug || product.nama,
+                      id: product.id,
                       name: product.nama,
                       category: product.kategori,
-                      priceLabel,
-                      priceValue:
-                        Number(
-                          product.price ??
-                            product.harga ??
-                            product.base_price ??
-                            0
-                        ) || undefined,
                       href: detailHref,
                       imageUrl: getProductImage(product),
                       imageAlt: product.image_alt || product.nama,

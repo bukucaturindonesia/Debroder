@@ -28,11 +28,6 @@ function uniqueLabels(values: Array<string | null | undefined>) {
   return Array.from(labels.values());
 }
 
-/**
- * Uses active PIM variants when they exist. Legacy color tags are only used
- * when the product has no variant collection at all, preserving old records
- * without inventing a color count.
- */
 export function productCardColors(product: Product) {
   const variants = product.variants || [];
 
@@ -60,33 +55,46 @@ export function productCardMetadata(product: Product) {
 
 export function productCardHasPriceVariation(product: Product) {
   if (
-    product.pricing_mode === "variant_based" ||
-    product.pricing_mode === "configurator_based" ||
-    product.pricing_mode === "custom_quote"
+    product.pricing_mode === "variant_based"
+    || product.pricing_mode === "configurator_based"
+    || product.pricing_mode === "custom_quote"
   ) {
     return true;
   }
 
   return (product.variants || []).some(
     (variant) =>
-      Number(variant.price_adjustment || 0) !== 0 ||
-      (variant.sizes || []).some(
+      Number(variant.price_adjustment || 0) !== 0
+      || (variant.sizes || []).some(
         (size) => Number(size.price_adjustment || 0) !== 0
       )
   );
 }
 
+function exactMoneyValue(value: number | string | null | undefined) {
+  if (typeof value === "number") {
+    return Number.isSafeInteger(value) && value > 0 ? value : null;
+  }
+  if (typeof value !== "string") return null;
+  const normalized = value.trim();
+  if (!/^(?:Rp\s*)?\d+(?:[.,]\d{3})*$/i.test(normalized)) return null;
+  const amount = Number(normalized.replace(/[^\d]/g, ""));
+  return Number.isSafeInteger(amount) && amount > 0 ? amount : null;
+}
+
 export function productCardPrice(product: Product) {
-  const priceValue = product.price ?? product.harga ?? product.base_price;
-  const formatted = priceValue !== null && priceValue !== undefined
-    ? formatRupiah(priceValue)
-    : cleanText(product.price_label);
+  if (
+    product.pricing_mode === "configurator_based"
+    || product.pricing_mode === "custom_quote"
+    || product.uses_configurator
+  ) {
+    return "Harga setelah konfigurasi";
+  }
 
-  if (!formatted) return "";
-  if (/^mulai\b/i.test(formatted)) return formatted;
+  if (productCardHasPriceVariation(product)) {
+    return "Pilih opsi untuk harga pasti";
+  }
 
-  const isFormattedCurrency = /^rp\b/i.test(formatted);
-  return productCardHasPriceVariation(product) && isFormattedCurrency
-    ? `Mulai ${formatted}`
-    : formatted;
+  const priceValue = exactMoneyValue(product.price ?? product.harga ?? product.base_price);
+  return priceValue === null ? "" : formatRupiah(priceValue);
 }

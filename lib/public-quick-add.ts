@@ -1,20 +1,20 @@
-import type { CartProductInput } from "@/components/CartProvider";
 import type { Product, ProductVariant, ProductVariantSize } from "@/lib/types";
 
+export type PublicQuickAddContext = Readonly<{
+  imageUrl: string;
+}>;
+
 export type PublicQuickAddDecision =
-  | { mode: "add"; product: CartProductInput }
-  | { mode: "options"; reason: "multiple_options" | "custom_product" | "missing_canonical_sku" }
+  | {
+      mode: "options";
+      reason:
+        | "multiple_options"
+        | "custom_product"
+        | "missing_canonical_sku"
+        | "missing_canonical_media"
+        | "server_pricing_required";
+    }
   | { mode: "unavailable"; reason: "inactive" | "out_of_stock" };
-
-function numeric(value: number | string | null | undefined) {
-  if (typeof value === "number" && Number.isFinite(value)) return value;
-  const parsed = Number(String(value ?? "").replace(/[^\d.-]/g, ""));
-  return Number.isFinite(parsed) ? parsed : 0;
-}
-
-function variantName(variant: ProductVariant) {
-  return variant.name || variant.color_name || variant.variant_name || "Default";
-}
 
 function activeVariants(product: Product) {
   return (product.variants || []).filter(
@@ -35,15 +35,17 @@ function availableStock(size: ProductVariantSize) {
 
 export function resolvePublicQuickAdd(
   product: Product,
-  input: {
-    detailHref: string;
-    imageUrl: string;
-    imageAlt: string;
-    priceLabel?: string;
-  }
+  context?: PublicQuickAddContext
 ): PublicQuickAddDecision {
   if (product.status !== "active" || product.status_aktif === false) {
     return { mode: "unavailable", reason: "inactive" };
+  }
+
+  // Preserve the canonical card-media handoff at the quick-add boundary.
+  // Exact Public Pricing still routes the active single-SKU path through the PDP,
+  // so this context must never be used to construct a client-side price.
+  if (context && !context.imageUrl.trim()) {
+    return { mode: "options", reason: "missing_canonical_media" };
   }
 
   if (
@@ -55,72 +57,21 @@ export function resolvePublicQuickAdd(
     return { mode: "options", reason: "custom_product" };
   }
 
-  const candidates = activeVariants(product).flatMap((variant) =>
-    activeSizes(variant)
-      .filter((size) => availableStock(size) > 0)
-      .map((size) => ({ variant, size }))
-  );
+  const variants = activeVariants(product);
+  const activeCanonicalSizes = variants.flatMap((variant) => activeSizes(variant));
+  const inStock = activeCanonicalSizes.filter((size) => availableStock(size) > 0);
 
-  if (candidates.length === 0) {
-    return activeVariants(product).some((variant) => activeSizes(variant).length > 0)
+  if (inStock.length === 0) {
+    return activeCanonicalSizes.length > 0
       ? { mode: "unavailable", reason: "out_of_stock" }
       : { mode: "options", reason: "missing_canonical_sku" };
   }
 
-  if (candidates.length !== 1) {
+  if (inStock.length > 1) {
     return { mode: "options", reason: "multiple_options" };
   }
 
-  const [{ variant, size }] = candidates;
-  if (!product.id || !variant.id || !size.id || !size.sku) {
-    return { mode: "options", reason: "missing_canonical_sku" };
-  }
-
-  const basePrice = numeric(product.base_price ?? product.price ?? product.harga);
-  const variantAdjustment = numeric(variant.price_adjustment) + numeric(size.price_adjustment);
-  const unitPrice = Math.max(0, basePrice + variantAdjustment);
-  const stock = availableStock(size);
-  const selectedVariantName = variantName(variant);
-
-  return {
-    mode: "add",
-    product: {
-      id: product.id,
-      name: product.nama,
-      category: product.kategori,
-      priceLabel: input.priceLabel,
-      priceValue: unitPrice || undefined,
-      href: input.detailHref,
-      imageUrl: input.imageUrl,
-      imageAlt: input.imageAlt,
-      sku: size.sku,
-      defaultColor: variant.color_name || selectedVariantName,
-      defaultColorHex: variant.color_hex || variant.hex_code || undefined,
-      defaultSize: size.size_name,
-      defaultQuantity: 1,
-      variantId: variant.id,
-      variantSizeId: size.id,
-      variantName: selectedVariantName,
-      variantSku: size.sku,
-      stockLabel: `Stok ${stock}`,
-      stockAvailable: stock,
-      variantSnapshot: {
-        product_id: product.id,
-        variant_id: variant.id,
-        variant_name: selectedVariantName,
-        color_name: variant.color_name || selectedVariantName,
-        color_hex: variant.color_hex || variant.hex_code || null,
-        size_id: size.id,
-        size_name: size.size_name,
-        sku: size.sku,
-        stock,
-        base_product_price: basePrice,
-        variant_adjustment: variantAdjustment,
-        selected_quantity: 1,
-        pricing_quantity: 1,
-        unit_price: unitPrice || null,
-        subtotal: unitPrice || null
-      }
-    }
-  };
+  // Even a single SKU must be repriced by the server after quantity and
+  // service selections are known. Public cards never construct a price.
+  return { mode: "options", reason: "server_pricing_required" };
 }

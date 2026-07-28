@@ -2,7 +2,7 @@ import { notFound } from "next/navigation";
 import { PageHero, PublicShell } from "@/components/PublicPage";
 import { fallbackServices } from "@/lib/fallback-data";
 import { getPublicContent } from "@/lib/public-data";
-import { formatRupiah, whatsappHref } from "@/lib/url";
+import { whatsappHref } from "@/lib/url";
 
 export default async function SablonDtfDetailPage({ params }: { params: Promise<{ slug: string }> }) {
   const [{ slug }, content] = await Promise.all([params, getPublicContent()]);
@@ -37,7 +37,7 @@ export default async function SablonDtfDetailPage({ params }: { params: Promise<
           </div>
           <aside className="bg-brand-charcoal p-6 text-white sm:p-8">
             <p className="text-xs font-semibold uppercase tracking-[0.2em] text-white/60">Informasi Produksi</p>
-            {service.harga_mulai ? <p className="mt-4 text-2xl font-semibold">Mulai {formatRupiah(service.harga_mulai)}</p> : null}
+            <p className="mt-4 text-xl font-semibold leading-8">Harga pasti ditetapkan setelah ukuran, jumlah, dan kebutuhan produksi dikonfirmasi.</p>
             {service.production_estimate ? <p className="mt-4 text-sm leading-6 text-white/70">{service.production_estimate}</p> : null}
             <a href={orderUrl} target="_blank" rel="noopener noreferrer" className="mt-6 inline-flex min-h-11 w-full items-center justify-center rounded-full bg-white px-5 text-sm font-semibold text-brand-charcoal">Konsultasi Sekarang</a>
           </aside>

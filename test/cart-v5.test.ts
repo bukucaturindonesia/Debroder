@@ -186,7 +186,22 @@ function customSnapshot(): CustomProjectSnapshot {
       finalTotal: 600000,
       estimatedMinTotal: null,
       estimatedMaxTotal: null,
-      lines: [],
+      lines: [{
+        key: "product:custom-item-1:allocation-1",
+        label: "Produk Custom · Hitam · M",
+        displayLabel: "Produk Custom · Hitam · M",
+        quantity: 12,
+        unitPrice: 50000,
+        subtotal: 600000,
+        kind: "product",
+        componentType: "product_base",
+        sourceRuleId: "pim-variant-size:10000000-0000-4000-8000-000000000013",
+        calculationBasis: "pim_tier",
+        productId: "10000000-0000-4000-8000-000000000011",
+        variantId: "10000000-0000-4000-8000-000000000012",
+        variantSizeId: "10000000-0000-4000-8000-000000000013",
+        sku: "CUSTOM-SKU"
+      }],
       issues: [],
       pricedAt: NOW
     }

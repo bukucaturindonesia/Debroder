@@ -23,13 +23,6 @@ function product(overrides: Partial<Product> = {}): Product {
   };
 }
 
-const input = {
-  detailHref: "/produk/cotton-combed-24s",
-  imageUrl: "/product.webp",
-  imageAlt: "Cotton Combed 24s",
-  priceLabel: "Rp45.000"
-};
-
 describe("B4-A1 public Quick Add canonical", () => {
   it("does not add a multi-SKU product directly from a public card", () => {
     const result = resolvePublicQuickAdd(product({
@@ -67,12 +60,12 @@ describe("B4-A1 public Quick Add canonical", () => {
           ]
         }
       ]
-    }), input);
+    }));
 
     expect(result).toEqual({ mode: "options", reason: "multiple_options" });
   });
 
-  it("adds only the sole active in-stock canonical SKU", () => {
+  it("routes even a sole SKU through server pricing instead of calculating a client price", () => {
     const result = resolvePublicQuickAdd(product({
       variants: [{
         id: "11111111-1111-4111-8111-111111111111",
@@ -96,14 +89,10 @@ describe("B4-A1 public Quick Add canonical", () => {
           sort_order: 1
         }]
       }]
-    }), input);
+    }));
 
-    expect(result.mode).toBe("add");
-    if (result.mode !== "add") throw new Error("Expected canonical add decision");
-    expect(result.product.variantSizeId).toBe("21111111-1111-4111-8111-111111111111");
-    expect(result.product.variantSku).toBe("CC24-HITAM-M");
-    expect(result.product.priceValue).toBe(48000);
-    expect(result.product.variantSnapshot?.product_id).toBe("412add8b-998d-4ee9-a793-c0e589ee5eff");
+    expect(result).toEqual({ mode: "options", reason: "server_pricing_required" });
+    expect(result).not.toHaveProperty("product.priceValue");
   });
 
   it("routes configurator products to option selection", () => {
@@ -111,7 +100,7 @@ describe("B4-A1 public Quick Add canonical", () => {
       product_type: "configurable_product",
       pricing_mode: "configurator_based",
       uses_configurator: true
-    }), input)).toEqual({ mode: "options", reason: "custom_product" });
+    }))).toEqual({ mode: "options", reason: "custom_product" });
   });
 
   it("shows unavailable when every canonical SKU has zero stock", () => {
@@ -136,7 +125,7 @@ describe("B4-A1 public Quick Add canonical", () => {
           sort_order: 1
         }]
       }]
-    }), input);
+    }));
 
     expect(result).toEqual({ mode: "unavailable", reason: "out_of_stock" });
   });

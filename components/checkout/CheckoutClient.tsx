@@ -9,6 +9,7 @@ import { removeCustomDraft } from "@/lib/custom-commerce/draft-storage";
 import { EMPTY_STRUCTURED_ADDRESS, StructuredIndonesiaAddress } from "@/components/checkout/StructuredIndonesiaAddress";
 import type { StructuredIndonesiaAddressInput } from "@/lib/indonesia-address";
 import { cartItemSubtotal } from "@/lib/cart-v5";
+import { isFinalExactCustomPricing } from "@/lib/custom-commerce/exact-pricing";
 
 type StoreOption = { id: string; name: string; address: string; hours: string };
 type CheckoutDraft = {
@@ -71,8 +72,14 @@ export function CheckoutClient({ stores }: { stores: StoreOption[] }) {
   const configuredItems = cart.items.filter((item) => item.lineType === "configured_product");
   const unsupportedItems = cart.items.filter((item) => item.lineType === "legacy_unsupported");
   const checkoutBlocked = !cart.checkoutDecision.allowed || configuredItems.length > 0;
+  const hasPendingCustomPricing = customItems.some((item) =>
+    !isFinalExactCustomPricing(item.customProject.pricing)
+  );
   const subtotal = readyItems.reduce((sum, item) => sum + cartItemSubtotal(item), 0)
-    + customItems.reduce((sum, item) => sum + Number(item.customProject.pricing.finalTotal || 0), 0);
+    + customItems.reduce((sum, item) =>
+      sum + (isFinalExactCustomPricing(item.customProject.pricing)
+        ? Number(item.customProject.pricing.finalTotal || 0)
+        : 0), 0);
 
   useEffect(() => {
     if (retryAfter <= 0) return;
@@ -298,7 +305,12 @@ export function CheckoutClient({ stores }: { stores: StoreOption[] }) {
               {fulfillment === "pickup" ? (
                 <div className="mt-5 grid gap-4">
                   <Field label="Lokasi pengambilan"><select name="pickupLocationId" required defaultValue=""><option value="" disabled>Pilih toko</option>{stores.map((store) => <option key={store.id} value={store.id}>{store.name} — {store.address}</option>)}</select></Field>
-                  <Field label="Cara pembayaran"><select name="paymentMethod" defaultValue="bank_transfer"><option value="bank_transfer">Transfer bank</option><option value="pay_at_store">Bayar di toko</option></select></Field>
+                  {hasPendingCustomPricing ? (
+                    <div className="rounded-2xl bg-amber-50 p-4 text-sm leading-6 text-amber-950">
+                      <input type="hidden" name="paymentMethod" value="bank_transfer" />
+                      Pembayaran belum tersedia. Admin akan mengirim penawaran resmi setelah order dibuat.
+                    </div>
+                  ) : <Field label="Cara pembayaran"><select name="paymentMethod" defaultValue="bank_transfer"><option value="bank_transfer">Transfer bank</option><option value="pay_at_store">Bayar di toko</option></select></Field>}
                 </div>
               ) : (
                 <div className="mt-5"><StructuredIndonesiaAddress value={structuredAddress} confirmed={addressConfirmed} onChange={(next) => { setStructuredAddress(next); setAddressConfirmed(false); }} onConfirmedChange={setAddressConfirmed} onFormattedAddressChange={setFormattedStructuredAddress} /></div>
@@ -313,11 +325,14 @@ export function CheckoutClient({ stores }: { stores: StoreOption[] }) {
                 <div><p className="font-semibold">{item.name}</p><p className="mt-1 text-black/55">{item.variantName || item.color} · {item.size} · {item.sku} × {item.quantity}</p>{item.instantCustom?.pricing.map((service) => <p key={service.serviceId} className="mt-1 text-xs text-amber-800">{service.serviceName} · {formatRupiah(service.total)}</p>)}</div>
                 <p className="shrink-0 font-semibold">{formatRupiah(cartItemSubtotal(item))}</p>
               </div>
-            ))}{customItems.map((item) => <div key={item.lineId} className="flex justify-between gap-4 border-b border-black/10 pb-4 text-sm"><div><p className="font-semibold">{item.name}</p><p className="mt-1 text-black/55">{item.customProject.items.length} grup produk · {item.customProject.pricing.totalQuantity} pcs · {item.customProject.pricing.status === "final" ? "Harga final" : item.customProject.pricing.status === "estimated" ? "Estimasi" : "Menunggu pemeriksaan"}</p></div><p className="shrink-0 font-semibold">{item.customProject.pricing.finalTotal ? formatRupiah(item.customProject.pricing.finalTotal) : "Diperiksa admin"}</p></div>)}</div>
-            <div className="mt-5 flex items-center justify-between"><span>Subtotal</span><strong>{formatRupiah(subtotal)}</strong></div>
-            <p className="mt-3 text-xs leading-5 text-black/50">{fulfillment === "shipping" ? "Admin akan menambahkan ongkir pada pesanan ini, lalu Anda dapat menyetujui total akhirnya." : "Pengambilan di toko tidak dikenakan ongkir."}</p>
+            ))}{customItems.map((item) => {
+              const exact = isFinalExactCustomPricing(item.customProject.pricing);
+              return <div key={item.lineId} className="flex justify-between gap-4 border-b border-black/10 pb-4 text-sm"><div><p className="font-semibold">{item.name}</p><p className="mt-1 text-black/55">{item.customProject.items.length} grup produk · {item.customProject.pricing.totalQuantity} pcs · {exact ? "Harga pasti" : "Order tanpa nominal"}</p></div><p className="shrink-0 font-semibold">{exact ? formatRupiah(item.customProject.pricing.finalTotal) : "Belum ditetapkan"}</p></div>;
+            })}</div>
+            <div className="mt-5 flex items-center justify-between"><span>Subtotal</span><strong>{hasPendingCustomPricing ? "Belum ditetapkan" : formatRupiah(subtotal)}</strong></div>
+            <p className="mt-3 text-xs leading-5 text-black/50">{hasPendingCustomPricing ? "Order dibuat terlebih dahulu. Tidak ada pembayaran sampai penawaran resmi disetujui." : fulfillment === "shipping" ? "Admin akan menambahkan ongkir pada pesanan ini, lalu Anda dapat menyetujui total akhirnya." : "Pengambilan di toko tidak dikenakan ongkir."}</p>
             {error ? <p className="mt-4 border border-red-200 bg-red-50 p-3 text-sm text-red-700">{error}</p> : null}
-            <button type="submit" disabled={submitting || retryAfter > 0 || checkoutBlocked || (fulfillment === "shipping" && !addressConfirmed)} className="mt-5 min-h-12 w-full rounded-full bg-black px-5 font-semibold text-white hover:bg-black/75 disabled:cursor-not-allowed disabled:opacity-45">{submitting ? "Membuat pesanan..." : retryAfter > 0 ? `Coba lagi ${retryAfter} dtk` : "Buat Pesanan"}</button>
+            <button type="submit" disabled={submitting || retryAfter > 0 || checkoutBlocked || (fulfillment === "shipping" && !addressConfirmed)} className="mt-5 min-h-12 w-full rounded-full bg-black px-5 font-semibold text-white hover:bg-black/75 disabled:cursor-not-allowed disabled:opacity-45">{submitting ? "Membuat pesanan..." : retryAfter > 0 ? `Coba lagi ${retryAfter} dtk` : hasPendingCustomPricing ? "Buat Order & Minta Penawaran" : "Buat Pesanan"}</button>
             <p className="mt-3 text-center text-[11px] leading-5 text-black/45">Pesanan menggunakan kunci pemulihan yang sama selama hasil sebelumnya belum diketahui. Jangan membuka checkout baru ketika jaringan terputus.</p>
           </aside>
         </form>

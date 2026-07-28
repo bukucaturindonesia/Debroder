@@ -56,19 +56,18 @@ describe("product card presentation data", () => {
     expect(productCardMetadata(product({ kategori: "", color_tags: [] }))).toBe("");
   });
 
-  it("uses the existing price source and only adds a global starting-price label", () => {
-    expect(productCardPrice(product({ price: 45000 }))).toBe("Rp 45.000");
+  it("shows only a fixed exact price and never publishes a starting price or range", () => {
+    expect(productCardPrice(product({ price: 45000, pricing_mode: "fixed_price" }))).toBe("Rp 45.000");
+    expect(productCardPrice(product({ price: "45.000", pricing_mode: "fixed_price" }))).toBe("Rp 45.000");
     expect(
       productCardPrice(product({ base_price: 45000, pricing_mode: "variant_based" }))
-    ).toBe("Mulai Rp 45.000");
+    ).toBe("Pilih opsi untuk harga pasti");
     expect(
       productCardPrice(
         product({ price_label: "Menunggu Konfirmasi", pricing_mode: "custom_quote" })
       )
-    ).toBe("Menunggu Konfirmasi");
-    expect(productCardPrice(product({ price_label: "Rp 45.000–Rp 50.000" }))).toBe(
-      "Rp 45.000–Rp 50.000"
-    );
+    ).toBe("Harga setelah konfigurasi");
+    expect(productCardPrice(product({ price_label: "Rp 45.000–Rp 50.000" }))).toBe("");
     expect(productCardPrice(product({ price: null, price_label: null }))).toBe("");
   });
 });

@@ -1,6 +1,6 @@
 import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
-import { priceCustomProject } from "@/lib/custom-commerce/pricing";
+import { priceCustomProject, toPublicCustomPricing } from "@/lib/custom-commerce/pricing";
 import type { CustomCategoryCatalog, CustomProject } from "@/lib/custom-commerce/types";
 import { parseCustomCheckoutProjects, parseCustomProject } from "@/lib/custom-commerce/validation";
 
@@ -150,7 +150,26 @@ describe("Custom Commerce", () => {
     expect(pricing.status).toBe("quotation_required");
     expect(pricing.finalTotal).toBeNull();
     expect(pricing.issues).toEqual([]);
-    expect(pricing.lines.find((line) => line.kind === "service")).toMatchObject({ serviceId: ids.service, serviceSlug: "layanan-uji", subtotal: null });
+    expect(pricing.estimatedMinTotal).toBeNull();
+    expect(pricing.estimatedMaxTotal).toBeNull();
+    expect(pricing.lines.find((line) => line.kind === "service")).toMatchObject({ serviceId: ids.service, serviceSlug: "layanan-uji", subtotal: null, calculationBasis: "quotation" });
+  });
+
+  it("converts historical estimated rules into order-first pricing without public nominal values", () => {
+    const estimated = catalog();
+    estimated.services[0].pricingType = "estimated";
+    estimated.services[0].estimatedMinPrice = 5000;
+    estimated.services[0].estimatedMaxPrice = 9000;
+
+    const internal = priceCustomProject(project(), [estimated]);
+    const publicPricing = toPublicCustomPricing(internal);
+
+    expect(publicPricing.status).toBe("quotation_required");
+    expect(publicPricing.finalTotal).toBeNull();
+    expect(publicPricing.estimatedMinTotal).toBeNull();
+    expect(publicPricing.estimatedMaxTotal).toBeNull();
+    expect(publicPricing.issues).toEqual([]);
+    expect(publicPricing.lines.every((line) => line.unitPrice === null && line.subtotal === null)).toBe(true);
   });
 
   it("drops every browser-provided pricing value from the checkout contract", () => {

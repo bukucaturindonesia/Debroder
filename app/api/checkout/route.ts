@@ -9,6 +9,7 @@ import {
 import { deriveCheckoutTrackingToken } from "@/lib/order-tracking";
 import { listCustomCategoryCatalogsByIds } from "@/lib/custom-commerce/data";
 import { priceCustomProject } from "@/lib/custom-commerce/pricing";
+import { isCheckoutEligibleCustomPricing } from "@/lib/custom-commerce/exact-pricing";
 import type { CustomProjectSnapshot } from "@/lib/custom-commerce/types";
 import { getAdminSupabaseEnv } from "@/lib/server-env";
 import { getAdminSupabaseClient } from "@/lib/supabase/admin";
@@ -221,6 +222,12 @@ export async function POST(request: Request) {
       const pricing = priceCustomProject(entry.project, catalogs);
       if (pricing.issues.length) {
         return respond({ code: "CHECKOUT_CUSTOM_INVALID", error: pricing.issues[0] }, 409);
+      }
+      if (!isCheckoutEligibleCustomPricing(pricing)) {
+        return respond({
+          code: "CHECKOUT_CUSTOM_PRICING_INVALID",
+          error: "Harga custom harus berupa harga pasti atau permintaan penawaran tanpa nominal."
+        }, 409);
       }
       const uploadsValid = await validateProjectUploads(client, entry.project);
       if (!uploadsValid) {
