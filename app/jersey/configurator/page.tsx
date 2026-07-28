@@ -17,7 +17,7 @@ export default async function JerseyConfiguratorPage({ searchParams }: { searchP
   });
 
   return (
-    <PublicShell headerMode="natural">
+    <PublicShell>
       <JerseyChrome />
       <header className="bg-[#111] py-12 text-white sm:py-16">
         <div className="section-shell max-w-5xl">

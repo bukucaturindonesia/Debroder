@@ -304,9 +304,9 @@ export function PublicMockupApproval({ token }: { token: string }) {
           ))}
         </section>
 
-        <footer className="mt-8 border-t border-black/10 py-6 text-sm leading-6 text-black/55">
+        <p className="mt-8 border-t border-black/10 py-6 text-sm leading-6 text-black/55">
           Persetujuan hanya berlaku untuk bagian dan versi file yang ditampilkan pada halaman ini.
-        </footer>
+        </p>
       </div>
 
       {revisionPart ? (

@@ -112,7 +112,8 @@ describe("Jersey commerce experience", () => {
     expect(chrome).toContain("group-hover:scale-x-100");
     expect(chrome).toContain("group-focus-visible:scale-x-100");
     expect(chrome).not.toContain('active ? "scale-x-100"');
-    expect(footer).toContain('dark ? "" : "border-b border-black/10"');
+    expect(footer).toContain("data-public-footer");
+    expect(footer).toContain("bg-black text-white");
   });
 
   it("provides reserved-ratio loading and a recoverable Jersey error state", () => {

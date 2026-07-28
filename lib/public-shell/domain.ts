@@ -144,19 +144,8 @@ function warningList(source: PublicShellSource): PublicShellWarning[] {
 }
 
 function headerModel(source: PublicShellSource): PublicShellHeaderViewModel {
-  const whatsappHref = whatsappLinkWithMessage(
-    contactLinks.whatsapp,
-    "Halo DEBRODER, saya ingin bertanya tentang layanan DEBRODER."
-  );
-
   return {
-    navigationFacets: buildPublicNavigationFacets(catalogProducts(source), catalogCategories(source)),
-    whatsappHref,
-    promo: {
-      message: "Konsultasi desain gratis untuk kebutuhan apparel custom",
-      actionLabel: "Hubungi WhatsApp",
-      actionHref: whatsappHref
-    }
+    navigationFacets: buildPublicNavigationFacets(catalogProducts(source), catalogCategories(source))
   };
 }
 
@@ -171,7 +160,7 @@ function footerModel(source: PublicShellSource): PublicShellFooterViewModel {
   const socialLinks = [
     { label: "Instagram", href: instagramHref(contact.instagram || undefined), icon: "instagram" as const, external: true },
     { label: "WhatsApp", href: whatsappLink, icon: "whatsapp" as const, external: true },
-    { label: "Facebook", href: facebookHref(contact.facebook || undefined), icon: "facebook" as const, external: true },
+    { label: "Facebook", href: facebookHref(contact.facebook || undefined), icon: null, external: true },
     { label: "Email", href: emailLink, icon: "email" as const }
   ].filter((item) => Boolean(item.href));
 

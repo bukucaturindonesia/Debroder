@@ -64,6 +64,7 @@
   --control-min-size: 48px;
   --focus-ring-width: 2px;
   --focus-ring-offset: 3px;
+  --public-header-height: 60px;
 
   --motion-fast: 150ms;
   --motion-normal: 220ms;
@@ -108,13 +109,19 @@
   }
 }
 
+@media (min-width: 1024px) {
+  :root {
+    --public-header-height: 72px;
+  }
+}
+
 * {
   box-sizing: border-box;
 }
 
 html {
   scroll-behavior: auto;
-  scroll-padding-top: 78px;
+  scroll-padding-top: var(--public-header-height);
 }
 
 body {
@@ -2137,9 +2144,9 @@ button,
 
 .debroder-landing .public-footer-system-v1 {
   margin-top: var(--home-end-space);
-  border-top: var(--divider-width) solid var(--color-divider-soft);
-  box-shadow: var(--shadow-decorative);
-  background: var(--color-canvas);
+  border-top: var(--divider-width) solid rgba(255, 255, 255, 0.15);
+  box-shadow: none;
+  background: #000000;
 }
 
 .debroder-landing .public-footer-system-v1 .section-shell {
@@ -2176,7 +2183,7 @@ button,
 .debroder-landing .public-footer-system-v1 .public-footer-links {
   font-size: var(--type-caption);
   line-height: 1.5;
-  color: var(--color-text-secondary);
+  color: rgba(255, 255, 255, 0.64);
 }
 
 .debroder-landing :is(a, button, input, select, textarea, [tabindex]):focus-visible {

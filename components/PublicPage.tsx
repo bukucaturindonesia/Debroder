@@ -608,16 +608,10 @@ export function CategoryDetailPage({
 
 export async function PublicShell({
   children,
-  headerMode = "sticky",
-  headerExpandedAtTop = false,
-  theme = "default",
-  showHeader = true
+  theme = "default"
 }: {
   children: ReactNode;
-  headerMode?: "sticky" | "natural";
-  headerExpandedAtTop?: boolean;
   theme?: "default" | "jersey" | "jersey-commerce";
-  showHeader?: boolean;
 }) {
   const shellModel = await getPublicShellPageModel();
   const jerseyEditorial = theme === "jersey";
@@ -626,21 +620,10 @@ export async function PublicShell({
   return (
     <StorefrontCartBoundary>
       <main className={`public-site min-h-screen ${jerseyEditorial ? "jersey-theme bg-[#050505] text-white" : jerseyCommerce ? "jersey-commerce-theme bg-white text-[#111111]" : "bg-brand-offWhite text-brand-charcoal"}`}>
-        {showHeader ? (
-          <SiteHeader
-            positionMode={headerMode}
-            expandedAtTop={headerExpandedAtTop}
-            navigationFacets={jerseyEditorial ? undefined : header.navigationFacets}
-            preserveJerseyOutput={jerseyEditorial}
-            promo={header.promo}
-          />
-        ) : null}
+        <SiteHeader navigationFacets={header.navigationFacets} />
         <PageMotion />
         {children}
-        <PublicFooter
-          model={shellModel.data.footer}
-          variant="public-dark"
-        />
+        <PublicFooter model={shellModel.data.footer} />
       </main>
     </StorefrontCartBoundary>
   );

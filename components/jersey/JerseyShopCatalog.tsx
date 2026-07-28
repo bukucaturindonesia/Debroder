@@ -365,7 +365,7 @@ export function JerseyShopCatalog({ products }: { products: Product[] }) {
         </div>
       </header>
 
-      <div className="sticky top-0 z-40 border-y border-black/10 bg-white/95 backdrop-blur-sm">
+      <div className="sticky top-[var(--public-header-height)] z-40 border-y border-black/10 bg-white/95 backdrop-blur-sm">
         <div className="section-shell flex min-h-14 items-center justify-between gap-4">
           <button
             ref={filterButtonRef}

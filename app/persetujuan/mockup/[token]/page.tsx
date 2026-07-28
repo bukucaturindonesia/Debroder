@@ -1,4 +1,5 @@
 import { PublicMockupApproval } from "@/components/public/PublicMockupApproval";
+import { PublicShell } from "@/components/PublicPage";
 
 export default async function PublicMockupApprovalPage({
   params
@@ -6,5 +7,9 @@ export default async function PublicMockupApprovalPage({
   params: Promise<{ token: string }>;
 }) {
   const { token } = await params;
-  return <PublicMockupApproval token={token} />;
+  return (
+    <PublicShell>
+      <PublicMockupApproval token={token} />
+    </PublicShell>
+  );
 }

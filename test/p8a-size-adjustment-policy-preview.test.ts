@@ -44,7 +44,8 @@ describe("P8A global size adjustment policy", () => {
       XL: 0,
       "2XL": 10_000,
       "3XL": 20_000,
-      "4XL": 30_000
+      "4XL": 30_000,
+      "5XL": 40_000
     });
   });
 
@@ -55,6 +56,8 @@ describe("P8A global size adjustment policy", () => {
     ["2-xl", "2XL"],
     ["xxxl", "3XL"],
     ["4 xl", "4XL"],
+    ["5XL", "5XL"],
+    ["6-xl", "6XL"],
     ["XS", null],
     ["All Size", null]
   ] as const)("normalizes %s without inventing an unmanaged policy", (input, expected) => {

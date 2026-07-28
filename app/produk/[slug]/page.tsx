@@ -84,7 +84,6 @@ export default async function ProductDetailPage({ params, searchParams }: PagePr
   return (
     <PublicShell
       theme={isJersey ? "jersey-commerce" : "default"}
-      showHeader={!isJersey}
     >
       {isJersey ? (
         <Suspense fallback={<div className="h-14 border-b border-black/10 bg-white" />}>

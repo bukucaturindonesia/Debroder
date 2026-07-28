@@ -8,7 +8,7 @@ export function JerseyChrome() {
   const pathname = usePathname();
 
   return (
-    <nav aria-label="Navigasi Jersey" className="jersey-context-header sticky top-0 z-[80] bg-[#050505] text-[#39FF88]">
+    <nav aria-label="Navigasi Jersey" className="jersey-context-header sticky top-[var(--public-header-height)] z-[80] bg-[#050505] text-[#39FF88]">
       <div className="jersey-shell grid min-h-[var(--jersey-header-height)] md:grid-cols-[auto_minmax(0,1fr)] md:items-center md:gap-8">
         <Link href="/jersey" className="jersey-neon inline-flex min-h-12 items-center whitespace-nowrap font-heading text-lg font-bold uppercase tracking-[0.07em] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#39FF88] sm:text-xl">
           DEBRODER JERSEY

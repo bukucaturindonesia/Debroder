@@ -112,7 +112,7 @@ describe("P3 public shell page-owned read model", () => {
     expect(model.data.footer.socialLinks.map((item) => item.icon)).toEqual([
       "instagram",
       "whatsapp",
-      "facebook",
+      null,
       "email"
     ]);
   });
@@ -148,7 +148,7 @@ describe("P3 public shell page-owned read model", () => {
       { code: "public_shell.contact_unavailable", source: "contact" },
       { code: "public_shell.stores_unavailable", source: "stores" }
     ]));
-    expect(model.data.header.whatsappHref).toContain("wa.me");
+    expect(model.data.header).not.toHaveProperty("whatsappHref");
     expect(model.data.footer.companyLinks.some((item) => item.label === "Store PETTARANI")).toBe(true);
   });
 

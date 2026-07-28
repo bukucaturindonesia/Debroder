@@ -97,13 +97,14 @@ describe("Jersey commerce catalog", () => {
     expect(jerseyProductStatus(hybrid)).toBe("Ready Stock + Custom");
   });
 
-  it("keeps the shop monochrome, hides the global header, and preserves three desktop columns", () => {
+  it("keeps the shop monochrome, uses the global header, and preserves three desktop columns", () => {
     const page = readFileSync("app/jersey/shop/page.tsx", "utf8");
     const catalog = readFileSync("components/jersey/JerseyShopCatalog.tsx", "utf8");
     const nav = readFileSync("components/jersey/JerseyCommerceNav.tsx", "utf8");
 
     expect(page).toContain('theme="jersey-commerce"');
-    expect(page).toContain("showHeader={false}");
+    expect(page).not.toContain("showHeader");
+    expect(page).toContain("<PublicShell");
     expect(catalog).toContain("lg:grid-cols-3");
     expect(catalog).toContain("router.replace");
     expect(catalog).toContain("ProductImageSwap");

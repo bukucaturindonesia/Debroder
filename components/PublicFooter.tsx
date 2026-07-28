@@ -5,100 +5,94 @@ import { Logo } from "@/components/Logo";
 import type { PageLinkViewModel } from "@/lib/contracts/page-view-model";
 import type { PublicShellFooterViewModel } from "@/lib/public-shell/model";
 
-type FooterVariant = "default" | "dark" | "public-dark";
-
-function FooterLinks({ children, dark, publicDark }: { children: ReactNode; dark: boolean; publicDark: boolean }) {
-  return <div className={`public-footer-links mt-5 grid gap-3.5 text-sm ${publicDark ? "public-footer-secondary" : dark ? "text-white/58" : "text-black/58"}`}>{children}</div>;
+function FooterLinks({ children }: { children: ReactNode }) {
+  return <div className="public-footer-links public-footer-secondary mt-5 grid gap-3.5 text-sm">{children}</div>;
 }
 
-function DesktopColumn({ title, children, dark, publicDark }: { title: string; children: ReactNode; dark: boolean; publicDark: boolean }) {
+function DesktopColumn({ title, children }: { title: string; children: ReactNode }) {
   return (
     <div className="public-footer-column">
-      <h3 className={`text-[15px] font-semibold ${dark ? "text-white" : "text-[#111]"}`}>{title}</h3>
-      <FooterLinks dark={dark} publicDark={publicDark}>{children}</FooterLinks>
+      <h3 className="text-[15px] font-semibold text-white">{title}</h3>
+      <FooterLinks>{children}</FooterLinks>
     </div>
   );
 }
 
-function MobileAccordion({ title, children, dark, publicDark }: { title: string; children: ReactNode; dark: boolean; publicDark: boolean }) {
+function MobileAccordion({ title, children }: { title: string; children: ReactNode }) {
   return (
-    <details className={`public-footer-accordion group ${dark ? "" : "border-b border-black/10"}`}>
+    <details className="public-footer-accordion group border-b border-white/15">
       <summary className="flex min-h-14 cursor-pointer list-none items-center justify-between text-[15px] font-semibold marker:hidden">
         {title}
         <span className="text-xl font-normal transition group-open:rotate-45" aria-hidden="true">+</span>
       </summary>
       <div className="pb-6">
-        <FooterLinks dark={dark} publicDark={publicDark}>{children}</FooterLinks>
+        <FooterLinks>{children}</FooterLinks>
       </div>
     </details>
   );
 }
 
-function FooterBrand({ dark, publicDark, description }: { dark: boolean; publicDark: boolean; description: string }) {
+function FooterBrand({ description }: { description: string }) {
   return (
     <div className="public-footer-brand min-w-0">
       <div className="public-footer-logo inline-flex max-w-[200px] items-center">
-        <Logo variant={dark ? "primary-white" : "primary-dark"} size="md" />
+        <Logo variant="primary-white" size="md" />
       </div>
-      <p className={`mt-4 max-w-[19rem] text-sm leading-6 ${publicDark ? "public-footer-secondary" : dark ? "text-white/58" : "text-black/58"}`}>
+      <p className="public-footer-secondary mt-4 max-w-[19rem] text-sm leading-6">
         {description}
       </p>
     </div>
   );
 }
 
-function FooterLink({ item, dark }: { item: PageLinkViewModel; dark: boolean }) {
-  const className = `transition underline-offset-4 ${dark ? "hover:text-white" : "hover:text-[#111]"}`;
+function FooterLink({ item }: { item: PageLinkViewModel }) {
+  const className = "transition underline-offset-4 hover:text-white focus-visible:text-white focus-visible:underline";
   if (item.href.startsWith("mailto:")) {
     return <a href={item.href} className={className}>{item.label}</a>;
   }
   return <Link href={item.href} className={className}>{item.label}</Link>;
 }
 
-export function PublicFooter({ model, variant = "default" }: { model: PublicShellFooterViewModel; variant?: FooterVariant }) {
-  const publicDark = variant === "public-dark";
-  const dark = variant === "dark" || publicDark;
-  const currentShopLinks = publicDark ? model.publicShopLinks : model.shopLinks;
-
+export function PublicFooter({ model }: { model: PublicShellFooterViewModel }) {
   return (
-    <footer className={`public-footer-system-v1 ${publicDark ? "public-footer-dark bg-black text-white" : dark ? "bg-[#050505] text-white" : "border-t border-black/10 bg-white text-[#111]"}`}>
+    <footer data-public-footer className="public-footer-system-v1 public-footer-dark bg-black text-white">
       <div className="section-shell py-14 sm:py-16 lg:py-20">
         <div className="public-footer-grid hidden grid-cols-[1fr_1fr_1.2fr_.7fr] gap-12 md:grid lg:gap-20">
-          <FooterBrand dark={dark} publicDark={publicDark} description={model.brandDescription} />
+          <FooterBrand description={model.brandDescription} />
 
-          <DesktopColumn title="Belanja" dark={dark} publicDark={publicDark}>
-            {currentShopLinks.map((item) => <FooterLink key={item.href} item={item} dark={dark} />)}
+          <DesktopColumn title="Belanja">
+            {model.publicShopLinks.map((item) => <FooterLink key={item.href} item={item} />)}
           </DesktopColumn>
 
-          <DesktopColumn title="Bantuan" dark={dark} publicDark={publicDark}>
-            {model.helpLinks.map((item) => <FooterLink key={item.href} item={item} dark={dark} />)}
+          <DesktopColumn title="Bantuan">
+            {model.helpLinks.map((item) => <FooterLink key={item.href} item={item} />)}
           </DesktopColumn>
 
-          <DesktopColumn title="Tentang" dark={dark} publicDark={publicDark}>
-            {model.companyLinks.map((item) => <FooterLink key={`${item.label}-${item.href}`} item={item} dark={dark} />)}
+          <DesktopColumn title="Tentang">
+            {model.companyLinks.map((item) => <FooterLink key={`${item.label}-${item.href}`} item={item} />)}
           </DesktopColumn>
         </div>
 
         <div className="md:hidden">
           <div className="mb-8">
-            <FooterBrand dark={dark} publicDark={publicDark} description={model.brandDescription} />
+            <FooterBrand description={model.brandDescription} />
           </div>
-          <MobileAccordion title="Belanja" dark={dark} publicDark={publicDark}>
-            {currentShopLinks.map((item) => <FooterLink key={item.href} item={item} dark={dark} />)}
+          <MobileAccordion title="Belanja">
+            {model.publicShopLinks.map((item) => <FooterLink key={item.href} item={item} />)}
           </MobileAccordion>
-          <MobileAccordion title="Bantuan" dark={dark} publicDark={publicDark}>
-            {model.helpLinks.map((item) => <FooterLink key={item.href} item={item} dark={dark} />)}
+          <MobileAccordion title="Bantuan">
+            {model.helpLinks.map((item) => <FooterLink key={item.href} item={item} />)}
           </MobileAccordion>
-          <MobileAccordion title="Tentang" dark={dark} publicDark={publicDark}>
-            {model.companyLinks.map((item) => <FooterLink key={`${item.label}-${item.href}`} item={item} dark={dark} />)}
+          <MobileAccordion title="Tentang">
+            {model.companyLinks.map((item) => <FooterLink key={`${item.label}-${item.href}`} item={item} />)}
           </MobileAccordion>
         </div>
 
-        <div className={`mt-16 flex flex-col gap-6 text-sm lg:mt-20 lg:flex-row lg:items-center lg:justify-between ${publicDark ? "public-footer-muted" : dark ? "text-white/55" : "text-black/55"}`}>
+        <div className="public-footer-muted mt-16 flex flex-col gap-6 text-sm lg:mt-20 lg:flex-row lg:items-center lg:justify-between">
           <div className="flex flex-wrap gap-x-6 gap-y-3">
             <p>{model.copyrightText}</p>
-            <Link href={model.termsLink.href} className={`transition ${dark ? "hover:text-white" : "hover:text-[#111]"}`}>{model.termsLink.label}</Link>
-            <Link href={model.privacyLink.href} className={`transition ${dark ? "hover:text-white" : "hover:text-[#111]"}`}>{model.privacyLink.label}</Link>
+            <Link href={model.termsLink.href} className="transition hover:text-white focus-visible:text-white focus-visible:underline">{model.termsLink.label}</Link>
+            <Link href={model.privacyLink.href} className="transition hover:text-white focus-visible:text-white focus-visible:underline">{model.privacyLink.label}</Link>
           </div>
 
           <div className="flex items-center gap-2">
@@ -109,9 +103,13 @@ export function PublicFooter({ model, variant = "default" }: { model: PublicShel
                 target={item.external ? "_blank" : undefined}
                 rel={item.external ? "noopener noreferrer" : undefined}
                 aria-label={item.label}
-                className={`grid h-12 w-12 place-items-center rounded-full transition ${dark ? "hover:bg-white/10" : "hover:bg-[#f5f5f5]"}`}
+                className="grid h-12 w-12 place-items-center rounded-full transition hover:bg-white/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
               >
-                <BrandIcon name={item.icon} className="h-4 w-4" />
+                {item.icon ? (
+                  <BrandIcon name={item.icon} className="h-4 w-4" tone="light" />
+                ) : (
+                  <span aria-hidden="true" className="text-sm font-bold text-white">f</span>
+                )}
               </a>
             ))}
           </div>

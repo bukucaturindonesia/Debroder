@@ -1,6 +1,6 @@
 ﻿# DEBRODER MASTER STATE
 
-Last updated: 27 July 2026 (Asia/Makassar)
+Last updated: 28 July 2026 (Asia/Makassar)
 
 ## 1. Canonical repository state
 
@@ -44,3 +44,22 @@ Existing legal, CMS route, Preview performance, remote transaction E2E, data-int
 1. Review, commit, and push the P15 source checkpoint.
 2. Open Final Integration, E2E & Go-Live Readiness Audit.
 3. Resolve remaining release blockers before requesting owner GO/NO-GO.
+
+## 6. Owner-authorized combined package (28 July 2026)
+
+- Working branch: `UI-UX-001`
+- Public global shell and owner SVG registry:
+  **IMPLEMENTED; STATICALLY VERIFIED**
+- Canonical trial pricing source and correction migration:
+  **IMPLEMENTED LOCALLY; REMOTE MIGRATION PENDING**
+- Protected product-image sources inventoried: `101`
+- Valid/nonzero sources: `101`
+- High-confidence Crewneck copies: `12`
+- Ambiguous sources retained without activation: `89`
+- Canonical primary prepared: `/products/crewneck/black/front.webp`
+- Full local test: **PASS — 100 files / 771 tests**
+- Local build: **PASS**
+- Runtime browser verification: **OWNER RUNTIME VERIFICATION REQUIRED**
+- Commit, push, deployment, and remote migration application:
+  **NOT PERFORMED**
+- Package decision: **PARTIALLY VERIFIED / NO-GO**

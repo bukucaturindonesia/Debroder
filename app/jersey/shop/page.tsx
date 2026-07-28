@@ -15,7 +15,7 @@ export default async function JerseyShopPage() {
   const model = await getCatalogPageModel({ routeKey: "jersey" });
 
   return (
-    <PublicShell theme="jersey-commerce" showHeader={false}>
+    <PublicShell theme="jersey-commerce">
       <Suspense fallback={<ShopShellSkeleton />}>
         <JerseyCommerceNav />
         <JerseyShopCatalog products={model.data.products} />

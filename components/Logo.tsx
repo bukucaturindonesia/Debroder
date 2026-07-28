@@ -1,5 +1,7 @@
 /* eslint-disable @next/next/no-img-element */
 
+import { brandIcons } from "@/lib/icons";
+
 type LogoVariant =
   | "primary-dark"
   | "primary-white"
@@ -31,12 +33,8 @@ export function Logo({
   const dimensions = sizeClasses[size];
   const white = variant === "primary-white" || variant === "symbol-white" || variant === "primary-dark-bg";
   const symbolOnly = variant.startsWith("symbol-");
-  const symbolSrc = white
-    ? "/brand/debroder/logo-symbol-white.svg"
-    : "/brand/debroder/logo-symbol-black.svg";
-  const wordmarkSrc = white
-    ? "/brand/debroder/logo-wordmark-white.svg"
-    : "/brand/debroder/logo-wordmark-black.svg";
+  const symbolSrc = white ? brandIcons.logoSymbolWhite : brandIcons.logoSymbolBlack;
+  const wordmarkSrc = white ? brandIcons.logoWordmarkWhite : brandIcons.logoWordmarkBlack;
 
   if (symbolOnly) {
     return <img src={symbolSrc} alt="Logo DE BRODER" className={`${dimensions.symbol} shrink-0 object-contain ${className}`} decoding="async" />;

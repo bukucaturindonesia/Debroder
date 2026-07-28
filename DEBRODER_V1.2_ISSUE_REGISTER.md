@@ -1,6 +1,6 @@
 ﻿# DEBRODER V1.2 ACTIVE ISSUE REGISTER
 
-Last updated: 27 July 2026 (Asia/Makassar)
+Last updated: 28 July 2026 (Asia/Makassar)
 
 ## P0-001 — Conflicting active governance documents
 
@@ -59,6 +59,30 @@ Last updated: 27 July 2026 (Asia/Makassar)
 
 - Severity: DATA INTEGRITY
 - Status: **OPEN — EXCLUDED FROM AUTOMATIC SIZE POLICY**
+
+## UI-UX-001 — Public global shell and icon asset recovery
+
+- Severity: MAJOR UX CONSISTENCY
+- Status: **IMPLEMENTED; STATICALLY VERIFIED; RUNTIME VERIFICATION REQUIRED**
+- Shared shell and owner-icon paths pass regression and build gates.
+- Browser runtime did not start because of a duplicate Windows environment key.
+
+## PRICE-001 — Canonical trial pricing migration pending
+
+- Severity: MAJOR COMMERCE DATA ALIGNMENT
+- Status: **IMPLEMENTED LOCALLY; REMOTE APPLICATION PENDING**
+- Local policy, migration tests, and build pass.
+- `20260728153142_canonical_trial_pricing_v1.sql` is not remotely applied.
+
+## MEDIA-001 — Ambiguous owner product-image mapping
+
+- Severity: MAJOR PIM CONTENT RISK
+- Status: **OPEN — OWNER/PIM IDENTITY REVIEW REQUIRED**
+- `89` valid images remain staging-only because their evidence does not uniquely
+  identify a canonical PIM product.
+- No ambiguous image was mapped or activated.
+- `12` Crewneck assets were copied hash-identically; only black/front is
+  prepared as primary in the pending migration.
 
 ## Release decision
 
