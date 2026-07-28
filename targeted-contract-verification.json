@@ -1,0 +1,9 @@
+{
+  "status": "PASS",
+  "assertions": 18,
+  "invariant": "positionAdjustment=0; designAdjustmentTotal=designSizeAdjustment",
+  "validPairTotal": 45000,
+  "stalePairCleared": true,
+  "partialCanonicalRejected": true,
+  "partialDraftPreservedAsInProgress": true
+}

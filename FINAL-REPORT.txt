@@ -1,0 +1,117 @@
+CUSTOM T-SHIRT CONFIGURATION INTEGRITY V1
+FINAL VERDICT: BLOCKED WITH EVIDENCE
+
+A. BASELINE
+- Remote branch: UI-UX-001
+- Remote HEAD: 20b3d8a0a095c9be55fd1e85e5a88874b2fa82e9
+- UI-UX-001 was reported 2 commits ahead of main and 0 behind.
+- Original local git status/staged/untracked: unavailable because no repository checkout was mounted.
+- No remote write was performed.
+
+B. OWNER TARGET
+Posisi Desain + Ukuran Desain must be one canonical pair. Position adjustment is 0. All design price comes only from Ukuran Desain. Partial or invalid pairs must fail closed at UI eligibility, canonical parsing, cart restore, repricing, checkout, and order creation.
+
+C. CURRENT BEHAVIOR
+- Pricing adds placement.priceAdjustment and printSize.priceAdjustment independently.
+- UI presents Placement and Ukuran cetak as independent add-ons and shows both adjustments.
+- Canonical parser accepts XOR pair state.
+- Cart-add path only checks pricing eligibility, not structural pair integrity.
+- Cart/admin summaries expose raw pair identifiers and old terminology.
+- Existing test explicitly locks the placement surcharge as valid.
+
+D. EXPECTED BEHAVIOR
+- Position selected first; size is contextual to that position.
+- Position price is never displayed or charged.
+- Size is retained only when compatible after position change; otherwise cleared.
+- Server validates identifiers and compatibility, reads canonical size adjustment, recalculates exact pricing, and rejects client totals.
+- New cart/order snapshots contain a complete pair only.
+
+E. ROOT CAUSE
+- Pricing gap: independent placement and size charge lines.
+- Contract gap: placementId and printSizeId parsed independently.
+- State gap: position changes do not atomically revalidate/clear size.
+- Persistence gap: cart creation lacks a strict structural pair guard.
+- UX gap: independent controls, old labels, generic errors, raw IDs in summaries.
+- Test gap: an existing assertion preserves the incorrect double-charge behavior.
+
+F. CANONICAL CONFIGURATION CONTRACT
+- placementId and printSizeId are both null or both valid identifiers during canonical persistence.
+- An editable draft may be incomplete only as in-progress state and is never checkout eligible.
+- Canonical parser, persisted cart, repricing, and checkout reject XOR pairs.
+- Pair compatibility is validated against server catalog rules.
+- Client-supplied adjustment/subtotal/total is not authoritative.
+
+G. UX FLOW BEFORE AND AFTER
+Before: Placement and Ukuran cetak are two independent price controls.
+Candidate after: grouped fieldset “Posisi Desain + Ukuran Desain”; position first; size disabled until position; position shows no Rp0; size alone shows adjustment; inline specific error; stale size cleared; loading clears old total and disables submit.
+
+H. PRICING INVARIANT
+positionAdjustment = 0
+designAdjustmentTotal = designSizeAdjustment
+No placement line is created for new canonical pricing.
+
+I. BLAST RADIUS
+Directly affected: custom parser/draft boundary, catalog projection, custom pricing, configurator state/UX, reprice API, checkout API, cart creation/restore summary, checkout summary, admin snapshot summary, targeted tests.
+Preserved: Ready Stock, Quick Cart image contract, ACL, numbering, historical snapshots, payment idempotency, RLS, nonstandard order-first flow.
+
+J. FILES INSPECTED
+Custom types, validation, data mapping, pricing, exact pricing, builder, draft storage, reprice API, checkout parser/API, cart v5/provider, checkout client, order confirmation/customer read model, admin order detail/pricing, and related tests.
+
+K. CANDIDATE FILES CHANGED
+12 files are listed in MANIFEST.txt. Each is a direct producer, validator, calculator, persistence boundary, consumer, or regression test for the pair contract.
+
+L. MIGRATION
+NOT REQUIRED.
+Reason: canonical position adjustment can be projected as 0 and enforced in server calculation without rewriting database rows or historical snapshots.
+Remote apply: none.
+Historical data: untouched.
+
+M. TEST INTEGRITY
+- Replaces the stale “placement is a valid separate surcharge” assertion with a stronger no-placement-charge assertion.
+- Adds valid pair, partial pair, invalid pair, stale-state, server-boundary, cart restore/quarantine, and cross-surface label coverage.
+- No skip, disabled validation, TypeScript suppression, or any was added.
+
+N. IMPLEMENTATION SUMMARY
+A candidate changed-files patch was prepared locally. It is not installed in the repository because the real checkout is unavailable and remote connector writes would violate the no-commit rule.
+
+O. TARGETED VERIFICATION
+Completed outside repository:
+- standalone invariant harness: PASS, 18 assertions;
+- static patch audit: PASS;
+- unified diff parse/stat/whitespace scan: PASS.
+Not completed:
+- git apply --check against real checkout;
+- project targeted Vitest;
+- typecheck, lint, full test, build;
+- database/runtime verification.
+
+P. DESKTOP AND MOBILE VERIFICATION
+Static source review only: responsive two-column-to-single-column field grouping, minimum control height, inline errors, clear selected state, and loading submit guard are present in the candidate.
+Browser/runtime verification: BLOCKED because no runnable checkout exists.
+
+Q. REGRESSION MATRIX
+- Valid pair: covered by candidate test/harness.
+- Position only: rejected by parser/API candidate.
+- Size only: rejected by parser/API candidate.
+- Invalid pair: rejected by server pricing candidate.
+- Position adjustment: zero/no line in candidate.
+- Double charge: removed in candidate.
+- Cart partial persistence: quarantined by candidate test.
+- Historical snapshots: no migration/rewrite.
+- Ready Stock/Quick Cart/ACL: files untouched; full regression not run.
+
+R. OUT-OF-SCOPE FINDINGS
+Customer confirmation/tracking read models do not currently expose the full custom pair snapshot. Tracking is explicitly outside this package; no broad read-model redesign was made.
+
+S. FINAL GIT STATUS
+Unavailable locally. Remote branch was not mutated. No commit, push, deploy, or migration occurred.
+
+T. OWNER QUALITY GATE COMMANDS
+pnpm.cmd typecheck
+pnpm.cmd lint
+pnpm.cmd test
+pnpm.cmd build
+git diff --check
+
+U. FINAL VERDICT
+BLOCKED WITH EVIDENCE
