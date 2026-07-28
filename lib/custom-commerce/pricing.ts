@@ -1,4 +1,4 @@
-import { calculateTieredUnitPrice, createServiceAllocation } from "@/lib/bulk-ordering";
+import { calculateTieredUnitPrice } from "@/lib/bulk-ordering";
 import type { CustomService, PimProduct, PimProductVariant, PimProductVariantSize } from "@/lib/types";
 import type {
   CustomCategoryCatalog,
@@ -6,16 +6,20 @@ import type {
   CustomPriceStatus,
   CustomPricingLine,
   CustomProject,
-  CustomProjectPricing,
-  CustomServiceCompatibility
+  CustomProjectPricing
 } from "@/lib/custom-commerce/types";
+import {
+  isCompleteCustomDesignPair,
+  isCustomDesignPairCompatible
+} from "@/lib/custom-commerce/design-pairs";
+import { canonicalCustomDesignPairIssues } from "@/lib/custom-commerce/validation";
 
 export function priceCustomProject(
   project: CustomProject,
   catalogs: CustomCategoryCatalog[],
   pricedAt = new Date().toISOString()
 ): CustomProjectPricing {
-  const issues: string[] = [];
+  const issues: string[] = canonicalCustomDesignPairIssues(project);
   const lines: CustomPricingLine[] = [];
   let finalTotal = 0;
   let status: CustomPriceStatus = "final";
@@ -193,35 +197,67 @@ function priceDesignPackage(
   let finalTotal = 0;
   let status: CustomPriceStatus = "final";
   const selectedServices: CustomService[] = [];
-  const semanticComponents = new Set<string>();
 
   for (const selection of designPackage.services) {
-    const service = catalog.services.find((candidate) => candidate.id === selection.serviceId && candidate.status === "active");
-    if (!service || !isCompatible(catalog.compatibility, service.id, catalog.category.id, productId, selection.placementId, selection.printSizeId)) {
-      issues.push(`Layanan pada ${designPackage.name} tidak kompatibel.`);
+    const service = catalog.services.find((candidate) =>
+      candidate.id === selection.serviceId && candidate.status === "active"
+    );
+    if (!service) {
+      issues.push(`Layanan pada ${designPackage.name} tidak lagi tersedia.`);
       continue;
     }
+
+    const placement = selection.placementId
+      ? catalog.placements.find((candidate) => candidate.id === selection.placementId)
+      : null;
+    const printSize = selection.printSizeId
+      ? catalog.printSizes.find((candidate) => candidate.id === selection.printSizeId)
+      : null;
+
+    if (!isCompleteCustomDesignPair(selection)) {
+      if (placement && !selection.printSizeId) {
+        issues.push(`Pilih Size Desain untuk posisi ${placement.name}.`);
+      } else if (!selection.placementId && printSize) {
+        issues.push(`Pilih Posisi Desain untuk Size Desain ${printSize.name}.`);
+      } else {
+        issues.push("Pilih minimal satu Posisi Desain dan Size Desain.");
+      }
+      continue;
+    }
+    if (!placement) {
+      issues.push(`Posisi Desain untuk ${service.name} tidak valid.`);
+      continue;
+    }
+    if (!printSize) {
+      issues.push(`Size Desain untuk posisi ${placement.name} tidak valid.`);
+      continue;
+    }
+    if (!isCustomDesignPairCompatible(
+      catalog,
+      service.id,
+      productId,
+      catalog.category.id,
+      placement.id,
+      printSize.id
+    )) {
+      issues.push(`Size Desain ${printSize.name} tidak kompatibel dengan posisi ${placement.name}.`);
+      continue;
+    }
+
     selectedServices.push(service);
-    if (service.requiresNotes && !selection.note) issues.push(`Catatan untuk ${service.name} wajib diisi.`);
-    if (service.requiresUpload && !selection.uploadIds.some((id) => itemUploadIds.includes(id))) issues.push(`File untuk ${service.name} wajib diunggah.`);
+    if (service.requiresNotes && !selection.note) {
+      issues.push(`Catatan untuk ${service.name} wajib diisi.`);
+    }
+    if (service.requiresUpload && !selection.uploadIds.some((id) => itemUploadIds.includes(id))) {
+      issues.push(`File untuk ${service.name} wajib diunggah.`);
+    }
     if (quantity < service.minimumQuantity || (service.maximumQuantity !== null && quantity > service.maximumQuantity)) {
       issues.push(`Jumlah ${service.name} tidak memenuhi batas layanan.`);
     }
 
-    const placement = selection.placementId ? catalog.placements.find((candidate) => candidate.id === selection.placementId) : null;
-    const printSize = selection.printSizeId ? catalog.printSizes.find((candidate) => candidate.id === selection.printSizeId) : null;
-    if (selection.placementId && !placement) issues.push(`Placement ${service.name} tidak valid.`);
-    if (selection.printSizeId && !printSize) issues.push(`Ukuran cetak ${service.name} tidak valid.`);
-
-    const printSizeDeterminesPrice = Boolean(printSize && printSize.priceAdjustment > 0);
-    const semanticKey = `${service.id}:${printSizeDeterminesPrice ? `print-size:${printSize?.id}` : "method"}:${placement?.id ?? "no-placement"}`;
-    if (semanticComponents.has(semanticKey)) {
-      issues.push(`Komponen harga ${service.name}${printSize ? ` ${printSize.name}` : ""}${placement ? ` ${placement.name}` : ""} terpilih lebih dari sekali.`);
-      continue;
-    }
-    semanticComponents.add(semanticKey);
-
-    const tieredRule = service.pricingType === "tiered" ? activeServiceTier(service, quantity) : null;
+    const tieredRule = service.pricingType === "tiered"
+      ? activeServiceTier(service, quantity)
+      : null;
     if (service.pricingType === "tiered" && !tieredRule) {
       issues.push(`Pricing rule ${service.name} tidak tersedia untuk ${quantity} pcs.`);
       continue;
@@ -231,117 +267,74 @@ function priceDesignPackage(
       || service.pricingType === "estimated"
       || service.pricingType === "manual_quote"
       || Boolean(tieredRule?.quoteRequired);
+    const displayLabel = `${service.name} · ${placement.name} — Size Desain ${printSize.name}`;
     if (requiresQuotation) {
       status = "quotation_required";
-      lines.push({
-        key: `service:${designPackage.id}:${selection.id}`,
-        label: `${designPackage.name} · ${service.name}`,
-        displayLabel: `${designPackage.name} · ${service.name}`,
-        quantity,
-        unitPrice: null,
-        subtotal: null,
-        kind: "service",
-        componentType: "method_fee",
-        sourceRuleId: tieredRule?.id ?? `service:${service.id}`,
-        calculationBasis: "quotation",
-        serviceId: service.id,
-        serviceSlug: service.slug,
-        serviceName: service.name,
-        pricingRuleId: tieredRule?.id,
-        placementId: placement?.id,
-        placementName: placement?.name,
-        printSizeId: printSize?.id,
-        printSizeName: printSize?.name
-      });
-      continue;
-    }
-
-    if (!printSizeDeterminesPrice && (
-      service.pricingType === "fixed_per_item"
-      || service.pricingType === "fixed_per_order"
-    ) && (!Number.isSafeInteger(service.basePrice) || service.basePrice <= 0)) {
-      issues.push(`Harga layanan ${service.name} belum dikonfigurasi dengan valid.`);
-      continue;
-    }
-    if (service.pricingType === "tiered" && tieredRule && tieredRule.unitPrice === null && tieredRule.flatPrice === null) {
-      issues.push(`Pricing rule ${service.name} tidak memiliki harga atau status quotation.`);
-      continue;
-    }
-
-    const price = createServiceAllocation(service, quantity, selection.note);
-    const serviceFinal = (price.unit_price ?? 0) * price.quantity + (price.flat_price ?? 0);
-    if (!printSizeDeterminesPrice) {
-      finalTotal += serviceFinal;
-      lines.push({
-        key: `service:${designPackage.id}:${selection.id}`,
-        label: `${designPackage.name} · ${service.name}`,
-        displayLabel: `${designPackage.name} · ${service.name}`,
-        quantity,
-        unitPrice: price.unit_price,
-        subtotal: serviceFinal,
-        kind: "service",
-        componentType: "method_fee",
-        sourceRuleId: tieredRule?.id ?? `service:${service.id}`,
-        calculationBasis: service.pricingType === "fixed_per_order" ? "per_order" : "per_item",
-        serviceId: service.id,
-        serviceSlug: service.slug,
-        serviceName: service.name,
-        pricingRuleId: tieredRule?.id,
-        placementId: placement?.id,
-        placementName: placement?.name,
-        printSizeId: printSize?.id,
-        printSizeName: printSize?.name
-      });
-    }
-
-    if (placement?.priceAdjustment) {
-      const subtotal = placement.priceAdjustment * quantity;
-      finalTotal += subtotal;
-      lines.push({
-        key: `placement:${selection.id}`,
-        label: placement.name,
-        displayLabel: placement.name,
-        quantity,
-        unitPrice: placement.priceAdjustment,
-        subtotal,
-        kind: "placement",
-        componentType: "placement",
-        sourceRuleId: `placement:${placement.id}`,
-        calculationBasis: "per_item",
-        serviceId: service.id,
-        placementId: placement.id,
-        placementName: placement.name
-      });
-    }
-    if (printSize?.priceAdjustment) {
-      const subtotal = printSize.priceAdjustment * quantity;
-      finalTotal += subtotal;
-      const displayLabel = `${service.name} ${printSize.name}${placement ? ` — ${placement.name}` : ""}`;
       lines.push({
         key: `print-size:${selection.id}`,
         label: displayLabel,
         displayLabel,
         quantity,
-        unitPrice: printSize.priceAdjustment,
-        subtotal,
+        unitPrice: null,
+        subtotal: null,
         kind: "print_size",
         componentType: "print_size",
         sourceRuleId: `print-size:${printSize.id}`,
-        calculationBasis: "per_item",
+        calculationBasis: "quotation",
         serviceId: service.id,
         serviceSlug: service.slug,
         serviceName: service.name,
-        placementId: placement?.id,
-        placementName: placement?.name,
+        pricingRuleId: tieredRule?.id,
+        selectionId: selection.id,
+        placementId: placement.id,
+        placementName: placement.name,
         printSizeId: printSize.id,
         printSizeName: printSize.name
       });
+      continue;
     }
+
+    if (!Number.isSafeInteger(printSize.priceAdjustment) || printSize.priceAdjustment < 0) {
+      issues.push(`Adjustment Size Desain ${printSize.name} belum dikonfigurasi dengan valid.`);
+      continue;
+    }
+    const subtotal = printSize.priceAdjustment * quantity;
+    finalTotal += subtotal;
+    lines.push({
+      key: `print-size:${selection.id}`,
+      label: displayLabel,
+      displayLabel,
+      quantity,
+      unitPrice: printSize.priceAdjustment,
+      subtotal,
+      kind: "print_size",
+      componentType: "print_size",
+      sourceRuleId: `print-size:${printSize.id}`,
+      calculationBasis: "per_item",
+      serviceId: service.id,
+      serviceSlug: service.slug,
+      serviceName: service.name,
+      pricingRuleId: tieredRule?.id,
+      selectionId: selection.id,
+      placementId: placement.id,
+      placementName: placement.name,
+      printSizeId: printSize.id,
+      printSizeName: printSize.name
+    });
   }
 
-  const exclusiveGroups = selectedServices.map((service) => service.exclusiveGroup).filter(Boolean);
-  if (new Set(exclusiveGroups).size !== exclusiveGroups.length) issues.push(`Ada layanan eksklusif yang bertabrakan di ${designPackage.name}.`);
-  if (selectedServices.length > 1 && selectedServices.some((service) => !service.isStackable)) issues.push(`Ada layanan yang tidak dapat digabung di ${designPackage.name}.`);
+  const uniqueServices = Array.from(
+    new Map(selectedServices.map((service) => [service.id, service])).values()
+  );
+  const exclusiveGroups = uniqueServices
+    .map((service) => service.exclusiveGroup)
+    .filter(Boolean);
+  if (new Set(exclusiveGroups).size !== exclusiveGroups.length) {
+    issues.push(`Ada layanan eksklusif yang bertabrakan di ${designPackage.name}.`);
+  }
+  if (uniqueServices.length > 1 && uniqueServices.some((service) => !service.isStackable)) {
+    issues.push(`Ada layanan yang tidak dapat digabung di ${designPackage.name}.`);
+  }
   return { issues, lines, finalTotal, status };
 }
 
@@ -402,23 +395,6 @@ function activeProductTier(product: PimProduct, quantity: number) {
   return product.priceTiers
     .filter((tier) => tier.status === "active" && quantity >= tier.minQuantity && (tier.maxQuantity === null || quantity <= tier.maxQuantity))
     .sort((left, right) => right.minQuantity - left.minQuantity)[0] ?? null;
-}
-
-function isCompatible(
-  rules: CustomServiceCompatibility[],
-  serviceId: string,
-  categoryId: string,
-  productId: string,
-  placementId: string | null,
-  printSizeId: string | null
-) {
-  return rules.some((rule) =>
-    rule.serviceId === serviceId
-    && (rule.categoryId === null || rule.categoryId === categoryId)
-    && (rule.productId === null || rule.productId === productId)
-    && (rule.placementId === null || rule.placementId === placementId)
-    && (rule.printSizeId === null || rule.printSizeId === printSizeId)
-  );
 }
 
 function combineStatus(current: CustomPriceStatus, next: CustomPriceStatus): CustomPriceStatus {

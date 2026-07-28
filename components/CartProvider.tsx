@@ -39,6 +39,11 @@ import {
 import type { ConfiguredProductSnapshot } from "@/lib/contracts";
 import type { CustomProjectSnapshot } from "@/lib/custom-commerce/types";
 import { isFinalExactCustomPricing } from "@/lib/custom-commerce/exact-pricing";
+import {
+  customDesignPairPricingIntegrityIssue,
+  findCustomDesignPairPricingLine
+} from "@/lib/custom-commerce/design-pairs";
+import { parseCustomProject } from "@/lib/custom-commerce/validation";
 import type { InstantCustomSnapshot } from "@/lib/instant-custom";
 import { fallbackImages, pageHeroImageFallbacks } from "@/lib/fallback-data";
 import { formatRupiah } from "@/lib/url";
@@ -264,11 +269,18 @@ function CustomProjectSummary({ item }: { item: CartItem }) {
         {project.items.map((projectItem) => (
           <div key={projectItem.id}>
             <p className="font-semibold">{projectItem.productName} · {projectItem.allocations.reduce((sum, allocation) => sum + allocation.quantity, 0)} pcs</p>
-            {projectItem.designPackages.flatMap((designPackage) => designPackage.services.map((service) => (
-              <p key={`${designPackage.id}:${service.id}`} className="mt-1 text-xs text-black/60">
-                Layanan {service.serviceId}{service.placementId ? ` · Posisi ${service.placementId}` : ""}{service.printSizeId ? ` · Ukuran cetak ${service.printSizeId}` : ""}
-              </p>
-            )))}
+            {projectItem.designPackages.flatMap((designPackage) => designPackage.services.map((selection) => {
+              const line = findCustomDesignPairPricingLine(project.pricing.lines, selection);
+              const serviceName = line?.serviceName ?? "Layanan custom";
+              const placementName = line?.placementName ?? selection.placementId ?? "Posisi belum tersedia";
+              const printSizeName = line?.printSizeName ?? selection.printSizeId ?? "Size belum tersedia";
+              return (
+                <div key={`${designPackage.id}:${selection.id}`} className="mt-2 text-xs text-black/60">
+                  <p className="font-semibold text-black/70">{serviceName}</p>
+                  <p>{placementName} — Size Desain {printSizeName}</p>
+                </div>
+              );
+            }))}
             {projectItem.personalization.sharedValue || projectItem.personalization.entries.length ? <p className="mt-1 text-xs text-black/60">Personalisasi: {projectItem.personalization.sharedValue || `${projectItem.personalization.entries.length} data per item`}</p> : null}
           </div>
         ))}
@@ -1179,24 +1191,37 @@ export function CartProvider({ children }: { children: ReactNode }) {
       setCartLines([]);
     },
     addCustomProject: (project) => {
+      const canonicalProject = parseCustomProject(project);
+      if (
+        !canonicalProject
+        || project.pricing.projectId !== canonicalProject.id
+        || customDesignPairPricingIntegrityIssue(project)
+      ) {
+        setOperationIssues([{
+          code: "CUSTOM_PROJECT_CONFIGURATION_INVALID",
+          message: "Posisi Desain dan Size Desain harus lengkap dan valid sebelum masuk keranjang."
+        }]);
+        return;
+      }
+      const canonicalSnapshot: CustomProjectSnapshot = { ...canonicalProject, pricing: project.pricing };
       commitMutation((current) => {
-        const lineId = `custom-project:${project.id}`;
+        const lineId = `custom-project:${canonicalSnapshot.id}`;
         const existing = current.find((item) => item.lineId === lineId);
-        const exactPrice = isFinalExactCustomPricing(project.pricing);
+        const exactPrice = isFinalExactCustomPricing(canonicalSnapshot.pricing);
         const priceValue = exactPrice
-          ? project.pricing.finalTotal ?? undefined
+          ? canonicalSnapshot.pricing.finalTotal ?? undefined
           : undefined;
         const priceLabel = exactPrice
-          ? formatRupiah(project.pricing.finalTotal)
+          ? formatRupiah(canonicalSnapshot.pricing.finalTotal)
           : "Harga ditetapkan setelah order";
         const next = createCustomProjectCartItem({
           lineId,
-          project,
+          project: canonicalSnapshot,
           display: {
-            title: `Custom Project · ${project.categoryName}`,
+            title: `Custom Project · ${canonicalSnapshot.categoryName}`,
             subtitle: "Custom",
-            imageAlt: project.categoryName,
-            href: `/custom/${project.categorySlug}`
+            imageAlt: canonicalSnapshot.categoryName,
+            href: `/custom/${canonicalSnapshot.categorySlug}`
           },
           ui: {
             role: existing?.role ?? (
@@ -1204,13 +1229,13 @@ export function CartProvider({ children }: { children: ReactNode }) {
                 ? "additional"
                 : "primary"
             ),
-            name: `Custom Project · ${project.categoryName}`,
+            name: `Custom Project · ${canonicalSnapshot.categoryName}`,
             category: "Custom",
             priceLabel,
             priceValue,
-            href: `/custom/${project.categorySlug}`,
+            href: `/custom/${canonicalSnapshot.categorySlug}`,
             imageUrl: existing?.imageUrl,
-            imageAlt: project.categoryName
+            imageAlt: canonicalSnapshot.categoryName
           }
         });
         return existing

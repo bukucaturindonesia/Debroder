@@ -3,6 +3,7 @@ import type {
   CustomerOrderCancellationReadModel,
   CustomerOrderConfirmationReadModel,
   CustomerOrderCustomQuoteReadModel,
+  CustomerOrderCustomDesignPairReadModel,
   CustomerOrderItemPricingStatus,
   CustomerOrderItemReadModel,
   CustomerOrderPaymentLinkReadModel,
@@ -71,6 +72,7 @@ export type CustomerOrderServerProjection = {
   items: CustomerOrderItemReadModel[];
   shippingQuote: CustomerOrderShippingQuoteReadModel | null;
   customQuote: CustomerOrderCustomQuoteReadModel | null;
+  customDesignPairs: CustomerOrderCustomDesignPairReadModel[];
   cancellation: CustomerOrderCancellationReadModel | null;
   refund: CustomerOrderRefundReadModel | null;
   pickup: CustomerOrderPickupReadModel | null;
@@ -125,6 +127,7 @@ export function projectCustomerOrderServerReadModel(
   );
   const amountPaid = amount(row.payment_effective_total);
   const customProjectSnapshot = row.custom_project_snapshot ?? [];
+  const customDesignPairs = projectCustomDesignPairs(customProjectSnapshot);
   const customQuoteStatus = nullableText(row.custom_quote_status);
   const customQuoteVersion = nullableInteger(row.custom_quote_version);
   const customQuoteLockedAt = nullableText(row.custom_quote_locked_at);
@@ -226,6 +229,7 @@ export function projectCustomerOrderServerReadModel(
       row.custom_order_quotation_versions,
       customQuoteVersion
     ),
+    customDesignPairs,
     cancellation: projectLatestCancellation(row.order_cancellation_requests),
     refund: projectLatestRefund(row.refund_cases),
     pickup: projectLatestPickup(row.pickup_preparations),
@@ -263,6 +267,7 @@ export function toCustomerOrderConfirmationReadModel(
     items: projection.items,
     shippingQuote: projection.shippingQuote,
     customQuote: projection.customQuote,
+    customDesignPairs: projection.customDesignPairs,
     payment,
     activeStage: projection.activeStage
   };
@@ -337,6 +342,56 @@ function projectItem(row: Record<string, unknown>): CustomerOrderItemReadModel {
     customProjectId: nullableText(row.custom_project_id),
     pricingStatus: itemPricingStatus(row.pricing_status)
   };
+}
+
+function projectCustomDesignPairs(value: unknown): CustomerOrderCustomDesignPairReadModel[] {
+  const pairs: CustomerOrderCustomDesignPairReadModel[] = [];
+  for (const project of arrayRecords(value)) {
+    const pricing = record(project.pricing);
+    const lines = arrayRecords(pricing?.lines);
+    for (const item of arrayRecords(project.items)) {
+      const itemId = text(item.id) || "custom-item";
+      const productName = text(item.productName) || "Produk Custom";
+      const packageQuantities = new Map<string, number>();
+      for (const allocation of arrayRecords(item.allocations)) {
+        const packageId = text(allocation.designPackageId);
+        if (!packageId) continue;
+        const quantity = number(allocation.quantity);
+        const safeQuantity = Number.isSafeInteger(quantity) && quantity > 0 ? quantity : 0;
+        packageQuantities.set(packageId, (packageQuantities.get(packageId) ?? 0) + safeQuantity);
+      }
+      for (const designPackage of arrayRecords(item.designPackages)) {
+        const packageId = text(designPackage.id) || "design-package";
+        const packageName = text(designPackage.name) || "Paket Desain";
+        for (const selection of arrayRecords(designPackage.services)) {
+          const selectionId = text(selection.id);
+          const serviceId = text(selection.serviceId);
+          const placementId = nullableText(selection.placementId);
+          const printSizeId = nullableText(selection.printSizeId);
+          if (!selectionId || (!placementId && !printSizeId)) continue;
+          const line = lines.find((candidate) =>
+            text(candidate.selectionId) === selectionId
+            || text(candidate.key) === `print-size:${selectionId}`
+          ) ?? lines.find((candidate) =>
+            ["print_size", "service"].includes(text(candidate.kind))
+            && text(candidate.serviceId) === serviceId
+            && nullableText(candidate.placementId) === placementId
+            && nullableText(candidate.printSizeId) === printSizeId
+          );
+          pairs.push({
+            id: `${text(project.id) || "custom-project"}:${itemId}:${packageId}:${selectionId}`,
+            productName,
+            packageName,
+            serviceName: text(line?.serviceName) || text(selection.serviceName) || "Layanan custom",
+            placementName: text(line?.placementName) || text(selection.placementName) || "Posisi tersimpan",
+            printSizeName: text(line?.printSizeName) || text(selection.printSizeName) || "Size tersimpan",
+            assignedQuantity: Math.max(0, packageQuantities.get(packageId) ?? 0)
+          });
+        }
+      }
+    }
+  }
+  return pairs;
 }
 
 function projectLatestShippingQuote(value: unknown) {

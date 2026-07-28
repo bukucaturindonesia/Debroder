@@ -10,6 +10,8 @@ import { EMPTY_STRUCTURED_ADDRESS, StructuredIndonesiaAddress } from "@/componen
 import type { StructuredIndonesiaAddressInput } from "@/lib/indonesia-address";
 import { cartItemSubtotal } from "@/lib/cart-v5";
 import { isFinalExactCustomPricing } from "@/lib/custom-commerce/exact-pricing";
+import { findCustomDesignPairPricingLine } from "@/lib/custom-commerce/design-pairs";
+import type { CustomProjectSnapshot } from "@/lib/custom-commerce/types";
 
 type StoreOption = { id: string; name: string; address: string; hours: string };
 type CheckoutDraft = {
@@ -327,7 +329,7 @@ export function CheckoutClient({ stores }: { stores: StoreOption[] }) {
               </div>
             ))}{customItems.map((item) => {
               const exact = isFinalExactCustomPricing(item.customProject.pricing);
-              return <div key={item.lineId} className="flex justify-between gap-4 border-b border-black/10 pb-4 text-sm"><div><p className="font-semibold">{item.name}</p><p className="mt-1 text-black/55">{item.customProject.items.length} grup produk · {item.customProject.pricing.totalQuantity} pcs · {exact ? "Harga pasti" : "Order tanpa nominal"}</p></div><p className="shrink-0 font-semibold">{exact ? formatRupiah(item.customProject.pricing.finalTotal) : "Belum ditetapkan"}</p></div>;
+              return <div key={item.lineId} className="flex justify-between gap-4 border-b border-black/10 pb-4 text-sm"><div><p className="font-semibold">{item.name}</p><p className="mt-1 text-black/55">{item.customProject.items.length} grup produk · {item.customProject.pricing.totalQuantity} pcs · {exact ? "Harga pasti" : "Order tanpa nominal"}</p><CustomCheckoutPairSummary project={item.customProject} /></div><p className="shrink-0 font-semibold">{exact ? formatRupiah(item.customProject.pricing.finalTotal) : "Belum ditetapkan"}</p></div>;
             })}</div>
             <div className="mt-5 flex items-center justify-between"><span>Subtotal</span><strong>{hasPendingCustomPricing ? "Belum ditetapkan" : formatRupiah(subtotal)}</strong></div>
             <p className="mt-3 text-xs leading-5 text-black/50">{hasPendingCustomPricing ? "Order dibuat terlebih dahulu. Tidak ada pembayaran sampai penawaran resmi disetujui." : fulfillment === "shipping" ? "Admin akan menambahkan ongkir pada pesanan ini, lalu Anda dapat menyetujui total akhirnya." : "Pengambilan di toko tidak dikenakan ongkir."}</p>
@@ -339,6 +341,21 @@ export function CheckoutClient({ stores }: { stores: StoreOption[] }) {
       </div>
     </section>
   );
+}
+
+function CustomCheckoutPairSummary({ project }: { project: CustomProjectSnapshot }) {
+  return <div className="mt-3 grid gap-2">{project.items.flatMap((item) =>
+    item.designPackages.flatMap((designPackage) => designPackage.services.map((selection) => {
+      const line = findCustomDesignPairPricingLine(project.pricing.lines, selection);
+      const serviceName = line?.serviceName ?? "Layanan custom";
+      const placementName = line?.placementName ?? selection.placementId ?? "Posisi belum tersedia";
+      const printSizeName = line?.printSizeName ?? selection.printSizeId ?? "Size belum tersedia";
+      return <div key={`${item.id}:${designPackage.id}:${selection.id}`} className="text-xs leading-5 text-black/60">
+        <p className="font-semibold text-black/70">{serviceName}</p>
+        <p>{placementName} — Size Desain {printSizeName}</p>
+      </div>;
+    }))
+  )}</div>;
 }
 
 async function recoverStoredCheckout(stored: CheckoutDraft): Promise<RecoveryResult> {

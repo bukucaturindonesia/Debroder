@@ -1,32 +1,40 @@
 "use client";
 
 import type { CustomProject } from "@/lib/custom-commerce/types";
-import { parseCustomProject } from "@/lib/custom-commerce/validation";
+import { parseCustomProjectDraft } from "@/lib/custom-commerce/validation";
 
 const STORAGE_KEY = "debroder-custom-projects-v1";
 
 export function readCustomDraft(projectId?: string | null): CustomProject | null {
   const drafts = readDrafts();
   if (projectId) return drafts.find((draft) => draft.id === projectId) ?? null;
-  return drafts.sort((left, right) => Date.parse(right.updatedAt) - Date.parse(left.updatedAt))[0] ?? null;
+  return [...drafts].sort((left, right) => Date.parse(right.updatedAt) - Date.parse(left.updatedAt))[0] ?? null;
 }
 
 export function writeCustomDraft(project: CustomProject) {
   try {
-    const safeProject = parseCustomProject(stripSignedUrls(project));
-    if (!safeProject) return;
+    const safeProject = parseCustomProjectDraft(stripSignedUrls(project));
+    if (!safeProject) return false;
     const drafts = readDrafts().filter((draft) => draft.id !== safeProject.id);
-    window.localStorage.setItem(STORAGE_KEY, JSON.stringify([safeProject, ...drafts].slice(0, 5)));
+    const serialized = JSON.stringify([safeProject, ...drafts].slice(0, 5));
+    if (window.localStorage.getItem(STORAGE_KEY) === serialized) return false;
+    window.localStorage.setItem(STORAGE_KEY, serialized);
+    return true;
   } catch {
     // The builder remains usable in memory when storage is unavailable.
+    return false;
   }
 }
 
 export function removeCustomDraft(projectId: string) {
   try {
-    window.localStorage.setItem(STORAGE_KEY, JSON.stringify(readDrafts().filter((draft) => draft.id !== projectId)));
+    const serialized = JSON.stringify(readDrafts().filter((draft) => draft.id !== projectId));
+    if (window.localStorage.getItem(STORAGE_KEY) === serialized) return false;
+    window.localStorage.setItem(STORAGE_KEY, serialized);
+    return true;
   } catch {
     // No-op when storage is unavailable.
+    return false;
   }
 }
 
@@ -35,7 +43,7 @@ function readDrafts(): CustomProject[] {
     const raw = window.localStorage.getItem(STORAGE_KEY);
     const value: unknown = raw ? JSON.parse(raw) : [];
     return Array.isArray(value)
-      ? value.map(parseCustomProject).filter((draft): draft is CustomProject => Boolean(draft))
+      ? value.map(parseCustomProjectDraft).filter((draft): draft is CustomProject => Boolean(draft))
       : [];
   } catch {
     return [];

@@ -386,7 +386,7 @@ function mapPreset(row: Record<string, unknown>): CustomPreset {
 }
 
 function mapPlacement(row: Record<string, unknown>): CustomPlacement {
-  return { id: string(row.id), categoryId: string(row.custom_category_id), name: string(row.name), slug: string(row.slug), description: nullableString(row.description), priceAdjustment: number(row.price_adjustment), sortOrder: number(row.sort_order) };
+  return { id: string(row.id), categoryId: string(row.custom_category_id), name: string(row.name), slug: string(row.slug), description: nullableString(row.description), priceAdjustment: 0, sortOrder: number(row.sort_order) };
 }
 
 function mapPrintSize(row: Record<string, unknown>): CustomPrintSize {

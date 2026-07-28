@@ -28,6 +28,11 @@ const NOW = "2026-07-24T00:00:00.000Z";
 const PRODUCT_ID = "10000000-0000-4000-8000-000000000001";
 const VARIANT_ID = "10000000-0000-4000-8000-000000000002";
 const VARIANT_SIZE_ID = "10000000-0000-4000-8000-000000000003";
+const CUSTOM_SERVICE_ID = "10000000-0000-4000-8000-000000000020";
+const CUSTOM_PLACEMENT_FRONT_ID = "10000000-0000-4000-8000-000000000021";
+const CUSTOM_PLACEMENT_BACK_ID = "10000000-0000-4000-8000-000000000022";
+const CUSTOM_PRINT_A3_ID = "10000000-0000-4000-8000-000000000023";
+const CUSTOM_PRINT_A4_ID = "10000000-0000-4000-8000-000000000024";
 
 function readyStockLine(
   input: {
@@ -163,9 +168,27 @@ function customSnapshot(): CustomProjectSnapshot {
         sizeName: "M",
         sku: "CUSTOM-SKU",
         quantity: 12,
-        designPackageId: null
+        designPackageId: "design-package-1"
       }],
-      designPackages: [],
+      designPackages: [{
+        id: "design-package-1",
+        name: "Desain 1",
+        services: [{
+          id: "design-selection-front",
+          serviceId: CUSTOM_SERVICE_ID,
+          placementId: CUSTOM_PLACEMENT_FRONT_ID,
+          printSizeId: CUSTOM_PRINT_A3_ID,
+          note: "Depan",
+          uploadIds: []
+        }, {
+          id: "design-selection-back",
+          serviceId: CUSTOM_SERVICE_ID,
+          placementId: CUSTOM_PLACEMENT_BACK_ID,
+          printSizeId: CUSTOM_PRINT_A4_ID,
+          note: "Belakang",
+          uploadIds: []
+        }]
+      }],
       personalization: {
         ruleId: null,
         mode: "same_for_all",
@@ -201,6 +224,44 @@ function customSnapshot(): CustomProjectSnapshot {
         variantId: "10000000-0000-4000-8000-000000000012",
         variantSizeId: "10000000-0000-4000-8000-000000000013",
         sku: "CUSTOM-SKU"
+      }, {
+        key: "print-size:design-selection-front",
+        label: "Sablon DTF · Depan — Size Desain A3",
+        displayLabel: "Sablon DTF · Depan — Size Desain A3",
+        quantity: 12,
+        unitPrice: 0,
+        subtotal: 0,
+        kind: "print_size",
+        componentType: "print_size",
+        sourceRuleId: `print-size:${CUSTOM_PRINT_A3_ID}`,
+        calculationBasis: "per_item",
+        serviceId: CUSTOM_SERVICE_ID,
+        serviceSlug: "sablon-dtf",
+        serviceName: "Sablon DTF",
+        selectionId: "design-selection-front",
+        placementId: CUSTOM_PLACEMENT_FRONT_ID,
+        placementName: "Depan",
+        printSizeId: CUSTOM_PRINT_A3_ID,
+        printSizeName: "A3"
+      }, {
+        key: "print-size:design-selection-back",
+        label: "Sablon DTF · Belakang — Size Desain A4",
+        displayLabel: "Sablon DTF · Belakang — Size Desain A4",
+        quantity: 12,
+        unitPrice: 0,
+        subtotal: 0,
+        kind: "print_size",
+        componentType: "print_size",
+        sourceRuleId: `print-size:${CUSTOM_PRINT_A4_ID}`,
+        calculationBasis: "per_item",
+        serviceId: CUSTOM_SERVICE_ID,
+        serviceSlug: "sablon-dtf",
+        serviceName: "Sablon DTF",
+        selectionId: "design-selection-back",
+        placementId: CUSTOM_PLACEMENT_BACK_ID,
+        placementName: "Belakang",
+        printSizeId: CUSTOM_PRINT_A4_ID,
+        printSizeName: "A4"
       }],
       issues: [],
       pricedAt: NOW
@@ -321,7 +382,76 @@ describe("P6 Cart v5", () => {
     expect(restored.cart.lines[2]).toMatchObject({
       projectId: "custom-project-1",
       quantity: 12,
-      customProject: { pricing: { finalTotal: 600000 } }
+      customProject: {
+        items: [{
+          designPackages: [{
+            services: [
+              { id: "design-selection-front", placementId: CUSTOM_PLACEMENT_FRONT_ID, printSizeId: CUSTOM_PRINT_A3_ID },
+              { id: "design-selection-back", placementId: CUSTOM_PLACEMENT_BACK_ID, printSizeId: CUSTOM_PRINT_A4_ID }
+            ]
+          }]
+        }],
+        pricing: {
+          finalTotal: 600000,
+          lines: expect.arrayContaining([
+            expect.objectContaining({ selectionId: "design-selection-front", placementName: "Depan", printSizeName: "A3" }),
+            expect.objectContaining({ selectionId: "design-selection-back", placementName: "Belakang", printSizeName: "A4" })
+          ])
+        }
+      }
+    });
+  });
+
+  it("quarantines a persisted Custom Project with a partial design pair", () => {
+    const partial = customSnapshot();
+    partial.items[0].designPackages[0].services[0].printSizeId = null;
+    const line = createCustomProjectCartItem({
+      lineId: "partial-custom-line",
+      project: partial,
+      display: { title: "Partial Custom Project" },
+      ui: { role: "primary", name: "Partial Custom Project" }
+    });
+    expect(line.validation).toMatchObject({
+      status: "invalid",
+      code: "CUSTOM_PROJECT_CONFIGURATION_INVALID"
+    });
+
+    const restored = restoreCartV5(serializeCartV5([line], NOW), [], NOW);
+    expect(restored.cart.lines[0]).toMatchObject({
+      lineType: "legacy_unsupported",
+      checkoutEligible: false,
+      reasonCode: "cart_v5.invalid_line"
+    });
+    expect(getCartCheckoutDecision([...restored.cart.lines])).toMatchObject({
+      allowed: false,
+      code: "CART_LEGACY_UNSUPPORTED"
+    });
+  });
+
+  it("quarantines a persisted Custom Project when a pair no longer matches its pricing line", () => {
+    const snapshot = customSnapshot();
+    snapshot.items[0].designPackages[0].services[0].placementId = CUSTOM_PLACEMENT_BACK_ID;
+    const line = createCustomProjectCartItem({
+      lineId: "custom-stale-pricing-line",
+      project: snapshot,
+      display: { title: "Custom stale pricing" },
+      ui: { role: "primary", name: "Custom stale pricing" }
+    });
+
+    const restored = restoreCartV5(
+      serializeCartV5([line], NOW),
+      [],
+      NOW
+    );
+
+    expect(restored.cart.lines[0]).toMatchObject({
+      lineType: "legacy_unsupported",
+      checkoutEligible: false,
+      reasonCode: "cart_v5.invalid_line"
+    });
+    expect(getCartCheckoutDecision([...restored.cart.lines])).toMatchObject({
+      allowed: false,
+      code: "CART_LEGACY_UNSUPPORTED"
     });
   });
 

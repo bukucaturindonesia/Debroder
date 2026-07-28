@@ -563,8 +563,8 @@ function ServiceSummaryList({ services }: { services: ServiceSummary[] }) {
               <p className="font-semibold">{service.name}</p>
               <dl className="mt-3 grid grid-cols-2 gap-x-3 gap-y-2">
                 <CompactData label="Metode" value={service.method || "Dari rincian pesanan"} />
-                <CompactData label="Ukuran" value={service.printSize || "-"} />
-                <CompactData label="Placement" value={service.placement || "-"} />
+                <CompactData label="Size Desain" value={service.printSize || "-"} />
+                <CompactData label="Posisi Desain" value={service.placement || "-"} />
                 <CompactData label="Qty" value={service.quantity ? String(service.quantity) : "-"} />
                 <CompactData label="Personalisasi" value={service.personalization || "-"} />
                 <CompactData label="File" value={service.fileAvailable ? "Tersedia" : "Tidak tercatat"} />
@@ -631,10 +631,10 @@ function PriceLineEditor({ line, duplicate, disabled, onChange, onRemove }: {
         <Field label="Service code">
           <input value={line.serviceCode} disabled={disabled} onChange={(event) => onChange({ serviceCode: event.target.value })} className="min-h-11 w-full border border-brand-softGray px-3" />
         </Field>
-        <Field label="Placement">
+        <Field label="Posisi Desain">
           <input value={line.placement} disabled={disabled} onChange={(event) => onChange({ placement: event.target.value })} className="min-h-11 w-full border border-brand-softGray px-3" />
         </Field>
-        <Field label="Print size">
+        <Field label="Size Desain">
           <input value={line.printSize} disabled={disabled} onChange={(event) => onChange({ printSize: event.target.value })} className="min-h-11 w-full border border-brand-softGray px-3" />
         </Field>
         <div className="flex items-end justify-between gap-3">

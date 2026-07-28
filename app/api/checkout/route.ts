@@ -11,6 +11,7 @@ import { listCustomCategoryCatalogsByIds } from "@/lib/custom-commerce/data";
 import { priceCustomProject } from "@/lib/custom-commerce/pricing";
 import { isCheckoutEligibleCustomPricing } from "@/lib/custom-commerce/exact-pricing";
 import type { CustomProjectSnapshot } from "@/lib/custom-commerce/types";
+import { customCheckoutDesignPairIssue } from "@/lib/custom-commerce/validation";
 import { getAdminSupabaseEnv } from "@/lib/server-env";
 import { getAdminSupabaseClient } from "@/lib/supabase/admin";
 import {
@@ -135,6 +136,14 @@ export async function POST(request: Request) {
         code: "CHECKOUT_MIXED_CART",
         error: "Ready Stock dan pesanan Custom harus diselesaikan sebagai pesanan terpisah."
       }, 409);
+    }
+
+    const rawCustomProjects = rawBody && typeof rawBody === "object" && !Array.isArray(rawBody)
+      ? (rawBody as Record<string, unknown>).customProjects
+      : undefined;
+    const pairIssue = customCheckoutDesignPairIssue(rawCustomProjects);
+    if (pairIssue) {
+      return respond({ code: "CHECKOUT_CUSTOM_INVALID", error: pairIssue }, 409);
     }
 
     const body = parsePublicCheckoutRequest(rawBody);

@@ -14,7 +14,8 @@ import {
   readLegacyCartStorage,
   type LegacyCartStorageVersion
 } from "@/lib/compatibility/cart";
-import { parseCustomProject } from "@/lib/custom-commerce/validation";
+import { canonicalCustomDesignPairIssues, parseCustomProject } from "@/lib/custom-commerce/validation";
+import { customDesignPairPricingIntegrityIssue } from "@/lib/custom-commerce/design-pairs";
 import { isCheckoutEligibleCustomPricing, isFinalExactCustomPricing } from "@/lib/custom-commerce/exact-pricing";
 import type {
   CustomPriceStatus,
@@ -694,6 +695,11 @@ export function createCustomProjectCartItem(input: {
   display: CartLineDisplaySnapshot;
   ui?: Partial<CartItemUiSnapshot>;
 }): CartItem {
+  const configurationIssue = canonicalCustomDesignPairIssues(input.project)[0]
+    ?? customDesignPairPricingIntegrityIssue(input.project)
+    ?? (input.project.pricing.projectId !== input.project.id
+      ? "Snapshot harga tidak sesuai dengan Custom Project."
+      : null);
   const line: CustomProjectCartLine = {
     contractVersion: CONTRACT_VERSIONS.cartLine,
     lineId: input.lineId,
@@ -701,14 +707,21 @@ export function createCustomProjectCartItem(input: {
     quantity: input.project.pricing.totalQuantity,
     display: input.display,
     displayPricing: null,
-    validation: !isCheckoutEligibleCustomPricing(input.project.pricing)
+    validation: configurationIssue
       ? {
           status: "invalid",
           retryable: true,
-          code: "CUSTOM_PROJECT_PRICING_INVALID",
-          message: input.project.pricing.issues[0] ?? "Harga custom belum memenuhi aturan harga pasti."
+          code: "CUSTOM_PROJECT_CONFIGURATION_INVALID",
+          message: configurationIssue
         }
-      : { status: "valid", validatedAt: input.project.pricing.pricedAt },
+      : !isCheckoutEligibleCustomPricing(input.project.pricing)
+        ? {
+            status: "invalid",
+            retryable: true,
+            code: "CUSTOM_PROJECT_PRICING_INVALID",
+            message: input.project.pricing.issues[0] ?? "Harga custom belum memenuhi aturan harga pasti."
+          }
+        : { status: "valid", validatedAt: input.project.pricing.pricedAt },
     ...(input.project.note ? { notes: input.project.note } : {}),
     projectId: input.project.id,
     projectVersion: String(input.project.version),
@@ -1089,7 +1102,8 @@ function readCustomProjectSnapshot(value: unknown): CustomProjectSnapshot | null
   const record = isRecord(value) ? value : null;
   const pricing = readCustomProjectPricing(record?.pricing);
   if (!project || !pricing || pricing.projectId !== project.id) return null;
-  return { ...project, pricing };
+  const snapshot: CustomProjectSnapshot = { ...project, pricing };
+  return customDesignPairPricingIntegrityIssue(snapshot) ? null : snapshot;
 }
 
 function readCustomProjectPricing(value: unknown): CustomProjectPricing | null {
@@ -1168,6 +1182,7 @@ function isCustomPricingLine(value: unknown): value is CustomPricingLine {
       "serviceSlug",
       "serviceName",
       "pricingRuleId",
+      "selectionId",
       "placementId",
       "placementName",
       "printSizeId",

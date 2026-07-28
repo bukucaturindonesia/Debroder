@@ -106,7 +106,7 @@ const BASE_FINAL_CHECKS = [
 
 const CUSTOM_FINAL_CHECKS = [
   ["method", "Metode Custom"], ["design", "Desain aktif"],
-  ["placement", "Placement"], ["print_size", "Ukuran cetak"], ["personalization", "Personalisasi"],
+  ["placement", "Posisi Desain"], ["print_size", "Size Desain"], ["personalization", "Personalisasi"],
   ["qc", "Hasil QC"]
 ] as const;
 
@@ -717,7 +717,7 @@ export function FulfillmentDetailAdmin() {
     method: "Cocokkan dengan metode Custom pada pesanan",
     design: "Cocokkan dengan desain aktif yang telah disetujui",
     placement: "Cocokkan posisi desain dengan snapshot pesanan",
-    print_size: "Cocokkan ukuran cetak dengan snapshot pesanan",
+    print_size: "Cocokkan Size Desain dengan snapshot pesanan",
     personalization: "Cocokkan nama/nomor/personalisasi setiap item",
     qc: "Pastikan hasil QC terakhir berstatus lulus"
   };

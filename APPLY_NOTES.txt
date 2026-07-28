@@ -1,50 +1,16 @@
-CARA MENERAPKAN
+DEBRODER — Custom T-Shirt Configuration Integrity V1
+CURRENT CHANGED-FILES-ONLY PACKAGE
 
-1. Backup repository DEBRODER terbaru.
-2. Pastikan source yang akan menerima paket berasal dari Debroder(17).zip atau review setiap konflik secara manual.
-3. Extract ZIP ini ke folder sementara.
-4. Copy seluruh folder/file ke root repository DEBRODER dengan struktur path tetap.
-5. Pilih Replace/Merge untuk file yang sama.
-6. Jangan menghapus file lain.
-7. Tidak ada SQL atau migration yang perlu dijalankan.
-8. Review diff di GitHub Desktop.
-9. Jalankan quality gates:
+Baseline branch: UI-UX-001
+Baseline HEAD: 7b80a0b38d9e5f1b5354360376ab8c9f6b80b622
 
-   pnpm vitest run test/customer-order-hub.test.ts test/order-confirmation-payment-link.test.ts test/payment-verification-workspace.test.ts
-   pnpm typecheck
-   pnpm lint
-   pnpm test
-   pnpm build
+This archive contains only the current package's changed source/test files,
+plus this manifest and checksums. It contains no .git directory, migrations,
+dependencies, commit, deployment output, or unrelated files.
 
-10. Owner melakukan commit dan push ke branch Preview.
-11. Redeploy Preview Vercel.
+React #185 runtime correction work is included in the current working-tree
+state. Owner will run the official pnpm quality gates and runtime checks in
+PowerShell. Do not report the package PASS until those checks succeed.
 
-BROWSER CHECK WAJIB
-
-A. Ready Stock + Transfer
-- Confirmation shows one “TINDAKAN ANDA” card.
-- “Lihat Rekening & Bayar” works.
-- “Lacak Pesanan” is visible on desktop and sticky on mobile.
-- After proof upload, the form disappears.
-- The page shows “Pembayaran sedang diperiksa”.
-
-B. Ready Stock + Bayar di Toko + Ambil di Toko
-- No bank-transfer payment link appears.
-- Before ready, customer sees “Jangan datang ke toko sebelum ada konfirmasi”.
-- When ready, active action becomes “Hubungi Admin Sebelum Datang”.
-
-C. Custom
-- Payment link is not issued before the Custom quote is approved and locked.
-- Quote approval remains the only active task at the approval stage.
-- After payment proof, next stage text points to Surat Perintah Kerja.
-
-D. Tracking
-- Only the active status card is open.
-- Summary, payment, and shipping/pickup details remain collapsed.
-- “Perbarui Status” works.
-- Payment CTA stays on the same Preview deployment.
-
-E. Responsive
-- Mobile sticky tracking button does not cover page content.
-- Desktop tracking button remains in the order header.
-- No horizontal overflow at 360–430 px.
+Apply by copying the archive contents into the repository root while
+preserving relative paths. Review git diff before running tests.

@@ -49,7 +49,11 @@ type SnapshotLine = {
   subtotal: number | null;
   serviceId: string | null;
   serviceSlug: string | null;
+  serviceName: string | null;
+  selectionId: string | null;
+  placementId: string | null;
   placementName: string | null;
+  printSizeId: string | null;
   printSizeName: string | null;
 };
 
@@ -435,7 +439,7 @@ export function OrderDetailAdmin({ orderId }: { orderId: string }) {
         {customProjects.length ? (
           <section id="custom-pricing" className="scroll-mt-24 border border-brand-softGray bg-white p-5 sm:p-7">
             <h2 className="text-2xl font-semibold">Breakdown Custom Canonical</h2>
-            <p className="mt-2 text-sm text-brand-charcoal/60">Layanan, posisi, ukuran cetak, personalisasi, file, dan harga mengikuti rincian saat pesanan dibuat—bukan data PIM/CMS terbaru.</p>
+            <p className="mt-2 text-sm text-brand-charcoal/60">Layanan, Posisi Desain, Size Desain, personalisasi, file, dan harga mengikuti rincian saat pesanan dibuat—bukan data PIM/CMS terbaru.</p>
             <div className="mt-6 grid gap-5">
               {customProjects.map((project) => (
                 <article key={project.id} className="border border-brand-softGray p-4 sm:p-5">
@@ -452,7 +456,7 @@ export function OrderDetailAdmin({ orderId }: { orderId: string }) {
                     ))}
                   </div>
                   {project.items.map((item) => (
-                    <div key={item.id} className="mt-4 rounded-lg bg-brand-offWhite p-4 text-sm"><p className="font-semibold">{item.productName}</p>{item.selectedServices.length ? <div className="mt-3"><p className="font-semibold">Layanan yang dipilih saat pemesanan</p><ul className="mt-2 grid gap-2">{item.selectedServices.map((service) => { const serviceLine = project.lines.find((line) => line.serviceId === service.serviceId && line.kind === "service"); return <li key={service.id} className="border-l-2 border-brand-softGray pl-3"><p className="font-semibold">{serviceLine?.label || "Layanan custom"}</p><p className={`mt-1 text-xs ${service.assignedQuantity ? "text-brand-charcoal/60" : "font-semibold text-red-700"}`}>{service.packageName} · {service.assignedQuantity ? `${service.assignedQuantity} pcs dialokasikan` : "Belum dialokasikan—tidak ikut harga"}{service.placementId ? ` · Posisi ${service.placementId}` : ""}{service.printSizeId ? ` · Ukuran cetak ${service.printSizeId}` : ""}</p>{service.note ? <p className="mt-1 text-xs text-brand-charcoal/60">Catatan: {service.note}</p> : null}</li>; })}</ul></div> : null}{item.personalization ? <p className="mt-3 text-brand-charcoal/65">Personalisasi: {item.personalization}</p> : null}{item.uploads.length ? <div className="mt-3"><p className="font-semibold">File pelanggan</p><ul className="mt-1 grid gap-1 text-xs text-brand-charcoal/60">{item.uploads.map((upload) => <li key={upload.id}>{upload.fileName} · {upload.mimeType || "tipe tidak tersedia"} · {formatBytes(upload.fileSize)}</li>)}</ul></div> : null}</div>
+                    <div key={item.id} className="mt-4 rounded-lg bg-brand-offWhite p-4 text-sm"><p className="font-semibold">{item.productName}</p>{item.selectedServices.length ? <div className="mt-3"><p className="font-semibold">Posisi Desain + Size Desain saat pemesanan</p><ul className="mt-2 grid gap-2">{item.selectedServices.map((service) => { const pairLine = findSnapshotDesignPairLine(project.lines, service); const placementName = pairLine?.placementName ?? service.placementId ?? "Posisi tidak tersedia"; const printSizeName = pairLine?.printSizeName ?? service.printSizeId ?? "Size tidak tersedia"; return <li key={service.id} className="border-l-2 border-brand-softGray pl-3"><p className="font-semibold">{pairLine?.serviceName || pairLine?.label || "Layanan custom"}</p><p className={`mt-1 text-xs ${service.assignedQuantity ? "text-brand-charcoal/60" : "font-semibold text-red-700"}`}>{service.packageName} · {service.assignedQuantity ? `${service.assignedQuantity} pcs dialokasikan` : "Belum dialokasikan—tidak ikut harga"}</p><p className="mt-1 text-xs text-brand-charcoal/60">{placementName} — Size Desain {printSizeName}</p>{service.note ? <p className="mt-1 text-xs text-brand-charcoal/60">Catatan: {service.note}</p> : null}</li>; })}</ul></div> : null}{item.personalization ? <p className="mt-3 text-brand-charcoal/65">Personalisasi: {item.personalization}</p> : null}{item.uploads.length ? <div className="mt-3"><p className="font-semibold">File pelanggan</p><ul className="mt-1 grid gap-1 text-xs text-brand-charcoal/60">{item.uploads.map((upload) => <li key={upload.id}>{upload.fileName} · {upload.mimeType || "tipe tidak tersedia"} · {formatBytes(upload.fileSize)}</li>)}</ul></div> : null}</div>
                   ))}
                 </article>
               ))}
@@ -689,7 +693,11 @@ function parseCustomProjects(value: unknown): SnapshotProject[] {
         subtotal: numeric(line.subtotal),
         serviceId: nullableText(line.serviceId),
         serviceSlug: nullableText(line.serviceSlug),
+        serviceName: nullableText(line.serviceName),
+        selectionId: nullableText(line.selectionId),
+        placementId: nullableText(line.placementId),
         placementName: nullableText(line.placementName),
+        printSizeId: nullableText(line.printSizeId),
         printSizeName: nullableText(line.printSizeName)
       } satisfies SnapshotLine];
     }) : [];
@@ -759,8 +767,25 @@ function pricingStatusLabel(value: string) {
   return getPricingStatusLabel(value);
 }
 
+function findSnapshotDesignPairLine(
+  lines: SnapshotLine[],
+  selection: SnapshotItem["selectedServices"][number]
+) {
+  const identityMatch = lines.find((line) =>
+    line.selectionId === selection.id
+    || line.key === `print-size:${selection.id}`
+  );
+  if (identityMatch) return identityMatch;
+  return lines.find((line) =>
+    (line.kind === "print_size" || line.kind === "service")
+    && line.serviceId === selection.serviceId
+    && line.placementId === selection.placementId
+    && line.printSizeId === selection.printSizeId
+  );
+}
+
 function pricingKindLabel(value: string) {
-  const labels: Record<string, string> = { product: "Produk", service: "Layanan", placement: "Posisi Cetak", print_size: "Ukuran Cetak", personalization: "Personalisasi" };
+  const labels: Record<string, string> = { product: "Produk", service: "Layanan", placement: "Posisi Desain Historis", print_size: "Size Desain", personalization: "Personalisasi" };
   return labels[value] ?? "Rincian Harga";
 }
 

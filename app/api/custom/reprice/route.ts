@@ -1,7 +1,11 @@
 import { readCheckoutJsonBody, CheckoutBodyError } from "@/lib/checkout-abuse-protection";
 import { listCustomCategoryCatalogsByIds } from "@/lib/custom-commerce/data";
 import { priceCustomProject, toPublicCustomPricing } from "@/lib/custom-commerce/pricing";
-import { parseCustomProject } from "@/lib/custom-commerce/validation";
+import {
+  canonicalCustomDesignPairIssues,
+  parseCustomProject,
+  parseCustomProjectDraft
+} from "@/lib/custom-commerce/validation";
 
 function response(body: unknown, status: number) {
   return Response.json(body, { status, headers: { "cache-control": "private, no-store" } });
@@ -13,7 +17,16 @@ export async function POST(request: Request) {
       return response({ code: "CUSTOM_INVALID_REQUEST", error: "Konfigurasi custom tidak valid." }, 400);
     }
     const raw = await readCheckoutJsonBody(request);
-    const project = parseCustomProject(isRecord(raw) ? raw.project : null);
+    const rawProject = isRecord(raw) ? raw.project : null;
+    const draftProject = parseCustomProjectDraft(rawProject);
+    if (!draftProject) {
+      return response({ code: "CUSTOM_INVALID_REQUEST", error: "Konfigurasi custom tidak valid." }, 400);
+    }
+    const pairIssue = canonicalCustomDesignPairIssues(draftProject)[0];
+    if (pairIssue) {
+      return response({ code: "CUSTOM_DESIGN_PAIR_INVALID", error: pairIssue }, 409);
+    }
+    const project = parseCustomProject(rawProject);
     if (!project) return response({ code: "CUSTOM_INVALID_REQUEST", error: "Konfigurasi custom tidak valid." }, 400);
 
     const categoryIds = Array.from(new Set(project.items.map((item) => item.categoryId)));

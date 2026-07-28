@@ -144,6 +144,39 @@ describe("P13 customer order read model and polling", () => {
     )).toThrow("Status harga order pelanggan tidak dikenali.");
   });
 
+  it("projects every Custom design pair into the customer confirmation by selection identity", () => {
+    const customProjectSnapshot = [{
+      id: "custom-project-1",
+      pricing: {
+        lines: [
+          { key: "print-size:selection-front", selectionId: "selection-front", kind: "print_size", serviceId: "service-dtf", serviceName: "Sablon DTF", placementId: "placement-front", placementName: "Depan", printSizeId: "size-a3", printSizeName: "A3" },
+          { key: "print-size:selection-back", selectionId: "selection-back", kind: "print_size", serviceId: "service-dtf", serviceName: "Sablon DTF", placementId: "placement-back", placementName: "Belakang", printSizeId: "size-a4", printSizeName: "A4" }
+        ]
+      },
+      items: [{
+        id: "custom-item-1",
+        productName: "Kaos Custom",
+        allocations: [{ designPackageId: "package-1", quantity: 3 }],
+        designPackages: [{
+          id: "package-1",
+          name: "Desain Utama",
+          services: [
+            { id: "selection-front", serviceId: "service-dtf", placementId: "placement-front", printSizeId: "size-a3" },
+            { id: "selection-back", serviceId: "service-dtf", placementId: "placement-back", printSizeId: "size-a4" }
+          ]
+        }]
+      }]
+    }];
+    const projection = projectCustomerOrderServerReadModel(graph({ custom_project_snapshot: customProjectSnapshot }));
+    expect(projection).not.toBeNull();
+    if (!projection) return;
+    const confirmation = toCustomerOrderConfirmationReadModel(projection, payment);
+    expect(confirmation.customDesignPairs).toEqual([
+      expect.objectContaining({ serviceName: "Sablon DTF", placementName: "Depan", printSizeName: "A3", assignedQuantity: 3 }),
+      expect.objectContaining({ serviceName: "Sablon DTF", placementName: "Belakang", printSizeName: "A4", assignedQuantity: 3 })
+    ]);
+  });
+
   it("polls only a visible online non-terminal order and backs off after failure", () => {
     expect(shouldPollCustomerOrder({
       terminal: false,

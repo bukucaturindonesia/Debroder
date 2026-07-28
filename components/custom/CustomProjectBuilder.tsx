@@ -18,6 +18,22 @@ import type {
 import type { PimProduct, PimProductVariant, PimProductVariantSize } from "@/lib/types";
 import { fallbackImages } from "@/lib/fallback-data";
 import { formatRupiah } from "@/lib/url";
+import {
+  changeCustomDesignPairPlacement,
+  compatibleCustomPlacements,
+  compatibleCustomPrintSizes,
+  isCompleteCustomDesignPair,
+  isCustomDesignPairCompatible,
+  removeCustomDesignPackageFromItem,
+  removeCustomDesignPairFromItem
+} from "@/lib/custom-commerce/design-pairs";
+import { parseCustomProject } from "@/lib/custom-commerce/validation";
+import {
+  customBuilderHydrationKey,
+  shouldReplaceCustomPricing,
+  shouldReplaceCustomProject,
+  shouldRunCustomBuilderHydration
+} from "@/lib/custom-commerce/builder-runtime";
 
 type BuilderProps = {
   catalogs: CustomCategoryCatalog[];
@@ -37,26 +53,54 @@ export function CustomProjectBuilder({ catalogs, initialCategoryId, preselectedP
   const [dirty, setDirty] = useState(false);
   const [pricing, setPricing] = useState<CustomProjectPricing | null>(null);
   const [pricingState, setPricingState] = useState<"idle" | "loading" | "error">("idle");
+  const [addingToCart, setAddingToCart] = useState(false);
   const [message, setMessage] = useState("");
   const [addProductValue, setAddProductValue] = useState("");
   const pricingRequestVersion = useRef(0);
+  const projectRef = useRef(project);
+  const pricingRef = useRef(pricing);
+  const catalogsRef = useRef(catalogs);
+  const initialCatalogRef = useRef(initialCatalog);
+  const hydratedKeyRef = useRef<string | null>(null);
+  const hydrationKey = customBuilderHydrationKey({
+    catalogs,
+    initialCategoryId,
+    preselectedProductId,
+    requestedDraftId
+  });
+
+  projectRef.current = project;
+  pricingRef.current = pricing;
+  catalogsRef.current = catalogs;
+  initialCatalogRef.current = initialCatalog;
 
   useEffect(() => {
+    if (!shouldRunCustomBuilderHydration(hydratedKeyRef.current, hydrationKey)) return;
+    hydratedKeyRef.current = hydrationKey;
+
+    const currentCatalogs = catalogsRef.current;
+    const fallbackCatalog = initialCatalogRef.current;
     const restored = readCustomDraft(requestedDraftId);
-    if (restored && restored.items.every((item) => catalogs.some((catalog) => catalog.category.id === item.categoryId))) {
-      pricingRequestVersion.current += 1;
-      setProject(restored);
-      setMessage("Draft custom dipulihkan.");
+    let nextProject: CustomProject | null = null;
+    let restoredDraft = false;
+
+    if (restored && restored.items.every((item) => currentCatalogs.some((catalog) => catalog.category.id === item.categoryId))) {
+      nextProject = restored;
+      restoredDraft = true;
     } else if (preselectedProductId) {
-      const catalog = catalogs.find((candidate) => candidate.products.some((product) => product.id === preselectedProductId)) ?? initialCatalog;
+      const catalog = currentCatalogs.find((candidate) => candidate.products.some((product) => product.id === preselectedProductId)) ?? fallbackCatalog;
       const product = catalog?.products.find((candidate) => candidate.id === preselectedProductId);
-      if (catalog && product) {
-        pricingRequestVersion.current += 1;
-        setProject((current) => addProductGroup(current, catalog, product));
-      }
+      if (catalog && product) nextProject = addProductGroup(projectRef.current, catalog, product);
     }
+
+    if (nextProject && shouldReplaceCustomProject(projectRef.current, nextProject)) {
+      pricingRequestVersion.current += 1;
+      projectRef.current = nextProject;
+      setProject(nextProject);
+    }
+    if (restoredDraft) setMessage("Draft custom dipulihkan.");
     setHydrated(true);
-  }, [catalogs, initialCatalog, preselectedProductId, requestedDraftId]);
+  }, [hydrationKey, preselectedProductId, requestedDraftId]);
 
   useEffect(() => {
     if (!hydrated) return;
@@ -75,11 +119,21 @@ export function CustomProjectBuilder({ catalogs, initialCategoryId, preselectedP
   const selectedCatalog = catalogs.find((catalog) => catalog.category.id === project.categoryId) ?? initialCatalog;
 
   function mutate(updater: (current: CustomProject) => CustomProject) {
+    const current = projectRef.current;
+    const candidate = updater(current);
+    if (!shouldReplaceCustomProject(current, candidate)) return;
+
+    const next = { ...candidate, updatedAt: new Date().toISOString() };
     pricingRequestVersion.current += 1;
-    setProject((current) => ({ ...updater(current), updatedAt: new Date().toISOString() }));
+    projectRef.current = next;
+    setProject(next);
     setDirty(true);
-    setPricing(null);
+    if (pricingRef.current) {
+      pricingRef.current = null;
+      setPricing(null);
+    }
     setPricingState("idle");
+    setAddingToCart(false);
     setMessage("");
   }
 
@@ -109,10 +163,15 @@ export function CustomProjectBuilder({ catalogs, initialCategoryId, preselectedP
     if (!product) return;
     const next = createProject(selectedCatalog, "preset", preset.id);
     const item = createProjectItem(selectedCatalog, product, preset);
+    const presetProject = { ...next, items: [item], updatedAt: new Date().toISOString() };
     pricingRequestVersion.current += 1;
-    setProject({ ...next, items: [item], updatedAt: new Date().toISOString() });
+    projectRef.current = presetProject;
+    setProject(presetProject);
     setDirty(true);
-    setPricing(null);
+    if (pricingRef.current) {
+      pricingRef.current = null;
+      setPricing(null);
+    }
     setStep(1);
   }
 
@@ -131,6 +190,7 @@ export function CustomProjectBuilder({ catalogs, initialCategoryId, preselectedP
   }
 
   async function reprice() {
+    if (pricingState === "loading" || addingToCart) return;
     for (let index = 0; index < steps.length - 1; index += 1) {
       const issue = validateBuilderStep(project, catalogs, index);
       if (issue) {
@@ -143,6 +203,11 @@ export function CustomProjectBuilder({ catalogs, initialCategoryId, preselectedP
     const requestVersion = pricingRequestVersion.current + 1;
     pricingRequestVersion.current = requestVersion;
     const requestProject = project;
+    if (pricingRef.current) {
+      pricingRef.current = null;
+      setPricing(null);
+    }
+    setAddingToCart(false);
     setPricingState("loading");
     setMessage("");
     try {
@@ -150,7 +215,10 @@ export function CustomProjectBuilder({ catalogs, initialCategoryId, preselectedP
       const payload = await response.json() as { pricing?: CustomProjectPricing; error?: string };
       if (!response.ok || !payload.pricing) throw new Error("Harga belum dapat divalidasi. Periksa pilihan produk lalu coba lagi.");
       if (requestVersion !== pricingRequestVersion.current) return;
-      setPricing(payload.pricing);
+      if (shouldReplaceCustomPricing(pricingRef.current, payload.pricing)) {
+        pricingRef.current = payload.pricing;
+        setPricing(payload.pricing);
+      }
       setPricingState("idle");
       setMessage(payload.pricing.status === "quotation_required" ? "Konfigurasi valid. Order akan dibuat tanpa nominal, lalu admin mengirim penawaran resmi." : "Harga pasti dan konfigurasi sudah divalidasi server.");
       setDirty(false);
@@ -162,8 +230,15 @@ export function CustomProjectBuilder({ catalogs, initialCategoryId, preselectedP
   }
 
   function addToCart() {
-    if (!pricing || pricing.issues.length) return;
-    const snapshot: CustomProjectSnapshot = { ...project, pricing };
+    if (addingToCart || pricingState === "loading" || !pricing || pricing.issues.length) return;
+    const canonicalProject = parseCustomProject(project);
+    if (!canonicalProject) {
+      setPricingState("error");
+      setMessage("Pilih minimal satu Posisi Desain dan Size Desain.");
+      return;
+    }
+    setAddingToCart(true);
+    const snapshot: CustomProjectSnapshot = { ...canonicalProject, pricing };
     cart.addCustomProject(snapshot);
     writeCustomDraft(project);
     setDirty(false);
@@ -175,8 +250,14 @@ export function CustomProjectBuilder({ catalogs, initialCategoryId, preselectedP
     pricingRequestVersion.current += 1;
     await deleteUploadRefs(project.items.flatMap((item) => item.uploads), project.sessionToken);
     removeCustomDraft(project.id);
-    setProject(createProject(initialCatalog));
-    setPricing(null);
+    const emptyProject = createProject(initialCatalogRef.current);
+    projectRef.current = emptyProject;
+    setProject(emptyProject);
+    if (pricingRef.current) {
+      pricingRef.current = null;
+      setPricing(null);
+    }
+    setAddingToCart(false);
     setDirty(false);
     setStep(0);
     setMessage("Draft dihapus.");
@@ -213,7 +294,7 @@ export function CustomProjectBuilder({ catalogs, initialCategoryId, preselectedP
           {step === 1 ? <AllocationsStep catalogs={catalogs} project={project} mutate={mutate} /> : null}
           {step === 2 ? <DesignStep catalogs={catalogs} project={project} mutate={mutate} /> : null}
           {step === 3 ? <AssignmentStep catalogs={catalogs} project={project} mutate={mutate} /> : null}
-          {step === 4 ? <ReviewStep catalogs={catalogs} project={project} pricing={pricing} totalQuantity={totalQuantity} pricingState={pricingState} onReprice={reprice} onAddToCart={addToCart} /> : null}
+          {step === 4 ? <ReviewStep catalogs={catalogs} project={project} pricing={pricing} totalQuantity={totalQuantity} pricingState={pricingState} addingToCart={addingToCart} onReprice={reprice} onAddToCart={addToCart} /> : null}
         </div>
 
         {message ? <p role="status" className={`mt-6 rounded-2xl p-4 text-sm ${pricingState === "error" ? "bg-red-50 text-red-800" : "bg-[#e9f4ee] text-[#063d24]"}`}>{message}</p> : null}
@@ -285,21 +366,35 @@ function DesignStep({ catalogs, project, mutate }: { catalogs: CustomCategoryCat
 
 function DesignPackageEditor({ catalog, item, designPackage, sessionToken, mutate }: { catalog: CustomCategoryCatalog; item: CustomProjectItem; designPackage: CustomDesignPackage; sessionToken: string; mutate: (updater: (project: CustomProject) => CustomProject) => void }) {
   const [serviceId, setServiceId] = useState("");
-  const compatibleServices = catalog.services.filter((service) => catalog.compatibility.some((rule) => rule.serviceId === service.id && (!rule.productId || rule.productId === item.productId) && (!rule.categoryId || rule.categoryId === item.categoryId)));
-  const usedServiceIds = new Set(designPackage.services.map((service) => service.serviceId));
+  const compatibleServices = catalog.services.filter((service) => catalog.compatibility.some((rule) =>
+    rule.serviceId === service.id
+    && (!rule.productId || rule.productId === item.productId)
+    && (!rule.categoryId || rule.categoryId === item.categoryId)
+  ));
 
   function updatePackage(update: (current: CustomDesignPackage) => CustomDesignPackage) {
-    mutate((project) => updateProjectItem(project, item.id, (target) => ({ ...target, designPackages: target.designPackages.map((candidate) => candidate.id === designPackage.id ? update(candidate) : candidate) })));
+    mutate((project) => updateProjectItem(project, item.id, (target) => ({
+      ...target,
+      designPackages: target.designPackages.map((candidate) =>
+        candidate.id === designPackage.id ? update(candidate) : candidate
+      )
+    })));
   }
 
   function addService() {
-    if (!serviceId || usedServiceIds.has(serviceId)) return;
+    if (!serviceId) return;
     mutate((project) => updateProjectItem(project, item.id, (target) => {
       const autoAssign = target.designPackages.length === 1;
       return {
         ...target,
-        designPackages: target.designPackages.map((candidate) => candidate.id === designPackage.id ? { ...candidate, services: [...candidate.services, createDesignService(serviceId)] } : candidate),
-        allocations: autoAssign ? target.allocations.map((allocation) => allocation.designPackageId === null ? { ...allocation, designPackageId: designPackage.id } : allocation) : target.allocations
+        designPackages: target.designPackages.map((candidate) => candidate.id === designPackage.id
+          ? { ...candidate, services: [...candidate.services, createDesignService(serviceId)] }
+          : candidate),
+        allocations: autoAssign
+          ? target.allocations.map((allocation) => allocation.designPackageId === null
+            ? { ...allocation, designPackageId: designPackage.id }
+            : allocation)
+          : target.allocations
       };
     }));
     setServiceId("");
@@ -312,57 +407,174 @@ function DesignPackageEditor({ catalog, item, designPackage, sessionToken, mutat
         ...designPackage,
         id: localId(),
         name: `${designPackage.name} (salinan)`,
-        services: designPackage.services.map((service) => ({ ...service, id: localId() }))
+        services: designPackage.services.map((service) => ({
+          ...service,
+          id: localId(),
+          placementId: null,
+          printSizeId: null,
+          uploadIds: []
+        }))
       }]
     })));
   }
 
-  const assignedQuantity = item.allocations.filter((allocation) => allocation.designPackageId === designPackage.id).reduce((sum, allocation) => sum + allocation.quantity, 0);
+  function removeSelection(selectionId: string) {
+    mutate((project) => updateProjectItem(project, item.id, (target) =>
+      removeCustomDesignPairFromItem(target, designPackage.id, selectionId)
+    ));
+  }
+
+  const assignedQuantity = item.allocations
+    .filter((allocation) => allocation.designPackageId === designPackage.id)
+    .reduce((sum, allocation) => sum + allocation.quantity, 0);
 
   return <article className="rounded-[24px] bg-[#f5f5ef] p-4 sm:p-5">
-    <div className="flex flex-wrap items-center justify-between gap-3"><input aria-label="Nama Paket Desain" value={designPackage.name} maxLength={120} onChange={(event) => updatePackage((current) => ({ ...current, name: event.target.value }))} className="min-h-10 rounded-xl border border-black/15 bg-white px-3 font-semibold" /><div className="flex gap-3"><button type="button" onClick={duplicate} className="text-xs font-semibold underline">Duplikasi</button><button type="button" disabled={item.designPackages.length === 1} onClick={() => mutate((project) => updateProjectItem(project, item.id, (target) => ({ ...target, designPackages: target.designPackages.filter((candidate) => candidate.id !== designPackage.id), allocations: target.allocations.map((allocation) => allocation.designPackageId === designPackage.id ? { ...allocation, designPackageId: null } : allocation) })))} className="text-xs font-semibold text-red-700 underline disabled:opacity-30">Hapus</button></div></div>
-    <div className="mt-4 grid gap-3">{designPackage.services.map((selection) => <ServiceEditor key={selection.id} catalog={catalog} item={item} selection={selection} sessionToken={sessionToken} attachUpload={(upload) => mutate((project) => updateProjectItem(project, item.id, (target) => target.uploads.some((candidate) => candidate.id === upload.id) ? target : { ...target, uploads: [...target.uploads, upload] }))} updatePackage={updatePackage} />)}</div>
-    {designPackage.services.length ? <p className={`mt-3 text-xs font-semibold ${assignedQuantity ? "text-[#063d24]" : "text-red-700"}`}>{assignedQuantity ? `Layanan paket ini dialokasikan ke ${assignedQuantity} pcs.` : "Layanan sudah dipilih, tetapi paket belum dialokasikan. Selesaikan pada tahap Alokasi."}</p> : null}
-    <div className="mt-4 grid gap-3 sm:grid-cols-[1fr_auto]"><select value={serviceId} onChange={(event) => setServiceId(event.target.value)} className="min-h-11 rounded-xl border border-black/15 bg-white px-3 text-sm"><option value="">Tambah layanan</option>{compatibleServices.filter((service) => !usedServiceIds.has(service.id)).map((service) => <option key={service.id} value={service.id}>{service.name}</option>)}</select><button type="button" disabled={!serviceId} onClick={addService} className="min-h-11 rounded-full border border-black/15 px-4 text-xs font-semibold disabled:opacity-35">Tambah</button></div>
+    <div className="flex flex-wrap items-center justify-between gap-3">
+      <input aria-label="Nama Paket Desain" value={designPackage.name} maxLength={120} onChange={(event) => updatePackage((current) => ({ ...current, name: event.target.value }))} className="min-h-10 rounded-xl border border-black/15 bg-white px-3 font-semibold" />
+      <div className="flex gap-3">
+        <button type="button" onClick={duplicate} className="text-xs font-semibold underline">Duplikasi</button>
+        <button type="button" disabled={item.designPackages.length === 1} onClick={() => mutate((project) => updateProjectItem(project, item.id, (target) => removeCustomDesignPackageFromItem(target, designPackage.id)))} className="text-xs font-semibold text-red-700 underline disabled:opacity-30">Hapus</button>
+      </div>
+    </div>
+    <div className="mt-4 grid gap-3">
+      {designPackage.services.map((selection) => <ServiceEditor key={selection.id} catalog={catalog} item={item} selection={selection} sessionToken={sessionToken} attachUpload={(upload) => mutate((project) => updateProjectItem(project, item.id, (target) => target.uploads.some((candidate) => candidate.id === upload.id) ? target : { ...target, uploads: [...target.uploads, upload] }))} onRemove={() => removeSelection(selection.id)} updatePackage={updatePackage} />)}
+    </div>
+    {designPackage.services.length ? <p className={`mt-3 text-xs font-semibold ${assignedQuantity ? "text-[#063d24]" : "text-red-700"}`}>{assignedQuantity ? `Pasangan desain paket ini dialokasikan ke ${assignedQuantity} pcs.` : "Pasangan desain sudah dipilih, tetapi paket belum dialokasikan. Selesaikan pada tahap Alokasi."}</p> : null}
+    <div className="mt-4 grid gap-3 sm:grid-cols-[1fr_auto]">
+      <select aria-label="Metode produksi" value={serviceId} onChange={(event) => setServiceId(event.target.value)} className="min-h-11 rounded-xl border border-black/15 bg-white px-3 text-sm">
+        <option value="">Pilih metode untuk pasangan baru</option>
+        {compatibleServices.map((service) => <option key={service.id} value={service.id}>{service.name}</option>)}
+      </select>
+      <button type="button" disabled={!serviceId} onClick={addService} className="min-h-11 rounded-full border border-black/15 px-4 text-xs font-semibold disabled:opacity-35">+ Posisi Desain</button>
+    </div>
   </article>;
 }
 
-function ServiceEditor({ catalog, item, selection, sessionToken, attachUpload, updatePackage }: { catalog: CustomCategoryCatalog; item: CustomProjectItem; selection: CustomDesignService; sessionToken: string; attachUpload: (upload: CustomProjectItem["uploads"][number]) => void; updatePackage: (update: (current: CustomDesignPackage) => CustomDesignPackage) => void }) {
+function ServiceEditor({ catalog, item, selection, sessionToken, attachUpload, onRemove, updatePackage }: { catalog: CustomCategoryCatalog; item: CustomProjectItem; selection: CustomDesignService; sessionToken: string; attachUpload: (upload: CustomProjectItem["uploads"][number]) => void; onRemove: () => void; updatePackage: (update: (current: CustomDesignPackage) => CustomDesignPackage) => void }) {
   const service = catalog.services.find((candidate) => candidate.id === selection.serviceId);
   const [uploading, setUploading] = useState(false);
   const [uploadError, setUploadError] = useState("");
   if (!service) return null;
-  const compatibleRules = catalog.compatibility.filter((rule) => rule.serviceId === service.id && (!rule.productId || rule.productId === item.productId) && (!rule.categoryId || rule.categoryId === item.categoryId));
-  const allowedPlacementIds = new Set(compatibleRules.map((rule) => rule.placementId).filter(Boolean));
-  const allowedPrintSizeIds = new Set(compatibleRules.map((rule) => rule.printSizeId).filter(Boolean));
-  const placements = allowedPlacementIds.size ? catalog.placements.filter((placement) => allowedPlacementIds.has(placement.id)) : catalog.placements;
-  const printSizes = allowedPrintSizeIds.size ? catalog.printSizes.filter((printSize) => allowedPrintSizeIds.has(printSize.id)) : catalog.printSizes;
+
+  const otherPlacementIds = new Set(item.designPackages.flatMap((designPackage) =>
+    designPackage.services
+      .filter((candidate) => candidate.id !== selection.id)
+      .map((candidate) => candidate.placementId)
+      .filter((placementId): placementId is string => Boolean(placementId))
+  ));
+  const placements = compatibleCustomPlacements(
+    catalog,
+    service.id,
+    item.productId,
+    item.categoryId
+  ).filter((placement) => !otherPlacementIds.has(placement.id) || placement.id === selection.placementId);
+  const printSizes = compatibleCustomPrintSizes(
+    catalog,
+    service.id,
+    item.productId,
+    item.categoryId,
+    selection.placementId
+  );
+  const selectedPlacement = catalog.placements.find((placement) => placement.id === selection.placementId);
+  const selectedPrintSize = catalog.printSizes.find((printSize) => printSize.id === selection.printSizeId);
+  const duplicatePosition = Boolean(selection.placementId && otherPlacementIds.has(selection.placementId));
+  const incompatiblePair = isCompleteCustomDesignPair(selection) && !isCustomDesignPairCompatible(
+    catalog,
+    service.id,
+    item.productId,
+    item.categoryId,
+    selection.placementId,
+    selection.printSizeId
+  );
+  const pairError = duplicatePosition
+    ? `Posisi Desain ${selectedPlacement?.name ?? "terpilih"} sudah digunakan pada produk ini.`
+    : selection.placementId && !selection.printSizeId
+      ? `Pilih Size Desain untuk posisi ${selectedPlacement?.name ?? "terpilih"}.`
+      : !selection.placementId && selection.printSizeId
+        ? `Pilih Posisi Desain untuk Size Desain ${selectedPrintSize?.name ?? "terpilih"}.`
+        : incompatiblePair
+          ? `Size Desain ${selectedPrintSize?.name ?? "terpilih"} tidak kompatibel dengan posisi ${selectedPlacement?.name ?? "terpilih"}.`
+          : "";
+  const errorId = `design-pair-error-${selection.id}`;
 
   function update(updates: Partial<CustomDesignService>) {
-    updatePackage((current) => ({ ...current, services: current.services.map((candidate) => candidate.id === selection.id ? { ...candidate, ...updates } : candidate) }));
+    updatePackage((current) => ({
+      ...current,
+      services: current.services.map((candidate) =>
+        candidate.id === selection.id ? { ...candidate, ...updates } : candidate
+      )
+    }));
+  }
+
+  function changePlacement(nextPlacementId: string | null) {
+    const nextSelection = changeCustomDesignPairPlacement(
+      selection,
+      nextPlacementId,
+      catalog,
+      item.productId,
+      item.categoryId
+    );
+    update({
+      placementId: nextSelection.placementId,
+      printSizeId: nextSelection.printSizeId
+    });
   }
 
   async function upload(file: File | undefined) {
     if (!file) return;
-    setUploading(true); setUploadError("");
+    setUploading(true);
+    setUploadError("");
     try {
-      const form = new FormData(); form.set("file", file); form.set("session_token", sessionToken);
+      const form = new FormData();
+      form.set("file", file);
+      form.set("session_token", sessionToken);
       const response = await fetch("/api/customer-uploads", { method: "POST", body: form });
       const payload = await response.json() as { upload?: CustomProjectItem["uploads"][number]; error?: string };
-      if (!response.ok || !payload.upload) throw new Error("File belum dapat diunggah. Periksa jenis dan ukuran file lalu coba lagi.");
-      updatePackage((current) => ({ ...current, services: current.services.map((candidate) => candidate.id === selection.id ? { ...candidate, uploadIds: [...candidate.uploadIds, payload.upload!.id] } : candidate) }));
+      if (!response.ok || !payload.upload) {
+        throw new Error("File belum dapat diunggah. Periksa jenis dan ukuran file lalu coba lagi.");
+      }
+      updatePackage((current) => ({
+        ...current,
+        services: current.services.map((candidate) => candidate.id === selection.id
+          ? { ...candidate, uploadIds: [...candidate.uploadIds, payload.upload!.id] }
+          : candidate)
+      }));
       attachUpload(payload.upload);
-    } catch (error) { setUploadError(error instanceof Error ? error.message : "File belum dapat diunggah. Coba lagi."); }
-    finally { setUploading(false); }
+    } catch (error) {
+      setUploadError(error instanceof Error ? error.message : "File belum dapat diunggah. Coba lagi.");
+    } finally {
+      setUploading(false);
+    }
   }
 
-  return <div className="rounded-2xl bg-white p-4"><div className="flex items-start justify-between gap-4"><div><p className="font-semibold">{service.name}</p>{service.description ? <p className="mt-1 text-xs leading-5 text-black/55">{service.description}</p> : null}</div><button type="button" onClick={() => updatePackage((current) => ({ ...current, services: current.services.filter((candidate) => candidate.id !== selection.id) }))} className="text-xs font-semibold text-red-700 underline">Hapus</button></div>
+  return <div className="rounded-2xl bg-white p-4">
+    <div className="flex items-start justify-between gap-4">
+      <div>
+        <p className="font-semibold">{service.name}</p>
+        <p className="mt-1 text-xs font-semibold text-black/45">Posisi Desain + Size Desain</p>
+        {service.description ? <p className="mt-1 text-xs leading-5 text-black/55">{service.description}</p> : null}
+      </div>
+      <button type="button" onClick={onRemove} className="text-xs font-semibold text-red-700 underline">Hapus pasangan</button>
+    </div>
     <div className="mt-4 grid gap-3 sm:grid-cols-2">
-      <Field label="Placement"><select value={selection.placementId ?? ""} onChange={(event) => update({ placementId: event.target.value || null })}><option value="">Pilih placement</option>{placements.map((placement) => <option key={placement.id} value={placement.id}>{placement.name}{placement.priceAdjustment ? ` (+${formatRupiah(placement.priceAdjustment)})` : ""}</option>)}</select></Field>
-      <Field label="Ukuran cetak"><select value={selection.printSizeId ?? ""} onChange={(event) => update({ printSizeId: event.target.value || null })}><option value="">Pilih ukuran</option>{printSizes.map((printSize) => <option key={printSize.id} value={printSize.id}>{printSize.name}{printSize.priceAdjustment ? ` (+${formatRupiah(printSize.priceAdjustment)})` : ""}</option>)}</select></Field>
+      <Field label="Posisi Desain">
+        <select value={selection.placementId ?? ""} aria-invalid={Boolean(pairError)} aria-describedby={pairError ? errorId : undefined} onChange={(event) => changePlacement(event.target.value || null)}>
+          <option value="">Pilih Posisi Desain</option>
+          {placements.map((placement) => <option key={placement.id} value={placement.id}>{placement.name}</option>)}
+        </select>
+      </Field>
+      <Field label="Size Desain">
+        <select disabled={!selection.placementId} value={selection.printSizeId ?? ""} aria-invalid={Boolean(pairError)} aria-describedby={pairError ? errorId : undefined} onChange={(event) => update({ printSizeId: event.target.value || null })}>
+          <option value="">{selection.placementId ? "Pilih Size Desain" : "Pilih Posisi Desain dahulu"}</option>
+          {printSizes.map((printSize) => <option key={printSize.id} value={printSize.id}>{printSize.name}{printSize.priceAdjustment ? ` (+${formatRupiah(printSize.priceAdjustment)})` : ""}</option>)}
+        </select>
+      </Field>
       <Field label={`Catatan${service.requiresNotes ? " *" : ""}`}><input value={selection.note} maxLength={1000} required={service.requiresNotes} onChange={(event) => update({ note: event.target.value })} /></Field>
       <Field label={`File desain${service.requiresUpload ? " *" : ""}`}><input type="file" disabled={uploading} accept={service.allowedFileTypes.map((extension) => `.${extension}`).join(",")} onChange={(event) => upload(event.target.files?.[0])} /></Field>
-    </div>{selection.uploadIds.length ? <p className="mt-3 text-xs text-[#063d24]">{selection.uploadIds.length} file terhubung.</p> : null}{uploadError ? <p className="mt-3 text-xs text-red-700">{uploadError}</p> : null}
+    </div>
+    {pairError ? <p id={errorId} role="alert" className="mt-3 text-xs font-semibold text-red-700">{pairError}</p> : null}
+    {selection.uploadIds.length ? <p className="mt-3 text-xs text-[#063d24]">{selection.uploadIds.length} file terhubung ke pasangan ini.</p> : null}
+    {uploadError ? <p className="mt-3 text-xs text-red-700">{uploadError}</p> : null}
   </div>;
 }
 
@@ -389,18 +601,45 @@ function PersonalizationEditor({ item, catalog, mutate }: { item: CustomProjectI
   </div>;
 }
 
-function ReviewStep({ catalogs, project, pricing, totalQuantity, pricingState, onReprice, onAddToCart }: { catalogs: CustomCategoryCatalog[]; project: CustomProject; pricing: CustomProjectPricing | null; totalQuantity: number; pricingState: "idle" | "loading" | "error"; onReprice: () => void; onAddToCart: () => void }) {
-  return <div><StepHeading title="Ringkasan" detail="Sistem memeriksa ulang produk, varian, jumlah minimum, kecocokan layanan, file, personalisasi, dan harga." />
-    <div className="mt-5 grid gap-5 lg:grid-cols-[1fr_360px]"><div className="grid gap-4">{project.items.map((item) => { const catalog = catalogs.find((candidate) => candidate.category.id === item.categoryId); return <article key={item.id} className="rounded-[24px] bg-[#f5f5ef] p-5"><div className="flex items-start justify-between gap-4"><div><p className="text-xs font-semibold uppercase tracking-[0.12em] text-black/45">{item.categoryName}</p><h3 className="mt-1 text-lg font-semibold">{item.productName}</h3></div><span className="font-semibold">{item.allocations.reduce((sum, allocation) => sum + allocation.quantity, 0)} pcs</span></div><div className="mt-4 grid gap-2 text-sm text-black/60">{item.allocations.map((allocation) => <p key={allocation.id}>{allocation.variantName} · {allocation.sizeName} · {allocation.quantity} pcs · {item.designPackages.find((designPackage) => designPackage.id === allocation.designPackageId)?.name || "Tanpa layanan"}</p>)}</div>{item.designPackages.map((designPackage) => designPackage.services.length ? <div key={designPackage.id} className="mt-4 border-t border-black/10 pt-3"><p className="text-xs font-semibold uppercase tracking-[0.1em] text-black/45">{designPackage.name}</p>{designPackage.services.map((selection) => { const service = catalog?.services.find((candidate) => candidate.id === selection.serviceId); const placement = catalog?.placements.find((candidate) => candidate.id === selection.placementId); const printSize = catalog?.printSizes.find((candidate) => candidate.id === selection.printSizeId); return <p key={selection.id} className="mt-2 text-sm text-black/65">{service?.name || "Layanan"}{printSize ? ` · ${printSize.name}` : ""}{placement ? ` · ${placement.name}` : ""}{selection.uploadIds.length ? ` · ${selection.uploadIds.length} file` : ""}</p>; })}</div> : null)}{item.personalization.ruleId ? <p className="mt-4 text-sm text-black/65">Personalisasi: {item.personalization.mode === "same_for_all" ? item.personalization.sharedValue : `${item.personalization.entries.length} data individual`}</p> : null}{item.note ? <p className="mt-2 text-sm text-black/65">Catatan: {item.note}</p> : null}</article>; })}</div>
-      <aside className="h-fit rounded-[24px] border border-black/10 p-5 lg:sticky lg:top-28"><h3 className="text-xl font-semibold">Total proyek</h3><p className="mt-2 text-sm text-black/55">{project.items.length} grup produk · {totalQuantity} pcs</p>
+function ReviewStep({ catalogs, project, pricing, totalQuantity, pricingState, addingToCart, onReprice, onAddToCart }: { catalogs: CustomCategoryCatalog[]; project: CustomProject; pricing: CustomProjectPricing | null; totalQuantity: number; pricingState: "idle" | "loading" | "error"; addingToCart: boolean; onReprice: () => void; onAddToCart: () => void }) {
+  return <div>
+    <StepHeading title="Ringkasan" detail="Sistem memeriksa ulang produk, varian, jumlah minimum, setiap Posisi Desain + Size Desain, file, personalisasi, dan harga." />
+    <div className="mt-5 grid gap-5 lg:grid-cols-[1fr_360px]">
+      <div className="grid gap-4">{project.items.map((item) => {
+        const catalog = catalogs.find((candidate) => candidate.category.id === item.categoryId);
+        return <article key={item.id} className="rounded-[24px] bg-[#f5f5ef] p-5">
+          <div className="flex items-start justify-between gap-4">
+            <div><p className="text-xs font-semibold uppercase tracking-[0.12em] text-black/45">{item.categoryName}</p><h3 className="mt-1 text-lg font-semibold">{item.productName}</h3></div>
+            <span className="font-semibold">{item.allocations.reduce((sum, allocation) => sum + allocation.quantity, 0)} pcs</span>
+          </div>
+          <div className="mt-4 grid gap-2 text-sm text-black/60">{item.allocations.map((allocation) => <p key={allocation.id}>{allocation.variantName} · {allocation.sizeName} · {allocation.quantity} pcs · {item.designPackages.find((designPackage) => designPackage.id === allocation.designPackageId)?.name || "Tanpa layanan"}</p>)}</div>
+          {item.designPackages.map((designPackage) => designPackage.services.length ? <div key={designPackage.id} className="mt-4 border-t border-black/10 pt-3">
+            <p className="text-xs font-semibold uppercase tracking-[0.1em] text-black/45">{designPackage.name}</p>
+            {designPackage.services.map((selection) => {
+              const service = catalog?.services.find((candidate) => candidate.id === selection.serviceId);
+              const placement = catalog?.placements.find((candidate) => candidate.id === selection.placementId);
+              const printSize = catalog?.printSizes.find((candidate) => candidate.id === selection.printSizeId);
+              return <div key={selection.id} className="mt-2 text-sm text-black/65">
+                <p className="font-semibold">{service?.name || "Layanan"}</p>
+                <p>{placement?.name || "Posisi belum dipilih"} — {printSize ? `Size Desain ${printSize.name}` : "Size Desain belum dipilih"}{selection.uploadIds.length ? ` · ${selection.uploadIds.length} file` : ""}</p>
+              </div>;
+            })}
+          </div> : null)}
+          {item.personalization.ruleId ? <p className="mt-4 text-sm text-black/65">Personalisasi: {item.personalization.mode === "same_for_all" ? item.personalization.sharedValue : `${item.personalization.entries.length} data individual`}</p> : null}
+          {item.note ? <p className="mt-2 text-sm text-black/65">Catatan: {item.note}</p> : null}
+        </article>;
+      })}</div>
+      <aside className="h-fit rounded-[24px] border border-black/10 p-5 lg:sticky lg:top-28">
+        <h3 className="text-xl font-semibold">Total proyek</h3>
+        <p className="mt-2 text-sm text-black/55">{project.items.length} grup produk · {totalQuantity} pcs</p>
         {pricing ? <div className="mt-5">
           <p className="text-xs font-semibold uppercase tracking-[0.12em] text-black/45">{pricing.status === "final" ? "Harga pasti" : "Penawaran resmi diperlukan"}</p>
           <p className="mt-2 text-2xl font-bold">{pricing.status === "final" ? formatRupiah(pricing.finalTotal) : "Belum ada nominal"}</p>
           <p className="mt-2 text-sm leading-6 text-black/55">{pricing.status === "final" ? "Nominal dihitung server dari konfigurasi dan aturan harga aktif." : "Order dibuat terlebih dahulu. Pembayaran baru tersedia setelah harga final dikirim dan disetujui."}</p>
           <div className="mt-4 max-h-56 overflow-y-auto border-t border-black/10 pt-3 text-xs text-black/60">{pricing.lines.map((line) => <div key={line.key} className="flex justify-between gap-3 py-1"><span>{line.label} × {line.quantity}</span><span>{pricing.status === "final" && line.subtotal !== null ? formatRupiah(line.subtotal) : "Masuk penawaran"}</span></div>)}</div>
         </div> : <p className="mt-5 rounded-2xl bg-[#f5f5ef] p-4 text-sm leading-6 text-black/60">Validasi konfigurasi untuk mendapatkan harga pasti atau membuat permintaan penawaran tanpa nominal.</p>}
-        <button type="button" disabled={pricingState === "loading"} onClick={onReprice} className="mt-5 min-h-12 w-full rounded-full border border-black/15 px-4 text-sm font-semibold disabled:opacity-40">{pricingState === "loading" ? "Memvalidasi..." : pricing ? "Validasi ulang" : "Validasi konfigurasi"}</button>
-        <button type="button" disabled={!pricing || Boolean(pricing.issues.length)} onClick={onAddToCart} className="mt-3 min-h-12 w-full rounded-full bg-black px-4 text-sm font-semibold text-white disabled:opacity-35">{pricing?.status === "quotation_required" ? "Lanjut Buat Order Tanpa Nominal" : "Gunakan Konfigurasi Ini & Lanjut ke Keranjang"}</button>
+        <button type="button" disabled={pricingState === "loading" || addingToCart} onClick={onReprice} className="mt-5 min-h-12 w-full rounded-full border border-black/15 px-4 text-sm font-semibold disabled:opacity-40">{pricingState === "loading" ? "Memvalidasi..." : pricing ? "Validasi ulang" : "Validasi konfigurasi"}</button>
+        <button type="button" disabled={addingToCart || pricingState === "loading" || !pricing || Boolean(pricing.issues.length)} onClick={onAddToCart} className="mt-3 min-h-12 w-full rounded-full bg-black px-4 text-sm font-semibold text-white disabled:opacity-35">{addingToCart ? "Menambahkan..." : pricing?.status === "quotation_required" ? "Lanjut Buat Order Tanpa Nominal" : "Gunakan Konfigurasi Ini & Lanjut ke Keranjang"}</button>
       </aside>
     </div>
   </div>;
@@ -410,21 +649,32 @@ function validateBuilderStep(project: CustomProject, catalogs: CustomCategoryCat
   if (step === 0 && !project.items.length) return "Tambahkan minimal satu produk PIM sebelum melanjutkan.";
   if (step === 1 && project.items.some((item) => !item.allocations.length || item.allocations.some((allocation) => allocation.quantity < 1))) return "Lengkapi varian dan jumlah pada setiap Product Group.";
   if (step === 2) {
+    let completePairCount = 0;
     for (const item of project.items) {
       const catalog = catalogs.find((candidate) => candidate.category.id === item.categoryId);
       if (!catalog) return `Katalog ${item.categoryName} tidak lagi tersedia.`;
+      const usedPlacementIds = new Set<string>();
       for (const designPackage of item.designPackages) {
         for (const selection of designPackage.services) {
           const service = catalog.services.find((candidate) => candidate.id === selection.serviceId);
           if (!service) return `Layanan pada ${designPackage.name} tidak lagi tersedia.`;
-          const rules = catalog.compatibility.filter((rule) => rule.serviceId === service.id && (!rule.productId || rule.productId === item.productId));
-          if (rules.some((rule) => rule.placementId) && !selection.placementId) return `Pilih placement untuk ${service.name}.`;
-          if (rules.some((rule) => rule.printSizeId) && !selection.printSizeId) return `Pilih ukuran cetak untuk ${service.name}.`;
+          const placement = catalog.placements.find((candidate) => candidate.id === selection.placementId);
+          const printSize = catalog.printSizes.find((candidate) => candidate.id === selection.printSizeId);
+          if (!selection.placementId && !selection.printSizeId) return "Pilih minimal satu Posisi Desain dan Size Desain.";
+          if (selection.placementId && !selection.printSizeId) return `Pilih Size Desain untuk posisi ${placement?.name ?? "terpilih"}.`;
+          if (!selection.placementId && selection.printSizeId) return `Pilih Posisi Desain untuk Size Desain ${printSize?.name ?? "terpilih"}.`;
+          if (!placement) return `Posisi Desain untuk ${service.name} tidak valid.`;
+          if (!printSize) return `Size Desain untuk posisi ${placement.name} tidak valid.`;
+          if (usedPlacementIds.has(placement.id)) return `Posisi Desain ${placement.name} hanya boleh dipilih satu kali untuk ${item.productName}.`;
+          if (!isCustomDesignPairCompatible(catalog, service.id, item.productId, item.categoryId, placement.id, printSize.id)) return `Size Desain ${printSize.name} tidak kompatibel dengan posisi ${placement.name}.`;
+          usedPlacementIds.add(placement.id);
+          completePairCount += 1;
           if (service.requiresNotes && !selection.note.trim()) return `Isi catatan untuk ${service.name}.`;
           if (service.requiresUpload && !selection.uploadIds.length) return `Unggah file desain untuk ${service.name}.`;
         }
       }
     }
+    if (completePairCount === 0) return "Pilih minimal satu Posisi Desain dan Size Desain.";
   }
   if (step === 3) {
     for (const item of project.items) {
