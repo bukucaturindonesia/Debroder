@@ -347,3 +347,53 @@ Last updated: 28 July 2026 (Asia/Makassar)
 - Full regression: **108 files / 813 tests PASS**; typecheck **PASS**; lint
   **0 errors / 38 existing warnings**; production build **126 pages PASS**.
 - Commit, push, deploy: **NOT PERFORMED**.
+
+## PUBLIC-V2-001 — Desktop mega dropdown separated from navbar
+
+- Severity: **MAJOR VISUAL/INTERACTION**.
+- Status: **CLOSED — CODE, TEST, AND RUNTIME VERIFIED**.
+- Root cause: dropdown used hard-coded `top-[72px]`, `pt-3`, and a vertical
+  translate transition, which created a gap and did not derive position from
+  the actual navbar.
+- Resolution: measure the public header with `ResizeObserver`, apply its
+  exact height as fixed `top`, remove vertical padding and transforms, and
+  retain opacity/visibility transitions only.
+- Runtime evidence at 1440px: header bottom `72px`, dropdown top `72px`, gap
+  `0px`, margin top `0px`, padding top `0px`, transform `none`.
+
+## PUBLIC-V2-002 — Koleksi and Custom below locked V2 composition
+
+- Severity: **MAJOR**.
+- Status: **CLOSED IN CODE — QUALITY GATE AND AVAILABLE-DATA RUNTIME PASS**.
+- Root cause: `/koleksi` contained only a hero and catalog; `/custom` was a
+  basic category hub.
+- Resolution: implemented the locked discovery/editorial structures while
+  sourcing products and categories only from canonical PIM/CMS data and
+  preserving official Custom and Jersey transaction destinations.
+- Verification: focused **30/30**, full suite **109 files / 819 tests**,
+  typecheck **PASS**, lint **0 errors / 38 warnings**, build **126 routes
+  PASS**, and all in-scope routes **HTTP 200**.
+
+## PUBLIC-V2-003 — Custom live content unavailable
+
+- Severity: **DATA-DEPENDENT VERIFICATION**.
+- Status: **OPEN — NOT A SOURCE-CODE FAILURE**.
+- Runtime `/custom` returns the designed canonical empty state because the
+  source contains no published Custom categories. Rich Custom T-Shirt and
+  Jersey Custom sections remain conditionally hidden.
+- Required next action: publish verified categories/products through the
+  existing CMS/PIM workflow; do not seed or fabricate public data for visual
+  verification.
+
+## LEGAL-V2-001 — Legal draft not publication-ready
+
+- Severity: **PUBLICATION BLOCKER**.
+- Status: **OPEN — OWNER AND LEGAL COUNSEL ACTION REQUIRED**.
+- Missing verified values include official business identity, address,
+  contact channels, return address, service hours, processing times, QC
+  tolerance, refund estimate, pickup limit, vendor/cookie audit, and data
+  retention periods.
+- `/legal/terms` and `/legal/privacy` intentionally remain `noindex` and
+  visibly marked as draft/not legally approved.
+- No legally approved or compliance-complete status may be assigned until
+  owner verification and review by qualified Indonesian counsel are recorded.

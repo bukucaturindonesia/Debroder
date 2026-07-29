@@ -30,7 +30,10 @@ export const PUBLIC_ROUTES = {
   help: "/help",
   freshDrop: "/fresh-drop",
   store: "/store",
-  orderGuide: "/cara-order"
+  orderGuide: "/cara-order",
+  about: "/tentang",
+  terms: "/legal/terms",
+  privacy: "/legal/privacy"
 } as const;
 
 export const PUBLIC_SITEMAP_ROUTES = [
@@ -56,7 +59,8 @@ export const PUBLIC_SITEMAP_ROUTES = [
   PUBLIC_ROUTES.search,
   PUBLIC_ROUTES.help,
   PUBLIC_ROUTES.store,
-  PUBLIC_ROUTES.orderGuide
+  PUBLIC_ROUTES.orderGuide,
+  PUBLIC_ROUTES.about
 ] as const;
 
 export function publicServiceHref(categoryKey: string | undefined, slug: string) {

@@ -229,7 +229,7 @@ export function ProductCatalog({
     const updateColumns = () =>
       setColumns(
         isCategoryCatalog
-          ? desktopQuery.matches ? 3 : 2
+          ? desktopQuery.matches ? 4 : 2
           : catalogColumnsForWidth(desktopQuery.matches ? 1024 : 0)
       );
     updateColumns();
@@ -553,7 +553,7 @@ export function ProductCatalog({
       </div>
 
       {visible.length ? (
-        <div className={`mt-6 grid grid-cols-2 gap-x-3 gap-y-8 sm:gap-x-4 lg:mt-8 ${isCategoryCatalog ? "lg:grid-cols-3 lg:gap-x-4 lg:gap-y-12" : "lg:grid-cols-4 lg:gap-x-6 lg:gap-y-10"}`}>
+        <div className={`mt-6 grid grid-cols-2 gap-x-3 gap-y-8 sm:gap-x-4 md:grid-cols-3 lg:mt-8 ${isCategoryCatalog ? "lg:grid-cols-4 lg:gap-x-4 lg:gap-y-12" : "lg:grid-cols-4 lg:gap-x-6 lg:gap-y-10"}`}>
           {displayedProducts.map((product) => (
             <PublicProductCard
               key={product.id || product.slug || product.nama}
@@ -582,7 +582,7 @@ export function ProductCatalog({
         <div
           aria-label="Memuat produk tambahan"
           aria-live="polite"
-          className={`mt-8 grid grid-cols-2 gap-x-3 gap-y-8 sm:gap-x-4 ${isCategoryCatalog ? "lg:grid-cols-3 lg:gap-x-4" : "lg:grid-cols-4 lg:gap-x-6"}`}
+          className={`mt-8 grid grid-cols-2 gap-x-3 gap-y-8 sm:gap-x-4 md:grid-cols-3 ${isCategoryCatalog ? "lg:grid-cols-4 lg:gap-x-4" : "lg:grid-cols-4 lg:gap-x-6"}`}
         >
           {Array.from({ length: columns }, (_, index) => (
             <div key={index} className="animate-pulse">

@@ -1,6 +1,7 @@
 import { contactLinks, storeContacts } from "@/lib/contact";
 import { CONTRACT_VERSIONS } from "@/lib/contracts/version";
 import { buildPublicNavigationFacets } from "@/lib/public-navigation";
+import { PUBLIC_ROUTES } from "@/lib/public-routes";
 import type { Product, ProductCategory, ProductVariant } from "@/lib/types";
 import { emailHref, facebookHref, instagramHref, whatsappLinkWithMessage } from "@/lib/url";
 import type {
@@ -169,7 +170,7 @@ function footerModel(source: PublicShellSource): PublicShellFooterViewModel {
     publicShopLinks: [...shopLinks, { label: "Custom", href: "/custom" }],
     helpLinks,
     companyLinks: [
-      { label: "Tentang DEBRODER", href: "/tentang" },
+      { label: "Tentang DEBRODER", href: PUBLIC_ROUTES.about },
       { label: "Fresh Drop", href: "/fresh-drop" },
       ...stores
         .filter((store) => store.status_aktif)
@@ -181,8 +182,8 @@ function footerModel(source: PublicShellSource): PublicShellFooterViewModel {
     socialLinks,
     brandDescription,
     copyrightText: "© 2026 DEBRODER. All rights reserved.",
-    termsLink: { label: "Syarat & Ketentuan", href: "/legal/terms" },
-    privacyLink: { label: "Kebijakan Privasi", href: "/legal/privacy" }
+    termsLink: { label: "Syarat & Ketentuan", href: PUBLIC_ROUTES.terms },
+    privacyLink: { label: "Kebijakan Privasi", href: PUBLIC_ROUTES.privacy }
   };
 }
 

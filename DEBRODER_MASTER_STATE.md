@@ -180,6 +180,48 @@ Existing legal, CMS route, Preview performance, remote transaction E2E, data-int
 
 ---
 
+## 14. Public Multi-Page Experience V2 and corporate/legal draft — 30 July 2026
+
+- Canonical routes remain unchanged: `/koleksi`, `/kaos-polos`,
+  `/jaket-hoodie`, `/headwear`, `/jersey`, `/custom`, `/legal/terms`,
+  `/legal/privacy`, and `/tentang`.
+- Desktop mega dropdown now derives its fixed top position from the measured
+  public header height. Runtime at 1440px proved header bottom `72px`,
+  dropdown top `72px`, gap `0px`, margin top `0px`, padding top `0px`, and
+  transform `none`.
+- Category commerce now uses the locked 420/340/280 hero heights, at most
+  seven discovery colors, 3–4 latest products, a 4/3/2 catalog grid, and
+  12-product load batches.
+- `/koleksi` now composes category discovery, curated products, latest
+  products, and the complete catalog from canonical PIM products. Sections
+  that lack enough canonical data hide instead of fabricating content.
+- `/custom` now implements the distinct Custom T-Shirt and Jersey Custom
+  experience while preserving the official Custom builder and Jersey
+  Configurator. Runtime currently returns the canonical empty state because
+  no Custom category is published by the source.
+- `/tentang` now presents CMS-owned corporate story, published trust items,
+  store information, testimonials, and canonical collection/custom exits.
+- `/legal/terms` and `/legal/privacy` now render accessible versioned drafts
+  from the owner-provided legal working document. Both remain `noindex`,
+  explicitly state that they are not legally approved, and preserve every
+  unverified identity, contact, SLA, QC, and retention value as unresolved.
+- Focused tests: **PASS — 5 files / 30 tests**.
+- Typecheck: **PASS**.
+- Lint: **PASS — 0 errors / 38 existing warnings**.
+- Full test: **PASS — 109 files / 819 tests**.
+- Production build: **PASS — 126 routes**.
+- Runtime: all nine in-scope routes returned **HTTP 200**; desktop and mobile
+  checks found no Next.js error overlay, horizontal overflow, or broken
+  completed image.
+- Database, migration, product data, pricing, stock, checkout, order,
+  payment, numbering, RLS, and ACL changes: **NONE**.
+- Release status: **IMPLEMENTED AND CODE/RUNTIME VERIFIED; LEGAL PUBLICATION
+  REMAINS NO-GO UNTIL OWNER AND QUALIFIED COUNSEL APPROVAL; PROJECT NOT
+  COMPLETE**.
+- Commit, push, deploy: **NOT PERFORMED**.
+
+---
+
 ## 14. Cotton Combed tier pricing canonical closure — 29 July 2026
 
 - Root cause: applied migration `20260729013734_canonical_product_data_publication_readiness_v1.sql`

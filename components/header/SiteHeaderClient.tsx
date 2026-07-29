@@ -164,21 +164,32 @@ function PublicNavIndicator({
 
 function MegaDropdown({
   columns,
+  dropdownTop,
   id,
   open,
   onNavigate
 }: {
   columns: MegaMenuColumn[];
+  dropdownTop: number;
   id?: string;
   open?: boolean;
   onNavigate?: () => void;
 }) {
   const controlledClass = open
-    ? "visible translate-y-0 opacity-100"
-    : "invisible pointer-events-none translate-y-2 opacity-0";
-  const legacyClass = "invisible translate-y-2 opacity-0 group-hover/nav:visible group-hover/nav:translate-y-0 group-hover/nav:opacity-100 group-focus-within/nav:visible group-focus-within/nav:translate-y-0 group-focus-within/nav:opacity-100";
+    ? "visible opacity-100"
+    : "invisible pointer-events-none opacity-0";
+  const legacyClass = "invisible opacity-0 group-hover/nav:visible group-hover/nav:opacity-100 group-focus-within/nav:visible group-focus-within/nav:opacity-100";
   return (
-    <div id={id} className={`fixed left-1/2 top-[72px] z-[var(--z-dropdown)] w-[min(1180px,calc(100vw-32px))] -translate-x-1/2 pt-3 transition duration-200 ${open === undefined ? legacyClass : controlledClass}`}>
+    <div
+      id={id}
+      data-mega-dropdown
+      style={{
+        top: dropdownTop,
+        left: "max(16px, calc((100vw - 1180px) / 2))",
+        right: "max(16px, calc((100vw - 1180px) / 2))"
+      }}
+      className={`fixed z-[var(--z-dropdown)] transition-opacity duration-200 ${open === undefined ? legacyClass : controlledClass}`}
+    >
       <div className={`grid gap-8 bg-white p-8 text-left shadow-[0_16px_40px_rgba(0,0,0,0.08)] ${columns.length >= 4 ? "grid-cols-4" : columns.length === 2 ? "grid-cols-2" : "grid-cols-3"}`}>
         {columns.map((column) => (
           <div key={column.title}>
@@ -207,6 +218,7 @@ export function SiteHeaderClient({
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [desktopCollectionOpen, setDesktopCollectionOpen] = useState(false);
   const [mobileCollectionOpen, setMobileCollectionOpen] = useState(false);
+  const [desktopDropdownTop, setDesktopDropdownTop] = useState(72);
   const headerRef = useRef<HTMLElement>(null);
   const collectionTriggerRef = useRef<HTMLButtonElement>(null);
   const mobileMenuTriggerRef = useRef<HTMLButtonElement>(null);
@@ -234,6 +246,20 @@ export function SiteHeaderClient({
     setDesktopCollectionOpen(false);
     setMobileCollectionOpen(false);
   }, [pathname]);
+
+  useEffect(() => {
+    const header = headerRef.current;
+    if (!header) return;
+
+    const updateDropdownTop = () => {
+      setDesktopDropdownTop(header.getBoundingClientRect().height);
+    };
+    updateDropdownTop();
+
+    const observer = new ResizeObserver(updateDropdownTop);
+    observer.observe(header);
+    return () => observer.disconnect();
+  }, []);
 
   useEffect(() => {
     if (!desktopCollectionOpen) return;
@@ -326,7 +352,13 @@ export function SiteHeaderClient({
                   >
                     <PublicNavIndicator label={item.label} active={active} open={desktopCollectionOpen} showChevron />
                   </button>
-                  <MegaDropdown id="global-collection-menu" columns={collectionMenu} open={desktopCollectionOpen} onNavigate={() => setDesktopCollectionOpen(false)} />
+                  <MegaDropdown
+                    id="global-collection-menu"
+                    columns={collectionMenu}
+                    dropdownTop={desktopDropdownTop}
+                    open={desktopCollectionOpen}
+                    onNavigate={() => setDesktopCollectionOpen(false)}
+                  />
                 </div>
               );
             }
@@ -336,7 +368,7 @@ export function SiteHeaderClient({
                   <Link href={item.href} aria-current={active ? "page" : undefined} className={`nav-link group/navitem relative flex h-full items-center whitespace-nowrap text-sm font-medium text-[#111] xl:text-[15px] ${active ? "font-semibold" : ""}`}>
                     <PublicNavIndicator label={item.label} active={active} />
                   </Link>
-                  <MegaDropdown columns={megaMenu} />
+                  <MegaDropdown columns={megaMenu} dropdownTop={desktopDropdownTop} />
                 </div>
               );
             }

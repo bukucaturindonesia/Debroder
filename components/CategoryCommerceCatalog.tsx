@@ -165,21 +165,20 @@ export function CategoryCommerceCatalog({
         ).entries()
       )
         .sort((a, b) => a[1].localeCompare(b[1], "id"))
-        .slice(0, 14),
+        .slice(0, 7),
     [products]
   );
 
-  const newestProducts = useMemo(
-    () =>
-      [...products]
+  const newestProducts = useMemo(() => {
+    const candidates = [...products]
         .sort((a, b) =>
           Number(Boolean(b.label_new)) - Number(Boolean(a.label_new))
           || new Date(b.created_at || 0).getTime() - new Date(a.created_at || 0).getTime()
           || a.urutan - b.urutan
         )
-        .slice(0, 6),
-    [products]
-  );
+        .slice(0, 4);
+    return candidates.length >= 3 ? candidates : [];
+  }, [products]);
 
   const catalogKey = `${initialProductType}|${initialColor}|${initialLabel}|${initialSort}`;
 

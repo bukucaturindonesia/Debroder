@@ -5,11 +5,13 @@ export function catalogColumnsForWidth(width: number) {
 }
 
 export function initialCatalogBatch(columns: number) {
-  return Math.max(2, columns) * 2;
+  void columns;
+  return 12;
 }
 
 export function nextCatalogBatch(current: number, columns: number, total: number) {
-  return Math.min(total, current + Math.max(2, columns));
+  void columns;
+  return Math.min(total, current + 12);
 }
 
 export function uniqueCatalogProducts(products: Product[]) {

@@ -630,3 +630,94 @@ DEFERRED; NOT DEPLOYED; NOT COMPLETE**
 
 **FINAL STATUS: COTTON COMBED TIER PRICING DEFECT CLOSED AND VERIFIED;
 DEBRODER V1.2 REMAINS NOT COMPLETE**
+
+---
+
+# HANDOFF UPDATE — PUBLIC MULTI-PAGE EXPERIENCE V2 — 30 JULY 2026
+
+## Scope
+
+- Modernized the locked public experience for Koleksi, Kaos Polos, Jaket &
+  Hoodie, Headwear, Jersey, and Custom without changing canonical routes or
+  commerce contracts.
+- Added the corporate/legal package for Syarat & Ketentuan, Kebijakan
+  Privasi, and Tentang DEBRODER at the existing canonical routes.
+- Closed the owner-specific desktop mega-dropdown `0px` attachment
+  requirement.
+
+## Implementation
+
+- `components/header/SiteHeaderClient.tsx`: measures the actual public header
+  with `ResizeObserver` and applies that exact height as dropdown `top`; all
+  vertical padding, margin, and transform offsets are absent.
+- `components/PublicPage.tsx`, `components/CategoryCommercePage.tsx`,
+  `components/CategoryCommerceCatalog.tsx`, `components/ProductCatalog.tsx`,
+  `lib/product-catalog.ts`: locked category hero, discovery, grid, and
+  pagination quantities.
+- `components/CollectionCommerceExperience.tsx`,
+  `app/koleksi/page.tsx`: category discovery, curated rail, latest rail, and
+  complete PIM catalog with data-dependent hiding.
+- `components/custom/CustomHub.tsx`, `app/custom/page.tsx`: distinct Custom
+  T-Shirt and Jersey Configurator paths, PIM base products, process, trust,
+  FAQ, and canonical exits.
+- `components/legal/LegalDocumentPage.tsx`, `lib/legal-content.ts`,
+  `app/legal/terms/page.tsx`, `app/legal/privacy/page.tsx`: versioned
+  accessible draft pages, contents navigation, readiness checklist, and
+  explicit non-approval/noindex status.
+- `app/tentang/page.tsx`: CMS-owned corporate story, trust, stores,
+  testimonials, and closing actions.
+- `lib/public-routes.ts`, `lib/public-shell/domain.ts`: canonical About and
+  legal footer route registry.
+- Tests: `test/public-page-experience-v2.test.ts` and updated
+  `test/product-catalog.test.ts`.
+
+## Route, database, and migration state
+
+- Routes changed in presentation only: `/koleksi`, `/kaos-polos`,
+  `/jaket-hoodie`, `/headwear`, `/custom`, `/legal/terms`,
+  `/legal/privacy`, and `/tentang`.
+- Jersey implementation was audited and preserved because its locked
+  editorial sequence already matched the supplied V2 specification.
+- New routes: **NONE**. The existing `/tentang`, `/legal/terms`, and
+  `/legal/privacy` remain canonical; proposed aliases were not created.
+- Local migration: **NONE**.
+- Remote migration: **NONE**.
+- Migration applied or pending: **NONE**.
+- Database and Supabase mutations: **NONE**.
+
+## Verification
+
+- Focused V2, public shell, catalog, Custom, and Jersey checks:
+  **PASS — 5 files / 30 tests**.
+- Typecheck: **PASS**.
+- Lint: **PASS — 0 errors / 38 existing warnings**.
+- Full suite: **PASS — 109 files / 819 tests**.
+- Production build: **PASS — 126 routes**.
+- `git diff --check`: **PASS before handoff update; final check required after
+  this documentation append**.
+- Runtime HTTP 200: `/koleksi`, `/kaos-polos`, `/jaket-hoodie`, `/headwear`,
+  `/jersey`, `/custom`, `/legal/terms`, `/legal/privacy`, and `/tentang`.
+- Desktop Edge measurement at 1440×1000: header height/bottom `72px`,
+  dropdown top `72px`, exact gap `0px`, margin/padding `0px`, transform
+  `none`, visible opacity `1`.
+- Desktop `/koleksi`: meaningful content, no error overlay, no horizontal
+  overflow, no broken completed image.
+- Mobile `/custom` at 390×844: canonical published-data empty state, no error
+  overlay, no horizontal overflow, no broken completed image.
+- Legal desktop rendering: status banner, version, publication warning, and
+  unresolved-data checklist rendered correctly.
+- Verification server and Edge session were stopped; ports 3100 and 9222
+  were closed.
+
+## Remaining issues and next step
+
+- Custom rich sections cannot be live-verified until at least one Custom
+  T-Shirt category and the Jersey Custom category are published through the
+  canonical CMS/PIM source.
+- Legal pages are drafts and remain `noindex`. Owner must verify official
+  identity/contact/operational values and obtain review from qualified
+  Indonesian counsel before publication approval.
+- Deployment status: **NOT DEPLOYED**.
+- GO/NO-GO: **GO for code handoff; NO-GO for legal publication; project
+  remains NOT COMPLETE**.
+- Commit, push, deploy, reset, clean, stash, and rebase: **NOT PERFORMED**.
