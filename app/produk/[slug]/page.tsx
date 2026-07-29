@@ -189,7 +189,7 @@ export default async function ProductDetailPage({ params, searchParams }: PagePr
                   <section className="mt-7 border-y border-black/10 py-6">
                     <h2 className="text-xl font-bold">Jersey Custom</h2>
                     <p className="mt-2 text-sm leading-6 text-black/60">
-                      Produk ini disiapkan melalui Jersey Configurator agar model, bahan, warna, logo, nama, nomor, dan jumlah pemain tercatat dalam satu alur.
+                      Lengkapi model, bahan, desain, logo, nama, nomor, dan jumlah pemain melalui alur Jersey Custom.
                     </p>
                     <Link
                       href={jerseyConfiguratorHref}

@@ -122,14 +122,24 @@ describe("global Ready Stock and Instant Custom contract", () => {
     expect(parsed?.items[0].services?.[0]).not.toHaveProperty("price");
   });
 
-  it("keeps Full Custom separate and uses a server-only checkout RPC", () => {
+  it("keeps Jersey Custom separate and uses a server-only checkout RPC", () => {
     const page = readFileSync("app/produk/[slug]/page.tsx", "utf8");
     const api = readFileSync("app/api/checkout/route.ts", "utf8");
     const migration = readFileSync(
       "supabase/migrations/20260726160000_global_ready_stock_instant_custom_v1.sql",
       "utf8"
     );
-    expect(page).toContain("Full Custom Jersey melalui Configurator");
+    expect(page).toContain(
+      "const jerseyConfiguratorHref = `/jersey/configurator?product=${encodeURIComponent(product.slug || slug)}`;"
+    );
+    expect(page).toContain('href={jerseyConfiguratorHref}');
+    expect(page).toContain("Jersey Custom");
+    expect(page).toContain("Mulai Desain Jersey");
+    expect(page).toContain(
+      "Lengkapi model, bahan, desain, logo, nama, nomor, dan jumlah pemain melalui alur Jersey Custom."
+    );
+    expect(page).not.toContain("Full Custom Jersey melalui Configurator");
+    expect(page).not.toContain("Produk ini disiapkan melalui Jersey Configurator");
     expect(api).toContain("create_public_instant_checkout_order");
     expect(migration).toMatch(/pricing_snapshot\s*=\s*jsonb_build_object/);
     expect(migration).toContain("revoke all on function public.create_public_instant_checkout_order");
