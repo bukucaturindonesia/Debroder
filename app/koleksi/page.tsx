@@ -57,7 +57,6 @@ export default async function KoleksiPage({ searchParams }: KoleksiPageProps) {
             initialStatus={filters.status}
             showStatusFilter
             catalogStyle="category"
-            showCardActions
             syncUrlState
           />
         </div>

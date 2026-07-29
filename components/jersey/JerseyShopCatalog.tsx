@@ -1,21 +1,16 @@
 "use client";
 
-import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { ProductImageSwap } from "@/components/ProductImageSwap";
-import { fallbackImages } from "@/lib/fallback-data";
+import { PublicProductCard } from "@/components/PublicProductCard";
 import {
   EMPTY_JERSEY_FILTERS,
   filterJerseyProducts,
   jerseyFilterOptions,
-  jerseyProductStatus,
   type FilterOption,
   type JerseyProductFilters,
   type JerseySort
 } from "@/lib/jersey-commerce";
-import { getProductCardImages } from "@/lib/product-gallery";
-import { productCardMetadata, productCardPrice } from "@/lib/product-card";
 import type { Product } from "@/lib/types";
 
 const filterKeys = [
@@ -27,15 +22,6 @@ const filterKeys = [
   "price",
   "sort"
 ] as const;
-
-function slugify(value: string) {
-  return value
-    .toLowerCase()
-    .normalize("NFKD")
-    .replace(/[\u0300-\u036f]/g, "")
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/^-|-$/g, "");
-}
 
 function isSort(value: string | null): value is JerseySort {
   return [
@@ -198,66 +184,6 @@ function FilterPanel({
         </button>
       </div>
     </div>
-  );
-}
-
-function ProductCard({ product }: { product: Product }) {
-  const images = getProductCardImages(product);
-  const focal = product.focal_points?.catalog;
-  const href = `/produk/${product.slug || slugify(product.nama)}`;
-  const metadata = productCardMetadata(product);
-  const price = productCardPrice(product);
-  const status = jerseyProductStatus(product);
-
-  return (
-    <article className="group min-w-0 text-black">
-      <Link
-        href={href}
-        className="block outline-none focus-visible:ring-2 focus-visible:ring-black focus-visible:ring-offset-4"
-      >
-        <ProductImageSwap
-          primarySrc={images.primary}
-          hoverSrc={images.hover}
-          fallbackSrc={fallbackImages.product}
-          alt={product.image_alt || product.nama}
-          imageClassName={
-            (product.object_fit || "cover") === "contain"
-              ? "object-contain p-3"
-              : "object-cover"
-          }
-          objectFit={product.object_fit || "cover"}
-          objectPosition={product.object_position || "center center"}
-          focalX={focal?.focal_x ?? product.focal_x}
-          focalY={focal?.focal_y ?? product.focal_y}
-          zoom={focal?.zoom ?? product.focal_zoom}
-          sizes="(min-width: 1280px) 31vw, (min-width: 1024px) 30vw, (min-width: 768px) 48vw, 50vw"
-        />
-      </Link>
-      <div className="pt-3 sm:pt-4">
-        {metadata ? <p className="text-[11px] font-medium leading-4 tracking-[0.01em] text-black/55 sm:text-xs">{metadata}</p> : null}
-        <Link
-          href={href}
-          className={`${metadata ? "mt-1.5" : ""} block outline-none focus-visible:underline focus-visible:decoration-2 focus-visible:underline-offset-4`}
-        >
-          <h2 className="line-clamp-2 text-[clamp(0.95rem,1.25vw,1.08rem)] font-semibold leading-[1.3] tracking-[-0.01em]">
-            {product.nama}
-          </h2>
-        </Link>
-        {price ? <p className="mt-2 text-[clamp(0.9rem,1.05vw,1.05rem)] font-semibold leading-6">
-          {price}
-        </p> : null}
-        {status || product.label_new ? <div className="mt-2 flex flex-wrap items-center gap-x-2 gap-y-1 text-[10px] font-semibold uppercase tracking-[0.06em] text-black/50 sm:text-xs">
-          {status ? <span>{status}</span> : null}
-          {product.label_new && status !== "New" ? <span>New</span> : null}
-        </div> : null}
-        <Link
-          href={href}
-          className="mt-3 inline-flex min-h-10 items-center border-b border-black text-xs font-bold uppercase tracking-[0.08em] outline-none transition-opacity hover:opacity-55 focus-visible:ring-2 focus-visible:ring-black focus-visible:ring-offset-2 sm:text-sm"
-        >
-          Lihat Produk
-        </Link>
-      </div>
-    </article>
   );
 }
 
@@ -431,9 +357,10 @@ export function JerseyShopCatalog({ products }: { products: Product[] }) {
             {shown.length ? (
               <div className="grid grid-cols-2 gap-x-3 gap-y-10 sm:gap-x-5 md:grid-cols-2 lg:grid-cols-3 lg:gap-x-6 lg:gap-y-14">
                 {shown.map((product) => (
-                  <ProductCard
+                  <PublicProductCard
                     key={product.id || product.slug || product.nama}
                     product={product}
+                    imageSizes="(min-width: 1280px) 31vw, (min-width: 1024px) 30vw, (min-width: 768px) 48vw, 50vw"
                   />
                 ))}
               </div>

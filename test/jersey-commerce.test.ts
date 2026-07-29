@@ -102,6 +102,7 @@ describe("Jersey commerce catalog", () => {
   it("keeps the shop monochrome, uses the global header, and preserves three desktop columns", () => {
     const page = readFileSync("app/jersey/shop/page.tsx", "utf8");
     const catalog = readFileSync("components/jersey/JerseyShopCatalog.tsx", "utf8");
+    const card = readFileSync("components/PublicProductCard.tsx", "utf8");
     const nav = readFileSync("components/jersey/JerseyCommerceNav.tsx", "utf8");
 
     expect(page).toContain('theme="jersey-commerce"');
@@ -109,7 +110,9 @@ describe("Jersey commerce catalog", () => {
     expect(page).toContain("<PublicShell");
     expect(catalog).toContain("lg:grid-cols-3");
     expect(catalog).toContain("router.replace");
-    expect(catalog).toContain("ProductImageSwap");
+    expect(catalog).toContain("PublicProductCard");
+    expect(card).toContain("ProductImageSwap");
+    expect(card.match(/<Link\b/g)).toHaveLength(1);
     expect(nav).not.toContain("#39FF88");
     expect(nav).not.toContain("JerseyChrome");
   });
@@ -127,7 +130,8 @@ describe("Jersey commerce catalog", () => {
     expect(detail).toContain("jerseyConfiguratorHref");
     expect(detail).toContain("?product=");
     expect(detail).toContain("purchaseCapabilities");
-    expect(detail).toContain("showBuyNow={purchaseCapabilities.showBuyNow}");
+    expect(detail).toContain("showAddToCart={purchaseCapabilities.showAddToCart}");
+    expect(detail).not.toContain("showBuyNow={purchaseCapabilities.showBuyNow}");
     expect(jerseyCategory).toContain("content.categories.find");
     expect(jerseyCategory).toContain('href="/jersey/configurator"');
     expect(jerseyCategory).not.toContain("getProductDetailPageModel");

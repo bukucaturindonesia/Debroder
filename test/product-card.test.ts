@@ -1,10 +1,13 @@
 import { describe, expect, it } from "vitest";
 import {
   productCardColors,
+  productCardMaterial,
   productCardMetadata,
   productCardPrice,
+  productCardPriceState,
+  productCardSizeRange,
   productCardSizes,
-  productCardSummary,
+  productCardSwatches,
   productCommerceBadges
 } from "@/lib/product-card";
 import type { Product } from "@/lib/types";
@@ -35,7 +38,7 @@ describe("product card presentation data", () => {
     });
 
     expect(productCardColors(item)).toEqual(["Hitam"]);
-    expect(productCardMetadata(item)).toBe("Kategori Uji · 1 warna");
+    expect(productCardMetadata(item)).toBe("1 warna");
   });
 
   it("falls back to legacy color tags only when no variant collection exists", () => {
@@ -43,57 +46,79 @@ describe("product card presentation data", () => {
       productCardMetadata(
         product({ color_tags: ["Navy", "navy", "Putih"] })
       )
-    ).toBe("Kategori Uji · 2 warna");
+    ).toBe("2 warna");
 
     expect(
       productCardMetadata(
         product({ variants: [], color_tags: ["Navy"] })
       )
-    ).toBe("Kategori Uji · 1 warna");
+    ).toBe("1 warna");
   });
 
   it("omits missing metadata parts without dangling separators", () => {
-    expect(productCardMetadata(product({ kategori: "", color_tags: ["Hitam"] }))).toBe(
+    expect(productCardMetadata(product({ color_tags: ["Hitam"] }))).toBe(
       "1 warna"
     );
-    expect(productCardMetadata(product({ kategori: "", color_tags: [] }))).toBe("");
+    expect(productCardMetadata(product({ color_tags: [] }))).toBe("");
   });
 
-  it("derives active PIM size counts and customer-facing summaries", () => {
+  it("derives a readable active PIM size range and canonical material metadata", () => {
     const item = product({
-      short_detail: "Ringkas dan jelas.",
+      material_tags: ["Cotton Combed 24s"],
       variants: [{
         product_id: "p",
         color_name: "Hitam",
+        hex_code: "#111111",
         is_active: true,
         sort_order: 1,
         sizes: [
-          { variant_id: "v", size_name: "M", stock: 10, is_active: true, sort_order: 1 },
+          { variant_id: "v", size_name: "S", stock: 10, is_active: true, sort_order: 1 },
           { variant_id: "v", size_name: "M", stock: 10, is_active: true, sort_order: 2 },
-          { variant_id: "v", size_name: "L", stock: 0, is_active: false, sort_order: 3 }
+          { variant_id: "v", size_name: "5XL", stock: 10, is_active: true, sort_order: 3 },
+          { variant_id: "v", size_name: "6XL", stock: 0, is_active: false, sort_order: 4 }
         ]
       }]
     });
 
-    expect(productCardSizes(item)).toEqual(["M"]);
+    expect(productCardSizes(item)).toEqual(["S", "M", "5XL"]);
+    expect(productCardSizeRange(item)).toBe("S–5XL");
+    expect(productCardMaterial(item)).toBe("Cotton Combed 24s");
     expect(productCardMetadata(item)).toContain("1 warna");
-    expect(productCardMetadata(item)).toContain("1 ukuran");
-    expect(productCardSummary(item)).toBe("Ringkas dan jelas.");
+    expect(productCardMetadata(item)).toContain("S–5XL");
+    expect(productCardMetadata(item)).toContain("Cotton Combed 24s");
   });
 
-  it("shows only a fixed exact price and never publishes a starting price or range", () => {
-    expect(productCardPrice(product({ price: 45000, pricing_mode: "fixed_price" }))).toBe("Rp 45.000");
-    expect(productCardPrice(product({ price: "45.000", pricing_mode: "fixed_price" }))).toBe("Rp 45.000");
+  it("shows canonical base price for every pricing mode and never fabricates a fallback", () => {
+    expect(productCardPrice(product({ base_price: 45000, pricing_mode: "fixed_price" }))).toBe("Rp45.000");
+    expect(productCardPrice(product({ base_price: "1.250.000", pricing_mode: "variant_based" }))).toBe("Rp1.250.000");
     expect(
-      productCardPrice(product({ base_price: 45000, pricing_mode: "variant_based" }))
-    ).toBe("Pilih opsi untuk harga pasti");
+      productCardPrice(product({ base_price: 140000, pricing_mode: "configurator_based", uses_configurator: true }))
+    ).toBe("Rp140.000");
     expect(
-      productCardPrice(
-        product({ price_label: "Menunggu Konfirmasi", pricing_mode: "custom_quote" })
-      )
-    ).toBe("Perlu konsultasi");
-    expect(productCardPrice(product({ price_label: "Rp 45.000–Rp 50.000" }))).toBe("");
-    expect(productCardPrice(product({ price: null, price_label: null }))).toBe("");
+      productCardPriceState(product({ price: 45000, harga: 45000, base_price: null }))
+    ).toEqual({
+      status: "unavailable",
+      amount: null,
+      label: "Harga belum tersedia"
+    });
+    expect(productCardPrice(product({ base_price: 0 }))).toBe("Harga belum tersedia");
+  });
+
+  it("exposes only canonical active variant swatches with valid exact hex values", () => {
+    const item = product({
+      variants: [
+        { product_id: "p", color_name: "Hitam", hex_code: "#111111", is_active: true, sort_order: 1 },
+        { product_id: "p", color_name: "Putih", color_hex: "#ffffff", is_active: true, sort_order: 2 },
+        { product_id: "p", color_name: "Tanpa HEX", is_active: true, sort_order: 3 },
+        { product_id: "p", color_name: "Nonaktif", hex_code: "#ff0000", is_active: false, sort_order: 4 }
+      ]
+    });
+
+    expect(productCardSwatches(item)).toEqual([
+      { label: "Hitam", hex: "#111111" },
+      { label: "Putih", hex: "#FFFFFF" }
+    ]);
+    expect(productCardSwatches(product({ color_tags: ["Navy"] }))).toEqual([]);
   });
 
   it("derives canonical commerce badges from PIM sales mode and inventory", () => {

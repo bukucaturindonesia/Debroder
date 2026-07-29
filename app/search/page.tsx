@@ -111,7 +111,6 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
                       <PublicProductCard
                         key={product.id || product.slug || product.nama}
                         product={product}
-                        showActions
                       />
                     ))}
                   </div>

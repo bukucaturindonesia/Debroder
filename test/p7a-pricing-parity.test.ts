@@ -111,6 +111,36 @@ describe("P7A executable TypeScript pricing parity", () => {
     }
   );
 
+  it.each([
+    [1, 45_000, 45_000, "tier-1-11"],
+    [11, 45_000, 495_000, "tier-1-11"],
+    [12, 42_000, 504_000, "tier-12-23"],
+    [13, 42_000, 546_000, "tier-12-23"],
+    [23, 42_000, 966_000, "tier-12-23"],
+    [24, 40_000, 960_000, "tier-24-plus"]
+  ] as const)(
+    "resolves the canonical Cotton Combed boundary at quantity %i",
+    (quantity, unitPrice, subtotal, tierId) => {
+      const decision = resolveReadyStockPricing(
+        pricingInput(quantity, {
+          variantAdjustment: 0,
+          variantSizeAdjustment: 0
+        })
+      );
+
+      expect(decision).toEqual({
+        status: "priced",
+        code: null,
+        pricingQuantity: quantity,
+        tierId,
+        unitPrice
+      });
+      expect(decision.unitPrice === null ? null : decision.unitPrice * quantity).toBe(
+        subtotal
+      );
+    }
+  );
+
   it("uses base price when canonical tier_scope is none", () => {
     expect(
       resolveReadyStockPricing(
@@ -321,6 +351,22 @@ describe("P7A SQL mismatches aligned by P7B", () => {
     expect(sql).not.toMatch(
       /\b(insert|update|delete|truncate|alter|drop|create|grant|revoke)\b/i
     );
+  });
+
+  it("locks Cotton Combed to product-tier scope without recreating canonical tiers", () => {
+    const migration = readFileSync(
+      "supabase/migrations/20260729141510_cotton_combed_tier_pricing_canonical_closure_v1.sql",
+      "utf8"
+    );
+
+    expect(migration).toContain("p.slug = 'cotton-combed-24s'");
+    expect(migration).toContain("upper(btrim(p.sku)) = 'DBR-CC24'");
+    expect(migration).toContain("set tier_scope = 'product'");
+    expect(migration).toContain("and tier_scope = 'none'");
+    expect(migration).not.toContain("insert into public.product_price_tiers");
+    expect(migration).not.toContain("delete from public.product_price_tiers");
+    expect(migration).not.toContain("public.order_items");
+    expect(migration).not.toContain("public.orders");
   });
 
   it("keeps quotation_required eligible for the quotation-draft path", () => {

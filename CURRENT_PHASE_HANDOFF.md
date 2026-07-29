@@ -334,3 +334,299 @@ NOT DEPLOYED; NOT COMPLETE; NO-GO**
 
 **FINAL STATUS: BLOCKED WITH EVIDENCE; DATABASE AND CODE IMPLEMENTED;
 PARTIALLY RUNTIME VERIFIED; NOT DEPLOYED; NOT COMPLETE; NO-GO**
+
+---
+
+# HANDOFF UPDATE — PUBLIC PRODUCT CARD PURCHASE CLARITY — 29 JULY 2026
+
+## Scope and implementation
+
+- Audited the shared public card, all public listing call sites, the Jersey
+  Shop duplicate card, canonical media helpers, and product-card tests.
+- Consolidated public listing presentation on `PublicProductCard`.
+- Established the final hierarchy: image, canonical color swatches, compact
+  metadata, two-line product name, and canonical base price.
+- Made the full card one accessible `/produk/[slug]` link and removed separate
+  detail/action links, quick-add controls, summary copy, badges, compare-price
+  copy, and `Pilih opsi untuk harga pasti`.
+- Base price is read only from `products.base_price`; missing/invalid values use
+  the truthful unavailable state.
+- No PDP, cart, checkout, order, payment, security, database, migration, or
+  route contract was changed.
+
+## Exact changed implementation and test files
+
+- `app/fresh-drop/page.tsx`
+- `app/globals.css`
+- `app/koleksi/page.tsx`
+- `app/sablon-dtf/page.tsx`
+- `app/search/page.tsx`
+- `components/ProductCatalog.tsx`
+- `components/PublicProductCard.tsx`
+- `components/jersey/JerseyShopCatalog.tsx`
+- `lib/product-card.ts`
+- `test/jersey-commerce.test.ts`
+- `test/jersey-experience.test.ts`
+- `test/p0-hotfix-02-public-media-pickup.test.ts`
+- `test/product-card.test.ts`
+- `test/uxui-bab6-screen-state-responsive.test.ts`
+- `test/uxui-bab8-high-fidelity.test.ts`
+
+## Verification
+
+- Focused product-card test: **PASS — 1 file / 7 tests**.
+- Targeted public-card regression: **PASS — 9 files / 52 tests**.
+- Typecheck: **PASS**.
+- Lint: **PASS — 0 errors / 38 warnings**.
+- Full suite: **PASS — 107 files / 799 tests**.
+- Production build: **PASS**; `.next/BUILD_ID` and
+  `.next/routes-manifest.json` completed at 19:41:58.
+- Database smoke/migration status: **NOT APPLICABLE; no database or migration
+  changes**.
+- Deployment: **NOT PERFORMED**.
+
+## Runtime and remaining risk
+
+- The owner-provided server at `localhost:3100` initially returned HTTP 200 for
+  `/kaos-polos`; the browser rendered the complete public shell and valid empty
+  state with `0 produk`, without browser console warnings or errors.
+- Product-card image, price, swatch, whole-card navigation, and responsive
+  behavior could not be visually proven against live product data because the
+  existing outbound data dependency returned no products.
+- After the production build replaced `.next`, the already-running server
+  returned `Internal Server Error` / HTTP 500 for `/kaos-polos` and
+  `/koleksi`. Per owner instruction, no background process or second server was
+  started.
+- Owner runtime verification remains required on a healthy server with product
+  data for desktop and mobile card presentation.
+
+**FINAL STATUS: IMPLEMENTED; CODE AND BUILD VERIFIED; RUNTIME BLOCKED WITH
+EVIDENCE; NOT DEPLOYED; NOT COMPLETE**
+
+---
+
+# HANDOFF UPDATE — PDP FINAL EXPERIENCE — 29 JULY 2026
+
+## Scope and implementation
+
+- Reworked only the universal PDP at `/produk/[slug]` and its shared PDP
+  presentation/pricing helpers.
+- Preserved the canonical server product model, universal route, Jersey
+  Configurator path, cart endpoint, price formula, and existing transaction
+  contracts.
+- Established the final primary hierarchy: canonical gallery, category/type,
+  product name, base or exact price, description, color thumbnails, a
+  three-column size grid, Instant Custom options when supported, quantity,
+  canonical tier pricing, exact subtotal, and one Add to Cart action.
+- Color and size controls use only canonical active variants. Unsupported
+  values are not invented, zero stock remains visible and disabled, and no
+  first option is selected automatically.
+- Quantity validates stock and cart limits without silent clamping. Invalid Add
+  to Cart attempts focus the first failing control and preserve customer
+  selections.
+- Exact price remains server-authoritative through
+  `/api/pricing/ready-stock`; stale or mismatched responses are rejected and
+  duplicate Add to Cart submissions are locked.
+- Added a bounded, keyboard-operable gallery/lightbox; a desktop sticky panel
+  that activates only when it fits the viewport; accessible disclosures; and
+  a native-scroll recommendation rail using the shared public product card.
+- Dipakai Pelanggan and Lengkapi Penampilan remain hidden because the current
+  product model provides no canonical UGC or complementary-product
+  relationship source.
+- No product-card contract, checkout, order, payment, security, database,
+  migration, or route contract was changed.
+
+## Exact changed PDP implementation and test files
+
+- `app/produk/[slug]/page.tsx`
+- `components/ProductGallery.tsx`
+- `components/ProductVariantGalleryContext.tsx`
+- `components/SafeImage.tsx`
+- `components/TieredProductPurchasePanel.tsx`
+- `components/product/ProductRecommendationRail.tsx`
+- `components/product/ProductStickyPurchasePanel.tsx`
+- `lib/pdp-purchase.ts`
+- `lib/product-detail-page/domain.ts`
+- `lib/product-gallery.ts`
+- `lib/supabase/products.ts`
+- `test/commerce-foundation-p0.test.ts`
+- `test/exact-public-pricing-v1.test.ts`
+- `test/global-ready-stock-instant-custom.test.ts`
+- `test/jersey-commerce.test.ts`
+- `test/pdp-final-experience.test.ts`
+- `test/pdp-ready-stock-visual-scroll.test.ts`
+- `test/uxui-bab8-high-fidelity.test.ts`
+
+## Verification
+
+- Focused PDP test: **PASS — 1 file / 7 tests**.
+- Related regression first run: **115/117 tests PASS**; two assertions still
+  expected superseded technical/customer copy.
+- Bounded correction rerun: **PASS — 2 files / 9 tests**.
+- Typecheck: **PASS** after one readonly presentation-tier type correction.
+- Lint: **PASS — 0 errors / 38 warnings**.
+- Full suite: **PASS — 108 files / 806 tests**.
+- Production build: **PASS — 126 static pages**.
+- Database smoke/migration status: **NOT APPLICABLE; no database or migration
+  changes**.
+- Deployment: **NOT PERFORMED**.
+
+## Runtime and remaining risk
+
+- The existing server at `localhost:3100` returned HTTP 500 for
+  `/produk/crewneck`.
+- `/produk/jersey-custom-pilot` returned HTTP 200 but rendered only
+  `Produk belum tersedia | DEBRODER`.
+- The app terminal is not attached to this task, so no server stack trace was
+  available from the Codex terminal reader.
+- Per owner instruction, no background process or second server was started.
+- Live desktop/mobile gallery, selection, server price, Add to Cart, accordion,
+  and recommendation behavior remain owner-runtime verification items on a
+  healthy server with canonical product data.
+
+**FINAL STATUS: IMPLEMENTED; TARGETED, FULL TEST, AND BUILD VERIFIED; RUNTIME
+BLOCKED WITH EVIDENCE; NOT DEPLOYED; NOT COMPLETE**
+
+---
+
+# HANDOFF UPDATE — PRODUCT CARD AND PDP RUNTIME CLOSURE — 29 JULY 2026
+
+## Runtime diagnosis and repair
+
+- STEP 1 baseline remained branch `UI-UX-001`, 30 tracked changed files, four
+  valid untracked implementation files, and zero staged files.
+- Elevated listener inspection found that the earlier port check had been
+  hidden by sandbox permissions. Port 3100 was owned by a `next dev` tree
+  started at 11:45, not by a production server.
+- Before restart, `/`, `/kaos-polos`, `/koleksi`, `/produk/crewneck`, and
+  `/produk/jersey-custom-pilot` all reproduced HTTP 500.
+- The old development process tree was stopped after exact PID/parent/command
+  verification. Graceful termination was unavailable, so Windows process-tree
+  termination was required.
+- The first controlled `next start -p 3100` used BUILD_ID
+  `ZjPDqA6o5BhcaRtP8LqX8` and reproduced HTTP 500 for all five routes.
+- Its first useful stack trace proved invalid generated output:
+  `.next/server/webpack-runtime.js` could not load `./5873.js`, `./5611.js`,
+  and `./vendor-chunks/@supabase.js`.
+- No source fix was applied. Only generated `.next` was removed.
+- One direct `pnpm.cmd exec next build` completed successfully with 126 pages.
+  It did not invoke the standalone test suite. BUILD_ID became
+  `C0zkDeBcm2GJcJ8siBKqH`.
+- One permitted production restart succeeded. All five required routes then
+  returned HTTP 200. `/produk/crewneck` correctly rendered the customer-safe
+  not-found page.
+
+## Product Card runtime
+
+- `/kaos-polos`: one canonical product.
+- `/koleksi`: five canonical products.
+- Verified 4:5 media, nonbroken primary image, six swatches plus `+9`,
+  compact metadata, `line-clamp-2`, canonical base price, one semantic PDP
+  link, no nested interactive control, no obsolete option-price copy, no
+  separate detail CTA, and no horizontal overflow at desktop and mobile.
+
+## PDP runtime
+
+- Canonical Ready Stock product: `cotton-combed-24s`.
+- Verified product identity, base price, 15 canonical colors, no automatic
+  selection, four canonical gallery images after selection, mobile scroll
+  snap/pagination, desktop thumbnails, lightbox ArrowRight/Escape behavior,
+  and no horizontal overflow.
+- Benhur + M resolved `DBR-CC24-BENHUR-M`, stock 100, exact Rp45.000 unit
+  price, and exact Rp45.000 subtotal.
+- Quantity 12 resolved Rp540.000; increment/decrement changed 12→13→12.
+  Rapid 24→1 ended at the correct Rp45.000 subtotal without stale overwrite.
+- Idle tab produced zero pricing requests. One quantity increment produced
+  exactly one pricing POST with HTTP 200.
+- Incomplete Add to Cart focused the size fieldset and displayed a
+  customer-safe alert. A deliberate double submission inserted exactly one
+  cart line.
+- Desktop safe sticky behavior was proven both ways: a 1567.5px panel stayed
+  in document flow at 900px viewport height and became sticky at `top: 96px`
+  when 1672px usable height was available.
+- Accessible disclosure expansion, three-column sizes, reduced-motion media,
+  and 640px reflow passed.
+- `Dipakai Pelanggan`, `Lengkapi Penampilan`, and `Produk Serupa` were hidden
+  because no corresponding canonical content/relationship was returned.
+
+## Remaining runtime deferrals
+
+- No zero-stock supported size was present in the inspected Cotton Combed
+  Benhur or Jersey Lime data; all supported sizes reported stock 100.
+- Native 200% browser zoom could not be proven because the available browser
+  control did not alter the measured zoom. Equivalent 640px reflow had no
+  horizontal overflow.
+- Transient image-optimizer timeouts occurred while first fetching Supabase
+  media; exact source and optimized URLs subsequently returned HTTP 200.
+  Isolated browser capture had no HTTP ≥400 response, JavaScript exception,
+  hydration warning, or console error.
+
+## Quality and mutation status
+
+- Source/test changes in this closure: **NONE**.
+- Database/migration/data changes: **NONE**.
+- Previously recorded focused, full-suite, typecheck, and lint results remain
+  valid and were not rerun.
+- Required rebuild after proven generated-output corruption: **PASS**.
+- Commit, push, deploy, reset, clean, and stash: **NOT PERFORMED**.
+
+**FINAL STATUS: PREVIOUS HTTP 500 ROOT CAUSE PROVEN AND CLOSED; PRODUCT CARD
+AND CORE PDP RUNTIME VERIFIED; ZERO-STOCK AND NATIVE 200% ZOOM EXPLICITLY
+DEFERRED; NOT DEPLOYED; NOT COMPLETE**
+
+---
+
+# HANDOFF UPDATE — COTTON COMBED TIER PRICING CLOSURE — 29 JULY 2026
+
+## Scope and proven root cause
+
+- Active scope was limited to canonical tier pricing for
+  `cotton-combed-24s` / `DBR-CC24`.
+- The server loader and pricing resolver were correct. The data defect came
+  from applied migration
+  `20260729013734_canonical_product_data_publication_readiness_v1.sql`, which
+  set canonical physical products to `tier_scope = 'none'`.
+- The existing tier-sync trigger was not invoked because that migration
+  updated `products` directly rather than changing `product_price_tiers`.
+- Remote audit found exactly one active-tier product with `tier_scope =
+  'none'`: Cotton Combed 24s.
+
+## Database and files
+
+- Applied migration:
+  `20260729141510_cotton_combed_tier_pricing_canonical_closure_v1.sql`.
+- The idempotent migration locks and validates the exact product and existing
+  three tier rows, changes only `tier_scope` from `none` to `product`, and
+  performs a postcondition check.
+- No tier was inserted, deleted, recreated, or repriced. No RLS, ACL,
+  function, schema, order, order-item, checkout, payment, or historical
+  snapshot was changed.
+- Local Supabase CLI generation was unavailable; the migration was applied
+  through the connected Supabase project and then synchronized locally under
+  the authoritative remote version.
+- Task-related files changed:
+  `supabase/migrations/20260729141510_cotton_combed_tier_pricing_canonical_closure_v1.sql`,
+  `test/p7a-pricing-parity.test.ts`, and the three governance documents.
+
+## Verification
+
+- Remote postcheck: scope `product`; active tiers remain 1–11/Rp45.000,
+  12–23/Rp42.000, and 24+/Rp40.000; duplicates zero.
+- Historical order count, order-item count, and recorded pricing
+  fingerprints: **UNCHANGED**.
+- Pricing boundaries 1, 11, 12, 13, 23, and 24: **PASS** through direct
+  server response and live PDP.
+- Cart at quantity 12: unit Rp42.000 and subtotal Rp504.000; temporary
+  verification line was removed.
+- Forged client price fields were ignored by the server.
+- Rapid 24→1 request: the superseded request was aborted and could not
+  overwrite the final quantity-1 response.
+- Relevant tests plus full suite: **PASS — 108 files / 813 tests**.
+- Typecheck: **PASS**.
+- Lint: **PASS — 0 errors / 38 existing warnings**.
+- Production build: **PASS — 126 pages**.
+- Controlled runtime was stopped after verification; port 3100 was free.
+- Deployment, commit, and push: **NOT PERFORMED**.
+
+**FINAL STATUS: COTTON COMBED TIER PRICING DEFECT CLOSED AND VERIFIED;
+DEBRODER V1.2 REMAINS NOT COMPLETE**

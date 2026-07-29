@@ -231,3 +231,119 @@ Last updated: 28 July 2026 (Asia/Makassar)
 - `/koleksi` therefore reports `0 produk`; canonical Jersey PDP reports
   `Produk belum dapat dimuat`. No full browser cart/checkout/payment E2E is
   claimed.
+
+## PUBLIC-CARD-CLARITY-001 — Fragmented public card contract
+
+- Severity: **MAJOR**.
+- Status: **CLOSED IN CODE — TARGETED AND FULL REGRESSION PASS**.
+- Root cause: public listing cards mixed price fallbacks, instructional
+  variation copy, raw metadata counts, duplicate PDP links/actions, and a
+  separate Jersey Shop implementation.
+- Resolution: public listings now reuse `PublicProductCard`, display canonical
+  `products.base_price` or an unavailable state, expose canonical color
+  swatches only, and use one whole-card link to `/produk/[slug]`.
+- Verification: focused **7/7**, targeted **9 files / 52 tests**, full suite
+  **107 files / 799 tests**, typecheck **PASS**, lint **0 errors / 38
+  warnings**, and production build **PASS**.
+
+## PUBLIC-CARD-CLARITY-002 — Live card verification unavailable
+
+- Severity: **MAJOR VERIFICATION BLOCKER**.
+- Status: **BLOCKED WITH EVIDENCE / OWNER RUNTIME VERIFICATION REQUIRED**.
+- Existing `localhost:3100` initially rendered `/kaos-polos` with `0 produk`.
+  It subsequently returned HTTP 500 after the production build updated the
+  shared `.next` directory used by the long-running server.
+- No second server was started. Live product image, swatch, price,
+  whole-card-link, and responsive card checks remain unclaimed until a healthy
+  server has product data.
+
+## PDP-FINAL-EXPERIENCE-001 — Fragmented and fabricated PDP presentation
+
+- Severity: **MAJOR**.
+- Status: **CLOSED IN CODE — TARGETED, FULL REGRESSION, AND BUILD PASS**.
+- Root cause: the active PDP mixed gallery fallback media, preselected or
+  fabricated variant options, incomplete quantity validation, technical
+  server-price messaging, an unbounded lightbox, and a purchase panel that
+  could remain sticky when taller than the viewport.
+- Resolution: the PDP now uses canonical media and active variants only,
+  server-authoritative tier pricing, explicit unavailable states, bounded
+  quantity/cart validation, one validated Add to Cart action, bounded
+  keyboard navigation, safe conditional stickiness, accessible disclosures,
+  and canonical same-category recommendations.
+- Verification: focused **7/7**, corrected affected regressions **9/9**,
+  typecheck **PASS**, lint **0 errors / 38 warnings**, full suite **108 files /
+  806 tests**, and production build **PASS — 126 static pages**.
+- Database, migration, checkout, order, payment, and security changes:
+  **NONE**.
+
+## PDP-FINAL-EXPERIENCE-002 — Live PDP verification unavailable
+
+- Severity: **MAJOR VERIFICATION BLOCKER**.
+- Status: **BLOCKED WITH EVIDENCE / OWNER RUNTIME VERIFICATION REQUIRED**.
+- Existing `localhost:3100` returned HTTP 500 for `/produk/crewneck`.
+  `/produk/jersey-custom-pilot` returned HTTP 200 but only the canonical
+  unavailable page.
+- No attached app-terminal session exposed the server stack trace, and no
+  second server was started.
+- Desktop/mobile media, variant selection, exact price/subtotal, Add to Cart,
+  disclosure, and recommendation interactions remain unclaimed until they are
+  exercised on a healthy runtime with canonical product data.
+
+## RUNTIME-CLOSURE-001 — Corrupted generated Next.js output
+
+- Severity: **BUILD/RUNTIME BLOCKER**.
+- Status: **CLOSED — ROOT CAUSE PROVEN AND FRESH PRODUCTION RUNTIME HEALTHY**.
+- Evidence: an old `next dev` process remained active while `.next` was
+  replaced. Fresh `next start` then failed because
+  `.next/server/webpack-runtime.js` referenced missing `5873.js`, `5611.js`,
+  and `vendor-chunks/@supabase.js`.
+- Resolution: stop only the verified project process tree, remove only
+  generated `.next`, run one direct production rebuild, and restart one
+  controlled production server.
+- Result: BUILD_ID `C0zkDeBcm2GJcJ8siBKqH`; all five required routes return
+  HTTP 200.
+- Source, test, product data, database, and migration changes: **NONE**.
+
+## PUBLIC-CARD-CLARITY-002 update — 29 July 2026
+
+- Status: **CLOSED — LIVE DATA VERIFIED**.
+- `/kaos-polos` returned one canonical product and `/koleksi` returned five.
+- Runtime verified canonical 4:5 media, swatch cap plus remainder, metadata,
+  base price, single semantic PDP link, mobile/desktop layout, and absence of
+  obsolete card copy/actions.
+
+## PDP-FINAL-EXPERIENCE-002 update — 29 July 2026
+
+- Status: **CORE RUNTIME VERIFIED; TWO EXPLICIT DEFERRALS REMAIN**.
+- `cotton-combed-24s` verified gallery, Benhur/M/SKU/stock mapping, canonical
+  tiers, exact price/subtotal, quantity behavior, stale-response protection,
+  invalid-selection feedback, and single cart insertion.
+- Deferred data state: no inspected canonical product exposed a supported
+  zero-stock size; Cotton Combed Benhur and Jersey Lime reported stock 100 on
+  all supported sizes.
+- Deferred environment check: native 200% browser zoom could not be measured;
+  640px equivalent reflow passed without horizontal overflow.
+- No canonical UGC, complementary relationship, or same-context similar
+  relationship was returned, so those sections correctly remained hidden.
+
+## PRICE-002 — Cotton Combed active tiers bypassed by product scope
+
+- Severity: **MAJOR**.
+- Status: **CLOSED — DATA CORRECTION, REGRESSION, BUILD, AND RUNTIME PASS**.
+- Root cause: applied publication-readiness migration directly set
+  `cotton-combed-24s` to `tier_scope = 'none'`; the tier-sync trigger did not
+  run because no `product_price_tiers` row changed.
+- Evidence: the product retained three valid active tiers but server pricing
+  correctly bypassed them while the scope was `none`.
+- Resolution: idempotent migration
+  `20260729141510_cotton_combed_tier_pricing_canonical_closure_v1.sql`
+  validates the canonical product and exact existing tier contract, then
+  changes only its scope from `none` to `product`.
+- Preserved tier IDs/prices: 1–11/Rp45.000, 12–23/Rp42.000, and
+  24+/Rp40.000; duplicate active tiers zero.
+- Historical orders, order items, and pricing snapshots: **UNCHANGED**.
+- Boundary quantities 1, 11, 12, 13, 23, and 24, server-authoritative price,
+  stale-response protection, PDP, and cart: **VERIFIED**.
+- Full regression: **108 files / 813 tests PASS**; typecheck **PASS**; lint
+  **0 errors / 38 existing warnings**; production build **126 pages PASS**.
+- Commit, push, deploy: **NOT PERFORMED**.

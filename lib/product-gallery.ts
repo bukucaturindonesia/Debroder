@@ -134,6 +134,14 @@ export function getProductGalleryImages(product: Product, variantImages: string[
   ]).slice(0, PRODUCT_GALLERY_LIMIT);
 }
 
+export function getCanonicalProductGalleryImages(product: Product) {
+  return uniqueImageUrls([
+    product.image_url,
+    product.gambar_url,
+    ...(product.gallery_urls || [])
+  ]).slice(0, PRODUCT_GALLERY_LIMIT);
+}
+
 export function getProductCardImages(product: Product) {
   const variant = canonicalCardVariant(product);
   const rootImages = getProductGalleryImages(product);

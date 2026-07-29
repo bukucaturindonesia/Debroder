@@ -74,9 +74,10 @@ describe("P0-HOTFIX-02 public media and pickup idempotency", () => {
     expect(result.hover).toBeNull();
   });
 
-  it("uses the same canonical card image for quick cart payloads", () => {
-    expect(card).toContain("imageUrl: cardImages.primary");
-    expect(card).not.toContain("imageUrl: getProductImage(product)");
+  it("uses the canonical card image inside the semantic PDP link", () => {
+    expect(card).toContain("primarySrc={cardImages.primary}");
+    expect(card).toContain("public-product-card-link");
+    expect(card).not.toContain("resolvePublicQuickAdd");
   });
 
   it("filters terminal orders from active pickup operations", () => {

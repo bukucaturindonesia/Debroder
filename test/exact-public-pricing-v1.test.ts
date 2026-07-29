@@ -72,7 +72,8 @@ describe("Exact Public Pricing V1", () => {
     expect(panel).toContain('fetch("/api/pricing/ready-stock"');
     expect(panel).toContain('pricing_source: "server_canonical"');
     expect(panel).toContain("pricingRequestKey");
-    expect(panel).toContain("Respons harga tidak sesuai dengan konfigurasi aktif.");
+    expect(panel).toContain('throw new Error("PRICE_RESPONSE_MISMATCH")');
+    expect(panel).toContain("Harga belum dapat dikonfirmasi. Coba lagi.");
     expect(panel).not.toContain('from("product_price_tiers")');
     expect(endpoint).toContain("resolveReadyStockSelectionPricing");
     expect(quickAdd).not.toContain("priceValue:");

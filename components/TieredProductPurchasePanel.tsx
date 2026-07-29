@@ -1,23 +1,24 @@
 "use client";
 
-import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useCart, type CartProductInput } from "@/components/CartProvider";
 import { useOptionalProductVariantGallery } from "@/components/ProductVariantGalleryContext";
-import { ProductDetailDisclosure } from "@/components/product/ProductDetailDisclosure";
+import { SafeImage } from "@/components/SafeImage";
 import { cartTierProductKey } from "@/lib/cart-group-tier-pricing";
-import type { ProductVariant, ProductVariantSize } from "@/lib/types";
-import { formatRupiah } from "@/lib/url";
+import { MAX_CART_LINE_QUANTITY, MAX_CART_TOTAL_QUANTITY } from "@/lib/cart-v5";
+import {
+  formatPdpRupiah,
+  nextPdpPricingTier,
+  pdpColorOptions,
+  pdpSizeOptions,
+  type PdpPricingTier
+} from "@/lib/pdp-purchase";
+import type { ProductVariant } from "@/lib/types";
 import {
   type InstantCustomSnapshot,
   type InstantServiceDefinition,
   type InstantServiceSelection
 } from "@/lib/instant-custom";
-
-export type ProductColorOption = {
-  name: string;
-  hex: string;
-};
 
 type ReadyStockPricingResponse =
   | {
@@ -38,6 +39,7 @@ type ReadyStockPricingResponse =
       serviceTotal: number;
       total: number;
       tier: { id: string; minQuantity: number; maxQuantity: number | null } | null;
+      tiers: PdpPricingTier[];
       instantCustomSnapshot?: InstantCustomSnapshot;
       message: null;
     }
@@ -56,147 +58,67 @@ type ReadyStockPricingResponse =
       serviceTotal: null;
       total: null;
       tier: null;
+      tiers: PdpPricingTier[];
       message: string;
     };
 
 type ProductPurchasePanelProps = {
   product: CartProductInput;
-  colors?: string[];
-  sizes?: string[];
-  sizeGuide?: string[];
-  bulkOrderNote?: string | null;
+  subcategory?: string | null;
+  description?: string | null;
+  minimumQuantity?: number;
   whatsappUrl?: string;
   variants?: ProductVariant[];
   showAddToCart?: boolean;
-  showBuyNow?: boolean;
   monochrome?: boolean;
   instantServices?: InstantServiceDefinition[];
   initialInstantMode?: boolean;
 };
 
-const baseColors: ProductColorOption[] = [
-  { name: "Hitam", hex: "#111111" },
-  { name: "Putih", hex: "#F7F7F4" },
-  { name: "Abu Muda", hex: "#D9D9D6" },
-  { name: "Abu Tua", hex: "#6B7280" },
-  { name: "Navy", hex: "#1F2A44" },
-  { name: "Biru Royal", hex: "#1D4ED8" },
-  { name: "Biru Muda", hex: "#7DD3FC" },
-  { name: "Forest Green", hex: "#063D24" },
-  { name: "Hijau Botol", hex: "#14532D" },
-  { name: "Army", hex: "#4B5320" },
-  { name: "Merah", hex: "#DC2626" },
-  { name: "Maroon", hex: "#6F1D1B" },
-  { name: "Kuning", hex: "#FACC15" },
-  { name: "Orange", hex: "#F97316" },
-  { name: "Cream", hex: "#EADFC8" },
-  { name: "Beige", hex: "#D6C4A5" },
-  { name: "Cokelat", hex: "#7C4A2D" },
-  { name: "Ungu", hex: "#6D28D9" },
-  { name: "Pink", hex: "#F9A8D4" },
-  { name: "Tosca", hex: "#14B8A6" }
-];
-
-const defaultSizes = ["S", "M", "L", "XL", "2XL", "3XL", "Mix Size"];
-
-function slugify(value: string) {
-  return value
-    .toLowerCase()
-    .normalize("NFKD")
-    .replace(/[\u0300-\u036f]/g, "")
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/^-|-$/g, "");
-}
-
-function colorHex(value: string) {
-  const key = slugify(value);
-  const direct = baseColors.find((color) => slugify(color.name) === key);
-  if (direct) return direct.hex;
-
-  const aliases: Record<string, string> = {
-    black: "#111111",
-    white: "#F7F7F4",
-    grey: "#9CA3AF",
-    gray: "#9CA3AF",
-    abu: "#9CA3AF",
-    blue: "#1D4ED8",
-    biru: "#1D4ED8",
-    green: "#14532D",
-    hijau: "#14532D",
-    forest: "#063D24",
-    red: "#DC2626",
-    merah: "#DC2626",
-    yellow: "#FACC15",
-    kuning: "#FACC15",
-    brown: "#7C4A2D",
-    cokelat: "#7C4A2D",
-    purple: "#6D28D9",
-    ungu: "#6D28D9",
-    teal: "#14B8A6",
-    tosca: "#14B8A6"
-  };
-
-  return aliases[key] || "#D9D9D6";
-}
-
-function uniqueList(values: string[]) {
-  const map = new Map<string, string>();
-  values.filter(Boolean).forEach((value) => {
-    const clean = value.trim();
-    if (clean) map.set(slugify(clean), clean);
-  });
-  return Array.from(map.values());
-}
-
-function sanitizeQuantity(value: number) {
-  return Number.isFinite(value) && value > 0 ? Math.floor(value) : 1;
-}
-
-function variantLabel(variant: ProductVariant) {
-  return variant.color_name || variant.variant_name || "Varian";
-}
-
 function variantCoverImage(variant?: ProductVariant) {
   if (!variant) return undefined;
   const cover =
-    variant.variant_images?.find((image) => image.is_cover) ||
-    variant.variant_images?.[0];
+    variant.variant_images?.find((image) => image.is_cover)
+    || variant.variant_images?.[0];
   return cover?.image_url || variant.image_url || variant.images?.[0];
 }
 
-function activeVariantSizes(variant?: ProductVariant) {
-  return (variant?.sizes || []).filter((size) => size.is_active !== false);
-}
-
-function findSize(variant: ProductVariant | undefined, selectedSize: string) {
-  return activeVariantSizes(variant).find(
-    (size) => size.size_name === selectedSize
-  );
-}
-
-function sizeIsUnavailable(size?: ProductVariantSize) {
-  return Boolean(size && Number(size.stock) <= 0);
+function safeMinimum(value?: number) {
+  return Number.isSafeInteger(value) && Number(value) > 0 ? Number(value) : 1;
 }
 
 export function TieredProductPurchasePanel({
   product,
-  colors = [],
-  sizes = [],
-  sizeGuide = [],
-  bulkOrderNote,
+  subcategory,
+  description,
+  minimumQuantity = 1,
   whatsappUrl,
   variants = [],
   showAddToCart = true,
-  showBuyNow = false,
   monochrome = false,
   instantServices = [],
   initialInstantMode = false
 }: ProductPurchasePanelProps) {
   const cart = useCart();
-  const router = useRouter();
   const variantGallery = useOptionalProductVariantGallery();
+  const colorFieldsetRef = useRef<HTMLFieldSetElement>(null);
+  const sizeFieldsetRef = useRef<HTMLFieldSetElement>(null);
+  const quantityInputRef = useRef<HTMLInputElement>(null);
   const interactionLocked = useRef(false);
-  const uploadSessionToken = useRef(`instant_${crypto.randomUUID().replace(/-/g, "")}`);
+  const uploadSessionToken = useRef("");
+
+  const colors = useMemo(() => pdpColorOptions(variants), [variants]);
+  const [selectedVariantId, setSelectedVariantId] = useState("");
+  const selectedColor = colors.find((option) => option.variantId === selectedVariantId) || null;
+  const sizes = useMemo(() => pdpSizeOptions(selectedColor?.variant), [selectedColor]);
+  const [selectedVariantSizeId, setSelectedVariantSizeId] = useState("");
+  const selectedSize = sizes.find((option) => option.variantSizeId === selectedVariantSizeId) || null;
+  const initialMinimumQuantity = safeMinimum(minimumQuantity);
+  const [quantityInput, setQuantityInput] = useState(String(initialMinimumQuantity));
+  const [validationMessage, setValidationMessage] = useState("");
+  const [cartFeedback, setCartFeedback] = useState("");
+  const [submitting, setSubmitting] = useState(false);
+
   const [instantMode, setInstantMode] = useState(initialInstantMode);
   const [selectedServices, setSelectedServices] = useState<Record<string, {
     inputs: Record<string, string>;
@@ -213,68 +135,31 @@ export function TieredProductPurchasePanel({
   const [pricingLoading, setPricingLoading] = useState(false);
   const [pricingError, setPricingError] = useState("");
 
-  const activeVariants = useMemo(
-    () => variants.filter((variant) => variant.is_active !== false),
-    [variants]
-  );
-  const hasVariants = activeVariants.length > 0;
-
-  const colorOptions = useMemo(() => {
-    if (hasVariants) {
-      return activeVariants.map((variant) => ({
-        name: variantLabel(variant),
-        hex: variant.color_hex || colorHex(variantLabel(variant)),
-        variant
-      }));
+  useEffect(() => {
+    if (!uploadSessionToken.current) {
+      uploadSessionToken.current = `instant_${crypto.randomUUID().replace(/-/g, "")}`;
     }
-
-    const productColors = uniqueList(colors);
-    const baseNames = baseColors.map((color) => color.name);
-    return uniqueList([...productColors, ...baseNames])
-      .slice(0, Math.max(20, productColors.length))
-      .map((name) => ({
-        name,
-        hex: colorHex(name),
-        variant: undefined
-      }));
-  }, [activeVariants, colors, hasVariants]);
-
-  const [selectedColor, setSelectedColor] = useState(
-    colorOptions[0]?.name || "Hitam"
-  );
-  const selectedVariant = colorOptions.find(
-    (option) => option.name === selectedColor
-  )?.variant;
-
-  const sizeOptions = useMemo(() => {
-    const variantSizes = activeVariantSizes(selectedVariant).map(
-      (size) => size.size_name
-    );
-    return variantSizes.length
-      ? uniqueList(variantSizes)
-      : uniqueList([...(sizes || []), ...defaultSizes]);
-  }, [selectedVariant, sizes]);
-
-  const [selectedSize, setSelectedSize] = useState(sizeOptions[0] || "S");
-  const [quantity, setQuantity] = useState(1);
+  }, []);
 
   useEffect(() => {
-    if (!colorOptions.some((option) => option.name === selectedColor)) {
-      setSelectedColor(colorOptions[0]?.name || "Hitam");
+    if (selectedVariantId && !colors.some((option) => option.variantId === selectedVariantId)) {
+      setSelectedVariantId("");
+      setSelectedVariantSizeId("");
     }
-  }, [colorOptions, selectedColor]);
+  }, [colors, selectedVariantId]);
 
   useEffect(() => {
-    if (!sizeOptions.includes(selectedSize)) {
-      setSelectedSize(sizeOptions[0] || "S");
-    }
-  }, [selectedSize, sizeOptions]);
+    variantGallery?.selectVariant(selectedVariantId || null);
+  }, [selectedVariantId, variantGallery]);
 
-  useEffect(() => {
-    variantGallery?.selectVariant(selectedVariant?.id || null);
-  }, [selectedVariant?.id, variantGallery]);
-
-  const selectedVariantSize = findSize(selectedVariant, selectedSize);
+  const quantity = Number(quantityInput);
+  const quantityIsInteger = /^\d+$/.test(quantityInput)
+    && Number.isSafeInteger(quantity)
+    && quantity > 0;
+  const selectedStockLimit = selectedSize
+    ? Math.min(MAX_CART_LINE_QUANTITY, selectedSize.stock)
+    : MAX_CART_LINE_QUANTITY;
+  const quantityWithinStock = quantityIsInteger && quantity <= selectedStockLimit;
 
   const existingProductQuantity = product.id
     ? cart.items.reduce(
@@ -283,7 +168,10 @@ export function TieredProductPurchasePanel({
         0
       )
     : 0;
-  const pricingQuantity = quantity + existingProductQuantity;
+  const pricingQuantity = quantityIsInteger ? quantity + existingProductQuantity : 0;
+  const pricingQuantityValid = pricingQuantity > 0
+    && pricingQuantity <= MAX_CART_TOTAL_QUANTITY;
+
   const instantSelections: InstantServiceSelection[] = useMemo(() =>
     Object.entries(selectedServices).map(([serviceId, selection]) => ({
       serviceId,
@@ -292,20 +180,36 @@ export function TieredProductPurchasePanel({
       uploadSessionToken: uploadSessionToken.current,
       note: selection.note || undefined
     })), [selectedServices]);
+
   const pricingRequest = useMemo(() => ({
     productId: product.id ?? "",
-    variantSizeId: selectedVariantSize?.id ?? "",
-    quantity,
-    pricingQuantity,
+    variantSizeId: selectedSize?.variantSizeId ?? "",
+    quantity: quantityIsInteger ? quantity : 0,
+    pricingQuantity: pricingQuantityValid ? pricingQuantity : 0,
     instantServices: instantMode ? instantSelections : []
-  }), [instantMode, instantSelections, pricingQuantity, product.id, quantity, selectedVariantSize?.id]);
+  }), [
+    instantMode,
+    instantSelections,
+    pricingQuantity,
+    pricingQuantityValid,
+    product.id,
+    quantity,
+    quantityIsInteger,
+    selectedSize?.variantSizeId
+  ]);
   const pricingRequestKey = useMemo(() => JSON.stringify(pricingRequest), [pricingRequest]);
   const pricing = pricingResult?.requestKey === pricingRequestKey
     ? pricingResult.value
     : null;
 
   useEffect(() => {
-    if (!pricingRequest.productId || !pricingRequest.variantSizeId) {
+    if (
+      !pricingRequest.productId
+      || !pricingRequest.variantSizeId
+      || !pricingRequest.quantity
+      || !pricingRequest.pricingQuantity
+      || !quantityWithinStock
+    ) {
       setPricingResult(null);
       setPricingLoading(false);
       setPricingError("");
@@ -333,15 +237,16 @@ export function TieredProductPurchasePanel({
           || payload.variantSizeId !== pricingRequest.variantSizeId
           || payload.quantity !== pricingRequest.quantity
           || payload.pricingQuantity !== pricingRequest.pricingQuantity
+          || !Array.isArray(payload.tiers)
         ) {
-          throw new Error("Respons harga tidak sesuai dengan konfigurasi aktif.");
+          throw new Error("PRICE_RESPONSE_MISMATCH");
         }
         setPricingResult({ requestKey: pricingRequestKey, value: payload });
         if (payload.status === "unavailable") setPricingError(payload.message);
-      } catch (error) {
+      } catch {
         if (controller.signal.aborted) return;
         setPricingResult(null);
-        setPricingError(error instanceof Error ? error.message : "Harga belum dapat divalidasi.");
+        setPricingError("Harga belum dapat dikonfirmasi. Coba lagi.");
       } finally {
         if (!controller.signal.aborted) setPricingLoading(false);
       }
@@ -351,65 +256,177 @@ export function TieredProductPurchasePanel({
       window.clearTimeout(timer);
       controller.abort();
     };
-  }, [pricingRequest, pricingRequestKey]);
+  }, [pricingRequest, pricingRequestKey, quantityWithinStock]);
 
-  const minimumQuantity = pricing?.minimumQuantity ?? 1;
-  const belowMinimum = quantity < minimumQuantity;
-  const quoteRequired = pricing?.status === "quotation_required";
+  const effectiveMinimumQuantity = pricing?.minimumQuantity ?? initialMinimumQuantity;
+  const belowMinimum = quantityIsInteger && quantity < effectiveMinimumQuantity;
   const exactPricing = pricing?.status === "priced" ? pricing : null;
-  const unavailable = sizeIsUnavailable(selectedVariantSize) || pricing?.status === "unavailable";
-  const stockAvailable = pricing?.stockAvailable ?? selectedVariantSize?.stock ?? 0;
-  const stockLabel = stockAvailable > 0 ? `Stok ${stockAvailable}` : "Stok kosong";
-  const selectedSku = exactPricing?.sku ?? selectedVariantSize?.sku ?? selectedVariant?.sku ?? product.sku;
-  const unitPriceLabel = exactPricing
-    ? formatRupiah(exactPricing.unitPrice)
-    : quoteRequired
-      ? "Penawaran resmi"
-      : pricingLoading
-        ? "Memvalidasi harga..."
-        : "Pilih konfigurasi";
-  const serviceTotal = exactPricing?.serviceTotal ?? 0;
-  const payableSubtotal = exactPricing?.total ?? 0;
-  const tierDescription = pricingLoading
-    ? "Sistem sedang menghitung harga pasti"
-    : belowMinimum
-      ? `Minimum order ${minimumQuantity} pcs`
-      : quoteRequired
-        ? pricing.message
-        : exactPricing?.tier
-          ? `Harga pasti tier ${exactPricing.tier.minQuantity}-${exactPricing.tier.maxQuantity ?? "seterusnya"} pcs`
-          : exactPricing
-            ? "Harga pasti berdasarkan konfigurasi aktif"
-            : "Pilih varian, ukuran, dan jumlah untuk melihat harga pasti";
+  const quoteRequired = pricing?.status === "quotation_required";
+  const unavailable = selectedColor?.disabled
+    || selectedSize?.disabled
+    || pricing?.status === "unavailable";
+  const tiers = pricing?.tiers || [];
+  const nextTier = nextPdpPricingTier(tiers, pricing?.pricingQuantity ?? pricingQuantity);
+  const stockAvailable = pricing?.stockAvailable ?? selectedSize?.stock ?? 0;
+  const selectedSku = exactPricing?.sku
+    ?? selectedSize?.sku
+    ?? selectedColor?.variant.sku
+    ?? product.sku;
+  const basePriceLabel = formatPdpRupiah(product.priceValue)
+    || formatPdpRupiah(product.priceLabel)
+    || "Harga belum tersedia";
+  const currentUnitPriceLabel = exactPricing
+    ? formatPdpRupiah(exactPricing.unitPrice)
+    : basePriceLabel;
+  const purchaseReady = Boolean(
+    selectedColor
+    && selectedSize
+    && quantityWithinStock
+    && pricingQuantityValid
+    && !belowMinimum
+    && !unavailable
+    && !pricingLoading
+    && exactPricing
+    && (!instantMode || (instantSelections.length > 0 && !uploadingServiceId))
+  );
 
-  const guideRows = sizeGuide;
+  function chooseColor(variantId: string) {
+    const nextColor = colors.find((option) => option.variantId === variantId);
+    if (!nextColor || nextColor.disabled) return;
+    const previousSizeName = selectedSize?.name;
+    const compatibleSize = previousSizeName
+      ? pdpSizeOptions(nextColor.variant).find(
+          (option) => option.name === previousSizeName && !option.disabled
+        )
+      : null;
+    setSelectedVariantId(variantId);
+    setSelectedVariantSizeId(compatibleSize?.variantSizeId || "");
+    setValidationMessage("");
+    setCartFeedback("");
+  }
 
-  function addSelectedToCart() {
-    if (!exactPricing || belowMinimum || unavailable || pricingLoading || interactionLocked.current) return false;
-    if (instantMode && (instantSelections.length === 0 || uploadingServiceId)) {
-      setServiceError(uploadingServiceId ? "Tunggu upload selesai." : "Pilih minimal satu layanan Custom Instan.");
+  function chooseSize(variantSizeId: string) {
+    const nextSize = sizes.find((option) => option.variantSizeId === variantSizeId);
+    if (!nextSize || nextSize.disabled) return;
+    setSelectedVariantSizeId(variantSizeId);
+    setValidationMessage("");
+    setCartFeedback("");
+  }
+
+  function changeQuantity(nextValue: string) {
+    setQuantityInput(nextValue);
+    setCartFeedback("");
+    if (!/^\d+$/.test(nextValue) || Number(nextValue) < 1) {
+      setValidationMessage("Jumlah harus berupa angka bulat minimal 1.");
+      return;
+    }
+    const nextQuantity = Number(nextValue);
+    if (!Number.isSafeInteger(nextQuantity) || nextQuantity > selectedStockLimit) {
+      setValidationMessage(`Jumlah maksimum untuk pilihan ini ${selectedStockLimit} pcs.`);
+      return;
+    }
+    if (nextQuantity + existingProductQuantity > MAX_CART_TOTAL_QUANTITY) {
+      setValidationMessage(`Total produk di keranjang tidak boleh melebihi ${MAX_CART_TOTAL_QUANTITY} pcs.`);
+      return;
+    }
+    setValidationMessage("");
+  }
+
+  function decrementQuantity() {
+    if (!quantityIsInteger || quantity <= 1) {
+      setValidationMessage("Jumlah minimum adalah 1 pcs.");
+      quantityInputRef.current?.focus();
+      return;
+    }
+    changeQuantity(String(quantity - 1));
+  }
+
+  function incrementQuantity() {
+    const nextQuantity = quantityIsInteger ? quantity + 1 : 1;
+    if (nextQuantity > selectedStockLimit) {
+      setValidationMessage(`Stok pilihan ini maksimal ${selectedStockLimit} pcs.`);
+      quantityInputRef.current?.focus();
+      return;
+    }
+    changeQuantity(String(nextQuantity));
+  }
+
+  function focusFirstInvalidControl() {
+    if (!selectedColor) {
+      setValidationMessage("Pilih warna yang tersedia terlebih dahulu.");
+      colorFieldsetRef.current?.focus();
       return false;
     }
-    setServiceError("");
+    if (!selectedSize) {
+      setValidationMessage("Pilih ukuran yang tersedia terlebih dahulu.");
+      sizeFieldsetRef.current?.focus();
+      return false;
+    }
+    if (!quantityWithinStock || !pricingQuantityValid) {
+      setValidationMessage(
+        quantityIsInteger
+          ? `Jumlah maksimum untuk pilihan ini ${selectedStockLimit} pcs.`
+          : "Masukkan jumlah dalam angka bulat."
+      );
+      quantityInputRef.current?.focus();
+      return false;
+    }
+    if (belowMinimum) {
+      setValidationMessage(`Minimum pembelian ${effectiveMinimumQuantity} pcs.`);
+      quantityInputRef.current?.focus();
+      return false;
+    }
+    if (pricingLoading) {
+      setValidationMessage("Tunggu harga selesai dikonfirmasi.");
+      return false;
+    }
+    if (quoteRequired) {
+      setValidationMessage(pricing.message);
+      return false;
+    }
+    if (unavailable) {
+      setValidationMessage(pricingError || "Pilihan ini sedang tidak tersedia.");
+      return false;
+    }
+    if (!exactPricing) {
+      setValidationMessage(pricingError || "Harga belum dapat dikonfirmasi. Coba lagi.");
+      return false;
+    }
+    if (instantMode && (instantSelections.length === 0 || uploadingServiceId)) {
+      setValidationMessage(
+        uploadingServiceId
+          ? "Tunggu file selesai diunggah."
+          : "Pilih minimal satu layanan Custom Instan."
+      );
+      return false;
+    }
+    return true;
+  }
+
+  function addSelectedToCart() {
+    if (!focusFirstInvalidControl() || !exactPricing || !selectedColor || !selectedSize) {
+      return;
+    }
+    if (interactionLocked.current) return;
     interactionLocked.current = true;
-    window.setTimeout(() => {
-      interactionLocked.current = false;
-    }, 500);
+    setSubmitting(true);
+    setValidationMessage("");
+    setCartFeedback("");
 
     cart.addItem({
       ...product,
-      priceLabel: formatRupiah(exactPricing.unitPrice),
+      priceLabel: formatPdpRupiah(exactPricing.unitPrice),
       priceValue: exactPricing.unitPrice,
-      imageUrl: variantCoverImage(selectedVariant) || product.imageUrl,
-      defaultColor: selectedColor,
-      defaultColorHex: colorOptions.find((option) => option.name === selectedColor)?.hex,
-      defaultSize: selectedSize,
+      imageUrl: variantCoverImage(selectedColor.variant) || product.imageUrl,
+      defaultColor: selectedColor.name,
+      defaultColorHex: selectedColor.hex || undefined,
+      defaultSize: selectedSize.name,
       defaultQuantity: quantity,
       variantId: exactPricing.variantId,
       variantSizeId: exactPricing.variantSizeId,
-      variantName: selectedVariant?.variant_name || selectedVariant?.color_name,
+      variantName: selectedColor.variant.variant_name || selectedColor.variant.color_name,
       variantSku: exactPricing.sku,
-      stockLabel,
+      stockLabel: `Stok ${exactPricing.stockAvailable}`,
       stockAvailable: exactPricing.stockAvailable,
       variantSnapshot: {
         pricing_source: "server_canonical",
@@ -421,6 +438,7 @@ export function TieredProductPurchasePanel({
         selected_quantity: quantity,
         pricing_quantity: exactPricing.pricingQuantity,
         applied_tier: exactPricing.tier,
+        pricing_tiers: exactPricing.tiers,
         minimum_order_qty: exactPricing.minimumQuantity,
         quotation_quantity: exactPricing.quotationQuantity,
         quote_required: false,
@@ -431,7 +449,11 @@ export function TieredProductPurchasePanel({
         ? { instantCustom: exactPricing.instantCustomSnapshot }
         : {})
     });
-    return true;
+    setCartFeedback(`${product.name} berhasil ditambahkan ke keranjang.`);
+    window.setTimeout(() => {
+      interactionLocked.current = false;
+      setSubmitting(false);
+    }, 500);
   }
 
   function toggleInstantService(serviceId: string) {
@@ -445,7 +467,10 @@ export function TieredProductPurchasePanel({
     });
   }
 
-  function updateInstantService(serviceId: string, patch: Partial<{ inputs: Record<string, string>; note: string }>) {
+  function updateInstantService(
+    serviceId: string,
+    patch: Partial<{ inputs: Record<string, string>; note: string }>
+  ) {
     setSelectedServices((current) => ({
       ...current,
       [serviceId]: {
@@ -468,7 +493,9 @@ export function TieredProductPurchasePanel({
       const upload = payload && typeof payload === "object" && !Array.isArray(payload)
         ? (payload as { upload?: { id?: unknown } }).upload
         : undefined;
-      if (!response.ok || typeof upload?.id !== "string") throw new Error("Upload file layanan gagal.");
+      if (!response.ok || typeof upload?.id !== "string") {
+        throw new Error("Upload file layanan gagal.");
+      }
       const uploadId = upload.id;
       setSelectedServices((current) => ({
         ...current,
@@ -477,148 +504,196 @@ export function TieredProductPurchasePanel({
           uploadIds: [uploadId]
         }
       }));
-    } catch (error) {
-      setServiceError(error instanceof Error ? error.message : "Upload file layanan gagal.");
+    } catch {
+      setServiceError("File belum dapat diunggah. Periksa file lalu coba lagi.");
     } finally {
       setUploadingServiceId(null);
     }
   }
 
-  function buySelectedNow() {
-    if (!addSelectedToCart()) return;
-    cart.closeCart();
-    router.push("/checkout");
-  }
-
   return (
-    <div className="mt-7 grid gap-6">
-      <fieldset className="min-w-0">
-        <legend className="sr-only">Pilih warna produk</legend>
-        <div className="flex items-center justify-between gap-4">
-          <p className="text-sm font-semibold text-brand-charcoal">
-            Warna:{" "}
-            <span className="font-normal text-brand-charcoal/60">
-              {selectedColor}
-            </span>
+    <div className="min-w-0 pb-[max(0px,env(safe-area-inset-bottom))]">
+      <header>
+        <p className="text-xs font-semibold uppercase tracking-[0.16em] text-brand-charcoal/50">
+          {[product.category, subcategory].filter(Boolean).join(" · ")}
+        </p>
+        <h1 className="mt-3 max-w-xl text-[30px] font-semibold leading-[1.1] tracking-[-0.025em] sm:text-[40px]">
+          {product.name}
+        </h1>
+        <div className="mt-4" aria-live="polite" aria-atomic="true">
+          <p className="text-2xl font-semibold tracking-[-0.02em] text-brand-charcoal">
+            {currentUnitPriceLabel}
           </p>
-          <span className="text-xs text-brand-charcoal/50">
-            {hasVariants
-              ? `${colorOptions.length} varian warna`
-              : "20 warna dasar"}
-          </span>
+          <p className="mt-1 text-xs text-brand-charcoal/55">
+            {exactPricing ? "Harga per pcs untuk pilihan aktif" : "Harga dasar"}
+            {pricingLoading ? " · Mengonfirmasi harga…" : ""}
+          </p>
         </div>
-
-        <div className="mt-3 flex flex-wrap gap-2.5">
-          {colorOptions.map((option) => {
-            const selected = option.name === selectedColor;
-            return (
-              <label
-                key={option.name}
-                title={option.name}
-                className={`grid h-12 w-12 cursor-pointer place-items-center rounded-full outline-none transition focus-within:outline focus-within:outline-2 focus-within:outline-offset-2 focus-within:outline-experience-focus ${
-                  selected
-                    ? "ring-2 ring-black ring-offset-2 ring-offset-[#F7F7F4]"
-                    : "ring-1 ring-black/10 hover:ring-black/30"
-                }`}
-              >
-                <input
-                  type="radio"
-                  name="product-color"
-                  value={option.name}
-                  checked={selected}
-                  onChange={() => setSelectedColor(option.name)}
-                  aria-label={`Pilih warna ${option.name}`}
-                  className="sr-only"
-                />
-                <span
-                  className="h-7 w-7 rounded-full border border-black/10"
-                  style={{ backgroundColor: option.hex }}
-                />
-              </label>
-            );
-          })}
-        </div>
-
-        {hasVariants ? (
-          <div className="mt-3 flex flex-wrap gap-2 text-xs text-brand-charcoal/55">
-            {selectedSku ? <span>SKU: {selectedSku}</span> : null}
-            <span>{stockLabel}</span>
-          </div>
+        {description ? (
+          <p className="mt-5 max-w-xl text-[15px] leading-6 text-brand-charcoal/65">
+            {description}
+          </p>
         ) : null}
-      </fieldset>
+      </header>
 
-      <fieldset className="min-w-0">
-        <legend className="sr-only">Pilih ukuran produk</legend>
-        <div className="flex items-center justify-between gap-4">
-          <p className="text-sm font-semibold text-brand-charcoal">
-            Ukuran:{" "}
-            <span className="font-normal text-brand-charcoal/60">
-              {selectedSize}
-            </span>
-          </p>
-          {guideRows.length ? (
-            <a
-              href="#panduan-ukuran"
-              className="inline-flex min-h-12 items-center text-xs font-semibold text-brand-charcoal underline-offset-4 hover:underline"
-            >
-              Panduan Ukuran
-            </a>
+      <div className="mt-8 grid gap-7">
+        <fieldset
+          ref={colorFieldsetRef}
+          tabIndex={-1}
+          aria-describedby="pdp-purchase-feedback"
+          className="min-w-0 rounded-sm outline-none focus-visible:ring-2 focus-visible:ring-experience-focus focus-visible:ring-offset-4"
+        >
+          <legend className="text-sm font-semibold text-brand-charcoal">
+            Pilih warna
+            {selectedColor ? <span className="font-normal text-brand-charcoal/60"> · {selectedColor.name}</span> : null}
+          </legend>
+          {colors.length ? (
+            <div className="mt-3 grid grid-cols-4 gap-3 sm:grid-cols-5">
+              {colors.map((option) => {
+                const selected = option.variantId === selectedVariantId;
+                return (
+                  <button
+                    key={option.variantId}
+                    type="button"
+                    aria-label={`${option.name}${option.disabled ? ", tidak tersedia" : ""}`}
+                    aria-pressed={selected}
+                    disabled={option.disabled}
+                    onClick={() => chooseColor(option.variantId)}
+                    className={`group min-w-0 rounded-sm text-left outline-none transition focus-visible:ring-2 focus-visible:ring-experience-focus focus-visible:ring-offset-2 disabled:cursor-not-allowed ${
+                      selected ? "ring-2 ring-black ring-offset-2" : "ring-1 ring-black/15 hover:ring-black/45"
+                    }`}
+                  >
+                    <span className="relative block aspect-[4/5] overflow-hidden bg-[#f3f3ef]">
+                      {option.imageUrl ? (
+                        <SafeImage
+                          src={option.imageUrl}
+                          alt={`${product.name} warna ${option.name}`}
+                          unavailableLabel="Foto tidak tersedia"
+                          fill
+                          className="object-cover"
+                          objectFit="cover"
+                          sizes="96px"
+                        />
+                      ) : option.hex ? (
+                        <span
+                          aria-hidden="true"
+                          className="absolute inset-3 rounded-full border border-black/15"
+                          style={{ backgroundColor: option.hex }}
+                        />
+                      ) : (
+                        <span className="absolute inset-0 grid place-items-center px-2 text-center text-[10px] font-semibold text-black/45">
+                          Foto tidak tersedia
+                        </span>
+                      )}
+                    </span>
+                    <span className="block truncate px-2 py-2 text-center text-[11px] font-semibold">
+                      {option.name}
+                    </span>
+                    {option.disabled ? (
+                      <span className="block px-2 pb-2 text-center text-[10px] font-semibold text-red-700">
+                        Tidak tersedia
+                      </span>
+                    ) : null}
+                  </button>
+                );
+              })}
+            </div>
+          ) : (
+            <p className="mt-3 border border-black/10 bg-[#f7f7f4] p-4 text-sm text-brand-charcoal/60">
+              Pilihan warna belum tersedia untuk produk ini.
+            </p>
+          )}
+        </fieldset>
+
+        <fieldset
+          ref={sizeFieldsetRef}
+          tabIndex={-1}
+          aria-describedby="pdp-purchase-feedback"
+          className="min-w-0 rounded-sm outline-none focus-visible:ring-2 focus-visible:ring-experience-focus focus-visible:ring-offset-4"
+        >
+          <legend className="text-sm font-semibold text-brand-charcoal">
+            Pilih ukuran
+            {selectedSize ? <span className="font-normal text-brand-charcoal/60"> · {selectedSize.name}</span> : null}
+          </legend>
+          {!selectedColor ? (
+            <p className="mt-3 text-sm text-brand-charcoal/55">Pilih warna untuk melihat ukuran yang tersedia.</p>
+          ) : sizes.length ? (
+            <div className="mt-3 grid grid-cols-3 gap-2.5">
+              {sizes.map((option) => {
+                const selected = option.variantSizeId === selectedVariantSizeId;
+                return (
+                  <button
+                    key={option.variantSizeId}
+                    type="button"
+                    aria-label={`Ukuran ${option.name}${option.disabled ? ", stok habis" : `, stok ${option.stock}`}`}
+                    aria-pressed={selected}
+                    disabled={option.disabled}
+                    onClick={() => chooseSize(option.variantSizeId)}
+                    className={`relative min-h-12 border px-3 py-2 text-sm font-semibold outline-none transition focus-visible:ring-2 focus-visible:ring-experience-focus focus-visible:ring-offset-2 disabled:cursor-not-allowed ${
+                      selected
+                        ? "border-black bg-black text-white"
+                        : option.disabled
+                          ? "border-black/10 bg-black/[0.035] text-black/40"
+                          : "border-black/20 bg-white text-black hover:border-black"
+                    }`}
+                  >
+                    <span className={option.disabled ? "line-through" : ""}>{option.name}</span>
+                    {option.disabled ? <span className="ml-1 text-[10px] no-underline">Habis</span> : null}
+                  </button>
+                );
+              })}
+            </div>
+          ) : (
+            <p className="mt-3 border border-black/10 bg-[#f7f7f4] p-4 text-sm text-brand-charcoal/60">
+              Ukuran canonical belum tersedia untuk warna ini.
+            </p>
+          )}
+          {selectedColor ? (
+            <p className="mt-3 text-xs text-brand-charcoal/55">
+              {[selectedSku ? `SKU ${selectedSku}` : null, selectedSize ? `Stok ${stockAvailable}` : null]
+                .filter(Boolean)
+                .join(" · ")}
+            </p>
           ) : null}
-        </div>
+        </fieldset>
 
-        <div className="mt-3 flex flex-wrap gap-2">
-          {sizeOptions.map((size) => {
-            const selected = size === selectedSize;
-            const sizeRecord = findSize(selectedVariant, size);
-            const disabled = sizeIsUnavailable(sizeRecord);
-
-            return (
-              <label
-                key={size}
-                className={`grid min-h-12 min-w-12 place-items-center rounded-full px-4 text-sm font-semibold outline-none transition focus-within:outline focus-within:outline-2 focus-within:outline-offset-2 focus-within:outline-experience-focus ${
-                  disabled ? "cursor-not-allowed opacity-35" : "cursor-pointer"
-                } ${
-                  selected
-                    ? "bg-brand-charcoal text-white"
-                    : "bg-white/70 text-brand-charcoal ring-1 ring-black/10 hover:ring-black/25"
-                }`}
-              >
-                <input
-                  type="radio"
-                  name="product-size"
-                  value={size}
-                  checked={selected}
-                  disabled={disabled}
-                  onChange={() => setSelectedSize(size)}
-                  aria-label={`Pilih ukuran ${size}`}
-                  className="sr-only"
-                />
-                {size}
-              </label>
-            );
-          })}
-        </div>
-      </fieldset>
-
-      <section className="grid gap-4 border-y border-[#e5e5e5] py-5">
         {instantServices.length ? (
-          <div className="grid gap-3 border-b border-black/10 pb-5">
-            <div className="grid gap-2 sm:grid-cols-2" role="group" aria-label="Mode pembelian">
-              <button type="button" aria-pressed={!instantMode} onClick={() => setInstantMode(false)} className={`min-h-12 rounded-full px-4 text-sm font-semibold ${!instantMode ? "bg-black text-white" : "border border-black/15 bg-white"}`}>Ready Stock</button>
-              <button type="button" aria-pressed={instantMode} onClick={() => setInstantMode(true)} className={`min-h-12 rounded-full px-4 text-sm font-semibold ${instantMode ? "bg-black text-white" : "border border-black/15 bg-white"}`}>Custom Instan</button>
+          <section className="border-y border-black/10 py-5" aria-labelledby="instant-mode-title">
+            <h2 id="instant-mode-title" className="text-sm font-semibold">Pilihan layanan</h2>
+            <div className="mt-3 grid grid-cols-2 gap-2" role="group" aria-label="Mode pembelian">
+              <button
+                type="button"
+                aria-pressed={!instantMode}
+                onClick={() => setInstantMode(false)}
+                className={`min-h-12 rounded-full px-4 text-sm font-semibold ${!instantMode ? "bg-black text-white" : "border border-black/15 bg-white"}`}
+              >
+                Ready Stock
+              </button>
+              <button
+                type="button"
+                aria-pressed={instantMode}
+                onClick={() => setInstantMode(true)}
+                className={`min-h-12 rounded-full px-4 text-sm font-semibold ${instantMode ? "bg-black text-white" : "border border-black/15 bg-white"}`}
+              >
+                Custom Instan
+              </button>
             </div>
             {instantMode ? (
-              <div className="grid gap-3">
-                <p className="text-sm leading-6 text-black/60">Gunakan SKU Ready Stock yang dipilih, lalu tambahkan layanan berikut. Harga dikonfirmasi ulang oleh server saat checkout.</p>
+              <div className="mt-4 grid gap-4">
                 {instantServices.map((service) => {
                   const selected = selectedServices[service.id];
                   return (
-                    <div key={service.id} className="border-t border-black/10 bg-white pt-4">
+                    <div key={service.id} className="border-t border-black/10 pt-4">
                       <label className="flex cursor-pointer items-start gap-3">
-                        <input type="checkbox" checked={Boolean(selected)} onChange={() => toggleInstantService(service.id)} className="mt-1 h-5 w-5" />
+                        <input
+                          type="checkbox"
+                          checked={Boolean(selected)}
+                          onChange={() => toggleInstantService(service.id)}
+                          className="mt-1 h-5 w-5"
+                        />
                         <span className="flex-1">
                           <span className="block font-semibold">{service.name}</span>
-                          <span className="text-xs text-black/55">{service.description || "Harga pasti dihitung setelah konfigurasi."}</span>
+                          {service.description ? <span className="text-xs text-black/55">{service.description}</span> : null}
                         </span>
                       </label>
                       {selected ? (
@@ -627,204 +702,232 @@ export function TieredProductPurchasePanel({
                             <label key={field.key} className="grid gap-1 text-sm">
                               <span className="font-medium">{field.label}{field.required ? " *" : ""}</span>
                               {field.type === "select" ? (
-                                <select value={selected.inputs[field.key] ?? ""} onChange={(event) => updateInstantService(service.id, { inputs: { ...selected.inputs, [field.key]: event.target.value } })} className="min-h-11 rounded-xl border border-black/15 px-3">
+                                <select
+                                  value={selected.inputs[field.key] ?? ""}
+                                  onChange={(event) => updateInstantService(service.id, {
+                                    inputs: { ...selected.inputs, [field.key]: event.target.value }
+                                  })}
+                                  className="min-h-11 rounded-xl border border-black/15 px-3"
+                                >
                                   <option value="">Pilih</option>
                                   {field.options?.map((option) => <option key={option}>{option}</option>)}
                                 </select>
                               ) : field.type === "textarea" ? (
-                                <textarea value={selected.inputs[field.key] ?? ""} maxLength={field.maxLength} onChange={(event) => updateInstantService(service.id, { inputs: { ...selected.inputs, [field.key]: event.target.value } })} className="min-h-24 rounded-xl border border-black/15 p-3" />
+                                <textarea
+                                  value={selected.inputs[field.key] ?? ""}
+                                  maxLength={field.maxLength}
+                                  onChange={(event) => updateInstantService(service.id, {
+                                    inputs: { ...selected.inputs, [field.key]: event.target.value }
+                                  })}
+                                  className="min-h-24 rounded-xl border border-black/15 p-3"
+                                />
                               ) : (
-                                <input type={field.type} value={selected.inputs[field.key] ?? ""} maxLength={field.maxLength} onChange={(event) => updateInstantService(service.id, { inputs: { ...selected.inputs, [field.key]: event.target.value } })} className="min-h-11 rounded-xl border border-black/15 px-3" />
+                                <input
+                                  type={field.type}
+                                  value={selected.inputs[field.key] ?? ""}
+                                  maxLength={field.maxLength}
+                                  onChange={(event) => updateInstantService(service.id, {
+                                    inputs: { ...selected.inputs, [field.key]: event.target.value }
+                                  })}
+                                  className="min-h-11 rounded-xl border border-black/15 px-3"
+                                />
                               )}
                             </label>
                           ))}
-                          {service.requiresNotes ? <textarea aria-label={`Catatan ${service.name}`} placeholder="Catatan layanan *" value={selected.note} onChange={(event) => updateInstantService(service.id, { note: event.target.value })} className="min-h-24 rounded-xl border border-black/15 p-3 text-sm" /> : null}
-                          {service.requiresUpload ? <label className="grid gap-1 text-sm"><span className="font-medium">File desain *</span><input type="file" accept=".ai,.cdr,.eps,.jpeg,.jpg,.pdf,.png,.psd,.svg,.zip" onChange={(event) => void uploadInstantServiceFile(service.id, event.target.files?.[0])} />{selected.uploadIds.length ? <span className="text-xs text-emerald-700">File siap</span> : null}</label> : null}
+                          {service.requiresNotes ? (
+                            <textarea
+                              aria-label={`Catatan ${service.name}`}
+                              placeholder="Catatan layanan *"
+                              value={selected.note}
+                              onChange={(event) => updateInstantService(service.id, { note: event.target.value })}
+                              className="min-h-24 rounded-xl border border-black/15 p-3 text-sm"
+                            />
+                          ) : null}
+                          {service.requiresUpload ? (
+                            <label className="grid gap-1 text-sm">
+                              <span className="font-medium">File desain *</span>
+                              <input
+                                type="file"
+                                accept=".ai,.cdr,.eps,.jpeg,.jpg,.pdf,.png,.psd,.svg,.zip"
+                                onChange={(event) => void uploadInstantServiceFile(service.id, event.target.files?.[0])}
+                              />
+                              {selected.uploadIds.length ? <span className="text-xs text-emerald-700">File siap</span> : null}
+                            </label>
+                          ) : null}
                         </div>
                       ) : null}
                     </div>
                   );
                 })}
-                {exactPricing && instantMode ? <p className="text-sm font-semibold">Total layanan: {formatRupiah(serviceTotal)}</p> : null}
+                {exactPricing && instantMode ? (
+                  <p className="text-sm font-semibold">Total layanan: {formatPdpRupiah(exactPricing.serviceTotal)}</p>
+                ) : null}
                 {serviceError ? <p role="alert" className="text-sm text-red-700">{serviceError}</p> : null}
               </div>
             ) : null}
-          </div>
+          </section>
         ) : null}
-        <div className="flex flex-wrap items-center justify-between gap-4">
-          <div>
-            <p className="text-sm font-semibold text-brand-charcoal">
-              Jumlah pesanan
-            </p>
-            <p className="mt-1 text-xs text-brand-charcoal/55">
-              Total jumlah menentukan harga per pcs.
-            </p>
-          </div>
 
-          <div className="inline-flex min-h-12 items-center overflow-hidden rounded-full bg-white ring-1 ring-black/10">
-            <button
-              type="button"
-              className="grid h-12 w-12 place-items-center text-lg transition hover:bg-black/5"
-              onClick={() =>
-                setQuantity((value) => Math.max(1, value - 1))
-              }
-              aria-label="Kurangi jumlah"
-            >
-              −
-            </button>
-            <input
-              value={quantity}
-              onChange={(event) =>
-                setQuantity(
-                  sanitizeQuantity(Number(event.target.value || 1))
-                )
-              }
-              className="h-12 w-16 bg-transparent text-center text-sm font-semibold outline-none"
-              inputMode="numeric"
-              aria-label="Jumlah produk"
-            />
-            <button
-              type="button"
-              className="grid h-12 w-12 place-items-center text-lg transition hover:bg-black/5"
-              onClick={() => setQuantity((value) => value + 1)}
-              aria-label="Tambah jumlah"
-            >
-              +
-            </button>
-          </div>
-        </div>
-
-        <div
-          className={`rounded-[18px] p-4 ${
-            belowMinimum
-              ? "bg-red-50 text-red-800"
-              : quoteRequired
-                ? "bg-amber-50 text-amber-900"
-                : monochrome
-                  ? "bg-black/[0.06] text-black"
-                  : "bg-black/[0.06] text-black"
-          }`}
-        >
-          <div className="flex flex-wrap items-start justify-between gap-4">
+        <section aria-labelledby="pdp-quantity-title">
+          <div className="flex items-center justify-between gap-4">
             <div>
-              <p className="text-xs font-bold uppercase tracking-[0.12em]">
-                {tierDescription}
+              <h2 id="pdp-quantity-title" className="text-sm font-semibold">Jumlah</h2>
+              <p className="mt-1 text-xs text-brand-charcoal/55">
+                Minimum {effectiveMinimumQuantity} pcs · Maksimum pilihan {selectedStockLimit} pcs
               </p>
-              {exactPricing && !belowMinimum ? (
-                <p className="mt-2 text-sm">
-                  Subtotal:{" "}
-                  <span className="font-semibold">
-                    {formatRupiah(payableSubtotal)}
-                  </span>
+            </div>
+            <div className="inline-flex min-h-12 items-center overflow-hidden rounded-full border border-black/15 bg-white">
+              <button
+                type="button"
+                disabled={quantityIsInteger && quantity <= 1}
+                onClick={decrementQuantity}
+                aria-label="Kurangi jumlah"
+                className="grid h-12 w-12 place-items-center text-lg outline-none hover:bg-black/5 focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-experience-focus disabled:cursor-not-allowed disabled:opacity-30"
+              >
+                −
+              </button>
+              <input
+                ref={quantityInputRef}
+                value={quantityInput}
+                onChange={(event) => changeQuantity(event.target.value)}
+                onBlur={() => {
+                  if (!quantityWithinStock) {
+                    setValidationMessage(
+                      quantityIsInteger
+                        ? `Jumlah maksimum untuk pilihan ini ${selectedStockLimit} pcs.`
+                        : "Jumlah harus berupa angka bulat minimal 1."
+                    );
+                  }
+                }}
+                min={1}
+                max={selectedStockLimit}
+                step={1}
+                inputMode="numeric"
+                aria-label="Jumlah produk"
+                aria-invalid={!quantityWithinStock}
+                aria-describedby="pdp-purchase-feedback"
+                className="h-12 w-16 bg-transparent text-center text-sm font-semibold outline-none"
+              />
+              <button
+                type="button"
+                disabled={quantityIsInteger && quantity >= selectedStockLimit}
+                onClick={incrementQuantity}
+                aria-label="Tambah jumlah"
+                className="grid h-12 w-12 place-items-center text-lg outline-none hover:bg-black/5 focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-experience-focus disabled:cursor-not-allowed disabled:opacity-30"
+              >
+                +
+              </button>
+            </div>
+          </div>
+        </section>
+
+        <section aria-labelledby="pdp-tier-title">
+          <h2 id="pdp-tier-title" className="text-sm font-semibold">Harga berdasarkan jumlah</h2>
+          {tiers.length ? (
+            <>
+              <div className="mt-3 divide-y divide-black/10 border-y border-black/10">
+                {tiers.map((tier) => {
+                  const active = exactPricing?.tier?.id === tier.id;
+                  return (
+                    <div
+                      key={tier.id}
+                      className={`grid grid-cols-[1fr_auto] gap-4 py-3 text-sm ${active ? "font-semibold text-black" : "text-black/60"}`}
+                      aria-current={active ? "true" : undefined}
+                    >
+                      <span>
+                        {tier.minQuantity}–{tier.maxQuantity ?? "seterusnya"} pcs
+                        {active ? " · Aktif" : ""}
+                      </span>
+                      <span>{tier.quoteRequired || tier.unitPrice === null ? "Penawaran resmi" : `${formatPdpRupiah(tier.unitPrice)} / pcs`}</span>
+                    </div>
+                  );
+                })}
+              </div>
+              {nextTier ? (
+                <p className="mt-3 text-xs leading-5 text-brand-charcoal/60">
+                  Tambahkan {Math.max(0, nextTier.minQuantity - (pricing?.pricingQuantity ?? pricingQuantity))} pcs untuk tier berikutnya.
                 </p>
               ) : null}
-            </div>
+            </>
+          ) : (
+            <p className="mt-3 text-sm leading-6 text-brand-charcoal/55">
+              {selectedSize
+                ? pricingLoading
+                  ? "Mengonfirmasi harga untuk jumlah ini…"
+                  : "Produk ini tidak memiliki tier harga tambahan."
+                : "Pilih warna dan ukuran untuk melihat harga berdasarkan jumlah."}
+            </p>
+          )}
+        </section>
 
-            <div className="text-right">
-              <p className="text-xl font-semibold">
-                {unitPriceLabel}
+        <section
+          className={`border p-5 ${monochrome ? "border-black/20 bg-black/[0.035]" : "border-[#d8e5dc] bg-[#f4f8f5]"}`}
+          aria-labelledby="pdp-subtotal-title"
+          aria-live="polite"
+        >
+          <div className="flex items-end justify-between gap-4">
+            <div>
+              <h2 id="pdp-subtotal-title" className="text-sm font-semibold">Subtotal</h2>
+              <p className="mt-1 text-xs text-brand-charcoal/55">
+                {exactPricing
+                  ? `${quantity} pcs × ${formatPdpRupiah(exactPricing.unitPrice)}`
+                  : "Lengkapi pilihan untuk melihat subtotal."}
               </p>
-              {exactPricing ? (
-                <p className="text-xs opacity-70">/ pcs</p>
-              ) : null}
             </div>
+            <p className="text-right text-2xl font-semibold tracking-[-0.02em]">
+              {exactPricing ? formatPdpRupiah(exactPricing.total) : "—"}
+            </p>
           </div>
-        </div>
-        {pricingError ? <p role="alert" className="text-sm text-red-700">{pricingError}</p> : null}
+        </section>
 
-        <div className={`grid gap-2 ${showAddToCart && showBuyNow ? "sm:grid-cols-2" : ""}`}>
+        <div>
           {showAddToCart ? (
             <button
               type="button"
-              disabled={unavailable || belowMinimum || pricingLoading || !exactPricing}
+              aria-disabled={!purchaseReady}
+              aria-describedby="pdp-purchase-feedback"
+              disabled={submitting}
               onClick={addSelectedToCart}
-              className="inline-flex min-h-12 items-center justify-center rounded-full bg-black px-6 text-sm font-semibold text-white transition hover:bg-black/75 disabled:cursor-not-allowed disabled:bg-black/20"
+              className="inline-flex min-h-14 w-full items-center justify-center rounded-full bg-black px-6 text-base font-semibold text-white outline-none transition hover:bg-black/75 focus-visible:ring-2 focus-visible:ring-experience-focus focus-visible:ring-offset-2 disabled:cursor-wait disabled:bg-black/45"
             >
-              {unavailable
-                ? "Varian Tidak Tersedia"
-                : pricingLoading
-                  ? "Memuat Harga..."
-                  : belowMinimum
-                    ? `Minimum ${minimumQuantity} pcs`
-                    : quoteRequired
-                      ? "Lanjut melalui konsultasi"
-                      : pricingError
-                        ? "Harga belum tersedia"
-                        : "Tambah ke Keranjang"}
+              {submitting ? "Menambahkan…" : "Tambah ke Keranjang"}
             </button>
           ) : (
-            <p className="flex min-h-12 items-center justify-center rounded-full bg-black/10 px-6 text-center text-sm font-semibold text-black/55">
+            <p className="flex min-h-14 items-center justify-center rounded-full bg-black/10 px-6 text-center text-sm font-semibold text-black/55">
               Ready Stock tidak tersedia
             </p>
           )}
-          {showBuyNow ? (
-            <button
-              type="button"
-              disabled={unavailable || belowMinimum || pricingLoading || !exactPricing}
-              onClick={buySelectedNow}
-              className="inline-flex min-h-12 items-center justify-center rounded-full border border-black bg-white px-6 text-sm font-semibold text-black transition hover:bg-black hover:text-white disabled:cursor-not-allowed disabled:border-black/20 disabled:text-black/30"
+          <div id="pdp-purchase-feedback" className="mt-3 min-h-5 text-sm" aria-live="assertive">
+            {validationMessage || pricingError || serviceError ? (
+              <p role="alert" className="text-red-700">{validationMessage || pricingError || serviceError}</p>
+            ) : cartFeedback ? (
+              <p role="status" className="text-emerald-700">{cartFeedback}</p>
+            ) : (
+              <p className="text-brand-charcoal/55">
+                {!selectedColor
+                  ? "Pilih warna untuk melanjutkan."
+                  : !selectedSize
+                    ? "Pilih ukuran untuk melanjutkan."
+                    : pricingLoading
+                      ? "Harga sedang dikonfirmasi."
+                      : exactPricing
+                        ? "Pilihan siap ditambahkan."
+                        : "Harga perlu dikonfirmasi sebelum masuk keranjang."}
+              </p>
+            )}
+          </div>
+          {whatsappUrl ? (
+            <a
+              href={whatsappUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="mt-3 inline-flex min-h-11 items-center text-sm font-semibold underline decoration-1 underline-offset-4 outline-none focus-visible:ring-2 focus-visible:ring-experience-focus focus-visible:ring-offset-2"
             >
-              Beli Sekarang
-            </button>
+              Butuh bantuan memilih? Hubungi WhatsApp
+            </a>
           ) : null}
         </div>
-
-        {whatsappUrl ? (
-          <a
-            href={whatsappUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex min-h-12 items-center justify-center rounded-full bg-white/70 px-6 text-sm font-semibold text-brand-charcoal ring-1 ring-black/10 transition hover:ring-black/25"
-          >
-            Tanya via WhatsApp
-          </a>
-        ) : null}
-      </section>
-
-      <section className="border-y border-[#e5e5e5] py-5">
-        <div className="flex items-start gap-3">
-          <span className={`grid h-10 w-10 shrink-0 place-items-center rounded-full text-lg ${monochrome ? "bg-black/[0.06]" : "bg-[#e9f4ee]"}`}>
-            👕
-          </span>
-          <div>
-            <h2 className="text-sm font-semibold text-brand-charcoal">
-              Pesanan Grosir Ada Diskon
-            </h2>
-            <p className="mt-1 text-sm leading-6 text-brand-charcoal/60">
-              {bulkOrderNote ||
-                "Harga otomatis mengikuti total jumlah pesanan. Pesanan besar yang memerlukan pengecekan akan diarahkan ke penawaran khusus."}
-            </p>
-          </div>
-        </div>
-      </section>
-
-      {guideRows.length ? (
-        <div id="panduan-ukuran" className="border-b border-[#e5e5e5]">
-          <ProductDetailDisclosure
-            id="product-size-guide"
-            title="Panduan Ukuran"
-          >
-            <div className="mt-4 grid gap-2">
-              {guideRows.map((row, index) => {
-                const [label, ...rest] = row.split(":");
-                return (
-                  <div
-                    key={`${row}-${index}`}
-                    className="grid gap-1 border-t border-[#e5e5e5] py-3 text-sm sm:grid-cols-[100px_1fr] sm:gap-4"
-                  >
-                    <p className="font-semibold text-brand-charcoal">
-                      {rest.length ? label.trim() : `Panduan ${index + 1}`}
-                    </p>
-                    <p className="text-brand-charcoal/60">
-                      {rest.length ? rest.join(":").trim() : row.trim()}
-                    </p>
-                  </div>
-                );
-              })}
-            </div>
-          </ProductDetailDisclosure>
-        </div>
-      ) : null}
+      </div>
     </div>
   );
 }

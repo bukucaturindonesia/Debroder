@@ -150,3 +150,118 @@ Existing legal, CMS route, Preview performance, remote transaction E2E, data-int
 - Local runtime data fetch: **BLOCKED — outbound Supabase `fetch failed`**.
 - Release decision: **BLOCKED WITH EVIDENCE / NO-GO / NOT COMPLETE**.
 - Commit, push, deploy, merge: **NOT PERFORMED**.
+
+---
+
+## 11. Public product card purchase clarity — 29 July 2026
+
+- Shared public product-card contract: **IMPLEMENTED AND CODE-VERIFIED**.
+- Canonical hierarchy: image, canonical color swatches, compact metadata,
+  two-line product name, and canonical base price.
+- Canonical base-price source: `products.base_price`; invalid or unavailable
+  values render `Harga belum tersedia`.
+- Whole-card navigation: one accessible link to `/produk/[slug]`; duplicate
+  detail/action links and instructional price friction were removed.
+- Jersey Shop now reuses the same shared public card.
+- Focused product-card test: **PASS — 7/7**.
+- Targeted public-card regression: **PASS — 9 files / 52 tests**.
+- Typecheck: **PASS**.
+- Lint: **PASS — 0 errors / 38 warnings**.
+- Full test: **PASS — 107 files / 799 tests**.
+- Production build: **PASS**; completed `.next/BUILD_ID` and route manifest
+  were generated at 19:41:58.
+- Runtime: **BLOCKED WITH EVIDENCE**. The existing port 3100 server first
+  rendered `/kaos-polos` with `0 produk`, then returned HTTP 500 after the
+  production build replaced its `.next` artifacts. No second server was
+  started.
+- Database/migration/route changes: **NONE**.
+- Release status: **PARTIALLY RUNTIME VERIFIED / NOT COMPLETE**.
+- Commit, push, deploy: **NOT PERFORMED**.
+
+---
+
+## 14. Cotton Combed tier pricing canonical closure — 29 July 2026
+
+- Root cause: applied migration `20260729013734_canonical_product_data_publication_readiness_v1.sql`
+  directly changed canonical physical products to `tier_scope = 'none'`;
+  the tier-sync trigger did not run because no tier row changed.
+- Affected data: exactly `cotton-combed-24s` (`DBR-CC24`) had active tiers
+  while retaining `tier_scope = 'none'`.
+- Correction: migration
+  `20260729141510_cotton_combed_tier_pricing_canonical_closure_v1.sql`
+  changed only that product's scope from `none` to `product`.
+- Existing active tiers and IDs were preserved: 1–11 at Rp45.000, 12–23 at
+  Rp42.000, and 24+ at Rp40.000; duplicate active tiers remain zero.
+- Order and order-item counts plus historical pricing fingerprints were
+  unchanged.
+- Boundary quantities 1, 11, 12, 13, 23, and 24: **SERVER, PDP, AND CART
+  VERIFIED**.
+- Typecheck: **PASS**.
+- Lint: **PASS — 0 errors / 38 existing warnings**.
+- Full test: **PASS — 108 files / 813 tests**.
+- Production build: **PASS — 126 pages**.
+- Release status: **TARGETED PRICING DEFECT CLOSED AND VERIFIED; PROJECT
+  REMAINS NOT COMPLETE**.
+- Commit, push, deploy: **NOT PERFORMED**.
+
+---
+
+## 13. Product Card and PDP runtime closure — 29 July 2026
+
+- Previous HTTP 500 root cause: **PROVEN GENERATED-RUNTIME FAILURE**.
+  A long-running `next dev` process remained active while `.next` was replaced;
+  the resulting production output referenced missing server chunks
+  `5873.js`, `5611.js`, and `vendor-chunks/@supabase.js`.
+- Source-code defect: **NOT FOUND**.
+- `.next` was removed only after the missing-chunk stack trace was captured.
+- One direct production rebuild: **PASS — 126 pages**.
+- Runtime BUILD_ID: `C0zkDeBcm2GJcJ8siBKqH`.
+- Fresh controlled production routes `/`, `/kaos-polos`, `/koleksi`,
+  `/produk/crewneck`, and `/produk/jersey-custom-pilot`: **HTTP 200**.
+- Product Card live data: **VERIFIED** on `/kaos-polos` (1 product) and
+  `/koleksi` (5 products).
+- Canonical Ready Stock PDP used: `cotton-combed-24s`.
+- Color/size/SKU/stock/pricing/cart runtime: **VERIFIED** for Benhur, M,
+  `DBR-CC24-BENHUR-M`, stock 100, exact unit price Rp45.000, and one cart
+  insertion.
+- Desktop/mobile composition, gallery, safe sticky behavior, accordion,
+  stale-pricing protection, and no pricing-request loop: **VERIFIED**.
+- Zero-stock size state: **DEFERRED — inspected canonical variants expose
+  stock 100 for every supported size**.
+- UGC/complementary/similar recommendations: **HIDDEN** because no canonical
+  relationship data was returned.
+- Browser 200% native zoom: **NOT PROVEN by the available browser control**;
+  640px equivalent reflow passed without horizontal overflow.
+- Source/test/database/migration changes: **NONE**.
+- Release status: **RUNTIME BLOCKER CLOSED; PARTIALLY VERIFIED WITH EXPLICIT
+  DATA/ZOOM DEFERRALS; NOT COMPLETE**.
+- Commit, push, deploy: **NOT PERFORMED**.
+
+---
+
+## 12. PDP final experience — 29 July 2026
+
+- Universal PDP route `/produk/[slug]`: **IMPLEMENTED AND CODE-VERIFIED**.
+- Final primary hierarchy: canonical gallery, product identity and base price,
+  canonical color/size controls, quantity, server-authoritative tier pricing,
+  exact subtotal, and one Add to Cart action.
+- Canonical media/variant integrity: **IMPLEMENTED**; unsupported colors,
+  sizes, stock, and unrelated fallback media are not fabricated.
+- Responsive gallery, bounded lightbox navigation, safe desktop sticky panel,
+  disclosure content, and same-category product recommendations:
+  **IMPLEMENTED**.
+- Dipakai Pelanggan and Lengkapi Penampilan: **HIDDEN** because no canonical
+  UGC or complementary-product relationship source exists.
+- Focused PDP test: **PASS — 7/7**.
+- Related regression: **PASS after one bounded stale-assertion correction**.
+- Typecheck: **PASS**.
+- Lint: **PASS — 0 errors / 38 warnings**.
+- Full test: **PASS — 108 files / 806 tests**.
+- Production build: **PASS — 126 static pages**.
+- Runtime: **BLOCKED WITH EVIDENCE**. Existing port 3100 returns HTTP 500 for
+  `/produk/crewneck`; `/produk/jersey-custom-pilot` returns HTTP 200 only for
+  `Produk belum tersedia`. No second server was started.
+- Database/migration/route creation: **NONE**.
+- Release status: **IMPLEMENTED; CODE AND BUILD VERIFIED; OWNER RUNTIME
+  VERIFICATION REQUIRED; NOT COMPLETE**.
+- Commit, push, deploy: **NOT PERFORMED**.

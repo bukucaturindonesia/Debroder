@@ -136,7 +136,7 @@ describe("global Ready Stock and Instant Custom contract", () => {
     expect(page).toContain("Jersey Custom");
     expect(page).toContain("Mulai Desain Jersey");
     expect(page).toContain(
-      "Lengkapi model, bahan, desain, logo, nama, nomor, dan jumlah pemain melalui alur Jersey Custom."
+      "Lengkapi model, bahan, desain, logo, nama, nomor, dan jumlah pemain melalui Jersey Configurator."
     );
     expect(page).not.toContain("Full Custom Jersey melalui Configurator");
     expect(page).not.toContain("Produk ini disiapkan melalui Jersey Configurator");

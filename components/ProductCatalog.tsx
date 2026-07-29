@@ -109,7 +109,6 @@ export function ProductCatalog({
   showGroupFilter = false,
   showStatusFilter = false,
   syncUrlState = false,
-  showCardActions,
   catalogStyle = "default"
 }: {
   products: Product[];
@@ -127,7 +126,6 @@ export function ProductCatalog({
   showGroupFilter?: boolean;
   showStatusFilter?: boolean;
   syncUrlState?: boolean;
-  showCardActions?: boolean;
   catalogStyle?: "default" | "category";
 }) {
   const [query, setQuery] = useState("");
@@ -148,7 +146,6 @@ export function ProductCatalog({
   const filterPanelRef = useRef<HTMLDivElement>(null);
   const filterCloseRef = useRef<HTMLButtonElement>(null);
   const isCategoryCatalog = catalogStyle === "category";
-  const shouldShowCardActions = showCardActions ?? !isCategoryCatalog;
 
   const categories = useMemo(
     () => Array.from(new Set(products.map((product) => product.kategori).filter(Boolean))).sort(),
@@ -561,7 +558,6 @@ export function ProductCatalog({
             <PublicProductCard
               key={product.id || product.slug || product.nama}
               product={product}
-              showActions={shouldShowCardActions}
               imageSizes="(min-width: 1024px) 25vw, 50vw"
             />
           ))}

@@ -182,6 +182,13 @@ export type ReadyStockSelectionPricingResult =
         minQuantity: number;
         maxQuantity: number | null;
       } | null;
+      tiers: readonly {
+        id: string;
+        minQuantity: number;
+        maxQuantity: number | null;
+        unitPrice: number | null;
+        quoteRequired: boolean;
+      }[];
       instantCustomSnapshot?: import("@/lib/instant-custom").InstantCustomSnapshot;
       message: null;
     }
@@ -200,6 +207,13 @@ export type ReadyStockSelectionPricingResult =
       serviceTotal: null;
       total: null;
       tier: null;
+      tiers: readonly {
+        id: string;
+        minQuantity: number;
+        maxQuantity: number | null;
+        unitPrice: number | null;
+        quoteRequired: boolean;
+      }[];
       message: string;
     };
 
@@ -220,7 +234,8 @@ export async function resolveReadyStockSelectionPricing(
     productSubtotal: null,
     serviceTotal: null,
     total: null,
-    tier: null
+    tier: null,
+    tiers: []
   } as const;
 
   if (!latest || latest.product.id !== input.productId) {
@@ -238,6 +253,36 @@ export async function resolveReadyStockSelectionPricing(
   const quotationQuantity = latest.product.minimumRule?.status === "active"
     ? latest.product.minimumRule.quotationQuantity
     : null;
+  const canonicalTiers = latest.product.priceTiers
+    .filter((tier) => tier.status === "active")
+    .sort((left, right) =>
+      left.minQuantity - right.minQuantity
+      || left.sortOrder - right.sortOrder
+    )
+    .map((tier) => {
+      const decision = resolveReadyStockPricing({
+        quantity: tier.minQuantity,
+        pricingQuantity: tier.minQuantity,
+        salesMode: latest.product.salesMode ?? null,
+        pricingMode: latest.product.pricingMode ?? null,
+        tierScope: latest.product.tierScope ?? null,
+        productStatus: latest.product.status,
+        variantStatus: latest.variant.status,
+        variantSizeStatus: latest.variantSize.status,
+        sizeStatus: latest.variantSize.size.status,
+        basePrice: latest.product.basePrice,
+        variantAdjustment: latest.variant.priceAdjustment,
+        variantSizeAdjustment: latest.variantSize.priceAdjustment,
+        tiers: latest.product.priceTiers
+      });
+      return {
+        id: tier.id,
+        minQuantity: tier.minQuantity,
+        maxQuantity: tier.maxQuantity,
+        unitPrice: decision.status === "priced" ? decision.unitPrice : null,
+        quoteRequired: tier.quoteRequired || decision.status === "quotation_required"
+      };
+    });
   const common = {
     productId: latest.product.id,
     variantSizeId: latest.variantSize.id,
@@ -250,7 +295,8 @@ export async function resolveReadyStockSelectionPricing(
     productSubtotal: null,
     serviceTotal: null,
     total: null,
-    tier: null
+    tier: null,
+    tiers: canonicalTiers
   } as const;
 
   if (input.quantity < minimumQuantity) {
@@ -356,6 +402,7 @@ export async function resolveReadyStockSelectionPricing(
       minQuantity: activeTier.minQuantity,
       maxQuantity: activeTier.maxQuantity
     } : null,
+    tiers: canonicalTiers,
     ...(instantCustom.snapshot ? { instantCustomSnapshot: instantCustom.snapshot } : {}),
     message: null
   };

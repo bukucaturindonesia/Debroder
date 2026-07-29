@@ -31,7 +31,7 @@ describe("UX/UI Bab 6 screen, state, and responsive contract", () => {
     expect(read("components/tracking/GuestOrderTracking.tsx")).toContain("CustomerOrderReadError");
   });
 
-  it("keeps responsive composition and 44px minimum primary catalog actions", () => {
+  it("keeps responsive composition and one keyboard-accessible whole-card link", () => {
     const styles = read("app/globals.css");
     const productCard = read("components/PublicProductCard.tsx");
     const serviceCard = read("components/ServiceCatalog.tsx");
@@ -42,8 +42,10 @@ describe("UX/UI Bab 6 screen, state, and responsive contract", () => {
     expect(styles).toContain("@media (min-width: 1440px)");
     expect(styles).toContain("--container-max: 1440px;");
     expect(styles).toContain("width: min(var(--content-max)");
-    expect(productCard).not.toMatch(/showActions[\s\S]*?min-h-10/);
-    expect(productCard).toContain("min-h-11");
+    expect(productCard).not.toContain("showActions");
+    expect(productCard).toContain("public-product-card-link");
+    expect(styles).toContain(".public-product-card-link:focus-visible");
+    expect(productCard.match(/<Link\b/g)).toHaveLength(1);
     expect(serviceCard).not.toContain("min-h-10");
   });
 });

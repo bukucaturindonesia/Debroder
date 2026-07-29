@@ -1,14 +1,14 @@
 import { CONTRACT_VERSIONS } from "@/lib/contracts/version";
-import { getProductImage } from "@/lib/fallback-data";
 import {
   productAllowsCustomOrder,
   productAllowsReadyStock
 } from "@/lib/jersey-commerce";
-import { getProductGalleryImages } from "@/lib/product-gallery";
+import { formatPdpRupiah } from "@/lib/pdp-purchase";
+import { getCanonicalProductGalleryImages } from "@/lib/product-gallery";
 import { productMatchesRoute } from "@/lib/product-route-matching";
 import { projectProductSource } from "@/lib/product-read/domain";
 import type { Product, ProductSizeGuide } from "@/lib/types";
-import { formatRupiah, whatsappLinkWithMessage } from "@/lib/url";
+import { whatsappLinkWithMessage } from "@/lib/url";
 import type {
   ProductDetailPageModel,
   ProductPurchaseCapabilities
@@ -133,7 +133,8 @@ export function buildProductDetailPageModel(slug: string, source: ProductDetailP
         .filter((item) => !productMatchesRoute(item, "jersey"))
         .filter((item) => item.kategori === product.kategori)
         .slice(0, 4);
-  const image = product.og_image_url || getProductImage(product);
+  const images = getCanonicalProductGalleryImages(product);
+  const image = product.og_image_url || images[0] || "";
   const description = product.seo_description || product.short_detail || product.description || product.deskripsi;
   const contactWhatsapp = source.contact?.whatsapp_link || source.contact?.whatsapp_utama || "";
 
@@ -156,7 +157,7 @@ export function buildProductDetailPageModel(slug: string, source: ProductDetailP
       state: source.status === "unavailable" ? "unavailable" : "ready",
       product,
       relatedProducts,
-      images: getProductGalleryImages(product),
+      images,
       focal: product.focal_points?.detail || product.focal_points?.catalog || {
         focal_x: Number(product.focal_x ?? 50),
         focal_y: Number(product.focal_y ?? 50),
@@ -167,7 +168,7 @@ export function buildProductDetailPageModel(slug: string, source: ProductDetailP
         product.whatsapp_link || contactWhatsapp,
         `Halo DEBRODER, saya ingin bertanya tentang ${product.nama}.`
       ),
-      priceLabel: formatRupiah(product.price ?? product.harga ?? product.base_price) || "Hubungi kami",
+      priceLabel: formatPdpRupiah(product.base_price) || "Harga belum tersedia",
       detailHref: `/produk/${product.slug || slug}`,
       isJersey,
       hasReadyStock,

@@ -13,20 +13,17 @@ const disclosure = readFileSync(
 );
 
 describe("PDP Ready Stock visual and scroll refinement", () => {
-  it("owns desktop sticky behavior in the bounded media column", () => {
-    const media = page.slice(
-      page.indexOf("data-pdp-sticky-media"),
-      page.indexOf("data-pdp-product-details")
+  it("owns desktop sticky behavior in a viewport-safe purchase panel", () => {
+    const sticky = readFileSync(
+      "components/product/ProductStickyPurchasePanel.tsx",
+      "utf8"
     );
-    const details = page.slice(
-      page.indexOf("data-pdp-product-details"),
-      page.indexOf("product.kategori")
-    );
-
     expect(page).toContain("data-pdp-primary");
-    expect(media).toContain("lg:sticky");
-    expect(media).toContain("lg:top-24");
-    expect(details).not.toContain("lg:sticky");
+    expect(page).toContain("data-pdp-media");
+    expect(page).not.toContain("data-pdp-sticky-media");
+    expect(sticky).toContain("ResizeObserver");
+    expect(sticky).toContain("panelHeight <= usableHeight");
+    expect(sticky).toContain("lg:sticky lg:top-24");
   });
 
   it("uses one dominant desktop media surface and an accessible thumbnail rail", () => {
@@ -46,17 +43,18 @@ describe("PDP Ready Stock visual and scroll refinement", () => {
     expect(disclosure).toContain("hidden={!expanded}");
     expect(page).toContain('title="Deskripsi Produk"');
     expect(page).toContain('title="Material & Detail"');
-    expect(purchasePanel).toContain("const guideRows = sizeGuide;");
-    expect(purchasePanel).toContain("guideRows.length ?");
+    expect(page).toContain('title="Panduan Ukuran"');
     expect(purchasePanel).not.toContain(
       "Sesuaikan dengan panduan ukuran produk ini."
     );
   });
 
   it("preserves canonical purchase commands while improving selector semantics", () => {
-    expect(purchasePanel).toContain('name="product-color"');
-    expect(purchasePanel).toContain('name="product-size"');
+    expect(purchasePanel).toContain("aria-pressed={selected}");
+    expect(purchasePanel).toContain("pdpColorOptions(variants)");
+    expect(purchasePanel).toContain("grid grid-cols-3");
     expect(purchasePanel).toContain("cart.addItem({");
-    expect(purchasePanel).toContain('router.push("/checkout")');
+    expect(purchasePanel).toContain("focusFirstInvalidControl");
+    expect(purchasePanel).not.toContain('router.push("/checkout")');
   });
 });

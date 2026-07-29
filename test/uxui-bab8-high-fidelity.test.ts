@@ -4,19 +4,20 @@ import { describe, expect, it } from "vitest";
 const read = (path: string) => readFileSync(path, "utf8");
 
 describe("UX/UI Bab 8 high-fidelity public commerce", () => {
-  it("keeps the catalog card uniform, data-driven, and visibly actionable", () => {
+  it("keeps the catalog card uniform, purchase-focused, and semantically actionable", () => {
     const card = read("components/PublicProductCard.tsx");
     const presentation = read("lib/product-card.ts");
     const image = read("components/ProductImageSwap.tsx");
 
     expect(image).toContain("aspect-[4/5]");
     expect(card).toContain("productCardMetadata");
-    expect(card).toContain("productCardSummary");
-    expect(card).toContain("productCommerceBadges");
+    expect(card).toContain("productCardSwatches");
+    expect(card).toContain("productCardPriceState");
     expect(card).toContain("line-clamp-2");
-    expect(card).toContain("Lihat Detail");
-    expect(presentation).toContain("productCardSizes");
-    expect(presentation).not.toMatch(/Mulai dari|Estimasi harga|Kisaran/);
+    expect(card).not.toMatch(/Lihat Detail|Lihat Produk|Pilih opsi/);
+    expect(card.match(/<Link\b/g)).toHaveLength(1);
+    expect(presentation).toContain("productCardSizeRange");
+    expect(presentation).not.toMatch(/Mulai dari|Estimasi harga|Kisaran|Pilih opsi untuk harga pasti/);
   });
 
   it("keeps Ready Stock PDP actions server-priced and data-derived", () => {
@@ -26,7 +27,7 @@ describe("UX/UI Bab 8 high-fidelity public commerce", () => {
     expect(pdp).toContain("<ProductGallery");
     expect(pdp).toContain("<TieredProductPurchasePanel");
     expect(purchase).toContain("Tambah ke Keranjang");
-    expect(purchase).toContain("Beli Sekarang");
+    expect(purchase).not.toContain("Beli Sekarang");
     expect(purchase).toContain("/api/pricing/ready-stock");
     expect(purchase).not.toContain("clientPrice");
   });
@@ -36,7 +37,8 @@ describe("UX/UI Bab 8 high-fidelity public commerce", () => {
     const cart = read("components/CartProvider.tsx");
     const checkout = read("components/checkout/CheckoutClient.tsx");
 
-    expect(pdp).toContain("imageUrl: getProductImage(product)");
+    expect(pdp).toContain("imageUrl: images[0]");
+    expect(pdp).not.toContain("getProductImage(product)");
     expect(cart).toContain("item.imageUrl || fallbackImages.product");
     expect(checkout).toContain("item.imageUrl || fallbackImages.product");
     expect(checkout).toContain("<SafeImage");

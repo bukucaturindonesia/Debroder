@@ -39,7 +39,6 @@ export default async function FreshDropPage() {
                 <PublicProductCard
                   key={product.id || product.slug || product.nama}
                   product={product}
-                  showActions
                 />
               ))}
             </div>

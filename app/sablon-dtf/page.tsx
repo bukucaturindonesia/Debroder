@@ -54,7 +54,7 @@ export default async function SablonDtfPage() {
               <p className="mt-4 text-sm leading-6 text-brand-charcoal/65">Pilih produk yang cocok untuk custom DTF dan kebutuhan produksi apparel.</p>
             </div>
             <div className="mt-4 md:mt-6">
-              <ProductCatalog products={products} showCategoryFilter={false} catalogStyle="category" showCardActions syncUrlState />
+              <ProductCatalog products={products} showCategoryFilter={false} catalogStyle="category" syncUrlState />
             </div>
           </div>
         </section>
