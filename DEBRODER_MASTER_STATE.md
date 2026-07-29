@@ -84,3 +84,69 @@ Existing legal, CMS route, Preview performance, remote transaction E2E, data-int
   **NOT RUN after Cycle 2 stop condition**
 - Package decision: **BLOCKED WITH EVIDENCE / NO-GO**
 - Commit, push, deploy: **NOT PERFORMED**
+
+---
+
+## 8. UX/UI Bab 3–9 continuation — 29 July 2026
+
+- Baseline: `ee588b84d47c09de6bc3308ef1ff0b9d0b9bf9a9`
+- Branch: `UI-UX-001`
+- Bab 3–8 code and focused verification: **IMPLEMENTED / PASS**
+- Bab 9 viewport matrix: **PASS — 8 viewports, no horizontal overflow**
+- Typecheck: **PASS**
+- Lint: **PASS — 0 errors, 38 warnings**
+- Mandatory Custom Commerce test: **PASS — 27/27**
+- Full test: **PASS — 106 files / 793 tests**
+- Production build: **PASS — 126 static pages**
+- Database mutation/migration: **NONE**
+- Remaining blockers:
+  configured Jersey checkout contract, nine owner-unproven primary images,
+  active Jersey taxonomy ownership, and Preview/live runtime-performance-E2E.
+- Release decision: **BLOCKED WITH EVIDENCE / NO-GO / NOT COMPLETE**
+- Commit, push, deploy: **NOT PERFORMED**
+
+---
+
+## 9. Bab 9 targeted no-go closure — 29 July 2026
+
+- Configured Jersey checkout contract: **IMPLEMENTED LOCALLY, NOT APPLIED**
+- Server-authoritative repricing/fingerprint validation: **IMPLEMENTED**
+- Immutable order-item configuration/pricing snapshot: **IMPLEMENTED LOCALLY**
+- Order-before-payment and same-order payment architecture: **PROVEN IN
+  SOURCE/FOCUSED TEST**
+- Database migration/data writes in this closure: **NONE**
+- Nine primary-image mappings: **0/9; BLOCKED BY OWNER IDENTITY EVIDENCE**
+- `jersey-custom-pilot` taxonomy: **BLOCKED; 12 canonical candidates and no
+  sport discriminator**
+- Typecheck after bounded correction: **PASS**
+- Focused closure test: **PASS — 4/4**
+- Regression run: **FAIL — 2 stale assertions; 105/107 files and 795/797 tests
+  pass**
+- Final lint/build/runtime gate: **NOT RUN after Pass 2 stop condition**
+- Release decision: **BLOCKED WITH EVIDENCE / NO-GO / NOT COMPLETE**
+- Commit, push, deploy, merge: **NOT PERFORMED**
+
+---
+
+## 10. Targeted Bab 9 final continuation — 29 July 2026
+
+- Remote migrations applied and locally synchronized:
+  `20260729033931_configured_jersey_checkout_v1`,
+  `20260729033946_provisional_product_primary_images_v1`, and
+  `20260729045016_ready_stock_fulfillment_trigger_record_fix_v1`.
+- Configured Jersey exact-price checkout: **REMOTE RPC VERIFIED**.
+- Order-before-payment: **PASS**; one idempotent test order is `unpaid` with
+  zero payment rows.
+- Duplicate configured checkout: **PASS**; retry returned the same order ID.
+- Public product images: **5/5 present**; nine provisional canonical mappings
+  are local, nonempty, and HTTP 200.
+- Canonical configured Jersey products public-active: `2`.
+- Pilot Jersey taxonomy: **BLOCKED**, with 12 candidates and no discriminator.
+- Typecheck: **PASS**.
+- Lint: **PASS — 0 errors / 38 warnings**.
+- Custom Commerce: **PASS — 27/27**.
+- Full test: **PASS — 107 files / 798 tests**.
+- Build: **PASS — 126 static pages**.
+- Local runtime data fetch: **BLOCKED — outbound Supabase `fetch failed`**.
+- Release decision: **BLOCKED WITH EVIDENCE / NO-GO / NOT COMPLETE**.
+- Commit, push, deploy, merge: **NOT PERFORMED**.

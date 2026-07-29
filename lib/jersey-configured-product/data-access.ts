@@ -1,5 +1,10 @@
 import "server-only";
 
+import {
+  CONTRACT_VERSIONS,
+  type ConfiguredProductPricingInput,
+  type PricingResult
+} from "@/lib/contracts";
 import type { ConfiguredProductDefinitionReadResult } from "@/lib/configured-product/data-access";
 import { createSupabaseServerClient } from "@/lib/supabase";
 import {
@@ -8,7 +13,7 @@ import {
   type JerseyConfiguredProductProjection
 } from "./domain";
 
-const PRODUCT_SELECT = "id,name,nama,slug,status,status_aktif,product_type,pricing_mode,uses_configurator,minimum_order_qty,config_schema,image_url,gambar_url,image_alt,updated_at";
+const PRODUCT_SELECT = "id,name,nama,slug,status,status_aktif,product_type,pricing_mode,price,harga,base_price,uses_configurator,minimum_order_qty,config_schema,image_url,gambar_url,image_alt,updated_at";
 const OPTION_SELECT = "id,name,slug,description,is_active,sort_order,updated_at";
 
 export type JerseyConfiguredProductReadResult =
@@ -27,7 +32,7 @@ export async function readJerseyConfiguredProduct(
   if (!client) {
     return unavailable(
       "jersey_configured_product.catalog_unavailable",
-      "Jersey configurator belum dapat memuat catalog."
+      "Jersey Custom belum dapat memuat katalog."
     );
   }
 
@@ -37,7 +42,7 @@ export async function readJerseyConfiguredProduct(
     .eq("status", "active")
     .eq("status_aktif", true)
     .eq("product_type", "configurable_product")
-    .eq("pricing_mode", "custom_quote")
+    .eq("pricing_mode", "configurator_based")
     .eq("uses_configurator", true)
     .contains("config_schema", { entry_type: "jersey_configurator" })
     .limit(2);
@@ -55,7 +60,7 @@ export async function readJerseyConfiguredProduct(
     return {
       status: "not_found",
       code: "jersey_configured_product.not_available",
-      message: "Jersey configured product belum tersedia.",
+      message: "Produk Jersey Custom belum tersedia.",
       retryable: false
     };
   }
@@ -125,6 +130,72 @@ export async function readJerseyConfiguredProductDefinition(
     message: result.message,
     retryable: result.retryable
   };
+}
+
+export async function priceJerseyConfiguredProduct(
+  input: ConfiguredProductPricingInput
+): Promise<PricingResult> {
+  const client = createSupabaseServerClient();
+  if (!client) throw new Error("Jersey pricing authority unavailable");
+
+  const { data, error } = await client
+    .from("products")
+    .select("id,name,nama,status,status_aktif,product_type,pricing_mode,price,harga,base_price,updated_at")
+    .eq("id", input.definitionId)
+    .eq("status", "active")
+    .eq("status_aktif", true)
+    .eq("product_type", "configurable_product")
+    .eq("pricing_mode", "configurator_based")
+    .maybeSingle();
+
+  if (error || !data) throw new Error("Jersey pricing product unavailable");
+  const unitAmount = readCanonicalMoney(data.base_price ?? data.price ?? data.harga);
+  const totalAmount = unitAmount * input.quantity;
+  if (!Number.isSafeInteger(totalAmount)) throw new Error("Jersey pricing total invalid");
+
+  const sourceReferences = [{
+    type: "product",
+    id: String(data.id),
+    ...(typeof data.updated_at === "string" ? { version: data.updated_at } : {})
+  }];
+  const money = (amount: number) => ({ currency: "IDR" as const, amount });
+
+  return {
+    contractVersion: CONTRACT_VERSIONS.pricing,
+    requestId: input.requestId,
+    status: "priced",
+    quantity: input.quantity,
+    lines: [{
+      key: `jersey:${data.id}`,
+      label: typeof data.name === "string" && data.name.trim()
+        ? data.name
+        : String(data.nama || "Jersey Custom"),
+      kind: "product_base",
+      quantity: input.quantity,
+      unitAmount: money(unitAmount),
+      totalAmount: money(totalAmount),
+      sourceReferences
+    }],
+    totals: {
+      subtotal: money(totalAmount),
+      discount: null,
+      shipping: null,
+      tax: null,
+      grandTotal: money(totalAmount)
+    },
+    sourceReferences,
+    policyReferences: input.sourceReferences,
+    warnings: [],
+    pricedAt: new Date().toISOString()
+  };
+}
+
+function readCanonicalMoney(value: unknown) {
+  const amount = typeof value === "number" ? value : Number(value);
+  if (!Number.isSafeInteger(amount) || amount < 0) {
+    throw new Error("Jersey pricing amount invalid");
+  }
+  return amount;
 }
 
 function fromProjection(

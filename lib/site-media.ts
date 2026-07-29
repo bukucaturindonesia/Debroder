@@ -13,8 +13,8 @@ export type SiteMediaDefaults = {
   socialPreview: string;
 };
 
-export const SAFE_BRAND_IMAGE = "/brand/debroder/social-preview.png";
-export const SAFE_BRAND_SQUARE = "/brand/debroder/open-graph-logo.png";
+export const SAFE_BRAND_IMAGE = "/debroder/social-preview.png";
+export const SAFE_BRAND_SQUARE = "/debroder/open-graph-logo.png";
 
 export const DEFAULT_SITE_MEDIA: SiteMediaDefaults = {
   heroDesktop: SAFE_BRAND_IMAGE,

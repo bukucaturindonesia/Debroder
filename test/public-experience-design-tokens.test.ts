@@ -9,13 +9,10 @@ const productionContract = `${globals}\n${home}\n${tailwind}`;
 const frozenColors = {
   "--color-canvas": "#ffffff",
   "--color-ink": "#111111",
-  "--color-text-secondary": "#707072",
+  "--color-text-secondary": "#5f5f5f",
   "--color-surface-soft": "#f5f5f5",
   "--color-divider-soft": "#e5e5e5",
-  "--color-border": "#cacacb",
-  "--color-sale-error": "#d30005",
-  "--color-success": "#007d48",
-  "--color-info-focus": "#1151ff"
+  "--color-border": "#cacaca"
 } as const;
 
 describe("DEBRODER Public Experience P0 design tokens", () => {
@@ -25,32 +22,35 @@ describe("DEBRODER Public Experience P0 design tokens", () => {
       expect(globals.match(new RegExp(`${token}:`, "g"))).toHaveLength(1);
     }
 
-    expect(globals).toContain('--font-heading: "Barlow Condensed"');
-    expect(globals).toContain('--font-body: "Inter"');
+    expect(globals).toContain("--font-sans: var(--font-inter), Inter, Arial, Helvetica, sans-serif;");
+    expect(globals).toContain("--font-heading: var(--font-sans);");
+    expect(readFileSync("app/layout.tsx", "utf8")).toContain("Inter({");
   });
 
   it("defines canonical layout, shape, focus, and motion primitives", () => {
-    expect(globals).toContain("--content-max: 90rem;");
-    expect(globals).toContain("--content-gutter: 16px;");
-    expect(globals).toContain("--section-space: 48px;");
+    expect(globals).toContain("--container-max: 1440px;");
+    expect(globals).toContain("--content-max: var(--container-max);");
+    expect(globals).toContain("--content-gutter: 20px;");
+    expect(globals).toContain("--section-space: 64px;");
     expect(globals).toContain("--radius-image: 0;");
     expect(globals).toContain("--radius-card: 0;");
-    expect(globals).toContain("--radius-pill: 999px;");
+    expect(globals).toContain("--radius-pill: 9999px;");
     expect(globals).toContain("--shadow-decorative: none;");
     expect(globals).toContain("--control-min-size: 48px;");
-    expect(globals).toContain("--motion-fast: 150ms;");
-    expect(globals).toContain("--motion-normal: 220ms;");
-    expect(globals).toContain("--motion-slow: 350ms;");
+    expect(globals).toContain("--duration-fast: 120ms;");
+    expect(globals).toContain("--duration-base: 180ms;");
+    expect(globals).toContain("--duration-overlay: 320ms;");
     expect(globals).toContain("outline: var(--focus-ring-width) solid var(--color-info-focus);");
   });
 
   it("covers the frozen responsive breakpoint system", () => {
-    for (const breakpoint of [600, 768, 960, 1200, 1440]) {
+    for (const breakpoint of [640, 768, 1024, 1280, 1440]) {
       expect(globals).toContain(`@media (min-width: ${breakpoint}px)`);
     }
 
-    expect(globals).toContain("--content-gutter: 24px;");
+    expect(globals).toContain("--content-gutter: 32px;");
     expect(globals).toContain("--content-gutter: 48px;");
+    expect(globals).toContain("--content-gutter: 64px;");
   });
 
   it("makes public consumers use the canonical contract", () => {

@@ -515,7 +515,7 @@ export function TieredProductPurchasePanel({
               <label
                 key={option.name}
                 title={option.name}
-                className={`grid h-12 w-12 cursor-pointer place-items-center rounded-full outline-none transition focus-within:outline focus-within:outline-2 focus-within:outline-offset-2 focus-within:outline-[#1151ff] ${
+                className={`grid h-12 w-12 cursor-pointer place-items-center rounded-full outline-none transition focus-within:outline focus-within:outline-2 focus-within:outline-offset-2 focus-within:outline-experience-focus ${
                   selected
                     ? "ring-2 ring-black ring-offset-2 ring-offset-[#F7F7F4]"
                     : "ring-1 ring-black/10 hover:ring-black/30"
@@ -575,7 +575,7 @@ export function TieredProductPurchasePanel({
             return (
               <label
                 key={size}
-                className={`grid min-h-12 min-w-12 place-items-center rounded-full px-4 text-sm font-semibold outline-none transition focus-within:outline focus-within:outline-2 focus-within:outline-offset-2 focus-within:outline-[#1151ff] ${
+                className={`grid min-h-12 min-w-12 place-items-center rounded-full px-4 text-sm font-semibold outline-none transition focus-within:outline focus-within:outline-2 focus-within:outline-offset-2 focus-within:outline-experience-focus ${
                   disabled ? "cursor-not-allowed opacity-35" : "cursor-pointer"
                 } ${
                   selected

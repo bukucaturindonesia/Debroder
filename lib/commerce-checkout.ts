@@ -10,6 +10,10 @@ import {
   instantServiceSelectionSchema,
   type InstantServiceSelection
 } from "@/lib/instant-custom";
+import {
+  parseJerseyConfiguredCheckoutItem,
+  type JerseyConfiguredCheckoutItem
+} from "@/lib/jersey-configured-product/request";
 import { z } from "zod";
 
 export type CheckoutFulfillmentMethod = "pickup" | "shipping";
@@ -43,6 +47,7 @@ export type PublicCheckoutRequest = {
     services?: InstantServiceSelection[];
   }>;
   customProjects: CustomCheckoutProject[];
+  configuredItems: JerseyConfiguredCheckoutItem[];
 };
 
 export function normalizeWhatsapp(value: string) {
@@ -52,7 +57,14 @@ export function normalizeWhatsapp(value: string) {
 }
 
 export function parsePublicCheckoutRequest(value: unknown): PublicCheckoutRequest | null {
-  if (!isRecord(value) || !isRecord(value.customer) || !isRecord(value.fulfillment) || !Array.isArray(value.items)) return null;
+  if (
+    !isRecord(value)
+    || !isRecord(value.customer)
+    || !isRecord(value.fulfillment)
+    || !Array.isArray(value.items)
+  ) return null;
+  const rawConfiguredItems = value.configuredItems ?? [];
+  if (!Array.isArray(rawConfiguredItems)) return null;
 
   const idempotencyKey = text(value.idempotencyKey);
   const accessToken = text(value.accessToken);
@@ -66,6 +78,9 @@ export function parsePublicCheckoutRequest(value: unknown): PublicCheckoutReques
   const pickupLocationId = text(value.fulfillment.pickupLocationId);
   const paymentMethod = value.fulfillment.paymentMethod;
   const customProjects = parseCustomCheckoutProjects(value.customProjects ?? []);
+  const configuredItems = rawConfiguredItems.map(
+    parseJerseyConfiguredCheckoutItem
+  );
   const addressSnapshot = parseStructuredIndonesiaAddress(value.fulfillment.addressSnapshot);
 
   if (!/^[a-zA-Z0-9_-]{16,100}$/.test(idempotencyKey)) return null;
@@ -75,13 +90,20 @@ export function parsePublicCheckoutRequest(value: unknown): PublicCheckoutReques
   if (email && !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) return null;
   if (method !== "pickup" && method !== "shipping") return null;
   if (paymentMethod !== "bank_transfer" && paymentMethod !== "pay_at_store") return null;
-  if (!customProjects) return null;
+  if (!customProjects || configuredItems.some((item) => item === null)) return null;
   if (method === "shipping" && paymentMethod !== "bank_transfer") return null;
   if (method === "shipping" && !addressSnapshot) return null;
   if (method === "pickup" && !/^[0-9a-fA-F-]{36}$/.test(pickupLocationId)) return null;
-  if (value.items.length > MAX_CHECKOUT_ITEMS) return null;
-  if (value.items.length < 1 && customProjects.length < 1) return null;
-  if (value.items.length > 0 && customProjects.length > 0) return null;
+  if (
+    value.items.length > MAX_CHECKOUT_ITEMS
+    || configuredItems.length > MAX_CHECKOUT_ITEMS
+  ) return null;
+  const activeModes = [
+    value.items.length > 0,
+    customProjects.length > 0,
+    configuredItems.length > 0
+  ].filter(Boolean).length;
+  if (activeModes !== 1) return null;
 
   const items: PublicCheckoutRequest["items"] = [];
   const variantIds = new Set<string>();
@@ -109,6 +131,11 @@ export function parsePublicCheckoutRequest(value: unknown): PublicCheckoutReques
       services: services.data
     });
   }
+  for (const item of configuredItems) {
+    if (!item) return null;
+    totalQuantity += item.draft.quantity;
+    if (totalQuantity > MAX_CHECKOUT_TOTAL_QUANTITY) return null;
+  }
 
   return {
     idempotencyKey,
@@ -123,7 +150,10 @@ export function parsePublicCheckoutRequest(value: unknown): PublicCheckoutReques
       paymentMethod
     },
     items,
-    customProjects
+    customProjects,
+    configuredItems: configuredItems.filter(
+      (item): item is JerseyConfiguredCheckoutItem => item !== null
+    )
   };
 }
 

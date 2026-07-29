@@ -9,6 +9,7 @@ import { CartNavButton } from "@/components/CartProvider";
 import { Logo } from "@/components/Logo";
 import { jacketTypeOptions, kaosTypeOptions } from "@/lib/product-taxonomy";
 import type { PublicNavigationFacets } from "@/lib/public-navigation";
+import { PUBLIC_ROUTES } from "@/lib/public-routes";
 
 const HeaderSearchModal = dynamic(
   () => import("@/components/header/HeaderSearchModal").then((module) => module.HeaderSearchModal),
@@ -16,24 +17,24 @@ const HeaderSearchModal = dynamic(
 );
 
 const topbarItems = [
-  { label: "Fresh Drop", href: "/fresh-drop" },
-  { label: "Toko", href: "/store" },
-  { label: "Cara Pemesanan", href: "/cara-order" },
-  { label: "Lacak Pesanan", href: "/track-order" }
+  { label: "Fresh Drop", href: PUBLIC_ROUTES.freshDrop },
+  { label: "Toko", href: PUBLIC_ROUTES.store },
+  { label: "Cara Pemesanan", href: PUBLIC_ROUTES.orderGuide },
+  { label: "Lacak Pesanan", href: PUBLIC_ROUTES.tracking }
 ];
 
 const navItems = [
-  { label: "Koleksi", href: "/koleksi" },
-  { label: "Kaos Polos", href: "/kaos-polos" },
-  { label: "Jaket & Hoodie", href: "/jaket-hoodie" },
-  { label: "Headwear", href: "/headwear" },
-  { label: "Sablon DTF", href: "/sablon-dtf" },
-  { label: "Jersey", href: "/jersey" }
+  { label: "Koleksi", href: PUBLIC_ROUTES.collection },
+  { label: "Kaos Polos", href: PUBLIC_ROUTES.plainShirts },
+  { label: "Jaket & Hoodie", href: PUBLIC_ROUTES.jackets },
+  { label: "Headwear", href: PUBLIC_ROUTES.headwear },
+  { label: "Sablon DTF", href: PUBLIC_ROUTES.dtf },
+  { label: "Jersey", href: PUBLIC_ROUTES.jersey }
 ];
 
 const publicNavItems = [
   ...navItems.slice(0, -1),
-  { label: "Custom", href: "/custom" },
+  { label: "Custom", href: PUBLIC_ROUTES.custom },
   navItems[navItems.length - 1]
 ];
 
@@ -177,7 +178,7 @@ function MegaDropdown({
     : "invisible pointer-events-none translate-y-2 opacity-0";
   const legacyClass = "invisible translate-y-2 opacity-0 group-hover/nav:visible group-hover/nav:translate-y-0 group-hover/nav:opacity-100 group-focus-within/nav:visible group-focus-within/nav:translate-y-0 group-focus-within/nav:opacity-100";
   return (
-    <div id={id} className={`fixed left-1/2 top-[72px] z-[120] w-[min(1180px,calc(100vw-32px))] -translate-x-1/2 pt-3 transition duration-200 ${open === undefined ? legacyClass : controlledClass}`}>
+    <div id={id} className={`fixed left-1/2 top-[72px] z-[var(--z-dropdown)] w-[min(1180px,calc(100vw-32px))] -translate-x-1/2 pt-3 transition duration-200 ${open === undefined ? legacyClass : controlledClass}`}>
       <div className={`grid gap-8 bg-white p-8 text-left shadow-[0_16px_40px_rgba(0,0,0,0.08)] ${columns.length >= 4 ? "grid-cols-4" : columns.length === 2 ? "grid-cols-2" : "grid-cols-3"}`}>
         {columns.map((column) => (
           <div key={column.title}>
@@ -209,6 +210,7 @@ export function SiteHeaderClient({
   const headerRef = useRef<HTMLElement>(null);
   const collectionTriggerRef = useRef<HTMLButtonElement>(null);
   const mobileMenuTriggerRef = useRef<HTMLButtonElement>(null);
+  const mobileMenuRef = useRef<HTMLDivElement>(null);
   const searchTriggerRef = useRef<HTMLButtonElement | null>(null);
   const collectionMenu = useMemo(() => buildCollectionMenu(navigationFacets), [navigationFacets]);
   const currentMegaMenus = useMemo<Record<string, MegaMenuColumn[]>>(() => ({
@@ -257,20 +259,42 @@ export function SiteHeaderClient({
     if (!isOpen) return;
     const previousOverflow = document.body.style.overflow;
     document.body.style.overflow = "hidden";
-    const closeOnEscape = (event: globalThis.KeyboardEvent) => {
-      if (event.key !== "Escape") return;
-      setIsOpen(false);
-      mobileMenuTriggerRef.current?.focus();
+    const focusableSelector =
+      'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])';
+    const focusFirst = window.requestAnimationFrame(() => {
+      mobileMenuRef.current?.querySelector<HTMLElement>(focusableSelector)?.focus();
+    });
+    const handleMenuKey = (event: globalThis.KeyboardEvent) => {
+      if (event.key === "Escape") {
+        setIsOpen(false);
+        window.requestAnimationFrame(() => mobileMenuTriggerRef.current?.focus());
+        return;
+      }
+      if (event.key !== "Tab" || !mobileMenuRef.current) return;
+      const focusable = Array.from(
+        mobileMenuRef.current.querySelectorAll<HTMLElement>(focusableSelector)
+      );
+      if (!focusable.length) return;
+      const first = focusable[0];
+      const last = focusable[focusable.length - 1];
+      if (event.shiftKey && document.activeElement === first) {
+        event.preventDefault();
+        last.focus();
+      } else if (!event.shiftKey && document.activeElement === last) {
+        event.preventDefault();
+        first.focus();
+      }
     };
-    window.addEventListener("keydown", closeOnEscape);
+    window.addEventListener("keydown", handleMenuKey);
     return () => {
-      window.removeEventListener("keydown", closeOnEscape);
+      window.cancelAnimationFrame(focusFirst);
+      window.removeEventListener("keydown", handleMenuKey);
       document.body.style.overflow = previousOverflow;
     };
   }, [isOpen]);
 
   return (
-    <header ref={headerRef} data-public-header className="sticky top-0 z-[100] h-[60px] border-b border-black/10 bg-white text-[#111] lg:h-[72px]">
+    <header ref={headerRef} data-public-header className="sticky top-0 z-[var(--z-sticky)] h-[60px] border-b border-black/10 bg-white text-[#111] lg:h-[72px]">
       <nav className="section-shell flex h-[60px] items-center justify-between gap-4 bg-white lg:h-[72px]" aria-label="Navigasi utama">
         <Link href="/" className="shrink-0" aria-label="DEBRODER beranda">
           <Logo variant="primary-dark" size="sm" className="transition duration-200 hover:opacity-70" />
@@ -347,7 +371,7 @@ export function SiteHeaderClient({
       </nav>
 
       <div id="global-mobile-navigation" aria-hidden={!isOpen} inert={!isOpen} className={`absolute inset-x-0 top-full h-[calc(100dvh-60px)] bg-white transition-transform duration-300 ease-out lg:hidden ${isOpen ? "visible translate-x-0" : "invisible pointer-events-none translate-x-full"}`}>
-        <div className="section-shell flex h-full flex-col overflow-y-auto py-6">
+        <div ref={mobileMenuRef} className="section-shell flex h-full flex-col overflow-y-auto py-6">
           <p className="mb-2 text-xs font-semibold uppercase tracking-[0.12em] text-black/45">Belanja</p>
           {currentNavItems.map((item) => {
             const active = pathname === item.href || (item.href === "/custom" && pathname.startsWith("/custom/"));

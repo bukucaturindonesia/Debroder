@@ -4,6 +4,7 @@ import { fallbackImages } from "@/lib/fallback-data";
 import {
   productCardMetadata,
   productCardPrice,
+  productCardSummary,
   productCommerceBadges
 } from "@/lib/product-card";
 import { getProductCardImages } from "@/lib/product-gallery";
@@ -39,6 +40,7 @@ export function PublicProductCard({
   const focal = product.focal_points?.catalog;
   const cardImages = getProductCardImages(product);
   const metadata = productCardMetadata(product);
+  const summary = productCardSummary(product);
   const priceLabel = productCardPrice(product);
   const quickAdd = resolvePublicQuickAdd(product, {
     imageUrl: cardImages.primary
@@ -82,6 +84,9 @@ export function PublicProductCard({
           <h3 className={`public-product-name line-clamp-2 ${metadata ? "has-metadata" : ""}`}>
             {product.nama}
           </h3>
+          {summary ? (
+            <p className="public-product-summary line-clamp-2">{summary}</p>
+          ) : null}
           {priceLabel ? (
             <div className="public-product-price-block">
               <p className="public-product-price">{priceLabel}</p>
@@ -92,6 +97,9 @@ export function PublicProductCard({
               ) : null}
             </div>
           ) : null}
+          <span className="public-product-detail-action inline-flex min-h-11 items-center text-sm font-semibold underline decoration-1 underline-offset-4">
+            Lihat Detail
+          </span>
         </div>
       </Link>
 
@@ -99,7 +107,7 @@ export function PublicProductCard({
         <div className="mt-4 grid grid-cols-2 gap-2">
           <Link
             href={detailHref}
-            className="public-secondary-action inline-flex min-h-10 items-center justify-center border px-3 text-sm font-semibold transition"
+            className="public-secondary-action inline-flex min-h-11 items-center justify-center border px-3 text-sm font-semibold transition"
           >
             Detail
           </Link>
@@ -107,14 +115,14 @@ export function PublicProductCard({
           {quickAdd.mode === "options" ? (
             <Link
               href={detailHref}
-              className="inline-flex min-h-10 items-center justify-center bg-black px-3 text-sm font-semibold text-white transition hover:bg-black/80"
+              className="inline-flex min-h-11 items-center justify-center bg-black px-3 text-sm font-semibold text-white transition hover:bg-black/80"
             >
               Pilih opsi
             </Link>
           ) : (
             <span
               aria-disabled="true"
-              className="inline-flex min-h-10 cursor-not-allowed items-center justify-center bg-black/10 px-3 text-sm font-semibold text-black/40"
+              className="inline-flex min-h-11 cursor-not-allowed items-center justify-center bg-black/10 px-3 text-sm font-semibold text-black/40"
             >
               Stok habis
             </span>

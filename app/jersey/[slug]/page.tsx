@@ -36,14 +36,14 @@ export default async function JerseyDetailPage({ params }: { params: Promise<{ s
   return (
     <PublicShell>
       <PageHero
-        label="CUSTOM JERSEY"
+        label="JERSEY CUSTOM"
         title={jerseyCategory.nama_kategori}
         description={jerseyCategory.deskripsi}
         imageUrl={jerseyCategory.gambar_url}
         objectPosition={jerseyCategory.object_position}
         objectFit={jerseyCategory.object_fit}
         imageZoom={jerseyCategory.focal_zoom}
-        ctaText="Mulai Konfigurasi Jersey"
+        ctaText="Mulai Desain Jersey"
         ctaHref="/jersey/configurator"
         secondaryCtaText="Belanja Jersey"
         secondaryCtaHref="/jersey/shop"
@@ -75,13 +75,13 @@ export default async function JerseyDetailPage({ params }: { params: Promise<{ s
       <section id="configurator" className="bg-brand-offWhite py-10 sm:py-12">
         <div className="section-shell">
           <div className="rounded-[28px] bg-white/70 p-6 ring-1 ring-black/6 sm:p-8">
-            <p className="text-xs font-semibold uppercase tracking-[0.16em] text-black/42">Jersey Configurator Resmi</p>
-            <h2 className="mt-2 text-2xl font-semibold tracking-tight">Lanjutkan melalui configurator canonical</h2>
+            <p className="text-xs font-semibold uppercase tracking-[0.16em] text-black/42">Jersey Custom</p>
+            <h2 className="mt-2 text-2xl font-semibold tracking-tight">Lengkapi kebutuhan jersey Anda</h2>
             <p className="mt-3 max-w-2xl text-sm leading-7 text-black/58">
-              Paket, bahan, kerah, alokasi ukuran, data pemain, dan kebutuhan desain divalidasi melalui satu jalur server-authoritative.
+              Pilih paket, bahan, kerah, ukuran, lalu lengkapi data pemain dan kebutuhan desain dalam satu alur.
             </p>
             <Link href="/jersey/configurator" className="mt-5 inline-flex min-h-12 items-center justify-center rounded-full bg-[#063d24] px-6 text-sm font-semibold text-white transition hover:bg-[#111111]">
-              Mulai Konfigurasi Jersey
+              Mulai Desain Jersey
             </Link>
           </div>
         </div>

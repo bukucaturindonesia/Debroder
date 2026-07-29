@@ -46,6 +46,33 @@ export function productCardColors(product: Product) {
   return uniqueLabels(product.color_tags || []);
 }
 
+export function productCardSizes(product: Product) {
+  const variants = product.variants || [];
+
+  if (variants.length) {
+    return uniqueLabels(
+      variants
+        .filter((variant) => variant.is_active !== false)
+        .flatMap((variant) =>
+          (variant.sizes || [])
+            .filter((size) => size.is_active !== false)
+            .map((size) => size.size_name)
+        )
+    );
+  }
+
+  return uniqueLabels(product.size_tags || []);
+}
+
+export function productCardSummary(product: Product) {
+  return cleanText(
+    product.short_detail
+    || product.public_description
+    || product.description
+    || product.deskripsi
+  );
+}
+
 export function productCardCategory(product: Product) {
   return cleanText(product.kategori);
 }
@@ -53,7 +80,12 @@ export function productCardCategory(product: Product) {
 export function productCardMetadata(product: Product) {
   const category = productCardCategory(product);
   const colorCount = productCardColors(product).length;
-  const parts = [category, colorCount ? `${colorCount} warna` : ""].filter(Boolean);
+  const sizeCount = productCardSizes(product).length;
+  const parts = [
+    category,
+    colorCount ? `${colorCount} warna` : "",
+    sizeCount ? `${sizeCount} ukuran` : ""
+  ].filter(Boolean);
   return parts.join(" · ");
 }
 
@@ -123,10 +155,13 @@ function exactMoneyValue(value: number | string | null | undefined) {
 export function productCardPrice(product: Product) {
   if (
     product.pricing_mode === "configurator_based"
-    || product.pricing_mode === "custom_quote"
     || product.uses_configurator
   ) {
-    return "Harga setelah konfigurasi";
+    return "Lengkapi pilihan untuk harga pasti";
+  }
+
+  if (product.pricing_mode === "custom_quote") {
+    return "Perlu konsultasi";
   }
 
   if (productCardHasPriceVariation(product)) {

@@ -2,20 +2,19 @@ import type { MetadataRoute } from "next";
 import { getPublicContent } from "@/lib/public-data";
 import { absoluteUrl } from "@/lib/site";
 import { listCustomCategories } from "@/lib/custom-commerce/data";
-
-const routes = ["", "/koleksi", "/keranjang", "/custom", "/kaos-polos", "/jersey", "/jersey/shop", "/jersey/configurator", "/jaket-hoodie", "/kemeja", "/headwear", "/sablon-dtf", "/maklon-dtf", "/cetak-sublim", "/store", "/cara-order"];
+import { PUBLIC_ROUTES, PUBLIC_SITEMAP_ROUTES } from "@/lib/public-routes";
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const now = new Date();
   const [content, customCategories] = await Promise.all([getPublicContent(), listCustomCategories()]);
-  const base: MetadataRoute.Sitemap = routes.map((route) => ({
+  const base: MetadataRoute.Sitemap = PUBLIC_SITEMAP_ROUTES.map((route) => ({
     url: absoluteUrl(route),
     lastModified: now,
-    changeFrequency: route === "" ? "weekly" : "monthly",
-    priority: route === "" ? 1 : route === "/koleksi" ? 0.9 : 0.8
+    changeFrequency: route === PUBLIC_ROUTES.home ? "weekly" : "monthly",
+    priority: route === PUBLIC_ROUTES.home ? 1 : route === PUBLIC_ROUTES.collection ? 0.9 : 0.8
   }));
   const products: MetadataRoute.Sitemap = content.products.filter((product) => product.slug).map((product) => ({
-    url: absoluteUrl(`/produk/${product.slug}`),
+    url: absoluteUrl(PUBLIC_ROUTES.product(product.slug!)),
     lastModified: product.updated_at ? new Date(product.updated_at) : now,
     changeFrequency: "weekly",
     priority: 0.8

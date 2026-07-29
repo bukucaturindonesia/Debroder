@@ -19,7 +19,7 @@ function product(patch: Partial<Product>): Product {
     subcategory: "Futsal",
     deskripsi: "",
     badge: "",
-    gambar_url: "/brand/debroder/open-graph-logo.png",
+    gambar_url: "/debroder/open-graph-logo.png",
     whatsapp_link: "",
     price: 125_000,
     stock: 8,

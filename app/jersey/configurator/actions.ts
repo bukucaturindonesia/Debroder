@@ -8,7 +8,10 @@ import {
   resolveConfiguredProductOnServer,
   type ResolveConfiguredProductResult
 } from "@/lib/configured-product/runtime";
-import { readJerseyConfiguredProductDefinition } from "@/lib/jersey-configured-product/data-access";
+import {
+  priceJerseyConfiguredProduct,
+  readJerseyConfiguredProductDefinition
+} from "@/lib/jersey-configured-product/data-access";
 import { validateJerseyConsumerDraft } from "@/lib/jersey-configured-product/domain";
 import { parseJerseyResolveRequest } from "@/lib/jersey-configured-product/request";
 
@@ -20,7 +23,7 @@ export async function resolveJerseyConfiguredProduct(
     return failure(
       "jersey-configurator",
       "configured_product.request.invalid",
-      "Permintaan Jersey configurator tidak valid."
+      "Permintaan Jersey Custom tidak valid."
     );
   }
 
@@ -62,7 +65,8 @@ export async function resolveJerseyConfiguredProduct(
   }
 
   return resolveConfiguredProductOnServer(input, {
-    readDefinition: async () => definitionResult
+    readDefinition: async () => definitionResult,
+    pricingAuthority: priceJerseyConfiguredProduct
   });
 }
 

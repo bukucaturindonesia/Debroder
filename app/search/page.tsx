@@ -4,6 +4,7 @@ import { PublicProductCard } from "@/components/PublicProductCard";
 import { PublicShell } from "@/components/PublicPage";
 import { getCatalogPageModel } from "@/lib/catalog-page/runtime";
 import { getPublicContent } from "@/lib/public-data";
+import { publicServiceHref } from "@/lib/public-routes";
 import type { Product } from "@/lib/types";
 
 export const metadata: Metadata = {
@@ -58,7 +59,23 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
           .includes(needle)
       )
     : [];
-  const totalResults = results.length + categoryResults.length;
+  const serviceResults = needle
+    ? content.services.filter((service) =>
+        service.status_aktif
+        && [
+          service.nama,
+          service.deskripsi,
+          service.detail_body,
+          service.category_key,
+          ...(service.available_sizes || [])
+        ]
+          .filter(Boolean)
+          .join(" ")
+          .toLocaleLowerCase("id-ID")
+          .includes(needle)
+      )
+    : [];
+  const totalResults = results.length + categoryResults.length + serviceResults.length;
 
   return (
     <PublicShell>
@@ -112,6 +129,23 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
                       >
                         <h3 className="font-semibold">{category.nama_kategori}</h3>
                         {category.deskripsi ? <p className="mt-2 line-clamp-2 text-sm leading-6 text-black/60">{category.deskripsi}</p> : null}
+                      </Link>
+                    ))}
+                  </div>
+                </section>
+              ) : null}
+              {serviceResults.length ? (
+                <section className="mt-10" aria-labelledby="service-search-results">
+                  <h2 id="service-search-results" className="text-2xl font-semibold">Layanan</h2>
+                  <div className="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                    {serviceResults.map((service) => (
+                      <Link
+                        key={service.id || service.slug}
+                        href={publicServiceHref(service.category_key, service.slug)}
+                        className="border border-black/10 bg-white p-5 transition hover:border-black focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-black"
+                      >
+                        <h3 className="font-semibold">{service.nama}</h3>
+                        {service.deskripsi ? <p className="mt-2 line-clamp-2 text-sm leading-6 text-black/60">{service.deskripsi}</p> : null}
                       </Link>
                     ))}
                   </div>

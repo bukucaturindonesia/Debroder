@@ -11,6 +11,14 @@ import type { ResolveConfiguredProductInput } from "@/lib/configured-product/run
 
 const MAX_ARRAY_ITEMS = 500;
 
+export type JerseyConfiguredCheckoutItem = {
+  lineId: string;
+  productId: string;
+  snapshotId: string;
+  inputFingerprint: string;
+  draft: ConfiguredProductDraft;
+};
+
 export function parseJerseyResolveRequest(
   value: unknown
 ): ResolveConfiguredProductInput | null {
@@ -35,6 +43,34 @@ export function parseJerseyResolveRequest(
     requestId: value.requestId,
     snapshotId: value.snapshotId,
     requestedAt: value.requestedAt
+  };
+}
+
+export function parseJerseyConfiguredCheckoutItem(
+  value: unknown
+): JerseyConfiguredCheckoutItem | null {
+  if (!isRecord(value) || hasUnknownKeys(value, [
+    "lineId",
+    "productId",
+    "snapshotId",
+    "inputFingerprint",
+    "draft"
+  ])) return null;
+  if (
+    !isString(value.lineId)
+    || !isString(value.productId)
+    || !isString(value.snapshotId)
+    || typeof value.inputFingerprint !== "string"
+    || !/^[a-f0-9]{64}$/.test(value.inputFingerprint)
+  ) return null;
+  const draft = parseDraft(value.draft);
+  if (!draft || draft.definitionId !== value.productId) return null;
+  return {
+    lineId: value.lineId,
+    productId: value.productId,
+    snapshotId: value.snapshotId,
+    inputFingerprint: value.inputFingerprint,
+    draft
   };
 }
 

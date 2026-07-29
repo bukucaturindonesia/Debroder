@@ -23,11 +23,11 @@ const config: Config = {
         brand: {
           black: "#000000",
           white: "#FFFFFF",
-          offWhite: "#F7F7F4",
+          offWhite: "#F5F5F5",
           charcoal: "#111111",
           softGray: "#E5E5E5",
-          muted: "#737373",
-          green: "#0F5A36",
+          muted: "#757575",
+          green: "#063D24",
           greenDark: "#063D24"
         }
       },
@@ -35,8 +35,9 @@ const config: Config = {
         soft: "0 18px 60px rgba(17, 17, 17, 0.08)"
       },
       fontFamily: {
-        heading: ["var(--font-heading)"],
-        sans: ["var(--font-body)"]
+        heading: ["var(--font-sans)"],
+        sans: ["var(--font-sans)"],
+        mono: ["var(--font-mono)"]
       }
     }
   },

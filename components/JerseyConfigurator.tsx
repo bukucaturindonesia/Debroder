@@ -10,6 +10,7 @@ import type {
 } from "@/lib/contracts";
 import { CONTRACT_VERSIONS } from "@/lib/contracts";
 import type { JerseyConfiguredProductConsumer } from "@/lib/jersey-configured-product/domain";
+import { formatRupiah } from "@/lib/money";
 
 type JerseyConfiguratorProps = {
   consumer: JerseyConfiguredProductConsumer;
@@ -195,7 +196,10 @@ export function JerseyConfigurator({ consumer }: JerseyConfiguratorProps) {
         snapshot: result.snapshot,
         name: consumer.product.name,
         category: "Jersey Custom",
-        priceLabel: "Menunggu penawaran",
+        priceLabel: result.snapshot.pricing?.totals.grandTotal
+          ? formatRupiah(result.snapshot.pricing.totals.grandTotal.amount)
+          : "Perlu konsultasi",
+        priceValue: result.snapshot.pricing?.totals.grandTotal?.amount,
         href: `/jersey/configurator?product=${encodeURIComponent(consumer.product.slug)}`,
         imageUrl: consumer.product.imageUrl,
         imageAlt: consumer.product.imageAlt,
@@ -205,7 +209,7 @@ export function JerseyConfigurator({ consumer }: JerseyConfiguratorProps) {
           .join(" · "),
         notes: teamInfo.notes.trim() || undefined
       });
-      setNotice("Konfigurasi tervalidasi server dan masuk ke keranjang penawaran.");
+      setNotice("Kebutuhan Jersey Custom sudah diperiksa dan masuk ke Keranjang.");
     } catch {
       setNotice("Validasi server belum dapat diselesaikan. Silakan coba lagi.");
     } finally {
@@ -217,10 +221,10 @@ export function JerseyConfigurator({ consumer }: JerseyConfiguratorProps) {
     <section id="configurator" data-reveal className="scroll-mt-14 bg-brand-offWhite py-10 sm:py-12">
       <div className="section-shell">
         <div className="mb-7 max-w-3xl">
-          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-brand-charcoal/45">Jersey Configurator</p>
+          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-brand-charcoal/45">Jersey Custom</p>
           <h2 className="mt-2 text-3xl font-semibold tracking-tight text-brand-charcoal sm:text-4xl">Rakit kebutuhan jersey</h2>
           <p className="mt-3 text-sm leading-6 text-black/58 sm:text-base sm:leading-7">
-            Pilihan akan divalidasi server dan disimpan sebagai snapshot konfigurasi. Harga tidak dihitung di browser dan menunggu penawaran resmi.
+            Pilihan Anda diperiksa oleh server. Harga pasti ditampilkan untuk konfigurasi standar; kebutuhan nonstandar diarahkan ke konsultasi.
           </p>
         </div>
 
@@ -256,7 +260,7 @@ export function JerseyConfigurator({ consumer }: JerseyConfiguratorProps) {
             </article>
 
             <article className="rounded-[28px] bg-white/40 p-4 ring-1 ring-black/5 sm:p-6">
-              <StepLabel number={5} title="Addon opsional" description="Pilih addon yang perlu ditinjau dalam penawaran." />
+              <StepLabel number={5} title="Tambahan opsional" description="Pilih kebutuhan tambahan yang sesuai untuk jersey Anda." />
               <div className="mt-5 grid gap-3 sm:grid-cols-2">
                 {(addonGroup?.options ?? []).map((item) => (
                   <OptionButton
@@ -273,7 +277,7 @@ export function JerseyConfigurator({ consumer }: JerseyConfiguratorProps) {
               <StepLabel
                 number={6}
                 title="Desain dan data tim"
-                description="Lengkapi kebutuhan transaction-critical. Tautan desain akan ditinjau; upload file langsung belum dianggap tersimpan."
+                description="Lengkapi data yang diperlukan. Tautan desain akan ditinjau oleh tim DEBRODER."
               />
               <div className="mt-5 grid gap-4">
                 <TextField label="Nama tim / komunitas" value={teamInfo.teamName} onChange={(value) => updateTeamInfo("teamName", value)} />
@@ -291,9 +295,11 @@ export function JerseyConfigurator({ consumer }: JerseyConfiguratorProps) {
           <aside className="lg:sticky lg:top-28 lg:self-start">
             <div className="rounded-[30px] bg-white/70 p-5 ring-1 ring-black/6 sm:p-6">
               <p className="text-xs font-semibold uppercase tracking-[0.18em] text-black/42">Status harga</p>
-              <h3 className="mt-2 text-2xl font-semibold tracking-tight">Penawaran diperlukan</h3>
+              <h3 className="mt-2 text-2xl font-semibold tracking-tight">
+                {definition.pricingMode === "server_priced" ? "Harga konfigurasi" : "Perlu konsultasi"}
+              </h3>
               <p className="mt-3 text-sm leading-6 text-black/55">
-                Browser tidak menentukan harga final. Admin akan meninjau konfigurasi tervalidasi sebelum penawaran dapat disetujui.
+                Harga tidak ditentukan oleh browser. Server memeriksa pilihan dan jumlah sebelum kebutuhan dapat dilanjutkan.
               </p>
               <div className="mt-5 grid gap-3 text-sm">
                 <Summary label="Paket" value={selectedPackage?.label} />
@@ -315,11 +321,11 @@ export function JerseyConfigurator({ consumer }: JerseyConfiguratorProps) {
                 onClick={addConfiguredJerseyToCart}
                 className="mt-5 inline-flex min-h-12 w-full items-center justify-center rounded-full bg-[#063d24] px-5 text-sm font-semibold text-white transition hover:bg-[#111111] disabled:cursor-not-allowed disabled:opacity-45"
               >
-                {submitting ? "Memvalidasi..." : "Masukkan ke Keranjang Penawaran"}
+                {submitting ? "Memeriksa..." : "Masukkan ke Keranjang"}
               </button>
               {notice ? <p role="status" className="mt-4 text-center text-xs leading-5 text-black/58">{notice}</p> : null}
               <p className="mt-4 text-center text-[11px] leading-5 text-black/45">
-                Konfigurasi quotation-required tidak dapat diproses sebagai checkout berbayar sebelum validasi dan penawaran server terbaru.
+                Kebutuhan nonstandar akan diarahkan ke konsultasi tanpa menampilkan nominal yang belum pasti.
               </p>
             </div>
           </aside>

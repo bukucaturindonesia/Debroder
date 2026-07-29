@@ -699,10 +699,10 @@ function CartDrawer() {
 
   return (
     <>
-      <div className={`fixed inset-0 z-[150] bg-black/35 transition ${isOpen ? "visible opacity-100" : "invisible opacity-0"}`} onMouseDown={(event) => event.target === event.currentTarget && closeCart()} />
+      <div className={`fixed inset-0 z-[var(--z-overlay)] bg-black/35 transition ${isOpen ? "visible opacity-100" : "invisible opacity-0"}`} onMouseDown={(event) => event.target === event.currentTarget && closeCart()} />
       <aside
         ref={drawerRef}
-        className={`fixed right-0 top-0 z-[160] flex h-dvh w-full max-w-md flex-col bg-[#F7F7F4] shadow-[-18px_0_50px_rgba(0,0,0,0.14)] transition-transform duration-300 ${isOpen ? "translate-x-0" : "translate-x-full"}`}
+        className={`fixed right-0 top-0 z-[var(--z-drawer)] flex h-dvh w-full max-w-md flex-col bg-brand-offWhite shadow-[var(--shadow-overlay)] transition-transform duration-[var(--duration-overlay)] ${isOpen ? "translate-x-0" : "translate-x-full"}`}
         role="dialog"
         aria-modal="true"
         aria-label="Keranjang belanja"

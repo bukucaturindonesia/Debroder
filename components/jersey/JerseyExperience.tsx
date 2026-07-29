@@ -48,7 +48,7 @@ function heroHref(value: string | undefined, fallback: string) {
 }
 
 function JerseyHero({ hero }: { hero: PageHeroContent | undefined }) {
-  const desktopImage = hero?.image_url || "/brand/debroder/social-preview.png";
+  const desktopImage = hero?.image_url || "/debroder/social-preview.png";
   const mobileImage = hero?.mobile_image_url || desktopImage;
   const primaryUrl = heroHref(hero?.primary_cta_url, "/jersey/shop");
   const secondaryUrl = heroHref(hero?.secondary_cta_url, "/jersey/configurator");

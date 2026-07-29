@@ -3,6 +3,7 @@ import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 import {
   CONTRACT_VERSIONS,
+  type ConfiguredProductPricingInput,
   type ConfiguredProductDraft
 } from "@/lib/contracts";
 import { resolveConfiguredProductOnServer } from "@/lib/configured-product/runtime";
@@ -39,7 +40,10 @@ function source(overrides: Record<string, unknown> = {}) {
       status: "active",
       status_aktif: true,
       product_type: "configurable_product",
-      pricing_mode: "custom_quote",
+      pricing_mode: "configurator_based",
+      price: 100_000,
+      harga: 100_000,
+      base_price: 100_000,
       uses_configurator: true,
       minimum_order_qty: 6,
       config_schema: {
@@ -146,7 +150,7 @@ describe("P10 Jersey configured-product consumer", () => {
     const consumer = readyConsumer();
     const definition = consumer.definition;
 
-    expect(definition.pricingMode).toBe("quotation_required");
+    expect(definition.pricingMode).toBe("server_priced");
     expect(definition.quantityRules).toEqual({ minimum: 6, maximum: 100 });
     expect(definition.optionGroups.map((group) => group.code)).toEqual([
       "package",
@@ -174,7 +178,7 @@ describe("P10 Jersey configured-product consumer", () => {
     );
   });
 
-  it("requires active custom-quote authority and never publishes the draft pilot implicitly", () => {
+  it("requires active server-priced authority and never publishes a quotation-only product implicitly", () => {
     const inactive = projectJerseyConfiguredProduct(source({
       product: {
         ...source().product,
@@ -185,7 +189,7 @@ describe("P10 Jersey configured-product consumer", () => {
     const priced = projectJerseyConfiguredProduct(source({
       product: {
         ...source().product,
-        pricing_mode: "configurator_based"
+        pricing_mode: "custom_quote"
       }
     }));
 
@@ -199,7 +203,7 @@ describe("P10 Jersey configured-product consumer", () => {
     });
   });
 
-  it("creates a deterministic immutable quotation-required snapshot through P9 runtime", async () => {
+  it("creates a deterministic immutable server-priced snapshot through P9 runtime", async () => {
     const consumer = readyConsumer();
     const first = projectJerseyConfiguredProduct(source());
     const second = projectJerseyConfiguredProduct(source());
@@ -218,17 +222,25 @@ describe("P10 Jersey configured-product consumer", () => {
       readDefinition: async () => ({
         status: "ready",
         definition: consumer.definition
-      })
+      }),
+      pricingAuthority: async (input) => priced(input)
     });
 
     expect(resolved).toMatchObject({
       ok: true,
       snapshot: {
         immutable: true,
-        pricing: null,
+        pricing: {
+          status: "priced",
+          quantity: 6,
+          totals: {
+            subtotal: { currency: "IDR", amount: 600_000 },
+            grandTotal: { currency: "IDR", amount: 600_000 }
+          }
+        },
         validation: {
           valid: true,
-          pricingStatus: "quotation_required"
+          pricingStatus: "priced"
         }
       }
     });
@@ -298,6 +310,10 @@ describe("P10 Jersey configured-product consumer", () => {
       join(process.cwd(), "lib/jersey-configured-product/data-access.ts"),
       "utf8"
     );
+    const action = readFileSync(
+      join(process.cwd(), "app/jersey/configurator/actions.ts"),
+      "utf8"
+    );
 
     expect(genericCore.toLowerCase()).not.toContain("jersey");
     expect(client).toContain("resolveJerseyConfiguredProduct");
@@ -305,10 +321,44 @@ describe("P10 Jersey configured-product consumer", () => {
     expect(client).not.toContain("cart.addItem");
     expect(client).not.toContain("sizeAdjustments");
     expect(client).not.toContain("JERSEY-CONFIG");
-    expect(client).not.toContain("formatRupiah");
+    expect(client).not.toContain("base_price");
+    expect(client).not.toContain("price_adjustment");
     expect(page).not.toContain("getPublicContent");
     expect(page).not.toContain("fallback");
-    expect(access).toContain('.eq("pricing_mode", "custom_quote")');
+    expect(access).toContain('.eq("pricing_mode", "configurator_based")');
     expect(access).toContain('.eq("status", "active")');
+    expect(action).toContain("pricingAuthority: priceJerseyConfiguredProduct");
   });
 });
+
+function priced(input: ConfiguredProductPricingInput) {
+  const unitAmount = 100_000;
+  const totalAmount = unitAmount * input.quantity;
+  const sourceReferences = [{ type: "product", id: input.definitionId, version: input.definitionVersion }];
+  return {
+    contractVersion: CONTRACT_VERSIONS.pricing,
+    requestId: input.requestId,
+    status: "priced" as const,
+    quantity: input.quantity,
+    lines: [{
+      key: `jersey:${input.definitionId}`,
+      label: "Jersey Custom",
+      kind: "product_base" as const,
+      quantity: input.quantity,
+      unitAmount: { currency: "IDR" as const, amount: unitAmount },
+      totalAmount: { currency: "IDR" as const, amount: totalAmount },
+      sourceReferences
+    }],
+    totals: {
+      subtotal: { currency: "IDR" as const, amount: totalAmount },
+      discount: null,
+      shipping: null,
+      tax: null,
+      grandTotal: { currency: "IDR" as const, amount: totalAmount }
+    },
+    sourceReferences,
+    policyReferences: input.sourceReferences,
+    warnings: [],
+    pricedAt: NOW
+  };
+}

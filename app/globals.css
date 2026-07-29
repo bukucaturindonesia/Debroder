@@ -5,113 +5,189 @@
 :root {
   color-scheme: light;
 
-  /* DEBRODER Public Experience System v1.0 — FINAL FROZEN */
+  /* DEBRODER Design System & Web Experience V1.1 — FINAL FROZEN LOCKED */
+  --font-sans: var(--font-inter), Inter, Arial, Helvetica, sans-serif;
+  --font-mono: ui-monospace, SFMono-Regular, Consolas, "Liberation Mono", monospace;
+  --font-heading: var(--font-sans);
+  --font-display: var(--font-sans);
+  --font-body: var(--font-sans);
+
+  --text-hero: clamp(2.75rem, 6vw, 5rem);
+  --text-section-display: clamp(2.25rem, 4.5vw, 4rem);
+  --text-h1: clamp(2.25rem, 4vw, 3.25rem);
+  --text-h2: clamp(1.75rem, 3vw, 2.5rem);
+  --text-h3: clamp(1.5rem, 2vw, 1.875rem);
+  --text-h4: 1.375rem;
+  --text-body-lg: 1.125rem;
+  --text-body: 1rem;
+  --text-body-sm: 0.875rem;
+  --text-caption: 0.75rem;
+
+  --brand-700: #042518;
+  --brand-600: #052f1c;
+  --brand-500: #063d24;
+  --brand-100: #eaf3ee;
+  --brand-050: #f4f8f6;
+  --black: #000000;
+  --neutral-950: #111111;
+  --neutral-900: #181818;
+  --neutral-800: #2a2a2a;
+  --neutral-700: #4b4b4b;
+  --neutral-600: #5f5f5f;
+  --neutral-500: #757575;
+  --neutral-400: #a3a3a3;
+  --neutral-300: #cacaca;
+  --neutral-200: #e5e5e5;
+  --neutral-100: #f5f5f5;
+  --neutral-050: #fafafa;
+  --white: #ffffff;
+  --success: #0a7a43;
+  --success-soft: #e8f5ee;
+  --warning: #a15c00;
+  --warning-soft: #fff4e5;
+  --danger: #b91c1c;
+  --danger-soft: #fdecec;
+  --info: #0b5cad;
+  --info-soft: #eaf2fc;
+
   --color-canvas: #ffffff;
   --color-ink: #111111;
-  --color-text-secondary: #707072;
+  --color-text-secondary: #5f5f5f;
   --color-surface-soft: #f5f5f5;
   --color-divider-soft: #e5e5e5;
-  --color-border: #cacacb;
-  --color-sale-error: #d30005;
-  --color-success: #007d48;
-  --color-info-focus: #1151ff;
-  --color-brand-primary: #063d24;
+  --color-border: #cacaca;
+  --color-sale-error: var(--danger);
+  --color-success: var(--success);
+  --color-info-focus: var(--brand-500);
+  --color-brand-primary: var(--brand-500);
 
-  --font-heading: "Barlow Condensed", "Arial Narrow", "Helvetica Neue Condensed", sans-serif;
-  --font-display: var(--font-heading);
-  --font-body: "Inter", ui-sans-serif, system-ui, -apple-system,
-    BlinkMacSystemFont, "Segoe UI", sans-serif;
   --font-weight-regular: 400;
   --font-weight-medium: 500;
   --font-weight-semibold: 600;
   --font-weight-bold: 700;
-  --leading-display: 0.92;
-  --leading-body: 1.6;
+  --font-weight-extrabold: 800;
+  --leading-display: 0.95;
+  --leading-body: 1.5;
 
-  --type-hero: clamp(2.625rem, 10vw, 3.25rem);
-  --type-page-title: clamp(1.5rem, 7vw, 1.75rem);
-  --type-section-title: clamp(1.375rem, 5vw, 1.75rem);
-  --type-card-title: clamp(1.125rem, 4vw, 1.375rem);
-  --type-product-title: clamp(1rem, 3vw, 1.25rem);
+  --type-hero: var(--text-hero);
+  --type-page-title: var(--text-h1);
+  --type-section-title: var(--text-h2);
+  --type-card-title: var(--text-h3);
+  --type-product-title: 1rem;
   --type-body: 1rem;
   --type-caption: 0.875rem;
   --type-utility: 0.75rem;
-  --type-button: clamp(0.875rem, 2vw, 1rem);
+  --type-button: 1rem;
 
+  --space-0: 0;
   --space-1: 4px;
   --space-2: 8px;
   --space-3: 12px;
   --space-4: 16px;
+  --space-5: 20px;
   --space-6: 24px;
   --space-8: 32px;
   --space-10: 40px;
   --space-12: 48px;
   --space-16: 64px;
   --space-20: 80px;
+  --space-24: 96px;
+  --space-30: 120px;
+  --space-36: 144px;
 
-  --content-max: 90rem;
-  --content-gutter: 16px;
-  --section-space: 48px;
-  --section-space-end: 64px;
+  --container-max: 1440px;
+  --content-max: var(--container-max);
+  --content-reading: 720px;
+  --content-form: 640px;
+  --content-gutter: 20px;
+  --section-space: 64px;
+  --section-space-end: 80px;
   --grid-gap: 12px;
-  --reading-max: 50rem;
+  --reading-max: var(--content-reading);
 
+  --radius-none: 0;
+  --radius-xs: 4px;
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-xl: 24px;
   --radius-image: 0;
   --radius-card: 0;
-  --radius-pill: 999px;
+  --radius-pill: 9999px;
+  --border-default: #e5e5e5;
+  --border-strong: #cacaca;
   --shadow-decorative: none;
+  --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.08);
+  --shadow-sm: 0 4px 12px rgba(0, 0, 0, 0.1);
+  --shadow-overlay: 0 16px 40px rgba(0, 0, 0, 0.16);
   --divider-width: 1px;
   --control-min-size: 48px;
   --focus-ring-width: 2px;
-  --focus-ring-offset: 3px;
+  --focus-ring-offset: 2px;
   --public-header-height: 60px;
 
-  --motion-fast: 150ms;
-  --motion-normal: 220ms;
-  --motion-slow: 350ms;
-  --motion-ease: cubic-bezier(0.2, 0, 0, 1);
+  --duration-instant: 80ms;
+  --duration-fast: 120ms;
+  --duration-base: 180ms;
+  --duration-slow: 240ms;
+  --duration-overlay: 320ms;
+  --ease-standard: cubic-bezier(0.2, 0, 0, 1);
+  --ease-enter: cubic-bezier(0, 0, 0.2, 1);
+  --ease-exit: cubic-bezier(0.4, 0, 1, 1);
+  --motion-fast: var(--duration-fast);
+  --motion-normal: var(--duration-base);
+  --motion-slow: var(--duration-slow);
+  --motion-ease: var(--ease-standard);
+
+  --z-base: 0;
+  --z-raised: 10;
+  --z-sticky: 20;
+  --z-dropdown: 30;
+  --z-overlay: 40;
+  --z-drawer: 50;
+  --z-modal: 60;
+  --z-toast: 70;
 
   /* Compatibility aliases retained while later packages migrate consumers. */
   --background: var(--color-canvas);
   --foreground: var(--color-ink);
   --surface-soft: var(--color-surface-soft);
   --surface-muted: var(--color-surface-soft);
-  --space-section-mobile: var(--space-12);
-  --space-section-tablet: var(--space-12);
-  --space-section-desktop: var(--space-20);
+  --space-section-mobile: var(--space-16);
+  --space-section-tablet: var(--space-20);
+  --space-section-desktop: var(--space-24);
   --type-home-hero: var(--type-hero);
   --type-home-section: var(--type-section-title);
   --type-home-page: var(--type-page-title);
 }
 
-@media (min-width: 600px) {
+@media (min-width: 640px) {
   :root {
-    --content-gutter: 24px;
-    --section-space: 48px;
-    --section-space-end: 72px;
     --grid-gap: 16px;
   }
 }
 
 @media (min-width: 768px) {
   :root {
-    --type-hero: clamp(3.25rem, 7vw, 4rem);
-    --type-page-title: clamp(1.75rem, 4vw, 2rem);
-  }
-}
-
-@media (min-width: 960px) {
-  :root {
-    --content-gutter: 48px;
+    --content-gutter: 32px;
     --section-space: 80px;
     --section-space-end: 80px;
-    --type-hero: clamp(4.5rem, 6vw, 5.5rem);
   }
 }
 
 @media (min-width: 1024px) {
   :root {
+    --content-gutter: 48px;
+    --section-space: 96px;
+    --section-space-end: 96px;
+    --grid-gap: 24px;
     --public-header-height: 72px;
+  }
+}
+
+@media (min-width: 1280px) {
+  :root {
+    --content-gutter: 64px;
   }
 }
 
@@ -122,6 +198,11 @@
 html {
   scroll-behavior: auto;
   scroll-padding-top: var(--public-header-height);
+  font-family: var(--font-sans);
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 body {
@@ -131,8 +212,6 @@ body {
   font-family: var(--font-body);
   overflow-x: hidden;
   padding-bottom: env(safe-area-inset-bottom);
-  text-rendering: optimizeLegibility;
-  -webkit-font-smoothing: antialiased;
 }
 
 
@@ -260,7 +339,7 @@ body {
 }
 
 .banner-title {
-  font-weight: 900;
+  font-weight: var(--font-weight-extrabold);
   line-height: 0.95;
 }
 
@@ -353,8 +432,8 @@ button,
 }
 
 .public-site.jersey-theme > header :where(a, button, input, select, textarea):focus-visible {
-  outline: 2px solid #0f5a36;
-  outline-offset: 3px;
+  outline: var(--focus-ring-width) solid var(--color-info-focus);
+  outline-offset: var(--focus-ring-offset);
 }
 
 @media (max-width: 768px) {
@@ -712,6 +791,9 @@ button,
 }
 
 .public-product-card-body {
+  display: flex;
+  min-height: 176px;
+  flex-direction: column;
   padding-top: 16px;
 }
 
@@ -736,6 +818,14 @@ button,
   margin-top: 8px;
 }
 
+.public-product-summary {
+  min-height: 40px;
+  margin-top: 8px;
+  color: var(--color-text-secondary);
+  font-size: 14px;
+  line-height: 20px;
+}
+
 .public-product-price {
   color: var(--public-ink-100, #000);
   font-family: var(--font-body);
@@ -743,6 +833,11 @@ button,
   font-weight: 600;
   line-height: 1.3;
   white-space: nowrap;
+}
+
+.public-product-detail-action {
+  margin-top: auto;
+  color: var(--color-ink);
 }
 
 .public-product-compare-price {
@@ -867,7 +962,7 @@ button,
 
 .premium-scrollbar::-webkit-scrollbar-thumb {
   background: rgba(17, 17, 17, 0.42);
-  border-radius: 999px;
+  border-radius: var(--radius-pill);
 }
 
 .public-site:not(.jersey-theme):not(.jersey-commerce-theme) .category-carousel:focus-visible {
@@ -1229,7 +1324,7 @@ button,
 .debroder-landing .hero-actions .cta {
   min-height: 44px;
   padding: 11px 22px;
-  border-radius: 999px;
+  border-radius: var(--radius-pill);
   font-size: 15px;
   font-weight: 600;
 }

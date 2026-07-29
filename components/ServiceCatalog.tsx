@@ -33,8 +33,8 @@ export function ServiceCatalog({ services, whatsapp }: { services: Service[]; wh
                 <p className="mt-1 text-sm font-semibold">Harga pasti setelah kebutuhan dikonfirmasi</p>
                 <p className="mt-2 line-clamp-2 flex-1 text-xs leading-5 text-brand-charcoal/60 sm:text-sm">{service.deskripsi}</p>
                 <div className="mt-5 grid grid-cols-2 gap-2">
-                  <Link href={`/sablon-dtf/${service.slug}`} className="premium-ghost-button inline-flex min-h-10 items-center justify-center rounded-full border px-3 text-sm font-semibold transition">Detail</Link>
-                  <a href={whatsappLinkWithMessage(whatsapp, `Halo DE BRODER, saya ingin bertanya tentang ${service.nama}.`)} target="_blank" rel="noopener noreferrer" className="inline-flex min-h-10 items-center justify-center rounded-full bg-brand-charcoal px-3 text-sm font-semibold text-white transition hover:bg-black/80">Pesan</a>
+                  <Link href={`/sablon-dtf/${service.slug}`} className="premium-ghost-button inline-flex min-h-11 items-center justify-center rounded-full border px-3 text-sm font-semibold transition">Detail</Link>
+                  <a href={whatsappLinkWithMessage(whatsapp, `Halo DE BRODER, saya ingin bertanya tentang ${service.nama}.`)} target="_blank" rel="noopener noreferrer" className="inline-flex min-h-11 items-center justify-center rounded-full bg-brand-charcoal px-3 text-sm font-semibold text-white transition hover:bg-black/80">Pesan</a>
                 </div>
               </div>
             </article>

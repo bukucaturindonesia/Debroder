@@ -176,3 +176,161 @@ NOT COMPLETE; NO-GO**
 
 **FINAL STATUS: BLOCKED WITH EVIDENCE; DATABASE PARTIALLY IMPLEMENTED;
 NOT DEPLOYED; NOT COMPLETE; NO-GO**
+
+---
+
+# HANDOFF UPDATE — UX/UI BAB 3–9 — 29 JULY 2026
+
+## Scope and implementation
+
+- Continued from baseline `ee588b84d47c09de6bc3308ef1ff0b9d0b9bf9a9`
+  without resetting the dirty worktree.
+- Implemented canonical Jersey server pricing, route registry/aliases, frozen
+  Homepage verification, screen-state/responsive coverage, V1.1 design tokens,
+  accessible shell/drawer behavior, high-fidelity catalog/PDP/checkout UI, and
+  correct `/debroder/*` public image paths.
+- Changed public routes include `/`, `/search`, `/jersey/[slug]`,
+  `/jersey/configurator`, `/kaos-polos/shop`, `/jaket-hoodie/shop`,
+  `/headwear/shop`, `/order-confirmation`, and `/account/orders[/id]`.
+- No database write, migration, publication, RLS, ACL, order, payment,
+  numbering, or inventory mutation was executed.
+
+## Verification
+
+- Focused Bab 3: **PASS — 13 files / 117 tests**
+- Focused Bab 4: **PASS — 5 files / 22 tests**
+- Focused Bab 5: **PASS — 4 files / 16 tests**
+- Focused Bab 6: **PASS — 7 files / 69 tests**
+- Focused Bab 7: **PASS — 5 files / 22 tests**
+- Focused Bab 8: **PASS — 9 files / 74 tests**
+- Viewports: **PASS for overflow — 360, 390, 430, 768, 1024, 1280, 1440, 1536**
+- Typecheck: **PASS**
+- Lint: **PASS — 0 errors, 38 warnings**
+- Custom Commerce: **PASS — 27/27**
+- Full regression: **PASS — 106 files / 793 tests**
+- Build: **PASS — 126 static pages**
+- Deployment: **NOT PERFORMED**
+
+## Remaining blockers and next action
+
+- Configured Jersey items are still intentionally blocked by checkout because
+  no canonical configured-product transaction RPC/schema contract exists.
+- Nine canonical product/Jersey records still lack owner-proven primary images;
+  89 ambiguous images remain unactivated.
+- Active `jersey-custom-pilot` has no subcategory.
+- The isolated browser blocked Supabase media; `/koleksi` runtime navigation
+  aborted once and keyboard automation timed out.
+- Preview performance, analytics provider/event architecture, and real remote
+  transaction E2E remain unverified.
+
+Owner/PIM must supply image identity and taxonomy ownership, then authorize the
+configured checkout contract before Preview E2E/performance verification.
+
+**FINAL STATUS: BLOCKED WITH EVIDENCE; LOCALLY IMPLEMENTED AND GATE-PASSING;
+NOT DEPLOYED; NOT COMPLETE; NO-GO**
+
+---
+
+# HANDOFF UPDATE — BAB 9 NO-GO BLOCKER CLOSURE — 29 JULY 2026
+
+## Scope and implementation
+
+- Added local configured-Jersey checkout transport, server revalidation,
+  exact fingerprint/price checks, and an additive service-role-only RPC
+  migration.
+- The migration creates an unpaid order before payment, persists immutable
+  configured/pricing snapshots, and serializes repeated checkout requests with
+  an advisory transaction lock.
+- Existing payment submission remains keyed to the same `order_id` and its
+  own unique submission idempotency key.
+- No remote migration or data mutation was executed.
+
+## Proven data blockers
+
+- All nine target products have no product primary URL and no
+  `product_variant_images` relation.
+- Owner inventory proves only Crewneck identity; Hoodie, Kaos, and Polo source
+  folders remain ambiguous, and no owner source proves Bomber, Windbreaker, or
+  either canonical Jersey product.
+- `jersey-custom-pilot` belongs to canonical Jersey category but has no sport
+  metadata that distinguishes the 12 canonical Jersey subcategories.
+- Random image mappings and guessed taxonomy writes: **0**.
+
+## Two-pass verification
+
+- Pass 1 typecheck: **FAIL**, configured array narrowing.
+- Pass 2 typecheck after the bounded correction: **PASS**.
+- Focused configured-Jersey tests: **PASS — 4/4**.
+- The invoked regression run also exposed two failures:
+  stale mixed-mode implementation-string assertion in
+  `test/b4-a3-checkout-integrity.test.ts`, and stale blocked-checkout copy
+  assertion in `test/uxui-bab8-high-fidelity.test.ts`.
+- Result: **105 test files / 795 tests PASS; 2 files / 2 tests FAIL**.
+- Lint, final Custom Commerce gate, build, `git diff --check`, and external
+  runtime E2E: **NOT RUN after Pass 2 stop condition**.
+
+**FINAL STATUS: BLOCKED WITH EVIDENCE; LOCAL MIGRATION NOT APPLIED; NO-GO**
+
+---
+
+# HANDOFF UPDATE — TARGETED BAB 9 FINAL CONTINUATION — 29 JULY 2026
+
+## Scope and exact changes
+
+- Applied configured Jersey checkout RPC
+  `20260729033931_configured_jersey_checkout_v1`.
+- Assigned nine explicitly provisional local primary images and applied
+  `20260729033946_provisional_product_primary_images_v1`.
+- Published only the two canonical configured Jersey products; seven other
+  newly imaged physical products remain draft.
+- Runtime RPC exposed the existing cross-table trigger record-field regression;
+  applied the bounded forward fix
+  `20260729045016_ready_stock_fulfillment_trigger_record_fix_v1`.
+- Updated the two stale checkout assertions and the closure test/manifest.
+- Owner source artwork was not modified.
+
+## Database and post-write verification
+
+- Target project: `lzennundwqqtyvvcnzbg`.
+- Public products: `5`; missing primary image: `0`; `/public/` image paths: `0`.
+- Provisional mappings: `9/9`; web-sourced: `0`; local HTTP image responses:
+  `9/9` status 200.
+- Configured Jersey public-active: `2`.
+- Service-only configured RPC ACL and empty search path: **PASS**.
+- Test order `ORD-DEB-2026-0046` / `450649d6-85eb-4996-b271-b19d2e41efec`:
+  exactly `1` order, `1` configured item, total `100000`, `unpaid`,
+  immutable configuration/pricing snapshots, and `0` payments.
+- Repeating the same checkout idempotency key returned the same order ID;
+  duplicate order/item: `0`.
+- No historical order, payment, inventory, numbering, or RLS mutation.
+- Supabase advisors reported no finding matching the three closure functions or
+  migrations; the pre-existing project-wide advisor backlog remains outside
+  this package.
+
+## Verification
+
+- Typecheck: **PASS**.
+- Lint: **PASS — 0 errors / 38 warnings**.
+- Focused closure: **PASS — 5/5**.
+- Custom Commerce: **PASS — 27/27** using the workspace Vitest binary.
+  `pnpm.cmd vitest ...` itself does not resolve that binary in this Windows
+  environment and exits before the runner.
+- Full suite: **PASS — 107 files / 798 tests**.
+- Production build: **PASS — 126 static pages**.
+- Deployment: **NOT PERFORMED**.
+
+## Remaining exact blockers
+
+- Active `jersey-custom-pilot` still has no subcategory. Twelve active canonical
+  Jersey subcategories exist, but the product has no sport discriminator; no
+  taxonomy guess was written.
+- The existing local server at port 3100 renders the public shell, but its
+  outbound Supabase request returns `TypeError: fetch failed`. Consequently
+  `/koleksi` shows the valid unavailable/empty state and the canonical Jersey
+  PDP shows `Produk belum dapat dimuat`; browser cart/configured-checkout E2E
+  cannot be claimed.
+- Same-order payment function/ACL and idempotency are verified in source and
+  remote function definition, but no fabricated payment proof was submitted.
+
+**FINAL STATUS: BLOCKED WITH EVIDENCE; DATABASE AND CODE IMPLEMENTED;
+PARTIALLY RUNTIME VERIFIED; NOT DEPLOYED; NOT COMPLETE; NO-GO**

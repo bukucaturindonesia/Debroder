@@ -110,7 +110,7 @@ export function ProductGallery({ images, alt, focal }: { images: string[]; alt: 
                 onClick={() => setActiveIndex(index)}
                 aria-label={`Tampilkan ${PRODUCT_IMAGE_SLOTS[index]?.label || `foto ${index + 1}`}`}
                 aria-pressed={selected}
-                className={`product-image-frame relative aspect-[4/5] min-h-12 w-full shrink-0 overflow-hidden outline-none transition-opacity focus-visible:ring-2 focus-visible:ring-[#1151ff] focus-visible:ring-offset-2 ${
+                className={`product-image-frame relative aspect-[4/5] min-h-12 w-full shrink-0 overflow-hidden outline-none transition-opacity focus-visible:ring-2 focus-visible:ring-experience-focus focus-visible:ring-offset-2 ${
                   selected ? "ring-2 ring-[#111111] ring-offset-2" : "opacity-65 hover:opacity-100"
                 }`}
               >
@@ -136,7 +136,7 @@ export function ProductGallery({ images, alt, focal }: { images: string[]; alt: 
           type="button"
           onClick={() => setLightboxIndex(displayedIndex)}
           aria-label={`Perbesar ${PRODUCT_IMAGE_SLOTS[displayedIndex]?.label || `foto ${displayedIndex + 1}`}`}
-          className="product-image-frame group relative aspect-[4/5] w-full max-w-[calc((100vh-7.5rem)*0.8)] justify-self-center overflow-hidden text-left outline-none focus-visible:ring-2 focus-visible:ring-[#1151ff] focus-visible:ring-offset-2"
+          className="product-image-frame group relative aspect-[4/5] w-full max-w-[calc((100vh-7.5rem)*0.8)] justify-self-center overflow-hidden text-left outline-none focus-visible:ring-2 focus-visible:ring-experience-focus focus-visible:ring-offset-2"
         >
           <SafeImage
             src={resolvedImages[displayedIndex]}

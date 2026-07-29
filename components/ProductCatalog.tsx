@@ -617,7 +617,7 @@ export function ProductCatalog({
             type="button"
             aria-label="Tutup filter"
             onClick={closeFilters}
-            className="fixed inset-0 z-[160] bg-black/48"
+            className="fixed inset-0 z-[var(--z-overlay)] bg-black/50"
           />
           <div
             ref={filterPanelRef}
@@ -625,7 +625,7 @@ export function ProductCatalog({
             role="dialog"
             aria-modal="true"
             aria-labelledby="public-catalog-filter-title"
-            className="fixed inset-x-0 bottom-0 z-[170] flex max-h-[88dvh] flex-col bg-white lg:inset-y-0 lg:left-auto lg:max-h-none lg:w-[420px]"
+            className="fixed inset-x-0 bottom-0 z-[var(--z-drawer)] flex max-h-[88dvh] flex-col bg-white lg:inset-y-0 lg:left-auto lg:max-h-none lg:w-[420px]"
           >
             <div className="public-divider flex items-center justify-between border-b px-4 py-4">
               <div>

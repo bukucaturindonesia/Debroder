@@ -3,6 +3,8 @@ import {
   productCardColors,
   productCardMetadata,
   productCardPrice,
+  productCardSizes,
+  productCardSummary,
   productCommerceBadges
 } from "@/lib/product-card";
 import type { Product } from "@/lib/types";
@@ -57,6 +59,28 @@ describe("product card presentation data", () => {
     expect(productCardMetadata(product({ kategori: "", color_tags: [] }))).toBe("");
   });
 
+  it("derives active PIM size counts and customer-facing summaries", () => {
+    const item = product({
+      short_detail: "Ringkas dan jelas.",
+      variants: [{
+        product_id: "p",
+        color_name: "Hitam",
+        is_active: true,
+        sort_order: 1,
+        sizes: [
+          { variant_id: "v", size_name: "M", stock: 10, is_active: true, sort_order: 1 },
+          { variant_id: "v", size_name: "M", stock: 10, is_active: true, sort_order: 2 },
+          { variant_id: "v", size_name: "L", stock: 0, is_active: false, sort_order: 3 }
+        ]
+      }]
+    });
+
+    expect(productCardSizes(item)).toEqual(["M"]);
+    expect(productCardMetadata(item)).toContain("1 warna");
+    expect(productCardMetadata(item)).toContain("1 ukuran");
+    expect(productCardSummary(item)).toBe("Ringkas dan jelas.");
+  });
+
   it("shows only a fixed exact price and never publishes a starting price or range", () => {
     expect(productCardPrice(product({ price: 45000, pricing_mode: "fixed_price" }))).toBe("Rp 45.000");
     expect(productCardPrice(product({ price: "45.000", pricing_mode: "fixed_price" }))).toBe("Rp 45.000");
@@ -67,7 +91,7 @@ describe("product card presentation data", () => {
       productCardPrice(
         product({ price_label: "Menunggu Konfirmasi", pricing_mode: "custom_quote" })
       )
-    ).toBe("Harga setelah konfigurasi");
+    ).toBe("Perlu konsultasi");
     expect(productCardPrice(product({ price_label: "Rp 45.000–Rp 50.000" }))).toBe("");
     expect(productCardPrice(product({ price: null, price_label: null }))).toBe("");
   });
