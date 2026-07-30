@@ -97,6 +97,10 @@ describe("Phase 12 notification helpers", () => {
 
 describe("Phase 12 backend and UI contract", () => {
   it("uses authenticated user-scoped RPCs for inbox lifecycle", () => {
+    expect(
+      inboxApi.match(/\.eq\("recipient_id", actor\.user\.id\)/g)
+    ).toHaveLength(5);
+    expect(detailApi).toContain('.eq("recipient_id", actor.user.id)');
     expect(inboxApi).toContain("mark_all_notifications_read");
     expect(detailApi).toContain("mark_notification_read");
     expect(detailApi).toContain("archive_notification");
