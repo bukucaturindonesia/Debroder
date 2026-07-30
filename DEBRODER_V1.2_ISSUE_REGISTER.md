@@ -427,3 +427,24 @@ Last updated: 28 July 2026 (Asia/Makassar)
 - Next action: reproduce only if the same error appears during normal
   user-paced navigation or Vercel observability shows correlated route
   failures; do not expand the current package speculatively.
+
+## PUBLIC-KAOS-001 — Kaos Polos catalog below locked editorial composition
+
+- Severity: **MAJOR VISUAL/INTERACTION**.
+- Status: **CLOSED IN CODE — QUALITY GATE PASS; RUNTIME EXPLICITLY DEFERRED**.
+- Root cause: `/kaos-polos` used the generic category composition and shared
+  four-column desktop catalog, with a modal filter on desktop and no
+  asymmetric first-row editorial placement.
+- Resolution: dedicated Kaos Polos editorial experience plus an opt-in catalog
+  layout that preserves all other category defaults.
+- Locked result: desktop 3 columns; first row 1 product + 2-column editorial
+  media; open filter sidebar + 2 columns; mobile 2 columns + full-width
+  editorial media; canonical 4:5 Product Card with no permanent CTA.
+- Data integrity: CMS/PIM canonical only; no product, campaign, taxonomy, or
+  database record created.
+- Verification: typecheck **PASS**; lint **0 errors / 38 existing warnings**;
+  full suite **112 files / 832 tests PASS**; production build **126 routes
+  PASS**.
+- Runtime evidence: **DEFERRED** under the owner's active prohibition against
+  further Windows local runtime launcher attempts.
+- Commit, push, deploy: **NOT PERFORMED**.

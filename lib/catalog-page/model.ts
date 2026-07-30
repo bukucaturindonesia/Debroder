@@ -25,16 +25,37 @@ export type CatalogPageHeroViewModel = {
 
 export type CatalogPageFiltersViewModel = {
   color: string;
+  size: string;
+  price: string;
   label: CatalogLabelValue;
   sort: CatalogSortValue;
   productType: string;
   status: string;
 };
 
+export type CatalogPageCampaignViewModel = {
+  id: string;
+  name: string;
+  imageUrl: string;
+  mobileImageUrl: string | null;
+  eyebrow: string;
+  title: string;
+  description: string;
+  ctaLabel: string;
+  ctaHref: string;
+  sectionType: string;
+  sectionGroup: string;
+  imageAlt: string;
+  objectPosition: string;
+  mobileObjectPosition: string;
+  sortOrder: number;
+};
+
 export type CatalogPageData = {
   state: CatalogPageState;
   routeKey: string;
   hero: CatalogPageHeroViewModel;
+  campaigns: CatalogPageCampaignViewModel[];
   products: Product[];
   customDestination: string | null;
   filters: CatalogPageFiltersViewModel;

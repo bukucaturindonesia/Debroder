@@ -807,3 +807,76 @@ DEBRODER V1.2 REMAINS NOT COMPLETE**
   authorization**.
 - Commit, push, deploy, reset, clean, stash, restore, checkout, rebase, and
   migration: **NOT PERFORMED**.
+
+---
+
+# Handoff — Kaos Polos editorial commerce category
+
+**Date:** 30 July 2026
+
+## Active scope and implementation
+
+- Revised only canonical `/kaos-polos`; no route, taxonomy, database,
+  migration, pricing, stock, cart, checkout, order/payment, RLS, or Admin
+  contract changed.
+- Added a dedicated editorial experience while retaining the shared public
+  header, footer, Product Card, PDP route, and CMS/PIM read architecture.
+- Locked responsive catalog behavior: 3 desktop columns, sidebar + 2 columns
+  when filter is open, 2 mobile columns, 2-column desktop campaign, and
+  full-width mobile campaign after the first two products.
+- Added URL-persistent `size` and `price` filters alongside type, color,
+  availability, label, and sort state.
+- Media eligibility uses only published CMS campaign data or canonical active
+  PIM product/variant media; exact-color discovery requires sellable stock.
+
+## Files and routes
+
+- Changed:
+  `app/kaos-polos/page.tsx`,
+  `app/globals.css`,
+  `components/ProductCatalog.tsx`,
+  `lib/product-catalog.ts`,
+  `lib/catalog-page/data-access.ts`,
+  `lib/catalog-page/domain.ts`,
+  `lib/catalog-page/model.ts`,
+  `lib/catalog-page/source.ts`,
+  and `test/product-catalog.test.ts`.
+- Added:
+  `components/KaosPolosEditorialExperience.tsx`,
+  `lib/kaos-polos-editorial.ts`, and
+  `test/kaos-polos-editorial-commerce.test.ts`.
+- Route retained: `/kaos-polos`. New route: **NONE**.
+
+## Database and migration
+
+- Local or remote migration: **NONE**.
+- Migration applied or pending: **NONE**.
+- Supabase/database mutation: **NONE**.
+
+## Verification
+
+- Typecheck: **PASS**.
+- Focused Kaos/catalog/public experience assertions: **PASS**.
+- Custom Commerce regression: **PASS within the full suite**.
+- Full suite: **112 files / 832 tests PASS**.
+- Lint: **PASS — 0 errors / 38 existing warnings; no new warning in package
+  files**.
+- Production build: **PASS — 126 routes generated**.
+- `git diff --check`: **final check pending after this handoff append**.
+- Runtime browser verification: **NOT RUN**. The owner prohibition against
+  additional local launcher attempts remains active; no server or browser
+  launcher was started.
+- Deployment: **NOT RUN**.
+
+## Remaining prerequisite and status
+
+- Rich campaign sections require valid published `cms_banners` rows for
+  `experience_key = 'kaos-polos'`. Missing optional CMS media is hidden; no
+  fabricated campaign is rendered.
+- Product-derived editorial fallback requires a canonical alternate PIM image;
+  color discovery requires an active exact-color image and aggregate sellable
+  stock greater than zero.
+- GO/NO-GO: **GO for code handoff; runtime and live CMS/PIM composition remain
+  explicitly deferred; project remains NOT COMPLETE**.
+- Commit, push, deploy, reset, clean, stash, restore, checkout, rebase, and
+  migration: **NOT PERFORMED**.

@@ -180,6 +180,32 @@ Existing legal, CMS route, Preview performance, remote transaction E2E, data-int
 
 ---
 
+## 14. Kaos Polos editorial commerce category — 30 July 2026
+
+- Canonical route and taxonomy remain `/kaos-polos` and **Kaos Polos**.
+- Dedicated page composition: **IMPLEMENTED** without changing shared category
+  behavior for Jaket & Hoodie or Headwear.
+- Catalog contract: desktop **3 columns**; open desktop filter **sidebar + 2
+  columns**; mobile **2 columns**; first-row editorial media spans two desktop
+  columns and becomes full-width after the first two mobile products.
+- Product Card remains the canonical shared full-card link with **no permanent
+  purchase CTA** and a reserved 4:5 media frame.
+- Hero/editorial media reads existing CMS records; products, variants,
+  images, exact-color availability, stock, price, and routes remain canonical
+  PIM data. No sample product or campaign record was created.
+- Typecheck: **PASS**.
+- Lint: **PASS — 0 errors / 38 existing warnings**.
+- Focused and full regression: **PASS — 112 files / 832 tests**.
+- Production build: **PASS — 126 routes generated**.
+- Browser runtime: **EXPLICITLY DEFERRED** because the owner has prohibited
+  additional local runtime launcher attempts after the recorded Windows
+  launcher blocker.
+- Database/migration/commit/push/deploy: **NONE / NOT PERFORMED**.
+- Release status: **IMPLEMENTED AND CODE-VERIFIED WITH EXPLICIT RUNTIME AND
+  CMS/PIM CONTENT PREREQUISITE DEFERRALS; PROJECT REMAINS NOT COMPLETE**.
+
+---
+
 ## 14. Product Card and PDP final runtime closure — 30 July 2026
 
 - Public Product Card full-card semantic link, catalog URL history, and

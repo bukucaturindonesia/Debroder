@@ -2577,3 +2577,127 @@ button,
     transition: none;
   }
 }
+
+/* Kaos Polos editorial commerce — isolated from the shared category templates. */
+.kaos-editorial-page {
+  --kaos-ink: #111111;
+  --kaos-muted: #656565;
+  --kaos-soft: #f5f5f2;
+  color: var(--kaos-ink);
+}
+
+.kaos-editorial-page .section-shell {
+  width: min(100% - 32px, 1440px);
+}
+
+.kaos-editorial-shortcuts {
+  position: relative;
+  z-index: 2;
+}
+
+.kaos-editorial-section {
+  padding-block: clamp(3.5rem, 7vw, 7.5rem);
+}
+
+.kaos-editorial-wide-section {
+  padding-block: clamp(1rem, 3vw, 2.5rem);
+}
+
+.kaos-editorial-heading-row {
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: 2rem;
+}
+
+.kaos-editorial-eyebrow {
+  color: var(--kaos-muted);
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+}
+
+.kaos-editorial-title {
+  margin-top: 0.5rem;
+  max-width: 60rem;
+  font-size: clamp(2rem, 4.25vw, 4rem);
+  font-weight: 600;
+  letter-spacing: -0.045em;
+  line-height: 1;
+}
+
+.kaos-editorial-text-link {
+  flex-shrink: 0;
+  font-size: 0.875rem;
+  font-weight: 600;
+  text-decoration: underline;
+  text-underline-offset: 0.25rem;
+}
+
+.kaos-editorial-campaign {
+  min-height: 26rem;
+}
+
+.kaos-editorial-product-catalog .public-control {
+  border-color: rgb(17 17 17 / 0.18);
+  background: white;
+  box-shadow: none;
+}
+
+.kaos-editorial-product-catalog .public-control:focus {
+  border-color: var(--kaos-ink);
+  box-shadow: 0 0 0 2px rgb(17 17 17 / 0.12);
+}
+
+.kaos-editorial-product-catalog .public-secondary-action {
+  border-color: rgb(17 17 17 / 0.24);
+  background: white;
+  box-shadow: none;
+}
+
+.kaos-editorial-product-catalog .public-product-card-body {
+  padding-top: 0.75rem;
+}
+
+.kaos-editorial-product-catalog .public-product-card-link::after {
+  display: none;
+}
+
+.kaos-editorial-product-catalog .public-product-card .product-image-frame,
+.kaos-editorial-product-catalog .public-product-card .product-image-swap {
+  aspect-ratio: 4 / 5;
+}
+
+@media (max-width: 639px) {
+  .kaos-editorial-page .section-shell {
+    width: min(100% - 24px, 1440px);
+  }
+
+  .kaos-editorial-heading-row {
+    align-items: start;
+  }
+
+  .kaos-editorial-text-link {
+    display: none;
+  }
+
+  .kaos-editorial-product-catalog .public-product-name,
+  .kaos-editorial-product-catalog .public-product-price {
+    font-size: 0.875rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  .kaos-editorial-catalog-grid:not(.lg\:grid-cols-2) .kaos-editorial-catalog-campaign {
+    grid-column: 2 / span 2;
+    grid-row: 1;
+    min-height: 100%;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .kaos-editorial-page img {
+    transition: none !important;
+  }
+}

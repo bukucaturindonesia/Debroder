@@ -26,7 +26,9 @@ function product(id: string, slug = id): Product {
 describe("product catalog batching", () => {
   it("uses four columns from the desktop breakpoint and two below it", () => {
     expect(catalogColumnsForWidth(1024)).toBe(4);
+    expect(catalogColumnsForWidth(1024, "kaos-editorial")).toBe(3);
     expect(catalogColumnsForWidth(768)).toBe(2);
+    expect(catalogColumnsForWidth(768, "kaos-editorial")).toBe(2);
     expect(catalogColumnsForWidth(360)).toBe(2);
   });
 
