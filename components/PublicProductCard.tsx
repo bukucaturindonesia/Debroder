@@ -43,11 +43,11 @@ export function PublicProductCard({
   const price = productCardPriceState(product);
 
   return (
-    <article className={`public-product-card min-w-0 ${className}`.trim()}>
+    <article className={`public-product-card h-full min-w-0 ${className}`.trim()}>
       <Link
         href={detailHref}
         aria-label={`Lihat ${product.nama}, ${price.label}`}
-        className="public-product-card-link group block min-w-0"
+        className="public-product-card-link group flex h-full min-w-0 flex-col"
       >
         <ProductImageSwap
           primarySrc={cardImages.primary}
@@ -63,7 +63,7 @@ export function PublicProductCard({
           sizes={imageSizes}
         />
 
-        <div className="public-product-card-body min-w-0">
+        <div className="public-product-card-body min-w-0 flex-1">
           {visibleSwatches.length ? (
             <div
               className="public-product-swatches"

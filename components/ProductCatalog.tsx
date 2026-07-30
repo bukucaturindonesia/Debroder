@@ -10,7 +10,11 @@ import {
 } from "@/lib/product-catalog";
 import { productCardColors } from "@/lib/product-card";
 import { productMatchesNavigationStatus } from "@/lib/public-navigation";
-import { matchesProductType, type ProductTypeOption } from "@/lib/product-taxonomy";
+import {
+  matchesProductType,
+  productTypeValue,
+  type ProductTypeOption
+} from "@/lib/product-taxonomy";
 import type { Product } from "@/lib/types";
 
 type SortValue = "order" | "newest" | "best-selling" | "price-low" | "price-high";
@@ -145,6 +149,7 @@ export function ProductCatalog({
   const filterTriggerRef = useRef<HTMLButtonElement>(null);
   const filterPanelRef = useRef<HTMLDivElement>(null);
   const filterCloseRef = useRef<HTMLButtonElement>(null);
+  const urlSyncMountedRef = useRef(false);
   const isCategoryCatalog = catalogStyle === "category";
 
   const categories = useMemo(
@@ -163,21 +168,18 @@ export function ProductCatalog({
       ).sort((a, b) => a[1].localeCompare(b[1], "id")),
     [products]
   );
+  const activeProductType = productTypeValue(productType, productTypeOptions) || "all";
   const availableProductTypeOptions = useMemo(
     () =>
       productTypeOptions.filter((option) =>
-        products.some((product) =>
+        option.value === activeProductType
+        || products.some((product) =>
           matchesProductType(product, option.value, productTypeOptions)
         )
       ),
-    [productTypeOptions, products]
+    [activeProductType, productTypeOptions, products]
   );
   const hasTypeFilter = availableProductTypeOptions.length > 0;
-  const activeProductType =
-    productType === "all" ||
-    availableProductTypeOptions.some((option) => option.value === productType)
-      ? productType
-      : "all";
   const activeStatus = ["all", "ready-stock", "custom", "hybrid"].includes(status)
     ? status
     : "all";
@@ -193,7 +195,7 @@ export function ProductCatalog({
       .filter((product) => matchesGroup(product, group))
       .filter((product) => category === "all" || product.kategori === category)
       .filter((product) =>
-        matchesProductType(product, activeProductType, availableProductTypeOptions)
+        matchesProductType(product, activeProductType, productTypeOptions)
       )
       .filter((product) => matchesColor(product, color))
       .filter((product) => productMatchesNavigationStatus(product, activeStatus))
@@ -222,7 +224,15 @@ export function ProductCatalog({
         if (sort === "price-high") return priceOf(b) - priceOf(a);
         return a.urutan - b.urutan;
       });
-  }, [activeProductType, activeStatus, availableProductTypeOptions, category, color, group, isCategoryCatalog, label, price, products, query, sort]);
+  }, [activeProductType, activeStatus, category, color, group, isCategoryCatalog, label, price, productTypeOptions, products, query, sort]);
+
+  useEffect(() => {
+    setColor(initialColor);
+    setStatus(initialStatus);
+    setLabel(initialLabel);
+    setSort(initialSort);
+    setProductType(initialProductType);
+  }, [initialColor, initialLabel, initialProductType, initialSort, initialStatus]);
 
   useEffect(() => {
     const desktopQuery = window.matchMedia("(min-width: 1024px)");
@@ -262,12 +272,60 @@ export function ProductCatalog({
       else url.searchParams.set(key, value);
     });
 
-    window.history.replaceState(
-      window.history.state,
-      "",
-      `${url.pathname}${url.search}${url.hash}`
-    );
+    const nextUrl = `${url.pathname}${url.search}${url.hash}`;
+    const currentUrl = `${window.location.pathname}${window.location.search}${window.location.hash}`;
+    if (nextUrl === currentUrl) {
+      urlSyncMountedRef.current = true;
+      return;
+    }
+
+    if (!urlSyncMountedRef.current) {
+      window.history.replaceState(window.history.state, "", nextUrl);
+      urlSyncMountedRef.current = true;
+      return;
+    }
+
+    window.history.pushState(window.history.state, "", nextUrl);
   }, [activeProductType, activeStatus, color, label, sort, syncUrlState]);
+
+  useEffect(() => {
+    if (!syncUrlState) return;
+
+    const restoreUrlState = () => {
+      const params = new URLSearchParams(window.location.search);
+      const nextLabel = params.get("label");
+      const nextSort = params.get("sort");
+      const nextStatus = params.get("status");
+
+      setProductType(
+        productTypeValue(params.get("type") || undefined, productTypeOptions) || "all"
+      );
+      setColor(normalizeFilterValue(params.get("color") || "all") || "all");
+      setLabel(
+        nextLabel === "new" || nextLabel === "promo" || nextLabel === "best"
+          ? nextLabel
+          : "all"
+      );
+      setSort(
+        nextSort === "newest"
+        || nextSort === "best-selling"
+        || nextSort === "price-low"
+        || nextSort === "price-high"
+          ? nextSort
+          : "order"
+      );
+      setStatus(
+        nextStatus === "ready-stock"
+        || nextStatus === "custom"
+        || nextStatus === "hybrid"
+          ? nextStatus
+          : "all"
+      );
+    };
+
+    window.addEventListener("popstate", restoreUrlState);
+    return () => window.removeEventListener("popstate", restoreUrlState);
+  }, [productTypeOptions, syncUrlState]);
 
   useEffect(
     () => () => {

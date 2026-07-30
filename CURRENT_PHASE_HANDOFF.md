@@ -721,3 +721,89 @@ DEBRODER V1.2 REMAINS NOT COMPLETE**
 - GO/NO-GO: **GO for code handoff; NO-GO for legal publication; project
   remains NOT COMPLETE**.
 - Commit, push, deploy, reset, clean, stash, and rebase: **NOT PERFORMED**.
+
+---
+
+# Handoff — Product Card and PDP final runtime closure
+
+**Date:** 30 July 2026
+
+## Active scope and recovery
+
+- Continued from the existing dirty worktree; no restart or broad audit.
+- The stalled command was a hidden `next start -p 3100` launcher. PID `21088`
+  remained alive without a port listener or log and was terminated by exact
+  PID. Unrelated MCP Node PID `22828` was preserved.
+- One healthy production runtime was then used at a time. Final runtime PID
+  `25696` was stopped after verification.
+- Previously passed implementation and quality-gate work was preserved.
+
+## Implementation and files
+
+- `components/PublicProductCard.tsx`: one full-height semantic link owns the
+  complete Product Card.
+- `components/ProductCatalog.tsx`: URL state uses pushState and restores
+  canonical state on popstate without replacing valid empty results.
+- `components/TieredProductPurchasePanel.tsx`: canonical color collapse,
+  fixed apparel sizes, server pricing, Buy Now, Custom, and Add to Cart
+  hierarchy.
+- `components/product/ProductStickyPurchasePanel.tsx`: actual-header-aware,
+  viewport-safe sticky gallery behavior.
+- `app/produk/[slug]/page.tsx`: left gallery/right purchase composition and
+  the runtime-proven `lg:self-stretch` sticky containing-block correction.
+- Regression changes:
+  `test/commerce-foundation-p0.test.ts`,
+  `test/jersey-commerce.test.ts`,
+  `test/pdp-final-experience.test.ts`,
+  `test/pdp-ready-stock-visual-scroll.test.ts`,
+  `test/uxui-bab8-high-fidelity.test.ts`, and the new
+  `test/product-pdp-clickability.test.ts`.
+- Routes retained: `/koleksi`, `/produk/[slug]`, `/checkout`, and
+  `/jersey/configurator`. New routes: **NONE**.
+
+## Database and migration state
+
+- Local migration created: **NONE**.
+- Remote migration created/applied/pending: **NONE**.
+- Supabase/database mutation: **NONE**.
+- Product, taxonomy, pricing, SKU, stock, checkout, order, payment,
+  idempotency, numbering, RLS, and ACL data/contracts: **UNCHANGED**.
+
+## Verification
+
+- Focused typecheck: **PASS**.
+- Focused PDP/sticky regression: **2 files / 12 tests PASS**.
+- Final typecheck: **PASS**.
+- Final lint: **PASS — 0 errors / 38 existing warnings**.
+- Exact Custom Commerce test: **1 file / 27 tests PASS**.
+- Full suite: **110 files / 824 tests PASS**.
+- Production build: **PASS — 126 routes generated**.
+- Runtime `/koleksi`: HTTP 200, 18 Product Card links, full-card navigation to
+  `/produk/cotton-combed-24s`, 0 broken completed images, and no horizontal
+  overflow across 320–1536px required viewports.
+- Runtime catalog history: `status=ready-stock` and `sort=newest` restored
+  correctly through browser Back and Forward.
+- Runtime Cotton Combed PDP: color expand/collapse, selected hidden color
+  retention, fixed size grid, canonical SKU/stock/Rp45.000 server price,
+  Add to Cart, Buy Now to `/checkout`, mobile 390px, and 0 broken images.
+- Runtime Jersey hybrid PDP: Custom action resolves to
+  `/jersey/configurator?product=jersey-custom-pilot`.
+- Runtime sticky proof at 1440px: header bottom `72px`, sticky CSS top `88px`,
+  active gallery top `88px`, and exact stop at media bottom.
+- Browser console errors: **0**.
+- `git diff --check`: **PASS before this handoff append; final check pending**.
+- Deployment: **NOT RUN**.
+
+## Remaining issues, risk, and next step
+
+- Runtime stderr captured bounded `TimeoutError` entries during rapid
+  navigation/back-forward automation. All tested routes remained HTTP 200 and
+  browser console errors were zero; retain as an observability item if it
+  reproduces in normal user-paced navigation.
+- No inspected runtime state proved a zero-stock supported size; unavailable
+  XS/5XL behavior was verified on the canonical Cotton Combed variant.
+- Project remains **NOT COMPLETE** pending the broader v1.2 owner audit.
+- GO/NO-GO: **GO for this local Product Card/PDP code handoff; not a deployment
+  authorization**.
+- Commit, push, deploy, reset, clean, stash, restore, checkout, rebase, and
+  migration: **NOT PERFORMED**.

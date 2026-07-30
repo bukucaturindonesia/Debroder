@@ -397,3 +397,33 @@ Last updated: 28 July 2026 (Asia/Makassar)
   visibly marked as draft/not legally approved.
 - No legally approved or compliance-complete status may be assigned until
   owner verification and review by qualified Indonesian counsel are recorded.
+
+## PUBLIC-PDP-002 — Sticky gallery had no desktop travel range
+
+- Severity: **MAJOR VISUAL/INTERACTION**.
+- Status: **CLOSED — RUNTIME PROVEN, MINIMUM FIX, REGRESSION, BUILD, AND
+  RUNTIME PASS**.
+- Root cause: the PDP grid used `items-start`; its media grid item therefore
+  stayed exactly as tall as the sticky gallery instead of stretching to the
+  taller purchase column. The sticky child had no containing-block travel
+  range even though computed `position` and `top` were correct.
+- Resolution: add only `lg:self-stretch` to `data-pdp-media`.
+- Runtime evidence at 1440px: header bottom `72px`, sticky top `88px`, gallery
+  top `88px` while active, and gallery bottom equals media bottom when stopped.
+- Regression: focused **12/12 PASS**, full suite **110 files / 824 tests
+  PASS**, build **126 routes PASS**.
+- Database, pricing, stock, cart, checkout, order/payment, migration, and
+  deployment: **UNCHANGED / NOT PERFORMED**.
+
+## RUNTIME-OBS-002 — Bounded timeout entries during rapid navigation
+
+- Severity: **OBSERVABILITY / MINOR**.
+- Status: **OPEN FOR REPRODUCTION — NO USER-FACING FAILURE OBSERVED**.
+- Final production runtime stderr recorded `TimeoutError` entries while the
+  browser automation rapidly navigated and exercised Back/Forward.
+- Counter-evidence: tested routes returned HTTP 200, server pricing resolved,
+  cart/checkout/configurator handoffs succeeded, and browser console error
+  count was zero.
+- Next action: reproduce only if the same error appears during normal
+  user-paced navigation or Vercel observability shows correlated route
+  failures; do not expand the current package speculatively.

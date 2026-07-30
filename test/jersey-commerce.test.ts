@@ -131,7 +131,8 @@ describe("Jersey commerce catalog", () => {
     expect(detail).toContain("?product=");
     expect(detail).toContain("purchaseCapabilities");
     expect(detail).toContain("showAddToCart={purchaseCapabilities.showAddToCart}");
-    expect(detail).not.toContain("showBuyNow={purchaseCapabilities.showBuyNow}");
+    expect(detail).toContain("showBuyNow={purchaseCapabilities.showBuyNow}");
+    expect(detail).toContain("customActionHref={customActionHref}");
     expect(jerseyCategory).toContain("content.categories.find");
     expect(jerseyCategory).toContain('href="/jersey/configurator"');
     expect(jerseyCategory).not.toContain("getProductDetailPageModel");

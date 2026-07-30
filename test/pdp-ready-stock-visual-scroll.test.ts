@@ -20,10 +20,13 @@ describe("PDP Ready Stock visual and scroll refinement", () => {
     );
     expect(page).toContain("data-pdp-primary");
     expect(page).toContain("data-pdp-media");
+    expect(page).toContain("lg:self-stretch");
+    expect(page).toContain("data-pdp-purchase-column");
     expect(page).not.toContain("data-pdp-sticky-media");
     expect(sticky).toContain("ResizeObserver");
     expect(sticky).toContain("panelHeight <= usableHeight");
-    expect(sticky).toContain("lg:sticky lg:top-24");
+    expect(sticky).toContain("[data-public-header]");
+    expect(sticky).toContain("lg:top-[var(--pdp-sticky-top)]");
   });
 
   it("uses one dominant desktop media surface and an accessible thumbnail rail", () => {
@@ -44,6 +47,9 @@ describe("PDP Ready Stock visual and scroll refinement", () => {
     expect(page).toContain('title="Deskripsi Produk"');
     expect(page).toContain('title="Material & Detail"');
     expect(page).toContain('title="Panduan Ukuran"');
+    expect(page.indexOf("product-information-title")).toBeLessThan(
+      page.indexOf("</ProductVariantGalleryProvider>")
+    );
     expect(purchasePanel).not.toContain(
       "Sesuaikan dengan panduan ukuran produk ini."
     );
@@ -55,6 +61,8 @@ describe("PDP Ready Stock visual and scroll refinement", () => {
     expect(purchasePanel).toContain("grid grid-cols-3");
     expect(purchasePanel).toContain("cart.addItem({");
     expect(purchasePanel).toContain("focusFirstInvalidControl");
-    expect(purchasePanel).not.toContain('router.push("/checkout")');
+    expect(purchasePanel).toContain('router.push("/checkout")');
+    expect(purchasePanel).not.toContain("Pilihan layanan");
+    expect(purchasePanel).not.toContain("Custom Instan");
   });
 });

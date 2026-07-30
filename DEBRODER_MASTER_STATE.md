@@ -180,6 +180,43 @@ Existing legal, CMS route, Preview performance, remote transaction E2E, data-int
 
 ---
 
+## 14. Product Card and PDP final runtime closure — 30 July 2026
+
+- Public Product Card full-card semantic link, catalog URL history, and
+  universal PDP route: **IMPLEMENTED AND VERIFIED**.
+- Runtime found one desktop sticky containment defect: the `items-start` grid
+  left `data-pdp-media` only as tall as the gallery, so CSS sticky had no
+  travel range.
+- Minimum correction: `data-pdp-media` now uses `lg:self-stretch`; no product,
+  pricing, stock, cart, checkout, order, payment, or database contract changed.
+- Desktop runtime: header bottom `72px`, sticky top `88px`, and gallery stops
+  exactly at the media containing-block bottom before later sections.
+- Catalog runtime: 18 semantic product links, 0 broken completed images, and
+  no horizontal overflow at 320, 375, 390, 430, 768, 1024, 1280, 1440, and
+  1536px.
+- Catalog `status` and `sort` URL state and browser Back/Forward restoration:
+  **VERIFIED**.
+- Cotton Combed PDP: 15 colors, collapsed 10-color state retaining the selected
+  Navy option, fixed apparel size grid with unavailable sizes disabled,
+  canonical SKU/stock/server price, Add to Cart, and Buy Now checkout handoff:
+  **VERIFIED**.
+- Jersey hybrid PDP Custom CTA to the canonical Jersey Configurator:
+  **VERIFIED**.
+- Focused sticky/PDP regression: **12/12 PASS**.
+- Final typecheck: **PASS**.
+- Final lint: **PASS — 0 errors / 38 existing warnings**.
+- Final Custom Commerce test: **27/27 PASS**.
+- Final full suite: **110 files / 824 tests PASS**.
+- Production build: **PASS — 126 routes**.
+- Browser console errors: **0**. Runtime stderr recorded bounded
+  `TimeoutError` entries during rapid navigation/back-forward checks; no HTTP,
+  page, pricing, cart, or navigation failure was observed.
+- Database/migration/deployment: **NONE**.
+- Release status: **IMPLEMENTED AND LOCALLY VERIFIED; PROJECT NOT COMPLETE**.
+- Commit, push, deploy: **NOT PERFORMED**.
+
+---
+
 ## 14. Public Multi-Page Experience V2 and corporate/legal draft — 30 July 2026
 
 - Canonical routes remain unchanged: `/koleksi`, `/kaos-polos`,

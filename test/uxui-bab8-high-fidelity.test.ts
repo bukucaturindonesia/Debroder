@@ -27,7 +27,8 @@ describe("UX/UI Bab 8 high-fidelity public commerce", () => {
     expect(pdp).toContain("<ProductGallery");
     expect(pdp).toContain("<TieredProductPurchasePanel");
     expect(purchase).toContain("Tambah ke Keranjang");
-    expect(purchase).not.toContain("Beli Sekarang");
+    expect(purchase).toContain("Beli Sekarang");
+    expect(purchase).toContain('router.push("/checkout")');
     expect(purchase).toContain("/api/pricing/ready-stock");
     expect(purchase).not.toContain("clientPrice");
   });

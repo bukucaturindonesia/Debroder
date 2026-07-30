@@ -1,5 +1,7 @@
 "use client";
 
+import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useCart, type CartProductInput } from "@/components/CartProvider";
 import { useOptionalProductVariantGallery } from "@/components/ProductVariantGalleryContext";
@@ -14,11 +16,9 @@ import {
   type PdpPricingTier
 } from "@/lib/pdp-purchase";
 import type { ProductVariant } from "@/lib/types";
-import {
-  type InstantCustomSnapshot,
-  type InstantServiceDefinition,
-  type InstantServiceSelection
-} from "@/lib/instant-custom";
+
+const APPAREL_SIZE_GRID = ["XS", "S", "M", "L", "XL", "2XL", "3XL", "4XL", "5XL"] as const;
+const COLLAPSED_COLOR_LIMIT = 10;
 
 type ReadyStockPricingResponse =
   | {
@@ -40,7 +40,6 @@ type ReadyStockPricingResponse =
       total: number;
       tier: { id: string; minQuantity: number; maxQuantity: number | null } | null;
       tiers: PdpPricingTier[];
-      instantCustomSnapshot?: InstantCustomSnapshot;
       message: null;
     }
   | {
@@ -67,13 +66,18 @@ type ProductPurchasePanelProps = {
   subcategory?: string | null;
   description?: string | null;
   minimumQuantity?: number;
-  whatsappUrl?: string;
   variants?: ProductVariant[];
   showAddToCart?: boolean;
+  showBuyNow?: boolean;
+  customActionHref?: string | null;
   monochrome?: boolean;
-  instantServices?: InstantServiceDefinition[];
-  initialInstantMode?: boolean;
 };
+
+function usesApparelSizeGrid(category?: string) {
+  return /kaos|shirt|jersey|jaket|jacket|hoodie|crewneck|kemeja|apparel/i.test(
+    category || ""
+  );
+}
 
 function variantCoverImage(variant?: ProductVariant) {
   if (!variant) return undefined;
@@ -92,21 +96,19 @@ export function TieredProductPurchasePanel({
   subcategory,
   description,
   minimumQuantity = 1,
-  whatsappUrl,
   variants = [],
   showAddToCart = true,
-  monochrome = false,
-  instantServices = [],
-  initialInstantMode = false
+  showBuyNow = false,
+  customActionHref = null,
+  monochrome = false
 }: ProductPurchasePanelProps) {
   const cart = useCart();
+  const router = useRouter();
   const variantGallery = useOptionalProductVariantGallery();
   const colorFieldsetRef = useRef<HTMLFieldSetElement>(null);
   const sizeFieldsetRef = useRef<HTMLFieldSetElement>(null);
   const quantityInputRef = useRef<HTMLInputElement>(null);
   const interactionLocked = useRef(false);
-  const uploadSessionToken = useRef("");
-
   const colors = useMemo(() => pdpColorOptions(variants), [variants]);
   const [selectedVariantId, setSelectedVariantId] = useState("");
   const selectedColor = colors.find((option) => option.variantId === selectedVariantId) || null;
@@ -118,15 +120,7 @@ export function TieredProductPurchasePanel({
   const [validationMessage, setValidationMessage] = useState("");
   const [cartFeedback, setCartFeedback] = useState("");
   const [submitting, setSubmitting] = useState(false);
-
-  const [instantMode, setInstantMode] = useState(initialInstantMode);
-  const [selectedServices, setSelectedServices] = useState<Record<string, {
-    inputs: Record<string, string>;
-    uploadIds: string[];
-    note: string;
-  }>>({});
-  const [uploadingServiceId, setUploadingServiceId] = useState<string | null>(null);
-  const [serviceError, setServiceError] = useState("");
+  const [showAllColors, setShowAllColors] = useState(false);
 
   const [pricingResult, setPricingResult] = useState<{
     requestKey: string;
@@ -134,12 +128,6 @@ export function TieredProductPurchasePanel({
   } | null>(null);
   const [pricingLoading, setPricingLoading] = useState(false);
   const [pricingError, setPricingError] = useState("");
-
-  useEffect(() => {
-    if (!uploadSessionToken.current) {
-      uploadSessionToken.current = `instant_${crypto.randomUUID().replace(/-/g, "")}`;
-    }
-  }, []);
 
   useEffect(() => {
     if (selectedVariantId && !colors.some((option) => option.variantId === selectedVariantId)) {
@@ -172,24 +160,13 @@ export function TieredProductPurchasePanel({
   const pricingQuantityValid = pricingQuantity > 0
     && pricingQuantity <= MAX_CART_TOTAL_QUANTITY;
 
-  const instantSelections: InstantServiceSelection[] = useMemo(() =>
-    Object.entries(selectedServices).map(([serviceId, selection]) => ({
-      serviceId,
-      inputs: selection.inputs,
-      uploadIds: selection.uploadIds,
-      uploadSessionToken: uploadSessionToken.current,
-      note: selection.note || undefined
-    })), [selectedServices]);
-
   const pricingRequest = useMemo(() => ({
     productId: product.id ?? "",
     variantSizeId: selectedSize?.variantSizeId ?? "",
     quantity: quantityIsInteger ? quantity : 0,
     pricingQuantity: pricingQuantityValid ? pricingQuantity : 0,
-    instantServices: instantMode ? instantSelections : []
+    instantServices: []
   }), [
-    instantMode,
-    instantSelections,
     pricingQuantity,
     pricingQuantityValid,
     product.id,
@@ -287,7 +264,34 @@ export function TieredProductPurchasePanel({
     && !unavailable
     && !pricingLoading
     && exactPricing
-    && (!instantMode || (instantSelections.length > 0 && !uploadingServiceId))
+  );
+
+  const visibleColors = useMemo(() => {
+    if (showAllColors || colors.length <= COLLAPSED_COLOR_LIMIT) return colors;
+    if (!selectedColor) return colors.slice(0, COLLAPSED_COLOR_LIMIT);
+    const selectedIndex = colors.findIndex(
+      (option) => option.variantId === selectedColor.variantId
+    );
+    if (selectedIndex < COLLAPSED_COLOR_LIMIT) {
+      return colors.slice(0, COLLAPSED_COLOR_LIMIT);
+    }
+    return [
+      ...colors.slice(0, COLLAPSED_COLOR_LIMIT - 1),
+      selectedColor
+    ];
+  }, [colors, selectedColor, showAllColors]);
+
+  const displayedSizes = useMemo(
+    () =>
+      usesApparelSizeGrid(product.category)
+        ? APPAREL_SIZE_GRID.map((name) => ({
+            name,
+            option: sizes.find(
+              (size) => size.name.toUpperCase().replace(/\s+/g, "") === name
+            ) || null
+          }))
+        : sizes.map((option) => ({ name: option.name, option })),
+    [product.category, sizes]
   );
 
   function chooseColor(variantId: string) {
@@ -358,7 +362,7 @@ export function TieredProductPurchasePanel({
       return false;
     }
     if (!selectedSize) {
-      setValidationMessage("Pilih ukuran yang tersedia terlebih dahulu.");
+      setValidationMessage("Silakan pilih ukuran terlebih dahulu.");
       sizeFieldsetRef.current?.focus();
       return false;
     }
@@ -392,22 +396,14 @@ export function TieredProductPurchasePanel({
       setValidationMessage(pricingError || "Harga belum dapat dikonfirmasi. Coba lagi.");
       return false;
     }
-    if (instantMode && (instantSelections.length === 0 || uploadingServiceId)) {
-      setValidationMessage(
-        uploadingServiceId
-          ? "Tunggu file selesai diunggah."
-          : "Pilih minimal satu layanan Custom Instan."
-      );
-      return false;
-    }
     return true;
   }
 
   function addSelectedToCart() {
     if (!focusFirstInvalidControl() || !exactPricing || !selectedColor || !selectedSize) {
-      return;
+      return false;
     }
-    if (interactionLocked.current) return;
+    if (interactionLocked.current) return false;
     interactionLocked.current = true;
     setSubmitting(true);
     setValidationMessage("");
@@ -444,71 +440,20 @@ export function TieredProductPurchasePanel({
         quote_required: false,
         unit_price: exactPricing.unitPrice,
         subtotal: exactPricing.productSubtotal
-      },
-      ...(exactPricing.instantCustomSnapshot
-        ? { instantCustom: exactPricing.instantCustomSnapshot }
-        : {})
+      }
     });
     setCartFeedback(`${product.name} berhasil ditambahkan ke keranjang.`);
     window.setTimeout(() => {
       interactionLocked.current = false;
       setSubmitting(false);
     }, 500);
+    return true;
   }
 
-  function toggleInstantService(serviceId: string) {
-    setSelectedServices((current) => {
-      if (current[serviceId]) {
-        const next = { ...current };
-        delete next[serviceId];
-        return next;
-      }
-      return { ...current, [serviceId]: { inputs: {}, uploadIds: [], note: "" } };
-    });
-  }
-
-  function updateInstantService(
-    serviceId: string,
-    patch: Partial<{ inputs: Record<string, string>; note: string }>
-  ) {
-    setSelectedServices((current) => ({
-      ...current,
-      [serviceId]: {
-        ...(current[serviceId] ?? { inputs: {}, uploadIds: [], note: "" }),
-        ...patch
-      }
-    }));
-  }
-
-  async function uploadInstantServiceFile(serviceId: string, file?: File) {
-    if (!file) return;
-    setUploadingServiceId(serviceId);
-    setServiceError("");
-    try {
-      const form = new FormData();
-      form.set("file", file);
-      form.set("session_token", uploadSessionToken.current);
-      const response = await fetch("/api/customer-uploads", { method: "POST", body: form });
-      const payload: unknown = await response.json();
-      const upload = payload && typeof payload === "object" && !Array.isArray(payload)
-        ? (payload as { upload?: { id?: unknown } }).upload
-        : undefined;
-      if (!response.ok || typeof upload?.id !== "string") {
-        throw new Error("Upload file layanan gagal.");
-      }
-      const uploadId = upload.id;
-      setSelectedServices((current) => ({
-        ...current,
-        [serviceId]: {
-          ...(current[serviceId] ?? { inputs: {}, uploadIds: [], note: "" }),
-          uploadIds: [uploadId]
-        }
-      }));
-    } catch {
-      setServiceError("File belum dapat diunggah. Periksa file lalu coba lagi.");
-    } finally {
-      setUploadingServiceId(null);
-    }
+  function buySelectedNow() {
+    if (!addSelectedToCart()) return;
+    cart.closeCart();
+    router.push("/checkout");
   }
 
   return (
@@ -549,7 +494,7 @@ export function TieredProductPurchasePanel({
           </legend>
           {colors.length ? (
             <div className="mt-3 grid grid-cols-4 gap-3 sm:grid-cols-5">
-              {colors.map((option) => {
+              {visibleColors.map((option) => {
                 const selected = option.variantId === selectedVariantId;
                 return (
                   <button
@@ -603,6 +548,16 @@ export function TieredProductPurchasePanel({
               Pilihan warna belum tersedia untuk produk ini.
             </p>
           )}
+          {colors.length > COLLAPSED_COLOR_LIMIT ? (
+            <button
+              type="button"
+              aria-expanded={showAllColors}
+              onClick={() => setShowAllColors((current) => !current)}
+              className="mt-4 inline-flex min-h-11 items-center text-sm font-semibold underline decoration-1 underline-offset-4 outline-none focus-visible:ring-2 focus-visible:ring-experience-focus focus-visible:ring-offset-2"
+            >
+              {showAllColors ? "Tampilkan lebih sedikit" : "Lihat semua warna"}
+            </button>
+          ) : null}
         </fieldset>
 
         <fieldset
@@ -617,28 +572,29 @@ export function TieredProductPurchasePanel({
           </legend>
           {!selectedColor ? (
             <p className="mt-3 text-sm text-brand-charcoal/55">Pilih warna untuk melihat ukuran yang tersedia.</p>
-          ) : sizes.length ? (
+          ) : displayedSizes.length ? (
             <div className="mt-3 grid grid-cols-3 gap-2.5">
-              {sizes.map((option) => {
-                const selected = option.variantSizeId === selectedVariantSizeId;
+              {displayedSizes.map(({ name, option }) => {
+                const selected = option?.variantSizeId === selectedVariantSizeId;
+                const disabled = !option || option.disabled;
                 return (
                   <button
-                    key={option.variantSizeId}
+                    key={option?.variantSizeId || `unavailable-${name}`}
                     type="button"
-                    aria-label={`Ukuran ${option.name}${option.disabled ? ", stok habis" : `, stok ${option.stock}`}`}
+                    aria-label={`Ukuran ${name}${disabled ? ", tidak tersedia" : `, stok ${option.stock}`}`}
                     aria-pressed={selected}
-                    disabled={option.disabled}
-                    onClick={() => chooseSize(option.variantSizeId)}
+                    disabled={disabled}
+                    onClick={() => option && chooseSize(option.variantSizeId)}
                     className={`relative min-h-12 border px-3 py-2 text-sm font-semibold outline-none transition focus-visible:ring-2 focus-visible:ring-experience-focus focus-visible:ring-offset-2 disabled:cursor-not-allowed ${
                       selected
                         ? "border-black bg-black text-white"
-                        : option.disabled
+                        : disabled
                           ? "border-black/10 bg-black/[0.035] text-black/40"
                           : "border-black/20 bg-white text-black hover:border-black"
                     }`}
                   >
-                    <span className={option.disabled ? "line-through" : ""}>{option.name}</span>
-                    {option.disabled ? <span className="ml-1 text-[10px] no-underline">Habis</span> : null}
+                    <span className={disabled ? "line-through" : ""}>{name}</span>
+                    {disabled ? <span className="ml-1 text-[10px] no-underline">Habis</span> : null}
                   </button>
                 );
               })}
@@ -648,6 +604,11 @@ export function TieredProductPurchasePanel({
               Ukuran canonical belum tersedia untuk warna ini.
             </p>
           )}
+          {!selectedSize && validationMessage === "Silakan pilih ukuran terlebih dahulu." ? (
+            <p role="alert" className="mt-3 text-sm font-medium text-red-700">
+              {validationMessage}
+            </p>
+          ) : null}
           {selectedColor ? (
             <p className="mt-3 text-xs text-brand-charcoal/55">
               {[selectedSku ? `SKU ${selectedSku}` : null, selectedSize ? `Stok ${stockAvailable}` : null]
@@ -656,117 +617,6 @@ export function TieredProductPurchasePanel({
             </p>
           ) : null}
         </fieldset>
-
-        {instantServices.length ? (
-          <section className="border-y border-black/10 py-5" aria-labelledby="instant-mode-title">
-            <h2 id="instant-mode-title" className="text-sm font-semibold">Pilihan layanan</h2>
-            <div className="mt-3 grid grid-cols-2 gap-2" role="group" aria-label="Mode pembelian">
-              <button
-                type="button"
-                aria-pressed={!instantMode}
-                onClick={() => setInstantMode(false)}
-                className={`min-h-12 rounded-full px-4 text-sm font-semibold ${!instantMode ? "bg-black text-white" : "border border-black/15 bg-white"}`}
-              >
-                Ready Stock
-              </button>
-              <button
-                type="button"
-                aria-pressed={instantMode}
-                onClick={() => setInstantMode(true)}
-                className={`min-h-12 rounded-full px-4 text-sm font-semibold ${instantMode ? "bg-black text-white" : "border border-black/15 bg-white"}`}
-              >
-                Custom Instan
-              </button>
-            </div>
-            {instantMode ? (
-              <div className="mt-4 grid gap-4">
-                {instantServices.map((service) => {
-                  const selected = selectedServices[service.id];
-                  return (
-                    <div key={service.id} className="border-t border-black/10 pt-4">
-                      <label className="flex cursor-pointer items-start gap-3">
-                        <input
-                          type="checkbox"
-                          checked={Boolean(selected)}
-                          onChange={() => toggleInstantService(service.id)}
-                          className="mt-1 h-5 w-5"
-                        />
-                        <span className="flex-1">
-                          <span className="block font-semibold">{service.name}</span>
-                          {service.description ? <span className="text-xs text-black/55">{service.description}</span> : null}
-                        </span>
-                      </label>
-                      {selected ? (
-                        <div className="mt-4 grid gap-3">
-                          {service.inputSchema.map((field) => (
-                            <label key={field.key} className="grid gap-1 text-sm">
-                              <span className="font-medium">{field.label}{field.required ? " *" : ""}</span>
-                              {field.type === "select" ? (
-                                <select
-                                  value={selected.inputs[field.key] ?? ""}
-                                  onChange={(event) => updateInstantService(service.id, {
-                                    inputs: { ...selected.inputs, [field.key]: event.target.value }
-                                  })}
-                                  className="min-h-11 rounded-xl border border-black/15 px-3"
-                                >
-                                  <option value="">Pilih</option>
-                                  {field.options?.map((option) => <option key={option}>{option}</option>)}
-                                </select>
-                              ) : field.type === "textarea" ? (
-                                <textarea
-                                  value={selected.inputs[field.key] ?? ""}
-                                  maxLength={field.maxLength}
-                                  onChange={(event) => updateInstantService(service.id, {
-                                    inputs: { ...selected.inputs, [field.key]: event.target.value }
-                                  })}
-                                  className="min-h-24 rounded-xl border border-black/15 p-3"
-                                />
-                              ) : (
-                                <input
-                                  type={field.type}
-                                  value={selected.inputs[field.key] ?? ""}
-                                  maxLength={field.maxLength}
-                                  onChange={(event) => updateInstantService(service.id, {
-                                    inputs: { ...selected.inputs, [field.key]: event.target.value }
-                                  })}
-                                  className="min-h-11 rounded-xl border border-black/15 px-3"
-                                />
-                              )}
-                            </label>
-                          ))}
-                          {service.requiresNotes ? (
-                            <textarea
-                              aria-label={`Catatan ${service.name}`}
-                              placeholder="Catatan layanan *"
-                              value={selected.note}
-                              onChange={(event) => updateInstantService(service.id, { note: event.target.value })}
-                              className="min-h-24 rounded-xl border border-black/15 p-3 text-sm"
-                            />
-                          ) : null}
-                          {service.requiresUpload ? (
-                            <label className="grid gap-1 text-sm">
-                              <span className="font-medium">File desain *</span>
-                              <input
-                                type="file"
-                                accept=".ai,.cdr,.eps,.jpeg,.jpg,.pdf,.png,.psd,.svg,.zip"
-                                onChange={(event) => void uploadInstantServiceFile(service.id, event.target.files?.[0])}
-                              />
-                              {selected.uploadIds.length ? <span className="text-xs text-emerald-700">File siap</span> : null}
-                            </label>
-                          ) : null}
-                        </div>
-                      ) : null}
-                    </div>
-                  );
-                })}
-                {exactPricing && instantMode ? (
-                  <p className="text-sm font-semibold">Total layanan: {formatPdpRupiah(exactPricing.serviceTotal)}</p>
-                ) : null}
-                {serviceError ? <p role="alert" className="text-sm text-red-700">{serviceError}</p> : null}
-              </div>
-            ) : null}
-          </section>
-        ) : null}
 
         <section aria-labelledby="pdp-quantity-title">
           <div className="flex items-center justify-between gap-4">
@@ -881,6 +731,30 @@ export function TieredProductPurchasePanel({
         </section>
 
         <div>
+          {showBuyNow || customActionHref ? (
+            <div className={`mb-3 grid gap-3 ${showBuyNow && customActionHref ? "grid-cols-2" : ""}`}>
+              {showBuyNow ? (
+                <button
+                  type="button"
+                  aria-disabled={!purchaseReady}
+                  aria-describedby="pdp-purchase-feedback"
+                  disabled={submitting}
+                  onClick={buySelectedNow}
+                  className="inline-flex min-h-14 items-center justify-center rounded-full bg-black px-5 text-sm font-semibold text-white outline-none transition hover:bg-black/75 focus-visible:ring-2 focus-visible:ring-experience-focus focus-visible:ring-offset-2 disabled:cursor-wait disabled:bg-black/45"
+                >
+                  Beli Sekarang
+                </button>
+              ) : null}
+              {customActionHref ? (
+                <Link
+                  href={customActionHref}
+                  className="inline-flex min-h-14 items-center justify-center rounded-full border border-black/35 bg-white px-5 text-sm font-semibold text-black outline-none transition hover:border-black hover:bg-black/5 focus-visible:ring-2 focus-visible:ring-experience-focus focus-visible:ring-offset-2"
+                >
+                  Custom
+                </Link>
+              ) : null}
+            </div>
+          ) : null}
           {showAddToCart ? (
             <button
               type="button"
@@ -888,7 +762,7 @@ export function TieredProductPurchasePanel({
               aria-describedby="pdp-purchase-feedback"
               disabled={submitting}
               onClick={addSelectedToCart}
-              className="inline-flex min-h-14 w-full items-center justify-center rounded-full bg-black px-6 text-base font-semibold text-white outline-none transition hover:bg-black/75 focus-visible:ring-2 focus-visible:ring-experience-focus focus-visible:ring-offset-2 disabled:cursor-wait disabled:bg-black/45"
+              className="inline-flex min-h-14 w-full items-center justify-center rounded-full border border-black bg-white px-6 text-base font-semibold text-black outline-none transition hover:bg-black hover:text-white focus-visible:ring-2 focus-visible:ring-experience-focus focus-visible:ring-offset-2 disabled:cursor-wait disabled:border-black/20 disabled:text-black/40"
             >
               {submitting ? "Menambahkan…" : "Tambah ke Keranjang"}
             </button>
@@ -898,8 +772,8 @@ export function TieredProductPurchasePanel({
             </p>
           )}
           <div id="pdp-purchase-feedback" className="mt-3 min-h-5 text-sm" aria-live="assertive">
-            {validationMessage || pricingError || serviceError ? (
-              <p role="alert" className="text-red-700">{validationMessage || pricingError || serviceError}</p>
+            {validationMessage || pricingError ? (
+              <p role="alert" className="text-red-700">{validationMessage || pricingError}</p>
             ) : cartFeedback ? (
               <p role="status" className="text-emerald-700">{cartFeedback}</p>
             ) : (
@@ -916,16 +790,6 @@ export function TieredProductPurchasePanel({
               </p>
             )}
           </div>
-          {whatsappUrl ? (
-            <a
-              href={whatsappUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="mt-3 inline-flex min-h-11 items-center text-sm font-semibold underline decoration-1 underline-offset-4 outline-none focus-visible:ring-2 focus-visible:ring-experience-focus focus-visible:ring-offset-2"
-            >
-              Butuh bantuan memilih? Hubungi WhatsApp
-            </a>
-          ) : null}
         </div>
       </div>
     </div>

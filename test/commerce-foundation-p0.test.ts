@@ -76,7 +76,7 @@ describe("Commerce Foundation V1 P0", () => {
     expect(cart).toContain('href={checkoutAllowed ? "/checkout" : "#"}');
     expect(cart).toContain("checkoutDecision");
     expect(purchase).toContain("cart.addItem({");
-    expect(purchase).not.toContain('router.push("/checkout")');
+    expect(purchase).toContain('router.push("/checkout")');
     expect(cart).not.toContain("window.location");
   });
 });

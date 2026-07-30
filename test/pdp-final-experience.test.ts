@@ -98,7 +98,7 @@ describe("DEBRODER PDP Final Experience V1", () => {
     expect(nextPdpPricingTier(tiers, 24)).toBeNull();
   });
 
-  it("implements the locked image-first composition and safe sticky purchase panel", () => {
+  it("implements the locked image-first composition and header-aware sticky gallery", () => {
     const page = readFileSync("app/produk/[slug]/page.tsx", "utf8");
     const sticky = readFileSync(
       "components/product/ProductStickyPurchasePanel.tsx",
@@ -109,11 +109,15 @@ describe("DEBRODER PDP Final Experience V1", () => {
       page.indexOf("<TieredProductPurchasePanel")
     );
     expect(page).toContain("<ProductStickyPurchasePanel>");
-    expect(page).toContain('data-pdp-media className="min-w-0"');
+    expect(page).toContain(
+      'data-pdp-media className="min-w-0 lg:self-stretch"'
+    );
+    expect(page).toContain("data-pdp-purchase-column");
     expect(page).not.toContain("data-pdp-sticky-media");
     expect(sticky).toContain("ResizeObserver");
     expect(sticky).toContain('data-sticky-safe={stickySafe ? "true" : "false"}');
-    expect(sticky).toContain('"lg:sticky lg:top-24 lg:self-start"');
+    expect(sticky).toContain("[data-public-header]");
+    expect(sticky).toContain("lg:top-[var(--pdp-sticky-top)]");
   });
 
   it("uses thumbnail colors, three-column sizes, bounded quantity, and focus-first validation", () => {
@@ -122,7 +126,12 @@ describe("DEBRODER PDP Final Experience V1", () => {
     expect(panel).toContain("pdpColorOptions(variants)");
     expect(panel).toContain("<SafeImage");
     expect(panel).toContain("grid grid-cols-3");
-    expect(panel).toContain('aria-label={`Ukuran ${option.name}${option.disabled ? ", stok habis"');
+    expect(panel).toContain("APPAREL_SIZE_GRID");
+    expect(panel).toContain("COLLAPSED_COLOR_LIMIT");
+    expect(panel).toContain("Lihat semua warna");
+    expect(panel).toContain("Tampilkan lebih sedikit");
+    expect(panel).toContain("aria-expanded={showAllColors}");
+    expect(panel).toContain('aria-label={`Ukuran ${name}${disabled ? ", tidak tersedia"');
     expect(panel).toContain("MAX_CART_LINE_QUANTITY");
     expect(panel).toContain("MAX_CART_TOTAL_QUANTITY");
     expect(panel).toContain("focusFirstInvalidControl");
@@ -130,6 +139,8 @@ describe("DEBRODER PDP Final Experience V1", () => {
     expect(panel).toContain("sizeFieldsetRef.current?.focus()");
     expect(panel).not.toContain("defaultSizes");
     expect(panel).not.toContain("baseColors");
+    expect(panel).not.toContain("Pilihan layanan");
+    expect(panel).not.toContain("Custom Instan");
   });
 
   it("keeps exact pricing and cart identity server-authoritative", () => {
@@ -143,6 +154,21 @@ describe("DEBRODER PDP Final Experience V1", () => {
     expect(panel).toContain("pricing_tiers: exactPricing.tiers");
     expect(pricing).toContain("const canonicalTiers = latest.product.priceTiers");
     expect(pricing).toContain("resolveReadyStockPricing({");
+  });
+
+  it("keeps Buy Now and Custom inside the canonical transaction hierarchy", () => {
+    const page = readFileSync("app/produk/[slug]/page.tsx", "utf8");
+    const panel = readFileSync("components/TieredProductPurchasePanel.tsx", "utf8");
+
+    expect(page).toContain("showBuyNow={purchaseCapabilities.showBuyNow}");
+    expect(page).toContain("customActionHref={customActionHref}");
+    expect(panel).toContain("function buySelectedNow()");
+    expect(panel).toContain('router.push("/checkout")');
+    expect(panel).toMatch(/>\s*Beli Sekarang\s*<\/button>/);
+    expect(panel).toMatch(/>\s*Custom\s*<\/Link>/);
+    expect(panel.indexOf("Beli Sekarang")).toBeLessThan(
+      panel.indexOf("Tambah ke Keranjang")
+    );
   });
 
   it("hides unverified customer and outfit content while using a native similar-product rail", () => {

@@ -11,11 +11,9 @@ import { ProductRecommendationRail } from "@/components/product/ProductRecommend
 import { ProductStickyPurchasePanel } from "@/components/product/ProductStickyPurchasePanel";
 import { PublicShell } from "@/components/PublicPage";
 import { getProductDetailPageModel } from "@/lib/product-detail-page/runtime";
-import { listInstantServicesForProduct } from "@/lib/instant-custom-data";
 
 type PageProps = {
   params: Promise<{ slug: string }>;
-  searchParams?: Promise<{ mode?: string }>;
 };
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
@@ -84,7 +82,7 @@ function SizeGuideList({ rows }: { rows: string[] }) {
   );
 }
 
-export default async function ProductDetailPage({ params, searchParams }: PageProps) {
+export default async function ProductDetailPage({ params }: PageProps) {
   const { slug } = await params;
   const model = await getProductDetailPageModel(slug);
   if (model.data.state === "not_found") notFound();
@@ -94,7 +92,6 @@ export default async function ProductDetailPage({ params, searchParams }: PagePr
     relatedProducts,
     images,
     focal,
-    whatsappUrl,
     priceLabel,
     detailHref,
     isJersey,
@@ -118,10 +115,6 @@ export default async function ProductDetailPage({ params, searchParams }: PagePr
     );
   }
 
-  const instantServices = product.id && product.product_category_id
-    ? await listInstantServicesForProduct(product.id, product.product_category_id)
-    : [];
-  const requestedMode = (await searchParams)?.mode;
   const productDescription = (product.description || product.deskripsi || "").trim();
   const purchaseDescription = (
     product.short_detail
@@ -130,6 +123,11 @@ export default async function ProductDetailPage({ params, searchParams }: PagePr
   ).trim();
   const productSpecifications = product.specifications || [];
   const jerseyConfiguratorHref = `/jersey/configurator?product=${encodeURIComponent(product.slug || slug)}`;
+  const customActionHref = purchaseCapabilities.showCustomAction
+    ? isJersey
+      ? jerseyConfiguratorHref
+      : customDestination
+    : null;
   const hasProductInformation = Boolean(
     productDescription
     || productSpecifications.length
@@ -164,15 +162,17 @@ export default async function ProductDetailPage({ params, searchParams }: PagePr
             variants={product.variants || []}
           >
             <div className="grid items-start gap-8 lg:grid-cols-[minmax(0,1.16fr)_minmax(360px,0.84fr)] lg:gap-12 xl:gap-16">
-              <div data-pdp-media className="min-w-0">
-                <ProductGallery
-                  images={images}
-                  alt={product.image_alt || product.nama}
-                  focal={focal}
-                />
+              <div data-pdp-media className="min-w-0 lg:self-stretch">
+                <ProductStickyPurchasePanel>
+                  <ProductGallery
+                    images={images}
+                    alt={product.image_alt || product.nama}
+                    focal={focal}
+                  />
+                </ProductStickyPurchasePanel>
               </div>
 
-              <ProductStickyPurchasePanel>
+              <div data-pdp-purchase-column className="min-w-0">
                 {purchaseCapabilities.showPurchasePanel ? (
                   <TieredProductPurchasePanel
                     product={{
@@ -188,12 +188,11 @@ export default async function ProductDetailPage({ params, searchParams }: PagePr
                     subcategory={product.subcategory}
                     description={purchaseDescription}
                     minimumQuantity={product.minimum_order_qty}
-                    whatsappUrl={whatsappUrl}
                     variants={product.variants}
                     showAddToCart={purchaseCapabilities.showAddToCart}
+                    showBuyNow={purchaseCapabilities.showBuyNow}
+                    customActionHref={customActionHref}
                     monochrome={isJersey}
-                    instantServices={instantServices}
-                    initialInstantMode={requestedMode === "instant"}
                   />
                 ) : (
                   <div className="min-w-0">
@@ -244,51 +243,34 @@ export default async function ProductDetailPage({ params, searchParams }: PagePr
                   </div>
                 )}
 
-                {isJersey && purchaseCapabilities.showPurchasePanel && purchaseCapabilities.showCustomAction ? (
-                  <Link
-                    href={jerseyConfiguratorHref}
-                    className="mt-4 inline-flex min-h-11 items-center text-sm font-semibold underline decoration-1 underline-offset-4 outline-none focus-visible:ring-2 focus-visible:ring-black focus-visible:ring-offset-2"
+                {hasProductInformation ? (
+                  <section
+                    className="mt-10 border-b border-[#e5e5e5]"
+                    aria-labelledby="product-information-title"
                   >
-                    Buat Jersey Custom
-                  </Link>
+                    <h2 id="product-information-title" className="mb-3 text-xl font-semibold tracking-[-0.015em]">
+                      Informasi Produk
+                    </h2>
+                    {productDescription ? (
+                      <ProductDetailDisclosure id="product-description" title="Deskripsi Produk">
+                        <p className="whitespace-pre-line">{productDescription}</p>
+                      </ProductDetailDisclosure>
+                    ) : null}
+                    {productSpecifications.length ? (
+                      <ProductDetailDisclosure id="product-specifications" title="Material & Detail">
+                        <SpecificationList specifications={productSpecifications} />
+                      </ProductDetailDisclosure>
+                    ) : null}
+                    {sizeGuide.length ? (
+                      <ProductDetailDisclosure id="product-size-guide" title="Panduan Ukuran">
+                        <SizeGuideList rows={sizeGuide} />
+                      </ProductDetailDisclosure>
+                    ) : null}
+                  </section>
                 ) : null}
-                {purchaseCapabilities.showCustomAction && customDestination ? (
-                  <Link
-                    href={customDestination}
-                    className="mt-4 inline-flex min-h-11 items-center text-sm font-semibold underline decoration-1 underline-offset-4 outline-none focus-visible:ring-2 focus-visible:ring-black focus-visible:ring-offset-2"
-                  >
-                    Buat Pesanan Custom
-                  </Link>
-                ) : null}
-              </ProductStickyPurchasePanel>
+              </div>
             </div>
           </ProductVariantGalleryProvider>
-
-          {hasProductInformation ? (
-            <section
-              className="mx-auto mt-12 max-w-4xl border-b border-[#e5e5e5] md:mt-16"
-              aria-labelledby="product-information-title"
-            >
-              <h2 id="product-information-title" className="mb-3 text-xl font-semibold tracking-[-0.015em]">
-                Informasi Produk
-              </h2>
-              {productDescription ? (
-                <ProductDetailDisclosure id="product-description" title="Deskripsi Produk">
-                  <p className="whitespace-pre-line">{productDescription}</p>
-                </ProductDetailDisclosure>
-              ) : null}
-              {productSpecifications.length ? (
-                <ProductDetailDisclosure id="product-specifications" title="Material & Detail">
-                  <SpecificationList specifications={productSpecifications} />
-                </ProductDetailDisclosure>
-              ) : null}
-              {sizeGuide.length ? (
-                <ProductDetailDisclosure id="product-size-guide" title="Panduan Ukuran">
-                  <SizeGuideList rows={sizeGuide} />
-                </ProductDetailDisclosure>
-              ) : null}
-            </section>
-          ) : null}
         </div>
       </section>
 
