@@ -61,6 +61,7 @@ export function CategoryCommercePage({
           secondaryCtaText={hero.secondaryCtaText}
           secondaryCtaHref={hero.secondaryCtaHref}
           contentPosition="lower"
+          variant="category"
           breadcrumbs={[{ label: "Beranda", href: "/" }, { label: config.breadcrumbLabel }]}
         />
         <CategoryCommerceCatalog

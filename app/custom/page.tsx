@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { CustomHub } from "@/components/custom/CustomHub";
 import { PublicShell } from "@/components/PublicPage";
+import { getCatalogPageModel } from "@/lib/catalog-page/runtime";
 import { listCustomCategories } from "@/lib/custom-commerce/data";
 
 export const metadata: Metadata = {
@@ -10,6 +11,9 @@ export const metadata: Metadata = {
 };
 
 export default async function CustomPage() {
-  const categories = await listCustomCategories();
-  return <PublicShell><div className="min-h-screen bg-[#f6f5f0]"><CustomHub categories={categories} /></div></PublicShell>;
+  const [categories, catalog] = await Promise.all([
+    listCustomCategories(),
+    getCatalogPageModel({ routeKey: "koleksi", scope: "all", searchParams: {} })
+  ]);
+  return <PublicShell><CustomHub categories={categories} products={catalog.data.products} /></PublicShell>;
 }

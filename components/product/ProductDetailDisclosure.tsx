@@ -25,7 +25,7 @@ export function ProductDetailDisclosure({
           aria-expanded={expanded}
           aria-controls={panelId}
           onClick={() => setExpanded((current) => !current)}
-          className="flex min-h-14 w-full items-center justify-between gap-4 text-left text-[15px] font-semibold text-[#111111] outline-none focus-visible:ring-2 focus-visible:ring-[#1151ff] focus-visible:ring-offset-2"
+          className="flex min-h-14 w-full items-center justify-between gap-4 text-left text-[15px] font-semibold text-experience-ink outline-none focus-visible:ring-2 focus-visible:ring-experience-focus focus-visible:ring-offset-2"
         >
           <span>{title}</span>
           <BrandIcon
@@ -41,7 +41,7 @@ export function ProductDetailDisclosure({
         role="region"
         aria-labelledby={triggerId}
         hidden={!expanded}
-        className="pb-6 text-[15px] leading-7 text-[#707072]"
+        className="pb-6 text-[15px] leading-7 text-experience-secondary"
       >
         {children}
       </div>

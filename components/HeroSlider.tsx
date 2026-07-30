@@ -139,8 +139,8 @@ export function HeroSlider({ heroes }: { heroes: HeroBanner[] }) {
                 </video>
               ) : (
                 <ResponsivePicture
-                  desktopSrc={slide.image_url || "/brand/debroder/social-preview.png"}
-                  mobileSrc={slide.mobile_image_url || slide.image_url || "/brand/debroder/social-preview.png"}
+                  desktopSrc={slide.image_url || "/debroder/social-preview.png"}
+                  mobileSrc={slide.mobile_image_url || slide.image_url || "/debroder/social-preview.png"}
                   alt={slide.image_alt || headline.replace(/\n/g, " ") || "Hero DEBRODER"}
                   priority={index === 0}
                   className="h-full w-full object-cover"

@@ -103,7 +103,21 @@ export function jerseyHasReadyStock(product: Product) {
   );
 }
 
-export function jerseyHasCustomAvailability(product: Product) {
+export function productAllowsReadyStock(product: Product) {
+  if (product.sales_mode) {
+    return product.sales_mode === "ready_stock" || product.sales_mode === "both";
+  }
+  return product.product_type !== "configurable_product"
+    && product.product_type !== "production_service"
+    && product.pricing_mode !== "configurator_based"
+    && product.pricing_mode !== "custom_quote"
+    && !product.uses_configurator;
+}
+
+export function productAllowsCustomOrder(product: Product) {
+  if (product.sales_mode) {
+    return product.sales_mode === "custom" || product.sales_mode === "both";
+  }
   return Boolean(
     product.uses_configurator ||
       product.product_type === "configurable_product" ||
@@ -112,9 +126,13 @@ export function jerseyHasCustomAvailability(product: Product) {
   );
 }
 
+export function jerseyHasCustomAvailability(product: Product) {
+  return productAllowsCustomOrder(product);
+}
+
 export function jerseyProductStatus(product: Product) {
-  const ready = jerseyHasReadyStock(product);
-  const custom = jerseyHasCustomAvailability(product);
+  const ready = productAllowsReadyStock(product);
+  const custom = productAllowsCustomOrder(product);
   if (ready && custom) return "Ready Stock + Custom";
   if (ready) {
     const stock = Number(product.stock || 0);

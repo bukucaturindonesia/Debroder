@@ -14,21 +14,17 @@ describe("Final Integration public shell consistency", () => {
     expect(headerClient).not.toContain("href={whatsappHref}");
   });
 
-  it("removes obsolete WhatsApp prop plumbing without changing the promo model", () => {
+  it("removes obsolete WhatsApp and promo plumbing from the public header", () => {
     expect(header).not.toContain("whatsappHref?: string");
     expect(header).not.toContain("whatsappHref={whatsappHref}");
     expect(publicPage).not.toContain("whatsappHref={header.whatsappHref}");
     expect(homePage).not.toContain("whatsappHref={shellModel.data.header.whatsappHref}");
-    expect(header).toContain("promo = fallbackPromo");
+    expect(header).not.toContain("fallbackPromo");
   });
 
-  it("uses the canonical public-dark footer for the homepage and every shared public shell theme", () => {
-    expect(homePage).toContain(
-      '<PublicFooter model={shellModel.data.footer} variant="public-dark" />'
-    );
-    expect(publicPage).toContain('variant="public-dark"');
-    expect(publicPage).not.toContain(
-      'variant={jerseyEditorial ? "dark" : jerseyCommerce ? "default" : "public-dark"}'
-    );
+  it("uses the canonical footer for the homepage and every shared public shell theme", () => {
+    expect(homePage).toContain('<PublicFooter model={shellModel.data.footer} />');
+    expect(publicPage).toContain('<PublicFooter model={shellModel.data.footer} />');
+    expect(publicPage).not.toContain("variant=");
   });
 });

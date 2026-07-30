@@ -1357,7 +1357,7 @@ export function AdminDashboard() {
       payload.gambar_url =
         valueToText(payload.image_url) ||
         valueToText(payload.gambar_url) ||
-        "/brand/debroder/open-graph-logo.png";
+        "/debroder/open-graph-logo.png";
       payload.whatsapp_link =
         valueToText(payload.whatsapp_link) || "https://wa.me/6285355333364";
       payload.kategori = valueToText(payload.kategori) || "Produk";
@@ -1375,7 +1375,7 @@ export function AdminDashboard() {
       payload.slug = valueToText(payload.slug) || makeSlug(valueToText(payload.nama));
       payload.image_url =
         valueToText(payload.image_url) ||
-        "/brand/debroder/open-graph-logo.png";
+        "/debroder/open-graph-logo.png";
       payload.deskripsi = valueToText(payload.deskripsi);
       payload.image_alt = valueToText(payload.image_alt) || valueToText(payload.nama);
       const serviceSlug = valueToText(payload.slug);

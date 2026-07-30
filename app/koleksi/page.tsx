@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { ProductCatalog } from "@/components/ProductCatalog";
+import { CollectionCommerceExperience } from "@/components/CollectionCommerceExperience";
 import { PageHero, PublicShell } from "@/components/PublicPage";
 import { getCatalogPageModel } from "@/lib/catalog-page/runtime";
 
@@ -43,25 +43,16 @@ export default async function KoleksiPage({ searchParams }: KoleksiPageProps) {
         objectFit={hero.objectFit}
         imageZoom={hero.imageZoom}
         mobileImageZoom={hero.mobileImageZoom}
+        variant="category"
         breadcrumbs={[{ label: "Beranda", href: "/" }, { label: "Koleksi" }]}
       />
-      <section className="bg-brand-offWhite py-12 md:py-16 lg:py-20">
-        <div className="section-shell">
-          <ProductCatalog
-            products={products}
-            title="Hasil Koleksi"
-            showHeading
-            initialColor={filters.color}
-            initialLabel={filters.label}
-            initialSort={filters.sort === "price-low" || filters.sort === "price-high" ? "order" : filters.sort}
-            initialStatus={filters.status}
-            showStatusFilter
-            catalogStyle="category"
-            showCardActions
-            syncUrlState
-          />
-        </div>
-      </section>
+      <CollectionCommerceExperience
+        products={products}
+        initialColor={filters.color}
+        initialLabel={filters.label}
+        initialSort={filters.sort === "price-low" || filters.sort === "price-high" ? "order" : filters.sort}
+        initialStatus={filters.status}
+      />
     </PublicShell>
   );
 }

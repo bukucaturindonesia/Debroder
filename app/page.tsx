@@ -10,6 +10,7 @@ import { ScrollButtons } from "@/components/ScrollButtons";
 import { SiteHeader } from "@/components/SiteHeader";
 import { StorefrontCartBoundary } from "@/components/storefront/StorefrontCartBoundary";
 import { fallbackImages, getProductImage, getStoreImage } from "@/lib/fallback-data";
+import { brandIcons } from "@/lib/icons";
 import { getPublicShellPageModel } from "@/lib/public-shell/runtime";
 import { getPublicContent } from "@/lib/public-data";
 import { absoluteUrl, siteConfig } from "@/lib/site";
@@ -413,7 +414,7 @@ export default async function Home() {
   const schema = {
     "@context": "https://schema.org",
     "@graph": [
-      { "@type": "Organization", "@id": `${siteConfig.siteUrl}/#organization`, name: "DEBRODER", url: siteConfig.siteUrl, logo: absoluteUrl("/brand/debroder/logo-primary-black.png"), email: content.contact.email, sameAs: [content.contact.instagram, content.contact.facebook].filter(Boolean) },
+      { "@type": "Organization", "@id": `${siteConfig.siteUrl}/#organization`, name: "DEBRODER", url: siteConfig.siteUrl, logo: absoluteUrl(brandIcons.logoWordmarkBlack), email: content.contact.email, sameAs: [content.contact.instagram, content.contact.facebook].filter(Boolean) },
       ...stores.map((store) => ({ "@type": "LocalBusiness", name: `DEBRODER ${store.nama_store}`, image: getStoreImage(store), address: store.alamat, telephone: store.whatsapp, url: absoluteUrl("/store") }))
     ]
   };
@@ -423,7 +424,6 @@ export default async function Home() {
     <main className="public-site debroder-landing min-h-screen bg-experience-canvas text-experience-ink">
       <SiteHeader
         navigationFacets={shellModel.data.header.navigationFacets}
-        promo={shellModel.data.header.promo}
       />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(schema).replace(/</g, "\\u003c") }} />
       {!heroHasHeading ? <h1 className="sr-only">DEBRODER</h1> : null}
@@ -563,7 +563,7 @@ export default async function Home() {
         </section>
       </LandingSectionSlot>
 
-      <PublicFooter model={shellModel.data.footer} variant="public-dark" />
+      <PublicFooter model={shellModel.data.footer} />
     </main>
     </StorefrontCartBoundary>
   );

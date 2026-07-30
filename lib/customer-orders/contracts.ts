@@ -39,6 +39,16 @@ export type CustomerOrderCustomQuoteReadModel = {
   lockedAt: string | null;
 };
 
+export type CustomerOrderCustomDesignPairReadModel = {
+  id: string;
+  productName: string;
+  packageName: string;
+  serviceName: string;
+  placementName: string;
+  printSizeName: string;
+  assignedQuantity: number;
+};
+
 export type CustomerOrderPaymentLinkReadModel = {
   url: string | null;
   expiresAt: string | null;
@@ -85,6 +95,7 @@ export type CustomerOrderConfirmationReadModel = CustomerOrderBaseReadModel & {
     customQuoteLockedAt: string | null;
   };
   customQuote: CustomerOrderCustomQuoteReadModel | null;
+  customDesignPairs: CustomerOrderCustomDesignPairReadModel[];
 };
 
 export type CustomerOrderCancellationReadModel = {

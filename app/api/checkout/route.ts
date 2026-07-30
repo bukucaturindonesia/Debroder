@@ -9,7 +9,9 @@ import {
 import { deriveCheckoutTrackingToken } from "@/lib/order-tracking";
 import { listCustomCategoryCatalogsByIds } from "@/lib/custom-commerce/data";
 import { priceCustomProject } from "@/lib/custom-commerce/pricing";
+import { isCheckoutEligibleCustomPricing } from "@/lib/custom-commerce/exact-pricing";
 import type { CustomProjectSnapshot } from "@/lib/custom-commerce/types";
+import { customCheckoutDesignPairIssue } from "@/lib/custom-commerce/validation";
 import { getAdminSupabaseEnv } from "@/lib/server-env";
 import { getAdminSupabaseClient } from "@/lib/supabase/admin";
 import {
@@ -20,6 +22,12 @@ import {
   type ServerRequestContext
 } from "@/lib/observability/server";
 import { publicApiErrorResponse } from "@/lib/public-api-error";
+import {
+  priceJerseyConfiguredProduct,
+  readJerseyConfiguredProductDefinition
+} from "@/lib/jersey-configured-product/data-access";
+import { validateJerseyConsumerDraft } from "@/lib/jersey-configured-product/domain";
+import { resolveConfiguredProductOnServer } from "@/lib/configured-product/runtime";
 
 function sha256(value: string) {
   return createHash("sha256").update(value).digest("hex");
@@ -57,10 +65,12 @@ function transientApiError(
 function hasMixedCheckoutModes(value: unknown) {
   if (!value || typeof value !== "object" || Array.isArray(value)) return false;
   const record = value as Record<string, unknown>;
-  return Array.isArray(record.items)
-    && record.items.length > 0
-    && Array.isArray(record.customProjects)
-    && record.customProjects.length > 0;
+  const populatedModes = [
+    record.items,
+    record.customProjects,
+    record.configuredItems
+  ].filter((entry) => Array.isArray(entry) && entry.length > 0);
+  return populatedModes.length > 1;
 }
 
 export async function GET(request: Request) {
@@ -134,6 +144,14 @@ export async function POST(request: Request) {
         code: "CHECKOUT_MIXED_CART",
         error: "Ready Stock dan pesanan Custom harus diselesaikan sebagai pesanan terpisah."
       }, 409);
+    }
+
+    const rawCustomProjects = rawBody && typeof rawBody === "object" && !Array.isArray(rawBody)
+      ? (rawBody as Record<string, unknown>).customProjects
+      : undefined;
+    const pairIssue = customCheckoutDesignPairIssue(rawCustomProjects);
+    if (pairIssue) {
+      return respond({ code: "CHECKOUT_CUSTOM_INVALID", error: pairIssue }, 409);
     }
 
     const body = parsePublicCheckoutRequest(rawBody);
@@ -222,6 +240,12 @@ export async function POST(request: Request) {
       if (pricing.issues.length) {
         return respond({ code: "CHECKOUT_CUSTOM_INVALID", error: pricing.issues[0] }, 409);
       }
+      if (!isCheckoutEligibleCustomPricing(pricing)) {
+        return respond({
+          code: "CHECKOUT_CUSTOM_PRICING_INVALID",
+          error: "Harga custom harus berupa harga pasti atau permintaan penawaran tanpa nominal."
+        }, 409);
+      }
       const uploadsValid = await validateProjectUploads(client, entry.project);
       if (!uploadsValid) {
         return respond({ code: "CHECKOUT_UPLOAD_INVALID", error: "Referensi file custom tidak valid atau sudah dihapus." }, 409);
@@ -229,8 +253,60 @@ export async function POST(request: Request) {
       pricedProjects.push({ ...entry.project, pricing });
     }
 
+    const configuredSnapshots = [];
+    for (const entry of body.configuredItems) {
+      const requestedAt = new Date().toISOString();
+      const definitionResult = await readJerseyConfiguredProductDefinition(
+        entry.productId
+      );
+      if (definitionResult.status !== "ready") {
+        return respond({
+          code: "CHECKOUT_ITEM_UNAVAILABLE",
+          error: "Konfigurasi Jersey sudah berubah. Muat ulang configurator."
+        }, 409);
+      }
+      const jerseyIssues = validateJerseyConsumerDraft(
+        definitionResult.definition,
+        entry.draft
+      );
+      if (jerseyIssues.length > 0) {
+        return respond({
+          code: "CHECKOUT_CONFIGURED_INVALID",
+          error: jerseyIssues[0]?.message ?? "Konfigurasi Jersey belum valid."
+        }, 409);
+      }
+      const resolved = await resolveConfiguredProductOnServer({
+        productId: entry.productId,
+        draft: entry.draft,
+        requestId: `${body.idempotencyKey}:${entry.lineId}`,
+        snapshotId: `checkout:${body.idempotencyKey}:${entry.lineId}`,
+        requestedAt
+      }, {
+        readDefinition: async () => definitionResult,
+        pricingAuthority: priceJerseyConfiguredProduct
+      });
+      if (
+        !resolved.ok
+        || resolved.pricingInput.inputFingerprint !== entry.inputFingerprint
+        || resolved.snapshot.validation.pricingStatus !== "priced"
+        || resolved.snapshot.pricing?.status !== "priced"
+      ) {
+        return respond({
+          code: "CHECKOUT_CONFIGURED_STALE",
+          error: "Konfigurasi atau harga Jersey sudah berubah. Validasi ulang sebelum checkout."
+        }, 409);
+      }
+      configuredSnapshots.push({
+        line_id: entry.lineId,
+        product_id: entry.productId,
+        snapshot: resolved.snapshot
+      });
+    }
+
     const hasInstantServices = body.items.some((item) => (item.services?.length ?? 0) > 0);
-    const rpcName = pricedProjects.length
+    const rpcName = configuredSnapshots.length
+      ? "create_public_configured_checkout_order"
+      : pricedProjects.length
       ? "create_public_custom_checkout_order"
       : hasInstantServices
         ? "create_public_instant_checkout_order"
@@ -254,7 +330,8 @@ export async function POST(request: Request) {
         services: item.services ?? []
       })),
       p_shipping_address_snapshot: body.fulfillment.addressSnapshot ?? null,
-      ...(pricedProjects.length ? { p_custom_projects: pricedProjects } : {})
+      ...(pricedProjects.length ? { p_custom_projects: pricedProjects } : {}),
+      ...(configuredSnapshots.length ? { p_configured_items: configuredSnapshots } : {})
     };
     const { data, error } = await client.rpc(rpcName, rpcPayload);
 

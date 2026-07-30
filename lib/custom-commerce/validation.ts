@@ -8,6 +8,8 @@ import type {
   CustomProjectItem,
   CustomVariantAllocation
 } from "@/lib/custom-commerce/types";
+import { isCompleteCustomDesignPair } from "@/lib/custom-commerce/design-pairs";
+import { z } from "zod";
 
 export const MAX_CUSTOM_PROJECTS = 5;
 export const MAX_CUSTOM_PROJECT_ITEMS = 12;
@@ -20,6 +22,24 @@ export const MAX_CUSTOM_UPLOADS = 30;
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 const LOCAL_ID = /^[a-zA-Z0-9_-]{8,100}$/;
 const SESSION_TOKEN = /^[a-zA-Z0-9_-]{32,160}$/;
+
+const customDesignServiceDraftSchema = z.object({
+  id: z.string().trim().regex(LOCAL_ID),
+  serviceId: z.string().trim().regex(UUID),
+  placementId: z.string().trim().regex(UUID).nullable(),
+  printSizeId: z.string().trim().regex(UUID).nullable(),
+  note: z.string().transform((value) => cleanText(value, 1000)),
+  uploadIds: z.array(z.string().trim().regex(UUID)).max(MAX_CUSTOM_UPLOADS)
+});
+
+export const customDesignServiceCanonicalSchema = customDesignServiceDraftSchema.superRefine((value, context) => {
+  if (!isCompleteCustomDesignPair(value)) {
+    context.addIssue({
+      code: z.ZodIssueCode.custom,
+      message: "Posisi Desain dan Size Desain harus dipilih sebagai satu pasangan."
+    });
+  }
+});
 
 export function parseCustomCheckoutProjects(value: unknown): CustomCheckoutProject[] | null {
   if (!Array.isArray(value) || value.length > MAX_CUSTOM_PROJECTS) return null;
@@ -36,7 +56,55 @@ export function parseCustomCheckoutProjects(value: unknown): CustomCheckoutProje
   return projects;
 }
 
+export function customCheckoutDesignPairIssue(value: unknown): string | null {
+  if (!Array.isArray(value)) return null;
+  for (const candidate of value) {
+    if (!isRecord(candidate)) return null;
+    const project = parseCustomProjectDraft(candidate.project);
+    if (!project) return null;
+    const issue = canonicalCustomDesignPairIssues(project)[0];
+    if (issue) return issue;
+  }
+  return null;
+}
+
 export function parseCustomProject(value: unknown): CustomProject | null {
+  return parseCustomProjectInternal(value, true);
+}
+
+export function parseCustomProjectDraft(value: unknown): CustomProject | null {
+  return parseCustomProjectInternal(value, false);
+}
+
+export function canonicalCustomDesignPairIssues(project: CustomProject): string[] {
+  const issues: string[] = [];
+  const selectionIds = new Set<string>();
+  let completePairCount = 0;
+  for (const item of project.items) {
+    const placementIds = new Set<string>();
+    for (const selection of item.designPackages.flatMap((designPackage) => designPackage.services)) {
+      if (selectionIds.has(selection.id)) {
+        issues.push(`Identitas pasangan desain ${selection.id} terduplikasi dalam Custom Project.`);
+      }
+      selectionIds.add(selection.id);
+      if (!isCompleteCustomDesignPair(selection)) {
+        issues.push(`Posisi Desain dan Size Desain pada ${item.productName} belum lengkap.`);
+        continue;
+      }
+      completePairCount += 1;
+      if (placementIds.has(selection.placementId)) {
+        issues.push(`Posisi Desain pada ${item.productName} terduplikasi.`);
+      }
+      placementIds.add(selection.placementId);
+    }
+  }
+  if (completePairCount === 0) {
+    issues.push("Pilih minimal satu Posisi Desain dan Size Desain.");
+  }
+  return Array.from(new Set(issues));
+}
+
+function parseCustomProjectInternal(value: unknown, canonical: boolean): CustomProject | null {
   if (!isRecord(value) || value.version !== 1 || !Array.isArray(value.items)) return null;
   const id = localId(value.id);
   const categoryId = uuid(value.categoryId);
@@ -55,13 +123,18 @@ export function parseCustomProject(value: unknown): CustomProject | null {
 
   const items: CustomProjectItem[] = [];
   const itemIds = new Set<string>();
+  const selectionIds = new Set<string>();
   let allocationCount = 0;
   let uploadCount = 0;
   let totalQuantity = 0;
   for (const candidate of value.items) {
-    const item = parseProjectItem(candidate);
+    const item = parseProjectItem(candidate, canonical);
     if (!item || itemIds.has(item.id)) return null;
     itemIds.add(item.id);
+    for (const selection of item.designPackages.flatMap((designPackage) => designPackage.services)) {
+      if (selectionIds.has(selection.id)) return null;
+      selectionIds.add(selection.id);
+    }
     allocationCount += item.allocations.length;
     uploadCount += item.uploads.length;
     totalQuantity += item.allocations.reduce((sum, allocation) => sum + allocation.quantity, 0);
@@ -73,7 +146,7 @@ export function parseCustomProject(value: unknown): CustomProject | null {
     items.push(item);
   }
 
-  return {
+  const project: CustomProject = {
     version: 1,
     id,
     mode,
@@ -87,9 +160,11 @@ export function parseCustomProject(value: unknown): CustomProject | null {
     createdAt,
     updatedAt
   };
+  if (canonical && canonicalCustomDesignPairIssues(project).length > 0) return null;
+  return project;
 }
 
-function parseProjectItem(value: unknown): CustomProjectItem | null {
+function parseProjectItem(value: unknown, canonical: boolean): CustomProjectItem | null {
   if (!isRecord(value) || !Array.isArray(value.allocations) || !Array.isArray(value.designPackages) || !Array.isArray(value.uploads)) return null;
   const id = localId(value.id);
   const categoryId = uuid(value.categoryId);
@@ -113,10 +188,20 @@ function parseProjectItem(value: unknown): CustomProjectItem | null {
 
   const designPackages: CustomDesignPackage[] = [];
   const designPackageIds = new Set<string>();
+  const selectionIds = new Set<string>();
+  const placementIds = new Set<string>();
   for (const candidate of value.designPackages) {
-    const designPackage = parseDesignPackage(candidate);
+    const designPackage = parseDesignPackage(candidate, canonical);
     if (!designPackage || designPackageIds.has(designPackage.id)) return null;
     designPackageIds.add(designPackage.id);
+    for (const selection of designPackage.services) {
+      if (selectionIds.has(selection.id)) return null;
+      selectionIds.add(selection.id);
+      if (canonical && selection.placementId) {
+        if (placementIds.has(selection.placementId)) return null;
+        placementIds.add(selection.placementId);
+      }
+    }
     designPackages.push(designPackage);
   }
   if (allocations.some((allocation) => allocation.designPackageId && !designPackageIds.has(allocation.designPackageId))) return null;
@@ -163,31 +248,25 @@ function parseAllocation(value: unknown): CustomVariantAllocation | null {
   };
 }
 
-function parseDesignPackage(value: unknown): CustomDesignPackage | null {
+function parseDesignPackage(value: unknown, canonical: boolean): CustomDesignPackage | null {
   if (!isRecord(value) || !Array.isArray(value.services) || value.services.length > MAX_CUSTOM_SERVICES_PER_PACKAGE) return null;
   const id = localId(value.id);
   const name = text(value.name, 120);
   if (!id || !name) return null;
   const services: CustomDesignService[] = [];
-  const serviceIds = new Set<string>();
+  const serviceSelectionIds = new Set<string>();
   for (const candidate of value.services) {
-    const service = parseDesignService(candidate);
-    if (!service || serviceIds.has(service.id)) return null;
-    serviceIds.add(service.id);
+    const service = parseDesignService(candidate, canonical);
+    if (!service || serviceSelectionIds.has(service.id)) return null;
+    serviceSelectionIds.add(service.id);
     services.push(service);
   }
   return { id, name, services };
 }
 
-function parseDesignService(value: unknown): CustomDesignService | null {
-  if (!isRecord(value) || !Array.isArray(value.uploadIds) || value.uploadIds.length > MAX_CUSTOM_UPLOADS) return null;
-  const id = localId(value.id);
-  const serviceId = uuid(value.serviceId);
-  const placementId = value.placementId === null ? null : uuid(value.placementId);
-  const printSizeId = value.printSizeId === null ? null : uuid(value.printSizeId);
-  const uploadIds = value.uploadIds.map(uuid);
-  if (!id || !serviceId || (value.placementId !== null && !placementId) || (value.printSizeId !== null && !printSizeId) || uploadIds.some((candidate) => !candidate)) return null;
-  return { id, serviceId, placementId, printSizeId, note: text(value.note, 1000), uploadIds: uploadIds as string[] };
+function parseDesignService(value: unknown, canonical: boolean): CustomDesignService | null {
+  const parsed = (canonical ? customDesignServiceCanonicalSchema : customDesignServiceDraftSchema).safeParse(value);
+  return parsed.success ? parsed.data : null;
 }
 
 function parsePersonalization(value: unknown): CustomPersonalization | null {
@@ -227,8 +306,12 @@ function rawText(value: unknown) {
   return typeof value === "string" ? value.trim() : "";
 }
 
+function cleanText(value: string, maxLength: number) {
+  return value.trim().replace(/[\u0000-\u001f\u007f]/g, "").slice(0, maxLength);
+}
+
 function text(value: unknown, maxLength: number) {
-  return rawText(value).replace(/[\u0000-\u001f\u007f]/g, "").slice(0, maxLength);
+  return cleanText(rawText(value), maxLength);
 }
 
 function uuid(value: unknown) {

@@ -38,7 +38,7 @@ export function SocialIconLinks({
         target="_blank"
         rel="noopener noreferrer"
       >
-        <BrandIcon name="facebook" tone={iconTone} className={iconClass} />
+        <span aria-hidden="true" className="text-sm font-bold">f</span>
       </a>
       <a
         href={instagramLink}

@@ -4,11 +4,16 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { type FormEvent, useEffect, useMemo, useRef, useState } from "react";
 import { isCustomProjectCartItem, useCart } from "@/components/CartProvider";
+import { SafeImage } from "@/components/SafeImage";
+import { fallbackImages } from "@/lib/fallback-data";
 import { formatRupiah } from "@/lib/url";
 import { removeCustomDraft } from "@/lib/custom-commerce/draft-storage";
 import { EMPTY_STRUCTURED_ADDRESS, StructuredIndonesiaAddress } from "@/components/checkout/StructuredIndonesiaAddress";
 import type { StructuredIndonesiaAddressInput } from "@/lib/indonesia-address";
 import { cartItemSubtotal } from "@/lib/cart-v5";
+import { isFinalExactCustomPricing } from "@/lib/custom-commerce/exact-pricing";
+import { findCustomDesignPairPricingLine } from "@/lib/custom-commerce/design-pairs";
+import type { CustomProjectSnapshot } from "@/lib/custom-commerce/types";
 
 type StoreOption = { id: string; name: string; address: string; hours: string };
 type CheckoutDraft = {
@@ -68,11 +73,23 @@ export function CheckoutClient({ stores }: { stores: StoreOption[] }) {
     [cart.items]
   );
   const customItems = useMemo(() => cart.items.filter(isCustomProjectCartItem), [cart.items]);
-  const configuredItems = cart.items.filter((item) => item.lineType === "configured_product");
+  const configuredItems = cart.items.filter(
+    (item): item is typeof item & { lineType: "configured_product" } =>
+      item.lineType === "configured_product"
+  );
   const unsupportedItems = cart.items.filter((item) => item.lineType === "legacy_unsupported");
-  const checkoutBlocked = !cart.checkoutDecision.allowed || configuredItems.length > 0;
+  const checkoutBlocked = !cart.checkoutDecision.allowed || configuredItems.some(
+    (item) => !item.configurationSnapshot.definition.productId
+  );
+  const hasPendingCustomPricing = customItems.some((item) =>
+    !isFinalExactCustomPricing(item.customProject.pricing)
+  );
   const subtotal = readyItems.reduce((sum, item) => sum + cartItemSubtotal(item), 0)
-    + customItems.reduce((sum, item) => sum + Number(item.customProject.pricing.finalTotal || 0), 0);
+    + configuredItems.reduce((sum, item) => sum + cartItemSubtotal(item), 0)
+    + customItems.reduce((sum, item) =>
+      sum + (isFinalExactCustomPricing(item.customProject.pricing)
+        ? Number(item.customProject.pricing.finalTotal || 0)
+        : 0), 0);
 
   useEffect(() => {
     if (retryAfter <= 0) return;
@@ -122,7 +139,7 @@ export function CheckoutClient({ stores }: { stores: StoreOption[] }) {
       submitting
       || retryAfter > 0
       || checkoutBlocked
-      || readyItems.length + customItems.length === 0
+      || readyItems.length + configuredItems.length + customItems.length === 0
     ) return;
     if (fulfillment === "shipping" && !addressConfirmed) {
       setError("Konfirmasi alamat terstruktur sebelum membuat order.");
@@ -169,7 +186,16 @@ export function CheckoutClient({ stores }: { stores: StoreOption[] }) {
         .sort((left, right) => String(left.variantSizeId).localeCompare(String(right.variantSizeId))),
       customProjects: customItems
         .map((item) => ({ project: item.customProject }))
-        .sort((left, right) => String(left.project?.id ?? "").localeCompare(String(right.project?.id ?? "")))
+        .sort((left, right) => String(left.project?.id ?? "").localeCompare(String(right.project?.id ?? ""))),
+      configuredItems: configuredItems
+        .map((item) => ({
+          lineId: item.lineId,
+          productId: item.configurationSnapshot.definition.productId ?? "",
+          snapshotId: item.configurationSnapshot.snapshotId,
+          inputFingerprint: item.configurationSnapshot.inputFingerprint ?? "",
+          draft: item.configurationSnapshot.draft
+        }))
+        .sort((left, right) => left.lineId.localeCompare(right.lineId))
     };
     const payloadHash = await hashBusinessPayload(businessPayload);
     let currentDraft = draft.current ?? readStoredDraft() ?? createDraft();
@@ -258,7 +284,7 @@ export function CheckoutClient({ stores }: { stores: StoreOption[] }) {
         {!cart.checkoutDecision.allowed && cart.checkoutDecision.code === "CART_MIXED_CHECKOUT_MODE" ? (
           <div className="mt-7 border border-amber-300 bg-amber-50 p-5 text-sm text-amber-950">
             <p className="font-semibold">Mode pesanan harus dipisahkan.</p>
-            <p className="mt-1">Ready Stock, Configured Product, dan Custom Project tidak boleh dicampur dalam satu perintah checkout.</p>
+            <p className="mt-1">Ready Stock, produk dengan pilihan khusus, dan Pesanan Custom harus dibuat secara terpisah.</p>
             <Link className="mt-3 inline-flex font-semibold underline" href="/keranjang">Atur ulang keranjang</Link>
           </div>
         ) : null}
@@ -268,14 +294,6 @@ export function CheckoutClient({ stores }: { stores: StoreOption[] }) {
             <p className="font-semibold">Ada item lama yang tidak didukung checkout.</p>
             <p className="mt-1">Data asli tetap disimpan. Hapus item tersebut dan tambahkan kembali melalui produk atau builder canonical.</p>
             <Link className="mt-3 inline-flex font-semibold underline" href="/keranjang">Ubah keranjang</Link>
-          </div>
-        ) : null}
-
-        {configuredItems.length ? (
-          <div className="mt-7 border border-amber-300 bg-amber-50 p-5 text-sm text-amber-950">
-            <p className="font-semibold">Configured Product belum memiliki command checkout aktif.</p>
-            <p className="mt-1">Cart v5 mempertahankan konfigurasinya, tetapi command server akan diaktifkan oleh package configured-product yang berwenang.</p>
-            <Link className="mt-3 inline-flex font-semibold underline" href="/keranjang">Kembali ke keranjang</Link>
           </div>
         ) : null}
 
@@ -298,7 +316,12 @@ export function CheckoutClient({ stores }: { stores: StoreOption[] }) {
               {fulfillment === "pickup" ? (
                 <div className="mt-5 grid gap-4">
                   <Field label="Lokasi pengambilan"><select name="pickupLocationId" required defaultValue=""><option value="" disabled>Pilih toko</option>{stores.map((store) => <option key={store.id} value={store.id}>{store.name} — {store.address}</option>)}</select></Field>
-                  <Field label="Cara pembayaran"><select name="paymentMethod" defaultValue="bank_transfer"><option value="bank_transfer">Transfer bank</option><option value="pay_at_store">Bayar di toko</option></select></Field>
+                  {hasPendingCustomPricing ? (
+                    <div className="rounded-2xl bg-amber-50 p-4 text-sm leading-6 text-amber-950">
+                      <input type="hidden" name="paymentMethod" value="bank_transfer" />
+                      Pembayaran belum tersedia. Admin akan mengirim penawaran resmi setelah order dibuat.
+                    </div>
+                  ) : <Field label="Cara pembayaran"><select name="paymentMethod" defaultValue="bank_transfer"><option value="bank_transfer">Transfer bank</option><option value="pay_at_store">Bayar di toko</option></select></Field>}
                 </div>
               ) : (
                 <div className="mt-5"><StructuredIndonesiaAddress value={structuredAddress} confirmed={addressConfirmed} onChange={(next) => { setStructuredAddress(next); setAddressConfirmed(false); }} onConfirmedChange={setAddressConfirmed} onFormattedAddressChange={setFormattedStructuredAddress} /></div>
@@ -306,24 +329,71 @@ export function CheckoutClient({ stores }: { stores: StoreOption[] }) {
             </Panel>
           </div>
 
-          <aside className="h-fit rounded-[28px] bg-white p-5 sm:p-6 lg:sticky lg:top-24">
+          <aside className="h-fit rounded-2xl bg-white p-5 sm:p-6 lg:sticky lg:top-24">
             <h2 className="text-xl font-semibold">Ringkasan pesanan</h2>
             <div className="mt-5 grid gap-4">{readyItems.map((item) => (
-              <div key={item.lineId} className="flex justify-between gap-4 border-b border-black/10 pb-4 text-sm">
-                <div><p className="font-semibold">{item.name}</p><p className="mt-1 text-black/55">{item.variantName || item.color} · {item.size} · {item.sku} × {item.quantity}</p>{item.instantCustom?.pricing.map((service) => <p key={service.serviceId} className="mt-1 text-xs text-amber-800">{service.serviceName} · {formatRupiah(service.total)}</p>)}</div>
+              <div key={item.lineId} className="grid grid-cols-[minmax(0,1fr)_auto] items-start gap-3 border-b border-black/10 pb-4 text-sm">
+                <div className="flex min-w-0 gap-3">
+                  <CheckoutLineImage item={item} />
+                  <div className="min-w-0"><p className="font-semibold">{item.name}</p><p className="mt-1 text-black/55">{item.variantName || item.color} · {item.size} · {item.sku} × {item.quantity}</p>{item.instantCustom?.pricing.map((service) => <p key={service.serviceId} className="mt-1 text-xs text-amber-800">{service.serviceName} · {formatRupiah(service.total)}</p>)}</div>
+                </div>
                 <p className="shrink-0 font-semibold">{formatRupiah(cartItemSubtotal(item))}</p>
               </div>
-            ))}{customItems.map((item) => <div key={item.lineId} className="flex justify-between gap-4 border-b border-black/10 pb-4 text-sm"><div><p className="font-semibold">{item.name}</p><p className="mt-1 text-black/55">{item.customProject.items.length} grup produk · {item.customProject.pricing.totalQuantity} pcs · {item.customProject.pricing.status === "final" ? "Harga final" : item.customProject.pricing.status === "estimated" ? "Estimasi" : "Menunggu pemeriksaan"}</p></div><p className="shrink-0 font-semibold">{item.customProject.pricing.finalTotal ? formatRupiah(item.customProject.pricing.finalTotal) : "Diperiksa admin"}</p></div>)}</div>
-            <div className="mt-5 flex items-center justify-between"><span>Subtotal</span><strong>{formatRupiah(subtotal)}</strong></div>
-            <p className="mt-3 text-xs leading-5 text-black/50">{fulfillment === "shipping" ? "Admin akan menambahkan ongkir pada pesanan ini, lalu Anda dapat menyetujui total akhirnya." : "Pengambilan di toko tidak dikenakan ongkir."}</p>
+            ))}{configuredItems.map((item) => (
+              <div key={item.lineId} className="grid grid-cols-[minmax(0,1fr)_auto] items-start gap-3 border-b border-black/10 pb-4 text-sm">
+                <div className="flex min-w-0 gap-3">
+                  <CheckoutLineImage item={item} />
+                  <div className="min-w-0">
+                    <p className="font-semibold">{item.name}</p>
+                    <p className="mt-1 text-black/55">{item.quantity} pcs · konfigurasi tervalidasi server</p>
+                  </div>
+                </div>
+                <p className="shrink-0 font-semibold">{formatRupiah(cartItemSubtotal(item))}</p>
+              </div>
+            ))}{customItems.map((item) => {
+              const exact = isFinalExactCustomPricing(item.customProject.pricing);
+              return <div key={item.lineId} className="grid grid-cols-[minmax(0,1fr)_auto] items-start gap-3 border-b border-black/10 pb-4 text-sm"><div className="flex min-w-0 gap-3"><CheckoutLineImage item={item} /><div className="min-w-0"><p className="font-semibold">{item.name}</p><p className="mt-1 text-black/55">{item.customProject.items.length} grup produk · {item.customProject.pricing.totalQuantity} pcs · {exact ? "Harga pasti" : "Order tanpa nominal"}</p><CustomCheckoutPairSummary project={item.customProject} /></div></div><p className="shrink-0 font-semibold">{exact ? formatRupiah(item.customProject.pricing.finalTotal) : "Belum ditetapkan"}</p></div>;
+            })}</div>
+            <div className="mt-5 flex items-center justify-between"><span>Subtotal</span><strong>{hasPendingCustomPricing ? "Belum ditetapkan" : formatRupiah(subtotal)}</strong></div>
+            <p className="mt-3 text-xs leading-5 text-black/50">{hasPendingCustomPricing ? "Order dibuat terlebih dahulu. Tidak ada pembayaran sampai penawaran resmi disetujui." : fulfillment === "shipping" ? "Admin akan menambahkan ongkir pada pesanan ini, lalu Anda dapat menyetujui total akhirnya." : "Pengambilan di toko tidak dikenakan ongkir."}</p>
             {error ? <p className="mt-4 border border-red-200 bg-red-50 p-3 text-sm text-red-700">{error}</p> : null}
-            <button type="submit" disabled={submitting || retryAfter > 0 || checkoutBlocked || (fulfillment === "shipping" && !addressConfirmed)} className="mt-5 min-h-12 w-full rounded-full bg-black px-5 font-semibold text-white hover:bg-black/75 disabled:cursor-not-allowed disabled:opacity-45">{submitting ? "Membuat pesanan..." : retryAfter > 0 ? `Coba lagi ${retryAfter} dtk` : "Buat Pesanan"}</button>
+            <button type="submit" disabled={submitting || retryAfter > 0 || checkoutBlocked || (fulfillment === "shipping" && !addressConfirmed)} className="mt-5 min-h-12 w-full rounded-full bg-black px-5 font-semibold text-white hover:bg-black/75 disabled:cursor-not-allowed disabled:opacity-45">{submitting ? "Membuat pesanan..." : retryAfter > 0 ? `Coba lagi ${retryAfter} dtk` : hasPendingCustomPricing ? "Buat Order & Minta Penawaran" : "Buat Pesanan"}</button>
             <p className="mt-3 text-center text-[11px] leading-5 text-black/45">Pesanan menggunakan kunci pemulihan yang sama selama hasil sebelumnya belum diketahui. Jangan membuka checkout baru ketika jaringan terputus.</p>
           </aside>
         </form>
       </div>
     </section>
   );
+}
+
+function CheckoutLineImage({ item }: { item: { imageUrl?: string; imageAlt?: string; name: string } }) {
+  return (
+    <div className="relative aspect-[4/5] w-16 shrink-0 overflow-hidden bg-brand-offWhite">
+      <SafeImage
+        src={item.imageUrl || fallbackImages.product}
+        fallbackSrc={fallbackImages.product}
+        alt={item.imageAlt || item.name}
+        fill
+        className="object-cover"
+        sizes="64px"
+      />
+    </div>
+  );
+}
+
+function CustomCheckoutPairSummary({ project }: { project: CustomProjectSnapshot }) {
+  return <div className="mt-3 grid gap-2">{project.items.flatMap((item) =>
+    item.designPackages.flatMap((designPackage) => designPackage.services.map((selection) => {
+      const line = findCustomDesignPairPricingLine(project.pricing.lines, selection);
+      const serviceName = line?.serviceName ?? "Layanan custom";
+      const placementName = line?.placementName ?? selection.placementId ?? "Posisi belum tersedia";
+      const printSizeName = line?.printSizeName ?? selection.printSizeId ?? "Size belum tersedia";
+      return <div key={`${item.id}:${designPackage.id}:${selection.id}`} className="text-xs leading-5 text-black/60">
+        <p className="font-semibold text-black/70">{serviceName}</p>
+        <p>{placementName} — Size Desain {printSizeName}</p>
+      </div>;
+    }))
+  )}</div>;
 }
 
 async function recoverStoredCheckout(stored: CheckoutDraft): Promise<RecoveryResult> {
@@ -392,9 +462,9 @@ function readStoredDraft(): CheckoutDraft | null {
 }
 
 function CheckoutMessage({ title, action, actionLabel }: { title: string; action?: string; actionLabel?: string }) {
-  return <section className="bg-[#f6f5f0] px-4 py-24"><div className="mx-auto max-w-xl rounded-[28px] bg-white p-8 text-center"><h1 className="text-2xl font-semibold">{title}</h1>{action ? <Link href={action} className="mt-5 inline-flex rounded-full bg-black px-5 py-3 font-semibold text-white hover:bg-black/75">{actionLabel}</Link> : null}</div></section>;
+  return <section className="bg-[#f6f5f0] px-4 py-24"><div className="mx-auto max-w-xl rounded-2xl bg-white p-8 text-center"><h1 className="text-2xl font-semibold">{title}</h1>{action ? <Link href={action} className="mt-5 inline-flex rounded-full bg-black px-5 py-3 font-semibold text-white hover:bg-black/75">{actionLabel}</Link> : null}</div></section>;
 }
 
-function Panel({ title, children }: { title: string; children: React.ReactNode }) { return <section className="rounded-[28px] bg-white p-5 sm:p-6"><h2 className="text-xl font-semibold">{title}</h2><div className="mt-5">{children}</div></section>; }
+function Panel({ title, children }: { title: string; children: React.ReactNode }) { return <section className="rounded-2xl bg-white p-5 sm:p-6"><h2 className="text-xl font-semibold">{title}</h2><div className="mt-5">{children}</div></section>; }
 function Field({ label, children }: { label: string; children: React.ReactNode }) { return <label className="grid gap-2 text-sm font-semibold [&_input]:min-h-11 [&_input]:rounded-xl [&_input]:border [&_input]:border-black/15 [&_input]:px-3 [&_select]:min-h-11 [&_select]:rounded-xl [&_select]:border [&_select]:border-black/15 [&_select]:px-3 [&_textarea]:rounded-xl [&_textarea]:border [&_textarea]:border-black/15 [&_textarea]:p-3">{label}{children}</label>; }
 function Choice({ checked, disabled, onChange, title, detail }: { checked: boolean; disabled?: boolean; onChange: () => void; title: string; detail: string }) { return <button type="button" disabled={disabled} onClick={onChange} className={`rounded-2xl border p-4 text-left disabled:opacity-40 ${checked ? "border-[#063d24] bg-emerald-50" : "border-black/10"}`}><span className="font-semibold">{title}</span><span className="mt-1 block text-xs leading-5 text-black/55">{detail}</span></button>; }

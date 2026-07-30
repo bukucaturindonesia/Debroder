@@ -326,7 +326,7 @@ function itemImage(item: EditableItem) {
     item.product?.image_url ||
     item.product?.gambar_url ||
     item.service?.image_url ||
-    "/brand/debroder/open-graph-logo.png"
+    "/debroder/open-graph-logo.png"
   );
 }
 

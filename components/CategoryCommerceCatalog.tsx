@@ -92,7 +92,7 @@ function TypeDiscoveryCard({
       </div>
       <div className="pt-4">
         <h3 className="text-[18px] font-medium leading-6 text-[#111] sm:text-xl">{option.label}</h3>
-        <span className="mt-2 inline-flex text-sm font-medium text-[#111] underline decoration-1 underline-offset-4 group-hover:text-[#707072]">
+        <span className="mt-2 inline-flex text-sm font-medium text-experience-ink underline decoration-1 underline-offset-4 group-hover:text-experience-secondary">
           Jelajahi
         </span>
       </div>
@@ -165,21 +165,20 @@ export function CategoryCommerceCatalog({
         ).entries()
       )
         .sort((a, b) => a[1].localeCompare(b[1], "id"))
-        .slice(0, 14),
+        .slice(0, 7),
     [products]
   );
 
-  const newestProducts = useMemo(
-    () =>
-      [...products]
+  const newestProducts = useMemo(() => {
+    const candidates = [...products]
         .sort((a, b) =>
           Number(Boolean(b.label_new)) - Number(Boolean(a.label_new))
           || new Date(b.created_at || 0).getTime() - new Date(a.created_at || 0).getTime()
           || a.urutan - b.urutan
         )
-        .slice(0, 6),
-    [products]
-  );
+        .slice(0, 4);
+    return candidates.length >= 3 ? candidates : [];
+  }, [products]);
 
   const catalogKey = `${initialProductType}|${initialColor}|${initialLabel}|${initialSort}`;
 
@@ -232,7 +231,7 @@ export function CategoryCommerceCatalog({
                 <Link
                   key={slug}
                   href={`${pagePath}?color=${encodeURIComponent(slug)}#catalog`}
-                  className="category-color-link group flex min-h-12 items-center gap-3 rounded-full bg-white px-4 text-sm font-medium text-[#111] outline-none transition hover:text-[#707072] focus-visible:ring-2 focus-visible:ring-[#1151ff] focus-visible:ring-offset-2"
+                  className="category-color-link group flex min-h-12 items-center gap-3 rounded-full bg-white px-4 text-sm font-medium text-experience-ink outline-none transition hover:text-experience-secondary focus-visible:ring-2 focus-visible:ring-experience-focus focus-visible:ring-offset-2"
                 >
                   <span
                     aria-hidden="true"
@@ -300,7 +299,7 @@ export function CategoryCommerceCatalog({
             <h2 className="text-lg font-medium text-[#111]">Kategori populer</h2>
             <div className="mt-5 flex flex-wrap gap-x-7 gap-y-4">
               {seoLinks.map((item) => (
-                <Link key={item.href} href={item.href} className="text-base text-[#111] underline decoration-1 underline-offset-4 hover:text-[#707072]">
+                <Link key={item.href} href={item.href} className="text-base text-experience-ink underline decoration-1 underline-offset-4 hover:text-experience-secondary">
                   {item.label}
                 </Link>
               ))}
@@ -312,7 +311,7 @@ export function CategoryCommerceCatalog({
       <section className="category-closing-section border-y border-[#e5e5e5] bg-[#f5f5f5] py-10 sm:py-12 lg:py-16">
         <div className="section-shell flex flex-col items-start justify-between gap-7 sm:flex-row sm:items-center">
           <h2 className="public-editorial-title max-w-3xl">{closingHeadline}</h2>
-          <Link href={closingCtaHref} className="inline-flex min-h-12 shrink-0 items-center justify-center rounded-full bg-[#111] px-7 text-[15px] font-medium text-white transition hover:bg-[#707072] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#1151ff]">
+          <Link href={closingCtaHref} className="inline-flex min-h-12 shrink-0 items-center justify-center rounded-full bg-experience-ink px-7 text-[15px] font-medium text-white transition hover:bg-experience-secondary focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-experience-focus">
             {closingCtaLabel}
           </Link>
         </div>

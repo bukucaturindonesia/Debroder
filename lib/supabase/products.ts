@@ -150,6 +150,264 @@ export async function getProductBySlug(
     : null;
 }
 
+
+export type ReadyStockSelectionPricingInput = {
+  productId: string;
+  variantSizeId: string;
+  quantity: number;
+  pricingQuantity: number;
+  instantServices?: unknown;
+};
+
+export type ReadyStockSelectionPricingResult =
+  | {
+      status: "priced";
+      code: null;
+      productId: string;
+      productCategoryId: string;
+      variantId: string;
+      variantSizeId: string;
+      sku: string;
+      quantity: number;
+      pricingQuantity: number;
+      minimumQuantity: number;
+      quotationQuantity: number | null;
+      stockAvailable: number;
+      unitPrice: number;
+      productSubtotal: number;
+      serviceTotal: number;
+      total: number;
+      tier: {
+        id: string;
+        minQuantity: number;
+        maxQuantity: number | null;
+      } | null;
+      tiers: readonly {
+        id: string;
+        minQuantity: number;
+        maxQuantity: number | null;
+        unitPrice: number | null;
+        quoteRequired: boolean;
+      }[];
+      instantCustomSnapshot?: import("@/lib/instant-custom").InstantCustomSnapshot;
+      message: null;
+    }
+  | {
+      status: "quotation_required" | "unavailable";
+      code: ReadyStockPricingErrorCode;
+      productId: string;
+      variantSizeId: string;
+      quantity: number;
+      pricingQuantity: number;
+      minimumQuantity: number;
+      quotationQuantity: number | null;
+      stockAvailable: number;
+      unitPrice: null;
+      productSubtotal: null;
+      serviceTotal: null;
+      total: null;
+      tier: null;
+      tiers: readonly {
+        id: string;
+        minQuantity: number;
+        maxQuantity: number | null;
+        unitPrice: number | null;
+        quoteRequired: boolean;
+      }[];
+      message: string;
+    };
+
+export async function resolveReadyStockSelectionPricing(
+  input: ReadyStockSelectionPricingInput
+): Promise<ReadyStockSelectionPricingResult> {
+  const products = await listProducts({ allowFallback: false });
+  const latest = findVariantSizeById(products, input.variantSizeId);
+  const empty = {
+    productId: input.productId,
+    variantSizeId: input.variantSizeId,
+    quantity: input.quantity,
+    pricingQuantity: input.pricingQuantity,
+    minimumQuantity: 1,
+    quotationQuantity: null,
+    stockAvailable: 0,
+    unitPrice: null,
+    productSubtotal: null,
+    serviceTotal: null,
+    total: null,
+    tier: null,
+    tiers: []
+  } as const;
+
+  if (!latest || latest.product.id !== input.productId) {
+    return {
+      ...empty,
+      status: "unavailable",
+      code: "PRICING_PRODUCT_UNAVAILABLE",
+      message: "Kombinasi produk tidak lagi tersedia."
+    };
+  }
+
+  const minimumQuantity = latest.product.minimumRule?.status === "active"
+    ? Math.max(1, latest.product.minimumRule.minimumQuantity)
+    : 1;
+  const quotationQuantity = latest.product.minimumRule?.status === "active"
+    ? latest.product.minimumRule.quotationQuantity
+    : null;
+  const canonicalTiers = latest.product.priceTiers
+    .filter((tier) => tier.status === "active")
+    .sort((left, right) =>
+      left.minQuantity - right.minQuantity
+      || left.sortOrder - right.sortOrder
+    )
+    .map((tier) => {
+      const decision = resolveReadyStockPricing({
+        quantity: tier.minQuantity,
+        pricingQuantity: tier.minQuantity,
+        salesMode: latest.product.salesMode ?? null,
+        pricingMode: latest.product.pricingMode ?? null,
+        tierScope: latest.product.tierScope ?? null,
+        productStatus: latest.product.status,
+        variantStatus: latest.variant.status,
+        variantSizeStatus: latest.variantSize.status,
+        sizeStatus: latest.variantSize.size.status,
+        basePrice: latest.product.basePrice,
+        variantAdjustment: latest.variant.priceAdjustment,
+        variantSizeAdjustment: latest.variantSize.priceAdjustment,
+        tiers: latest.product.priceTiers
+      });
+      return {
+        id: tier.id,
+        minQuantity: tier.minQuantity,
+        maxQuantity: tier.maxQuantity,
+        unitPrice: decision.status === "priced" ? decision.unitPrice : null,
+        quoteRequired: tier.quoteRequired || decision.status === "quotation_required"
+      };
+    });
+  const common = {
+    productId: latest.product.id,
+    variantSizeId: latest.variantSize.id,
+    quantity: input.quantity,
+    pricingQuantity: input.pricingQuantity,
+    minimumQuantity,
+    quotationQuantity,
+    stockAvailable: latest.variantSize.stockQuantity,
+    unitPrice: null,
+    productSubtotal: null,
+    serviceTotal: null,
+    total: null,
+    tier: null,
+    tiers: canonicalTiers
+  } as const;
+
+  if (input.quantity < minimumQuantity) {
+    return {
+      ...common,
+      status: "unavailable",
+      code: "PRICING_INPUT_INVALID",
+      message: `Minimum order ${minimumQuantity} pcs.`
+    };
+  }
+
+  if (quotationQuantity !== null && input.pricingQuantity >= quotationQuantity) {
+    return {
+      ...common,
+      status: "quotation_required",
+      code: "PRICING_QUOTATION_REQUIRED",
+      message: "Konfigurasi ini memerlukan penawaran resmi sebelum pembayaran."
+    };
+  }
+
+  const pricing = resolveReadyStockPricing({
+    quantity: input.quantity,
+    pricingQuantity: input.pricingQuantity,
+    salesMode: latest.product.salesMode ?? null,
+    pricingMode: latest.product.pricingMode ?? null,
+    tierScope: latest.product.tierScope ?? null,
+    productStatus: latest.product.status,
+    variantStatus: latest.variant.status,
+    variantSizeStatus: latest.variantSize.status,
+    sizeStatus: latest.variantSize.size.status,
+    basePrice: latest.product.basePrice,
+    variantAdjustment: latest.variant.priceAdjustment,
+    variantSizeAdjustment: latest.variantSize.priceAdjustment,
+    tiers: latest.product.priceTiers
+  });
+
+  if (pricing.status === "quotation_required") {
+    return {
+      ...common,
+      status: "quotation_required",
+      code: pricing.code,
+      message: "Konfigurasi ini memerlukan penawaran resmi sebelum pembayaran."
+    };
+  }
+  if (pricing.status === "unavailable") {
+    return {
+      ...common,
+      status: "unavailable",
+      code: pricing.code,
+      message: pricingUnavailableMessage(pricing.code)
+    };
+  }
+  if (input.quantity > latest.variantSize.stockQuantity) {
+    return {
+      ...common,
+      status: "unavailable",
+      code: "PRICING_VARIANT_UNAVAILABLE",
+      message: `Stok ${latest.variant.name} ukuran ${latest.variantSize.size.name} hanya tersisa ${latest.variantSize.stockQuantity} pcs.`
+    };
+  }
+
+  const instantCustom = await repriceInstantServicesForProduct({
+    productId: latest.product.id,
+    productCategoryId: latest.product.productCategoryId,
+    quantity: input.quantity,
+    selections: input.instantServices ?? []
+  });
+  if (!instantCustom.ok) {
+    return {
+      ...common,
+      status: instantCustom.code === "INSTANT_SERVICE_QUOTATION_REQUIRED"
+        ? "quotation_required"
+        : "unavailable",
+      code: instantCustom.code === "INSTANT_SERVICE_QUOTATION_REQUIRED"
+        ? "PRICING_QUOTATION_REQUIRED"
+        : "PRICING_PRODUCT_UNAVAILABLE",
+      message: instantCustom.message
+    };
+  }
+
+  const activeTier = latest.product.priceTiers.find((tier) => tier.id === pricing.tierId) ?? null;
+  const productSubtotal = pricing.unitPrice * input.quantity;
+  const serviceTotal = instantCustom.snapshot?.serviceTotal ?? 0;
+  return {
+    status: "priced",
+    code: null,
+    productId: latest.product.id,
+    productCategoryId: latest.product.productCategoryId,
+    variantId: latest.variant.id,
+    variantSizeId: latest.variantSize.id,
+    sku: latest.variantSize.sku,
+    quantity: input.quantity,
+    pricingQuantity: pricing.pricingQuantity,
+    minimumQuantity,
+    quotationQuantity,
+    stockAvailable: latest.variantSize.stockQuantity,
+    unitPrice: pricing.unitPrice,
+    productSubtotal,
+    serviceTotal,
+    total: productSubtotal + serviceTotal,
+    tier: activeTier ? {
+      id: activeTier.id,
+      minQuantity: activeTier.minQuantity,
+      maxQuantity: activeTier.maxQuantity
+    } : null,
+    tiers: canonicalTiers,
+    ...(instantCustom.snapshot ? { instantCustomSnapshot: instantCustom.snapshot } : {}),
+    message: null
+  };
+}
+
 export async function revalidateCartItems(
   inputs: RevalidationInput[]
 ): Promise<RevalidationResult[]> {

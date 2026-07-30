@@ -22,6 +22,9 @@ type JerseyProductSource = {
   status_aktif: boolean | null;
   product_type: string | null;
   pricing_mode: string | null;
+  price: number | null;
+  harga: number | null;
+  base_price: number | null;
   uses_configurator: boolean | null;
   minimum_order_qty: number | null;
   config_schema: unknown;
@@ -102,13 +105,13 @@ export function projectJerseyConfiguredProduct(
     || product.status_aktif !== true
     || product.product_type !== "configurable_product"
     || product.uses_configurator !== true
-    || product.pricing_mode !== "custom_quote"
+    || product.pricing_mode !== "configurator_based"
     || !hasJerseyEntryType(product.config_schema)
   ) {
     return {
       status: "not_found",
       code: "jersey_configured_product.not_available",
-      message: "Jersey configured product belum tersedia."
+      message: "Produk Jersey Custom belum tersedia."
     };
   }
   if (
@@ -183,7 +186,7 @@ export function projectJerseyConfiguredProduct(
       contractVersion: CONTRACT_VERSIONS.configuredProduct,
       version,
       code: JERSEY_DEFINITION_CODE,
-      pricingMode: "quotation_required",
+      pricingMode: "server_priced",
       maximumQuantity: MAX_CART_LINE_QUANTITY,
       optionGroups: [
         selectGroup("jersey-package", "package", "Paket jersey", activePackages, 10),
@@ -294,7 +297,7 @@ export function validateJerseyConsumerDraft(
     issues.push({
       field: "definition.code",
       code: "jersey_configured_product.definition_mismatch",
-      message: "Definition bukan milik Jersey configurator."
+      message: "Konfigurasi ini tidak tersedia untuk Jersey Custom."
     });
   }
   if (draft.uploads.length > 0) {
@@ -421,6 +424,9 @@ function readProduct(value: unknown): JerseyProductSource | null {
     || !nullableBoolean(value.status_aktif)
     || !nullableString(value.product_type)
     || !nullableString(value.pricing_mode)
+    || !nullableInteger(value.price)
+    || !nullableInteger(value.harga)
+    || !nullableInteger(value.base_price)
     || !nullableBoolean(value.uses_configurator)
     || !nullableInteger(value.minimum_order_qty)
     || !nullableString(value.image_url)
@@ -437,6 +443,9 @@ function readProduct(value: unknown): JerseyProductSource | null {
     status_aktif: value.status_aktif,
     product_type: value.product_type,
     pricing_mode: value.pricing_mode,
+    price: value.price,
+    harga: value.harga,
+    base_price: value.base_price,
     uses_configurator: value.uses_configurator,
     minimum_order_qty: value.minimum_order_qty,
     config_schema: value.config_schema,

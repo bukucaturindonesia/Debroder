@@ -1,7 +1,16 @@
 import type { Metadata } from "next";
+import { Inter } from "next/font/google";
 import type { ReactNode } from "react";
 import { siteConfig } from "@/lib/site";
 import "./globals.css";
+
+const inter = Inter({
+  subsets: ["latin"],
+  weight: ["400", "500", "600", "700", "800"],
+  display: "swap",
+  fallback: ["Arial", "Helvetica"],
+  variable: "--font-inter"
+});
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteConfig.siteUrl),
@@ -33,7 +42,7 @@ export const metadata: Metadata = {
     siteName: "DE BRODER",
     images: [
       {
-        url: "/brand/debroder/open-graph-logo.png",
+        url: "/debroder/open-graph-logo.png",
         width: 1200,
         height: 630,
         alt: "Logo DE BRODER"
@@ -46,35 +55,35 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: siteConfig.defaultMetaTitle,
     description: siteConfig.defaultMetaDescription,
-    images: ["/brand/debroder/open-graph-logo.png"]
+    images: ["/debroder/open-graph-logo.png"]
   },
   icons: {
     icon: [
-      { url: "/brand/debroder/favicon.ico" },
+      { url: "/debroder/favicon.ico" },
       {
-        url: "/brand/debroder/favicon.png",
+        url: "/debroder/favicon.png",
         sizes: "512x512",
         type: "image/png"
       },
       {
-        url: "/brand/debroder/favicon-16x16.png",
+        url: "/debroder/favicon-16x16.png",
         sizes: "16x16",
         type: "image/png"
       },
       {
-        url: "/brand/debroder/favicon-32x32.png",
+        url: "/debroder/favicon-32x32.png",
         sizes: "32x32",
         type: "image/png"
       },
       {
-        url: "/brand/debroder/favicon-48x48.png",
+        url: "/debroder/favicon-48x48.png",
         sizes: "48x48",
         type: "image/png"
       }
     ],
     apple: [
       {
-        url: "/brand/debroder/apple-touch-icon.png",
+        url: "/debroder/apple-touch-icon.png",
         sizes: "180x180",
         type: "image/png"
       }
@@ -88,8 +97,8 @@ export default function RootLayout({
   children: ReactNode;
 }>) {
   return (
-    <html lang="id">
-      <body>{children}</body>
+    <html lang="id" className={inter.variable}>
+      <body className={inter.className}>{children}</body>
     </html>
   );
 }

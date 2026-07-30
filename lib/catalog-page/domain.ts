@@ -1,5 +1,9 @@
 import { CONTRACT_VERSIONS } from "@/lib/contracts/version";
 import { fallbackContent } from "@/lib/fallback-data";
+import {
+  productAllowsCustomOrder,
+  productAllowsReadyStock
+} from "@/lib/jersey-commerce";
 import { productTypeValue, type ProductTypeOption } from "@/lib/product-taxonomy";
 import { productsForCategoryRoute } from "@/lib/product-route-matching";
 import { projectProductSource } from "@/lib/product-read/domain";
@@ -64,21 +68,8 @@ function filters(input: CatalogPageInput): CatalogPageFiltersViewModel {
 
 function journeyAvailability(products: ReturnType<typeof projectProductSource>) {
   const states = products.map((product) => {
-    const variantStock = (product.variants || []).reduce(
-      (total, variant) => total + (variant.sizes || []).reduce(
-        (sum, size) => sum + Math.max(0, Number(size.stock_quantity ?? size.stock ?? 0)),
-        0
-      ),
-      0
-    );
-    const readyStock = Math.max(0, Number(product.stock || 0)) > 0 || variantStock > 0;
-    const custom = Boolean(
-      product.uses_configurator
-      || product.product_type === "configurable_product"
-      || product.product_type === "production_service"
-      || product.pricing_mode === "configurator_based"
-      || product.pricing_mode === "custom_quote"
-    );
+    const readyStock = productAllowsReadyStock(product);
+    const custom = productAllowsCustomOrder(product);
     return { readyStock, custom };
   });
   return {

@@ -26,12 +26,10 @@ export function ProductVariantGalleryProvider({
     () => variants.filter((variant) => variant.is_active !== false),
     [variants]
   );
-  const [selectedVariantId, setSelectedVariantId] = useState<string | null>(
-    activeVariants[0]?.id || null
-  );
+  const [selectedVariantId, setSelectedVariantId] = useState<string | null>(null);
 
   const selectedVariant = useMemo(
-    () => activeVariants.find((variant) => variant.id === selectedVariantId) || activeVariants[0] || null,
+    () => activeVariants.find((variant) => variant.id === selectedVariantId) || null,
     [activeVariants, selectedVariantId]
   );
 
@@ -44,8 +42,8 @@ export function ProductVariantGalleryProvider({
     selectedVariantId: selectedVariant?.id || null,
     selectedVariant,
     galleryImages,
-    selectVariant: (variantId) => setSelectedVariantId(variantId || activeVariants[0]?.id || null)
-  }), [activeVariants, galleryImages, selectedVariant]);
+    selectVariant: (variantId) => setSelectedVariantId(variantId || null)
+  }), [galleryImages, selectedVariant]);
 
   return (
     <ProductVariantGalleryContext.Provider value={value}>

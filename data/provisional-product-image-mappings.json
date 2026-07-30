@@ -1,0 +1,112 @@
+{
+  "schemaVersion": 1,
+  "recordedAt": "2026-07-29",
+  "status": "TEMPORARY_PROVISIONAL",
+  "summary": {
+    "expected": 9,
+    "assigned": 9,
+    "provisional": 9,
+    "webSourced": 0
+  },
+  "mappings": [
+    {
+      "productSlug": "3600-soft-tee",
+      "sourceKind": "owner_local_asset",
+      "source": "public/product-images-source/KAOS POLOS/87-Black.webp",
+      "destination": "public/products/3600-soft-tee/primary.webp",
+      "publicUrl": "/products/3600-soft-tee/primary.webp",
+      "altText": "Kaos Polos NSA warna hitam",
+      "sha256": "c74d2f37144945e8564b7259ae93722d9477a3680d880fc4bd309424f65472e8",
+      "license": "Owner-provided project asset; external license not applicable.",
+      "evidence": "Closest available owner-provided Kaos Polos family image; provisional mapping permitted for trial/staging."
+    },
+    {
+      "productSlug": "72y00-youth",
+      "sourceKind": "owner_local_asset",
+      "source": "public/product-images-source/KAOS POLOS/96-Sport Grey.webp",
+      "destination": "public/products/72y00-youth/primary.webp",
+      "publicUrl": "/products/72y00-youth/primary.webp",
+      "altText": "Kaos Polos Anak warna sport grey",
+      "sha256": "6fed9168dcfa11d8c9137a7c816fdd188c4483bc3af74cfa5a9d8e97406537cf",
+      "license": "Owner-provided project asset; external license not applicable.",
+      "evidence": "Closest available owner-provided Kaos Polos family image; provisional mapping permitted for trial/staging."
+    },
+    {
+      "productSlug": "8100-polo",
+      "sourceKind": "owner_local_asset",
+      "source": "public/product-images-source/POLO/139-Black.webp",
+      "destination": "public/products/8100-polo/primary.webp",
+      "publicUrl": "/products/8100-polo/primary.webp",
+      "altText": "Polo Shirt Polos warna hitam",
+      "sha256": "1325ebd3ee7ed654dae3f0245c536289f848c9976dc32fa5cc1ec797b2470628",
+      "license": "Owner-provided project asset; external license not applicable.",
+      "evidence": "Closest available owner-provided Polo family image; provisional mapping permitted for trial/staging."
+    },
+    {
+      "productSlug": "bomber-jacket",
+      "sourceKind": "owner_local_asset",
+      "source": "public/product-images-source/HODDIE/103-Black Camo.webp",
+      "destination": "public/products/bomber-jacket/primary.webp",
+      "publicUrl": "/products/bomber-jacket/primary.webp",
+      "altText": "Bomber Jacket Custom warna black camo",
+      "sha256": "d3b7fd7257924d4954259aab0678c074007ec205bfcc5c60beff131f59adac29",
+      "license": "Owner-provided project asset; external license not applicable.",
+      "evidence": "Closest available owner-provided outerwear family image; provisional mapping permitted for trial/staging."
+    },
+    {
+      "productSlug": "pullover-hooded",
+      "sourceKind": "owner_local_asset",
+      "source": "public/product-images-source/HODDIE/103-Black.webp",
+      "destination": "public/products/pullover-hooded/primary.webp",
+      "publicUrl": "/products/pullover-hooded/primary.webp",
+      "altText": "Hoodie Fleece warna hitam",
+      "sha256": "8b1a3b1ca9b9b69f861aeb88b1110ac1bd2db19f38e306f34ab83ec9dac2f0aa",
+      "license": "Owner-provided project asset; external license not applicable.",
+      "evidence": "Closest available owner-provided Hoodie family image; provisional mapping permitted for trial/staging."
+    },
+    {
+      "productSlug": "windbreaker",
+      "sourceKind": "owner_local_asset",
+      "source": "public/product-images-source/HODDIE/103-Navy.webp",
+      "destination": "public/products/windbreaker/primary.webp",
+      "publicUrl": "/products/windbreaker/primary.webp",
+      "altText": "Windbreaker Custom warna navy",
+      "sha256": "908b657f4c68fdc900cd41d495ffe9ff101f304b462f0df4aeaf205a6d43e164",
+      "license": "Owner-provided project asset; external license not applicable.",
+      "evidence": "Closest available owner-provided outerwear family image; provisional mapping permitted for trial/staging."
+    },
+    {
+      "productSlug": "zip-hooded",
+      "sourceKind": "owner_local_asset",
+      "source": "public/product-images-source/HODDIE/103-Sport Grey.webp",
+      "destination": "public/products/zip-hooded/primary.webp",
+      "publicUrl": "/products/zip-hooded/primary.webp",
+      "altText": "Zip Hoodie Custom warna sport grey",
+      "sha256": "bd7a57291069a7f046b38ccaf15e27af7d830ba9724d48c452c1de3e09443a9c",
+      "license": "Owner-provided project asset; external license not applicable.",
+      "evidence": "Closest available owner-provided Hoodie family image; provisional mapping permitted for trial/staging."
+    },
+    {
+      "productSlug": "jersey-futsal-custom",
+      "sourceKind": "owner_supabase_asset",
+      "source": "https://lzennundwqqtyvvcnzbg.supabase.co/storage/v1/object/public/website-images/product/1783967492528-sublime-jersey-3.jpeg",
+      "destination": "public/products/jersey-futsal-custom/primary.jpeg",
+      "publicUrl": "/products/jersey-futsal-custom/primary.jpeg",
+      "altText": "Jersey Futsal Custom DEBRODER",
+      "sha256": "cb54f9534ac716eb9063a515aad58bfd06557332d1e1f9aac8ba64627421d1f9",
+      "license": "Owner-provided project storage asset; external license not applicable.",
+      "evidence": "Existing DEBRODER Jersey media copied into the project; no runtime hotlink."
+    },
+    {
+      "productSlug": "jersey-sepak-bola-custom",
+      "sourceKind": "owner_supabase_asset",
+      "source": "https://lzennundwqqtyvvcnzbg.supabase.co/storage/v1/object/public/website-images/product/1783967511075-jersey-kostum.jpeg",
+      "destination": "public/products/jersey-sepak-bola-custom/primary.jpeg",
+      "publicUrl": "/products/jersey-sepak-bola-custom/primary.jpeg",
+      "altText": "Jersey Sepak Bola Custom DEBRODER",
+      "sha256": "268468dd63dd3af725ff5b8152338374482237da503a4ab161f20b4dcde7839a",
+      "license": "Owner-provided project storage asset; external license not applicable.",
+      "evidence": "Existing DEBRODER Jersey media copied into the project; no runtime hotlink."
+    }
+  ]
+}

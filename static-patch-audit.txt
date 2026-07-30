@@ -1,0 +1,18 @@
+PASS — Zod pair validation
+PASS — Strict canonical parser
+PASS — Permissive draft parser
+PASS — Specific position-size errors
+PASS — Position canonical zero
+PASS — Position charge removed
+PASS — No position price UI production
+PASS — Loading clears total
+PASS — Loading blocks add
+PASS — Stale pair revalidation
+PASS — Server reprice guard
+PASS — Server checkout guard
+PASS — Cart strict guard
+PASS — Cross-surface labels
+PASS — No migration changed
+PASS — No numbering changed
+PASS — No TS suppression
+PASS — No any additions

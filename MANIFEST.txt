@@ -1,0 +1,30 @@
+PACKAGE: CUSTOM T-SHIRT CONFIGURATION INTEGRITY V1 — BLOCKED EVIDENCE
+BASELINE BRANCH: UI-UX-001
+BASELINE REMOTE HEAD: 20b3d8a0a095c9be55fd1e85e5a88874b2fa82e9
+STATUS: BLOCKED WITH EVIDENCE
+
+IMPORTANT:
+This is not a final implementation package. The repository was not mounted as a local checkout, and GitHub connector writes would create a commit, which is forbidden by the owner prompt. The candidate patch was not applied to the real repository and was not compiled or tested in-project.
+
+CANDIDATE CHANGED FILES (12):
+1. lib/custom-commerce/validation.ts
+2. lib/custom-commerce/draft-storage.ts
+3. app/api/custom/reprice/route.ts
+4. app/api/checkout/route.ts
+5. lib/custom-commerce/data.ts
+6. lib/custom-commerce/pricing.ts
+7. components/custom/CustomProjectBuilder.tsx
+8. components/CartProvider.tsx
+9. components/checkout/CheckoutClient.tsx
+10. components/admin/OrderDetailAdmin.tsx
+11. test/custom-commerce.test.ts
+12. test/cart-v5.test.ts
+
+NO CHANGES PERFORMED:
+- no database migration
+- no historical data rewrite
+- no numbering/sequence/allocator/registry changes
+- no branch switch
+- no commit
+- no push
+- no deploy

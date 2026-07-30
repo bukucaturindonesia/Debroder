@@ -315,6 +315,18 @@ export function OrderConfirmationClient({ token }: { token: string }) {
               </article>
             ))}
           </div>
+          {data.customDesignPairs.length ? (
+            <div className="mt-4 grid gap-3 rounded-2xl bg-[#f5f5ef] p-4 text-sm">
+              <p className="font-semibold">Posisi Desain + Size Desain</p>
+              {data.customDesignPairs.map((pair) => (
+                <div key={pair.id} className="border-l-2 border-black/15 pl-3">
+                  <p className="font-semibold">{pair.serviceName}</p>
+                  <p className="mt-1 text-xs text-black/60">{pair.productName} · {pair.packageName}{pair.assignedQuantity ? ` · ${pair.assignedQuantity} pcs` : ""}</p>
+                  <p className="mt-1 text-xs text-black/60">{pair.placementName} — Size Desain {pair.printSizeName}</p>
+                </div>
+              ))}
+            </div>
+          ) : null}
           <dl className="mt-4 grid gap-3 text-sm">
             <Summary label={pricingIsFinal ? "Subtotal" : "Subtotal produk PIM"} value={formatRupiah(pricingIsFinal ? order.subtotal : productBaseSubtotal)} />
             {!isPickup ? <Summary label="Ongkir" value={order.shippingCost === null ? "Menunggu Admin" : formatRupiah(order.shippingCost)} /> : null}

@@ -3,7 +3,6 @@
 import { useEffect, useMemo, useRef, useState, type UIEvent } from "react";
 import { SafeImage } from "@/components/SafeImage";
 import { useOptionalProductVariantGallery } from "@/components/ProductVariantGalleryContext";
-import { fallbackImages } from "@/lib/fallback-data";
 import { PRODUCT_GALLERY_LIMIT, PRODUCT_IMAGE_SLOTS, uniqueImageUrls } from "@/lib/product-gallery";
 import type { FocalPoint } from "@/lib/types";
 
@@ -11,18 +10,46 @@ export function ProductGallery({ images, alt, focal }: { images: string[]; alt: 
   const variantGallery = useOptionalProductVariantGallery();
   const sourceImages = variantGallery?.galleryImages?.length ? variantGallery.galleryImages : images;
   const gallery = useMemo(() => uniqueImageUrls(sourceImages).slice(0, PRODUCT_GALLERY_LIMIT), [sourceImages]);
-  const resolvedImages = gallery.length ? gallery : [fallbackImages.product];
+  const resolvedImages = gallery;
   const mobileTrackRef = useRef<HTMLDivElement>(null);
+  const closeButtonRef = useRef<HTMLButtonElement>(null);
+  const lightboxTriggerRef = useRef<HTMLElement | null>(null);
   const [activeIndex, setActiveIndex] = useState(0);
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
   const galleryKey = resolvedImages.join("|");
-  const displayedIndex = Math.min(activeIndex, resolvedImages.length - 1);
+  const displayedIndex = Math.max(0, Math.min(activeIndex, resolvedImages.length - 1));
+  const lightboxOpen = lightboxIndex !== null;
 
   useEffect(() => {
     setActiveIndex(0);
     setLightboxIndex(null);
-    mobileTrackRef.current?.scrollTo({ left: 0, behavior: "smooth" });
+    mobileTrackRef.current?.scrollTo({ left: 0, behavior: "auto" });
   }, [galleryKey]);
+
+  useEffect(() => {
+    if (!lightboxOpen) return;
+    const focusFrame = window.requestAnimationFrame(() => closeButtonRef.current?.focus());
+    function handleKeyDown(event: KeyboardEvent) {
+      if (event.key === "Escape") {
+        setLightboxIndex(null);
+        return;
+      }
+      if (event.key === "ArrowLeft") {
+        setLightboxIndex((current) => current === null ? null : Math.max(0, current - 1));
+      }
+      if (event.key === "ArrowRight") {
+        setLightboxIndex((current) => current === null
+          ? null
+          : Math.min(resolvedImages.length - 1, current + 1));
+      }
+    }
+    window.addEventListener("keydown", handleKeyDown);
+    return () => {
+      window.cancelAnimationFrame(focusFrame);
+      window.removeEventListener("keydown", handleKeyDown);
+      lightboxTriggerRef.current?.focus();
+    };
+  }, [lightboxOpen, resolvedImages.length]);
 
   function handleMobileScroll(event: UIEvent<HTMLDivElement>) {
     const track = event.currentTarget;
@@ -34,8 +61,32 @@ export function ProductGallery({ images, alt, focal }: { images: string[]; alt: 
   function scrollToImage(index: number) {
     const track = mobileTrackRef.current;
     if (!track) return;
-    track.scrollTo({ left: track.clientWidth * index, behavior: "smooth" });
+    track.scrollTo({ left: track.clientWidth * index, behavior: "auto" });
     setActiveIndex(index);
+  }
+
+  function openLightbox(index: number) {
+    lightboxTriggerRef.current = document.activeElement instanceof HTMLElement
+      ? document.activeElement
+      : null;
+    setLightboxIndex(index);
+  }
+
+  if (!resolvedImages.length) {
+    return (
+      <div
+        role="img"
+        aria-label={`${alt}: gambar belum tersedia`}
+        className="product-image-frame grid aspect-[4/5] w-full place-items-center bg-[#f3f3ef] px-6 text-center"
+      >
+        <div>
+          <p className="text-sm font-semibold text-brand-charcoal">Gambar belum tersedia</p>
+          <p className="mt-2 text-xs leading-5 text-brand-charcoal/55">
+            Pilih warna dengan foto canonical bila tersedia.
+          </p>
+        </div>
+      </div>
+    );
   }
 
   return (
@@ -51,14 +102,14 @@ export function ProductGallery({ images, alt, focal }: { images: string[]; alt: 
             <button
               key={`${image}-${index}`}
               type="button"
-              onClick={() => setLightboxIndex(index)}
+              onClick={() => openLightbox(index)}
               aria-label={`Buka ${PRODUCT_IMAGE_SLOTS[index]?.label || `foto ${index + 1}`}`}
               className="product-image-frame relative aspect-[4/5] min-w-full shrink-0 snap-center overflow-hidden text-left"
             >
               <SafeImage
                 src={image}
-                fallbackSrc={fallbackImages.product}
                 alt={`${alt} ${PRODUCT_IMAGE_SLOTS[index]?.shortLabel || index + 1}`}
+                unavailableLabel="Gambar tidak tersedia"
                 fill
                 priority={index === 0}
                 className="object-cover"
@@ -110,14 +161,14 @@ export function ProductGallery({ images, alt, focal }: { images: string[]; alt: 
                 onClick={() => setActiveIndex(index)}
                 aria-label={`Tampilkan ${PRODUCT_IMAGE_SLOTS[index]?.label || `foto ${index + 1}`}`}
                 aria-pressed={selected}
-                className={`product-image-frame relative aspect-[4/5] min-h-12 w-full shrink-0 overflow-hidden outline-none transition-opacity focus-visible:ring-2 focus-visible:ring-[#1151ff] focus-visible:ring-offset-2 ${
+                className={`product-image-frame relative aspect-[4/5] min-h-12 w-full shrink-0 overflow-hidden outline-none transition-opacity focus-visible:ring-2 focus-visible:ring-experience-focus focus-visible:ring-offset-2 ${
                   selected ? "ring-2 ring-[#111111] ring-offset-2" : "opacity-65 hover:opacity-100"
                 }`}
               >
                 <SafeImage
                   src={image}
-                  fallbackSrc={fallbackImages.product}
                   alt=""
+                  unavailableLabel="Gambar tidak tersedia"
                   fill
                   className="object-cover"
                   objectFit="cover"
@@ -134,14 +185,14 @@ export function ProductGallery({ images, alt, focal }: { images: string[]; alt: 
 
         <button
           type="button"
-          onClick={() => setLightboxIndex(displayedIndex)}
+          onClick={() => openLightbox(displayedIndex)}
           aria-label={`Perbesar ${PRODUCT_IMAGE_SLOTS[displayedIndex]?.label || `foto ${displayedIndex + 1}`}`}
-          className="product-image-frame group relative aspect-[4/5] w-full max-w-[calc((100vh-7.5rem)*0.8)] justify-self-center overflow-hidden text-left outline-none focus-visible:ring-2 focus-visible:ring-[#1151ff] focus-visible:ring-offset-2"
+          className="product-image-frame group relative aspect-[4/5] w-full max-w-[calc((100vh-7.5rem)*0.8)] justify-self-center overflow-hidden text-left outline-none focus-visible:ring-2 focus-visible:ring-experience-focus focus-visible:ring-offset-2"
         >
           <SafeImage
             src={resolvedImages[displayedIndex]}
-            fallbackSrc={fallbackImages.product}
             alt={`${alt} ${PRODUCT_IMAGE_SLOTS[displayedIndex]?.shortLabel || displayedIndex + 1}`}
+            unavailableLabel="Gambar tidak tersedia"
             fill
             priority={displayedIndex === 0}
             className="object-cover transition duration-500 group-hover:scale-[1.015] motion-reduce:transition-none"
@@ -170,6 +221,7 @@ export function ProductGallery({ images, alt, focal }: { images: string[]; alt: 
           onClick={() => setLightboxIndex(null)}
         >
           <button
+            ref={closeButtonRef}
             type="button"
             onClick={() => setLightboxIndex(null)}
             aria-label="Tutup galeri"
@@ -183,10 +235,11 @@ export function ProductGallery({ images, alt, focal }: { images: string[]; alt: 
                 type="button"
                 onClick={(event) => {
                   event.stopPropagation();
-                  setLightboxIndex((current) => current === null ? 0 : (current - 1 + resolvedImages.length) % resolvedImages.length);
+                  setLightboxIndex((current) => current === null ? 0 : Math.max(0, current - 1));
                 }}
+                disabled={lightboxIndex === 0}
                 aria-label="Foto sebelumnya"
-                className="absolute left-3 top-1/2 z-20 grid h-12 w-12 -translate-y-1/2 place-items-center rounded-full bg-white text-xl text-brand-charcoal sm:left-6"
+                className="absolute left-3 top-1/2 z-20 grid h-12 w-12 -translate-y-1/2 place-items-center rounded-full bg-white text-xl text-brand-charcoal disabled:cursor-not-allowed disabled:opacity-35 sm:left-6"
               >
                 ‹
               </button>
@@ -194,10 +247,11 @@ export function ProductGallery({ images, alt, focal }: { images: string[]; alt: 
                 type="button"
                 onClick={(event) => {
                   event.stopPropagation();
-                  setLightboxIndex((current) => current === null ? 0 : (current + 1) % resolvedImages.length);
+                  setLightboxIndex((current) => current === null ? 0 : Math.min(resolvedImages.length - 1, current + 1));
                 }}
+                disabled={lightboxIndex === resolvedImages.length - 1}
                 aria-label="Foto berikutnya"
-                className="absolute right-3 top-1/2 z-20 grid h-12 w-12 -translate-y-1/2 place-items-center rounded-full bg-white text-xl text-brand-charcoal sm:right-6"
+                className="absolute right-3 top-1/2 z-20 grid h-12 w-12 -translate-y-1/2 place-items-center rounded-full bg-white text-xl text-brand-charcoal disabled:cursor-not-allowed disabled:opacity-35 sm:right-6"
               >
                 ›
               </button>
@@ -206,8 +260,8 @@ export function ProductGallery({ images, alt, focal }: { images: string[]; alt: 
           <div className="relative h-[88vh] w-full max-w-5xl" onClick={(event) => event.stopPropagation()}>
             <SafeImage
               src={resolvedImages[lightboxIndex]}
-              fallbackSrc={fallbackImages.product}
               alt={`${alt} diperbesar`}
+              unavailableLabel="Gambar tidak tersedia"
               fill
               priority
               className="object-contain"

@@ -1,0 +1,19 @@
+DO NOT TREAT THIS PACKAGE AS FINAL IMPLEMENTATION.
+
+The candidate patch is evidence of the proposed minimum-correct change only.
+It must first be checked against the exact local checkout at remote HEAD:
+
+1. git status --short
+2. git branch --show-current
+3. git rev-parse HEAD
+4. git apply --check custom-tshirt-configuration-integrity-v1.candidate.patch
+5. Only after the check succeeds, apply it and run the owner quality gate.
+
+Required owner quality gate after a successful real-repository apply:
+- pnpm.cmd typecheck
+- pnpm.cmd lint
+- pnpm.cmd test
+- pnpm.cmd build
+- git diff --check
+
+The candidate must be revised if git apply --check, typecheck, lint, tests, build, or runtime verification finds any issue.

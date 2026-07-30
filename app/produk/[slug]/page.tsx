@@ -4,19 +4,16 @@ import { notFound } from "next/navigation";
 import { Suspense } from "react";
 import { JerseyCommerceNav } from "@/components/jersey/JerseyCommerceNav";
 import { ProductGallery } from "@/components/ProductGallery";
-import { PublicProductCard } from "@/components/PublicProductCard";
 import { TieredProductPurchasePanel } from "@/components/TieredProductPurchasePanel";
 import { ProductVariantGalleryProvider } from "@/components/ProductVariantGalleryContext";
 import { ProductDetailDisclosure } from "@/components/product/ProductDetailDisclosure";
+import { ProductRecommendationRail } from "@/components/product/ProductRecommendationRail";
+import { ProductStickyPurchasePanel } from "@/components/product/ProductStickyPurchasePanel";
 import { PublicShell } from "@/components/PublicPage";
-import { getProductImage } from "@/lib/fallback-data";
 import { getProductDetailPageModel } from "@/lib/product-detail-page/runtime";
-import { formatRupiah } from "@/lib/url";
-import { listInstantServicesForProduct } from "@/lib/instant-custom-data";
 
 type PageProps = {
   params: Promise<{ slug: string }>;
-  searchParams?: Promise<{ mode?: string }>;
 };
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
@@ -43,7 +40,49 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   };
 }
 
-export default async function ProductDetailPage({ params, searchParams }: PageProps) {
+function SpecificationList({ specifications }: { specifications: string[] }) {
+  return (
+    <dl className="divide-y divide-[#e5e5e5]">
+      {specifications.map((item) => {
+        const [key, ...rest] = item.split(":");
+        return (
+          <div
+            key={item}
+            className="grid gap-1 py-3 text-sm sm:grid-cols-[140px_1fr] sm:gap-4"
+          >
+            <dt className="font-semibold text-[#111111]">
+              {rest.length ? key : "Detail"}
+            </dt>
+            <dd>{rest.length ? rest.join(":").trim() : item}</dd>
+          </div>
+        );
+      })}
+    </dl>
+  );
+}
+
+function SizeGuideList({ rows }: { rows: string[] }) {
+  return (
+    <div className="divide-y divide-[#e5e5e5]">
+      {rows.map((row, index) => {
+        const [label, ...rest] = row.split(":");
+        return (
+          <div
+            key={`${row}-${index}`}
+            className="grid gap-1 py-3 text-sm sm:grid-cols-[140px_1fr] sm:gap-4"
+          >
+            <p className="font-semibold text-[#111111]">
+              {rest.length ? label.trim() : `Panduan ${index + 1}`}
+            </p>
+            <p>{rest.length ? rest.join(":").trim() : row.trim()}</p>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
+export default async function ProductDetailPage({ params }: PageProps) {
   const { slug } = await params;
   const model = await getProductDetailPageModel(slug);
   if (model.data.state === "not_found") notFound();
@@ -53,14 +92,11 @@ export default async function ProductDetailPage({ params, searchParams }: PagePr
     relatedProducts,
     images,
     focal,
-    whatsappUrl,
     priceLabel,
     detailHref,
     isJersey,
     purchaseCapabilities,
     customDestination,
-    colors,
-    sizes,
     sizeGuide
   } = model.data;
 
@@ -70,44 +106,54 @@ export default async function ProductDetailPage({ params, searchParams }: PagePr
         <section className="bg-white py-16">
           <div className="section-shell">
             <h1 className="text-2xl font-semibold">Produk belum dapat dimuat</h1>
-            <p className="mt-3 text-sm text-black/60">Silakan muat ulang halaman atau coba kembali beberapa saat lagi.</p>
+            <p className="mt-3 text-sm text-black/60">
+              Silakan muat ulang halaman atau coba kembali beberapa saat lagi.
+            </p>
           </div>
         </section>
       </PublicShell>
     );
   }
-  const instantServices = product.id && product.product_category_id
-    ? await listInstantServicesForProduct(product.id, product.product_category_id)
-    : [];
-  const requestedMode = (await searchParams)?.mode;
+
   const productDescription = (product.description || product.deskripsi || "").trim();
+  const purchaseDescription = (
+    product.short_detail
+    || product.public_description
+    || ""
+  ).trim();
   const productSpecifications = product.specifications || [];
+  const jerseyConfiguratorHref = `/jersey/configurator?product=${encodeURIComponent(product.slug || slug)}`;
+  const customActionHref = purchaseCapabilities.showCustomAction
+    ? isJersey
+      ? jerseyConfiguratorHref
+      : customDestination
+    : null;
+  const hasProductInformation = Boolean(
+    productDescription
+    || productSpecifications.length
+    || sizeGuide.length
+  );
 
   return (
-    <PublicShell
-      theme={isJersey ? "jersey-commerce" : "default"}
-      showHeader={!isJersey}
-    >
+    <PublicShell theme={isJersey ? "jersey-commerce" : "default"}>
       {isJersey ? (
         <Suspense fallback={<div className="h-14 border-b border-black/10 bg-white" />}>
           <JerseyCommerceNav />
         </Suspense>
       ) : null}
-      <section
-        data-pdp-primary
-        className={isJersey ? "bg-white py-8 sm:py-12" : "bg-white py-8 sm:py-12 lg:py-16"}
-      >
+
+      <section data-pdp-primary className="overflow-x-clip bg-white pb-12 pt-6 sm:pb-16 sm:pt-8 lg:pb-20 lg:pt-10">
         <div className="section-shell">
           <nav
             aria-label="Breadcrumb"
-            className="flex flex-wrap items-center gap-2 text-xs font-medium text-brand-charcoal/55"
+            className="mb-5 flex flex-wrap items-center gap-2 text-xs font-medium text-brand-charcoal/55"
           >
             <Link href="/">Beranda</Link>
-            <span>/</span>
+            <span aria-hidden="true">/</span>
             <Link href={isJersey ? "/jersey/shop" : "/koleksi"}>
               {isJersey ? "Jersey" : "Koleksi"}
             </Link>
-            <span>/</span>
+            <span aria-hidden="true">/</span>
             <span aria-current="page">{product.nama}</span>
           </nav>
 
@@ -115,181 +161,126 @@ export default async function ProductDetailPage({ params, searchParams }: PagePr
             baseImages={images}
             variants={product.variants || []}
           >
-            <div className="mt-6 grid items-start gap-8 lg:grid-cols-[minmax(0,1.18fr)_minmax(360px,0.72fr)] lg:gap-10 xl:gap-14">
-              <div
-                data-pdp-sticky-media
-                className="min-w-0 lg:sticky lg:top-24 lg:self-start"
-              >
-                <ProductGallery
-                  images={images}
-                  alt={product.image_alt || product.nama}
-                  focal={focal}
-                />
+            <div className="grid items-start gap-8 lg:grid-cols-[minmax(0,1.16fr)_minmax(360px,0.84fr)] lg:gap-12 xl:gap-16">
+              <div data-pdp-media className="min-w-0 lg:self-stretch">
+                <ProductStickyPurchasePanel>
+                  <ProductGallery
+                    images={images}
+                    alt={product.image_alt || product.nama}
+                    focal={focal}
+                  />
+                </ProductStickyPurchasePanel>
               </div>
 
-              <div
-                data-pdp-product-details
-                className={isJersey ? "min-w-0 self-start border-t border-black/10 bg-white p-5 sm:p-7" : "min-w-0 self-start"}
-              >
-                <p className={isJersey ? "text-xs font-semibold uppercase tracking-[.16em] text-brand-charcoal/50" : "public-muted-copy text-[13px] leading-[1.45]"}>
-                  {product.kategori}
-                  {product.subcategory
-                    ? ` · ${product.subcategory}`
-                    : ""}
-                </p>
-
-                <h1 className={isJersey ? "mt-3 max-w-xl text-[30px] font-semibold leading-[1.12] tracking-[-0.015em] sm:text-[40px]" : "mt-2 max-w-xl text-2xl font-semibold leading-[1.15] tracking-[-0.02em] lg:text-[28px]"}>
-                  {product.nama}
-                </h1>
-
-                {product.short_detail ? (
-                  <p className={isJersey ? "mt-4 max-w-xl text-base leading-7 text-brand-charcoal/60 sm:text-lg" : "public-secondary-copy mt-4 max-w-xl text-[15px] leading-6 md:text-base"}>
-                    {product.short_detail}
-                  </p>
-                ) : null}
-
-                <div className="mt-5 flex flex-wrap items-baseline gap-3">
-                  <p className={isJersey ? "text-xl font-semibold sm:text-2xl" : "text-[17px] font-semibold leading-6 md:text-lg"}>
-                    {priceLabel}
-                  </p>
-                  <span className="text-sm text-brand-charcoal/50">
-                    / pcs harga awal
-                  </span>
-                  {product.compare_price ? (
-                    <p className="text-base text-brand-charcoal/40 line-through">
-                      {formatRupiah(product.compare_price)}
-                    </p>
-                  ) : null}
-                </div>
-
-                <p className={isJersey ? "mt-2 text-sm leading-6 text-brand-charcoal/55" : "public-muted-copy mt-2 text-sm leading-6"}>
-                  Harga akhir berubah otomatis mengikuti jumlah pesanan.
-                </p>
-
+              <div data-pdp-purchase-column className="min-w-0">
                 {purchaseCapabilities.showPurchasePanel ? (
                   <TieredProductPurchasePanel
                     product={{
-                      id: product.id || product.slug || product.nama,
+                      id: product.id,
                       name: product.nama,
                       category: product.kategori,
                       priceLabel,
-                      priceValue:
-                        Number(
-                          product.price ??
-                            product.harga ??
-                            product.base_price ??
-                            0
-                        ) || undefined,
                       href: detailHref,
-                      imageUrl: getProductImage(product),
+                      imageUrl: images[0],
                       imageAlt: product.image_alt || product.nama,
                       sku: product.sku || undefined
                     }}
-                    colors={colors}
-                    sizes={sizes}
-                    sizeGuide={sizeGuide}
-                    bulkOrderNote={product.bulk_order_note}
-                    whatsappUrl={whatsappUrl}
+                    subcategory={product.subcategory}
+                    description={purchaseDescription}
+                    minimumQuantity={product.minimum_order_qty}
                     variants={product.variants}
                     showAddToCart={purchaseCapabilities.showAddToCart}
                     showBuyNow={purchaseCapabilities.showBuyNow}
+                    customActionHref={customActionHref}
                     monochrome={isJersey}
-                    instantServices={instantServices}
-                    initialInstantMode={requestedMode === "instant"}
                   />
                 ) : (
-                  <section className="mt-7 border-y border-black/10 py-6">
-                    <h2 className="text-xl font-bold">Jersey Custom</h2>
-                    <p className="mt-2 text-sm leading-6 text-black/60">
-                      Produk ini disiapkan melalui Jersey Configurator agar model, bahan, warna, logo, nama, nomor, dan jumlah pemain tercatat dalam satu alur.
+                  <div className="min-w-0">
+                    <p className="text-xs font-semibold uppercase tracking-[0.16em] text-brand-charcoal/50">
+                      {[product.kategori, product.subcategory].filter(Boolean).join(" · ")}
                     </p>
-                    <Link
-                      href="/jersey/configurator"
-                      className="mt-5 inline-flex min-h-12 items-center justify-center rounded-full bg-black px-6 text-sm font-semibold text-white outline-none transition hover:bg-black/75 focus-visible:ring-2 focus-visible:ring-black focus-visible:ring-offset-2"
-                    >
-                      Mulai Konfigurasi Jersey
-                    </Link>
-                  </section>
+                    <h1 className="mt-3 max-w-xl text-[30px] font-semibold leading-[1.1] tracking-[-0.025em] sm:text-[40px]">
+                      {product.nama}
+                    </h1>
+                    <p className="mt-4 text-2xl font-semibold">{priceLabel}</p>
+                    {purchaseDescription ? (
+                      <p className="mt-5 max-w-xl text-[15px] leading-6 text-brand-charcoal/65">
+                        {purchaseDescription}
+                      </p>
+                    ) : null}
+
+                    {isJersey ? (
+                      <section className="mt-8 border-y border-black/10 py-6">
+                        <h2 className="text-xl font-semibold">Jersey Custom</h2>
+                        <p className="mt-2 text-sm leading-6 text-black/60">
+                          Lengkapi model, bahan, desain, logo, nama, nomor, dan jumlah pemain melalui Jersey Configurator.
+                        </p>
+                        <Link
+                          href={jerseyConfiguratorHref}
+                          className="mt-5 inline-flex min-h-12 items-center justify-center rounded-full bg-black px-6 text-sm font-semibold text-white outline-none transition hover:bg-black/75 focus-visible:ring-2 focus-visible:ring-black focus-visible:ring-offset-2"
+                        >
+                          Mulai Desain Jersey
+                        </Link>
+                      </section>
+                    ) : customDestination ? (
+                      <section className="mt-8 border-y border-black/10 py-6">
+                        <h2 className="text-xl font-semibold">Pesanan Custom</h2>
+                        <p className="mt-2 text-sm leading-6 text-black/60">
+                          Pilih kebutuhan Custom agar spesifikasi pesanan tercatat dengan jelas.
+                        </p>
+                        <Link
+                          href={customDestination}
+                          className="mt-5 inline-flex min-h-12 items-center justify-center rounded-full bg-black px-6 text-sm font-semibold text-white outline-none transition hover:bg-black/75 focus-visible:ring-2 focus-visible:ring-black focus-visible:ring-offset-2"
+                        >
+                          Mulai Custom
+                        </Link>
+                      </section>
+                    ) : (
+                      <p className="mt-8 border-y border-black/10 py-6 text-sm text-black/60">
+                        Produk ini belum dapat dipesan. Pilih produk lain dari Koleksi.
+                      </p>
+                    )}
+                  </div>
                 )}
 
-                {isJersey && purchaseCapabilities.showBuyNow && purchaseCapabilities.showCustomAction ? (
-                  <Link
-                    href="/jersey/configurator"
-                    className="mt-3 inline-flex min-h-11 items-center text-sm font-semibold text-black underline decoration-1 underline-offset-4 outline-none focus-visible:ring-2 focus-visible:ring-black focus-visible:ring-offset-2"
+                {hasProductInformation ? (
+                  <section
+                    className="mt-10 border-b border-[#e5e5e5]"
+                    aria-labelledby="product-information-title"
                   >
-                    Full Custom Jersey melalui Configurator
-                  </Link>
-                ) : null}
-
-                {purchaseCapabilities.showCustomAction && customDestination ? (
-                  <Link href={customDestination} className="mt-4 inline-flex min-h-11 items-center rounded-full border border-black px-5 text-sm font-semibold transition hover:bg-black hover:text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-black">
-                    Custom produk ini
-                  </Link>
-                ) : null}
-
-                {productDescription || productSpecifications.length ? (
-                  <div className="mt-8 border-b border-[#e5e5e5]">
-                    <p className="mb-2 text-sm font-semibold text-[#111111]">
-                      Lihat Detail Produk
-                    </p>
+                    <h2 id="product-information-title" className="mb-3 text-xl font-semibold tracking-[-0.015em]">
+                      Informasi Produk
+                    </h2>
                     {productDescription ? (
-                      <ProductDetailDisclosure
-                        id="product-description"
-                        title="Deskripsi Produk"
-                      >
+                      <ProductDetailDisclosure id="product-description" title="Deskripsi Produk">
                         <p className="whitespace-pre-line">{productDescription}</p>
                       </ProductDetailDisclosure>
                     ) : null}
                     {productSpecifications.length ? (
-                      <ProductDetailDisclosure
-                        id="product-specifications"
-                        title="Material & Detail"
-                      >
-                        <dl className="divide-y divide-[#e5e5e5]">
-                          {productSpecifications.map((item) => {
-                            const [key, ...rest] = item.split(":");
-                            return (
-                              <div
-                                key={item}
-                                className="grid gap-1 py-3 text-sm sm:grid-cols-[120px_1fr] sm:gap-3"
-                              >
-                                <dt className="font-semibold text-[#111111]">
-                                  {rest.length ? key : "Detail"}
-                                </dt>
-                                <dd>
-                                  {rest.length
-                                    ? rest.join(":").trim()
-                                    : item}
-                                </dd>
-                              </div>
-                            );
-                          })}
-                        </dl>
+                      <ProductDetailDisclosure id="product-specifications" title="Material & Detail">
+                        <SpecificationList specifications={productSpecifications} />
                       </ProductDetailDisclosure>
                     ) : null}
-                  </div>
+                    {sizeGuide.length ? (
+                      <ProductDetailDisclosure id="product-size-guide" title="Panduan Ukuran">
+                        <SizeGuideList rows={sizeGuide} />
+                      </ProductDetailDisclosure>
+                    ) : null}
+                  </section>
                 ) : null}
               </div>
             </div>
           </ProductVariantGalleryProvider>
         </div>
       </section>
+
+      {/*
+        "Dipakai Pelanggan" and "Lengkapi Penampilan" intentionally remain
+        hidden until verified, rights-cleared UGC or an approved canonical
+        complementary-product relationship is present in the PDP model.
+      */}
       {!isJersey && relatedProducts.length ? (
-        <section className="bg-white py-12 md:py-16 lg:py-20" aria-labelledby="related-products-title">
-          <div className="section-shell">
-            <h2 id="related-products-title" className="public-section-title">
-              Rekomendasi
-            </h2>
-            <div className="mt-4 grid grid-cols-2 gap-x-4 gap-y-8 md:mt-6 lg:grid-cols-4 lg:gap-x-6 lg:gap-y-10">
-              {relatedProducts.map((item) => (
-                <PublicProductCard
-                  key={item.id || item.slug || item.nama}
-                  product={item}
-                />
-              ))}
-            </div>
-          </div>
-        </section>
+        <ProductRecommendationRail title="Produk Serupa" products={relatedProducts} />
       ) : null}
     </PublicShell>
   );

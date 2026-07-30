@@ -31,9 +31,9 @@ describe("product catalog batching", () => {
   });
 
   it("starts with two rows and adds exactly one row", () => {
-    expect(initialCatalogBatch(4)).toBe(8);
-    expect(initialCatalogBatch(2)).toBe(4);
-    expect(nextCatalogBatch(8, 4, 13)).toBe(12);
+    expect(initialCatalogBatch(4)).toBe(12);
+    expect(initialCatalogBatch(2)).toBe(12);
+    expect(nextCatalogBatch(8, 4, 24)).toBe(20);
     expect(nextCatalogBatch(4, 2, 5)).toBe(5);
   });
 

@@ -192,6 +192,7 @@ export type CustomPricingLine = {
   serviceSlug?: string;
   serviceName?: string;
   pricingRuleId?: string;
+  selectionId?: string;
   placementId?: string;
   placementName?: string;
   printSizeId?: string;

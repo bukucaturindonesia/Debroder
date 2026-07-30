@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { type CartProductInput, useCart } from "@/components/CartProvider";
 import type { ProductRecommendation, RecommendationItem } from "@/lib/recommendation-rules";
 
@@ -24,18 +24,43 @@ export function ProductRecommendationDrawer({
 }) {
   const [isOpen, setIsOpen] = useState(false);
   const { addItem } = useCart();
+  const triggerRef = useRef<HTMLButtonElement>(null);
+  const drawerRef = useRef<HTMLElement>(null);
+  const closeRef = useRef<HTMLButtonElement>(null);
 
   useEffect(() => {
     if (!isOpen) return;
     const previousOverflow = document.body.style.overflow;
     document.body.style.overflow = "hidden";
+    const focusFrame = window.requestAnimationFrame(() => closeRef.current?.focus());
     const onKeyDown = (event: KeyboardEvent) => {
-      if (event.key === "Escape") setIsOpen(false);
+      if (event.key === "Escape") {
+        setIsOpen(false);
+        return;
+      }
+      if (event.key !== "Tab" || !drawerRef.current) return;
+      const focusable = Array.from(
+        drawerRef.current.querySelectorAll<HTMLElement>(
+          'a[href],button:not([disabled]),input:not([disabled]),select:not([disabled]),textarea:not([disabled]),[tabindex]:not([tabindex="-1"])'
+        )
+      );
+      if (!focusable.length) return;
+      const first = focusable[0];
+      const last = focusable[focusable.length - 1];
+      if (event.shiftKey && document.activeElement === first) {
+        event.preventDefault();
+        last.focus();
+      } else if (!event.shiftKey && document.activeElement === last) {
+        event.preventDefault();
+        first.focus();
+      }
     };
     window.addEventListener("keydown", onKeyDown);
     return () => {
+      window.cancelAnimationFrame(focusFrame);
       document.body.style.overflow = previousOverflow;
       window.removeEventListener("keydown", onKeyDown);
+      triggerRef.current?.focus();
     };
   }, [isOpen]);
 
@@ -49,6 +74,7 @@ export function ProductRecommendationDrawer({
             <p className="mt-2 max-w-xl text-sm leading-6 text-brand-charcoal/60">{recommendation.description}</p>
           </div>
           <button
+            ref={triggerRef}
             type="button"
             onClick={() => setIsOpen(true)}
             className="inline-flex min-h-11 shrink-0 items-center justify-center rounded-full border border-brand-charcoal px-5 text-sm font-semibold transition hover:bg-brand-charcoal hover:text-white"
@@ -59,14 +85,17 @@ export function ProductRecommendationDrawer({
       </section>
 
       <div
-        className={`fixed inset-0 z-[170] bg-black/45 transition ${isOpen ? "visible opacity-100" : "invisible opacity-0"}`}
+        className={`fixed inset-0 z-[var(--z-overlay)] bg-black/45 transition ${isOpen ? "visible opacity-100" : "invisible opacity-0"}`}
         onMouseDown={(event) => event.target === event.currentTarget && setIsOpen(false)}
       />
       <aside
-        className={`fixed bottom-0 right-0 z-[180] flex max-h-[88dvh] w-full flex-col bg-white shadow-[0_-20px_60px_rgba(0,0,0,0.18)] transition-transform duration-300 sm:bottom-auto sm:top-0 sm:h-dvh sm:max-h-none sm:max-w-md sm:shadow-[-18px_0_50px_rgba(0,0,0,0.18)] ${isOpen ? "translate-y-0 sm:translate-x-0" : "translate-y-full sm:translate-x-full sm:translate-y-0"}`}
+        ref={drawerRef}
+        className={`fixed bottom-0 right-0 z-[var(--z-drawer)] flex max-h-[88dvh] w-full flex-col bg-white shadow-[var(--shadow-overlay)] transition-transform duration-[var(--duration-overlay)] sm:bottom-auto sm:top-0 sm:h-dvh sm:max-h-none sm:max-w-md ${isOpen ? "translate-y-0 sm:translate-x-0" : "translate-y-full sm:translate-x-full sm:translate-y-0"}`}
         role="dialog"
         aria-modal="true"
         aria-label={recommendation.title}
+        aria-hidden={!isOpen}
+        inert={!isOpen}
       >
         <div className="flex items-start justify-between gap-4 border-b border-black/10 p-5">
           <div>
@@ -75,10 +104,11 @@ export function ProductRecommendationDrawer({
             <p className="mt-2 text-sm leading-6 text-black/55">{recommendation.description}</p>
           </div>
           <button
+            ref={closeRef}
             type="button"
             onClick={() => setIsOpen(false)}
             aria-label="Tutup rekomendasi"
-            className="grid h-10 w-10 shrink-0 place-items-center rounded-full border border-black/10 text-xl leading-none transition hover:bg-[#f5f5ef]"
+            className="grid h-11 w-11 shrink-0 place-items-center rounded-full border border-black/10 text-xl leading-none transition hover:bg-brand-offWhite"
           >
             x
           </button>
@@ -103,7 +133,7 @@ export function ProductRecommendationDrawer({
                         <Link
                           href={item.href}
                           onClick={() => setIsOpen(false)}
-                          className="inline-flex min-h-10 items-center justify-center rounded-full border border-black/10 px-3 text-xs font-semibold transition hover:border-black"
+                          className="inline-flex min-h-11 items-center justify-center rounded-full border border-black/10 px-3 text-xs font-semibold transition hover:border-black"
                         >
                           Lihat
                         </Link>
@@ -113,7 +143,7 @@ export function ProductRecommendationDrawer({
                             addItem(recommendationCartItem(item, sourceProduct), "additional");
                             setIsOpen(false);
                           }}
-                          className="inline-flex min-h-10 items-center justify-center rounded-full bg-black px-3 text-xs font-semibold text-white transition hover:bg-black/75"
+                          className="inline-flex min-h-11 items-center justify-center rounded-full bg-black px-3 text-xs font-semibold text-white transition hover:bg-black/75"
                         >
                           Tambah
                         </button>

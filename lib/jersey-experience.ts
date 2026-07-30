@@ -63,7 +63,7 @@ export function jerseyItemHref(item: CmsBanner, value: string | null | undefined
 }
 
 function fallbackMedia(pageHero: PageHeroContent | undefined, categories: ServiceCategory[]) {
-  return pageHero?.image_url || categories[0]?.gambar_url || "/brand/debroder/social-preview.png";
+  return pageHero?.image_url || categories[0]?.gambar_url || "/debroder/social-preview.png";
 }
 
 function banner(
@@ -76,8 +76,8 @@ function banner(
     id: `jersey-fallback-${sectionKey}-${sortOrder}`,
     name: source.name || sectionKey,
     media_type: source.media_type || "image",
-    desktop_media_url: source.desktop_media_url || "/brand/debroder/social-preview.png",
-    mobile_media_url: source.mobile_media_url || source.desktop_media_url || "/brand/debroder/social-preview.png",
+    desktop_media_url: source.desktop_media_url || "/debroder/social-preview.png",
+    mobile_media_url: source.mobile_media_url || source.desktop_media_url || "/debroder/social-preview.png",
     eyebrow: source.eyebrow || "DEBRODER JERSEY",
     title: source.title || "",
     subtitle: source.subtitle || "",

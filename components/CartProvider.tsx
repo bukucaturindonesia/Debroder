@@ -38,6 +38,12 @@ import {
 } from "@/lib/cart-v5";
 import type { ConfiguredProductSnapshot } from "@/lib/contracts";
 import type { CustomProjectSnapshot } from "@/lib/custom-commerce/types";
+import { isFinalExactCustomPricing } from "@/lib/custom-commerce/exact-pricing";
+import {
+  customDesignPairPricingIntegrityIssue,
+  findCustomDesignPairPricingLine
+} from "@/lib/custom-commerce/design-pairs";
+import { parseCustomProject } from "@/lib/custom-commerce/validation";
 import type { InstantCustomSnapshot } from "@/lib/instant-custom";
 import { fallbackImages, pageHeroImageFallbacks } from "@/lib/fallback-data";
 import { formatRupiah } from "@/lib/url";
@@ -256,18 +262,25 @@ function CustomProjectSummary({ item }: { item: CartItem }) {
       <div className="mt-3 grid gap-1 text-xs sm:text-sm">
         <p><span className="font-semibold">Produk:</span> {productGroups} grup · {quantity} pcs</p>
         <p><span className="font-semibold">Paket desain:</span> {designs} · {services} layanan</p>
-        <p><span className="font-semibold">Status harga:</span> {project.pricing.status === "final" ? "Final" : project.pricing.status === "estimated" ? "Estimasi" : "Perlu penawaran"}</p>
+        <p><span className="font-semibold">Status harga:</span> {project.pricing.status === "final" ? "Harga pasti" : "Menunggu penawaran resmi"}</p>
         <p><span className="font-semibold">Estimasi pengerjaan:</span> {Array.from(new Set(project.items.map((projectItem) => projectItem.leadTime))).join(", ")}</p>
       </div>
       <div className="mt-4 grid gap-3 border-t border-black/10 pt-4">
         {project.items.map((projectItem) => (
           <div key={projectItem.id}>
             <p className="font-semibold">{projectItem.productName} · {projectItem.allocations.reduce((sum, allocation) => sum + allocation.quantity, 0)} pcs</p>
-            {projectItem.designPackages.flatMap((designPackage) => designPackage.services.map((service) => (
-              <p key={`${designPackage.id}:${service.id}`} className="mt-1 text-xs text-black/60">
-                Layanan {service.serviceId}{service.placementId ? ` · Posisi ${service.placementId}` : ""}{service.printSizeId ? ` · Ukuran cetak ${service.printSizeId}` : ""}
-              </p>
-            )))}
+            {projectItem.designPackages.flatMap((designPackage) => designPackage.services.map((selection) => {
+              const line = findCustomDesignPairPricingLine(project.pricing.lines, selection);
+              const serviceName = line?.serviceName ?? "Layanan custom";
+              const placementName = line?.placementName ?? selection.placementId ?? "Posisi belum tersedia";
+              const printSizeName = line?.printSizeName ?? selection.printSizeId ?? "Size belum tersedia";
+              return (
+                <div key={`${designPackage.id}:${selection.id}`} className="mt-2 text-xs text-black/60">
+                  <p className="font-semibold text-black/70">{serviceName}</p>
+                  <p>{placementName} — Size Desain {printSizeName}</p>
+                </div>
+              );
+            }))}
             {projectItem.personalization.sharedValue || projectItem.personalization.entries.length ? <p className="mt-1 text-xs text-black/60">Personalisasi: {projectItem.personalization.sharedValue || `${projectItem.personalization.entries.length} data per item`}</p> : null}
           </div>
         ))}
@@ -308,7 +321,7 @@ function cartTotals(items: CartItem[]) {
 }
 
 function safeCurrency(value: number) {
-  return value > 0 ? formatRupiah(value) : "Konfirmasi admin";
+  return value > 0 ? formatRupiah(value) : "Belum ditetapkan";
 }
 
 function labelForItem(item: CartItem) {
@@ -340,6 +353,8 @@ function CartProductHeader({ item, compact = false }: { item: CartItem; compact?
     ? item.sku
     : readRecordString(item.variantSnapshot, "sku");
   const cart = useCart();
+  const customPricing = isCustomProjectCartItem(item) ? item.customProject.pricing : null;
+  const customHasExactPrice = customPricing ? isFinalExactCustomPricing(customPricing) : false;
 
   return (
     <div className="flex gap-4 sm:gap-5">
@@ -373,8 +388,12 @@ function CartProductHeader({ item, compact = false }: { item: CartItem; compact?
         <div className="mt-4 flex flex-wrap items-center justify-between gap-3">
           {isCustomProjectCartItem(item) ? <p className="rounded-full bg-[#f5f5ef] px-3 py-2 text-xs font-semibold">{item.customProject.pricing.totalQuantity} pcs terkonfigurasi</p> : item.lineType === "legacy_unsupported" ? <p className="rounded-full bg-amber-50 px-3 py-2 text-xs font-semibold text-amber-900">Perlu ditinjau</p> : <QuantityControl value={item.quantity} ariaLabel={`jumlah ${item.name}`} onChange={(quantity) => cart.updateItem(item.lineId, { quantity })} />}
           <div className="text-right text-sm">
-            <p className="text-black/50">{isCustomProjectCartItem(item) ? "Total proyek" : unitPrice > 0 ? `${formatRupiah(unitPrice)} / pcs` : "Harga dikonfirmasi"}</p>
-            <p className="mt-1 font-semibold">{safeCurrency(subtotal)}</p>
+            <p className="text-black/50">{isCustomProjectCartItem(item)
+              ? customHasExactPrice ? "Total proyek" : "Harga ditetapkan setelah order"
+              : unitPrice > 0 ? `${formatRupiah(unitPrice)} / pcs` : "Harga belum tersedia"}</p>
+            <p className="mt-1 font-semibold">{isCustomProjectCartItem(item) && !customHasExactPrice
+              ? "Belum ditetapkan"
+              : safeCurrency(subtotal)}</p>
           </div>
         </div>
       </div>
@@ -460,6 +479,9 @@ function CartSummary({ compact = false }: { compact?: boolean }) {
   const cart = useCart();
   const totals = cartTotals(cart.items);
   const checkoutAllowed = cart.checkoutDecision.allowed;
+  const hasPendingCustomPricing = cart.items.some((item) =>
+    isCustomProjectCartItem(item) && !isFinalExactCustomPricing(item.customProject.pricing)
+  );
 
   return (
     <aside className={`rounded-[28px] bg-white/50 ${compact ? "p-4" : "p-5 sm:p-6"}`}>
@@ -467,17 +489,17 @@ function CartSummary({ compact = false }: { compact?: boolean }) {
       <div className="mt-6 grid gap-4 text-sm">
         <div className="flex items-center justify-between gap-4">
           <span className="text-black/60">Subtotal Produk</span>
-          <span className="font-semibold">{safeCurrency(totals.productSubtotal)}</span>
+          <span className="font-semibold">{hasPendingCustomPricing ? "Belum ditetapkan" : safeCurrency(totals.productSubtotal)}</span>
         </div>
         <div className="border-t border-black/10 pt-4">
           <div className="flex items-center justify-between gap-4">
             <span className="font-semibold">Total</span>
-            <span className="text-xl font-bold text-[#063d24]">{safeCurrency(totals.normalTotal)}</span>
+            <span className="text-xl font-bold text-[#063d24]">{hasPendingCustomPricing ? "Belum ditetapkan" : safeCurrency(totals.normalTotal)}</span>
           </div>
         </div>
       </div>
       <div className="mt-5 rounded-2xl bg-[#f5f5ef] p-4 text-xs leading-6 text-black/58">
-        Produk Ready Stock mengikuti harga PIM. Custom Instan memakai SKU yang sama dan seluruh harga layanan divalidasi ulang oleh server.
+        Ready Stock memakai harga pasti dari server. Custom nonstandar dibuat sebagai order tanpa nominal dan baru dapat dibayar setelah penawaran resmi disetujui.
       </div>
       {!checkoutAllowed ? <p className="mt-4 text-xs leading-5 text-amber-800">{cart.checkoutDecision.message}</p> : null}
       <Link href={checkoutAllowed ? "/checkout" : "#"} aria-disabled={!checkoutAllowed} className={`mt-5 inline-flex min-h-12 w-full items-center justify-center rounded-full px-5 text-center text-sm font-semibold ${checkoutAllowed ? cart.preserveJerseyInteractions ? "bg-[#063d24] text-white" : "bg-black text-white hover:bg-black/75" : "pointer-events-none bg-black/10 text-black/35"}`}>
@@ -573,6 +595,9 @@ function MiniCartContent() {
   const primary = cart.items.find((item) => item.role === "primary");
   const additionalCount = cart.items.filter((item) => item.role === "additional").length;
   const totals = cartTotals(cart.items);
+  const hasPendingCustomPricing = cart.items.some((item) =>
+    isCustomProjectCartItem(item) && !isFinalExactCustomPricing(item.customProject.pricing)
+  );
 
   if (!primary) return <EmptyCart />;
 
@@ -586,12 +611,12 @@ function MiniCartContent() {
       <section className="rounded-[24px] bg-white/50 p-4">
         <div className="flex items-center justify-between text-sm">
           <span className="text-black/60">Subtotal Produk</span>
-          <span className="font-semibold">{safeCurrency(totals.productSubtotal)}</span>
+          <span className="font-semibold">{hasPendingCustomPricing ? "Belum ditetapkan" : safeCurrency(totals.productSubtotal)}</span>
         </div>
         <div className="mt-4 border-t border-black/10 pt-4">
           <div className="flex items-center justify-between gap-4">
             <span className="font-semibold">Total</span>
-            <span className="text-lg font-bold text-[#063d24]">{safeCurrency(totals.normalTotal)}</span>
+            <span className="text-lg font-bold text-[#063d24]">{hasPendingCustomPricing ? "Belum ditetapkan" : safeCurrency(totals.normalTotal)}</span>
           </div>
         </div>
         <Link href="/keranjang" onClick={cart.closeCart} className="mt-5 inline-flex min-h-11 w-full items-center justify-center rounded-full border border-black/10 px-5 text-sm font-semibold transition hover:border-black">Lihat Keranjang</Link>
@@ -674,10 +699,10 @@ function CartDrawer() {
 
   return (
     <>
-      <div className={`fixed inset-0 z-[150] bg-black/35 transition ${isOpen ? "visible opacity-100" : "invisible opacity-0"}`} onMouseDown={(event) => event.target === event.currentTarget && closeCart()} />
+      <div className={`fixed inset-0 z-[var(--z-overlay)] bg-black/35 transition ${isOpen ? "visible opacity-100" : "invisible opacity-0"}`} onMouseDown={(event) => event.target === event.currentTarget && closeCart()} />
       <aside
         ref={drawerRef}
-        className={`fixed right-0 top-0 z-[160] flex h-dvh w-full max-w-md flex-col bg-[#F7F7F4] shadow-[-18px_0_50px_rgba(0,0,0,0.14)] transition-transform duration-300 ${isOpen ? "translate-x-0" : "translate-x-full"}`}
+        className={`fixed right-0 top-0 z-[var(--z-drawer)] flex h-dvh w-full max-w-md flex-col bg-brand-offWhite shadow-[var(--shadow-overlay)] transition-transform duration-[var(--duration-overlay)] ${isOpen ? "translate-x-0" : "translate-x-full"}`}
         role="dialog"
         aria-modal="true"
         aria-label="Keranjang belanja"
@@ -715,12 +740,34 @@ function issuesFromLines(lines: readonly CartItem[]): CartV5Issue[] {
   }));
 }
 
+function supersededRevalidationOutcome(lines: readonly CartItem[]): CartRevalidationOutcome {
+  const issue: CartV5Issue = {
+    code: "CART_REVALIDATION_SUPERSEDED",
+    message: "Keranjang berubah saat validasi berlangsung. Harga terbaru akan diperiksa ulang."
+  };
+  return { ok: false, lines: [...lines], issues: [issue] };
+}
+
 function dedupeIssues(issues: readonly CartV5Issue[]): CartV5Issue[] {
   const unique = new Map<string, CartV5Issue>();
   issues.forEach((issue) => {
     unique.set(`${issue.code}:${issue.lineId ?? ""}:${issue.message}`, issue);
   });
   return [...unique.values()];
+}
+
+function readyStockRequestSignature(lines: readonly CartItem[]) {
+  return lines
+    .filter((line) => line.lineType === "ready_stock")
+    .map((line) => JSON.stringify({
+      lineId: line.lineId,
+      productId: line.productId,
+      variantSizeId: line.variantSizeId,
+      quantity: line.quantity,
+      instantServices: line.instantCustom?.selections ?? []
+    }))
+    .sort()
+    .join("|");
 }
 
 function readyStockRevalidationSignature(lines: readonly CartItem[]) {
@@ -836,6 +883,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
   const runRevalidation = useCallback(async (
     sourceLines: CartItem[]
   ): Promise<CartRevalidationOutcome> => {
+    const requestSignature = readyStockRequestSignature(sourceLines);
     const readyStock = sourceLines.filter(
       (line): line is CartItem & { lineType: "ready_stock" } =>
         line.lineType === "ready_stock"
@@ -869,6 +917,9 @@ export function CartProvider({ children }: { children: ReactNode }) {
       if (!isRevalidationPayload(payload)) {
         throw new Error("Cart revalidation returned an invalid payload.");
       }
+      if (readyStockRequestSignature(itemsRef.current) !== requestSignature) {
+        return supersededRevalidationOutcome(itemsRef.current);
+      }
       const applied = applyReadyStockRevalidation(sourceLines, payload.items);
       const nextLines = ensureCartRoles(applied.lines);
       const issues = dedupeIssues([...applied.issues, ...issuesFromLines(nextLines)]);
@@ -876,6 +927,9 @@ export function CartProvider({ children }: { children: ReactNode }) {
       setOperationIssues(issues);
       return { ok: applied.readyStockValid, lines: nextLines, issues };
     } catch {
+      if (readyStockRequestSignature(itemsRef.current) !== requestSignature) {
+        return supersededRevalidationOutcome(itemsRef.current);
+      }
       const warning = {
         code: "CART_REVALIDATION_UNAVAILABLE",
         message: "Harga dan stok terbaru belum dapat dipastikan. Snapshot terakhir tetap ditampilkan, tetapi checkout diblokir."
@@ -1123,32 +1177,51 @@ export function CartProvider({ children }: { children: ReactNode }) {
       }));
     },
     removeItem: (lineId) => {
-      commitMutation((current) => current.filter((item) => item.lineId !== lineId));
+      commitMutation((current) => {
+        const removed = current.find((item) => item.lineId === lineId);
+        const remaining = current.filter((item) => item.lineId !== lineId);
+        if (removed?.lineType !== "ready_stock") return remaining;
+        return remaining.map((item) => item.lineType === "ready_stock"
+          ? { ...item, validation: { status: "unvalidated" } }
+          : item);
+      });
     },
     clearCart: () => {
       setOperationIssues([]);
       setCartLines([]);
     },
     addCustomProject: (project) => {
+      const canonicalProject = parseCustomProject(project);
+      if (
+        !canonicalProject
+        || project.pricing.projectId !== canonicalProject.id
+        || customDesignPairPricingIntegrityIssue(project)
+      ) {
+        setOperationIssues([{
+          code: "CUSTOM_PROJECT_CONFIGURATION_INVALID",
+          message: "Posisi Desain dan Size Desain harus lengkap dan valid sebelum masuk keranjang."
+        }]);
+        return;
+      }
+      const canonicalSnapshot: CustomProjectSnapshot = { ...canonicalProject, pricing: project.pricing };
       commitMutation((current) => {
-        const lineId = `custom-project:${project.id}`;
+        const lineId = `custom-project:${canonicalSnapshot.id}`;
         const existing = current.find((item) => item.lineId === lineId);
-        const priceValue = project.pricing.status === "final"
-          ? project.pricing.finalTotal ?? undefined
+        const exactPrice = isFinalExactCustomPricing(canonicalSnapshot.pricing);
+        const priceValue = exactPrice
+          ? canonicalSnapshot.pricing.finalTotal ?? undefined
           : undefined;
-        const priceLabel = project.pricing.status === "final"
-          ? formatRupiah(project.pricing.finalTotal)
-          : project.pricing.status === "estimated"
-            ? "Estimasi"
-            : "Minta penawaran";
+        const priceLabel = exactPrice
+          ? formatRupiah(canonicalSnapshot.pricing.finalTotal)
+          : "Harga ditetapkan setelah order";
         const next = createCustomProjectCartItem({
           lineId,
-          project,
+          project: canonicalSnapshot,
           display: {
-            title: `Custom Project · ${project.categoryName}`,
+            title: `Custom Project · ${canonicalSnapshot.categoryName}`,
             subtitle: "Custom",
-            imageAlt: project.categoryName,
-            href: `/custom/${project.categorySlug}`
+            imageAlt: canonicalSnapshot.categoryName,
+            href: `/custom/${canonicalSnapshot.categorySlug}`
           },
           ui: {
             role: existing?.role ?? (
@@ -1156,13 +1229,13 @@ export function CartProvider({ children }: { children: ReactNode }) {
                 ? "additional"
                 : "primary"
             ),
-            name: `Custom Project · ${project.categoryName}`,
+            name: `Custom Project · ${canonicalSnapshot.categoryName}`,
             category: "Custom",
             priceLabel,
             priceValue,
-            href: `/custom/${project.categorySlug}`,
+            href: `/custom/${canonicalSnapshot.categorySlug}`,
             imageUrl: existing?.imageUrl,
-            imageAlt: project.categoryName
+            imageAlt: canonicalSnapshot.categoryName
           }
         });
         return existing

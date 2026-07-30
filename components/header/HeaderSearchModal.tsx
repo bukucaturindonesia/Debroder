@@ -78,7 +78,7 @@ export function HeaderSearchModal({ onClose }: { onClose: () => void }) {
   }
 
   return (
-    <div className="fixed inset-0 z-[110] bg-[#050706]/55 px-4 py-5 backdrop-blur-sm" role="dialog" aria-modal="true" aria-label="Pencarian DEBRODER" onMouseDown={(event) => event.target === event.currentTarget && onClose()}>
+    <div className="fixed inset-0 z-[var(--z-modal)] bg-black/55 px-4 py-5" role="dialog" aria-modal="true" aria-label="Pencarian DEBRODER" onMouseDown={(event) => event.target === event.currentTarget && onClose()}>
       <div ref={dialogRef} className="mx-auto mt-14 max-w-2xl overflow-hidden rounded-lg bg-white">
         <div className="flex items-center gap-3 border-b border-black/10 p-4">
           <BrandIcon name="search" />

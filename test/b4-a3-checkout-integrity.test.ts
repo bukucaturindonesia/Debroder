@@ -59,9 +59,12 @@ describe("B4-A3 Ready Stock checkout integrity", () => {
     const client = read("components/checkout/CheckoutClient.tsx");
     const route = read("app/api/checkout/route.ts");
 
-    expect(parser).toContain("value.items.length > 0 && customProjects.length > 0");
+    expect(parser).toContain("const activeModes = [");
+    expect(parser).toContain("configuredItems.length > 0");
+    expect(parser).toContain("if (activeModes !== 1) return null");
     expect(client).toContain("cart.checkoutDecision.allowed");
-    expect(client).toContain("tidak boleh dicampur dalam satu perintah checkout");
+    expect(client).toContain("Mode pesanan harus dipisahkan.");
+    expect(client).toContain("harus dibuat secara terpisah");
     expect(route).toContain("CHECKOUT_MIXED_CART");
   });
 

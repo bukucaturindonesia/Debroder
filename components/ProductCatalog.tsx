@@ -10,7 +10,11 @@ import {
 } from "@/lib/product-catalog";
 import { productCardColors } from "@/lib/product-card";
 import { productMatchesNavigationStatus } from "@/lib/public-navigation";
-import { matchesProductType, type ProductTypeOption } from "@/lib/product-taxonomy";
+import {
+  matchesProductType,
+  productTypeValue,
+  type ProductTypeOption
+} from "@/lib/product-taxonomy";
 import type { Product } from "@/lib/types";
 
 type SortValue = "order" | "newest" | "best-selling" | "price-low" | "price-high";
@@ -109,7 +113,6 @@ export function ProductCatalog({
   showGroupFilter = false,
   showStatusFilter = false,
   syncUrlState = false,
-  showCardActions,
   catalogStyle = "default"
 }: {
   products: Product[];
@@ -127,7 +130,6 @@ export function ProductCatalog({
   showGroupFilter?: boolean;
   showStatusFilter?: boolean;
   syncUrlState?: boolean;
-  showCardActions?: boolean;
   catalogStyle?: "default" | "category";
 }) {
   const [query, setQuery] = useState("");
@@ -147,8 +149,8 @@ export function ProductCatalog({
   const filterTriggerRef = useRef<HTMLButtonElement>(null);
   const filterPanelRef = useRef<HTMLDivElement>(null);
   const filterCloseRef = useRef<HTMLButtonElement>(null);
+  const urlSyncMountedRef = useRef(false);
   const isCategoryCatalog = catalogStyle === "category";
-  const shouldShowCardActions = showCardActions ?? !isCategoryCatalog;
 
   const categories = useMemo(
     () => Array.from(new Set(products.map((product) => product.kategori).filter(Boolean))).sort(),
@@ -166,21 +168,18 @@ export function ProductCatalog({
       ).sort((a, b) => a[1].localeCompare(b[1], "id")),
     [products]
   );
+  const activeProductType = productTypeValue(productType, productTypeOptions) || "all";
   const availableProductTypeOptions = useMemo(
     () =>
       productTypeOptions.filter((option) =>
-        products.some((product) =>
+        option.value === activeProductType
+        || products.some((product) =>
           matchesProductType(product, option.value, productTypeOptions)
         )
       ),
-    [productTypeOptions, products]
+    [activeProductType, productTypeOptions, products]
   );
   const hasTypeFilter = availableProductTypeOptions.length > 0;
-  const activeProductType =
-    productType === "all" ||
-    availableProductTypeOptions.some((option) => option.value === productType)
-      ? productType
-      : "all";
   const activeStatus = ["all", "ready-stock", "custom", "hybrid"].includes(status)
     ? status
     : "all";
@@ -196,7 +195,7 @@ export function ProductCatalog({
       .filter((product) => matchesGroup(product, group))
       .filter((product) => category === "all" || product.kategori === category)
       .filter((product) =>
-        matchesProductType(product, activeProductType, availableProductTypeOptions)
+        matchesProductType(product, activeProductType, productTypeOptions)
       )
       .filter((product) => matchesColor(product, color))
       .filter((product) => productMatchesNavigationStatus(product, activeStatus))
@@ -225,14 +224,22 @@ export function ProductCatalog({
         if (sort === "price-high") return priceOf(b) - priceOf(a);
         return a.urutan - b.urutan;
       });
-  }, [activeProductType, activeStatus, availableProductTypeOptions, category, color, group, isCategoryCatalog, label, price, products, query, sort]);
+  }, [activeProductType, activeStatus, category, color, group, isCategoryCatalog, label, price, productTypeOptions, products, query, sort]);
+
+  useEffect(() => {
+    setColor(initialColor);
+    setStatus(initialStatus);
+    setLabel(initialLabel);
+    setSort(initialSort);
+    setProductType(initialProductType);
+  }, [initialColor, initialLabel, initialProductType, initialSort, initialStatus]);
 
   useEffect(() => {
     const desktopQuery = window.matchMedia("(min-width: 1024px)");
     const updateColumns = () =>
       setColumns(
         isCategoryCatalog
-          ? desktopQuery.matches ? 3 : 2
+          ? desktopQuery.matches ? 4 : 2
           : catalogColumnsForWidth(desktopQuery.matches ? 1024 : 0)
       );
     updateColumns();
@@ -265,12 +272,60 @@ export function ProductCatalog({
       else url.searchParams.set(key, value);
     });
 
-    window.history.replaceState(
-      window.history.state,
-      "",
-      `${url.pathname}${url.search}${url.hash}`
-    );
+    const nextUrl = `${url.pathname}${url.search}${url.hash}`;
+    const currentUrl = `${window.location.pathname}${window.location.search}${window.location.hash}`;
+    if (nextUrl === currentUrl) {
+      urlSyncMountedRef.current = true;
+      return;
+    }
+
+    if (!urlSyncMountedRef.current) {
+      window.history.replaceState(window.history.state, "", nextUrl);
+      urlSyncMountedRef.current = true;
+      return;
+    }
+
+    window.history.pushState(window.history.state, "", nextUrl);
   }, [activeProductType, activeStatus, color, label, sort, syncUrlState]);
+
+  useEffect(() => {
+    if (!syncUrlState) return;
+
+    const restoreUrlState = () => {
+      const params = new URLSearchParams(window.location.search);
+      const nextLabel = params.get("label");
+      const nextSort = params.get("sort");
+      const nextStatus = params.get("status");
+
+      setProductType(
+        productTypeValue(params.get("type") || undefined, productTypeOptions) || "all"
+      );
+      setColor(normalizeFilterValue(params.get("color") || "all") || "all");
+      setLabel(
+        nextLabel === "new" || nextLabel === "promo" || nextLabel === "best"
+          ? nextLabel
+          : "all"
+      );
+      setSort(
+        nextSort === "newest"
+        || nextSort === "best-selling"
+        || nextSort === "price-low"
+        || nextSort === "price-high"
+          ? nextSort
+          : "order"
+      );
+      setStatus(
+        nextStatus === "ready-stock"
+        || nextStatus === "custom"
+        || nextStatus === "hybrid"
+          ? nextStatus
+          : "all"
+      );
+    };
+
+    window.addEventListener("popstate", restoreUrlState);
+    return () => window.removeEventListener("popstate", restoreUrlState);
+  }, [productTypeOptions, syncUrlState]);
 
   useEffect(
     () => () => {
@@ -556,12 +611,11 @@ export function ProductCatalog({
       </div>
 
       {visible.length ? (
-        <div className={`mt-6 grid grid-cols-2 gap-x-3 gap-y-8 sm:gap-x-4 lg:mt-8 ${isCategoryCatalog ? "lg:grid-cols-3 lg:gap-x-4 lg:gap-y-12" : "lg:grid-cols-4 lg:gap-x-6 lg:gap-y-10"}`}>
+        <div className={`mt-6 grid grid-cols-2 gap-x-3 gap-y-8 sm:gap-x-4 md:grid-cols-3 lg:mt-8 ${isCategoryCatalog ? "lg:grid-cols-4 lg:gap-x-4 lg:gap-y-12" : "lg:grid-cols-4 lg:gap-x-6 lg:gap-y-10"}`}>
           {displayedProducts.map((product) => (
             <PublicProductCard
               key={product.id || product.slug || product.nama}
               product={product}
-              showActions={shouldShowCardActions}
               imageSizes="(min-width: 1024px) 25vw, 50vw"
             />
           ))}
@@ -586,7 +640,7 @@ export function ProductCatalog({
         <div
           aria-label="Memuat produk tambahan"
           aria-live="polite"
-          className={`mt-8 grid grid-cols-2 gap-x-3 gap-y-8 sm:gap-x-4 ${isCategoryCatalog ? "lg:grid-cols-3 lg:gap-x-4" : "lg:grid-cols-4 lg:gap-x-6"}`}
+          className={`mt-8 grid grid-cols-2 gap-x-3 gap-y-8 sm:gap-x-4 md:grid-cols-3 ${isCategoryCatalog ? "lg:grid-cols-4 lg:gap-x-4" : "lg:grid-cols-4 lg:gap-x-6"}`}
         >
           {Array.from({ length: columns }, (_, index) => (
             <div key={index} className="animate-pulse">
@@ -617,7 +671,7 @@ export function ProductCatalog({
             type="button"
             aria-label="Tutup filter"
             onClick={closeFilters}
-            className="fixed inset-0 z-[160] bg-black/48"
+            className="fixed inset-0 z-[var(--z-overlay)] bg-black/50"
           />
           <div
             ref={filterPanelRef}
@@ -625,7 +679,7 @@ export function ProductCatalog({
             role="dialog"
             aria-modal="true"
             aria-labelledby="public-catalog-filter-title"
-            className="fixed inset-x-0 bottom-0 z-[170] flex max-h-[88dvh] flex-col bg-white lg:inset-y-0 lg:left-auto lg:max-h-none lg:w-[420px]"
+            className="fixed inset-x-0 bottom-0 z-[var(--z-drawer)] flex max-h-[88dvh] flex-col bg-white lg:inset-y-0 lg:left-auto lg:max-h-none lg:w-[420px]"
           >
             <div className="public-divider flex items-center justify-between border-b px-4 py-4">
               <div>

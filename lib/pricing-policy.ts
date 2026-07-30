@@ -59,6 +59,43 @@ export type ReadyStockPricingDecision =
       unitPrice: null;
     };
 
+export function normalizeReadyStockGarmentSize(value: string): string | null {
+  const token = value.trim().toUpperCase().replace(/[\s_-]+/g, "");
+  if (["S", "M", "L", "XL"].includes(token)) return token;
+
+  const alias = {
+    XXL: "2XL",
+    XXXL: "3XL",
+    XXXXL: "4XL"
+  }[token];
+  if (alias) return alias;
+
+  const match = token.match(/^([2-9]\d*)XL$/);
+  if (!match) return null;
+  const level = Number(match[1]);
+  return Number.isSafeInteger(level) ? `${level}XL` : null;
+}
+
+export function resolveReadyStockGarmentSizeAdjustment(
+  value: string
+): number | null {
+  const size = normalizeReadyStockGarmentSize(value);
+  if (!size) return null;
+  if (["S", "M", "L", "XL"].includes(size)) return 0;
+
+  const level = Number(size.slice(0, -2));
+  const adjustment = (level - 1) * 10_000;
+  return Number.isSafeInteger(adjustment) ? adjustment : null;
+}
+
+export function resolveProvenServiceLevelFallback(
+  zeroBasedLevel: number
+): number | null {
+  if (!Number.isSafeInteger(zeroBasedLevel) || zeroBasedLevel < 0) return null;
+  const amount = 15_000 + zeroBasedLevel * 5_000;
+  return Number.isSafeInteger(amount) ? amount : null;
+}
+
 export function resolveReadyStockPricing(
   input: ReadyStockPricingInput
 ): ReadyStockPricingDecision {

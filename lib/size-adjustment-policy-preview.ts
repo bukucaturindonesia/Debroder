@@ -1,3 +1,8 @@
+import {
+  normalizeReadyStockGarmentSize,
+  resolveReadyStockGarmentSizeAdjustment
+} from "@/lib/pricing-policy";
+
 export const GLOBAL_SIZE_ADJUSTMENT_POLICY = {
   S: 0,
   M: 0,
@@ -5,10 +10,13 @@ export const GLOBAL_SIZE_ADJUSTMENT_POLICY = {
   XL: 0,
   "2XL": 10_000,
   "3XL": 20_000,
-  "4XL": 30_000
+  "4XL": 30_000,
+  "5XL": 40_000
 } as const;
 
-export type ManagedSizeKey = keyof typeof GLOBAL_SIZE_ADJUSTMENT_POLICY;
+export type ManagedSizeKey =
+  | keyof typeof GLOBAL_SIZE_ADJUSTMENT_POLICY
+  | `${number}XL`;
 
 export type SizeMasterPreviewInput = {
   id: string;
@@ -101,27 +109,7 @@ type IndexedSizeMaster = SizeMasterPreviewInput & {
 };
 
 export function normalizeManagedSize(value: string): ManagedSizeKey | null {
-  switch (normalizeSizeToken(value)) {
-    case "S":
-      return "S";
-    case "M":
-      return "M";
-    case "L":
-      return "L";
-    case "XL":
-      return "XL";
-    case "2XL":
-    case "XXL":
-      return "2XL";
-    case "3XL":
-    case "XXXL":
-      return "3XL";
-    case "4XL":
-    case "XXXXL":
-      return "4XL";
-    default:
-      return null;
-  }
+  return normalizeReadyStockGarmentSize(value) as ManagedSizeKey | null;
 }
 
 export function buildSizeAdjustmentPolicyPreview(input: {
@@ -217,7 +205,9 @@ function previewRow(
   const master = row.sizeId ? masterById.get(row.sizeId) ?? null : null;
   const managedSize = master?.managedSize ?? null;
   const afterAdjustment =
-    managedSize === null ? null : GLOBAL_SIZE_ADJUSTMENT_POLICY[managedSize];
+    managedSize === null
+      ? null
+      : resolveReadyStockGarmentSizeAdjustment(managedSize);
   const issueCodes: SizeAdjustmentPreviewIssueCode[] = [];
 
   if (row.sizeId === null) {

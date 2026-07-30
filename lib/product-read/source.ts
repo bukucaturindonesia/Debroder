@@ -57,6 +57,8 @@ export type ProductRow = {
   size_guide_id: string | null;
   product_type: "standard_product" | "configurable_product" | "production_service" | null;
   pricing_mode: "fixed_price" | "variant_based" | "configurator_based" | "custom_quote" | null;
+  sales_mode: "ready_stock" | "custom" | "both" | null;
+  tier_scope: "none" | "product" | "variant" | "category" | null;
   sku: string | null;
   has_variants: boolean | null;
   uses_configurator: boolean | null;

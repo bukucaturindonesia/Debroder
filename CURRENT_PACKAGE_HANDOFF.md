@@ -77,3 +77,25 @@ Prepared source changes:
 ## 6. Next action
 
 Review the final diff, commit, and push the P15 branch. Do not rerun any P15 migration manually.
+
+---
+
+## 7. Superseding local checkpoint — UX/UI Bab 3–9
+
+Last updated: 29 July 2026 (Asia/Makassar)
+
+- Working branch/baseline: `UI-UX-001` /
+  `ee588b84d47c09de6bc3308ef1ff0b9d0b9bf9a9`
+- Bab 3–8: locally implemented with focused tests PASS.
+- Bab 9: eight viewport overflow checks PASS; representative route/SEO evidence
+  captured; external Preview/live verification remains incomplete.
+- Typecheck: PASS.
+- Lint: PASS with 0 errors and 38 warnings.
+- Custom Commerce: PASS 27/27.
+- Full suite: PASS 106 files / 793 tests.
+- Production build: PASS, 126 static pages.
+- Database/migration: no change in this continuation.
+- Commit/push/deploy: not performed.
+- Decision: **BLOCKED WITH EVIDENCE / NO-GO / NOT COMPLETE** because configured
+  Jersey checkout, proven product image identity, taxonomy ownership, and
+  Preview runtime/performance/E2E evidence remain open.

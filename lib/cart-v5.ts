@@ -14,7 +14,9 @@ import {
   readLegacyCartStorage,
   type LegacyCartStorageVersion
 } from "@/lib/compatibility/cart";
-import { parseCustomProject } from "@/lib/custom-commerce/validation";
+import { canonicalCustomDesignPairIssues, parseCustomProject } from "@/lib/custom-commerce/validation";
+import { customDesignPairPricingIntegrityIssue } from "@/lib/custom-commerce/design-pairs";
+import { isCheckoutEligibleCustomPricing, isFinalExactCustomPricing } from "@/lib/custom-commerce/exact-pricing";
 import type {
   CustomPriceStatus,
   CustomPricingLine,
@@ -463,6 +465,21 @@ export function getCartCheckoutDecision(lines: readonly CartItem[]): CartCheckou
       message: "Konfigurasi harus divalidasi ulang oleh server sebelum checkout."
     };
   }
+  if (
+    mode === "custom_project"
+    && lines.some((line) => (
+      line.lineType !== "custom_project"
+      || line.validation.status !== "valid"
+      || !line.customProject
+      || !isCheckoutEligibleCustomPricing(line.customProject.pricing)
+    ))
+  ) {
+    return {
+      allowed: false,
+      code: "CART_CONFIGURATION_INVALID",
+      message: "Harga custom harus divalidasi sebagai harga pasti atau permintaan penawaran tanpa nominal."
+    };
+  }
 
   return { allowed: true, mode };
 }
@@ -614,7 +631,8 @@ export function createReadyStockCartItem(input: {
 export function cartItemSubtotal(item: CartItem) {
   if (item.lineType === "legacy_unsupported") return 0;
   if (item.lineType === "custom_project") {
-    return item.customProject?.pricing.finalTotal ?? 0;
+    const pricing = item.customProject?.pricing;
+    return pricing && isFinalExactCustomPricing(pricing) ? pricing.finalTotal ?? 0 : 0;
   }
   const productTotal = (Number(item.priceValue) || Number(String(item.priceLabel ?? "").replace(/[^\d]/g, "")) || 0) * item.quantity;
   return productTotal + (item.lineType === "ready_stock" ? item.instantCustom?.serviceTotal ?? 0 : 0);
@@ -677,6 +695,11 @@ export function createCustomProjectCartItem(input: {
   display: CartLineDisplaySnapshot;
   ui?: Partial<CartItemUiSnapshot>;
 }): CartItem {
+  const configurationIssue = canonicalCustomDesignPairIssues(input.project)[0]
+    ?? customDesignPairPricingIntegrityIssue(input.project)
+    ?? (input.project.pricing.projectId !== input.project.id
+      ? "Snapshot harga tidak sesuai dengan Custom Project."
+      : null);
   const line: CustomProjectCartLine = {
     contractVersion: CONTRACT_VERSIONS.cartLine,
     lineId: input.lineId,
@@ -684,14 +707,21 @@ export function createCustomProjectCartItem(input: {
     quantity: input.project.pricing.totalQuantity,
     display: input.display,
     displayPricing: null,
-    validation: input.project.pricing.issues.length
+    validation: configurationIssue
       ? {
           status: "invalid",
           retryable: true,
-          code: "CUSTOM_PROJECT_PRICING_INVALID",
-          message: input.project.pricing.issues[0]
+          code: "CUSTOM_PROJECT_CONFIGURATION_INVALID",
+          message: configurationIssue
         }
-      : { status: "valid", validatedAt: input.project.pricing.pricedAt },
+      : !isCheckoutEligibleCustomPricing(input.project.pricing)
+        ? {
+            status: "invalid",
+            retryable: true,
+            code: "CUSTOM_PROJECT_PRICING_INVALID",
+            message: input.project.pricing.issues[0] ?? "Harga custom belum memenuhi aturan harga pasti."
+          }
+        : { status: "valid", validatedAt: input.project.pricing.pricedAt },
     ...(input.project.note ? { notes: input.project.note } : {}),
     projectId: input.project.id,
     projectVersion: String(input.project.version),
@@ -931,12 +961,12 @@ function legacyCustomProjectItem(
   return {
     ...line,
     quantity: customProject.pricing.totalQuantity,
-    validation: customProject.pricing.issues.length
+    validation: !isCheckoutEligibleCustomPricing(customProject.pricing)
       ? {
           status: "invalid",
           retryable: true,
           code: "CUSTOM_PROJECT_PRICING_INVALID",
-          message: customProject.pricing.issues[0]
+          message: customProject.pricing.issues[0] ?? "Harga custom tersimpan perlu divalidasi ulang."
         }
       : { status: "valid", validatedAt: customProject.pricing.pricedAt },
     ...migrateUiSnapshot(rawLine, line.display),
@@ -1072,7 +1102,8 @@ function readCustomProjectSnapshot(value: unknown): CustomProjectSnapshot | null
   const record = isRecord(value) ? value : null;
   const pricing = readCustomProjectPricing(record?.pricing);
   if (!project || !pricing || pricing.projectId !== project.id) return null;
-  return { ...project, pricing };
+  const snapshot: CustomProjectSnapshot = { ...project, pricing };
+  return customDesignPairPricingIntegrityIssue(snapshot) ? null : snapshot;
 }
 
 function readCustomProjectPricing(value: unknown): CustomProjectPricing | null {
@@ -1151,6 +1182,7 @@ function isCustomPricingLine(value: unknown): value is CustomPricingLine {
       "serviceSlug",
       "serviceName",
       "pricingRuleId",
+      "selectionId",
       "placementId",
       "placementName",
       "printSizeId",

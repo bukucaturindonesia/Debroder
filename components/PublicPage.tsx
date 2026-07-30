@@ -178,7 +178,8 @@ export function PageHero({
   secondaryCtaText,
   secondaryCtaHref,
   breadcrumbs,
-  contentPosition = "default"
+  contentPosition = "default",
+  variant = "default"
 }: {
   label?: string | null;
   title?: string | null;
@@ -196,6 +197,7 @@ export function PageHero({
   secondaryCtaHref?: string;
   breadcrumbs?: { label: string; href?: string }[];
   contentPosition?: "default" | "lower";
+  variant?: "default" | "category";
 }) {
   const cleanLabel = cleanDisplayText(label);
   const cleanTitle = cleanDisplayText(title);
@@ -206,11 +208,15 @@ export function PageHero({
   const hasCopy = Boolean(cleanLabel || cleanTitle || cleanDescription || primaryHref || (cleanSecondaryCtaText && secondaryCtaHref));
   const desktopImage = imageUrl || fallbackImages.pageHero;
   const mobileImage = mobileImageUrl || desktopImage;
+  const categoryHero = variant === "category";
 
   return (
     <section data-reveal className="bg-brand-offWhite">
-      <div className="relative w-full overflow-hidden bg-brand-offWhite sm:aspect-[16/5] sm:min-h-[260px] lg:aspect-[16/4.5]">
-        <div className="relative aspect-[4/5] w-full sm:absolute sm:inset-0 sm:aspect-auto">
+      <div className={categoryHero
+        ? "relative h-[280px] w-full overflow-hidden bg-brand-offWhite sm:h-[340px] lg:h-[420px]"
+        : "relative w-full overflow-hidden bg-brand-offWhite sm:aspect-[16/5] sm:min-h-[260px] lg:aspect-[16/4.5]"
+      }>
+        <div className={categoryHero ? "absolute inset-0" : "relative aspect-[4/5] w-full sm:absolute sm:inset-0 sm:aspect-auto"}>
           <ResponsivePicture
             desktopSrc={desktopImage}
             mobileSrc={mobileImage}
@@ -224,18 +230,21 @@ export function PageHero({
             desktopZoom={imageZoom}
             mobileZoom={mobileImageZoom}
           />
-          {hasCopy ? <div className="absolute inset-x-0 bottom-0 hidden h-[52%] bg-gradient-to-t from-black/48 via-black/14 to-transparent sm:block" /> : null}
+          {hasCopy ? <div className={`absolute inset-x-0 bottom-0 h-[62%] bg-gradient-to-t from-black/55 via-black/16 to-transparent ${categoryHero ? "block" : "hidden sm:block"}`} /> : null}
         </div>
-        {hasCopy ? <div className={`hero-content relative mx-auto px-4 text-center text-brand-charcoal sm:absolute sm:left-1/2 sm:right-auto sm:w-full sm:max-w-[1120px] sm:-translate-x-1/2 sm:p-0 sm:text-white ${contentPosition === "lower" ? "pb-5 pt-8 sm:bottom-5 lg:bottom-6" : "py-6 sm:bottom-8 lg:bottom-10"}`}>
+        {hasCopy ? <div className={categoryHero
+          ? "hero-content absolute inset-x-0 bottom-5 mx-auto w-full max-w-[1120px] px-4 text-center text-white sm:bottom-6 lg:bottom-8"
+          : `hero-content relative mx-auto px-4 text-center text-brand-charcoal sm:absolute sm:left-1/2 sm:right-auto sm:w-full sm:max-w-[1120px] sm:-translate-x-1/2 sm:p-0 sm:text-white ${contentPosition === "lower" ? "pb-5 pt-8 sm:bottom-5 lg:bottom-6" : "py-6 sm:bottom-8 lg:bottom-10"}`
+        }>
           {breadcrumbs?.length ? (
             <nav
               aria-label="Breadcrumb"
-              className="mb-3 flex flex-wrap justify-center gap-2 text-xs font-medium text-brand-charcoal/50 sm:text-white/70"
+              className={`mb-3 flex flex-wrap justify-center gap-2 text-xs font-medium ${categoryHero ? "text-white/70" : "text-brand-charcoal/50 sm:text-white/70"}`}
             >
               {breadcrumbs.map((item, index) => (
                 <span key={`${item.label}-${index}`} className="flex gap-2">
                   {item.href ? (
-                    <Link href={item.href} className="hover:text-brand-charcoal sm:hover:text-white">
+                    <Link href={item.href} className={categoryHero ? "hover:text-white" : "hover:text-brand-charcoal sm:hover:text-white"}>
                       {item.label}
                     </Link>
                   ) : (
@@ -247,7 +256,7 @@ export function PageHero({
             </nav>
           ) : null}
           {cleanLabel ? (
-            <p className="mx-auto w-fit bg-brand-charcoal px-3 py-1 text-center text-[15px] font-medium uppercase leading-5 text-white sm:bg-white sm:text-brand-charcoal">
+            <p className={`mx-auto w-fit px-3 py-1 text-center text-[15px] font-medium uppercase leading-5 ${categoryHero ? "bg-white text-brand-charcoal" : "bg-brand-charcoal text-white sm:bg-white sm:text-brand-charcoal"}`}>
               {cleanLabel}
             </p>
           ) : null}
@@ -257,7 +266,7 @@ export function PageHero({
             </h1>
           ) : null}
           {cleanDescription ? (
-            <p className="hero-subtitle mt-3 max-w-[680px] text-center text-[17px] leading-[1.45] text-brand-charcoal/70 sm:text-xl sm:text-white/85">
+            <p className={`hero-subtitle mt-3 max-w-[680px] text-center text-[17px] leading-[1.45] sm:text-xl ${categoryHero ? "text-white/85" : "text-brand-charcoal/70 sm:text-white/85"}`}>
               {cleanDescription}
             </p>
           ) : null}
@@ -265,7 +274,7 @@ export function PageHero({
             <div className="hero-actions mt-5 flex flex-col justify-center gap-3 sm:flex-row">
               <a
                 href={primaryHref}
-                className="cta inline-flex min-h-11 items-center justify-center rounded-full bg-brand-charcoal px-6 py-3 text-sm text-white transition hover:bg-black/80 sm:bg-white sm:text-brand-charcoal sm:hover:bg-brand-offWhite"
+                className={`cta inline-flex min-h-11 items-center justify-center rounded-full px-6 py-3 text-sm transition ${categoryHero ? "bg-white text-brand-charcoal hover:bg-brand-offWhite" : "bg-brand-charcoal text-white hover:bg-black/80 sm:bg-white sm:text-brand-charcoal sm:hover:bg-brand-offWhite"}`}
                 target={primaryHref.startsWith("http") ? "_blank" : undefined}
                 rel={
                   primaryHref.startsWith("http")
@@ -278,7 +287,7 @@ export function PageHero({
               {cleanSecondaryCtaText && secondaryCtaHref ? (
                 <Link
                   href={secondaryCtaHref}
-                  className="cta inline-flex min-h-11 items-center justify-center rounded-full border border-brand-softGray px-6 py-3 text-sm text-brand-charcoal transition hover:border-brand-charcoal sm:border-white/40 sm:text-white sm:hover:bg-white sm:hover:text-brand-charcoal"
+                  className={`cta inline-flex min-h-11 items-center justify-center rounded-full border px-6 py-3 text-sm transition ${categoryHero ? "border-white/40 text-white hover:bg-white hover:text-brand-charcoal" : "border-brand-softGray text-brand-charcoal hover:border-brand-charcoal sm:border-white/40 sm:text-white sm:hover:bg-white sm:hover:text-brand-charcoal"}`}
                 >
                   {cleanSecondaryCtaText}
                 </Link>
@@ -608,16 +617,10 @@ export function CategoryDetailPage({
 
 export async function PublicShell({
   children,
-  headerMode = "sticky",
-  headerExpandedAtTop = false,
-  theme = "default",
-  showHeader = true
+  theme = "default"
 }: {
   children: ReactNode;
-  headerMode?: "sticky" | "natural";
-  headerExpandedAtTop?: boolean;
   theme?: "default" | "jersey" | "jersey-commerce";
-  showHeader?: boolean;
 }) {
   const shellModel = await getPublicShellPageModel();
   const jerseyEditorial = theme === "jersey";
@@ -626,21 +629,10 @@ export async function PublicShell({
   return (
     <StorefrontCartBoundary>
       <main className={`public-site min-h-screen ${jerseyEditorial ? "jersey-theme bg-[#050505] text-white" : jerseyCommerce ? "jersey-commerce-theme bg-white text-[#111111]" : "bg-brand-offWhite text-brand-charcoal"}`}>
-        {showHeader ? (
-          <SiteHeader
-            positionMode={headerMode}
-            expandedAtTop={headerExpandedAtTop}
-            navigationFacets={jerseyEditorial ? undefined : header.navigationFacets}
-            preserveJerseyOutput={jerseyEditorial}
-            promo={header.promo}
-          />
-        ) : null}
+        <SiteHeader navigationFacets={header.navigationFacets} />
         <PageMotion />
         {children}
-        <PublicFooter
-          model={shellModel.data.footer}
-          variant="public-dark"
-        />
+        <PublicFooter model={shellModel.data.footer} />
       </main>
     </StorefrontCartBoundary>
   );

@@ -25,20 +25,12 @@ export type PublicNavigationFacetsViewModel = {
   }>;
 };
 
-export type PublicShellPromoViewModel = {
-  message: string;
-  actionLabel: string;
-  actionHref: string;
-};
-
 export type PublicShellHeaderViewModel = {
   navigationFacets: PublicNavigationFacetsViewModel;
-  whatsappHref: string;
-  promo: PublicShellPromoViewModel;
 };
 
 export type PublicShellSocialLinkViewModel = PageLinkViewModel & {
-  icon: "instagram" | "whatsapp" | "facebook" | "email";
+  icon: "instagram" | "whatsapp" | "email" | null;
 };
 
 export type PublicShellFooterViewModel = {

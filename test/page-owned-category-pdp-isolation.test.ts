@@ -68,7 +68,9 @@ function productRow(overrides: Partial<ProductRow> = {}): ProductRow {
     status_aktif: true,
     created_at: "2026-07-01T00:00:00.000Z",
     updated_at: "2026-07-01T00:00:00.000Z",
-    ...overrides
+    ...overrides,
+    sales_mode: overrides.sales_mode ?? null,
+    tier_scope: overrides.tier_scope ?? null
   };
 }
 

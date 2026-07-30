@@ -1,5 +1,26 @@
 import type { Product } from "@/lib/types";
 import { formatRupiah } from "@/lib/url";
+import {
+  productAllowsCustomOrder,
+  productAllowsReadyStock
+} from "@/lib/jersey-commerce";
+
+const APPAREL_SIZE_ORDER = new Map([
+  ["xxs", 0],
+  ["xs", 1],
+  ["s", 2],
+  ["m", 3],
+  ["l", 4],
+  ["xl", 5],
+  ["xxl", 6],
+  ["2xl", 6],
+  ["xxxl", 7],
+  ["3xl", 7],
+  ["4xl", 8],
+  ["5xl", 9],
+  ["6xl", 10],
+  ["7xl", 11]
+]);
 
 function cleanText(value: string | null | undefined) {
   const text = value?.trim();
@@ -28,11 +49,6 @@ function uniqueLabels(values: Array<string | null | undefined>) {
   return Array.from(labels.values());
 }
 
-/**
- * Uses active PIM variants when they exist. Legacy color tags are only used
- * when the product has no variant collection at all, preserving old records
- * without inventing a color count.
- */
 export function productCardColors(product: Product) {
   const variants = product.variants || [];
 
@@ -40,53 +56,165 @@ export function productCardColors(product: Product) {
     return uniqueLabels(
       variants
         .filter((variant) => variant.is_active !== false)
-        .map((variant) => variant.color_name || variant.variant_name)
+        .map((variant) => variant.color_name || variant.variant_name || variant.name)
     );
   }
 
   return uniqueLabels(product.color_tags || []);
 }
 
-export function productCardCategory(product: Product) {
-  return cleanText(product.kategori);
+export function productCardSizes(product: Product) {
+  const variants = product.variants || [];
+
+  if (variants.length) {
+    return uniqueLabels(
+      variants
+        .filter((variant) => variant.is_active !== false)
+        .flatMap((variant) =>
+          (variant.sizes || [])
+            .filter((size) => size.is_active !== false)
+            .map((size) => size.size_name)
+        )
+    );
+  }
+
+  return uniqueLabels(product.size_tags || []);
+}
+
+function canonicalHex(value: string | null | undefined) {
+  const hex = cleanText(value);
+  return /^#[0-9a-f]{6}$/i.test(hex) ? hex.toUpperCase() : "";
+}
+
+export function productCardSwatches(product: Product) {
+  const swatches = new Map<string, { label: string; hex: string }>();
+
+  (product.variants || [])
+    .filter((variant) => variant.is_active !== false)
+    .forEach((variant) => {
+      const label = cleanText(
+        variant.color_name || variant.variant_name || variant.name
+      );
+      const hex = canonicalHex(variant.hex_code || variant.color_hex);
+      if (!label || !hex) return;
+      const key = normalizeKey(label) || label.toLowerCase();
+      if (!swatches.has(key)) swatches.set(key, { label, hex });
+    });
+
+  return Array.from(swatches.values());
+}
+
+function apparelSizeRank(value: string) {
+  return APPAREL_SIZE_ORDER.get(normalizeKey(value)) ?? null;
+}
+
+export function productCardSizeRange(product: Product) {
+  const sizes = productCardSizes(product);
+  if (!sizes.length) return "";
+  if (sizes.length === 1) return sizes[0];
+
+  const ranked = sizes.map((label) => ({
+    label,
+    rank: apparelSizeRank(label)
+  }));
+  if (ranked.every((item) => item.rank !== null)) {
+    const ordered = Array.from(
+      new Map(
+        ranked
+          .sort((a, b) => Number(a.rank) - Number(b.rank))
+          .map((item) => [item.rank, item.label] as const)
+      ).values()
+    );
+    return ordered.length === 1
+      ? ordered[0]
+      : `${ordered[0]}–${ordered[ordered.length - 1]}`;
+  }
+
+  return sizes.length <= 3 ? sizes.join(" / ") : "";
+}
+
+export function productCardMaterial(product: Product) {
+  return uniqueLabels(product.material_tags || [])[0] || "";
 }
 
 export function productCardMetadata(product: Product) {
-  const category = productCardCategory(product);
   const colorCount = productCardColors(product).length;
-  const parts = [category, colorCount ? `${colorCount} warna` : ""].filter(Boolean);
+  const sizeRange = productCardSizeRange(product);
+  const material = productCardMaterial(product);
+  const parts = [
+    colorCount ? `${colorCount} warna` : "",
+    sizeRange,
+    material
+  ].filter(Boolean);
   return parts.join(" · ");
 }
 
-export function productCardHasPriceVariation(product: Product) {
-  if (
-    product.pricing_mode === "variant_based" ||
-    product.pricing_mode === "configurator_based" ||
-    product.pricing_mode === "custom_quote"
-  ) {
-    return true;
+export function productCommerceBadges(product: Product) {
+  const readyStock = productAllowsReadyStock(product);
+  const custom = productAllowsCustomOrder(product);
+  const primary = readyStock && custom
+    ? "Ready Stock + Custom"
+    : readyStock
+      ? "Ready Stock"
+      : custom
+        ? "Custom Available"
+        : "";
+
+  const activeSizes = (product.variants || [])
+    .filter((variant) => variant.is_active !== false)
+    .flatMap((variant) =>
+      (variant.sizes || []).filter((size) => size.is_active !== false)
+    );
+  const soldOut = readyStock
+    && (
+      activeSizes.length
+        ? activeSizes.every((size) => Number(size.stock_quantity ?? size.stock ?? 0) <= 0)
+        : typeof product.stock === "number" && product.stock <= 0
+    );
+  const pimSecondary = ["Sold Out", "Coming Soon", "Low Stock", "New"].includes(
+    cleanText(product.badge)
+  )
+    ? cleanText(product.badge)
+    : "";
+  const secondary = soldOut
+    ? "Sold Out"
+    : pimSecondary || (product.label_new ? "New" : "");
+
+  return uniqueLabels([primary, secondary]);
+}
+
+function exactMoneyValue(value: number | string | null | undefined) {
+  if (typeof value === "number") {
+    return Number.isSafeInteger(value) && value > 0 ? value : null;
+  }
+  if (typeof value !== "string") return null;
+  const normalized = value.trim();
+  if (!/^(?:Rp\s*)?\d+(?:[.,]\d{3})*$/i.test(normalized)) return null;
+  const amount = Number(normalized.replace(/[^\d]/g, ""));
+  return Number.isSafeInteger(amount) && amount > 0 ? amount : null;
+}
+
+function compactRupiah(value: number) {
+  return formatRupiah(value).replace(/^Rp\s+/, "Rp");
+}
+
+export function productCardPriceState(product: Product) {
+  const amount = exactMoneyValue(product.base_price);
+  if (amount === null) {
+    return {
+      status: "unavailable" as const,
+      amount: null,
+      label: "Harga belum tersedia"
+    };
   }
 
-  return (product.variants || []).some(
-    (variant) =>
-      Number(variant.price_adjustment || 0) !== 0 ||
-      (variant.sizes || []).some(
-        (size) => Number(size.price_adjustment || 0) !== 0
-      )
-  );
+  return {
+    status: "available" as const,
+    amount,
+    label: compactRupiah(amount)
+  };
 }
 
 export function productCardPrice(product: Product) {
-  const priceValue = product.price ?? product.harga ?? product.base_price;
-  const formatted = priceValue !== null && priceValue !== undefined
-    ? formatRupiah(priceValue)
-    : cleanText(product.price_label);
-
-  if (!formatted) return "";
-  if (/^mulai\b/i.test(formatted)) return formatted;
-
-  const isFormattedCurrency = /^rp\b/i.test(formatted);
-  return productCardHasPriceVariation(product) && isFormattedCurrency
-    ? `Mulai ${formatted}`
-    : formatted;
+  return productCardPriceState(product).label;
 }

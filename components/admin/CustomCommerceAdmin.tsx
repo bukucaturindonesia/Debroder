@@ -367,7 +367,7 @@ export function CustomCommerceAdmin() {
 
     const base = { custom_category_id: selected.id, name, slug, is_active: true, sort_order: 0 };
     const request = simpleKind === "placement"
-      ? supabase.from("custom_placements").insert({ ...base, description: null, price_adjustment: Math.max(0, simplePrice) })
+      ? supabase.from("custom_placements").insert({ ...base, description: null, price_adjustment: 0 })
       : simpleKind === "print-size"
         ? supabase.from("custom_print_sizes").insert({ ...base, description: null, width_mm: null, height_mm: null, price_adjustment: Math.max(0, simplePrice) })
         : supabase.from("custom_personalization_rules").insert({ ...base, pricing_type: "fixed_per_item", unit_price: Math.max(0, simplePrice), flat_price: null, estimated_min_price: null, estimated_max_price: null, quote_required: false });
@@ -411,7 +411,7 @@ export function CustomCommerceAdmin() {
       <AdminPageHeader
         eyebrow="WEBSITE / CUSTOM"
         title="CMS Custom Commerce"
-        description="Kelola kategori Custom, mapping produk PIM, Paket Instan, layanan kompatibel, posisi, ukuran cetak, dan personalisasi. Produk, varian, SKU, stok, serta harga dasar tetap berasal dari PIM."
+        description="Kelola kategori Custom, mapping produk PIM, Paket Instan, layanan kompatibel, Posisi Desain, Size Desain, dan personalisasi. Produk, varian, SKU, stok, serta harga dasar tetap berasal dari PIM."
         actions={(
           <>
             <button data-admin-mutation="true" type="button" onClick={startNewCategory} className="min-h-11 rounded-full border border-brand-softGray px-5 text-sm font-semibold">Kategori Baru</button>
@@ -501,17 +501,17 @@ export function CustomCommerceAdmin() {
             </section>
 
             <section className="border border-brand-softGray bg-white p-5 sm:p-6">
-              <div><p className="text-xs font-semibold uppercase tracking-[0.16em] text-brand-green">Konfigurasi tambahan</p><h2 className="mt-2 text-2xl font-semibold">Posisi, ukuran cetak, dan personalisasi</h2></div>
+              <div><p className="text-xs font-semibold uppercase tracking-[0.16em] text-brand-green">Konfigurasi tambahan</p><h2 className="mt-2 text-2xl font-semibold">Posisi Desain, Size Desain, dan personalisasi</h2></div>
               <form onSubmit={saveSimpleConfiguration} className="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-[180px_1fr_1fr_160px_auto]">
-                <select value={simpleKind} onChange={(event) => setSimpleKind(event.target.value as SimpleEditorKind)} className={inputClass}><option value="placement">Posisi desain</option><option value="print-size">Ukuran cetak</option><option value="personalization">Personalisasi</option></select>
+                <select value={simpleKind} onChange={(event) => setSimpleKind(event.target.value as SimpleEditorKind)} className={inputClass}><option value="placement">Posisi Desain</option><option value="print-size">Size Desain</option><option value="personalization">Personalisasi</option></select>
                 <input value={simpleName} onChange={(event) => { setSimpleName(event.target.value); if (!simpleSlug) setSimpleSlug(slugify(event.target.value)); }} placeholder="Nama" className={inputClass} />
                 <input value={simpleSlug} onChange={(event) => setSimpleSlug(slugify(event.target.value))} placeholder="slug" className={inputClass} />
-                <input type="number" min={0} value={simplePrice} onChange={(event) => setSimplePrice(numberValue(event.target.value))} placeholder="Tambahan harga" className={inputClass} />
+                <input type="number" min={0} disabled={simpleKind === "placement"} value={simpleKind === "placement" ? 0 : simplePrice} onChange={(event) => setSimplePrice(numberValue(event.target.value))} placeholder={simpleKind === "placement" ? "Posisi tanpa harga" : "Tambahan harga"} className={inputClass} />
                 <button data-admin-mutation="true" disabled={working} className="min-h-11 rounded-full bg-brand-charcoal px-5 text-sm font-semibold text-white disabled:opacity-45">Tambah</button>
               </form>
               <div className="mt-5 grid gap-4 lg:grid-cols-3">
-                <SimpleList title="Posisi" rows={selectedPlacements.map((row) => ({ id: row.id, name: row.name, detail: money(row.price_adjustment) }))} onDeactivate={(id) => void deactivateSimple("custom_placements", id)} />
-                <SimpleList title="Ukuran cetak" rows={selectedPrintSizes.map((row) => ({ id: row.id, name: row.name, detail: money(row.price_adjustment) }))} onDeactivate={(id) => void deactivateSimple("custom_print_sizes", id)} />
+                <SimpleList title="Posisi Desain" rows={selectedPlacements.map((row) => ({ id: row.id, name: row.name, detail: "Tanpa adjustment" }))} onDeactivate={(id) => void deactivateSimple("custom_placements", id)} />
+                <SimpleList title="Size Desain" rows={selectedPrintSizes.map((row) => ({ id: row.id, name: row.name, detail: money(row.price_adjustment) }))} onDeactivate={(id) => void deactivateSimple("custom_print_sizes", id)} />
                 <SimpleList title="Personalisasi" rows={selectedPersonalization.map((row) => ({ id: row.id, name: row.name, detail: row.pricing_type }))} onDeactivate={(id) => void deactivateSimple("custom_personalization_rules", id)} />
               </div>
             </section>

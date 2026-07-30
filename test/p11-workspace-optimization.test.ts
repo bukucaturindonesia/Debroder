@@ -68,7 +68,7 @@ describe("P11 workspace optimization", () => {
     const action = read("app/jersey/configurator/actions.ts");
 
     expect(page).toContain("readJerseyConfiguredProduct");
-    expect(access).toContain('.eq("pricing_mode", "custom_quote")');
+    expect(access).toContain('.eq("pricing_mode", "configurator_based")');
     expect(action).toContain("resolveConfiguredProductOnServer");
   });
 });

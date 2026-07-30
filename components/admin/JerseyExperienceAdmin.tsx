@@ -165,7 +165,7 @@ export function JerseyExperienceAdmin() {
 
     const payload = {
       name: form.name.trim(), media_type: form.media_type,
-      desktop_media_url: form.desktop_media_url.trim() || "/brand/debroder/social-preview.png",
+      desktop_media_url: form.desktop_media_url.trim() || "/debroder/social-preview.png",
       mobile_media_url: form.mobile_media_url?.trim() || null,
       poster_url: form.poster_url?.trim() || null,
       eyebrow: form.eyebrow.trim(), title: form.title.trim(), subtitle: form.subtitle.trim(),
