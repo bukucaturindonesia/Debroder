@@ -448,3 +448,23 @@ Last updated: 28 July 2026 (Asia/Makassar)
 - Runtime evidence: **DEFERRED** under the owner's active prohibition against
   further Windows local runtime launcher attempts.
 - Commit, push, deploy: **NOT PERFORMED**.
+
+## PUBLIC-KAOS-002 — Owner editorial sizing, CMS ownership, and filtered-grid correction
+
+- Severity: **MAJOR VISUAL/CONTENT OWNERSHIP**.
+- Status: **CLOSED IN CODE — STATIC VERIFICATION PASS; FULL QUALITY GATE PENDING**.
+- Root causes:
+  - Hero retained the previous oversized height and type scale.
+  - Featured was derived from PIM products rather than CMS editorial content and had a visible card gap.
+  - Campaign media used one wide linked banner instead of separate 400/1200 editorial slots.
+  - Category discovery did not reuse the Homepage Shop by Category scrollbar presentation.
+  - Opening the desktop filter reduced Kaos Polos catalog from three to two product columns.
+- Resolution:
+  - Hero dimensions changed to 60% and primary type dimensions to 80% of the previous values.
+  - Featured now reads up to two Kaos Polos `cms_banners` editorial records and uses a 0 px gap.
+  - Banner now uses 1:3 columns, 16:5 overall aspect ratio, 1 px gap, canonical Custom link on the left, and non-clickable right media.
+  - Category rail now uses native flex overflow, snap, and `premium-scrollbar` behavior.
+  - Desktop filtered catalog keeps `repeat(3, minmax(0, 1fr))`; cards resize without changing column count.
+  - Dedicated CMS route added without database or migration changes.
+- Verification: TypeScript parser **PASS**; static owner-contract matrix **PASS**; full pnpm gates and runtime **NOT RUN due missing dependencies and blocked registry access**.
+- Commit, push, deploy: **NOT PERFORMED**.

@@ -880,3 +880,68 @@ DEBRODER V1.2 REMAINS NOT COMPLETE**
   explicitly deferred; project remains NOT COMPLETE**.
 - Commit, push, deploy, reset, clean, stash, restore, checkout, rebase, and
   migration: **NOT PERFORMED**.
+
+---
+
+# Handoff — Kaos Polos owner editorial revision
+
+**Date:** 31 July 2026
+
+## Active scope and implementation
+
+- Revised only the public `/kaos-polos` presentation and the CMS controls required to own its editorial media.
+- Hero height is now 60% of the prior implementation and the hero typography scale is reduced to 80%.
+- Featured no longer reads PIM products. It reads up to two published `cms_banners` records for the Kaos Polos experience and renders them with a zero-pixel internal gap.
+- Editorial banner is locked to a responsive 1600 × 500 reference frame: 400 × 500 left, 1200 × 500 right, and a 1 px gap.
+- The left editorial media links to the canonical Custom Kaos Polos destination. The right media has no whole-media link; only its CMS caption CTA can navigate.
+- “Berdasarkan Kategori” is now “Pilih Kategori” and uses the same native horizontal-scroll, scroll-snap, and visible scrollbar pattern as Homepage Shop by Category.
+- Kaos Polos catalog cards retain 4:5 media and three desktop product columns both with the filter closed and with the 272 px filter sidebar open. The cards resize within the remaining width.
+- Added a dedicated CMS page at `/admin/commerce/kaos-polos` for two Featured editorials and the two editorial-banner media slots. Existing `cms_banners` columns are reused; no schema extension is required.
+
+## CMS content contract
+
+- `experience_key = 'kaos-polos'`
+- Featured records: `section_type = 'featured_editorial'` (maximum two public items by `sort_order`).
+- Left banner: `section_type = 'banner_editorial_left'`; recommended desktop media 400 × 500 px.
+- Right banner: `section_type = 'banner_editorial_right'`; recommended desktop media 1200 × 500 px.
+- Hero remains managed through `/admin/page-hero` with page key `kaos-polos`.
+- Desktop/mobile media, alt text, object positions, copy, CTA, order, active state, draft, and publish remain CMS-owned.
+
+## Files and routes
+
+- Changed:
+  `app/globals.css`,
+  `components/KaosPolosEditorialExperience.tsx`,
+  `components/ProductCatalog.tsx`,
+  `components/admin/layout/admin-navigation.ts`,
+  `test/kaos-polos-editorial-commerce.test.ts`,
+  `DEBRODER_MASTER_STATE.md`,
+  `CURRENT_PHASE_HANDOFF.md`, and
+  `DEBRODER_V1.2_ISSUE_REGISTER.md`.
+- Added:
+  `components/admin/KaosPolosExperienceAdmin.tsx` and
+  `app/admin/commerce/kaos-polos/page.tsx`.
+- Public route retained: `/kaos-polos`.
+- Admin route added: `/admin/commerce/kaos-polos`.
+
+## Database and migration
+
+- Database mutation: **NONE**.
+- Local or remote migration: **NONE**.
+- Existing `cms_banners` and `page_heroes` fields are sufficient.
+
+## Verification
+
+- TypeScript/TSX parser check with TypeScript 5.8.3: **PASS for all changed TS/TSX files**.
+- Owner contract static assertions: **PASS — section order, hero scaling, CMS-only Featured, 0 px Featured gap, 1600 × 500 banner, 1:3 split, 1 px gap, Custom link, non-clickable right media, category rail, 3-column filtered catalog, 4:5 product media, and CMS route**.
+- CSS structural check: **PASS**.
+- Conflict-marker and trailing-whitespace scan: pending final package check.
+- `pnpm typecheck`, lint, Vitest, full test, and build: **NOT RUN** because the uploaded repository has no `node_modules`, `pnpm` is not installed, and the sandbox cannot reach the npm registry.
+- Browser runtime and deployment: **NOT RUN**.
+
+## Remaining prerequisite and status
+
+- Owner must create/publish two `featured_editorial`, one `banner_editorial_left`, and one `banner_editorial_right` CMS records for the full composition to appear. Missing optional CMS sections remain hidden rather than fabricated.
+- Final repository quality gates and Vercel runtime screenshots remain owner/local-environment prerequisites.
+- Status: **IMPLEMENTED AND STATICALLY VERIFIED / FULL QUALITY GATE PENDING / NOT COMPLETE**.
+- Commit, push, deploy, and migration: **NOT PERFORMED**.

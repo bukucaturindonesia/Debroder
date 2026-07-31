@@ -608,9 +608,7 @@ export function ProductCatalog({
     </>
   );
   const catalogGridClass = isKaosEditorial
-    ? `kaos-editorial-catalog-grid grid grid-cols-2 gap-x-3 gap-y-8 sm:gap-x-4 md:grid-cols-3 lg:gap-x-4 lg:gap-y-12 ${
-        filtersOpen ? "lg:grid-cols-2" : "lg:grid-cols-3"
-      }`
+    ? "kaos-editorial-catalog-grid grid grid-cols-2 gap-x-3 gap-y-8 sm:gap-x-4 md:grid-cols-3 lg:grid-cols-3 lg:gap-x-4 lg:gap-y-12"
     : `grid grid-cols-2 gap-x-3 gap-y-8 sm:gap-x-4 md:grid-cols-3 ${
         isCategoryCatalog
           ? "lg:grid-cols-4 lg:gap-x-4 lg:gap-y-12"
@@ -625,7 +623,7 @@ export function ProductCatalog({
         <div className="hidden items-center justify-between gap-8 lg:flex">
           <div className="flex min-w-0 flex-1 items-center gap-3">
             {isKaosEditorial ? (
-              <p className="text-xl font-semibold">{title} ({visible.length})</p>
+              <p className="text-xl font-normal">{title} ({visible.length})</p>
             ) : (
               <input
                 aria-label="Cari produk"
@@ -670,7 +668,7 @@ export function ProductCatalog({
         <div className="lg:hidden">
           {isKaosEditorial ? (
             <div className="flex items-baseline justify-between gap-4">
-              <p className="text-lg font-semibold">{title}</p>
+              <p className="text-lg font-normal">{title}</p>
               <p className="public-muted-copy text-sm" aria-live="polite">
                 {visible.length} produk
               </p>
@@ -820,7 +818,7 @@ export function ProductCatalog({
               aria-live="polite"
               className={`mt-8 grid grid-cols-2 gap-x-3 gap-y-8 sm:gap-x-4 md:grid-cols-3 ${
                 isKaosEditorial
-                  ? filtersOpen ? "lg:grid-cols-2 lg:gap-x-4" : "lg:grid-cols-3 lg:gap-x-4"
+                  ? "lg:grid-cols-3 lg:gap-x-4"
                   : "lg:grid-cols-4 lg:gap-x-4"
               }`}
             >

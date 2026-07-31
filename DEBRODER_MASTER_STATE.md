@@ -370,3 +370,18 @@ Existing legal, CMS route, Preview performance, remote transaction E2E, data-int
 - Release status: **IMPLEMENTED; CODE AND BUILD VERIFIED; OWNER RUNTIME
   VERIFICATION REQUIRED; NOT COMPLETE**.
 - Commit, push, deploy: **NOT PERFORMED**.
+
+---
+
+## 15. Kaos Polos owner editorial revision — 31 July 2026
+
+- Hero height reduced by 40%; hero typography scale reduced by 20%.
+- Featured source changed from PIM products to two CMS editorial records; gap locked to 0 px.
+- Editorial banner locked to a 1600 × 500 reference frame with 400 × 500 left media, 1200 × 500 right media, and 1 px gap.
+- Left banner media routes to canonical Custom Kaos Polos; right banner media is non-clickable and keeps CTA ownership in the caption.
+- “Pilih Kategori” now follows the Homepage Shop by Category native carousel and scrollbar behavior.
+- Desktop catalog remains three product columns when the filter sidebar is open; product media remains 4:5.
+- Dedicated CMS route `/admin/commerce/kaos-polos` added using existing `cms_banners`; database/migration changes: **NONE**.
+- Static contract and TS/TSX parser verification: **PASS**.
+- Full pnpm quality gate and browser runtime: **PENDING OWNER/LOCAL ENVIRONMENT** because dependencies were not included and registry access is unavailable.
+- Package decision: **IMPLEMENTED AND STATICALLY VERIFIED / NOT COMPLETE**.
