@@ -38,17 +38,35 @@ describe("Kaos Polos editorial commerce", () => {
     expect(experience).toContain("<h1");
     expect(experience).toContain("Kaos Polos");
     expect(experience).toContain('catalogLayout="kaos-editorial"');
-    expect(experience).toContain("<PublicProductCard");
+    expect(experience).toContain("<ProductCatalog");
   });
 
-  it("locks three desktop columns, two columns with the sidebar, and two mobile columns", () => {
+  it("follows the owner blueprint order without the removed shortcut, spotlight, color, and directory sections", () => {
+    const experience = read("components/KaosPolosEditorialExperience.tsx");
+    const hero = experience.indexOf('data-kaos-blueprint-section="hero"');
+    const featured = experience.indexOf('data-kaos-blueprint-section="featured"');
+    const campaign = experience.indexOf('data-kaos-blueprint-section="campaign"');
+    const categories = experience.indexOf('data-kaos-blueprint-section="categories"');
+    const catalog = experience.indexOf('data-kaos-blueprint-section="catalog"');
+
+    expect(hero).toBeGreaterThan(-1);
+    expect(featured).toBeGreaterThan(hero);
+    expect(campaign).toBeGreaterThan(featured);
+    expect(categories).toBeGreaterThan(campaign);
+    expect(catalog).toBeGreaterThan(categories);
+    expect(experience).not.toContain("kaos-editorial-shortcuts");
+    expect(experience).not.toContain("Product spotlight");
+    expect(experience).not.toContain("Warna yang tersedia");
+    expect(experience).not.toContain("Jelajahi lebih lanjut");
+    expect(experience).not.toContain("editorialCampaign=");
+  });
+
+  it("keeps the canonical responsive product catalog contract", () => {
     const catalog = read("components/ProductCatalog.tsx");
 
     expect(catalog).toContain('"lg:grid-cols-2" : "lg:grid-cols-3"');
     expect(catalog).toContain("lg:grid-cols-[17rem_minmax(0,1fr)]");
-    expect(catalog).toContain("kaos-editorial-catalog-campaign");
-    expect(catalog).toContain("col-span-2 aspect-[8/5]");
-    expect(catalog).toContain("index === 1");
+    expect(catalog).toContain("grid grid-cols-2");
   });
 
   it("uses only canonical PIM media for product-derived editorial content", () => {
@@ -153,6 +171,6 @@ describe("Kaos Polos editorial commerce", () => {
 
     expect(card).not.toContain("Tambah ke Keranjang");
     expect(card).not.toContain("Beli Sekarang");
-    expect(experience).toContain("kaos-editorial-media-cta");
+    expect(experience).toContain("Pesan Sekarang");
   });
 });
