@@ -134,16 +134,29 @@ type GuidedFulfillmentAction =
   | { kind: "pickup_preparation"; label: string; instruction: string; next: string }
   | { kind: "final_check"; label: string; instruction: string; next: string }
   | { kind: "edit_tracking"; label: string; instruction: string; next: string }
+  | { kind: "customer_arrival"; label: string; instruction: string; next: string }
   | { kind: "pickup_cash"; label: string; instruction: string; next: string }
+  | { kind: "pickup_handover"; label: string; instruction: string; next: string }
+  | { kind: "pickup_complete"; label: string; instruction: string; next: string }
   | { kind: "proof"; label: string; instruction: string; next: string }
   | null;
 
 function resolveGuidedFulfillmentAction(record: FulfillmentRow, order: OrderRow | null, hasHandoverProof: boolean): GuidedFulfillmentAction {
+  const payAtStorePickup = record.method === "pickup" && order?.payment_method === "pay_at_store";
+  const paymentVerified = ["paid", "terverifikasi", "verified"].includes(order?.payment_status ?? "");
   if (record.archived_at || ["delivered", "picked_up", "cancelled"].includes(record.status)) return null;
   if (record.status === "preparing") {
     return { kind: "transition", target: "packing", label: "Persiapan Selesai, Mulai Pengemasan", instruction: "Pastikan seluruh item, ukuran, warna, dan jumlah sudah tersedia. Setelah siap, lanjutkan ke pengemasan.", next: "Pengemasan" };
   }
   if (record.status === "packing" && !record.final_verified_at) {
+    if (payAtStorePickup) {
+      return {
+        kind: "pickup_preparation",
+        label: "Buka Persiapan Pickup",
+        instruction: "Siapkan stok dan lokasi pickup terlebih dahulu. Verifikasi akhir dilakukan setelah barang Siap Diambil dan pelanggan tiba.",
+        next: "Siap Diambil"
+      };
+    }
     return { kind: "final_check", label: "Lakukan Pengecekan Akhir", instruction: "Selesaikan checklist isi paket, penerima, jumlah paket, dan kondisi kemasan sebelum penyerahan.", next: record.method === "pickup" ? "Siap Diambil" : "Siap Dikirim" };
   }
   if (record.status === "packing" && record.final_verified_at) {
@@ -173,10 +186,24 @@ function resolveGuidedFulfillmentAction(record: FulfillmentRow, order: OrderRow 
     return { kind: "transition", target: "delivered", label: "Konfirmasi Pesanan Diterima", instruction: "Bukti penerimaan sudah tersedia. Pastikan paket benar-benar diterima pelanggan sebelum menyelesaikan pesanan.", next: "Selesai" };
   }
   if (record.status === "ready_for_pickup" && !hasHandoverProof) {
-    return { kind: "proof", label: "Unggah Bukti Serah Terima", instruction: "Saat pelanggan sudah hadir dan barang akan diserahkan, unggah foto, tanda tangan, atau dokumen serah-terima terlebih dahulu.", next: order?.payment_method === "pay_at_store" ? "Terima Pembayaran & Serahkan Pesanan" : "Konfirmasi Pesanan Sudah Diambil" };
+    if (!payAtStorePickup || (paymentVerified && Boolean(record.customer_arrived_at) && Boolean(record.final_verified_at))) {
+      return { kind: "proof", label: "Unggah Bukti Serah Terima", instruction: "Saat barang akan diserahkan, unggah foto, tanda tangan, atau dokumen serah-terima terlebih dahulu.", next: payAtStorePickup ? "Catat Serah Terima" : "Konfirmasi Pesanan Sudah Diambil" };
+    }
   }
-  if (record.status === "ready_for_pickup" && order?.payment_method === "pay_at_store" && !["paid", "terverifikasi"].includes(order.payment_status)) {
-    return { kind: "pickup_cash", label: "Terima Pembayaran & Serahkan Pesanan", instruction: "Catat penerimaan pembayaran tunai dan serah terima dalam satu tindakan atomik.", next: "Selesai" };
+  if (record.status === "ready_for_pickup" && payAtStorePickup && !record.customer_arrived_at) {
+    return { kind: "customer_arrival", label: "Konfirmasi Pelanggan Tiba", instruction: "Gunakan tindakan ini hanya ketika pelanggan benar-benar sudah tiba. Setelah tersimpan, lakukan verifikasi akhir barang dan total canonical.", next: "Verifikasi Akhir & Harga" };
+  }
+  if (record.status === "ready_for_pickup" && payAtStorePickup && !record.final_verified_at) {
+    return { kind: "final_check", label: "Lakukan Verifikasi Akhir & Harga", instruction: "Cocokkan barang, jumlah, kondisi, dan total canonical setelah pelanggan tiba. Jangan mengubah harga dari client.", next: "Pembayaran di Toko" };
+  }
+  if (record.status === "ready_for_pickup" && payAtStorePickup && !paymentVerified) {
+    return { kind: "pickup_cash", label: "Catat Pembayaran di Toko", instruction: "Catat pembayaran sesuai saldo canonical. Tindakan ini tidak menyerahkan barang dan aman untuk retry.", next: "Serah Terima / Pickup" };
+  }
+  if (record.status === "ready_for_pickup" && payAtStorePickup && paymentVerified && hasHandoverProof && !record.handover_completed_at) {
+    return { kind: "pickup_handover", label: "Catat Serah Terima", instruction: "Pembayaran dan bukti sudah tersedia. Konfirmasi barang benar-benar diserahkan kepada pelanggan.", next: "Tutup Pesanan" };
+  }
+  if (record.status === "ready_for_pickup" && payAtStorePickup && record.handover_completed_at) {
+    return { kind: "pickup_complete", label: "Tutup Pesanan sebagai Selesai", instruction: "Serah terima sudah tercatat. Tutup order dan fulfillment secara terminal; retry tidak membuat event atau mutasi kedua.", next: "Selesai" };
   }
   if (record.status === "ready_for_pickup") {
     return { kind: "transition", target: "picked_up", label: "Konfirmasi Pesanan Sudah Diambil", instruction: "Pastikan identitas/kode pengambilan cocok dan barang benar-benar telah diserahkan kepada pelanggan.", next: "Selesai" };
@@ -249,7 +276,7 @@ export function FulfillmentDetailAdmin() {
     const userId = sessionResult.data.session?.user.id;
     const recordResult = await supabase
       .from("fulfillments")
-      .select("id,fulfillment_number,order_id,job_order_id,method,status,receiver_name,receiver_phone,destination,courier,tracking_number,package_count,scheduled_at,packing_at,ready_at,shipped_at,delivered_at,picked_up_at,problem_at,cancelled_at,cancel_reason,notes,idempotency_key,created_by,updated_by,created_at,updated_at,archived_at,archived_by,archive_reason,final_verification_checklist,final_verified_at,final_verified_by,final_verification_note")
+      .select("id,fulfillment_number,order_id,job_order_id,method,status,receiver_name,receiver_phone,destination,courier,tracking_number,package_count,scheduled_at,packing_at,ready_at,shipped_at,delivered_at,picked_up_at,problem_at,cancelled_at,cancel_reason,notes,idempotency_key,created_by,updated_by,created_at,updated_at,archived_at,archived_by,archive_reason,customer_arrived_at,customer_arrived_by,customer_arrival_note,final_verification_checklist,final_verified_at,final_verified_by,final_verification_note,handover_completed_at,handover_completed_by,handover_note")
       .eq("id", fulfillmentId)
       .maybeSingle();
 
@@ -416,7 +443,11 @@ export function FulfillmentDetailAdmin() {
 
   async function completeFinalVerification() {
     const checks = finalVerificationChecks(Array.isArray(order?.custom_project_snapshot) && order.custom_project_snapshot.length > 0, record?.method ?? "");
-    if (!record || !canManage || working || record.status !== "packing" || checks.some(([key]) => !finalChecklist[key])) return;
+    const payAtStorePickup = record?.method === "pickup" && order?.payment_method === "pay_at_store";
+    const validStatus = payAtStorePickup
+      ? record?.status === "ready_for_pickup" && Boolean(record.customer_arrived_at)
+      : record?.status === "packing";
+    if (!record || !canManage || working || !validStatus || checks.some(([key]) => !finalChecklist[key])) return;
     const supabase = createSupabaseClient();
     if (!supabase) return;
     setWorking(true); setNotice(null);
@@ -437,7 +468,7 @@ export function FulfillmentDetailAdmin() {
       });
       return;
     }
-    setNotice({ type: "success", text: "Pengecekan akhir tersimpan. Pengiriman / pickup sekarang dapat dilanjutkan." });
+    setNotice({ type: "success", text: payAtStorePickup ? "Verifikasi akhir tersimpan. Pembayaran di toko sekarang dapat dicatat." : "Pengecekan akhir tersimpan. Pengiriman / pickup sekarang dapat dilanjutkan." });
     await loadData();
   }
 
@@ -483,29 +514,92 @@ export function FulfillmentDetailAdmin() {
     }
   }
 
-  async function completePickupAtStore() {
+  async function confirmCustomerArrival() {
     if (!record || record.status !== "ready_for_pickup" || working || !canManage) return;
-    if (!hasHandoverProof) {
-      setNotice({ type: "warning", text: "Unggah bukti serah-terima terlebih dahulu sebelum menerima pembayaran dan menyelesaikan pickup." });
-      document.getElementById("handover-proof")?.scrollIntoView({ behavior: "smooth", block: "start" });
+    const note = window.prompt("Catatan kedatangan pelanggan (opsional):")?.trim() || null;
+    const supabase = createSupabaseClient();
+    if (!supabase) return;
+    setWorking(true); setNotice(null);
+    const result = await supabase.rpc("begin_pickup_final_verification_v1", {
+      p_fulfillment_id: record.id,
+      p_note: note,
+      p_expected_updated_at: record.updated_at
+    });
+    setWorking(false);
+    if (result.error) {
+      setNotice({ type: "error", text: `Kedatangan pelanggan belum dapat dicatat: ${result.error.message}` });
+      await loadData();
       return;
     }
+    setNotice({ type: "success", text: "Kedatangan pelanggan tersimpan. Lanjutkan verifikasi akhir dan harga." });
+    await loadData();
+  }
+
+  async function completePickupAtStore() {
+    if (!record || record.status !== "ready_for_pickup" || working || !canManage) return;
     const notes = window.prompt("Catatan penerimaan pembayaran di toko:")?.trim() || "Pembayaran penuh diterima saat pengambilan";
     const supabase = createSupabaseClient();
     if (!supabase) return;
     setWorking(true);
     setNotice(null);
-    const result = await supabase.rpc("complete_ready_stock_pickup_at_store", {
+    const result = await supabase.rpc("record_pay_at_store_payment_v1", {
       p_fulfillment_id: record.id,
-      p_admin_notes: notes
+      p_admin_notes: notes,
+      p_expected_updated_at: record.updated_at
     });
     setWorking(false);
     if (result.error) {
-      setNotice({ type: "error", text: `Pembayaran dan serah terima belum dapat diselesaikan: ${result.error.message}` });
+      setNotice({ type: "error", text: `Pembayaran belum dapat dicatat: ${result.error.message}` });
       await loadData();
       return;
     }
-    setNotice({ type: "success", text: "Pembayaran tunai dan serah terima berhasil dicatat dalam satu proses." });
+    setNotice({ type: "success", text: "Pembayaran di toko berhasil dicatat. Lanjutkan bukti dan serah terima." });
+    await loadData();
+  }
+
+  async function recordPickupHandover() {
+    if (!record || record.status !== "ready_for_pickup" || working || !canManage) return;
+    if (!hasHandoverProof) {
+      setNotice({ type: "warning", text: "Unggah bukti serah-terima terlebih dahulu." });
+      document.getElementById("handover-proof")?.scrollIntoView({ behavior: "smooth", block: "start" });
+      return;
+    }
+    const note = window.prompt("Catatan serah terima pickup:")?.trim() || "Barang diserahkan kepada pelanggan di toko";
+    const supabase = createSupabaseClient();
+    if (!supabase) return;
+    setWorking(true); setNotice(null);
+    const result = await supabase.rpc("record_pickup_handover_v1", {
+      p_fulfillment_id: record.id,
+      p_note: note,
+      p_expected_updated_at: record.updated_at
+    });
+    setWorking(false);
+    if (result.error) {
+      setNotice({ type: "error", text: `Serah terima belum dapat dicatat: ${result.error.message}` });
+      await loadData();
+      return;
+    }
+    setNotice({ type: "success", text: "Serah terima tersimpan. Tutup pesanan untuk menyimpan state terminal." });
+    await loadData();
+  }
+
+  async function completePickupOrder() {
+    if (!record || record.status !== "ready_for_pickup" || working || !canManage) return;
+    const supabase = createSupabaseClient();
+    if (!supabase) return;
+    setWorking(true); setNotice(null);
+    const result = await supabase.rpc("complete_pickup_order_v1", {
+      p_fulfillment_id: record.id,
+      p_note: "Pickup selesai melalui alur Pay at Store",
+      p_expected_updated_at: record.updated_at
+    });
+    setWorking(false);
+    if (result.error) {
+      setNotice({ type: "error", text: `Pesanan belum dapat ditutup: ${result.error.message}` });
+      await loadData();
+      return;
+    }
+    setNotice({ type: "success", text: "Pesanan pickup selesai dan state terminal tersimpan." });
     await loadData();
   }
 
@@ -530,6 +624,18 @@ export function FulfillmentDetailAdmin() {
     }
     if (action.kind === "proof") {
       document.getElementById("handover-proof")?.scrollIntoView({ behavior: "smooth", block: "start" });
+      return;
+    }
+    if (action.kind === "customer_arrival") {
+      void confirmCustomerArrival();
+      return;
+    }
+    if (action.kind === "pickup_handover") {
+      void recordPickupHandover();
+      return;
+    }
+    if (action.kind === "pickup_complete") {
+      void completePickupOrder();
       return;
     }
     void completePickupAtStore();
@@ -688,7 +794,12 @@ export function FulfillmentDetailAdmin() {
 
   const isCustomOrder = Array.isArray(order?.custom_project_snapshot) && order.custom_project_snapshot.length > 0;
   const finalChecks = finalVerificationChecks(isCustomOrder, record.method);
-  const transitions = getFulfillmentTransitions(record.method, record.status).filter((target) => !(record.status === "packing" && !record.final_verified_at && ["ready_to_ship", "ready_for_pickup"].includes(target)));
+  const payAtStorePickup = record.method === "pickup" && order?.payment_method === "pay_at_store";
+  const transitions = getFulfillmentTransitions(record.method, record.status).filter((target) => {
+    if (record.status === "packing" && !record.final_verified_at && ["ready_to_ship", "ready_for_pickup"].includes(target) && !payAtStorePickup) return false;
+    if (payAtStorePickup && target === "picked_up") return false;
+    return true;
+  });
   const hasHandoverProof = files.some((file) => ["handover", "signature", "photo"].includes(file.file_type));
   const guidedAction = resolveGuidedFulfillmentAction(record, order, hasHandoverProof);
   const exceptionTransitions = transitions.filter((target) => {
@@ -722,7 +833,7 @@ export function FulfillmentDetailAdmin() {
     qc: "Pastikan hasil QC terakhir berstatus lulus"
   };
   const proofUploadActive = !record.archived_at && (
-    (record.method === "pickup" && record.status === "ready_for_pickup")
+    (record.method === "pickup" && record.status === "ready_for_pickup" && (!payAtStorePickup || ["paid", "terverifikasi", "verified"].includes(order?.payment_status ?? "")))
     || (record.method === "shipping" && ["ready_to_ship", "shipped", "in_transit"].includes(record.status))
   );
   const proofSectionVisible = proofUploadActive || files.length > 0;
@@ -800,6 +911,8 @@ export function FulfillmentDetailAdmin() {
           <Data label="Jadwal" value={formatFulfillmentDate(record.scheduled_at)} />
           <Data label="Kurir" value={record.courier || "-"} />
           <Data label="Nomor Resi Kurir" value={record.tracking_number || "Belum tersedia"} />
+          {payAtStorePickup ? <Data label="Pelanggan Tiba" value={formatFulfillmentDate(record.customer_arrived_at)} /> : null}
+          {payAtStorePickup ? <Data label="Serah Terima Tercatat" value={formatFulfillmentDate(record.handover_completed_at)} /> : null}
           <Data label="Dibuat" value={formatFulfillmentDate(record.created_at)} />
           <div className="sm:col-span-2 lg:col-span-3"><Data label="Tujuan / Lokasi Pickup" value={record.destination || (record.method === "pickup" ? "Ambil di toko" : "-")} /></div>
           <div className="sm:col-span-2 lg:col-span-3"><Data label="Catatan" value={record.notes || "-"} /></div>
@@ -895,13 +1008,15 @@ export function FulfillmentDetailAdmin() {
           ) : null}
         </section>
 
-        {(record.status === "packing" || record.final_verified_at) ? (
+        {((record.status === "packing" && !payAtStorePickup) || record.final_verified_at || (payAtStorePickup && record.status === "ready_for_pickup" && record.customer_arrived_at)) ? (
           <section id="final-verification" className="scroll-mt-24 border border-brand-softGray bg-white p-5 sm:p-7">
             <div className="flex flex-wrap items-start justify-between gap-4"><div><p className="text-xs font-semibold uppercase tracking-[0.12em] text-brand-charcoal/45">{isCustomOrder ? "PESANAN CUSTOM" : "READY STOCK"}</p><h2 className="mt-2 text-xl font-semibold">Pengecekan Akhir</h2><p className="mt-2 max-w-3xl text-sm leading-6 text-brand-charcoal/60">Bandingkan pesanan, isi paket, kondisi kemasan, dan data penerima. {isCustomOrder ? "Hasil QC dan desain aktif juga wajib cocok. " : ""}Pengiriman terkunci sampai semua barang dikonfirmasi.</p></div>{record.final_verified_at ? <span className="rounded-full bg-emerald-50 px-3 py-1 text-xs font-semibold text-brand-green">Selesai {formatFulfillmentDate(record.final_verified_at)}</span> : <span className="rounded-full bg-amber-50 px-3 py-1 text-xs font-semibold text-amber-800">Wajib diselesaikan</span>}</div>
             <div className="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
               {finalChecks.map(([key, label]) => (
                 <label key={key} className="grid min-h-[104px] cursor-pointer grid-cols-[auto_minmax(0,1fr)] items-start gap-3 border border-brand-softGray bg-brand-offWhite/35 p-4">
                   <input
+                    id={`final-check-${key}`}
+                    name={`final_check_${key}`}
                     type="checkbox"
                     checked={Boolean(finalChecklist[key])}
                     disabled={Boolean(record.final_verified_at) || !canManage}
@@ -915,7 +1030,7 @@ export function FulfillmentDetailAdmin() {
                 </label>
               ))}
             </div>
-            <label className="mt-5 grid gap-2 text-sm font-semibold">Catatan pengecekan akhir<textarea rows={3} value={finalNote} disabled={Boolean(record.final_verified_at) || !canManage} onChange={(event) => setFinalNote(event.target.value)} className="rounded-lg border border-brand-softGray px-4 py-3" /></label>
+            <label htmlFor="final-verification-note" className="mt-5 grid gap-2 text-sm font-semibold">Catatan pengecekan akhir<textarea id="final-verification-note" name="final_verification_note" rows={3} value={finalNote} disabled={Boolean(record.final_verified_at) || !canManage} onChange={(event) => setFinalNote(event.target.value)} className="rounded-lg border border-brand-softGray px-4 py-3" /></label>
             {!record.final_verified_at ? <button type="button" onClick={() => void completeFinalVerification()} disabled={working || !canManage || finalChecks.some(([key]) => !finalChecklist[key])} className="mt-5 min-h-11 rounded-full bg-brand-green px-5 text-sm font-semibold text-white disabled:opacity-45">{working ? "Menyimpan..." : "Konfirmasi Pengecekan Akhir"}</button> : <p className="mt-5 text-sm text-brand-charcoal/60">Checklist tersimpan read-only. Perubahan detail paket/penerima pada tahap packing akan membatalkan verifikasi dan mewajibkan pemeriksaan ulang.</p>}
           </section>
         ) : null}

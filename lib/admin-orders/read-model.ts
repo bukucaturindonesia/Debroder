@@ -88,6 +88,8 @@ export function projectAdminOrderDetailReadModel(
     jobOrderStatus: jobOrder?.status ?? null,
     qualityControlStatus: qualityControl?.result ?? qualityControl?.status ?? null,
     finalVerificationCompleted: Boolean(fulfillment?.final_verified_at),
+    customerArrivedAt: fulfillment?.customer_arrived_at ?? null,
+    handoverCompletedAt: fulfillment?.handover_completed_at ?? null,
     trackingNumber: fulfillment?.tracking_number ?? null,
     taskRevision: fulfillment?.updated_at
       ?? jobOrder?.updated_at
@@ -198,7 +200,9 @@ function projectFulfillment(row: Record<string, unknown>): AdminOrderFulfillment
     method: requiredText(row.method, "Fulfillment tanpa metode."),
     courier: nullableText(row.courier),
     tracking_number: nullableText(row.tracking_number),
-    final_verified_at: nullableText(row.final_verified_at)
+    customer_arrived_at: nullableText(row.customer_arrived_at),
+    final_verified_at: nullableText(row.final_verified_at),
+    handover_completed_at: nullableText(row.handover_completed_at)
   };
 }
 

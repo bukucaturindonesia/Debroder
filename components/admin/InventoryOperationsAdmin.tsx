@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useCallback, useEffect, useMemo, useState, type ChangeEvent } from "react";
 import { AdminPageHeader } from "@/components/admin/layout/AdminPageHeader";
 import { AdminAlert, AdminEmptyState, AdminLoadingState } from "@/components/admin/ui/AdminFeedback";
@@ -8,7 +9,7 @@ import { operationsApiFetch } from "@/lib/admin-operations-api";
 type Location = { id: string; code: string; name: string; location_type: string; is_pickup_enabled: boolean };
 type Transfer = { id: string; transfer_number: string; status: string; created_at: string; received_at: string | null; orders: { order_number?: string } | null; from_location: { name?: string } | null; to_location: { name?: string } | null };
 type Preparation = {
-  id: string; order_id: string; status: string; ready_at: string | null; pickup_deadline: string | null;
+  id: string; order_id: string; fulfillment_id: string; status: string; ready_at: string | null; pickup_deadline: string | null;
   extension_requested_at: string | null; requested_deadline: string | null; extension_reason: string | null;
   orders: { order_number?: string; customer_name?: string; payment_method?: string; payment_status?: string; status?: string } | null;
   inventory_locations: { name?: string; code?: string } | null;
@@ -135,7 +136,11 @@ export function InventoryOperationsAdmin({ initialOrderId = "" }: { initialOrder
           <div className="mt-4 flex flex-wrap gap-2">
             {prep.status === "transfer_required" ? <button data-admin-mutation="true" disabled={working===prep.id} onClick={()=>void run("create_pickup_transfer",{preparationId:prep.id,idempotencyKey:`pickup-${prep.id}-${Date.now()}`},prep.id)} className="min-h-10 rounded-full border border-brand-softGray px-4 text-xs font-semibold">Buat Transfer Stok</button> : null}
             {prep.status === "checking" ? <button data-admin-mutation="true" disabled={working===prep.id} onClick={()=>void run("mark_pickup_ready",{preparationId:prep.id,deadlineHours:72},prep.id)} className="min-h-10 rounded-full bg-brand-green px-4 text-xs font-semibold text-white">Tandai Siap Diambil</button> : null}
-            {["ready_for_pickup","no_show"].includes(prep.status) ? <button data-admin-mutation="true" disabled={working===prep.id} onClick={()=>void run("complete_handover",{preparationId:prep.id,note:"Diserahkan melalui panel operasional"},prep.id)} className="min-h-10 rounded-full bg-brand-charcoal px-4 text-xs font-semibold text-white">Selesaikan Serah Terima</button> : null}
+            {["ready_for_pickup","no_show"].includes(prep.status) && prep.orders?.payment_method === "pay_at_store"
+              ? <Link href={`/admin/fulfillments/${prep.fulfillment_id}#guided-action`} className="inline-flex min-h-10 items-center rounded-full bg-brand-charcoal px-4 text-xs font-semibold text-white">Lanjutkan Verifikasi di Pickup</Link>
+              : ["ready_for_pickup","no_show"].includes(prep.status)
+                ? <button data-admin-mutation="true" disabled={working===prep.id} onClick={()=>void run("complete_handover",{preparationId:prep.id,note:"Diserahkan melalui panel operasional"},prep.id)} className="min-h-10 rounded-full bg-brand-charcoal px-4 text-xs font-semibold text-white">Selesaikan Serah Terima</button>
+                : null}
             {prep.extension_requested_at ? <><button data-admin-mutation="true" disabled={working===prep.id} onClick={()=>void run("decide_extension",{preparationId:prep.id,approve:true,deadline:prep.requested_deadline,reason:"Disetujui Admin"},prep.id)} className="min-h-10 rounded-full border border-emerald-300 px-4 text-xs font-semibold text-emerald-800">Setujui Perpanjangan</button><button data-admin-mutation="true" disabled={working===prep.id} onClick={()=>void run("decide_extension",{preparationId:prep.id,approve:false,deadline:prep.pickup_deadline,reason:"Ditolak Admin"},prep.id)} className="min-h-10 rounded-full border border-red-300 px-4 text-xs font-semibold text-red-700">Tolak</button></> : null}
           </div>
         </article>;

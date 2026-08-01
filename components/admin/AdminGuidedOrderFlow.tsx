@@ -44,6 +44,10 @@ const ACTION_LABELS: Record<Exclude<OrderPrimaryAction, null>, string> = {
   run_quality_control: "Buka Pemeriksaan Kualitas",
   pack_order: "Lanjutkan Pengemasan",
   run_final_check: "Lakukan Pengecekan Akhir",
+  confirm_customer_arrival: "Konfirmasi Pelanggan Tiba",
+  record_pay_at_store_payment: "Catat Pembayaran di Toko",
+  record_pickup_handover: "Catat Serah Terima",
+  complete_pickup_order: "Tutup Pesanan Pickup",
   dispatch_order: "Siapkan Penyerahan",
   handover_pickup: "Konfirmasi Serah Terima",
   contact_admin: "Lihat Penyelesaian Pesanan",
@@ -52,8 +56,8 @@ const ACTION_LABELS: Record<Exclude<OrderPrimaryAction, null>, string> = {
 
 export function AdminGuidedOrderFlow({ order, activeStage, jobOrder, qualityControl, fulfillment }: Props) {
   const fulfillmentMethod = fulfillment?.method ?? order.delivery_method;
-  const compactJourney = buildCompactOrderJourney({ stage: activeStage, fulfillmentMethod });
-  const detailedJourney = buildOrderJourney({ stage: activeStage, fulfillmentMethod });
+  const compactJourney = buildCompactOrderJourney({ stage: activeStage, fulfillmentMethod, paymentMethod: order.payment_method });
+  const detailedJourney = buildOrderJourney({ stage: activeStage, fulfillmentMethod, paymentMethod: order.payment_method });
   const action = resolveAction(order.id, activeStage.primaryAction, jobOrder?.id, fulfillment?.id);
   const terminal = activeStage.isTerminal;
   const terminalPaymentAction = terminal && ["pending", "pending_verification", "menunggu_verifikasi", "rejected", "ditolak"].includes(order.payment_status)
@@ -98,7 +102,7 @@ export function AdminGuidedOrderFlow({ order, activeStage, jobOrder, qualityCont
           </div>
         </div>
 
-        <ol className="mt-7 grid gap-2 sm:grid-cols-3 xl:grid-cols-6" aria-label="Tahap utama pesanan admin">
+        <ol className="mt-7 grid gap-2 sm:grid-cols-3 xl:grid-cols-7" aria-label="Tahap utama pesanan admin">
           {compactJourney.map((step) => {
             const current = step.state === "current" || step.state === "stopped";
             return (
@@ -172,6 +176,10 @@ function resolveAction(orderId: string, action: OrderPrimaryAction, jobOrderId?:
     run_quality_control: `/admin/quality-control${jobOrderId ? `?job_order=${jobOrderId}` : ""}`,
     pack_order: fulfillmentHref,
     run_final_check: fulfillmentHref,
+    confirm_customer_arrival: fulfillmentHref,
+    record_pay_at_store_payment: fulfillmentHref,
+    record_pickup_handover: fulfillmentHref,
+    complete_pickup_order: fulfillmentHref,
     dispatch_order: fulfillmentHref,
     handover_pickup: fulfillmentHref,
     contact_admin: `/admin/orders/${orderId}?tab=history#history`,
@@ -186,6 +194,8 @@ function shortAction(action: Exclude<OrderPrimaryAction, null>) {
     prepare_quote: "Buka Penawaran", approve_quote: "Pantau", approve_total: "Pantau", open_payment: "Buka Pembayaran",
     review_payment: "Verifikasi", resubmit_payment: "Pantau", create_job_order: "Buat SPK", prepare_goods: "Lanjutkan",
     run_production: "Buka Produksi", run_quality_control: "Buka QC", pack_order: "Lanjutkan", run_final_check: "Periksa",
+    confirm_customer_arrival: "Pelanggan Tiba", record_pay_at_store_payment: "Catat Bayar",
+    record_pickup_handover: "Serah Terima", complete_pickup_order: "Tutup Pesanan",
     dispatch_order: "Siapkan", handover_pickup: "Serahkan", contact_admin: "Lihat", track_only: "Riwayat"
   }[action];
 }
@@ -194,6 +204,9 @@ function adminInstruction(stage: OrderActiveStageResolution) {
   if (stage.isTerminal) return stage.activeStage === "completed"
     ? "Pesanan telah selesai. Tidak ada tindakan operasional baru. Gunakan riwayat untuk pemeriksaan setelah penjualan."
     : "Pesanan sudah tidak aktif. Jangan melanjutkan produksi, pengemasan, atau pengiriman. Temuan pembayaran yang masih terbuka harus ditutup tanpa mengaktifkan kembali pesanan.";
+  if (stage.primaryAction === "confirm_customer_arrival") {
+    return "Tunggu pelanggan benar-benar tiba, lalu konfirmasi kedatangan sebelum memulai verifikasi akhir dan harga.";
+  }
   if (stage.responsibility === "customer") return `Tidak ada tindakan admin utama saat ini. Pelanggan sedang menyelesaikan tahap ${stage.customerStatusLabel.toLowerCase()}.`;
   return stage.nextStep;
 }

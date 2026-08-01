@@ -41,6 +41,7 @@ export type CustomerOrderPresentation = {
   journey: OrderJourneyStep[];
   activeStage: OrderActiveStageResolution;
   fulfillmentMethod: string | null;
+  paymentMethod: string | null;
 };
 
 // Browser dan Admin memakai resolver TypeScript yang sama. Nilai RPC lama hanya
@@ -50,8 +51,8 @@ export function resolveCustomerOrderPresentation(
   input: CustomerOrderPresentationInput
 ): CustomerOrderPresentation {
   const canonicalStage = resolveCanonicalOrderActiveStage(input);
-  // Preserve the frozen compatibility contract while passing the already-resolved
-  // canonical stage as the authoritative payload. Stale RPC data never wins here.
+  // Preserve the compatibility payload contract without allowing a stale RPC
+  // stage to outrank newer payment, fulfillment, or milestone facts.
   const stage = resolveOrderActiveStageFromServer(input, canonicalStage);
   return {
     responsibility: stage.responsibility,
@@ -68,9 +69,10 @@ export function resolveCustomerOrderPresentation(
     action: customerAction(stage),
     blockingReason: stage.blockingReason,
     warning: stage.warning,
-    journey: buildOrderJourney({ stage, fulfillmentMethod: input.fulfillmentMethod }),
+    journey: buildOrderJourney({ stage, fulfillmentMethod: input.fulfillmentMethod, paymentMethod: input.paymentMethod }),
     activeStage: stage,
-    fulfillmentMethod: input.fulfillmentMethod ?? null
+    fulfillmentMethod: input.fulfillmentMethod ?? null,
+    paymentMethod: input.paymentMethod ?? null
   };
 }
 
@@ -87,6 +89,7 @@ function customerAction(stage: OrderActiveStageResolution): CustomerOrderAction 
     case "resubmit_payment":
       return "resubmit_payment";
     case "handover_pickup":
+    case "confirm_customer_arrival":
       return "pickup";
     case "contact_admin":
       return "contact_admin";

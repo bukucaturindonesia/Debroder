@@ -69,7 +69,8 @@ describe("DEBRODER Human-Centered Operational Experience P0", () => {
     expect(fulfillment).toContain("Tindakan pengecualian");
     expect(fulfillment).not.toContain(">Aksi Status<");
     expect(fulfillment).toContain("Nomor Resi Kurir");
-    expect(fulfillment).toContain("Terima Pembayaran & Serahkan Pesanan");
+    expect(fulfillment).toContain("Catat Pembayaran di Toko");
+    expect(fulfillment).toContain("Catat Serah Terima");
     expect(fulfillment).toContain("payment_method,payment_status");
   });
 

@@ -18,6 +18,10 @@ export type OrderPrimaryAction =
   | "run_quality_control"
   | "pack_order"
   | "run_final_check"
+  | "confirm_customer_arrival"
+  | "record_pay_at_store_payment"
+  | "record_pickup_handover"
+  | "complete_pickup_order"
   | "dispatch_order"
   | "handover_pickup"
   | "contact_admin"
@@ -37,6 +41,10 @@ export type OrderAdminTaskType =
   | "run_quality_control"
   | "pack_order"
   | "run_final_check"
+  | "confirm_customer_arrival"
+  | "record_pay_at_store_payment"
+  | "record_pickup_handover"
+  | "complete_pickup_order"
   | "dispatch_shipping"
   | "handover_pickup"
   | "resolve_integrity"
@@ -66,6 +74,8 @@ export type OrderActiveStageInput = {
   jobOrderStatus?: string | null;
   qualityControlStatus?: string | null;
   finalVerificationCompleted?: boolean;
+  customerArrivedAt?: string | null;
+  handoverCompletedAt?: string | null;
   trackingNumber?: string | null;
   taskRevision?: string | number | null;
 };
@@ -236,6 +246,8 @@ function blockingIntegrityWarning(input: OrderActiveStageInput) {
   const fulfillmentStatus = normalized(input.fulfillmentStatus);
   const fulfillmentMethod = normalized(input.fulfillmentMethod);
   const paymentMethod = normalized(input.paymentMethod);
+  const customerArrived = Boolean(input.customerArrivedAt);
+  const handoverCompleted = Boolean(input.handoverCompletedAt);
   if (input.paymentRequirementMet
     && paymentMethod !== "pay_at_store"
     && (input.paymentEffectiveTotal != null || input.hasVerifiedPayment != null)
@@ -256,6 +268,12 @@ function blockingIntegrityWarning(input: OrderActiveStageInput) {
     && fulfillmentMethod !== "shipping") {
     return "Status pengiriman tidak cocok dengan metode fulfillment.";
   }
+  if ((customerArrived || handoverCompleted) && fulfillmentMethod !== "pickup") {
+    return "Milestone kedatangan atau serah terima hanya valid untuk pickup.";
+  }
+  if (handoverCompleted && !customerArrived) {
+    return "Serah terima tercatat tanpa milestone kedatangan pelanggan.";
+  }
   return null;
 }
 
@@ -269,6 +287,11 @@ export function resolveOrderActiveStage(input: OrderActiveStageInput): OrderActi
   const isPickup = normalized(input.fulfillmentMethod) === "pickup";
   const isShipping = normalized(input.fulfillmentMethod) === "shipping";
   const isPayAtStore = normalized(input.paymentMethod) === "pay_at_store";
+  const customerArrived = Boolean(input.customerArrivedAt);
+  const handoverCompleted = Boolean(input.handoverCompletedAt);
+  const paymentVerified = Boolean(input.paymentRequirementMet)
+    || PAYMENT_VERIFIED.has(paymentStatus)
+    || input.hasVerifiedPayment === true;
   const postPaymentStage = input.isCustom ? "Surat Perintah Kerja" : "Persiapan Barang";
   const warnings = integrityWarnings(input);
 
@@ -346,21 +369,105 @@ export function resolveOrderActiveStage(input: OrderActiveStageInput): OrderActi
   // Concrete post-payment operational facts outrank stale payment/order summaries.
   const operationalStatus = fulfillmentStatus || orderStatus;
   if (operationalStatus === "ready_for_pickup") {
+    if (isPickup && isPayAtStore && customerArrived && !input.finalVerificationCompleted) {
+      return finish(input, {
+        activeStage: "pickup_final_verification",
+        responsibility: "debroder",
+        tone: "processing",
+        customerStatusLabel: "Verifikasi Akhir & Harga",
+        adminStatusLabel: "Lakukan Verifikasi Akhir & Harga",
+        customerTitle: "Verifikasi akhir sedang dilakukan",
+        customerDescription: "Anda sudah tiba di toko. Admin sedang mencocokkan barang, jumlah, dan total canonical sebelum pembayaran.",
+        adminTaskType: "run_final_check",
+        primaryAction: "run_final_check",
+        secondaryAction: "track",
+        previousStage: "Siap Diambil",
+        nextStage: "Pembayaran di Toko",
+        nextStep: "Pembayaran dicatat setelah checklist dan total canonical dikonfirmasi.",
+        blockingReason: "Checklist verifikasi akhir belum selesai.",
+        warning: warnings[0] ?? null,
+        isTerminal: false,
+        warnings
+      });
+    }
+    if (isPickup && isPayAtStore && customerArrived && input.finalVerificationCompleted && !paymentVerified) {
+      return finish(input, {
+        activeStage: "pickup_payment",
+        responsibility: "debroder",
+        tone: "processing",
+        customerStatusLabel: "Pembayaran di Toko",
+        adminStatusLabel: "Catat Pembayaran di Toko",
+        customerTitle: "Menunggu pencatatan pembayaran",
+        customerDescription: "Verifikasi akhir selesai. Admin akan mencatat pembayaran sesuai total canonical pesanan.",
+        adminTaskType: "record_pay_at_store_payment",
+        primaryAction: "record_pay_at_store_payment",
+        secondaryAction: "track",
+        previousStage: "Verifikasi Akhir & Harga",
+        nextStage: "Serah Terima / Pickup",
+        nextStep: "Barang dapat diserahkan setelah pembayaran terverifikasi.",
+        blockingReason: "Pembayaran di toko belum tercatat.",
+        warning: warnings[0] ?? null,
+        isTerminal: false,
+        warnings
+      });
+    }
+    if (isPickup && isPayAtStore && paymentVerified && !handoverCompleted) {
+      return finish(input, {
+        activeStage: "pickup_handover",
+        responsibility: "debroder",
+        tone: "processing",
+        customerStatusLabel: "Serah Terima / Pickup",
+        adminStatusLabel: "Selesaikan Serah Terima",
+        customerTitle: "Pembayaran diterima",
+        customerDescription: "Pembayaran sudah terverifikasi. Admin sedang menyelesaikan serah terima barang.",
+        adminTaskType: "record_pickup_handover",
+        primaryAction: "record_pickup_handover",
+        secondaryAction: "track",
+        previousStage: "Pembayaran di Toko",
+        nextStage: "Selesai",
+        nextStep: "Pesanan ditutup setelah bukti serah terima tersimpan.",
+        blockingReason: "Serah terima belum dikonfirmasi.",
+        warning: warnings[0] ?? null,
+        isTerminal: false,
+        warnings
+      });
+    }
+    if (isPickup && isPayAtStore && handoverCompleted) {
+      return finish(input, {
+        activeStage: "pickup_completion",
+        responsibility: "debroder",
+        tone: "processing",
+        customerStatusLabel: "Serah Terima / Pickup",
+        adminStatusLabel: "Tutup Pesanan Pickup",
+        customerTitle: "Serah terima sudah dicatat",
+        customerDescription: "Barang sudah diserahkan. Admin sedang menutup pesanan sebagai selesai.",
+        adminTaskType: "complete_pickup_order",
+        primaryAction: "complete_pickup_order",
+        secondaryAction: "track",
+        previousStage: "Serah Terima / Pickup",
+        nextStage: "Selesai",
+        nextStep: "Status akhir akan tersimpan sebagai Selesai.",
+        blockingReason: "Penyelesaian terminal belum dikonfirmasi.",
+        warning: warnings[0] ?? null,
+        isTerminal: false,
+        warnings
+      });
+    }
     return finish(input, {
       activeStage: "ready_for_pickup",
       responsibility: "customer",
       tone: "action",
       customerStatusLabel: "Barang Siap Diambil",
-      adminStatusLabel: "Menunggu Serah Terima",
+      adminStatusLabel: isPayAtStore ? "Konfirmasi Kedatangan Pelanggan" : "Menunggu Serah Terima",
       customerTitle: isPayAtStore ? "Barang siap diambil dan dibayar di toko" : "Barang siap diambil",
       customerDescription: "Hubungi Admin sebelum berangkat dan tunjukkan nomor pesanan saat tiba di toko.",
-      adminTaskType: "handover_pickup",
-      primaryAction: "handover_pickup",
+      adminTaskType: isPayAtStore ? "confirm_customer_arrival" : "handover_pickup",
+      primaryAction: isPayAtStore ? "confirm_customer_arrival" : "handover_pickup",
       secondaryAction: "track",
       previousStage: "Pengecekan Akhir",
-      nextStage: "Serah Terima",
+      nextStage: isPayAtStore ? "Verifikasi Akhir & Harga" : "Serah Terima",
       nextStep: isPayAtStore
-        ? "Pembayaran dikonfirmasi oleh Admin saat barang diserahkan."
+        ? "Saat Anda tiba, Admin memulai verifikasi akhir sebelum pembayaran."
         : "Setelah barang diserahkan, pesanan akan ditandai selesai.",
       blockingReason: null,
       warning: warnings[0] ?? null,
@@ -397,6 +504,27 @@ export function resolveOrderActiveStage(input: OrderActiveStageInput): OrderActi
   }
 
   if (operationalStatus === "packing") {
+    if (isPickup && isPayAtStore) {
+      return finish(input, {
+        activeStage: "preparing_goods",
+        responsibility: "debroder",
+        tone: "processing",
+        customerStatusLabel: "Persiapan / Produksi",
+        adminStatusLabel: "Siapkan Barang Pickup",
+        customerTitle: "Barang sedang disiapkan untuk diambil",
+        customerDescription: "Anda belum perlu datang ke toko. Tim DEBRODER sedang menyiapkan barang dan lokasi pickup.",
+        adminTaskType: "prepare_ready_stock",
+        primaryAction: "prepare_goods",
+        secondaryAction: "track",
+        previousStage: "Pesanan Masuk",
+        nextStage: "Siap Diambil",
+        nextStep: "Verifikasi akhir dilakukan setelah barang siap dan Anda tiba di toko.",
+        blockingReason: null,
+        warning: warnings[0] ?? null,
+        isTerminal: false,
+        warnings
+      });
+    }
     const finalCheckDone = Boolean(input.finalVerificationCompleted);
     return finish(input, {
       activeStage: finalCheckDone ? "final_check_completed" : "final_check",

@@ -49,7 +49,7 @@ describe("B4-O1 Order Command Center and status integrity", () => {
     expect(presentation.title).toBe("Pembayaran sedang diperiksa");
   });
 
-  it("lets in-transit fulfillment outrank stale order and RPC summaries", () => {
+  it("keeps an explicit completed order terminal despite stale child and RPC summaries", () => {
     const presentation = resolveCustomerOrderPresentation({
       status: "completed",
       paymentStatus: "paid",
@@ -63,9 +63,9 @@ describe("B4-O1 Order Command Center and status integrity", () => {
       activeStage: staleStage("order_review")
     });
 
-    expect(presentation.activeStage.activeStage).toBe("shipping");
-    expect(presentation.currentStage).toBe("Sedang Dikirim");
-    expect(presentation.activeStage.isTerminal).toBe(false);
+    expect(presentation.activeStage.activeStage).toBe("completed");
+    expect(presentation.currentStage).toBe("Selesai");
+    expect(presentation.activeStage.isTerminal).toBe(true);
   });
 
   it("shows exactly six command-center stages", () => {
@@ -92,7 +92,7 @@ describe("B4-O1 Order Command Center and status integrity", () => {
     ]);
   });
 
-  it("does not finish when a package is only handed to a courier", () => {
+  it("never regresses an explicitly completed order to a courier stage", () => {
     for (const fulfillmentStatus of ["shipped", "in_transit"]) {
       const stage = resolveCanonicalOrderActiveStage({
         status: "completed",
@@ -105,8 +105,8 @@ describe("B4-O1 Order Command Center and status integrity", () => {
         paymentEffectiveTotal: 100_000,
         hasVerifiedPayment: true
       });
-      expect(stage.activeStage).toBe("shipping");
-      expect(stage.isTerminal).toBe(false);
+      expect(stage.activeStage).toBe("completed");
+      expect(stage.isTerminal).toBe(true);
     }
   });
 

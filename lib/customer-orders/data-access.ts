@@ -41,7 +41,7 @@ const CUSTOMER_ORDER_GRAPH_SELECT = [
   "stock_reservations(id,status,quantity,expires_at,created_at,updated_at)",
   "order_shipping_quotes(id,version,courier,service,cost,estimate,total_snapshot,status,created_at,approved_at)",
   "custom_order_quotation_versions(id,version_number,status,quoted_total,pricing_components,design_version_snapshot,valid_until,sent_at,locked_at,created_at)",
-  "fulfillments(id,method,status,courier,tracking_number,scheduled_at,ready_at,shipped_at,delivered_at,picked_up_at,final_verified_at,created_at,updated_at,archived_at)",
+  "fulfillments(id,method,status,courier,tracking_number,scheduled_at,ready_at,shipped_at,delivered_at,picked_up_at,customer_arrived_at,final_verified_at,handover_completed_at,created_at,updated_at,archived_at)",
   "order_payments(id,status,review_outcome,amount,verified_amount,created_at,updated_at,archived_at)",
   "pickup_preparations(id,status,ready_at,pickup_deadline,extension_requested_at,requested_deadline,expired_at,created_at,updated_at)",
   "order_cancellation_requests(id,status,reason,requires_refund,requested_at,decision_reason,created_at,updated_at)",
