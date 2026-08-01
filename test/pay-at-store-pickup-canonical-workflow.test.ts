@@ -11,6 +11,10 @@ const taskLedgerMigration = readFileSync(
   "supabase/migrations/20260801134645_pay_at_store_pickup_task_ledger_alignment_v1.sql",
   "utf8"
 );
+const paymentResolverMigration = readFileSync(
+  "supabase/migrations/20260801200909_pay_at_store_pickup_payment_resolver_null_alignment_v1.sql",
+  "utf8"
+);
 const fulfillmentUi = readFileSync("components/admin/FulfillmentDetailAdmin.tsx", "utf8");
 const customerRead = readFileSync("lib/customer-orders/data-access.ts", "utf8");
 const nextConfig = readFileSync("next.config.ts", "utf8");
@@ -171,6 +175,28 @@ describe("Pay at Store + Store Pickup canonical P0 workflow", () => {
     }
     expect(taskLedgerMigration).toContain("add constraint order_tasks_task_type_check");
     expect(taskLedgerMigration).toContain("create or replace function public.sync_order_operational_task_v1");
+  });
+
+  it("keeps a missing payment row in the canonical pickup payment stage", () => {
+    expect(paymentResolverMigration).toContain(
+      "payment_verified := coalesce(o.payment_requirement_met, false)"
+    );
+    expect(paymentResolverMigration).toContain(
+      "or coalesce(o.payment_status in ('paid', 'verified', 'terverifikasi'), false)"
+    );
+    expect(paymentResolverMigration).toContain("or coalesce(p.status = 'verified', false)");
+    expect(paymentResolverMigration).toContain("or coalesce(p.review_outcome = 'verified', false)");
+
+    const paymentStage = paymentResolverMigration.indexOf("elsif not payment_verified then");
+    const handoverStage = paymentResolverMigration.indexOf("elsif f.handover_completed_at is null then");
+    expect(paymentStage).toBeGreaterThan(-1);
+    expect(handoverStage).toBeGreaterThan(paymentStage);
+    expect(paymentResolverMigration).toContain(
+      "revoke all on function public._resolve_order_active_stage_v1(uuid) from public, anon, authenticated"
+    );
+    expect(paymentResolverMigration).toContain(
+      "grant execute on function public._resolve_order_active_stage_v1(uuid) to service_role"
+    );
   });
 
   it("resolves both reported metadata paths to tracked assets", () => {
