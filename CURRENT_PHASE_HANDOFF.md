@@ -807,3 +807,260 @@ DEBRODER V1.2 REMAINS NOT COMPLETE**
   authorization**.
 - Commit, push, deploy, reset, clean, stash, restore, checkout, rebase, and
   migration: **NOT PERFORMED**.
+
+---
+
+# Handoff — Kaos Polos editorial commerce category
+
+**Date:** 30 July 2026
+
+## Active scope and implementation
+
+- Revised only canonical `/kaos-polos`; no route, taxonomy, database,
+  migration, pricing, stock, cart, checkout, order/payment, RLS, or Admin
+  contract changed.
+- Added a dedicated editorial experience while retaining the shared public
+  header, footer, Product Card, PDP route, and CMS/PIM read architecture.
+- Locked responsive catalog behavior: 3 desktop columns, sidebar + 2 columns
+  when filter is open, 2 mobile columns, 2-column desktop campaign, and
+  full-width mobile campaign after the first two products.
+- Added URL-persistent `size` and `price` filters alongside type, color,
+  availability, label, and sort state.
+- Media eligibility uses only published CMS campaign data or canonical active
+  PIM product/variant media; exact-color discovery requires sellable stock.
+
+## Files and routes
+
+- Changed:
+  `app/kaos-polos/page.tsx`,
+  `app/globals.css`,
+  `components/ProductCatalog.tsx`,
+  `lib/product-catalog.ts`,
+  `lib/catalog-page/data-access.ts`,
+  `lib/catalog-page/domain.ts`,
+  `lib/catalog-page/model.ts`,
+  `lib/catalog-page/source.ts`,
+  and `test/product-catalog.test.ts`.
+- Added:
+  `components/KaosPolosEditorialExperience.tsx`,
+  `lib/kaos-polos-editorial.ts`, and
+  `test/kaos-polos-editorial-commerce.test.ts`.
+- Route retained: `/kaos-polos`. New route: **NONE**.
+
+## Database and migration
+
+- Local or remote migration: **NONE**.
+- Migration applied or pending: **NONE**.
+- Supabase/database mutation: **NONE**.
+
+## Verification
+
+- Typecheck: **PASS**.
+- Focused Kaos/catalog/public experience assertions: **PASS**.
+- Custom Commerce regression: **PASS within the full suite**.
+- Full suite: **112 files / 832 tests PASS**.
+- Lint: **PASS — 0 errors / 38 existing warnings; no new warning in package
+  files**.
+- Production build: **PASS — 126 routes generated**.
+- `git diff --check`: **final check pending after this handoff append**.
+- Runtime browser verification: **NOT RUN**. The owner prohibition against
+  additional local launcher attempts remains active; no server or browser
+  launcher was started.
+- Deployment: **NOT RUN**.
+
+## Remaining prerequisite and status
+
+- Rich campaign sections require valid published `cms_banners` rows for
+  `experience_key = 'kaos-polos'`. Missing optional CMS media is hidden; no
+  fabricated campaign is rendered.
+- Product-derived editorial fallback requires a canonical alternate PIM image;
+  color discovery requires an active exact-color image and aggregate sellable
+  stock greater than zero.
+- GO/NO-GO: **GO for code handoff; runtime and live CMS/PIM composition remain
+  explicitly deferred; project remains NOT COMPLETE**.
+- Commit, push, deploy, reset, clean, stash, restore, checkout, rebase, and
+  migration: **NOT PERFORMED**.
+
+---
+
+# Handoff — Kaos Polos Owner CMS Hotfix
+
+**Date:** 1 August 2026
+**Working branch:** `UI-UX-001`
+**Supabase project:** `lzennundwqqtyvvcnzbg`
+
+## Active scope and implementation
+
+- Public `/kaos-polos` and admin `/admin/commerce/kaos-polos` remain the only in-scope routes.
+- Admin ownership is now slot-based rather than database-form based:
+  `Featured 01`, `Featured 02`, `Banner kiri`, and `Banner kanan`.
+- Technical fields such as `experience_key`, `section_type`, `section_key`,
+  internal name, and sort order are assigned by the system for each slot.
+- Desktop and mobile focal positions use a visual 3 × 3 control.
+- Editorial banner preview and public composition are locked to:
+  desktop `25:75` and mobile `32:68`, both with a 1 px gap.
+- Mobile banner media stays side by side and must not stack vertically.
+- Kaos Polos section rhythm inherits the Homepage canonical tokens
+  `--section-space` and `--section-space-end`; stacked top-and-bottom section
+  padding is removed.
+- Catalog heading is shown once. The toolbar displays the dynamic count as
+  `{visible.length} Produk`, so additions and filters update automatically.
+- Featured remains CMS-owned and renders only published
+  `featured_editorial` records, up to two items.
+
+## Database and migration
+
+- Applied migration:
+  `20260801045549_kaos_polos_editorial_section_types_v1`.
+- Repository source:
+  `supabase/migrations/20260801045549_kaos_polos_editorial_section_types_v1.sql`.
+- Remote migration history: **VERIFIED PRESENT**.
+- Remote constraint `cms_banners_section_type_check`: **VERIFIED** to allow:
+  `featured_editorial`, `banner_editorial_left`, and
+  `banner_editorial_right`, while preserving all prior allowed section types.
+- Migration scope is additive compatibility only. Product, pricing, inventory,
+  SKU, order, payment, and transaction tables are untouched.
+
+## Changed files in this hotfix
+
+- `app/globals.css`
+- `components/KaosPolosEditorialExperience.tsx`
+- `components/ProductCatalog.tsx`
+- `components/admin/KaosPolosExperienceAdmin.tsx`
+- `test/kaos-polos-editorial-commerce.test.ts`
+- `supabase/migrations/20260801045549_kaos_polos_editorial_section_types_v1.sql`
+- `CURRENT_PHASE_HANDOFF.md`
+- `CURRENT_PACKAGE_HANDOFF.md`
+- `DEBRODER_MASTER_STATE.md`
+- `DEBRODER_V1.2_ISSUE_REGISTER.md`
+
+## Verification and status
+
+- Supabase migration application: **PASS**.
+- Remote migration-history verification: **PASS**.
+- Remote check-constraint verification: **PASS**.
+- Targeted static contract checks included in the package: **PASS before this
+  governance update**.
+- Full `pnpm` typecheck, lint, focused Vitest, full test, build, and browser
+  runtime: **PENDING OWNER/LOCAL ENVIRONMENT**.
+- Commit, push, and deploy: **NOT PERFORMED**.
+- Package status: **IMPLEMENTED / DATABASE MIGRATED AND VERIFIED / FULL LOCAL
+  QUALITY GATE AND RUNTIME PENDING / NOT COMPLETE**.
+
+---
+
+# Handoff — P0 transaction and Admin operational recovery
+
+**Date:** 1 August 2026
+**Working branch:** `UI-UX-001`
+**Local/origin HEAD before package:** `07557dc62fd07a239998c8974738c2888d42443f`
+**Supabase project:** `lzennundwqqtyvvcnzbg`
+
+## Active scope and work inspected
+
+- Inspected order/payment verification API, `review_order_payment` RPC
+  contract, pending/verified remote payment states, notification event/row
+  uniqueness, browser auth-client creation, Admin notification lifecycle,
+  all owned payment form controls, Admin route/navigation/role contracts,
+  migration history, local/origin SHA, and available Vercel project access.
+- Implemented only the smallest transaction/Admin recovery changes. No page,
+  route, schema, migration, pricing, stock, product, Kaos Polos, or visual
+  redesign change was made.
+
+## Work changed
+
+- Browser-only Supabase client is now singleton across HMR/remounts; server
+  clients remain separate and non-persistent.
+- Payment verification API reads and returns canonical payment state, exposes
+  stable conflict codes, and treats repeat verification of an already verified
+  payment as idempotent success without calling the mutation RPC again.
+- Payment Admin refetches canonical state after every server response; stale,
+  already-reviewed, missing, and inactive-order modal state closes safely.
+  Duplicate bank references remain rejected by the existing database guard.
+- Notification UI suppresses duplicate display of the same Realtime insert ID
+  with a bounded set; database notification writes/constraints were unchanged.
+- Payment workspace controls now carry stable IDs, names, associated labels,
+  and applicable required/disabled/helper/autocomplete semantics.
+- Added focused executable contracts for conflict classification, browser
+  singleton behavior, form associations, and Realtime replay suppression.
+
+## Files changed
+
+- `lib/supabase.ts`
+- `lib/payments.ts`
+- `app/api/admin/payments/[id]/verification/route.ts`
+- `components/admin/PaymentTrackingManager.tsx`
+- `components/admin/PaymentCompletionPanel.tsx`
+- `components/admin/PaymentSettingsAdmin.tsx`
+- `components/admin/AdminNotificationBell.tsx`
+- `test/payment-verification-workspace.test.ts`
+- `test/transaction-notification-admin-recovery.test.ts`
+- `DEBRODER_MASTER_STATE.md`
+- `CURRENT_PHASE_HANDOFF.md`
+- `DEBRODER_V1.2_ISSUE_REGISTER.md`
+
+## Routes changed
+
+- Behavior revised: `POST /api/admin/payments/[id]/verification`.
+- UI consumers revised under existing `/admin/payments` and
+  `/admin/orders/[id]` workspaces.
+- New, removed, or redirected routes: **NONE**.
+
+## Database and migration
+
+- Local migration created/changed: **NONE**.
+- Remote database mutation during this package: **NONE**.
+- Existing recovery migration
+  `20260730122821_transaction_notification_admin_recovery_v1`: **APPLIED in
+  remote history**.
+- Latest known remote migration
+  `20260801045549_kaos_polos_editorial_section_types_v1`: **APPLIED**.
+- Package migration applied: **NONE**.
+- Package migration pending: **NONE**.
+- RLS, ACL, unique reference protection, numbering functions, and historical
+  transaction data: **UNCHANGED**.
+
+## Verification actually run
+
+- Focused P0 tests:
+  `payment-verification-workspace`,
+  `transaction-notification-admin-recovery`,
+  `payment-phase5b`, and `admin-three-roles`: **29/29 PASS**.
+- Custom Commerce regression: **27/27 PASS**.
+- Typecheck: **PASS** via project `tsc --noEmit` binary.
+- Lint: **PASS — 0 errors / 38 existing warnings; no warning in changed
+  package files**.
+- Full tests: **112 files / 842 tests PASS**.
+- Production build: **PASS — 127 pages**. First attempt compiled but timed out
+  at static page 63/127 after 240 seconds; the one permitted additional
+  attempt completed successfully in 222.6 seconds.
+- `git diff --check`: **PASS after final governance update**.
+- Dependency note: direct `pnpm.cmd` could not resolve `vitest`; the bundled
+  pnpm wrapper then attempted an interactive module-store purge. No dependency
+  change was allowed. Gates used the already-installed project binaries; the
+  transient `.pnpm-store` created by the failed wrapper was removed.
+
+## Deployment, runtime, and remaining work
+
+- Deployment: **NOT RUN**.
+- Vercel production SHA/branch/log: **UNAVAILABLE**. The connected team exposes
+  no projects and `.vercel/project.json` is absent.
+- Exact owner 409 payment ID/request ID was not supplied and was absent from
+  accessible recent logs. Remote read-only evidence confirmed the relevant
+  state classes, but no production transaction was fabricated or mutated.
+- Controlled Ready Stock/tier/guest/auth/payment/notification/tracking runtime
+  matrix: **NOT RUN** under the owner prohibition on another Windows launcher
+  and the prohibition on deploy.
+- Admin live load/edit/save/persist-after-refresh and browser Console/Issues:
+  **PENDING deployed runtime verification**. Static route/build and role tests
+  passed; this is not runtime proof.
+- Next action after owner deploys: execute the 20-step runtime checklist from
+  the owner package against one controlled order, capture Vercel/Supabase
+  request evidence, repeat verify once, and confirm one per-recipient
+  notification plus tracking persistence.
+- Work not finished: deployed runtime/E2E evidence and Vercel alignment only.
+- Remaining risk: production may still run a stale SHA or divergent env/schema;
+  this cannot be resolved from the available connector.
+- GO/NO-GO: **NO-GO for public release; PASS WITH EXPLICIT DEFERRAL for local
+  implementation and static/build verification; NOT COMPLETE**.
+- Commit, push, deploy: **NOT PERFORMED**.

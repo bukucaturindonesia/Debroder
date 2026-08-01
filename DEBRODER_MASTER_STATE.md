@@ -1,6 +1,6 @@
 ﻿# DEBRODER MASTER STATE
 
-Last updated: 28 July 2026 (Asia/Makassar)
+Last updated: 1 August 2026 (Asia/Makassar)
 
 ## 1. Canonical repository state
 
@@ -180,6 +180,32 @@ Existing legal, CMS route, Preview performance, remote transaction E2E, data-int
 
 ---
 
+## 14. Kaos Polos editorial commerce category — 30 July 2026
+
+- Canonical route and taxonomy remain `/kaos-polos` and **Kaos Polos**.
+- Dedicated page composition: **IMPLEMENTED** without changing shared category
+  behavior for Jaket & Hoodie or Headwear.
+- Catalog contract: desktop **3 columns**; open desktop filter **sidebar + 2
+  columns**; mobile **2 columns**; first-row editorial media spans two desktop
+  columns and becomes full-width after the first two mobile products.
+- Product Card remains the canonical shared full-card link with **no permanent
+  purchase CTA** and a reserved 4:5 media frame.
+- Hero/editorial media reads existing CMS records; products, variants,
+  images, exact-color availability, stock, price, and routes remain canonical
+  PIM data. No sample product or campaign record was created.
+- Typecheck: **PASS**.
+- Lint: **PASS — 0 errors / 38 existing warnings**.
+- Focused and full regression: **PASS — 112 files / 832 tests**.
+- Production build: **PASS — 126 routes generated**.
+- Browser runtime: **EXPLICITLY DEFERRED** because the owner has prohibited
+  additional local runtime launcher attempts after the recorded Windows
+  launcher blocker.
+- Database/migration/commit/push/deploy: **NONE / NOT PERFORMED**.
+- Release status: **IMPLEMENTED AND CODE-VERIFIED WITH EXPLICIT RUNTIME AND
+  CMS/PIM CONTENT PREREQUISITE DEFERRALS; PROJECT REMAINS NOT COMPLETE**.
+
+---
+
 ## 14. Product Card and PDP final runtime closure — 30 July 2026
 
 - Public Product Card full-card semantic link, catalog URL history, and
@@ -343,4 +369,107 @@ Existing legal, CMS route, Preview performance, remote transaction E2E, data-int
 - Database/migration/route creation: **NONE**.
 - Release status: **IMPLEMENTED; CODE AND BUILD VERIFIED; OWNER RUNTIME
   VERIFICATION REQUIRED; NOT COMPLETE**.
+- Commit, push, deploy: **NOT PERFORMED**.
+
+---
+
+## 15. Kaos Polos owner editorial revision — 31 July 2026
+
+- Hero height reduced by 40%; hero typography scale reduced by 20%.
+- Featured source changed from PIM products to two CMS editorial records; gap locked to 0 px.
+- Editorial banner locked to a 1600 × 500 reference frame with 400 × 500 left media, 1200 × 500 right media, and 1 px gap.
+- Left banner media routes to canonical Custom Kaos Polos; right banner media is non-clickable and keeps CTA ownership in the caption.
+- “Pilih Kategori” now follows the Homepage Shop by Category native carousel and scrollbar behavior.
+- Desktop catalog remains three product columns when the filter sidebar is open; product media remains 4:5.
+- Dedicated CMS route `/admin/commerce/kaos-polos` added using shared `cms_banners`. The initial no-migration assumption was superseded by the 1 August 2026 compatibility migration recorded below.
+- Static contract and TS/TSX parser verification: **PASS**.
+- Full pnpm quality gate and browser runtime: **PENDING OWNER/LOCAL ENVIRONMENT** because dependencies were not included and registry access is unavailable.
+- Package decision: **IMPLEMENTED AND STATICALLY VERIFIED / NOT COMPLETE**.
+
+---
+
+## 16. Kaos Polos Owner CMS Hotfix — 1 August 2026
+
+**Canonical owner decisions — FINAL for this package:**
+
+- Admin editing must be slot-based: `Featured 01`, `Featured 02`,
+  `Banner kiri`, and `Banner kanan`.
+- Owner-facing forms must not require manual entry of database-oriented fields
+  such as `experience_key`, `section_type`, `section_key`, internal name, or
+  sort order.
+- Desktop banner composition is `25:75`; mobile banner composition is `32:68`;
+  both use a 1 px gap.
+- Mobile banner media must remain horizontal/editorial and must not stack.
+- Desktop and mobile focal positions are independently CMS-owned through a
+  visual 3 × 3 control.
+- Kaos Polos section spacing inherits the same canonical Homepage tokens and
+  top-only rhythm; section padding may not accumulate between adjacent blocks.
+- Public catalog heading appears once. Product count is always derived from
+  current data/filter state as `{visible.length} Produk`.
+- Featured is CMS-owned, capped at two published public items, and is hidden
+  when no published item exists rather than fabricated.
+
+**Database evidence:**
+
+- Migration `20260801045549_kaos_polos_editorial_section_types_v1`:
+  **APPLIED AND VERIFIED** on Supabase project `lzennundwqqtyvvcnzbg`.
+- Repository migration source uses the exact applied version.
+- `cms_banners_section_type_check` preserves prior values and additionally
+  accepts `featured_editorial`, `banner_editorial_left`, and
+  `banner_editorial_right`.
+- Product, pricing, stock, SKU, cart, checkout, order, payment, and transaction
+  behavior is unchanged.
+
+**Release state:**
+
+- Implementation and database alignment: **PASS**.
+- Full local quality gate and runtime visual verification: **PENDING**.
+- Commit, push, deploy: **NOT PERFORMED**.
+- Project remains **NO-GO / NOT COMPLETE** until remaining package and global
+  release gates are satisfied.
+
+---
+
+## 17. P0 transaction and Admin operational recovery — 1 August 2026
+
+- Active scope: payment-verification conflict recovery, browser Supabase
+  singleton, payment form semantics, notification display dedupe, and static
+  Admin capability/security regression. No visual redesign or Kaos Polos work
+  was performed.
+- Payment verification now returns stable result codes and canonical payment
+  state. A repeated `verify` for an already verified payment is an idempotent
+  HTTP 200; stale, duplicate-reference, already-reviewed, missing-pending, and
+  inactive-order conflicts remain explicit and non-mutating.
+- Admin payment UI prevents concurrent submit, parses the response, refetches
+  canonical state after every server response, closes stale/completed review
+  state safely, and preserves review input on retryable validation conflicts.
+- Browser auth now uses one HMR-safe client per browser context; server access
+  remains request-scoped, non-persistent, and separate. No service-role client
+  was added to browser code.
+- Remote notification audit found zero duplicate event idempotency keys and
+  zero duplicate `(event_id, recipient_id, channel)` rows. The observed 2–3
+  rows per event are distinct legitimate recipients. UI Realtime inserts now
+  have a bounded per-ID replay guard; unread remains server-count-derived.
+- Every native input, select, textarea, checkbox, and file input in the owned
+  Admin payment workspaces has an ID, name, associated label, and applicable
+  browser semantics; this contract is AST-tested.
+- Admin routes and role-aware navigation remain intact. `PIM V2` stays
+  intentionally consolidated behind the canonical Product workspace; no
+  deprecated Admin version or broad permission bypass was restored.
+- Database/schema changes: **NONE**. Existing recovery migration
+  `20260730122821_transaction_notification_admin_recovery_v1` and latest known
+  migration `20260801045549_kaos_polos_editorial_section_types_v1` are present
+  in remote history for project `lzennundwqqtyvvcnzbg`; package migrations
+  pending: **NONE**.
+- Verification: focused P0 **29/29 PASS**; custom-commerce **27/27 PASS**;
+  typecheck **PASS**; lint **0 errors / 38 pre-existing warnings**; full suite
+  **112 files / 842 tests PASS**; production build **PASS — 127 pages**;
+  `git diff --check` **PASS after governance append**.
+- Local/GitHub alignment: local HEAD and `origin/UI-UX-001` both
+  `07557dc62fd07a239998c8974738c2888d42443f` before this uncommitted package.
+- Vercel alignment/runtime: **NOT VERIFIED**. The available Vercel team
+  returned no projects and the repository has no `.vercel/project.json`; no
+  production SHA/log was fabricated and no deployment was performed.
+- Release status: **IMPLEMENTED AND CODE/BUILD VERIFIED; RUNTIME AND CONTROLLED
+  LIVE TRANSACTION MATRIX DEFERRED; PROJECT REMAINS NO-GO / NOT COMPLETE**.
 - Commit, push, deploy: **NOT PERFORMED**.

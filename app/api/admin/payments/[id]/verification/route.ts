@@ -1,7 +1,43 @@
 import { paymentErrorResponse, requirePaymentActor } from "@/lib/payment-auth";
-import { isPaymentVerifier, parsePaymentReviewInput } from "@/lib/payments";
+import {
+  classifyPaymentReviewResult,
+  isPaymentVerifier,
+  parsePaymentReviewInput,
+  type PaymentReviewAction
+} from "@/lib/payments";
 
 type Context = { params: Promise<{ id: string }> };
+
+const CANONICAL_PAYMENT_FIELDS = "id,order_id,payment_number,status,review_outcome,verified_amount,verified_destination_account,verified_transaction_at,verified_reference,verified_at,rejection_reason,admin_notes,updated_at" as const;
+
+type PaymentClient = Awaited<ReturnType<typeof requirePaymentActor>>["client"];
+
+async function getCanonicalPayment(client: PaymentClient, paymentId: string) {
+  return client
+    .from("order_payments")
+    .select(CANONICAL_PAYMENT_FIELDS)
+    .eq("id", paymentId)
+    .maybeSingle();
+}
+
+function reviewResponse(input: {
+  action: PaymentReviewAction;
+  currentStatus?: string | null;
+  errorMessage?: string | null;
+  payment: unknown;
+}) {
+  const result = classifyPaymentReviewResult(input);
+  return Response.json(
+    {
+      error: result.status >= 400 ? result.message : undefined,
+      message: result.message,
+      code: result.code,
+      idempotent: result.idempotent,
+      canonicalPayment: input.payment
+    },
+    { status: result.status }
+  );
+}
 
 export async function POST(request: Request, context: Context) {
   try {
@@ -28,6 +64,31 @@ export async function POST(request: Request, context: Context) {
       return Response.json({ error: "Alasan tindak lanjut wajib diisi." }, { status: 400 });
     }
 
+    const currentResult = await getCanonicalPayment(actor.client, id);
+    if (currentResult.error) {
+      return Response.json(
+        {
+          error: "State pembayaran belum dapat dibaca. Coba lagi.",
+          code: "PAYMENT_STATE_UNAVAILABLE"
+        },
+        { status: 503 }
+      );
+    }
+    if (!currentResult.data) {
+      return reviewResponse({
+        action: body.action,
+        errorMessage: "Pending payment not found",
+        payment: null
+      });
+    }
+    if (currentResult.data.status !== "pending") {
+      return reviewResponse({
+        action: body.action,
+        currentStatus: currentResult.data.status,
+        payment: currentResult.data
+      });
+    }
+
     const { data, error } = await actor.client.rpc("review_order_payment", {
       p_payment_id: id,
       p_action: body.action,
@@ -45,16 +106,24 @@ export async function POST(request: Request, context: Context) {
       p_reason: body.reason || null,
       p_expected_updated_at: body.expectedUpdatedAt
     });
-    const message = error?.message ?? "";
-    if (message.includes("Pending payment not found") || message.includes("STALE_PAYMENT_REVIEW")) {
-      return Response.json({ error: "Pembayaran telah berubah atau ditangani Admin lain. Muat ulang sebelum melanjutkan." }, { status: 409 });
+    const canonicalResult = await getCanonicalPayment(actor.client, id);
+    const canonicalPayment = canonicalResult.data ?? currentResult.data;
+    if (error) {
+      return reviewResponse({
+        action: body.action,
+        currentStatus: canonicalPayment?.status,
+        errorMessage: error.message,
+        payment: canonicalPayment
+      });
     }
-    if (message.includes("DUPLICATE_BANK_REFERENCE")) {
-      return Response.json({ error: "Referensi mutasi sudah digunakan pada pembayaran terverifikasi lain." }, { status: 409 });
-    }
-    if (error) return Response.json({ error: error.message }, { status: 400 });
-    return Response.json({ payment: data });
+    return Response.json({
+      payment: canonicalPayment ?? data,
+      canonicalPayment: canonicalPayment ?? data,
+      code: "PAYMENT_REVIEW_APPLIED",
+      idempotent: false,
+      message: "Pemeriksaan pembayaran berhasil disimpan."
+    });
   } catch (error) {
-    return paymentErrorResponse(error);
+    return paymentErrorResponse(error, request);
   }
 }

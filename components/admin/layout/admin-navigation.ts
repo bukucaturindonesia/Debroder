@@ -58,6 +58,7 @@ export const adminNavigationGroups: readonly AdminNavigationGroup[] = [
     items: [
       { label: "CMS / Halaman Utama", href: "/admin/homepage-sections", roles: FULL_ADMIN_ROLES },
       { label: "CMS / Jersey", href: "/admin/commerce/jersey", roles: FULL_ADMIN_ROLES },
+      { label: "CMS / Kaos Polos", href: "/admin/commerce/kaos-polos", roles: FULL_ADMIN_ROLES },
       { label: "CMS / Custom", href: "/admin/custom-commerce", roles: FULL_ADMIN_ROLES },
       { label: "Hero Halaman", href: "/admin/page-hero", roles: FULL_ADMIN_ROLES },
       { label: "Galeri Media", href: "/admin/media", roles: FULL_ADMIN_ROLES },
@@ -126,6 +127,7 @@ const adminGuestNavigationGroups: readonly AdminNavigationGroup[] = [
     items: [
       { label: "CMS / Halaman Utama", href: "/admin/homepage-sections", roles: ADMIN_GUEST_ROLES },
       { label: "CMS / Jersey", href: "/admin/commerce/jersey", roles: ADMIN_GUEST_ROLES },
+      { label: "CMS / Kaos Polos", href: "/admin/commerce/kaos-polos", roles: ADMIN_GUEST_ROLES },
       { label: "CMS / Custom", href: "/admin/custom-commerce", roles: ADMIN_GUEST_ROLES },
       { label: "Hero Halaman", href: "/admin/page-hero", roles: ADMIN_GUEST_ROLES },
       { label: "Galeri Media", href: "/admin/media", roles: ADMIN_GUEST_ROLES },

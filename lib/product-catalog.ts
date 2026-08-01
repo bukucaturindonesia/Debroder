@@ -1,7 +1,11 @@
 import type { Product } from "@/lib/types";
 
-export function catalogColumnsForWidth(width: number) {
-  return width >= 1024 ? 4 : 2;
+export function catalogColumnsForWidth(
+  width: number,
+  layout: "default" | "kaos-editorial" = "default"
+) {
+  if (width < 1024) return 2;
+  return layout === "kaos-editorial" ? 3 : 4;
 }
 
 export function initialCatalogBatch(columns: number) {

@@ -1,6 +1,6 @@
 ﻿# CURRENT PACKAGE HANDOFF
 
-Last updated: 27 July 2026 (Asia/Makassar)
+Last updated: 1 August 2026 (Asia/Makassar)
 
 ## 1. Active package
 
@@ -99,3 +99,28 @@ Last updated: 29 July 2026 (Asia/Makassar)
 - Decision: **BLOCKED WITH EVIDENCE / NO-GO / NOT COMPLETE** because configured
   Jersey checkout, proven product image identity, taxonomy ownership, and
   Preview runtime/performance/E2E evidence remain open.
+
+---
+
+## 8. Latest checkpoint — Kaos Polos Owner CMS Hotfix
+
+Last updated: 1 August 2026 (Asia/Makassar)
+
+- Working branch: `UI-UX-001`.
+- Package scope: owner-friendly Kaos Polos CMS slots, responsive editorial
+  banner composition, canonical section rhythm, dynamic catalog count, and
+  Supabase section-type compatibility.
+- Admin slots: `Featured 01`, `Featured 02`, `Banner kiri`, `Banner kanan`.
+- Banner composition: desktop `25:75`; mobile `32:68`; 1 px gap; no vertical
+  stacking on mobile.
+- Section spacing inherits Homepage tokens; duplicate block padding is removed.
+- Catalog toolbar uses `{visible.length} Produk`; no hardcoded count.
+- Applied Supabase migration:
+  `20260801045549_kaos_polos_editorial_section_types_v1`.
+- Remote migration history and `cms_banners_section_type_check`: **PASS**.
+- Product, pricing, inventory, SKU, order, payment, and transaction logic:
+  **UNCHANGED**.
+- Static package checks: **PASS before governance synchronization**.
+- Full local quality gate and browser runtime: **PENDING**.
+- Commit, push, deploy: **NOT PERFORMED**.
+- Decision: **IMPLEMENTED / DATABASE MIGRATED AND VERIFIED / NOT COMPLETE**.

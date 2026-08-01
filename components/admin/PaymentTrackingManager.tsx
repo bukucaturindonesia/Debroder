@@ -73,6 +73,24 @@ type OrderSummary = {
   payment_production_eligible: boolean;
 };
 
+type PaymentReviewResponse = {
+  error?: string;
+  message?: string;
+  code?: string;
+  idempotent?: boolean;
+  canonicalPayment?: Partial<PaymentRow> | null;
+};
+
+class PaymentReviewRequestError extends Error {
+  constructor(
+    message: string,
+    public readonly code: string,
+    public readonly canonicalPayment: Partial<PaymentRow> | null
+  ) {
+    super(message);
+  }
+}
+
 const PAYMENT_STATUS: Record<string, string> = {
   draft: "Draft Pembayaran",
   pending: "Menunggu Verifikasi",
@@ -241,7 +259,7 @@ export function PaymentTrackingManager() {
   async function paymentAction(
     paymentId: string,
     body: Record<string, unknown>
-  ) {
+  ): Promise<PaymentReviewResponse> {
     const supabase = createSupabaseClient();
     const { data } = await supabase?.auth.getSession() ?? { data: { session: null } };
     const accessToken = data.session?.access_token;
@@ -254,8 +272,15 @@ export function PaymentTrackingManager() {
       },
       body: JSON.stringify(body)
     });
-    const payload = await response.json() as { error?: string };
-    if (!response.ok) throw new Error(payload.error || "Perubahan pembayaran belum berhasil disimpan. Coba lagi.");
+    const payload = await response.json().catch(() => ({})) as PaymentReviewResponse;
+    if (!response.ok) {
+      throw new PaymentReviewRequestError(
+        payload.error || "Perubahan pembayaran belum berhasil disimpan. Coba lagi.",
+        payload.code || "PAYMENT_REVIEW_REQUEST_FAILED",
+        payload.canonicalPayment ?? null
+      );
+    }
+    return payload;
   }
 
   function openCreate() {
@@ -443,8 +468,9 @@ export function PaymentTrackingManager() {
     }
     setWorkingId(reviewTarget.id);
     setMessage("");
+    let serverResponded = false;
     try {
-      await paymentAction(reviewTarget.id, {
+      const result = await paymentAction(reviewTarget.id, {
         action,
         destinationMethodId: reviewMethodId,
         checks: reviewChecks,
@@ -458,6 +484,12 @@ export function PaymentTrackingManager() {
         reason: reviewReason,
         expectedUpdatedAt: reviewTarget.updated_at
       });
+      serverResponded = true;
+      if (result.code === "PAYMENT_ALREADY_VERIFIED") {
+        setMessage(result.message || "Pembayaran sudah terverifikasi. State terbaru telah dimuat.");
+        setReviewTarget(null);
+        return;
+      }
       const label = action === "verify"
         ? "diverifikasi berdasarkan mutasi"
         : action === "funds_not_found"
@@ -467,10 +499,23 @@ export function PaymentTrackingManager() {
             : "ditolak";
       setMessage(`${reviewTarget.payment_number} ${label}.`);
       setReviewTarget(null);
-      await loadData();
     } catch (reason) {
-      setMessage(reason instanceof Error ? reason.message : "Pemeriksaan pembayaran belum berhasil.");
+      if (reason instanceof PaymentReviewRequestError) {
+        serverResponded = true;
+        setMessage(reason.message);
+        if ([
+          "STALE_PAYMENT_REVIEW",
+          "PAYMENT_ALREADY_REVIEWED",
+          "PENDING_PAYMENT_NOT_FOUND",
+          "WRONG_ORDER_STATE"
+        ].includes(reason.code)) {
+          setReviewTarget(null);
+        }
+      } else {
+        setMessage(reason instanceof Error ? reason.message : "Pemeriksaan pembayaran belum berhasil.");
+      }
     } finally {
+      if (serverResponded) await loadData();
       setWorkingId(null);
     }
   }
@@ -781,30 +826,38 @@ export function PaymentTrackingManager() {
       {formOpen ? (
         <Modal title={editing ? "Edit Pembayaran" : "Tambah Pembayaran"}>
           <form onSubmit={savePayment}>
-            <label className="text-sm font-semibold">
+            <label htmlFor="payment-amount" className="text-sm font-semibold">
               Nominal pembayaran
               <input
+                id="payment-amount"
+                name="amount"
                 type="number"
                 min="1"
+                required
                 value={amount}
                 onChange={(event) => setAmount(event.target.value)}
                 className="mt-2 min-h-11 w-full rounded-lg border border-brand-softGray px-4"
               />
             </label>
 
-            <label className="mt-4 block text-sm font-semibold">
+            <label htmlFor="payment-paid-at" className="mt-4 block text-sm font-semibold">
               Tanggal pembayaran
               <input
+                id="payment-paid-at"
+                name="paidAt"
                 type="datetime-local"
+                required
                 value={paidAt}
                 onChange={(event) => setPaidAt(event.target.value)}
                 className="mt-2 min-h-11 w-full rounded-lg border border-brand-softGray px-4"
               />
             </label>
 
-            <label className="mt-4 block text-sm font-semibold">
+            <label htmlFor="payment-method" className="mt-4 block text-sm font-semibold">
               Metode pembayaran
               <select
+                id="payment-method"
+                name="method"
                 value={method}
                 onChange={(event) => setMethod(event.target.value)}
                 className="mt-2 min-h-11 w-full rounded-lg border border-brand-softGray px-4"
@@ -817,9 +870,12 @@ export function PaymentTrackingManager() {
               </select>
             </label>
 
-            <label className="mt-4 block text-sm font-semibold">
+            <label htmlFor="payment-channel-name" className="mt-4 block text-sm font-semibold">
               Bank atau kanal pembayaran
               <input
+                id="payment-channel-name"
+                name="channelName"
+                autoComplete="organization"
                 value={channelName}
                 onChange={(event) => setChannelName(event.target.value)}
                 placeholder="Contoh: BCA, BRI, QRIS, DANA"
@@ -827,9 +883,12 @@ export function PaymentTrackingManager() {
               />
             </label>
 
-            <label className="mt-4 block text-sm font-semibold">
+            <label htmlFor="payment-reference-number" className="mt-4 block text-sm font-semibold">
               Nomor referensi
               <input
+                id="payment-reference-number"
+                name="referenceNumber"
+                autoComplete="off"
                 value={referenceNumber}
                 onChange={(event) => setReferenceNumber(event.target.value)}
                 className="mt-2 min-h-11 w-full rounded-lg border border-brand-softGray px-4"
@@ -837,26 +896,31 @@ export function PaymentTrackingManager() {
             </label>
 
             {!editing ? (
-              <label className="mt-4 block text-sm font-semibold">
+              <label htmlFor="payment-proof" className="mt-4 block text-sm font-semibold">
                 Bukti pembayaran
                 <input
+                  id="payment-proof"
+                  name="proof"
                   type="file"
                   required
+                  aria-describedby="payment-proof-help"
                   accept=".png,.jpg,.jpeg,.pdf,image/png,image/jpeg,application/pdf"
                   onChange={(event) =>
                     setProofFile(event.target.files?.[0] || null)
                   }
                   className="mt-2 block w-full rounded-lg border border-brand-softGray bg-white p-3 text-sm"
                 />
-                <span className="mt-2 block text-xs font-normal text-brand-charcoal/55">
+                <span id="payment-proof-help" className="mt-2 block text-xs font-normal text-brand-charcoal/55">
                   PNG, JPG, atau PDF. Maksimal 5 MB.
                 </span>
               </label>
             ) : null}
 
-            <label className="mt-4 block text-sm font-semibold">
+            <label htmlFor="payment-customer-notes" className="mt-4 block text-sm font-semibold">
               Catatan pelanggan
               <textarea
+                id="payment-customer-notes"
+                name="customerNotes"
                 rows={3}
                 value={customerNotes}
                 onChange={(event) => setCustomerNotes(event.target.value)}
@@ -864,9 +928,11 @@ export function PaymentTrackingManager() {
               />
             </label>
 
-            <label className="mt-4 block text-sm font-semibold">
+            <label htmlFor="payment-admin-notes" className="mt-4 block text-sm font-semibold">
               Catatan admin
               <textarea
+                id="payment-admin-notes"
+                name="adminNotes"
                 rows={3}
                 value={adminNotes}
                 onChange={(event) => setAdminNotes(event.target.value)}
@@ -917,27 +983,28 @@ export function PaymentTrackingManager() {
 
             <section className="border border-brand-softGray p-4">
               <h3 className="font-semibold">Data Mutasi Aktual</h3>
-              <label className="mt-4 grid gap-2 text-sm font-semibold">Rekening tujuan<select value={reviewMethodId} onChange={(event) => changeReviewMethod(event.target.value)} className="min-h-11 rounded-lg border border-brand-softGray px-3"><option value="">Pilih rekening tujuan</option>{paymentMethods.map((method) => <option key={method.id} value={method.id}>{method.display_name}{method.account_number ? ` · ${method.account_number}` : ""}</option>)}</select></label>
-              <label className="mt-3 grid gap-2 text-sm font-semibold">Nominal masuk<input type="number" min="1" value={verifiedAmount} onChange={(event) => setVerifiedAmount(event.target.value)} className="min-h-11 rounded-lg border border-brand-softGray px-3" /></label>
-              <label className="mt-3 grid gap-2 text-sm font-semibold">Rekening / tujuan terkonfirmasi<input value={verifiedDestinationAccount} onChange={(event) => setVerifiedDestinationAccount(event.target.value)} className="min-h-11 rounded-lg border border-brand-softGray px-3" /></label>
-              <label className="mt-3 grid gap-2 text-sm font-semibold">Waktu transaksi<input type="datetime-local" value={verifiedTransactionAt} onChange={(event) => setVerifiedTransactionAt(event.target.value)} className="min-h-11 rounded-lg border border-brand-softGray px-3" /></label>
-              <label className="mt-3 grid gap-2 text-sm font-semibold">Referensi mutasi<input value={verifiedReference} onChange={(event) => setVerifiedReference(event.target.value)} className="min-h-11 rounded-lg border border-brand-softGray px-3" /></label>
+              <label htmlFor="review-destination-method" className="mt-4 grid gap-2 text-sm font-semibold">Rekening tujuan<select id="review-destination-method" name="destinationMethodId" value={reviewMethodId} onChange={(event) => changeReviewMethod(event.target.value)} className="min-h-11 rounded-lg border border-brand-softGray px-3"><option value="">Pilih rekening tujuan</option>{paymentMethods.map((method) => <option key={method.id} value={method.id}>{method.display_name}{method.account_number ? ` · ${method.account_number}` : ""}</option>)}</select></label>
+              <label htmlFor="review-verified-amount" className="mt-3 grid gap-2 text-sm font-semibold">Nominal masuk<input id="review-verified-amount" name="verifiedAmount" type="number" min="1" aria-required="true" value={verifiedAmount} onChange={(event) => setVerifiedAmount(event.target.value)} className="min-h-11 rounded-lg border border-brand-softGray px-3" /></label>
+              <label htmlFor="review-destination-account" className="mt-3 grid gap-2 text-sm font-semibold">Rekening / tujuan terkonfirmasi<input id="review-destination-account" name="verifiedDestinationAccount" autoComplete="off" value={verifiedDestinationAccount} onChange={(event) => setVerifiedDestinationAccount(event.target.value)} className="min-h-11 rounded-lg border border-brand-softGray px-3" /></label>
+              <label htmlFor="review-transaction-at" className="mt-3 grid gap-2 text-sm font-semibold">Waktu transaksi<input id="review-transaction-at" name="verifiedTransactionAt" type="datetime-local" aria-required="true" value={verifiedTransactionAt} onChange={(event) => setVerifiedTransactionAt(event.target.value)} className="min-h-11 rounded-lg border border-brand-softGray px-3" /></label>
+              <label htmlFor="review-bank-reference" className="mt-3 grid gap-2 text-sm font-semibold">Referensi mutasi<input id="review-bank-reference" name="verifiedReference" autoComplete="off" aria-required="true" value={verifiedReference} onChange={(event) => setVerifiedReference(event.target.value)} className="min-h-11 rounded-lg border border-brand-softGray px-3" /></label>
             </section>
           </div>
 
           <fieldset className="mt-5 border border-brand-softGray p-4">
             <legend className="px-2 text-sm font-semibold">Checklist wajib mutasi bank</legend>
             <div className="grid gap-3 sm:grid-cols-2">
-              <Check label="Dana benar-benar sudah masuk" checked={reviewChecks.fundsReceived} onChange={(value) => setReviewChecks({ ...reviewChecks, fundsReceived: value })} />
-              <Check label="Rekening tujuan sesuai" checked={reviewChecks.destinationAccount} onChange={(value) => setReviewChecks({ ...reviewChecks, destinationAccount: value })} />
-              <Check label="Nominal cocok dengan mutasi" checked={reviewChecks.amount} onChange={(value) => setReviewChecks({ ...reviewChecks, amount: value })} />
-              <Check label="Tanggal dan waktu cocok" checked={reviewChecks.transactionTime} onChange={(value) => setReviewChecks({ ...reviewChecks, transactionTime: value })} />
-              <Check label="Referensi bukan transaksi duplikat" checked={reviewChecks.referenceUnique} onChange={(value) => setReviewChecks({ ...reviewChecks, referenceUnique: value })} />
+              <Check id="review-check-funds" name="fundsReceived" label="Dana benar-benar sudah masuk" checked={reviewChecks.fundsReceived} onChange={(value) => setReviewChecks({ ...reviewChecks, fundsReceived: value })} />
+              <Check id="review-check-destination" name="destinationAccount" label="Rekening tujuan sesuai" checked={reviewChecks.destinationAccount} onChange={(value) => setReviewChecks({ ...reviewChecks, destinationAccount: value })} />
+              <Check id="review-check-amount" name="amountMatches" label="Nominal cocok dengan mutasi" checked={reviewChecks.amount} onChange={(value) => setReviewChecks({ ...reviewChecks, amount: value })} />
+              <Check id="review-check-time" name="transactionTimeMatches" label="Tanggal dan waktu cocok" checked={reviewChecks.transactionTime} onChange={(value) => setReviewChecks({ ...reviewChecks, transactionTime: value })} />
+              <Check id="review-check-reference" name="referenceUnique" label="Referensi bukan transaksi duplikat" checked={reviewChecks.referenceUnique} onChange={(value) => setReviewChecks({ ...reviewChecks, referenceUnique: value })} />
             </div>
           </fieldset>
 
-          <label className="mt-4 grid gap-2 text-sm font-semibold">Catatan internal<textarea rows={3} value={reviewNotes} onChange={(event) => setReviewNotes(event.target.value)} className="rounded-lg border border-brand-softGray p-3 font-normal" /></label>
-          <label className="mt-4 grid gap-2 text-sm font-semibold">Alasan tindak lanjut (wajib selain Verifikasi)<textarea rows={3} value={reviewReason} onChange={(event) => setReviewReason(event.target.value)} className="rounded-lg border border-brand-softGray p-3 font-normal" /></label>
+          <label htmlFor="review-admin-notes" className="mt-4 grid gap-2 text-sm font-semibold">Catatan internal<textarea id="review-admin-notes" name="adminNotes" rows={3} value={reviewNotes} onChange={(event) => setReviewNotes(event.target.value)} className="rounded-lg border border-brand-softGray p-3 font-normal" /></label>
+          <label htmlFor="review-action-reason" className="mt-4 grid gap-2 text-sm font-semibold">Alasan tindak lanjut (wajib selain Verifikasi)<textarea id="review-action-reason" name="reason" rows={3} aria-describedby="review-action-reason-help" value={reviewReason} onChange={(event) => setReviewReason(event.target.value)} className="rounded-lg border border-brand-softGray p-3 font-normal" /></label>
+          <p id="review-action-reason-help" className="mt-1 text-xs text-brand-charcoal/55">Wajib untuk Dana Belum Ditemukan, Minta Koreksi, atau Tolak.</p>
 
           <div className="mt-6 flex flex-wrap gap-3">
             <button type="button" onClick={() => void submitReview("verify")} disabled={Boolean(workingId) || !Object.values(reviewChecks).every(Boolean) || !reviewMethodId || !verifiedAmount || !verifiedTransactionAt || !verifiedReference} className="rounded-full bg-brand-green px-5 py-3 text-sm font-semibold text-white disabled:opacity-45">Verifikasi Dana Masuk</button>
@@ -954,13 +1021,17 @@ export function PaymentTrackingManager() {
           <p className="text-sm leading-6 text-brand-charcoal/65">
             Pembayaran akan hilang dari daftar aktif, tetapi dapat dipulihkan.
           </p>
-          <textarea
-            rows={4}
-            value={archiveReason}
-            onChange={(event) => setArchiveReason(event.target.value)}
-            placeholder="Alasan arsip"
-            className="mt-4 w-full rounded-lg border border-brand-softGray px-4 py-3"
-          />
+          <label htmlFor="payment-archive-reason" className="mt-4 grid gap-2 text-sm font-semibold">
+            Alasan arsip
+            <textarea
+              id="payment-archive-reason"
+              name="archiveReason"
+              rows={4}
+              value={archiveReason}
+              onChange={(event) => setArchiveReason(event.target.value)}
+              className="w-full rounded-lg border border-brand-softGray px-4 py-3 font-normal"
+            />
+          </label>
           <div className="mt-6 flex flex-wrap gap-3">
             <button
               type="button"
@@ -1143,6 +1214,6 @@ function ReviewLine({ label, value }: { label: string; value: string }) {
   return <div className="flex justify-between gap-4"><dt className="text-brand-charcoal/55">{label}</dt><dd className="text-right font-semibold">{value}</dd></div>;
 }
 
-function Check({ label, checked, onChange }: { label: string; checked: boolean; onChange: (value: boolean) => void }) {
-  return <label className="flex min-h-11 items-center gap-3 text-sm font-semibold"><input type="checkbox" checked={checked} onChange={(event) => onChange(event.target.checked)} />{label}</label>;
+function Check({ id, name, label, checked, onChange }: { id: string; name: string; label: string; checked: boolean; onChange: (value: boolean) => void }) {
+  return <label htmlFor={id} className="flex min-h-11 items-center gap-3 text-sm font-semibold"><input id={id} name={name} type="checkbox" checked={checked} onChange={(event) => onChange(event.target.checked)} />{label}</label>;
 }

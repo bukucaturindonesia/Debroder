@@ -33,6 +33,7 @@ export async function GET(request: Request) {
       .select(
         "id,event_id,recipient_id,channel,title,body,related_path,status,sent_at,read_at,archived_at,archived_by,archive_reason,status_before_archive,error_message,seen_at,acknowledged_at,action_required,resolved_at,priority,action_type,created_at"
       )
+      .eq("recipient_id", actor.user.id)
       .order("created_at", { ascending: false })
       .limit(limit);
 
@@ -48,21 +49,25 @@ export async function GET(request: Request) {
       actor.client
         .from("notifications")
         .select("id", { count: "exact", head: true })
+        .eq("recipient_id", actor.user.id)
         .is("archived_at", null),
       actor.client
         .from("notifications")
         .select("id", { count: "exact", head: true })
+        .eq("recipient_id", actor.user.id)
         .is("archived_at", null)
         .is("read_at", null),
       actor.client
         .from("notifications")
         .select("id", { count: "exact", head: true })
+        .eq("recipient_id", actor.user.id)
         .is("archived_at", null)
         .eq("action_required", true)
         .is("resolved_at", null),
       actor.client
         .from("notifications")
         .select("id", { count: "exact", head: true })
+        .eq("recipient_id", actor.user.id)
         .not("archived_at", "is", null)
     ]);
 

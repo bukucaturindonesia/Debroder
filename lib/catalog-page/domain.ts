@@ -23,6 +23,8 @@ export type CatalogPageInput = {
   searchParams?: {
     color?: string | string[];
     status?: string | string[];
+    size?: string | string[];
+    price?: string | string[];
     label?: string | string[];
     sort?: string | string[];
     type?: string | string[];
@@ -57,8 +59,11 @@ function sortValue(value?: string | string[]): CatalogSortValue {
 
 function filters(input: CatalogPageInput): CatalogPageFiltersViewModel {
   const params = input.searchParams || {};
+  const price = normalized(firstParam(params.price), "all");
   return {
     color: normalized(firstParam(params.color), "all"),
+    size: normalized(firstParam(params.size), "all"),
+    price: ["under-50", "50-100", "over-100"].includes(price) ? price : "all",
     status: normalized(firstParam(params.status), "all"),
     label: labelValue(params.label),
     sort: sortValue(params.sort),
@@ -127,6 +132,25 @@ export function buildCatalogPageModel(source: CatalogPageSource, input: CatalogP
         secondaryCtaText: hero?.secondary_cta_label || undefined,
         secondaryCtaHref: hero?.secondary_cta_url || undefined
       },
+      campaigns: (source.campaigns || [])
+        .filter((campaign) => Boolean(campaign.desktop_media_url))
+        .map((campaign) => ({
+          id: campaign.id,
+          name: campaign.name || "",
+          imageUrl: campaign.desktop_media_url || "",
+          mobileImageUrl: campaign.mobile_media_url || null,
+          eyebrow: campaign.eyebrow || "",
+          title: campaign.title || "",
+          description: campaign.subtitle || "",
+          ctaLabel: campaign.cta_label || "",
+          ctaHref: campaign.cta_url || "",
+          sectionType: campaign.section_type || "",
+          sectionGroup: campaign.section_group || "",
+          imageAlt: campaign.image_alt || campaign.title || campaign.name || "",
+          objectPosition: campaign.object_position || "center center",
+          mobileObjectPosition: campaign.mobile_object_position || campaign.object_position || "center center",
+          sortOrder: campaign.sort_order
+        })),
       products,
       customDestination: source.customDestination,
       filters: filters(input),
@@ -142,6 +166,7 @@ export function buildUnavailableCatalogPageModel(input: CatalogPageInput): Catal
     routeKey: input.routeKey,
     status: "unavailable",
     hero: null,
+    campaigns: [],
     category: null,
     productSource: {
       products: { status: "unavailable", data: [] },

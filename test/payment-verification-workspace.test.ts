@@ -1,6 +1,8 @@
 import { readFileSync } from "node:fs";
+import ts from "typescript";
 import { describe, expect, it } from "vitest";
 import {
+  classifyPaymentReviewResult,
   parsePaymentReviewInput,
   paymentSettlementLabel
 } from "@/lib/payments";
@@ -13,7 +15,44 @@ const publicRoute = readFileSync("app/api/public/payments/[token]/route.ts", "ut
 const reviewRoute = readFileSync("app/api/admin/payments/[id]/verification/route.ts", "utf8");
 const publicForm = readFileSync("components/payments/PublicPaymentForm.tsx", "utf8");
 const adminWorkspace = readFileSync("components/admin/PaymentTrackingManager.tsx", "utf8");
+const completionWorkspace = readFileSync("components/admin/PaymentCompletionPanel.tsx", "utf8");
 const settingsWorkspace = readFileSync("components/admin/PaymentSettingsAdmin.tsx", "utf8");
+const supabaseFactory = readFileSync("lib/supabase.ts", "utf8");
+
+function auditNativeFormControls(source: string, fileName: string) {
+  const sourceFile = ts.createSourceFile(fileName, source, ts.ScriptTarget.Latest, true, ts.ScriptKind.TSX);
+  const labelTargets = new Set<string>();
+  const controls: Array<{ tag: string; id: string; name: string }> = [];
+  const literalIds: string[] = [];
+
+  function attributeValue(attribute: ts.JsxAttribute) {
+    return attribute.initializer?.getText(sourceFile) ?? "";
+  }
+
+  function visit(node: ts.Node) {
+    if (ts.isJsxOpeningElement(node) || ts.isJsxSelfClosingElement(node)) {
+      const tag = node.tagName.getText(sourceFile);
+      const attributes = node.attributes.properties.filter(ts.isJsxAttribute);
+      const byName = new Map(attributes.map((attribute) => [attribute.name.getText(sourceFile), attributeValue(attribute)]));
+      const idValue = byName.get("id") ?? "";
+      if (idValue.startsWith('"') && idValue.endsWith('"')) literalIds.push(idValue);
+      if (tag === "label" && byName.get("htmlFor")) labelTargets.add(byName.get("htmlFor")!);
+      if (["input", "select", "textarea"].includes(tag)) {
+        controls.push({ tag, id: byName.get("id") ?? "", name: byName.get("name") ?? "" });
+      }
+    }
+    ts.forEachChild(node, visit);
+  }
+  visit(sourceFile);
+
+  expect(controls.length).toBeGreaterThan(0);
+  expect(new Set(literalIds).size, `${fileName}: literal ids must be unique`).toBe(literalIds.length);
+  for (const control of controls) {
+    expect(control.id, `${fileName}: <${control.tag}> must have id`).not.toBe("");
+    expect(control.name, `${fileName}: <${control.tag}> must have name`).not.toBe("");
+    expect(labelTargets, `${fileName}: ${control.id} must have label htmlFor`).toContain(control.id);
+  }
+}
 
 const validReview = {
   action: "verify",
@@ -80,6 +119,33 @@ describe("Payment verification and mutation workspace", () => {
     expect(adminWorkspace).toContain('submitReview("funds_not_found")');
     expect(adminWorkspace).toContain('submitReview("request_correction")');
     expect(adminWorkspace).toContain('submitReview("reject")');
+  });
+
+  it("classifies retry, stale state, duplicate reference, and inactive-order conflicts", () => {
+    expect(classifyPaymentReviewResult({ action: "verify", currentStatus: "verified" })).toMatchObject({
+      code: "PAYMENT_ALREADY_VERIFIED",
+      status: 200,
+      idempotent: true
+    });
+    expect(classifyPaymentReviewResult({ action: "verify", currentStatus: "pending", errorMessage: "STALE_PAYMENT_REVIEW" }).code).toBe("STALE_PAYMENT_REVIEW");
+    expect(classifyPaymentReviewResult({ action: "verify", currentStatus: "pending", errorMessage: "DUPLICATE_BANK_REFERENCE" }).code).toBe("DUPLICATE_BANK_REFERENCE");
+    expect(classifyPaymentReviewResult({ action: "verify", currentStatus: "pending", errorMessage: "Payment cannot be reviewed for inactive order" }).code).toBe("WRONG_ORDER_STATE");
+    expect(reviewRoute).toContain("getCanonicalPayment");
+    expect(reviewRoute).toContain('code: "PAYMENT_REVIEW_APPLIED"');
+    expect(adminWorkspace).toContain("if (serverResponded) await loadData()");
+  });
+
+  it("uses one browser auth client while keeping server access non-persistent", () => {
+    expect(supabaseFactory).toContain("__debroderSupabaseBrowserClient");
+    expect(supabaseFactory).toContain('typeof window === "undefined"');
+    expect(supabaseFactory).toContain("return createSupabaseServerClient()");
+    expect(supabaseFactory).toContain("persistSession: false");
+  });
+
+  it("gives every native payment control a stable id, name, and associated label", () => {
+    auditNativeFormControls(adminWorkspace, "PaymentTrackingManager.tsx");
+    auditNativeFormControls(completionWorkspace, "PaymentCompletionPanel.tsx");
+    auditNativeFormControls(settingsWorkspace, "PaymentSettingsAdmin.tsx");
   });
 
   it("keeps proof storage private and removes authenticated legacy verification bypasses", () => {

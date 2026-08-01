@@ -117,7 +117,7 @@ export function PaymentSettingsAdmin() {
       <summary className="cursor-pointer list-none p-5 font-semibold">Pengaturan Metode Pembayaran</summary>
       <div className="border-t border-brand-softGray p-5">
         <p className="text-sm leading-6 text-brand-charcoal/60">Sumber terpusat untuk rekening, QRIS, instruksi, urutan, status aktif, dan masa berlaku. Pelanggan hanya melihat metode aktif.</p>
-        {message ? <div className="mt-4 border border-brand-softGray bg-brand-offWhite p-3 text-sm font-semibold">{message}</div> : null}
+        {message ? <div role="status" className="mt-4 border border-brand-softGray bg-brand-offWhite p-3 text-sm font-semibold">{message}</div> : null}
         <div className="mt-5 grid gap-3 lg:grid-cols-2">
           {settings.map((setting) => (
             <article key={setting.id} className="border border-brand-softGray p-4 text-sm">
@@ -132,17 +132,17 @@ export function PaymentSettingsAdmin() {
         {canManage ? (
           <form onSubmit={save} className="mt-6 grid gap-4 border-t border-brand-softGray pt-6 sm:grid-cols-2">
             <h3 className="font-semibold sm:col-span-2">{form.id ? "Edit Metode" : "Tambah Metode"}</h3>
-            <Input label="Kode internal" value={form.methodCode} onChange={(value) => setForm({ ...form, methodCode: value })} placeholder="bca_utama" required />
-            <label className="grid gap-2 text-sm font-semibold">Jenis<select value={form.methodType} onChange={(event) => setForm({ ...form, methodType: event.target.value })} className="min-h-11 rounded-lg border border-brand-softGray px-3"><option value="bank_transfer">Transfer bank</option><option value="qris">QRIS</option><option value="ewallet">Dompet digital</option></select></label>
-            <Input label="Nama tampil" value={form.displayName} onChange={(value) => setForm({ ...form, displayName: value })} required />
-            <Input label="Bank / kanal" value={form.bankName} onChange={(value) => setForm({ ...form, bankName: value })} />
-            <Input label="Nomor rekening / tujuan" value={form.accountNumber} onChange={(value) => setForm({ ...form, accountNumber: value })} />
-            <Input label="Nama pemilik" value={form.accountHolder} onChange={(value) => setForm({ ...form, accountHolder: value })} />
-            <Input label="URL gambar QRIS (HTTPS/path internal)" value={form.qrisImageUrl} onChange={(value) => setForm({ ...form, qrisImageUrl: value })} />
-            <Input label="Masa berlaku (jam)" type="number" min="1" max="720" value={form.expiresInHours} onChange={(value) => setForm({ ...form, expiresInHours: value })} required />
-            <Input label="Urutan" type="number" value={form.sortOrder} onChange={(value) => setForm({ ...form, sortOrder: value })} required />
-            <label className="flex min-h-11 items-center gap-3 text-sm font-semibold"><input type="checkbox" checked={form.isActive} onChange={(event) => setForm({ ...form, isActive: event.target.checked })} /> Aktif untuk pelanggan</label>
-            <label className="grid gap-2 text-sm font-semibold sm:col-span-2">Instruksi<textarea rows={4} value={form.instructions} onChange={(event) => setForm({ ...form, instructions: event.target.value })} className="rounded-lg border border-brand-softGray p-3 font-normal" /></label>
+            <Input id="payment-setting-code" name="methodCode" label="Kode internal" value={form.methodCode} onChange={(value) => setForm({ ...form, methodCode: value })} placeholder="bca_utama" autoComplete="off" required />
+            <label htmlFor="payment-setting-type" className="grid gap-2 text-sm font-semibold">Jenis<select id="payment-setting-type" name="methodType" value={form.methodType} onChange={(event) => setForm({ ...form, methodType: event.target.value as Setting["method_type"] })} className="min-h-11 rounded-lg border border-brand-softGray px-3"><option value="bank_transfer">Transfer bank</option><option value="qris">QRIS</option><option value="ewallet">Dompet digital</option></select></label>
+            <Input id="payment-setting-display-name" name="displayName" label="Nama tampil" value={form.displayName} onChange={(value) => setForm({ ...form, displayName: value })} autoComplete="off" required />
+            <Input id="payment-setting-bank" name="bankName" label="Bank / kanal" value={form.bankName} onChange={(value) => setForm({ ...form, bankName: value })} autoComplete="organization" />
+            <Input id="payment-setting-account-number" name="accountNumber" label="Nomor rekening / tujuan" value={form.accountNumber} onChange={(value) => setForm({ ...form, accountNumber: value })} autoComplete="off" />
+            <Input id="payment-setting-account-holder" name="accountHolder" label="Nama pemilik" value={form.accountHolder} onChange={(value) => setForm({ ...form, accountHolder: value })} autoComplete="name" />
+            <Input id="payment-setting-qris-url" name="qrisImageUrl" label="URL gambar QRIS (HTTPS/path internal)" value={form.qrisImageUrl} onChange={(value) => setForm({ ...form, qrisImageUrl: value })} autoComplete="url" />
+            <Input id="payment-setting-expiry" name="expiresInHours" label="Masa berlaku (jam)" type="number" min="1" max="720" value={form.expiresInHours} onChange={(value) => setForm({ ...form, expiresInHours: value })} required />
+            <Input id="payment-setting-sort-order" name="sortOrder" label="Urutan" type="number" value={form.sortOrder} onChange={(value) => setForm({ ...form, sortOrder: value })} required />
+            <label htmlFor="payment-setting-active" className="flex min-h-11 items-center gap-3 text-sm font-semibold"><input id="payment-setting-active" name="isActive" type="checkbox" checked={form.isActive} onChange={(event) => setForm({ ...form, isActive: event.target.checked })} /> Aktif untuk pelanggan</label>
+            <label htmlFor="payment-setting-instructions" className="grid gap-2 text-sm font-semibold sm:col-span-2">Instruksi<textarea id="payment-setting-instructions" name="instructions" rows={4} value={form.instructions} onChange={(event) => setForm({ ...form, instructions: event.target.value })} className="rounded-lg border border-brand-softGray p-3 font-normal" /></label>
             <div className="flex flex-wrap gap-3 sm:col-span-2"><button disabled={busy} className="min-h-11 rounded-full bg-brand-charcoal px-5 text-sm font-semibold text-white disabled:opacity-50">{busy ? "Menyimpan..." : "Simpan Metode"}</button>{form.id ? <button type="button" onClick={() => setForm(EMPTY)} className="min-h-11 rounded-full border border-brand-softGray px-5 text-sm font-semibold">Batal Edit</button> : null}</div>
           </form>
         ) : <p className="mt-5 text-sm text-brand-charcoal/55">Akses Anda hanya dapat melihat pengaturan pembayaran.</p>}
@@ -151,6 +151,6 @@ export function PaymentSettingsAdmin() {
   );
 }
 
-function Input({ label, value, onChange, ...props }: Omit<React.InputHTMLAttributes<HTMLInputElement>, "onChange" | "value"> & { label: string; value: string; onChange: (value: string) => void }) {
-  return <label className="grid gap-2 text-sm font-semibold">{label}<input {...props} value={value} onChange={(event) => onChange(event.target.value)} className="min-h-11 rounded-lg border border-brand-softGray px-3 font-normal" /></label>;
+function Input({ id, name, label, value, onChange, ...props }: Omit<React.InputHTMLAttributes<HTMLInputElement>, "id" | "name" | "onChange" | "value"> & { id: string; name: string; label: string; value: string; onChange: (value: string) => void }) {
+  return <label htmlFor={id} className="grid gap-2 text-sm font-semibold">{label}<input {...props} id={id} name={name} value={value} onChange={(event) => onChange(event.target.value)} className="min-h-11 rounded-lg border border-brand-softGray px-3 font-normal" /></label>;
 }

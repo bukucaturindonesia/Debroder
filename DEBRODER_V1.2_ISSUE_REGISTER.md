@@ -348,6 +348,54 @@ Last updated: 28 July 2026 (Asia/Makassar)
   **0 errors / 38 existing warnings**; production build **126 pages PASS**.
 - Commit, push, deploy: **NOT PERFORMED**.
 
+## P0-TRANS-001 — Payment review conflicts were non-reconciling in Admin UI
+
+- Severity: **BLOCKER / TRANSACTION OPERABILITY**.
+- Status: **CLOSED IN CODE; FOCUSED/FULL/BUILD PASS; RUNTIME PENDING**.
+- Evidence: the API collapsed stale and missing-pending states into generic
+  HTTP 409, returned no canonical state/code, and the Admin modal refetched
+  only after success. The RPC already enforced row lock, expected timestamp,
+  five bank checks, and duplicate-reference uniqueness.
+- Resolution: stable result classification, canonical-state responses,
+  idempotent repeat verify for an already verified payment, and unconditional
+  UI reconciliation after any server response. Duplicate references and wrong
+  order/payment state remain non-mutating conflicts.
+- Verification: focused payment/Admin suite **29/29 PASS**, full suite
+  **842/842 PASS**, build **127 pages PASS**.
+- Remaining evidence: execute one controlled deployed payment verification and
+  repeat request after owner deploys; capture request/payment/order/
+  notification/log identities.
+
+## P0-AUTH-NOTIF-001 — Repeated browser auth clients and Realtime replay risk
+
+- Severity: **MAJOR / ADMIN OPERABILITY**.
+- Status: **CLOSED IN CODE; DATABASE DUPLICATION DISPROVEN; RUNTIME PENDING**.
+- Evidence: `createSupabaseClient()` previously created a GoTrue client on
+  every call. Remote audit found zero duplicate notification event keys and
+  zero duplicate `(event_id, recipient_id, channel)` rows; 2–3 rows are
+  distinct legitimate recipients.
+- Resolution: one HMR-safe browser client, separate request-scoped server
+  client, existing channel cleanup retained, and bounded notification-ID replay
+  suppression in the bell. Unread stays derived from the server count.
+- Security: RLS/ACL and recipient scoping are unchanged; service-role remains
+  server-only.
+- Remaining evidence: after deploy, confirm zero GoTrue warnings and maximum
+  one popup/unread increment per intended recipient across remount/reconnect.
+
+## P0-ADMIN-RUNTIME-001 — Live Admin configuration and deployment alignment
+
+- Severity: **RELEASE VERIFICATION BLOCKER**.
+- Status: **OPEN — STATIC/ROLE/BUILD PASS; DEPLOYED RUNTIME UNAVAILABLE**.
+- Evidence: canonical Admin routes are present in the 127-page build and the
+  three-role matrix passes. `PIM V2` is intentionally consolidated into the
+  Product workspace, not a lost capability. The available Vercel team exposes
+  no project and the repo has no `.vercel/project.json`.
+- Required next action: owner deploys or grants project visibility, then verify
+  Admin load/edit/save/persistence, Console/Issues, exact production SHA/env,
+  Vercel/Supabase logs, one transaction journey, and public denial.
+- No route, legacy Admin version, feature flag, permission bypass, migration,
+  commit, push, or deploy was added in this recovery package.
+
 ## PUBLIC-V2-001 — Desktop mega dropdown separated from navbar
 
 - Severity: **MAJOR VISUAL/INTERACTION**.
@@ -427,3 +475,89 @@ Last updated: 28 July 2026 (Asia/Makassar)
 - Next action: reproduce only if the same error appears during normal
   user-paced navigation or Vercel observability shows correlated route
   failures; do not expand the current package speculatively.
+
+## PUBLIC-KAOS-001 — Kaos Polos catalog below locked editorial composition
+
+- Severity: **MAJOR VISUAL/INTERACTION**.
+- Status: **CLOSED IN CODE — QUALITY GATE PASS; RUNTIME EXPLICITLY DEFERRED**.
+- Root cause: `/kaos-polos` used the generic category composition and shared
+  four-column desktop catalog, with a modal filter on desktop and no
+  asymmetric first-row editorial placement.
+- Resolution: dedicated Kaos Polos editorial experience plus an opt-in catalog
+  layout that preserves all other category defaults.
+- Locked result: desktop 3 columns; first row 1 product + 2-column editorial
+  media; open filter sidebar + 2 columns; mobile 2 columns + full-width
+  editorial media; canonical 4:5 Product Card with no permanent CTA.
+- Data integrity: CMS/PIM canonical only; no product, campaign, taxonomy, or
+  database record created.
+- Verification: typecheck **PASS**; lint **0 errors / 38 existing warnings**;
+  full suite **112 files / 832 tests PASS**; production build **126 routes
+  PASS**.
+- Runtime evidence: **DEFERRED** under the owner's active prohibition against
+  further Windows local runtime launcher attempts.
+- Commit, push, deploy: **NOT PERFORMED**.
+
+## PUBLIC-KAOS-002 — Owner editorial sizing, CMS ownership, and filtered-grid correction
+
+- Severity: **MAJOR VISUAL/CONTENT OWNERSHIP**.
+- Status: **SUPERSEDED BY PUBLIC-KAOS-003 — INITIAL CODE REVISION RECORDED**.
+- Root causes:
+  - Hero retained the previous oversized height and type scale.
+  - Featured was derived from PIM products rather than CMS editorial content and had a visible card gap.
+  - Campaign media used one wide linked banner instead of separate 400/1200 editorial slots.
+  - Category discovery did not reuse the Homepage Shop by Category scrollbar presentation.
+  - Opening the desktop filter reduced Kaos Polos catalog from three to two product columns.
+- Resolution:
+  - Hero dimensions changed to 60% and primary type dimensions to 80% of the previous values.
+  - Featured now reads up to two Kaos Polos `cms_banners` editorial records and uses a 0 px gap.
+  - Banner now uses 1:3 columns, 16:5 overall aspect ratio, 1 px gap, canonical Custom link on the left, and non-clickable right media.
+  - Category rail now uses native flex overflow, snap, and `premium-scrollbar` behavior.
+  - Desktop filtered catalog keeps `repeat(3, minmax(0, 1fr))`; cards resize without changing column count.
+  - Initial revision added the dedicated CMS route under a no-migration assumption; schema/history alignment is superseded by PUBLIC-KAOS-003.
+- Verification: TypeScript parser **PASS**; static owner-contract matrix **PASS**; full pnpm gates and runtime **NOT RUN due missing dependencies and blocked registry access**.
+- Commit, push, deploy: **NOT PERFORMED**.
+
+## PUBLIC-KAOS-003 — Owner CMS usability, mobile editorial banner, spacing, and schema alignment
+
+- Severity: **MAJOR UX / VISUAL / CMS OPERABILITY / DATABASE COMPATIBILITY**.
+- Status: **IMPLEMENTED; DATABASE MIGRATION AND POSTCHECK PASS; FULL LOCAL
+  QUALITY GATE AND RUNTIME PENDING**.
+- Root causes:
+  - Kaos Polos admin exposed a generic CMS form and required the owner to
+    understand technical record fields.
+  - Mobile banner layout stacked the left and right assets vertically, so
+    object-position controls could not create the intended editorial
+    composition.
+  - Featured slots were not explicit in admin and no published
+    `featured_editorial` records existed, so the public section was absent.
+  - Kaos Polos introduced its own `padding-block` rhythm, causing adjacent
+    section spacing to accumulate instead of following Homepage tokens.
+  - Catalog heading and toolbar repeated `Kaos Polos`; the count presentation
+    was visually redundant.
+  - Live `cms_banners_section_type_check` required formal source/history
+    alignment for the three Kaos Polos section types.
+- Resolution:
+  - Replaced the owner workflow with four fixed slots: `Featured 01`,
+    `Featured 02`, `Banner kiri`, and `Banner kanan`.
+  - Added independent desktop/mobile 3 × 3 focal-position controls and combined
+    desktop/mobile previews.
+  - Locked banner layouts to desktop `25:75` and mobile `32:68`, with a 1 px
+    gap and no mobile stacking.
+  - Inherited `--section-space` and `--section-space-end` from Homepage and
+    removed double-sided section spacing accumulation.
+  - Reduced the catalog toolbar label to dynamic `{visible.length} Produk`.
+  - Applied and verified migration
+    `20260801045549_kaos_polos_editorial_section_types_v1`.
+- Database postcheck:
+  - migration history entry present;
+  - `cms_banners_section_type_check` accepts all prior types plus
+    `featured_editorial`, `banner_editorial_left`, and
+    `banner_editorial_right`;
+  - no product, pricing, inventory, SKU, order, payment, or transaction table
+    changed.
+- Remaining verification:
+  - run owner quality gates locally;
+  - verify admin and `/kaos-polos` at representative mobile/desktop widths;
+  - create and publish Featured slot content through admin for visual runtime
+    confirmation.
+- Commit, push, deploy: **NOT PERFORMED**.
