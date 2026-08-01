@@ -7,6 +7,10 @@ import { resolveOrderActiveStage, type OrderActiveStageInput } from "@/lib/order
 
 const migrationPath = "supabase/migrations/20260801115245_pay_at_store_pickup_canonical_workflow_v1.sql";
 const migration = readFileSync(migrationPath, "utf8");
+const taskLedgerMigration = readFileSync(
+  "supabase/migrations/20260801134645_pay_at_store_pickup_task_ledger_alignment_v1.sql",
+  "utf8"
+);
 const fulfillmentUi = readFileSync("components/admin/FulfillmentDetailAdmin.tsx", "utf8");
 const customerRead = readFileSync("lib/customer-orders/data-access.ts", "utf8");
 const nextConfig = readFileSync("next.config.ts", "utf8");
@@ -153,6 +157,20 @@ describe("Pay at Store + Store Pickup canonical P0 workflow", () => {
     expect(migration).toContain("pickup_order_completed");
     expect(migration).toContain("where not exists");
     expect(migration).toContain("Bukti serah terima belum tersedia");
+  });
+
+  it("keeps every Pay at Store pickup task inside the canonical task ledger", () => {
+    for (const taskType of [
+      "confirm_customer_arrival",
+      "record_pay_at_store_payment",
+      "record_pickup_handover",
+      "complete_pickup_order"
+    ]) {
+      expect(taskLedgerMigration).toContain(`'${taskType}'`);
+      expect(taskLedgerMigration).toContain(`when '${taskType}' then 'store_staff'`);
+    }
+    expect(taskLedgerMigration).toContain("add constraint order_tasks_task_type_check");
+    expect(taskLedgerMigration).toContain("create or replace function public.sync_order_operational_task_v1");
   });
 
   it("resolves both reported metadata paths to tracked assets", () => {
