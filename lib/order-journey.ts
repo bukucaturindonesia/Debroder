@@ -13,6 +13,7 @@ export type OrderJourneyStep = {
 type JourneyInput = {
   stage: OrderActiveStageResolution;
   fulfillmentMethod?: string | null;
+  paymentMethod?: string | null;
 };
 
 type JourneyDefinition = Omit<OrderJourneyStep, "state" | "position">;
@@ -53,6 +54,44 @@ const COMPACT_BASE: JourneyDefinition[] = [
   { id: "completed", label: "Selesai", description: "Pesanan benar-benar diterima atau diambil pelanggan." }
 ];
 
+const PAY_AT_STORE_PICKUP: JourneyDefinition[] = [
+  { id: "order", label: "Pesanan Masuk", description: "Pesanan tercatat dan identitas order tersedia." },
+  { id: "operations", label: "Persiapan / Produksi", description: "Barang disiapkan atau diproduksi sebelum pelanggan datang." },
+  { id: "ready_for_pickup", label: "Siap Diambil", description: "Barang sudah siap dan menunggu pelanggan di toko." },
+  { id: "pickup_verification", label: "Verifikasi Akhir & Harga", description: "Setelah pelanggan tiba, Admin mencocokkan barang, jumlah, dan total canonical." },
+  { id: "pickup_payment", label: "Pembayaran di Toko", description: "Admin mencatat pembayaran sesuai total canonical pesanan." },
+  { id: "pickup_handover", label: "Serah Terima / Pickup", description: "Barang yang sudah dibayar diserahkan dan bukti serah terima disimpan." },
+  { id: "completed", label: "Selesai", description: "Pesanan terminal dan tidak kembali ke tahap sebelumnya tanpa reopen resmi." }
+];
+
+const STAGE_TO_PAY_AT_STORE_PICKUP: Record<string, string> = {
+  whatsapp_confirmation: "order",
+  order_review: "order",
+  integrity_review: "order",
+  shipping_quote: "order",
+  custom_pricing: "order",
+  customer_approval: "order",
+  payment_pending: "order",
+  payment_review: "order",
+  payment_correction: "order",
+  payment_balance_due: "order",
+  job_order_required: "operations",
+  preparing_goods: "operations",
+  production: "operations",
+  quality_control: "operations",
+  packing: "operations",
+  final_check: "operations",
+  final_check_completed: "operations",
+  ready_for_pickup: "ready_for_pickup",
+  pickup_final_verification: "pickup_verification",
+  pickup_payment: "pickup_payment",
+  pickup_handover: "pickup_handover",
+  pickup_completion: "pickup_handover",
+  completed: "completed",
+  cancelled: "order",
+  expired: "order"
+};
+
 const STAGE_TO_JOURNEY: Record<string, string> = {
   whatsapp_confirmation: "order_created",
   order_review: "order_review",
@@ -74,6 +113,10 @@ const STAGE_TO_JOURNEY: Record<string, string> = {
   ready_to_ship: "handover",
   shipping: "handover",
   ready_for_pickup: "handover",
+  pickup_final_verification: "final_check",
+  pickup_payment: "payment",
+  pickup_handover: "handover",
+  pickup_completion: "handover",
   completed: "completed",
   cancelled: "order_created",
   expired: "order_created"
@@ -100,12 +143,19 @@ const STAGE_TO_COMPACT: Record<string, string> = {
   ready_to_ship: "handover",
   shipping: "handover",
   ready_for_pickup: "handover",
+  pickup_final_verification: "operations",
+  pickup_payment: "payment",
+  pickup_handover: "handover",
+  pickup_completion: "handover",
   completed: "completed",
   cancelled: "order",
   expired: "order"
 };
 
-export function buildOrderJourney({ stage, fulfillmentMethod }: JourneyInput): OrderJourneyStep[] {
+export function buildOrderJourney({ stage, fulfillmentMethod, paymentMethod }: JourneyInput): OrderJourneyStep[] {
+  if (isPayAtStorePickup(fulfillmentMethod, paymentMethod)) {
+    return buildPayAtStorePickupJourney(stage);
+  }
   const definitions = stage.lifecycleKind === "custom" ? CUSTOM_BASE : READY_STOCK_BASE;
   const activeId = STAGE_TO_JOURNEY[stage.activeStage] ?? "order_review";
   const activeIndex = Math.max(0, definitions.findIndex((item) => item.id === activeId));
@@ -147,7 +197,10 @@ export function buildOrderJourney({ stage, fulfillmentMethod }: JourneyInput): O
   }));
 }
 
-export function buildCompactOrderJourney({ stage, fulfillmentMethod }: JourneyInput): OrderJourneyStep[] {
+export function buildCompactOrderJourney({ stage, fulfillmentMethod, paymentMethod }: JourneyInput): OrderJourneyStep[] {
+  if (isPayAtStorePickup(fulfillmentMethod, paymentMethod)) {
+    return buildPayAtStorePickupJourney(stage);
+  }
   const stopped = stage.activeStage === "cancelled" || stage.activeStage === "expired";
   const handoverLabel = normalized(fulfillmentMethod) === "pickup" ? "Pickup" : "Pengiriman";
   const definitions = COMPACT_BASE.map((definition) => definition.id === "handover"
@@ -175,6 +228,36 @@ export function buildCompactOrderJourney({ stage, fulfillmentMethod }: JourneyIn
     state: index < activeIndex ? "done" : index === activeIndex ? "current" : "upcoming",
     position: index + 1
   }));
+}
+
+function buildPayAtStorePickupJourney(stage: OrderActiveStageResolution): OrderJourneyStep[] {
+  const stopped = stage.activeStage === "cancelled" || stage.activeStage === "expired";
+  if (stopped) {
+    const terminalLabel = stage.activeStage === "expired" ? "Kedaluwarsa" : "Dibatalkan";
+    return PAY_AT_STORE_PICKUP.map((definition, index) => index === 0
+      ? {
+          ...definition,
+          id: stage.activeStage,
+          label: terminalLabel,
+          description: stage.blockingReason || "Pesanan tidak dilanjutkan.",
+          state: "stopped" as const,
+          position: 1
+        }
+      : { ...definition, state: "skipped" as const, position: index + 1 });
+  }
+
+  const activeId = STAGE_TO_PAY_AT_STORE_PICKUP[stage.activeStage];
+  const resolvedId = activeId ?? (stage.isTerminal ? "completed" : "order");
+  const activeIndex = Math.max(0, PAY_AT_STORE_PICKUP.findIndex((definition) => definition.id === resolvedId));
+  return PAY_AT_STORE_PICKUP.map((definition, index) => ({
+    ...definition,
+    state: index < activeIndex ? "done" : index === activeIndex ? "current" : "upcoming",
+    position: index + 1
+  }));
+}
+
+function isPayAtStorePickup(fulfillmentMethod: unknown, paymentMethod: unknown) {
+  return normalized(fulfillmentMethod) === "pickup" && normalized(paymentMethod) === "pay_at_store";
 }
 
 export function orderJourneyCurrentStep(steps: OrderJourneyStep[]) {

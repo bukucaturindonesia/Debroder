@@ -147,7 +147,7 @@ describe("Order Integrity & Handoff Foundation Phase 0-3", () => {
     expect(stage).toMatchObject({
       activeStage: "ready_for_pickup",
       responsibility: "customer",
-      primaryAction: "handover_pickup",
+      primaryAction: "confirm_customer_arrival",
       customerTitle: "Barang siap diambil dan dibayar di toko"
     });
   });

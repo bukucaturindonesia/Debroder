@@ -23,7 +23,8 @@ export function CustomerOrderStatusCard({
   const styles = TONE_STYLES[presentation.tone];
   const compactJourney = buildCompactOrderJourney({
     stage: presentation.activeStage,
-    fulfillmentMethod: presentation.fulfillmentMethod
+    fulfillmentMethod: presentation.fulfillmentMethod,
+    paymentMethod: presentation.paymentMethod
   });
 
   return (
@@ -54,10 +55,10 @@ export function CustomerOrderStatusCard({
             <p className="text-xs font-semibold uppercase tracking-[0.14em] text-black/45">Perjalanan Pesanan</p>
             <h3 className="mt-1 text-xl font-semibold">Status sejak checkout</h3>
           </div>
-          <p className="max-w-md text-sm leading-6 text-black/55">Enam tahap utama menampilkan posisi pesanan tanpa memenuhi halaman.</p>
+          <p className="max-w-md text-sm leading-6 text-black/55">Tahap canonical menampilkan posisi pesanan dari checkout sampai selesai.</p>
         </div>
 
-        <ol className="mt-5 grid gap-2 sm:grid-cols-3 xl:grid-cols-6" aria-label="Tahap utama pesanan">
+        <ol className="mt-5 grid gap-2 sm:grid-cols-3 xl:grid-cols-7" aria-label="Tahap utama pesanan">
           {compactJourney.map((step) => {
             const current = step.state === "current" || step.state === "stopped";
             return (

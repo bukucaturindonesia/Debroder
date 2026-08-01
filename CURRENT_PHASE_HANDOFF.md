@@ -1064,3 +1064,80 @@ DEBRODER V1.2 REMAINS NOT COMPLETE**
 - GO/NO-GO: **NO-GO for public release; PASS WITH EXPLICIT DEFERRAL for local
   implementation and static/build verification; NOT COMPLETE**.
 - Commit, push, deploy: **NOT PERFORMED**.
+
+---
+
+# Handoff — P0 Pay at Store + Store Pickup continuous completion
+
+**Date:** 1 August 2026
+**Working branch:** `UI-UX-001`
+**Supabase project:** `lzennundwqqtyvvcnzbg`
+
+## Active scope and inspected evidence
+
+- Inspected the existing Admin order/fulfillment/payment actions, customer and
+  guest projections, order integrity resolver, migration history, applied
+  database schema/RPC signatures/ACL, and read-only reference order
+  `ORD-DEB-2026-0050`.
+- The reference order was not mutated. Its terminal state remains authoritative
+  while its historical pre-arrival final verification remains visible as an
+  integrity warning.
+
+## Work changed
+
+- Added explicit `customer_arrived_*` and `handover_completed_*` fulfillment
+  milestones and separated arrival, final verification, in-store payment,
+  handover, and terminal completion commands.
+- Added database guards and exactly-once history checks so a Pay at Store
+  pickup cannot skip arrival, payment, proof, handover, or final verification.
+- Replaced divergent client projections with the canonical seven-stage
+  resolver and made terminal state monotonic across Admin, customer order, and
+  guest tracking.
+- Added stable form IDs/names for the owned final-check controls and corrected
+  known metadata images to existing `/debroder/...` assets.
+- Removed only the duplicate, unapplied local Kaos Polos migration version;
+  the applied canonical migration source remains.
+
+## Files and routes changed
+
+- Changed workflow/read-model files under `components/admin`,
+  `components/customer-order`, `components/tracking`, `lib/admin-orders`,
+  `lib/customer-orders`, `lib/fulfillments.ts`, `lib/order-active-stage.ts`,
+  `lib/order-journey.ts`, `lib/canonical-order-stage.ts`, and `next.config.ts`.
+- Added `test/pay-at-store-pickup-canonical-workflow.test.ts` and revised only
+  affected regression expectations.
+- Existing routes affected: `/admin/orders/[id]`, `/admin/fulfillment/[id]`,
+  `/account/orders/[id]`, and `/track-order`. New/removed public routes: **NONE**.
+
+## Database and migration
+
+- Local/remote canonical migration:
+  `20260801115245_pay_at_store_pickup_canonical_workflow_v1.sql`.
+- Remote migration application: **PASS**; history entry: **PRESENT**.
+- Postcheck: four milestone columns, five workflow/resolver functions, progress
+  guard trigger, and intended ACL: **PASS**.
+- Package migration pending: **NONE**.
+- Destructive SQL, reset, data deletion, old applied migration rewrite: **NONE**.
+
+## Verification actually run
+
+- Focused/impacted workflow tests: **41/41 PASS**.
+- Required payment-verification, transaction-notification, and custom-commerce
+  regressions: **40/40 PASS**.
+- Typecheck: **PASS**.
+- Lint: **PASS — 0 errors / 38 pre-existing warnings; no changed-file warning**.
+- Full suite: **113 files / 848 tests PASS**.
+- Production build: **PASS — 127 pages**. The sandbox attempt failed only on
+  outbound Google Font access; the approved network-enabled build completed.
+- Supabase CLI resolution was unavailable and two bounded `npx` attempts
+  timed out. The migration was therefore applied through the connected
+  Supabase migration API and verified independently.
+
+## Deployment and remaining work
+
+- Commit/push/PR/production deployment: **PENDING**.
+- Production controlled transaction, idempotent retries, per-recipient
+  notification database/UI checks, Admin save persistence, tracking reload,
+  browser Console/Issues, LCP after evidence, and Vercel/Supabase logs:
+  **PENDING DEPLOYED RUNTIME**.
+- Current GO/NO-GO: **NO-GO UNTIL PRODUCTION RUNTIME MATRIX PASSES**.

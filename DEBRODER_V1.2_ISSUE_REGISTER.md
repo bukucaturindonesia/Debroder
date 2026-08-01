@@ -561,3 +561,28 @@ Last updated: 28 July 2026 (Asia/Makassar)
   - create and publish Featured slot content through admin for visual runtime
     confirmation.
 - Commit, push, deploy: **NOT PERFORMED**.
+
+## P0-STORE-PICKUP-001 — Pay at Store pickup stages were non-canonical
+
+- Severity: **BLOCKER — TRANSACTION/OPERATIONS**.
+- Status: **CLOSED IN CODE AND DATABASE; PRODUCTION E2E PENDING**.
+- Proven root cause:
+  - final verification could precede customer arrival;
+  - the old Admin action coupled payment verification with pickup handover;
+  - Admin/customer/tracking projections could disagree and could regress a
+    completed order to an active stage;
+  - arrival and handover were not first-class persisted milestones.
+- Resolution: additive fulfillment milestones, separated guarded RPCs,
+  exactly-once transition history, canonical seven-stage projection, terminal
+  monotonicity, and explicit Admin action ownership.
+- Migration `20260801115245_pay_at_store_pickup_canonical_workflow_v1`:
+  **APPLIED AND POSTCHECK PASS** on project `lzennundwqqtyvvcnzbg`.
+- Reference evidence: `ORD-DEB-2026-0050` remains read-only, completed, paid,
+  and picked up. The resolver returns terminal `completed` plus its retained
+  legacy-ordering warning.
+- Regression evidence: impacted **41/41 PASS**; required suites **40/40 PASS**;
+  full suite **113 files / 848 tests PASS**; typecheck/lint/build **PASS**.
+- Remaining gate: one fresh production Pay at Store + Store Pickup order must
+  prove the exact sequence, retry idempotency, one notification per recipient,
+  stable tracking after refresh, Admin persistence, zero target console/log
+  errors, and post-deployment LCP evidence.

@@ -81,7 +81,9 @@ export type CustomerOrderServerProjection = {
     status: string;
     courier: string | null;
     trackingNumber: string | null;
+    customerArrivedAt: string | null;
     finalVerifiedAt: string | null;
+    handoverCompletedAt: string | null;
     updatedAt: string | null;
   } | null;
   activeStage: OrderActiveStageResolution;
@@ -118,7 +120,9 @@ export function projectCustomerOrderServerReadModel(
     status: requiredText(fulfillmentRow.status, "Fulfillment tanpa status."),
     courier: nullableText(fulfillmentRow.courier),
     trackingNumber: nullableText(fulfillmentRow.tracking_number),
+    customerArrivedAt: nullableText(fulfillmentRow.customer_arrived_at),
     finalVerifiedAt: nullableText(fulfillmentRow.final_verified_at),
+    handoverCompletedAt: nullableText(fulfillmentRow.handover_completed_at),
     updatedAt: nullableText(fulfillmentRow.updated_at)
   } : null;
   const effectivePayment = effectivePaymentStatus(
@@ -163,6 +167,8 @@ export function projectCustomerOrderServerReadModel(
       ? nullableText(qualityControlRow.result) ?? nullableText(qualityControlRow.status)
       : null,
     finalVerificationCompleted: Boolean(fulfillment?.finalVerifiedAt),
+    customerArrivedAt: fulfillment?.customerArrivedAt ?? null,
+    handoverCompletedAt: fulfillment?.handoverCompletedAt ?? null,
     trackingNumber: fulfillment?.trackingNumber ?? null,
     taskRevision: latestRevision([
       nullableText(row.updated_at),
@@ -297,6 +303,9 @@ export function toCustomerOrderTrackingReadModel(
         ? projection.fulfillment?.status ?? projection.order.status
         : null,
       fulfillmentStatus: projection.fulfillment?.status ?? null,
+      customerArrivedAt: projection.fulfillment?.customerArrivedAt ?? null,
+      finalVerifiedAt: projection.fulfillment?.finalVerifiedAt ?? null,
+      handoverCompletedAt: projection.fulfillment?.handoverCompletedAt ?? null,
       nextStep: projection.activeStage.nextStep
     },
     items: projection.items,

@@ -92,7 +92,9 @@ export type AdminOrderFulfillmentSummary = AdminOrderDomainSummary & {
   method: string;
   courier: string | null;
   tracking_number: string | null;
+  customer_arrived_at: string | null;
   final_verified_at: string | null;
+  handover_completed_at: string | null;
 };
 
 export type AdminOrderPaymentSummary = {

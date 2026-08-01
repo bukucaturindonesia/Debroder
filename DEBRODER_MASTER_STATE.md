@@ -473,3 +473,40 @@ Existing legal, CMS route, Preview performance, remote transaction E2E, data-int
 - Release status: **IMPLEMENTED AND CODE/BUILD VERIFIED; RUNTIME AND CONTROLLED
   LIVE TRANSACTION MATRIX DEFERRED; PROJECT REMAINS NO-GO / NOT COMPLETE**.
 - Commit, push, deploy: **NOT PERFORMED**.
+
+---
+
+## 18. P0 Pay at Store + Store Pickup canonical workflow — 1 August 2026
+
+- Active scope is limited to the canonical sequence: Pesanan Masuk →
+  Persiapan/Produksi → Siap Diambil → customer arrival → Verifikasi Akhir &
+  Harga → Pembayaran di Toko → Serah Terima/Pickup → Selesai.
+- Root cause was a split authority between fulfillment, payment, and UI
+  projection: Pay at Store could record final verification before arrival,
+  payment and handover were coupled, and a completed order could project back
+  to a non-terminal stage.
+- The recovery adds explicit arrival and handover milestones, four
+  role-checked RPCs, invariant guards, exactly-once history events, and one
+  canonical stage resolver shared by Admin, customer order, and guest tracking
+  read models. Completed/picked-up remains terminal even when legacy integrity
+  warnings exist.
+- Supabase project `lzennundwqqtyvvcnzbg`: migration
+  `20260801115245_pay_at_store_pickup_canonical_workflow_v1` is **APPLIED AND
+  VERIFIED**. Four milestone columns, five resolver/workflow RPCs, the progress
+  guard trigger, and authenticated/service-role-only workflow ACL are present.
+- Duplicate local migration
+  `20260801044500_kaos_polos_editorial_section_types_v1.sql` was removed; the
+  applied canonical source `20260801045549_kaos_polos_editorial_section_types_v1.sql`
+  remains unchanged.
+- Read-only reference `ORD-DEB-2026-0050` remains `completed` and terminal;
+  its pre-recovery ordering anomaly is retained as a warning and was not
+  mutated.
+- Verification: focused/impacted **41/41 PASS**; required payment,
+  notification, and custom-commerce regressions **40/40 PASS**; full suite
+  **113 files / 848 tests PASS**; typecheck **PASS**; lint **0 errors / 38
+  pre-existing warnings**; production build **PASS — 127 pages**.
+- Deployment, production transaction E2E, notification UI replay, Admin
+  persistence, tracking, LCP, and production logs: **PENDING** until the code
+  commit is merged and the Current Vercel deployment is verified.
+- Package state before production runtime: **IMPLEMENTED; DATABASE MIGRATED;
+  LOCAL QUALITY GATES PASS; NOT YET OWNER QUALITY-GATE COMPLETE**.

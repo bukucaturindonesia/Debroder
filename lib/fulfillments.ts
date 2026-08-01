@@ -46,9 +46,15 @@ export type FulfillmentRow = {
   archived_by: string | null;
   archive_reason: string | null;
   final_verification_checklist: Record<string, boolean> | null;
+  customer_arrived_at: string | null;
+  customer_arrived_by: string | null;
+  customer_arrival_note: string | null;
   final_verified_at: string | null;
   final_verified_by: string | null;
   final_verification_note: string | null;
+  handover_completed_at: string | null;
+  handover_completed_by: string | null;
+  handover_note: string | null;
 };
 
 export type FulfillmentItemRow = {

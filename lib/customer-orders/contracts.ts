@@ -138,6 +138,9 @@ export type CustomerOrderTrackingReadModel = CustomerOrderBaseReadModel & {
     trackingNumber: string | null;
     pickupStatus: string | null;
     fulfillmentStatus: string | null;
+    customerArrivedAt: string | null;
+    finalVerifiedAt: string | null;
+    handoverCompletedAt: string | null;
     nextStep: string;
   };
   customerOperations: {
@@ -161,4 +164,3 @@ export type CustomerOrderApiErrorCode =
   | "CUSTOMER_ORDER_RATE_LIMITED"
   | "CUSTOMER_ORDER_UNAVAILABLE"
   | "CUSTOMER_ORDER_ACTION_FAILED";
-

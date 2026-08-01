@@ -51,7 +51,7 @@ const ADMIN_ORDER_DETAIL_SELECT = [
   "updated_at",
   "order_items(id,product_name,variant_name,color,size,sku,quantity,unit_price,subtotal,notes,config_snapshot,required_services,estimated_total,pricing_status,custom_project_id,custom_project_item_id,pricing_snapshot,created_at,archived_at)",
   "order_payments(id,payment_number,amount,verified_amount,status,review_outcome,updated_at,created_at,archived_at)",
-  "fulfillments(id,method,status,courier,tracking_number,final_verified_at,updated_at,created_at,archived_at)",
+  "fulfillments(id,method,status,courier,tracking_number,customer_arrived_at,final_verified_at,handover_completed_at,updated_at,created_at,archived_at)",
   "job_orders(id,status,updated_at,created_at,archived_at,qc_records(id,status,result,updated_at,created_at,archived_at))"
 ].join(",");
 

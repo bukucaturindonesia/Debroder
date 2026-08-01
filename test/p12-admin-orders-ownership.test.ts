@@ -185,8 +185,8 @@ describe("P12 Admin Orders ownership", () => {
       pricing_snapshot: linePricingSnapshot
     });
     expect(model?.order.source_snapshot).toEqual(orderSourceSnapshot);
-    expect(model?.active_stage.activeStage).toBe("shipping");
-    expect(model?.active_stage.warning).toContain("fulfillment belum delivered");
+    expect(model?.active_stage.activeStage).toBe("completed");
+    expect(model?.active_stage.warning).toContain("fulfillment belum terminal");
     expect(model?.revision).toBe("2026-07-24T00:00:00.000Z");
     expect(graph.order_items[0].pricing_snapshot).toEqual(linePricingSnapshot);
   });

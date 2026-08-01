@@ -137,6 +137,9 @@ function TrackingDetail({ data, credentials, refreshing, onRefresh }: { data: Cu
     fulfillmentStatus: order.fulfillmentStatus,
     fulfillmentMethod: order.fulfillmentMethod,
     paymentMethod: order.paymentMethod,
+    customerArrivedAt: order.customerArrivedAt,
+    finalVerificationCompleted: Boolean(order.finalVerifiedAt),
+    handoverCompletedAt: order.handoverCompletedAt,
     hasPaymentUrl: Boolean(data.payment.url),
     isCustom,
     activeStage: data.activeStage
