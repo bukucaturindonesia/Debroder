@@ -883,65 +883,66 @@ DEBRODER V1.2 REMAINS NOT COMPLETE**
 
 ---
 
-# Handoff — Kaos Polos owner editorial revision
+# Handoff — Kaos Polos Owner CMS Hotfix
 
-**Date:** 31 July 2026
+**Date:** 1 August 2026
+**Working branch:** `UI-UX-001`
+**Supabase project:** `lzennundwqqtyvvcnzbg`
 
 ## Active scope and implementation
 
-- Revised only the public `/kaos-polos` presentation and the CMS controls required to own its editorial media.
-- Hero height is now 60% of the prior implementation and the hero typography scale is reduced to 80%.
-- Featured no longer reads PIM products. It reads up to two published `cms_banners` records for the Kaos Polos experience and renders them with a zero-pixel internal gap.
-- Editorial banner is locked to a responsive 1600 × 500 reference frame: 400 × 500 left, 1200 × 500 right, and a 1 px gap.
-- The left editorial media links to the canonical Custom Kaos Polos destination. The right media has no whole-media link; only its CMS caption CTA can navigate.
-- “Berdasarkan Kategori” is now “Pilih Kategori” and uses the same native horizontal-scroll, scroll-snap, and visible scrollbar pattern as Homepage Shop by Category.
-- Kaos Polos catalog cards retain 4:5 media and three desktop product columns both with the filter closed and with the 272 px filter sidebar open. The cards resize within the remaining width.
-- Added a dedicated CMS page at `/admin/commerce/kaos-polos` for two Featured editorials and the two editorial-banner media slots. Existing `cms_banners` columns are reused; no schema extension is required.
-
-## CMS content contract
-
-- `experience_key = 'kaos-polos'`
-- Featured records: `section_type = 'featured_editorial'` (maximum two public items by `sort_order`).
-- Left banner: `section_type = 'banner_editorial_left'`; recommended desktop media 400 × 500 px.
-- Right banner: `section_type = 'banner_editorial_right'`; recommended desktop media 1200 × 500 px.
-- Hero remains managed through `/admin/page-hero` with page key `kaos-polos`.
-- Desktop/mobile media, alt text, object positions, copy, CTA, order, active state, draft, and publish remain CMS-owned.
-
-## Files and routes
-
-- Changed:
-  `app/globals.css`,
-  `components/KaosPolosEditorialExperience.tsx`,
-  `components/ProductCatalog.tsx`,
-  `components/admin/layout/admin-navigation.ts`,
-  `test/kaos-polos-editorial-commerce.test.ts`,
-  `DEBRODER_MASTER_STATE.md`,
-  `CURRENT_PHASE_HANDOFF.md`, and
-  `DEBRODER_V1.2_ISSUE_REGISTER.md`.
-- Added:
-  `components/admin/KaosPolosExperienceAdmin.tsx` and
-  `app/admin/commerce/kaos-polos/page.tsx`.
-- Public route retained: `/kaos-polos`.
-- Admin route added: `/admin/commerce/kaos-polos`.
+- Public `/kaos-polos` and admin `/admin/commerce/kaos-polos` remain the only in-scope routes.
+- Admin ownership is now slot-based rather than database-form based:
+  `Featured 01`, `Featured 02`, `Banner kiri`, and `Banner kanan`.
+- Technical fields such as `experience_key`, `section_type`, `section_key`,
+  internal name, and sort order are assigned by the system for each slot.
+- Desktop and mobile focal positions use a visual 3 × 3 control.
+- Editorial banner preview and public composition are locked to:
+  desktop `25:75` and mobile `32:68`, both with a 1 px gap.
+- Mobile banner media stays side by side and must not stack vertically.
+- Kaos Polos section rhythm inherits the Homepage canonical tokens
+  `--section-space` and `--section-space-end`; stacked top-and-bottom section
+  padding is removed.
+- Catalog heading is shown once. The toolbar displays the dynamic count as
+  `{visible.length} Produk`, so additions and filters update automatically.
+- Featured remains CMS-owned and renders only published
+  `featured_editorial` records, up to two items.
 
 ## Database and migration
 
-- Database mutation: **NONE**.
-- Local or remote migration: **NONE**.
-- Existing `cms_banners` and `page_heroes` fields are sufficient.
+- Applied migration:
+  `20260801045549_kaos_polos_editorial_section_types_v1`.
+- Repository source:
+  `supabase/migrations/20260801045549_kaos_polos_editorial_section_types_v1.sql`.
+- Remote migration history: **VERIFIED PRESENT**.
+- Remote constraint `cms_banners_section_type_check`: **VERIFIED** to allow:
+  `featured_editorial`, `banner_editorial_left`, and
+  `banner_editorial_right`, while preserving all prior allowed section types.
+- Migration scope is additive compatibility only. Product, pricing, inventory,
+  SKU, order, payment, and transaction tables are untouched.
 
-## Verification
+## Changed files in this hotfix
 
-- TypeScript/TSX parser check with TypeScript 5.8.3: **PASS for all changed TS/TSX files**.
-- Owner contract static assertions: **PASS — section order, hero scaling, CMS-only Featured, 0 px Featured gap, 1600 × 500 banner, 1:3 split, 1 px gap, Custom link, non-clickable right media, category rail, 3-column filtered catalog, 4:5 product media, and CMS route**.
-- CSS structural check: **PASS**.
-- Conflict-marker and trailing-whitespace scan: pending final package check.
-- `pnpm typecheck`, lint, Vitest, full test, and build: **NOT RUN** because the uploaded repository has no `node_modules`, `pnpm` is not installed, and the sandbox cannot reach the npm registry.
-- Browser runtime and deployment: **NOT RUN**.
+- `app/globals.css`
+- `components/KaosPolosEditorialExperience.tsx`
+- `components/ProductCatalog.tsx`
+- `components/admin/KaosPolosExperienceAdmin.tsx`
+- `test/kaos-polos-editorial-commerce.test.ts`
+- `supabase/migrations/20260801045549_kaos_polos_editorial_section_types_v1.sql`
+- `CURRENT_PHASE_HANDOFF.md`
+- `CURRENT_PACKAGE_HANDOFF.md`
+- `DEBRODER_MASTER_STATE.md`
+- `DEBRODER_V1.2_ISSUE_REGISTER.md`
 
-## Remaining prerequisite and status
+## Verification and status
 
-- Owner must create/publish two `featured_editorial`, one `banner_editorial_left`, and one `banner_editorial_right` CMS records for the full composition to appear. Missing optional CMS sections remain hidden rather than fabricated.
-- Final repository quality gates and Vercel runtime screenshots remain owner/local-environment prerequisites.
-- Status: **IMPLEMENTED AND STATICALLY VERIFIED / FULL QUALITY GATE PENDING / NOT COMPLETE**.
-- Commit, push, deploy, and migration: **NOT PERFORMED**.
+- Supabase migration application: **PASS**.
+- Remote migration-history verification: **PASS**.
+- Remote check-constraint verification: **PASS**.
+- Targeted static contract checks included in the package: **PASS before this
+  governance update**.
+- Full `pnpm` typecheck, lint, focused Vitest, full test, build, and browser
+  runtime: **PENDING OWNER/LOCAL ENVIRONMENT**.
+- Commit, push, and deploy: **NOT PERFORMED**.
+- Package status: **IMPLEMENTED / DATABASE MIGRATED AND VERIFIED / FULL LOCAL
+  QUALITY GATE AND RUNTIME PENDING / NOT COMPLETE**.

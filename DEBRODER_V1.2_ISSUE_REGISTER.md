@@ -452,7 +452,7 @@ Last updated: 28 July 2026 (Asia/Makassar)
 ## PUBLIC-KAOS-002 — Owner editorial sizing, CMS ownership, and filtered-grid correction
 
 - Severity: **MAJOR VISUAL/CONTENT OWNERSHIP**.
-- Status: **CLOSED IN CODE — STATIC VERIFICATION PASS; FULL QUALITY GATE PENDING**.
+- Status: **SUPERSEDED BY PUBLIC-KAOS-003 — INITIAL CODE REVISION RECORDED**.
 - Root causes:
   - Hero retained the previous oversized height and type scale.
   - Featured was derived from PIM products rather than CMS editorial content and had a visible card gap.
@@ -465,6 +465,51 @@ Last updated: 28 July 2026 (Asia/Makassar)
   - Banner now uses 1:3 columns, 16:5 overall aspect ratio, 1 px gap, canonical Custom link on the left, and non-clickable right media.
   - Category rail now uses native flex overflow, snap, and `premium-scrollbar` behavior.
   - Desktop filtered catalog keeps `repeat(3, minmax(0, 1fr))`; cards resize without changing column count.
-  - Dedicated CMS route added without database or migration changes.
+  - Initial revision added the dedicated CMS route under a no-migration assumption; schema/history alignment is superseded by PUBLIC-KAOS-003.
 - Verification: TypeScript parser **PASS**; static owner-contract matrix **PASS**; full pnpm gates and runtime **NOT RUN due missing dependencies and blocked registry access**.
+- Commit, push, deploy: **NOT PERFORMED**.
+
+## PUBLIC-KAOS-003 — Owner CMS usability, mobile editorial banner, spacing, and schema alignment
+
+- Severity: **MAJOR UX / VISUAL / CMS OPERABILITY / DATABASE COMPATIBILITY**.
+- Status: **IMPLEMENTED; DATABASE MIGRATION AND POSTCHECK PASS; FULL LOCAL
+  QUALITY GATE AND RUNTIME PENDING**.
+- Root causes:
+  - Kaos Polos admin exposed a generic CMS form and required the owner to
+    understand technical record fields.
+  - Mobile banner layout stacked the left and right assets vertically, so
+    object-position controls could not create the intended editorial
+    composition.
+  - Featured slots were not explicit in admin and no published
+    `featured_editorial` records existed, so the public section was absent.
+  - Kaos Polos introduced its own `padding-block` rhythm, causing adjacent
+    section spacing to accumulate instead of following Homepage tokens.
+  - Catalog heading and toolbar repeated `Kaos Polos`; the count presentation
+    was visually redundant.
+  - Live `cms_banners_section_type_check` required formal source/history
+    alignment for the three Kaos Polos section types.
+- Resolution:
+  - Replaced the owner workflow with four fixed slots: `Featured 01`,
+    `Featured 02`, `Banner kiri`, and `Banner kanan`.
+  - Added independent desktop/mobile 3 × 3 focal-position controls and combined
+    desktop/mobile previews.
+  - Locked banner layouts to desktop `25:75` and mobile `32:68`, with a 1 px
+    gap and no mobile stacking.
+  - Inherited `--section-space` and `--section-space-end` from Homepage and
+    removed double-sided section spacing accumulation.
+  - Reduced the catalog toolbar label to dynamic `{visible.length} Produk`.
+  - Applied and verified migration
+    `20260801045549_kaos_polos_editorial_section_types_v1`.
+- Database postcheck:
+  - migration history entry present;
+  - `cms_banners_section_type_check` accepts all prior types plus
+    `featured_editorial`, `banner_editorial_left`, and
+    `banner_editorial_right`;
+  - no product, pricing, inventory, SKU, order, payment, or transaction table
+    changed.
+- Remaining verification:
+  - run owner quality gates locally;
+  - verify admin and `/kaos-polos` at representative mobile/desktop widths;
+  - create and publish Featured slot content through admin for visual runtime
+    confirmation.
 - Commit, push, deploy: **NOT PERFORMED**.

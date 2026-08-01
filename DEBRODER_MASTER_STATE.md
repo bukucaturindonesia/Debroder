@@ -1,6 +1,6 @@
 ﻿# DEBRODER MASTER STATE
 
-Last updated: 28 July 2026 (Asia/Makassar)
+Last updated: 1 August 2026 (Asia/Makassar)
 
 ## 1. Canonical repository state
 
@@ -381,7 +381,49 @@ Existing legal, CMS route, Preview performance, remote transaction E2E, data-int
 - Left banner media routes to canonical Custom Kaos Polos; right banner media is non-clickable and keeps CTA ownership in the caption.
 - “Pilih Kategori” now follows the Homepage Shop by Category native carousel and scrollbar behavior.
 - Desktop catalog remains three product columns when the filter sidebar is open; product media remains 4:5.
-- Dedicated CMS route `/admin/commerce/kaos-polos` added using existing `cms_banners`; database/migration changes: **NONE**.
+- Dedicated CMS route `/admin/commerce/kaos-polos` added using shared `cms_banners`. The initial no-migration assumption was superseded by the 1 August 2026 compatibility migration recorded below.
 - Static contract and TS/TSX parser verification: **PASS**.
 - Full pnpm quality gate and browser runtime: **PENDING OWNER/LOCAL ENVIRONMENT** because dependencies were not included and registry access is unavailable.
 - Package decision: **IMPLEMENTED AND STATICALLY VERIFIED / NOT COMPLETE**.
+
+---
+
+## 16. Kaos Polos Owner CMS Hotfix — 1 August 2026
+
+**Canonical owner decisions — FINAL for this package:**
+
+- Admin editing must be slot-based: `Featured 01`, `Featured 02`,
+  `Banner kiri`, and `Banner kanan`.
+- Owner-facing forms must not require manual entry of database-oriented fields
+  such as `experience_key`, `section_type`, `section_key`, internal name, or
+  sort order.
+- Desktop banner composition is `25:75`; mobile banner composition is `32:68`;
+  both use a 1 px gap.
+- Mobile banner media must remain horizontal/editorial and must not stack.
+- Desktop and mobile focal positions are independently CMS-owned through a
+  visual 3 × 3 control.
+- Kaos Polos section spacing inherits the same canonical Homepage tokens and
+  top-only rhythm; section padding may not accumulate between adjacent blocks.
+- Public catalog heading appears once. Product count is always derived from
+  current data/filter state as `{visible.length} Produk`.
+- Featured is CMS-owned, capped at two published public items, and is hidden
+  when no published item exists rather than fabricated.
+
+**Database evidence:**
+
+- Migration `20260801045549_kaos_polos_editorial_section_types_v1`:
+  **APPLIED AND VERIFIED** on Supabase project `lzennundwqqtyvvcnzbg`.
+- Repository migration source uses the exact applied version.
+- `cms_banners_section_type_check` preserves prior values and additionally
+  accepts `featured_editorial`, `banner_editorial_left`, and
+  `banner_editorial_right`.
+- Product, pricing, stock, SKU, cart, checkout, order, payment, and transaction
+  behavior is unchanged.
+
+**Release state:**
+
+- Implementation and database alignment: **PASS**.
+- Full local quality gate and runtime visual verification: **PENDING**.
+- Commit, push, deploy: **NOT PERFORMED**.
+- Project remains **NO-GO / NOT COMPLETE** until remaining package and global
+  release gates are satisfied.

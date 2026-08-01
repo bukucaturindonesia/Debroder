@@ -126,7 +126,7 @@ describe("Kaos Polos owner editorial revision", () => {
     const adminPage = read("app/admin/commerce/kaos-polos/page.tsx");
     const admin = read("components/admin/KaosPolosExperienceAdmin.tsx");
     const navigation = read("components/admin/layout/admin-navigation.ts");
-    const migration = read("supabase/migrations/20260801044500_kaos_polos_editorial_section_types_v1.sql");
+    const migration = read("supabase/migrations/20260801045549_kaos_polos_editorial_section_types_v1.sql");
 
     expect(adminPage).toContain("KaosPolosExperienceAdmin");
     expect(admin).toContain('.eq("experience_key", "kaos-polos")');
