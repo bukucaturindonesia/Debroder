@@ -15,6 +15,10 @@ const paymentResolverMigration = readFileSync(
   "supabase/migrations/20260801200909_pay_at_store_pickup_payment_resolver_null_alignment_v1.sql",
   "utf8"
 );
+const cashEvidenceMigration = readFileSync(
+  "supabase/migrations/20260801204856_pay_at_store_cash_evidence_alignment_v1.sql",
+  "utf8"
+);
 const fulfillmentUi = readFileSync("components/admin/FulfillmentDetailAdmin.tsx", "utf8");
 const customerRead = readFileSync("lib/customer-orders/data-access.ts", "utf8");
 const nextConfig = readFileSync("next.config.ts", "utf8");
@@ -196,6 +200,30 @@ describe("Pay at Store + Store Pickup canonical P0 workflow", () => {
     );
     expect(paymentResolverMigration).toContain(
       "grant execute on function public._resolve_order_active_stage_v1(uuid) to service_role"
+    );
+  });
+
+  it("records Pay at Store cash with complete canonical verification evidence", () => {
+    expect(cashEvidenceMigration).toContain(
+      "create or replace function public.record_pay_at_store_payment_v1"
+    );
+    expect(cashEvidenceMigration).toContain("public.has_permission('payment.create')");
+    expect(cashEvidenceMigration).toContain("public.has_permission('payment.verify')");
+    expect(cashEvidenceMigration).toContain(
+      "cash_reference := format('PAY-AT-STORE:%s', order_value.id)"
+    );
+    expect(cashEvidenceMigration).toContain("review_outcome = 'verified'");
+    expect(cashEvidenceMigration).toContain("check_funds_received = true");
+    expect(cashEvidenceMigration).toContain("check_destination_account = true");
+    expect(cashEvidenceMigration).toContain("check_amount = true");
+    expect(cashEvidenceMigration).toContain("check_transaction_time = true");
+    expect(cashEvidenceMigration).toContain("check_reference_unique = true");
+    expect(cashEvidenceMigration).toContain("verified_amount = payment_value.amount");
+    expect(cashEvidenceMigration).toContain("verified_destination_account = 'Kasir Pickup Toko'");
+    expect(cashEvidenceMigration).toContain("verified_reference = cash_reference");
+    expect(cashEvidenceMigration).not.toContain("perform public.verify_order_payment(");
+    expect(cashEvidenceMigration).toContain(
+      "grant execute on function public.record_pay_at_store_payment_v1(uuid, text, timestamptz)"
     );
   });
 
