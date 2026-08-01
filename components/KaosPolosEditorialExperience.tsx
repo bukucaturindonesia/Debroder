@@ -320,7 +320,9 @@ export function KaosPolosEditorialExperience({
               id="kaos-category-carousel"
               tabIndex={0}
               aria-label="Pilih kategori Kaos Polos"
-              className="kaos-blueprint-category-rail category-carousel premium-scrollbar mt-6 flex snap-x snap-mandatory overflow-x-auto pb-6"
+              className={`kaos-blueprint-category-rail category-carousel premium-scrollbar mt-6 flex snap-x snap-mandatory overflow-x-auto pb-6 ${
+                categoryCards.length <= 2 ? "kaos-blueprint-category-rail--compact" : ""
+              }`}
             >
               {categoryCards.map(({ imageUrl, option, product }) => (
                 <article

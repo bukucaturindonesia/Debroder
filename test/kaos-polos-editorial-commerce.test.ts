@@ -82,7 +82,7 @@ describe("Kaos Polos owner editorial revision", () => {
     expect(css).toContain("font-weight: 400");
   });
 
-  it("locks the editorial banner to 1600 × 500 with a 400/1200 split and one-pixel gap", () => {
+  it("locks the editorial banner to 1600 × 500 on desktop and keeps a horizontal mobile composition", () => {
     const experience = read("components/KaosPolosEditorialExperience.tsx");
     const css = read("app/globals.css");
 
@@ -94,6 +94,8 @@ describe("Kaos Polos owner editorial revision", () => {
     expect(css).toContain("aspect-ratio: 16 / 5");
     expect(css).toContain("grid-template-columns: minmax(0, 1fr) minmax(0, 3fr)");
     expect(css).toContain("gap: 1px");
+    expect(css).toContain("grid-template-columns: minmax(0, 32fr) minmax(0, 68fr)");
+    expect(css).toContain("height: clamp(190px, 52vw, 240px)");
   });
 
   it("presents Pilih Kategori with the homepage-style native rail and visible scrollbar", () => {
@@ -115,23 +117,44 @@ describe("Kaos Polos owner editorial revision", () => {
     expect(catalog).toContain("lg:grid-cols-[17rem_minmax(0,1fr)]");
     expect(catalog).not.toContain('filtersOpen ? "lg:grid-cols-2" : "lg:grid-cols-3"');
     expect(catalog).toContain('isKaosEditorial\n                  ? "lg:grid-cols-3 lg:gap-x-4"');
-    expect(catalog).toContain('<p className="text-lg font-normal">{title}</p>');
+    expect(catalog).toContain('{visible.length} Produk');
+    expect(catalog).not.toContain('{title} ({visible.length})');
     expect(css).toContain("aspect-ratio: 4 / 5");
   });
 
-  it("adds a dedicated CMS manager without requiring a database migration", () => {
+  it("uses a fixed-slot owner-friendly CMS manager and records the required database migration", () => {
     const adminPage = read("app/admin/commerce/kaos-polos/page.tsx");
     const admin = read("components/admin/KaosPolosExperienceAdmin.tsx");
     const navigation = read("components/admin/layout/admin-navigation.ts");
+    const migration = read("supabase/migrations/20260801044500_kaos_polos_editorial_section_types_v1.sql");
 
     expect(adminPage).toContain("KaosPolosExperienceAdmin");
     expect(admin).toContain('.eq("experience_key", "kaos-polos")');
-    expect(admin).toContain('"featured_editorial"');
-    expect(admin).toContain('"banner_editorial_left"');
-    expect(admin).toContain('"banner_editorial_right"');
-    expect(admin).toContain("400 × 500");
-    expect(admin).toContain("1200 × 500");
+    expect(admin).toContain('label: "Featured 01"');
+    expect(admin).toContain('label: "Featured 02"');
+    expect(admin).toContain('label: "Banner kiri"');
+    expect(admin).toContain('label: "Banner kanan"');
+    expect(admin).toContain("POSITION_OPTIONS");
+    expect(admin).toContain("loadLatestCmsRevisions");
+    expect(admin).toContain("mergeCmsRevision");
+    expect(admin).toContain('grid-cols-[32fr_68fr]');
+    expect(admin).not.toContain('Field label="Jenis konten"');
+    expect(admin).not.toContain('Field label="Nama internal"');
+    expect(admin).not.toContain('Field label="Urutan"');
+    expect(migration).toContain("'featured_editorial'");
+    expect(migration).toContain("'banner_editorial_left'");
+    expect(migration).toContain("'banner_editorial_right'");
     expect(navigation).toContain('href: "/admin/commerce/kaos-polos"');
+  });
+
+  it("inherits the canonical homepage section rhythm instead of stacking block padding", () => {
+    const css = read("app/globals.css");
+
+    expect(css).toContain("--kaos-section-gap: var(--section-space)");
+    expect(css).toContain("--kaos-end-space: var(--section-space-end)");
+    expect(css).toContain("padding-top: var(--kaos-section-gap)");
+    expect(css).toContain("padding-bottom: var(--kaos-end-space)");
+    expect(css).not.toContain(".kaos-blueprint-section {\n  padding-block:");
   });
 
   it("still accepts only canonical PIM media for product discovery helpers", () => {

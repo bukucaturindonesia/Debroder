@@ -619,11 +619,11 @@ export function ProductCatalog({
     <div className={`${isCategoryCatalog ? "category-product-catalog" : ""} ${isKaosEditorial ? "kaos-editorial-product-catalog" : ""}`.trim()}>
       {showHeading ? <h2 className="public-section-title">{title}</h2> : null}
 
-      <div className={`${showHeading ? "mt-6 " : ""}public-divider border-y bg-white py-4`}>
+      <div className={`${showHeading ? "mt-6 " : ""}public-divider bg-white ${isKaosEditorial ? "border-b py-3" : "border-y py-4"}`}>
         <div className="hidden items-center justify-between gap-8 lg:flex">
           <div className="flex min-w-0 flex-1 items-center gap-3">
             {isKaosEditorial ? (
-              <p className="text-xl font-normal">{title} ({visible.length})</p>
+              <p className="text-base font-normal" aria-live="polite">{visible.length} Produk</p>
             ) : (
               <input
                 aria-label="Cari produk"
@@ -667,12 +667,9 @@ export function ProductCatalog({
 
         <div className="lg:hidden">
           {isKaosEditorial ? (
-            <div className="flex items-baseline justify-between gap-4">
-              <p className="text-lg font-normal">{title}</p>
-              <p className="public-muted-copy text-sm" aria-live="polite">
-                {visible.length} produk
-              </p>
-            </div>
+            <p className="text-base font-normal" aria-live="polite">
+              {visible.length} Produk
+            </p>
           ) : (
             <input
               aria-label="Cari produk"

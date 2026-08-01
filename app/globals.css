@@ -2583,6 +2583,8 @@ button,
   --kaos-ink: #111111;
   --kaos-muted: #656565;
   --kaos-soft: #f5f5f2;
+  --kaos-section-gap: var(--section-space);
+  --kaos-end-space: var(--section-space-end);
   color: var(--kaos-ink);
   overflow-x: clip;
 }
@@ -2619,16 +2621,15 @@ button,
   font-size: 0.7rem;
 }
 
-.kaos-blueprint-section {
-  padding-block: clamp(64px, 6vw, 112px);
-}
-
-.kaos-blueprint-campaign-section {
-  padding-block: clamp(32px, 4vw, 72px) clamp(72px, 7vw, 128px);
+.kaos-blueprint-section,
+.kaos-blueprint-campaign-section,
+.kaos-blueprint-catalog-section {
+  padding-top: var(--kaos-section-gap);
+  padding-bottom: 0;
 }
 
 .kaos-blueprint-catalog-section {
-  padding-block: clamp(64px, 6vw, 112px) clamp(80px, 7vw, 128px);
+  padding-bottom: var(--kaos-end-space);
 }
 
 .kaos-blueprint-section-label {
@@ -2638,8 +2639,8 @@ button,
   line-height: 1.2;
 }
 
-.kaos-blueprint-heading-normal {
-  font-weight: 400;
+.kaos-editorial-page .kaos-blueprint-heading-normal {
+  font-weight: 400 !important;
 }
 
 .kaos-blueprint-eyebrow {
@@ -2674,7 +2675,7 @@ button,
 }
 
 .kaos-blueprint-campaign-copy {
-  padding-top: clamp(40px, 5vw, 88px);
+  padding-top: clamp(32px, 3vw, 48px);
 }
 
 .kaos-blueprint-category-shell {
@@ -2730,6 +2731,12 @@ button,
   aspect-ratio: 4 / 5;
 }
 
+@media (min-width: 1024px) {
+  .kaos-blueprint-category-rail--compact .kaos-blueprint-category-card {
+    flex-basis: calc((100% - 16px) / 2);
+  }
+}
+
 @media (max-width: 1023px) {
   .kaos-editorial-page .section-shell {
     width: min(calc(100% - 48px), 1600px);
@@ -2759,28 +2766,23 @@ button,
     line-height: 1.2rem;
   }
 
-  .kaos-blueprint-section {
-    padding-block: 56px;
-  }
-
-  .kaos-blueprint-campaign-section {
-    padding-block: 16px 64px;
-  }
-
-  .kaos-blueprint-catalog-section {
-    padding-block: 56px 80px;
-  }
-
   .kaos-blueprint-editorial-banner {
+    height: clamp(190px, 52vw, 240px);
     aspect-ratio: auto;
-    grid-template-columns: minmax(0, 1fr);
+    grid-template-columns: minmax(0, 32fr) minmax(0, 68fr);
     gap: 1px;
   }
 
   .kaos-blueprint-editorial-left,
   .kaos-blueprint-editorial-right {
-    aspect-ratio: 4 / 5;
-    height: auto;
+    width: 100%;
+    height: 100%;
+    min-width: 0;
+    aspect-ratio: auto;
+  }
+
+  .kaos-blueprint-campaign-copy {
+    padding-top: 24px;
   }
 
   .kaos-blueprint-category-rail {
