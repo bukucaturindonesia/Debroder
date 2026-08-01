@@ -25,6 +25,7 @@ export function AdminNotificationBell() {
   const [unread, setUnread] = useState(0);
   const [error, setError] = useState("");
   const [popup, setPopup] = useState<NotificationRow | null>(null);
+  const seenRealtimeInsertIds = useRef(new Set<string>());
 
   const load = useCallback(async (silent = false) => {
     if (!silent) setLoading(true);
@@ -67,6 +68,12 @@ export function AdminNotificationBell() {
       channel = client.channel(`admin-notifications-${userId}`)
         .on("postgres_changes", { event: "INSERT", schema: "public", table: "notifications", filter: `recipient_id=eq.${userId}` }, (event) => {
           const row = event.new as NotificationRow;
+          if (seenRealtimeInsertIds.current.has(row.id)) return;
+          seenRealtimeInsertIds.current.add(row.id);
+          if (seenRealtimeInsertIds.current.size > 200) {
+            const oldestId = seenRealtimeInsertIds.current.values().next().value;
+            if (oldestId) seenRealtimeInsertIds.current.delete(oldestId);
+          }
           setPopup(row);
           void load(true);
         })

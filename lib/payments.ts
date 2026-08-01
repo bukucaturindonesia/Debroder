@@ -26,6 +26,23 @@ export const PAYMENT_REVIEW_ACTIONS = [
 
 export type PaymentReviewAction = (typeof PAYMENT_REVIEW_ACTIONS)[number];
 
+export type PaymentReviewResultCode =
+  | "PAYMENT_REVIEW_APPLIED"
+  | "PAYMENT_ALREADY_VERIFIED"
+  | "PAYMENT_ALREADY_REVIEWED"
+  | "STALE_PAYMENT_REVIEW"
+  | "PENDING_PAYMENT_NOT_FOUND"
+  | "DUPLICATE_BANK_REFERENCE"
+  | "WRONG_ORDER_STATE"
+  | "PAYMENT_REVIEW_REJECTED";
+
+export type PaymentReviewClassification = {
+  code: PaymentReviewResultCode;
+  status: number;
+  idempotent: boolean;
+  message: string;
+};
+
 export type PaymentReviewInput = {
   action: PaymentReviewAction;
   destinationMethodId: string;
@@ -95,6 +112,70 @@ export function parsePaymentReviewInput(value: unknown): PaymentReviewInput | nu
     adminNotes: typeof source.adminNotes === "string" ? source.adminNotes.trim() : "",
     reason: typeof source.reason === "string" ? source.reason.trim() : "",
     expectedUpdatedAt
+  };
+}
+
+export function classifyPaymentReviewResult(input: {
+  action: PaymentReviewAction;
+  currentStatus?: string | null;
+  errorMessage?: string | null;
+}): PaymentReviewClassification {
+  const status = input.currentStatus?.toLowerCase() ?? "";
+  const message = input.errorMessage?.toUpperCase() ?? "";
+
+  if (input.action === "verify" && status === "verified") {
+    return {
+      code: "PAYMENT_ALREADY_VERIFIED",
+      status: 200,
+      idempotent: true,
+      message: "Pembayaran sudah terverifikasi. State terbaru telah dimuat."
+    };
+  }
+  if (status && status !== "pending") {
+    return {
+      code: "PAYMENT_ALREADY_REVIEWED",
+      status: 409,
+      idempotent: false,
+      message: "Pembayaran sudah ditangani. State terbaru telah dimuat."
+    };
+  }
+  if (message.includes("STALE_PAYMENT_REVIEW")) {
+    return {
+      code: "STALE_PAYMENT_REVIEW",
+      status: 409,
+      idempotent: false,
+      message: "Pembayaran berubah saat diperiksa. State terbaru telah dimuat."
+    };
+  }
+  if (message.includes("DUPLICATE_BANK_REFERENCE")) {
+    return {
+      code: "DUPLICATE_BANK_REFERENCE",
+      status: 409,
+      idempotent: false,
+      message: "Referensi mutasi sudah digunakan pada pembayaran terverifikasi lain."
+    };
+  }
+  if (message.includes("INACTIVE ORDER") || message.includes("ORDER STATE")) {
+    return {
+      code: "WRONG_ORDER_STATE",
+      status: 409,
+      idempotent: false,
+      message: "Status order tidak lagi mengizinkan pemeriksaan pembayaran."
+    };
+  }
+  if (message.includes("PENDING PAYMENT NOT FOUND")) {
+    return {
+      code: "PENDING_PAYMENT_NOT_FOUND",
+      status: 409,
+      idempotent: false,
+      message: "Pembayaran pending tidak ditemukan. State terbaru telah dimuat."
+    };
+  }
+  return {
+    code: "PAYMENT_REVIEW_REJECTED",
+    status: 400,
+    idempotent: false,
+    message: "Pemeriksaan pembayaran ditolak oleh aturan transaksi."
   };
 }
 

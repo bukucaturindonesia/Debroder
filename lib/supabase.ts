@@ -7,6 +7,9 @@ const placeholderPattern = /^ISI_/;
 export const WEBSITE_IMAGES_BUCKET = "website-images";
 export const ORDER_UPLOADS_BUCKET = "order-uploads";
 const SUPABASE_FETCH_TIMEOUT_MS = 8000;
+const globalForSupabase = globalThis as typeof globalThis & {
+  __debroderSupabaseBrowserClient?: SupabaseClient;
+};
 
 async function noStoreFetch(
   input: RequestInfo | URL,
@@ -91,7 +94,18 @@ export function createSupabaseClient(): SupabaseClient | null {
     return null;
   }
 
-  return createClient(supabaseUrl, supabaseAnonKey);
+  if (typeof window === "undefined") {
+    return createSupabaseServerClient();
+  }
+
+  if (!globalForSupabase.__debroderSupabaseBrowserClient) {
+    globalForSupabase.__debroderSupabaseBrowserClient = createClient(
+      supabaseUrl,
+      supabaseAnonKey
+    );
+  }
+
+  return globalForSupabase.__debroderSupabaseBrowserClient;
 }
 
 export function createSupabaseServerClient(): SupabaseClient | null {

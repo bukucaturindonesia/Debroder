@@ -348,6 +348,54 @@ Last updated: 28 July 2026 (Asia/Makassar)
   **0 errors / 38 existing warnings**; production build **126 pages PASS**.
 - Commit, push, deploy: **NOT PERFORMED**.
 
+## P0-TRANS-001 — Payment review conflicts were non-reconciling in Admin UI
+
+- Severity: **BLOCKER / TRANSACTION OPERABILITY**.
+- Status: **CLOSED IN CODE; FOCUSED/FULL/BUILD PASS; RUNTIME PENDING**.
+- Evidence: the API collapsed stale and missing-pending states into generic
+  HTTP 409, returned no canonical state/code, and the Admin modal refetched
+  only after success. The RPC already enforced row lock, expected timestamp,
+  five bank checks, and duplicate-reference uniqueness.
+- Resolution: stable result classification, canonical-state responses,
+  idempotent repeat verify for an already verified payment, and unconditional
+  UI reconciliation after any server response. Duplicate references and wrong
+  order/payment state remain non-mutating conflicts.
+- Verification: focused payment/Admin suite **29/29 PASS**, full suite
+  **842/842 PASS**, build **127 pages PASS**.
+- Remaining evidence: execute one controlled deployed payment verification and
+  repeat request after owner deploys; capture request/payment/order/
+  notification/log identities.
+
+## P0-AUTH-NOTIF-001 — Repeated browser auth clients and Realtime replay risk
+
+- Severity: **MAJOR / ADMIN OPERABILITY**.
+- Status: **CLOSED IN CODE; DATABASE DUPLICATION DISPROVEN; RUNTIME PENDING**.
+- Evidence: `createSupabaseClient()` previously created a GoTrue client on
+  every call. Remote audit found zero duplicate notification event keys and
+  zero duplicate `(event_id, recipient_id, channel)` rows; 2–3 rows are
+  distinct legitimate recipients.
+- Resolution: one HMR-safe browser client, separate request-scoped server
+  client, existing channel cleanup retained, and bounded notification-ID replay
+  suppression in the bell. Unread stays derived from the server count.
+- Security: RLS/ACL and recipient scoping are unchanged; service-role remains
+  server-only.
+- Remaining evidence: after deploy, confirm zero GoTrue warnings and maximum
+  one popup/unread increment per intended recipient across remount/reconnect.
+
+## P0-ADMIN-RUNTIME-001 — Live Admin configuration and deployment alignment
+
+- Severity: **RELEASE VERIFICATION BLOCKER**.
+- Status: **OPEN — STATIC/ROLE/BUILD PASS; DEPLOYED RUNTIME UNAVAILABLE**.
+- Evidence: canonical Admin routes are present in the 127-page build and the
+  three-role matrix passes. `PIM V2` is intentionally consolidated into the
+  Product workspace, not a lost capability. The available Vercel team exposes
+  no project and the repo has no `.vercel/project.json`.
+- Required next action: owner deploys or grants project visibility, then verify
+  Admin load/edit/save/persistence, Console/Issues, exact production SHA/env,
+  Vercel/Supabase logs, one transaction journey, and public denial.
+- No route, legacy Admin version, feature flag, permission bypass, migration,
+  commit, push, or deploy was added in this recovery package.
+
 ## PUBLIC-V2-001 — Desktop mega dropdown separated from navbar
 
 - Severity: **MAJOR VISUAL/INTERACTION**.

@@ -8,6 +8,7 @@ const migration = read(
 );
 const inboxApi = read("app/api/admin/notifications/route.ts");
 const detailApi = read("app/api/admin/notifications/[id]/route.ts");
+const notificationBell = read("components/admin/AdminNotificationBell.tsx");
 
 describe("transaction and Admin notification P0 recovery", () => {
   it("breaks the production RLS cycle without widening operator access", () => {
@@ -41,5 +42,11 @@ describe("transaction and Admin notification P0 recovery", () => {
       inboxApi.match(/\.eq\("recipient_id", actor\.user\.id\)/g)
     ).toHaveLength(5);
     expect(detailApi).toContain('.eq("recipient_id", actor.user.id)');
+  });
+
+  it("suppresses replay of the same realtime insert without changing database counts", () => {
+    expect(notificationBell).toContain("seenRealtimeInsertIds");
+    expect(notificationBell).toContain("seenRealtimeInsertIds.current.has(row.id)");
+    expect(notificationBell).toContain("setUnread(payload.counts.unread)");
   });
 });

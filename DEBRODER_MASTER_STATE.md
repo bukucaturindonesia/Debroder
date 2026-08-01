@@ -427,3 +427,49 @@ Existing legal, CMS route, Preview performance, remote transaction E2E, data-int
 - Commit, push, deploy: **NOT PERFORMED**.
 - Project remains **NO-GO / NOT COMPLETE** until remaining package and global
   release gates are satisfied.
+
+---
+
+## 17. P0 transaction and Admin operational recovery — 1 August 2026
+
+- Active scope: payment-verification conflict recovery, browser Supabase
+  singleton, payment form semantics, notification display dedupe, and static
+  Admin capability/security regression. No visual redesign or Kaos Polos work
+  was performed.
+- Payment verification now returns stable result codes and canonical payment
+  state. A repeated `verify` for an already verified payment is an idempotent
+  HTTP 200; stale, duplicate-reference, already-reviewed, missing-pending, and
+  inactive-order conflicts remain explicit and non-mutating.
+- Admin payment UI prevents concurrent submit, parses the response, refetches
+  canonical state after every server response, closes stale/completed review
+  state safely, and preserves review input on retryable validation conflicts.
+- Browser auth now uses one HMR-safe client per browser context; server access
+  remains request-scoped, non-persistent, and separate. No service-role client
+  was added to browser code.
+- Remote notification audit found zero duplicate event idempotency keys and
+  zero duplicate `(event_id, recipient_id, channel)` rows. The observed 2–3
+  rows per event are distinct legitimate recipients. UI Realtime inserts now
+  have a bounded per-ID replay guard; unread remains server-count-derived.
+- Every native input, select, textarea, checkbox, and file input in the owned
+  Admin payment workspaces has an ID, name, associated label, and applicable
+  browser semantics; this contract is AST-tested.
+- Admin routes and role-aware navigation remain intact. `PIM V2` stays
+  intentionally consolidated behind the canonical Product workspace; no
+  deprecated Admin version or broad permission bypass was restored.
+- Database/schema changes: **NONE**. Existing recovery migration
+  `20260730122821_transaction_notification_admin_recovery_v1` and latest known
+  migration `20260801045549_kaos_polos_editorial_section_types_v1` are present
+  in remote history for project `lzennundwqqtyvvcnzbg`; package migrations
+  pending: **NONE**.
+- Verification: focused P0 **29/29 PASS**; custom-commerce **27/27 PASS**;
+  typecheck **PASS**; lint **0 errors / 38 pre-existing warnings**; full suite
+  **112 files / 842 tests PASS**; production build **PASS — 127 pages**;
+  `git diff --check` **PASS after governance append**.
+- Local/GitHub alignment: local HEAD and `origin/UI-UX-001` both
+  `07557dc62fd07a239998c8974738c2888d42443f` before this uncommitted package.
+- Vercel alignment/runtime: **NOT VERIFIED**. The available Vercel team
+  returned no projects and the repository has no `.vercel/project.json`; no
+  production SHA/log was fabricated and no deployment was performed.
+- Release status: **IMPLEMENTED AND CODE/BUILD VERIFIED; RUNTIME AND CONTROLLED
+  LIVE TRANSACTION MATRIX DEFERRED; PROJECT REMAINS NO-GO / NOT COMPLETE**.
+- Commit, push, deploy: **NOT PERFORMED**.
