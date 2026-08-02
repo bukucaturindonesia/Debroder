@@ -4,6 +4,7 @@ export function catalogColumnsForWidth(
   width: number,
   layout: "default" | "kaos-editorial" = "default"
 ) {
+  if (layout === "kaos-editorial" && width >= 768) return 3;
   if (width < 1024) return 2;
   return layout === "kaos-editorial" ? 3 : 4;
 }

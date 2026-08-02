@@ -28,7 +28,8 @@ describe("product catalog batching", () => {
     expect(catalogColumnsForWidth(1024)).toBe(4);
     expect(catalogColumnsForWidth(1024, "kaos-editorial")).toBe(3);
     expect(catalogColumnsForWidth(768)).toBe(2);
-    expect(catalogColumnsForWidth(768, "kaos-editorial")).toBe(2);
+    expect(catalogColumnsForWidth(768, "kaos-editorial")).toBe(3);
+    expect(catalogColumnsForWidth(767, "kaos-editorial")).toBe(2);
     expect(catalogColumnsForWidth(360)).toBe(2);
   });
 

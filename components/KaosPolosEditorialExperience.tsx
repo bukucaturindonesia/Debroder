@@ -2,7 +2,6 @@ import Link from "next/link";
 import { ProductCatalog } from "@/components/ProductCatalog";
 import { ResponsivePicture } from "@/components/ResponsivePicture";
 import { SafeImage } from "@/components/SafeImage";
-import { ScrollButtons } from "@/components/ScrollButtons";
 import type {
   CatalogPageCampaignViewModel,
   CatalogPageModel
@@ -310,24 +309,17 @@ export function KaosPolosEditorialExperience({
           aria-labelledby="kaos-category-heading"
         >
           <div className="section-shell kaos-blueprint-category-shell">
-            <div className="flex items-center justify-between gap-4">
-              <h2 id="kaos-category-heading" className="kaos-blueprint-section-label">
-                Pilih Kategori
-              </h2>
-              <ScrollButtons containerId="kaos-category-carousel" largeTargets />
-            </div>
+            <h2 id="kaos-category-heading" className="kaos-blueprint-section-label">
+              Pilih Kategori
+            </h2>
             <div
-              id="kaos-category-carousel"
-              tabIndex={0}
               aria-label="Pilih kategori Kaos Polos"
-              className={`kaos-blueprint-category-rail category-carousel premium-scrollbar mt-6 flex snap-x snap-mandatory overflow-x-auto pb-6 ${
-                categoryCards.length <= 2 ? "kaos-blueprint-category-rail--compact" : ""
-              }`}
+              className="kaos-responsive-card-grid mt-6"
             >
               {categoryCards.map(({ imageUrl, option, product }) => (
                 <article
                   key={option.value}
-                  className="kaos-blueprint-category-card min-w-0 shrink-0 snap-start"
+                  className="kaos-blueprint-category-card w-full min-w-0"
                 >
                   <Link
                     href={`${PAGE_PATH}?type=${encodeURIComponent(option.value)}#catalog`}
@@ -339,12 +331,12 @@ export function KaosPolosEditorialExperience({
                         src={imageUrl}
                         alt={`${option.label} — ${product.nama}`}
                         className="absolute inset-0 h-full w-full object-cover transition duration-500 group-hover:scale-[1.015]"
-                        sizes="(min-width: 1024px) 31vw, (min-width: 640px) 44vw, 78vw"
+                        sizes="(min-width: 768px) 33vw, 50vw"
                         objectFit={product.object_fit}
                         objectPosition={product.object_position}
                       />
                     </div>
-                    <h3 className="mt-3 text-base font-medium tracking-[-0.01em] text-[#111] sm:text-lg">
+                    <h3 className="mt-2.5 text-base font-medium tracking-[-0.01em] text-[#111]">
                       {option.label}
                     </h3>
                   </Link>

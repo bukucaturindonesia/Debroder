@@ -98,14 +98,21 @@ describe("Kaos Polos owner editorial revision", () => {
     expect(css).toContain("height: clamp(190px, 52vw, 240px)");
   });
 
-  it("presents Pilih Kategori with the homepage-style native rail and visible scrollbar", () => {
+  it("uses the same responsive card grid for category and product cards", () => {
     const experience = read("components/KaosPolosEditorialExperience.tsx");
+    const catalog = read("components/ProductCatalog.tsx");
+    const css = read("app/globals.css");
 
     expect(experience).toContain("Pilih Kategori");
     expect(experience).not.toContain("Berdasarkan Kategori");
-    expect(experience).toContain('ScrollButtons containerId="kaos-category-carousel"');
-    expect(experience).toContain("category-carousel premium-scrollbar");
-    expect(experience).toContain("snap-x snap-mandatory overflow-x-auto pb-6");
+    expect(experience).toContain('className="kaos-responsive-card-grid mt-6"');
+    expect(experience).not.toContain("ScrollButtons");
+    expect(experience).not.toContain("kaos-category-carousel");
+    expect(catalog).toContain('"kaos-editorial-catalog-grid kaos-responsive-card-grid"');
+    expect(css).toContain("grid-template-columns: repeat(2, minmax(0, 1fr))");
+    expect(css).toContain("grid-template-columns: repeat(3, minmax(0, 1fr))");
+    expect(css).toContain("column-gap: 12px");
+    expect(css).toContain("column-gap: 16px");
     expect(experience).toContain("aspect-[4/5]");
   });
 
@@ -113,12 +120,14 @@ describe("Kaos Polos owner editorial revision", () => {
     const catalog = read("components/ProductCatalog.tsx");
     const css = read("app/globals.css");
 
-    expect(catalog).toContain("lg:grid-cols-3 lg:gap-x-4 lg:gap-y-12");
+    expect(catalog).toContain('"kaos-editorial-catalog-grid kaos-responsive-card-grid"');
     expect(catalog).toContain("lg:grid-cols-[17rem_minmax(0,1fr)]");
     expect(catalog).not.toContain('filtersOpen ? "lg:grid-cols-2" : "lg:grid-cols-3"');
-    expect(catalog).toContain('isKaosEditorial\n                  ? "lg:grid-cols-3 lg:gap-x-4"');
+    expect(catalog).toContain('? "kaos-responsive-card-grid"');
     expect(catalog).toContain('{visible.length} Produk');
     expect(catalog).not.toContain('{title} ({visible.length})');
+    expect(css).toContain("@media (min-width: 768px)");
+    expect(css).toContain("grid-template-columns: repeat(3, minmax(0, 1fr))");
     expect(css).toContain("aspect-ratio: 4 / 5");
   });
 

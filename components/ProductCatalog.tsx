@@ -271,19 +271,23 @@ export function ProductCatalog({
   }, [initialColor, initialLabel, initialPrice, initialProductType, initialSize, initialSort, initialStatus]);
 
   useEffect(() => {
+    const tabletQuery = window.matchMedia("(min-width: 768px)");
     const desktopQuery = window.matchMedia("(min-width: 1024px)");
-    const updateColumns = () =>
+    const updateColumns = () => {
+      const width = desktopQuery.matches ? 1024 : tabletQuery.matches ? 768 : 0;
       setColumns(
         isCategoryCatalog
-          ? catalogColumnsForWidth(
-              desktopQuery.matches ? 1024 : 0,
-              catalogLayout
-            )
-          : catalogColumnsForWidth(desktopQuery.matches ? 1024 : 0)
+          ? catalogColumnsForWidth(width, catalogLayout)
+          : catalogColumnsForWidth(width)
       );
+    };
     updateColumns();
+    tabletQuery.addEventListener("change", updateColumns);
     desktopQuery.addEventListener("change", updateColumns);
-    return () => desktopQuery.removeEventListener("change", updateColumns);
+    return () => {
+      tabletQuery.removeEventListener("change", updateColumns);
+      desktopQuery.removeEventListener("change", updateColumns);
+    };
   }, [catalogLayout, isCategoryCatalog]);
 
   useEffect(() => {
@@ -608,12 +612,15 @@ export function ProductCatalog({
     </>
   );
   const catalogGridClass = isKaosEditorial
-    ? "kaos-editorial-catalog-grid grid grid-cols-2 gap-x-3 gap-y-8 sm:gap-x-4 md:grid-cols-3 lg:grid-cols-3 lg:gap-x-4 lg:gap-y-12"
+    ? "kaos-editorial-catalog-grid kaos-responsive-card-grid"
     : `grid grid-cols-2 gap-x-3 gap-y-8 sm:gap-x-4 md:grid-cols-3 ${
         isCategoryCatalog
           ? "lg:grid-cols-4 lg:gap-x-4 lg:gap-y-12"
           : "lg:grid-cols-4 lg:gap-x-6 lg:gap-y-10"
       }`;
+  const loadingGridClass = isKaosEditorial
+    ? "kaos-responsive-card-grid"
+    : "grid grid-cols-2 gap-x-3 gap-y-8 sm:gap-x-4 md:grid-cols-3 lg:grid-cols-4 lg:gap-x-4";
 
   return (
     <div className={`${isCategoryCatalog ? "category-product-catalog" : ""} ${isKaosEditorial ? "kaos-editorial-product-catalog" : ""}`.trim()}>
@@ -813,11 +820,7 @@ export function ProductCatalog({
             <div
               aria-label="Memuat produk tambahan"
               aria-live="polite"
-              className={`mt-8 grid grid-cols-2 gap-x-3 gap-y-8 sm:gap-x-4 md:grid-cols-3 ${
-                isKaosEditorial
-                  ? "lg:grid-cols-3 lg:gap-x-4"
-                  : "lg:grid-cols-4 lg:gap-x-4"
-              }`}
+              className={`mt-8 ${loadingGridClass}`}
             >
               {Array.from({ length: columns }, (_, index) => (
                 <div key={index} className="animate-pulse">
