@@ -2,21 +2,22 @@
 
 import { AdminNotificationBell } from "@/components/admin/AdminNotificationBell";
 import { AdminBreadcrumb } from "./AdminBreadcrumb";
-import type { AdminRole } from "./admin-navigation";
-import { getCurrentNavigationLabel, ROLE_LABELS } from "./admin-navigation";
+import { getCurrentNavigationLabel } from "./admin-navigation";
 import { isAdminGuestRole } from "@/lib/access-control";
+import type { AdminAccessSnapshot } from "@/lib/access-control";
 import { usePathname } from "next/navigation";
 
 export function AdminHeader({
-  role,
+  access,
   onOpenMenu,
   onLogout
 }: {
-  role: AdminRole;
+  access: AdminAccessSnapshot;
   onOpenMenu: () => void;
   onLogout: () => void;
 }) {
   const pathname = usePathname();
+  const { role } = access;
 
   return (
     <header className="sticky top-0 z-30 border-b border-brand-softGray bg-white/95 backdrop-blur">
@@ -45,9 +46,11 @@ export function AdminHeader({
               MODE LIHAT SAJA
             </span>
           ) : null}
-          <span className="hidden rounded-full border border-brand-softGray bg-brand-offWhite px-3 py-2 text-xs font-semibold text-brand-charcoal/70 sm:inline-flex">
-            {ROLE_LABELS[role]}
-          </span>
+          <div className="hidden text-right text-xs leading-4 text-brand-charcoal/65 md:block">
+            <p className="font-semibold text-brand-charcoal">{access.displayName}</p>
+            <p>{access.roleLabel} · {access.scopeLabel}</p>
+            <p>{access.accountStatus}</p>
+          </div>
           <button
             type="button"
             onClick={onLogout}

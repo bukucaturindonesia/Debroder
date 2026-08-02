@@ -1,12 +1,6 @@
-import { createClient, type SupabaseClient, type User } from "@supabase/supabase-js";
-import { getAdminSupabaseClient } from "@/lib/supabase/admin";
-import { getPublicSupabaseEnv } from "@/lib/env";
-import {
-  adminGuestErrorResponse,
-  assertAdminRequestMethodAllowed
-} from "@/lib/admin-role-security";
-import { canCreateRepeatOrder } from "@/lib/repeat-orders";
-import { isAdminRole } from "@/lib/access-control";
+import type { SupabaseClient, User } from "@supabase/supabase-js";
+import { adminGuestErrorResponse } from "@/lib/admin-role-security";
+import { Phase13AuthError, requirePhase13Actor } from "@/lib/phase13-auth";
 import {
   canonicalErrorResponse,
   createServerRequestContext
@@ -29,48 +23,24 @@ export async function requireRepeatOrderActor(
   request: Request,
   options: { create?: boolean } = {}
 ): Promise<RepeatOrderActor> {
-  const authorization = request.headers.get("authorization") ?? "";
-  const token = authorization.startsWith("Bearer ") ? authorization.slice(7).trim() : "";
-  if (!token) throw new RepeatOrderAuthError(401, "Sesi admin diperlukan.");
-
-  const adminClient = getAdminSupabaseClient();
-  const env = getPublicSupabaseEnv();
-  if (!adminClient || !env) throw new RepeatOrderAuthError(503, "Supabase admin belum dikonfigurasi.");
-
-  const { data, error } = await adminClient.auth.getUser(token);
-  if (error || !data.user) throw new RepeatOrderAuthError(401, "Sesi admin tidak valid.");
-
-  const { data: profile, error: profileError } = await adminClient
-    .from("profiles")
-    .select("role")
-    .eq("id", data.user.id)
-    .maybeSingle();
-  const role = typeof profile?.role === "string" ? profile.role.toLowerCase() : "";
-  assertAdminRequestMethodAllowed(role, request.method);
-  if (profileError || !isAdminRole(role)) throw new RepeatOrderAuthError(403, "Akses panel admin ditolak.");
-
-  const client = createClient(env.url, env.anonKey, {
-    auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false },
-    global: { headers: { Authorization: `Bearer ${token}` } }
-  });
-
-  const requiredPermissions = options.create
-    ? ["order.read", "quotation.write"]
-    : ["order.read"];
-  for (const permission of requiredPermissions) {
-    const { data: allowed, error: permissionError } = await client.rpc("has_permission", {
-      p_permission_key: permission
-    });
-    if (permissionError || allowed !== true) {
-      throw new RepeatOrderAuthError(403, "Permission tidak mencukupi untuk Repeat Order.");
+  try {
+    const actor = await requirePhase13Actor(request, options.create ? "quotation.write" : "order.read");
+    if (options.create) {
+      const { data: orderAllowed, error } = await actor.client.rpc("has_permission", {
+        p_permission_key: "order.read"
+      });
+      if (error || orderAllowed !== true) {
+        throw new RepeatOrderAuthError(403, "Permission tidak mencukupi untuk Repeat Order.");
+      }
     }
+    return actor;
+  } catch (error) {
+    if (error instanceof RepeatOrderAuthError) throw error;
+    if (error instanceof Phase13AuthError) {
+      throw new RepeatOrderAuthError(error.status, error.message);
+    }
+    throw error;
   }
-
-  if (options.create && !canCreateRepeatOrder(role)) {
-    throw new RepeatOrderAuthError(403, "Role ini tidak diizinkan membuat Repeat Order.");
-  }
-
-  return { user: data.user, role, client, adminClient };
 }
 
 export function repeatOrderErrorResponse(error: unknown, request?: Request): Response {

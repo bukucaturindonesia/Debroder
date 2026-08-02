@@ -83,7 +83,7 @@ describe("DEBRODER final three admin roles", () => {
     expect(isAdminGuestFullViewerPath("/admin/products")).toBe(false);
 
     const labels = JSON.stringify(getNavigationGroups("admin_guest"));
-    for (const label of ["Manajemen Produk Lanjutan", "Pemeliharaan Produk", "Pembayaran", "Laporan", "Pengguna & Hak Akses", "Riwayat Aktivitas"]) {
+    for (const label of ["Manajemen Produk Lanjutan", "Pemeliharaan Produk", "Pembayaran", "Laporan", "Akun Admin", "Riwayat Aktivitas"]) {
       expect(labels).toContain(label);
     }
   });
@@ -150,7 +150,8 @@ describe("DEBRODER final three admin roles", () => {
 
   it("uses a trusted server session guard and presents the read-only UI", () => {
     expect(sessionRoute).toContain("requirePhase13Actor(request)");
-    expect(sessionRoute).toContain("roleCanAccessPath(actor.role, pathname)");
+    expect(sessionRoute).toContain("canAccessAdminPath(pathname, actor.permissions)");
+    expect(sessionRoute).toContain("httpOnly: true");
     expect(sessionRoute).not.toContain("searchParams.get(\"role\")");
     expect(shell).toContain("MODE LIHAT SAJA");
     expect(shell).toContain("Akun ini dapat melihat seluruh Panel Admin, tetapi tidak dapat melakukan perubahan.");

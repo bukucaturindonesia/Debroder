@@ -10,7 +10,7 @@ export const runtime = "nodejs";
 
 export async function GET(request: Request, context: { params: Promise<{ jobId: string }> }) {
   try {
-    const actor = await requirePhase13Actor(request);
+    const actor = await requirePhase13Actor(request, "product.read");
     if (!PRODUCT_MANAGER_ROLES.includes(actor.role as AdminRole)) throw new Phase13AuthError(403, "Role ini tidak memiliki akses Product Manager.");
     const { jobId } = await context.params;
     if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(jobId)) throw new PimPhase6ServerError(404, "File export tidak ditemukan.", "EXPORT_JOB_NOT_FOUND");

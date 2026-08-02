@@ -150,7 +150,7 @@ const IMAGE_FIELDS = [
 
 export async function GET(request: Request) {
   try {
-    const actor = await requireProductActor(request);
+    const actor = await requireProductActor(request, "product.read");
     const payload = await loadManagerPayload(actor.adminClient, actor.role);
     return noStoreJson(payload);
   } catch (error) {
@@ -160,7 +160,7 @@ export async function GET(request: Request) {
 
 export async function POST(request: Request) {
   try {
-    const actor = await requireProductActor(request);
+    const actor = await requireProductActor(request, "product.manage");
     const body = await readBody(request);
     const auditIdentity = createPimAuditIdentity(request, String(body.action || "invalid"));
 
@@ -192,6 +192,7 @@ export async function POST(request: Request) {
     }
 
     if (body.action === "save_sellable") {
+      requireActorPermission(actor.permissions, "product.inventory.manage");
       requireDependencyRole(actor.role);
       const input = normalizeSellableSkuInput(body.sellable);
       if (!input) throw new ProductApiError(400, "Data sellable SKU tidak valid.");
@@ -225,6 +226,7 @@ export async function POST(request: Request) {
     }
 
     if (body.action === "save_matrix") {
+      requireActorPermission(actor.permissions, "product.inventory.manage");
       requireDependencyRole(actor.role);
       const result = await saveVariantMatrixAtomic(actor.adminClient, body.matrix as VariantMatrixSaveInput);
       await auditProductMutation({ actor, identity: auditIdentity, eventCode: "VARIANT_MATRIX_UPDATED", entityType: "products", entityId: result.productId, entityLabel: "Variant Matrix", productId: result.productId, metadata: { targetCount: result.summary.affected, successCount: result.summary.affected, changedFields: ["variant_matrix"] } });
@@ -246,6 +248,7 @@ export async function POST(request: Request) {
       return noStoreJson({ ok: true, productId: duplicateId, message: "Produk diduplikasi sebagai Draft." });
     }
 
+    requireActorPermission(actor.permissions, "product.publish");
     requireLifecycleRole(actor.role);
 
     if (body.action === "validate_publish") {
@@ -352,12 +355,18 @@ export async function POST(request: Request) {
   }
 }
 
-async function requireProductActor(request: Request) {
-  const actor = await requirePhase13Actor(request);
+async function requireProductActor(request: Request, permission: string) {
+  const actor = await requirePhase13Actor(request, permission);
   if (!PRODUCT_MANAGER_ROLES.includes(actor.role as AdminRole)) {
     throw new Phase13AuthError(403, "Role ini tidak memiliki akses Product Manager.");
   }
   return actor;
+}
+
+function requireActorPermission(permissions: readonly string[], permission: string) {
+  if (!permissions.includes(permission)) {
+    throw new ProductApiError(403, "Capability produk tidak mencukupi untuk tindakan ini.");
+  }
 }
 
 function requireLifecycleRole(role: string) {

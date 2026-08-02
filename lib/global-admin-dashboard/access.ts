@@ -1,6 +1,6 @@
 import { Phase13AuthError } from "@/lib/phase13-auth";
 
-const GLOBAL_ROLES = new Set(["owner", "superadmin", "super_admin", "admin"]);
+const GLOBAL_ROLES = new Set(["owner", "superadmin", "super_admin", "admin", "head_store"]);
 const STORE_SCOPED_ROLE = "store_admin";
 const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 

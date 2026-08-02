@@ -104,7 +104,7 @@ export async function POST(request: Request) {
 }
 
 async function requireBulkImportActor(request: Request) {
-  const actor = await requirePhase13Actor(request);
+  const actor = await requirePhase13Actor(request, "product.inventory.manage");
   if (!PRODUCT_MANAGER_ROLES.includes(actor.role as AdminRole)) throw new Phase13AuthError(403, "Role ini tidak memiliki akses Product Manager.");
   return actor;
 }

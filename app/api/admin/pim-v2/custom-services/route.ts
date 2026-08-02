@@ -37,7 +37,7 @@ type ParsedCustomService = CustomService & {
 
 export async function POST(request: Request) {
   try {
-    const actor = await requirePhase13Actor(request);
+    const actor = await requirePhase13Actor(request, request.method === "GET" ? "content.read" : "content.manage");
     if (!getProductManagerCapabilities(actor.role).canEditDraft) {
       throw new Phase13AuthError(403, "Role ini tidak memiliki akses untuk mengubah katalog layanan.");
     }

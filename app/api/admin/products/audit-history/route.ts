@@ -13,7 +13,7 @@ export const runtime = "nodejs";
 
 export async function GET(request: Request) {
   try {
-    const actor = await requirePhase13Actor(request);
+    const actor = await requirePhase13Actor(request, "product.read");
     if (!PRODUCT_MANAGER_ROLES.includes(actor.role as AdminRole)) {
       throw new Phase13AuthError(403, "Anda tidak mempunyai akses ke riwayat PIM.");
     }

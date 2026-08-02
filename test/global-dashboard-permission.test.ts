@@ -36,7 +36,8 @@ describe("Global Dashboard canonical permission", () => {
       allStoreAccess: false
     }, storeB)).toThrowError("Store Admin hanya dapat membaca toko yang ditetapkan.");
     expect(roleCanAccessPath("store_admin", "/admin/dashboard")).toBe(true);
-    expect(roleCanAccessPath("store_admin", "/admin/orders")).toBe(false);
+    // Owner-approved V1: Store Admin can open the order route; RLS locks the rows.
+    expect(roleCanAccessPath("store_admin", "/admin/orders")).toBe(true);
   });
 
   it("rejects an authenticated role without Dashboard permission", () => {

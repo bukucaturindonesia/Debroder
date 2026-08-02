@@ -16,7 +16,8 @@ const productManagerViewRoles = [
   "superadmin",
   "super_admin",
   "admin",
-  "admin_guest"
+  "admin_guest",
+  "product_content_manager"
 ] as const satisfies readonly AdminRole[];
 
 const unrelatedRoles = [

@@ -522,7 +522,7 @@ async function loadProductVariantsPayload(
 }
 
 async function requireProductVariantsActor(request: Request) {
-  const actor = await requirePhase13Actor(request);
+  const actor = await requirePhase13Actor(request, request.method === "GET" ? "product.read" : "product.manage");
   if (!PRODUCT_MANAGER_ROLES.includes(actor.role as AdminRole)) {
     throw new Phase13AuthError(403, "Role ini tidak memiliki akses modul Varian.");
   }

@@ -6,7 +6,7 @@ type Context = { params: Promise<{ id: string }> };
 
 export async function GET(request: Request, context: Context) {
   try {
-    await requirePaymentActor(request);
+    await requirePaymentActor(request, "payment.read");
     const { id } = await context.params;
     const client = getAdminSupabaseClient();
     if (!client) throw new Error("Supabase admin belum dikonfigurasi.");
@@ -20,7 +20,7 @@ export async function GET(request: Request, context: Context) {
 
 export async function POST(request: Request, context: Context) {
   try {
-    const actor = await requirePaymentActor(request);
+    const actor = await requirePaymentActor(request, "payment.create");
     const { id } = await context.params;
     const body = await request.json().catch(() => ({})) as { action?: unknown; reason?: unknown };
     const action = typeof body.action === "string" ? body.action : "ensure";
@@ -40,7 +40,7 @@ export async function POST(request: Request, context: Context) {
 
 export async function PATCH(request: Request, context: Context) {
   try {
-    const actor = await requirePaymentActor(request);
+    const actor = await requirePaymentActor(request, "payment.create");
     const { id } = await context.params;
     const body = (await request.json()) as { linkId?: unknown; action?: unknown; reason?: unknown };
     const linkId = typeof body.linkId === "string" ? body.linkId : "";
@@ -61,7 +61,7 @@ export async function PATCH(request: Request, context: Context) {
 
 export async function DELETE(request: Request, context: Context) {
   try {
-    const actor = await requirePaymentActor(request);
+    const actor = await requirePaymentActor(request, "payment.archive");
     if (!["superadmin", "super_admin"].includes(actor.role)) return Response.json({ error: "Hanya Super Admin." }, { status: 403 });
     const { id } = await context.params;
     const url = new URL(request.url); const linkId = url.searchParams.get("linkId") ?? "";

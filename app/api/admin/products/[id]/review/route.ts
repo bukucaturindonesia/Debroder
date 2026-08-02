@@ -91,7 +91,7 @@ export async function PATCH(request: Request, context: Context) {
 }
 
 async function requireProductReviewActor(request: Request) {
-  const actor = await requirePhase13Actor(request);
+  const actor = await requirePhase13Actor(request, request.method === "GET" ? "product.read" : "product.publish");
   if (!PRODUCT_MANAGER_ROLES.includes(actor.role as AdminRole)) {
     throw new Phase13AuthError(
       403,

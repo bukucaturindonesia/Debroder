@@ -3,7 +3,7 @@ import { isPaymentVerifier } from "@/lib/payments";
 
 export async function POST(request: Request) {
   try {
-    const actor = await requirePaymentActor(request);
+    const actor = await requirePaymentActor(request, "payment.adjust");
     if (!isPaymentVerifier(actor.role)) return Response.json({ error: "Role tidak dapat membuat koreksi." }, { status: 403 });
     const body = (await request.json()) as { paymentId?: unknown; type?: unknown; amount?: unknown; reason?: unknown };
     const { data, error } = await actor.client.rpc("create_payment_adjustment", {
@@ -17,7 +17,7 @@ export async function POST(request: Request) {
 
 export async function PATCH(request: Request) {
   try {
-    const actor = await requirePaymentActor(request);
+    const actor = await requirePaymentActor(request, "payment.adjust");
     if (!isPaymentVerifier(actor.role)) return Response.json({ error: "Role tidak dapat memutus koreksi." }, { status: 403 });
     const body = (await request.json()) as { adjustmentId?: unknown; approve?: unknown; reason?: unknown };
     const { data, error } = await actor.client.rpc("decide_payment_adjustment", {

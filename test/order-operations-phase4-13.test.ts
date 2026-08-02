@@ -115,7 +115,9 @@ describe("DEBRODER Order Operations Phase 4-13", () => {
     expect(sql).toContain("('quality_control','order.task.read',true");
     expect(sql).toContain("('quality_control','order.task.manage',true");
     expect(sql).toContain("('quality_control','operations.read',true");
-    expect(read("components/admin/layout/admin-navigation.ts")).toContain('"quality_control", "store_staff"');
+    const navigation = read("components/admin/layout/admin-navigation.ts");
+    expect(navigation).toContain('quality_control: ["order.read"');
+    expect(navigation).toContain('store_staff: ["order.read"');
   });
 
   it("keeps every new RLS policy redeploy-safe", () => {

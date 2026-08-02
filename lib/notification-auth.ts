@@ -1,15 +1,6 @@
-import { createClient, type SupabaseClient, type User } from "@supabase/supabase-js";
-import { getAdminSupabaseClient } from "@/lib/supabase/admin";
-import { getPublicSupabaseEnv } from "@/lib/env";
-import {
-  adminGuestErrorResponse,
-  assertAdminRequestMethodAllowed
-} from "@/lib/admin-role-security";
-import {
-  canManageNotificationTemplates,
-  isNotificationRole,
-  isNotificationSuperAdmin
-} from "@/lib/notifications";
+import type { SupabaseClient, User } from "@supabase/supabase-js";
+import { adminGuestErrorResponse } from "@/lib/admin-role-security";
+import { Phase13AuthError, requirePhase13Actor } from "@/lib/phase13-auth";
 import {
   canonicalErrorResponse,
   createServerRequestContext
@@ -25,61 +16,20 @@ export async function requireNotificationActor(
   request: Request,
   requirement: "read" | "manage" | "superadmin" = "read"
 ): Promise<NotificationActor> {
-  const authorization = request.headers.get("authorization") ?? "";
-  const token = authorization.startsWith("Bearer ")
-    ? authorization.slice(7).trim()
-    : "";
-
-  if (!token) {
-    throw new NotificationAuthError(401, "Sesi admin diperlukan.");
-  }
-
-  const adminClient = getAdminSupabaseClient();
-  const publicEnv = getPublicSupabaseEnv();
-
-  if (!adminClient || !publicEnv) {
-    throw new NotificationAuthError(503, "Supabase admin belum dikonfigurasi.");
-  }
-
-  const { data, error } = await adminClient.auth.getUser(token);
-  if (error || !data.user) {
-    throw new NotificationAuthError(401, "Sesi admin tidak valid.");
-  }
-
-  const { data: profile, error: profileError } = await adminClient
-    .from("profiles")
-    .select("role")
-    .eq("id", data.user.id)
-    .maybeSingle();
-
-  const role = typeof profile?.role === "string" ? profile.role.toLowerCase() : "";
-  assertAdminRequestMethodAllowed(role, request.method);
-  if (profileError || !isNotificationRole(role)) {
-    throw new NotificationAuthError(403, "Akses notifikasi ditolak.");
-  }
-
-  if (requirement === "manage" && !canManageNotificationTemplates(role)) {
-    throw new NotificationAuthError(403, "Role tidak dapat mengelola template notifikasi.");
-  }
-
-  if (requirement === "superadmin" && !isNotificationSuperAdmin(role)) {
-    throw new NotificationAuthError(403, "Hanya Super Admin yang dapat melakukan aksi ini.");
-  }
-
-  const client = createClient(publicEnv.url, publicEnv.anonKey, {
-    auth: {
-      persistSession: false,
-      autoRefreshToken: false,
-      detectSessionInUrl: false
-    },
-    global: {
-      headers: {
-        Authorization: `Bearer ${token}`
-      }
+  try {
+    const permission = requirement === "read" ? "notification.read" : "notification.manage";
+    const actor = await requirePhase13Actor(request, permission);
+    if (requirement === "superadmin" && !["owner", "superadmin", "super_admin"].includes(actor.role)) {
+      throw new NotificationAuthError(403, "Hanya Owner atau Super Admin yang dapat melakukan aksi ini.");
     }
-  });
-
-  return { user: data.user, role, client };
+    return actor;
+  } catch (error) {
+    if (error instanceof NotificationAuthError) throw error;
+    if (error instanceof Phase13AuthError) {
+      throw new NotificationAuthError(error.status, error.message);
+    }
+    throw error;
+  }
 }
 
 export class NotificationAuthError extends Error {

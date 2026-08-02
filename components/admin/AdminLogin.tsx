@@ -94,7 +94,7 @@ export function AdminLogin() {
       cache: "no-store",
       headers: { authorization: `Bearer ${data.session.access_token}` }
     });
-    const access = await response.json().catch(() => ({})) as { error?: string };
+    const access = await response.json().catch(() => ({})) as { error?: string; home?: string };
 
     if (!response.ok) {
       await supabase.auth.signOut();
@@ -103,7 +103,7 @@ export function AdminLogin() {
       return;
     }
 
-    router.push("/admin/dashboard");
+    router.push(access.home || "/admin/dashboard");
     router.refresh();
   }
 
@@ -119,7 +119,7 @@ export function AdminLogin() {
 
           <h1 className="mt-8 text-3xl font-black">Masuk ke Panel Admin</h1>
           <p className="mt-3 text-sm leading-6 text-brand-charcoal/70">
-            Masuk sebagai Super Admin, Admin, atau Admin Guest sesuai peran pada profil terverifikasi.
+            Masuk dengan akun Admin pribadi. Role, status, dan scope akan diverifikasi sebelum area kerja dibuka.
           </p>
 
           {!configured ? (
@@ -153,6 +153,8 @@ export function AdminLogin() {
           <label className="mt-6 block text-sm font-black">
             Email
             <input
+              id="admin-email"
+              name="email"
               type="email"
               value={email}
               onChange={(event) => setEmail(event.target.value)}
@@ -164,6 +166,8 @@ export function AdminLogin() {
           <label className="mt-4 block text-sm font-black">
             Kata sandi
             <input
+              id="admin-password"
+              name="password"
               type="password"
               value={password}
               onChange={(event) => setPassword(event.target.value)}

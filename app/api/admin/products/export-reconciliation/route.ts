@@ -222,7 +222,7 @@ async function createReport(actor: Awaited<ReturnType<typeof requirePimPhase6Act
 
 async function requirePimPhase6Actor(request: Request) {
   const authRequest = request.method === "GET" ? request : new Request(request.url, { method: "GET", headers: request.headers });
-  const actor = await requirePhase13Actor(authRequest);
+  const actor = await requirePhase13Actor(authRequest, "product.read");
   if (!PRODUCT_MANAGER_ROLES.includes(actor.role as AdminRole)) throw new Phase13AuthError(403, "Role ini tidak memiliki akses Product Manager.");
   return actor;
 }

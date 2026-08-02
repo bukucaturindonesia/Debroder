@@ -10,19 +10,18 @@ import { isAdminGuestFullViewerPath } from "@/lib/admin-full-viewer";
 import { AdminAccessProvider } from "./AdminAccessContext";
 import { AdminSidebar } from "./AdminSidebar";
 import {
-  getRoleHome,
   isAdminRole,
   isLegacyAdminRoute,
-  roleCanAccessPath,
   type AdminRole
 } from "./admin-navigation";
+import { isAccountStatus, type AdminAccessSnapshot } from "@/lib/access-control";
 import { takeAdminFlash, type AdminFlash } from "./admin-flash";
 
 export function AdminShell({ children }: { children: ReactNode }) {
   const pathname = usePathname();
   const router = useRouter();
-  const isLoginPage = pathname.startsWith("/admin/login");
-  const [role, setRole] = useState<AdminRole | null>(null);
+  const isLoginPage = pathname.startsWith("/admin/login") || pathname.startsWith("/admin/change-password");
+  const [access, setAccess] = useState<AdminAccessSnapshot | null>(null);
   const [checking, setChecking] = useState(!isLoginPage);
   const [accessError, setAccessError] = useState("");
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -62,29 +61,31 @@ export function AdminShell({ children }: { children: ReactNode }) {
         cache: "no-store",
         headers: token ? { authorization: `Bearer ${token}` } : undefined
       });
-      const session = await response.json().catch(() => ({})) as {
-        role?: unknown;
+      const session = await response.json().catch(() => ({})) as Partial<AdminAccessSnapshot> & {
         allowed?: boolean;
         home?: string;
         error?: string;
       };
 
       if (!active) return;
+      const allowed = session.allowed;
       if (response.status === 401) {
         await supabase.auth.signOut();
         router.replace("/admin/login");
         return;
       }
 
-      if (!isAdminRole(session.role)) {
+      if (!isAdminAccess(session)) {
         setAccessError(session.error || "Akun ini tidak memiliki akses panel admin.");
         setChecking(false);
         return;
       }
 
-      setRole(session.role);
+      setAccess(session);
       setChecking(false);
-      if (!session.allowed) router.replace(session.home || getRoleHome(session.role));
+      if (!allowed) {
+        setAccessError("403 — Anda tidak memiliki akses ke halaman ini.");
+      }
     }
 
     void verifyAccess();
@@ -95,11 +96,22 @@ export function AdminShell({ children }: { children: ReactNode }) {
   }, [isLoginPage, pathname, router]);
 
   useEffect(() => {
-    if (!role || isLoginPage) return;
-    if (!roleCanAccessPath(role, pathname)) {
-      router.replace(getRoleHome(role));
-    }
-  }, [isLoginPage, pathname, role, router]);
+    if (isLoginPage) return;
+    const supabase = createSupabaseClient();
+    if (!supabase) return;
+    const { data } = supabase.auth.onAuthStateChange((event, session) => {
+      if (event !== "TOKEN_REFRESHED" || !session?.access_token) return;
+      window.setTimeout(() => {
+        void fetch(`/api/admin/session?path=${encodeURIComponent(pathname)}`, {
+          cache: "no-store",
+          headers: { authorization: `Bearer ${session.access_token}` }
+        }).then((response) => {
+          if (response.status === 401 || response.status === 403) router.refresh();
+        });
+      }, 0);
+    });
+    return () => data.subscription.unsubscribe();
+  }, [isLoginPage, pathname, router]);
 
   useEffect(() => {
     setMobileOpen(false);
@@ -113,19 +125,20 @@ export function AdminShell({ children }: { children: ReactNode }) {
 
   async function logout() {
     const supabase = createSupabaseClient();
+    await fetch("/api/admin/session", { method: "DELETE", cache: "no-store" }).catch(() => undefined);
     if (supabase) await supabase.auth.signOut();
     router.replace("/admin/login");
     router.refresh();
   }
 
   function blockReadOnlySubmit(event: SyntheticEvent<HTMLDivElement>) {
-    if (role !== "admin_guest") return;
+    if (access?.role !== "admin_guest") return;
     event.preventDefault();
     event.stopPropagation();
   }
 
   function blockReadOnlyMutation(event: MouseEvent<HTMLDivElement>) {
-    if (role !== "admin_guest") return;
+    if (access?.role !== "admin_guest") return;
     const target = event.target as HTMLElement | null;
     if (!target?.closest('[data-admin-mutation="true"]')) return;
     event.preventDefault();
@@ -150,7 +163,7 @@ export function AdminShell({ children }: { children: ReactNode }) {
     );
   }
 
-  if (accessError || !role) {
+  if (accessError || !access) {
     return (
       <main className="min-h-screen bg-brand-offWhite p-6 text-brand-charcoal">
         <div className="mx-auto mt-24 max-w-lg border border-brand-softGray bg-white p-8 text-center">
@@ -176,15 +189,17 @@ export function AdminShell({ children }: { children: ReactNode }) {
   const legacyRoute = isLegacyAdminRoute(pathname);
   const globalDashboardRoute = pathname === "/admin" || pathname === "/admin/dashboard";
 
+  const role: AdminRole = access.role;
+
   return (
-    <AdminAccessProvider role={role}>
+    <AdminAccessProvider access={access}>
       <div
         className="admin-shell-root"
         data-admin-read-only={role === "admin_guest"}
         data-global-dashboard={globalDashboardRoute ? "true" : "false"}
       >
       <aside className="admin-shell-desktop-sidebar">
-        <AdminSidebar role={role} onLogout={logout} />
+        <AdminSidebar access={access} onLogout={logout} />
       </aside>
 
       {mobileOpen ? (
@@ -197,7 +212,7 @@ export function AdminShell({ children }: { children: ReactNode }) {
           />
           <aside className="admin-shell-mobile-sidebar">
             <AdminSidebar
-              role={role}
+              access={access}
               onNavigate={() => setMobileOpen(false)}
               onLogout={logout}
             />
@@ -207,7 +222,7 @@ export function AdminShell({ children }: { children: ReactNode }) {
 
       <div className="admin-shell-main">
         <AdminHeader
-          role={role}
+          access={access}
           onOpenMenu={() => setMobileOpen(true)}
           onLogout={logout}
         />
@@ -250,4 +265,18 @@ export function AdminShell({ children }: { children: ReactNode }) {
     </div>
     </AdminAccessProvider>
   );
+}
+
+function isAdminAccess(value: Partial<AdminAccessSnapshot>): value is AdminAccessSnapshot {
+  return typeof value.userId === "string"
+    && typeof value.displayName === "string"
+    && isAdminRole(value.role)
+    && typeof value.roleLabel === "string"
+    && isAccountStatus(value.accountStatus)
+    && (value.primaryStoreId === null || typeof value.primaryStoreId === "string")
+    && (value.primaryStoreName === null || typeof value.primaryStoreName === "string")
+    && typeof value.allStoreAccess === "boolean"
+    && typeof value.scopeLabel === "string"
+    && Array.isArray(value.permissions)
+    && typeof value.readOnly === "boolean";
 }

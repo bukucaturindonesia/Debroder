@@ -15,7 +15,8 @@ export const PRODUCT_MANAGER_ROLES: readonly AdminRole[] = [
   "superadmin",
   "super_admin",
   "admin",
-  "admin_guest"
+  "admin_guest",
+  "product_content_manager"
 ];
 
 export const PRODUCT_LIFECYCLE_ROLES: readonly AdminRole[] = [
@@ -39,6 +40,7 @@ export type ProductManagerCapabilities = {
 export function getProductManagerCapabilities(role: string | null | undefined): ProductManagerCapabilities {
   const canUseProductManager = PRODUCT_MANAGER_ROLES.includes(role as AdminRole);
   const canManageLifecycle = PRODUCT_LIFECYCLE_ROLES.includes(role as AdminRole);
+  const isContentManager = role === "product_content_manager";
   const readOnly = role === "admin_guest";
 
   return {
@@ -47,7 +49,7 @@ export function getProductManagerCapabilities(role: string | null | undefined): 
     canEditPublished: canManageLifecycle,
     canPublish: canManageLifecycle,
     canArchive: canManageLifecycle,
-    canManageDependencies: canManageLifecycle,
+    canManageDependencies: canManageLifecycle || isContentManager,
     canUseMaintenance: canManageLifecycle
   };
 }

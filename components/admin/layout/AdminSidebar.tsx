@@ -10,18 +10,20 @@ import {
   isNavigationLink,
   type AdminRole
 } from "./admin-navigation";
+import type { AdminAccessSnapshot } from "@/lib/access-control";
 
 export function AdminSidebar({
-  role,
+  access,
   onNavigate,
   onLogout
 }: {
-  role: AdminRole;
+  access: AdminAccessSnapshot;
   onNavigate?: () => void;
   onLogout: () => void;
 }) {
   const pathname = usePathname();
-  const groups = getNavigationGroups(role);
+  const role: AdminRole = access.role;
+  const groups = getNavigationGroups(role, access.permissions);
   const globalDashboard = pathname === "/admin" || pathname === "/admin/dashboard";
 
   return (
@@ -33,6 +35,11 @@ export function AdminSidebar({
         <p className="mt-3 text-xs font-semibold uppercase tracking-[0.18em] text-brand-charcoal/45">
           {globalDashboard ? "GLOBAL ADMIN" : "Area Kerja Admin"}
         </p>
+        <div className="mt-3 border-t border-brand-softGray pt-3 text-xs leading-5 text-brand-charcoal/65">
+          <p className="font-semibold text-brand-charcoal">{access.displayName}</p>
+          <p>{access.roleLabel}</p>
+          <p>{access.scopeLabel}</p>
+        </div>
       </div>
 
       <nav className="min-h-0 flex-1 overflow-y-auto px-4 py-5" aria-label="Menu admin">

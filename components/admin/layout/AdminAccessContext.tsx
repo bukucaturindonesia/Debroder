@@ -1,24 +1,19 @@
 "use client";
 
 import { createContext, useContext, type ReactNode } from "react";
-import { isAdminGuestRole, type AdminRole } from "@/lib/access-control";
+import type { AdminAccessSnapshot } from "@/lib/access-control";
 
-export type AdminAccessState = {
-  role: AdminRole;
-  readOnly: boolean;
-};
-
-const AdminAccessContext = createContext<AdminAccessState | null>(null);
+const AdminAccessContext = createContext<AdminAccessSnapshot | null>(null);
 
 export function AdminAccessProvider({
-  role,
+  access,
   children
 }: {
-  role: AdminRole;
+  access: AdminAccessSnapshot;
   children: ReactNode;
 }) {
   return (
-    <AdminAccessContext.Provider value={{ role, readOnly: isAdminGuestRole(role) }}>
+    <AdminAccessContext.Provider value={access}>
       {children}
     </AdminAccessContext.Provider>
   );

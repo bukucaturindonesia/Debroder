@@ -32,14 +32,15 @@ describe("Phase 14 Repeat Order contracts", () => {
       "superadmin",
       "super_admin",
       "admin",
-      "sales_admin"
+      "sales_admin",
+      "order_cs_admin"
     ]);
     expect(canCreateRepeatOrder("superadmin")).toBe(true);
     expect(canCreateRepeatOrder("sales_admin")).toBe(true);
     expect(canCreateRepeatOrder("finance")).toBe(false);
     expect(canCreateRepeatOrder("operator")).toBe(false);
     expect(authSource).toContain('"quotation.write"');
-    expect(authSource).toContain("Role ini tidak diizinkan membuat Repeat Order");
+    expect(authSource).toContain("Permission tidak mencukupi untuk Repeat Order.");
   });
 
   it("validates UUID, reason, and idempotency key", () => {

@@ -180,6 +180,47 @@ Existing legal, CMS route, Preview performance, remote transaction E2E, data-int
 
 ---
 
+## 19. Admin Account & Role-Based Experience V1 — 2 August 2026
+
+- Active scope: audit and local implementation of the canonical Admin Auth →
+  profile → role → store scope → account status → effective-permission chain.
+- Implemented one permission-driven AdminShell/navigation source, server route
+  authorization, canonical session/status/scope enforcement, role-specific
+  dashboard presentation, and the six owner-approved role contracts.
+- Implemented account list/detail, filtered roster, invitation foundation,
+  role/scope/status changes, reset initiation, session revocation, and
+  append-only lifecycle audit. Invitation profile creation and its audit row
+  are one database transaction; Auth invitation remains an explicit Owner UI
+  action.
+- Added local-only migration
+  `20260802090000_admin_account_role_experience_v1.sql` and read-only verifier.
+  Migration is **NOT APPLIED** locally or remotely. No Auth user, invitation,
+  password, profile, session, or production account was mutated.
+- Restored the three missing, already-applied Admin RBAC history sources under
+  their remote version numbers (`20260725070355`, `20260725073814`, and
+  `20260725074004`). Their blob hashes exactly match the historical source;
+  they were not edited or re-executed.
+- Supabase project: `lzennundwqqtyvvcnzbg`. Remote history currently ends at
+  `20260801204856_pay_at_store_cash_evidence_alignment_v1`; the new package
+  migration is pending Owner activation.
+- Verification: focused account/role tests **35/35 PASS**; impacted compatibility
+  tests **PASS**; all non-Kaos test files **113/113, 877/877 PASS**; typecheck
+  **PASS**; lint **PASS with 0 errors / 37 existing warnings**; direct Next.js
+  production build **PASS — 128 pages**.
+- Full `pnpm test` remains red only on one unchanged Kaos Polos assertion whose
+  multiline literal is LF-only while the Windows working copy is CRLF. No Kaos
+  or public UI file was modified under this package.
+- Runtime role/account matrix is **NOT RUN** because the migration has not been
+  applied and the production accounts must not be mutated. Exact target Auth
+  roster re-query was also unavailable at finalization because the Supabase
+  connector reached its usage limit; earlier read-only profile evidence found
+  all eight target profiles.
+- Package state: **IMPLEMENTED AND LOCALLY VERIFIED; OWNER MIGRATION/ACTIVATION
+  AND DEPLOYED RUNTIME REQUIRED; PROJECT REMAINS NOT COMPLETE**.
+- Commit, push, deploy: **NOT PERFORMED**.
+
+---
+
 ## 14. Kaos Polos editorial commerce category — 30 July 2026
 
 - Canonical route and taxonomy remain `/kaos-polos` and **Kaos Polos**.

@@ -75,7 +75,7 @@ describe("Phase 12 notification helpers", () => {
     expect(canManageNotificationTemplates("sales_admin")).toBe(false);
     expect(canManageNotificationTemplates("admin")).toBe(true);
     expect(isNotificationSuperAdmin("superadmin")).toBe(true);
-    expect(isNotificationSuperAdmin("owner")).toBe(false);
+    expect(isNotificationSuperAdmin("owner")).toBe(true);
   });
 
   it("labels operational events and status tones", () => {

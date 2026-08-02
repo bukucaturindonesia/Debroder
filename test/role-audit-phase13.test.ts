@@ -115,8 +115,8 @@ describe("Phase 13 backend and UI contract", () => {
   it("uses authenticated permission checks and an audited role RPC", () => {
     expect(accessApi).toContain('requirePhase13Actor(request, "access_control.read")');
     expect(userRoleApi).toContain('requirePhase13Actor(request, "access_control.manage")');
-    expect(userRoleApi).toContain('rpc("update_profile_role"');
-    expect(userRoleApi).toContain("Super Admin terakhir");
+    expect(userRoleApi).toContain('rpc("update_admin_account_access_v1"');
+    expect(userRoleApi).toContain("assertSafeAccountTarget");
     expect(auditApi).toContain('requirePhase13Actor(request, "audit.read")');
     expect(auditApi).toContain("system_audit_log");
   });

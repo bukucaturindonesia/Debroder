@@ -6,6 +6,7 @@ import { AdminPageHeader } from "@/components/admin/layout/AdminPageHeader";
 import { AdminAlert, AdminErrorState, AdminLoadingState } from "@/components/admin/ui/AdminFeedback";
 import { notificationApiFetch } from "@/lib/admin-notification-api";
 import { isAdminRole, roleCanAccessPath } from "@/components/admin/layout/admin-navigation";
+import { useAdminAccess } from "@/components/admin/layout/AdminAccessContext";
 import { resolveNotificationTarget } from "@/lib/notification-routing";
 import {
   NOTIFICATION_CHANNEL_LABELS,
@@ -27,6 +28,7 @@ type DetailResponse = {
 };
 
 export function NotificationDetailAdmin({ notificationId }: { notificationId: string }) {
+  const access = useAdminAccess();
   const [data, setData] = useState<DetailResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [working, setWorking] = useState(false);
@@ -115,7 +117,7 @@ export function NotificationDetailAdmin({ notificationId }: { notificationId: st
   const canOpenRelatedPath = Boolean(
     resolvedTarget &&
       isAdminRole(role) &&
-      roleCanAccessPath(role, resolvedTarget.split(/[?#]/)[0])
+      roleCanAccessPath(role, resolvedTarget.split(/[?#]/)[0], access.permissions)
   );
 
   return (

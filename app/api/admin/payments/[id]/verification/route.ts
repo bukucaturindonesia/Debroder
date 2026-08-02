@@ -41,7 +41,7 @@ function reviewResponse(input: {
 
 export async function POST(request: Request, context: Context) {
   try {
-    const actor = await requirePaymentActor(request);
+    const actor = await requirePaymentActor(request, "payment.verify");
     if (!isPaymentVerifier(actor.role)) {
       return Response.json(
         { error: "Role tidak dapat memverifikasi pembayaran." },

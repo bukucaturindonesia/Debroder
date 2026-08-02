@@ -586,3 +586,36 @@ Last updated: 28 July 2026 (Asia/Makassar)
   prove the exact sequence, retry idempotency, one notification per recipient,
   stable tracking after refresh, Admin persistence, zero target console/log
   errors, and post-deployment LCP evidence.
+
+## ADMIN-RBAC-001 — Role, scope, account lifecycle, and server enforcement were fragmented
+
+- Severity: **BLOCKER — ADMIN SECURITY / OPERATIONS**.
+- Status: **IMPLEMENTED LOCALLY; OWNER ACTIVATION AND RUNTIME PENDING**.
+- Proven causes: static role arrays diverged from `role_permissions`; several
+  sensitive APIs duplicated actor logic; Admin route denial was client-side;
+  account list/detail and lifecycle controls were incomplete; and an existing
+  remote access-update RPC contained an email-specific authorization branch.
+- Resolution: one canonical access snapshot, permission-driven navigation,
+  middleware route enforcement, canonical API actor delegation, store-scope
+  validation, account lifecycle UI/API, atomic invitation profile+audit RPC,
+  session revocation, additive RLS alignment, and exact restoration of three
+  missing already-applied Admin RBAC migration-history sources.
+- Local migration:
+  `20260802090000_admin_account_role_experience_v1.sql` — **NOT APPLIED**.
+- Production accounts mutated: **NONE**.
+- Verification: focused **35/35 PASS**; non-Kaos regression **877/877 PASS**;
+  typecheck/lint/direct Next build **PASS**.
+- Remaining gate: migration apply/postcheck and six-role runtime plus negative
+  cross-store/cross-role evidence using safe test identities.
+
+## QA-CRLF-001 — Kaos Polos source-literal test is line-ending sensitive
+
+- Severity: **MINOR — TEST PORTABILITY; UNRELATED TO ADMIN PACKAGE**.
+- Status: **OPEN / DEFERRED TO KAOS PACKAGE**.
+- Evidence: `test/kaos-polos-editorial-commerce.test.ts` expects a multiline LF
+  literal while unchanged `components/ProductCatalog.tsx` is CRLF on Windows.
+  The behavioral fragments are present; the single assertion fails before and
+  outside this package's scope.
+- Impact: full `pnpm test` and therefore the scripted `pnpm build` prebuild are
+  red; all other 113 test files pass and direct Next production build passes.
+- No Kaos Polos test or public UI file was changed in this Admin package.

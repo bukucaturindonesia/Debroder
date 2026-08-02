@@ -1,11 +1,6 @@
-import { createClient, type SupabaseClient, type User } from "@supabase/supabase-js";
-import { getAdminSupabaseClient } from "@/lib/supabase/admin";
-import { getPublicSupabaseEnv } from "@/lib/env";
-import {
-  adminGuestErrorResponse,
-  assertAdminRequestMethodAllowed
-} from "@/lib/admin-role-security";
-import { isPaymentRole } from "@/lib/payments";
+import type { SupabaseClient, User } from "@supabase/supabase-js";
+import { adminGuestErrorResponse } from "@/lib/admin-role-security";
+import { Phase13AuthError, requirePhase13Actor } from "@/lib/phase13-auth";
 import {
   canonicalErrorResponse,
   createServerRequestContext
@@ -13,34 +8,18 @@ import {
 
 export type PaymentActor = { user: User; role: string; client: SupabaseClient };
 
-export async function requirePaymentActor(request: Request): Promise<PaymentActor> {
-  const authorization = request.headers.get("authorization") ?? "";
-  const token = authorization.startsWith("Bearer ") ? authorization.slice(7).trim() : "";
-  if (!token) throw new PaymentAuthError(401, "Sesi admin diperlukan.");
-
-  const adminClient = getAdminSupabaseClient();
-  const env = getPublicSupabaseEnv();
-  if (!adminClient || !env) throw new PaymentAuthError(503, "Supabase admin belum dikonfigurasi.");
-  const { data, error } = await adminClient.auth.getUser(token);
-  if (error || !data.user) throw new PaymentAuthError(401, "Sesi admin tidak valid.");
-
-  const { data: profile, error: profileError } = await adminClient
-    .from("profiles")
-    .select("role")
-    .eq("id", data.user.id)
-    .maybeSingle();
-  const role = typeof profile?.role === "string" ? profile.role.toLowerCase() : "";
-  assertAdminRequestMethodAllowed(role, request.method);
-  if (profileError || !isPaymentRole(role)) throw new PaymentAuthError(403, "Akses pembayaran ditolak.");
-  const client = createClient(env.url, env.anonKey, {
-    auth: {
-      persistSession: false,
-      autoRefreshToken: false,
-      detectSessionInUrl: false
-    },
-    global: { headers: { Authorization: `Bearer ${token}` } }
-  });
-  return { user: data.user, role, client };
+export async function requirePaymentActor(
+  request: Request,
+  permission = request.method === "GET" ? "payment.read" : "payment.create"
+): Promise<PaymentActor> {
+  try {
+    return await requirePhase13Actor(request, permission);
+  } catch (error) {
+    if (error instanceof Phase13AuthError) {
+      throw new PaymentAuthError(error.status, error.message);
+    }
+    throw error;
+  }
 }
 
 export class PaymentAuthError extends Error {

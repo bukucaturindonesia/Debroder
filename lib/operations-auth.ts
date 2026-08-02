@@ -1,7 +1,6 @@
-import { createClient, type SupabaseClient, type User } from "@supabase/supabase-js";
-import { getAdminSupabaseClient } from "@/lib/supabase/admin";
-import { getPublicSupabaseEnv } from "@/lib/env";
-import { adminGuestErrorResponse, assertAdminRequestMethodAllowed } from "@/lib/admin-role-security";
+import type { SupabaseClient, User } from "@supabase/supabase-js";
+import { adminGuestErrorResponse } from "@/lib/admin-role-security";
+import { Phase13AuthError, requirePhase13Actor } from "@/lib/phase13-auth";
 import {
   canonicalErrorResponse,
   createServerRequestContext
@@ -17,40 +16,14 @@ export async function requireOperationsActor(
   request: Request,
   permission: string = "operations.read"
 ): Promise<OperationsActor> {
-  const authorization = request.headers.get("authorization") ?? "";
-  const token = authorization.startsWith("Bearer ") ? authorization.slice(7).trim() : "";
-  if (!token) throw new OperationsAuthError(401, "Sesi admin diperlukan.");
-
-  const adminClient = getAdminSupabaseClient();
-  const env = getPublicSupabaseEnv();
-  if (!adminClient || !env) throw new OperationsAuthError(503, "Layanan operasional belum dikonfigurasi.");
-
-  const { data, error } = await adminClient.auth.getUser(token);
-  if (error || !data.user) throw new OperationsAuthError(401, "Sesi admin tidak valid.");
-
-  const { data: profile, error: profileError } = await adminClient
-    .from("profiles")
-    .select("role")
-    .eq("id", data.user.id)
-    .maybeSingle();
-  if (profileError || typeof profile?.role !== "string") {
-    throw new OperationsAuthError(403, "Role admin tidak tersedia.");
+  try {
+    return await requirePhase13Actor(request, permission);
+  } catch (error) {
+    if (error instanceof Phase13AuthError) {
+      throw new OperationsAuthError(error.status, error.message);
+    }
+    throw error;
   }
-
-  const role = profile.role.toLowerCase();
-  assertAdminRequestMethodAllowed(role, request.method);
-  const client = createClient(env.url, env.anonKey, {
-    auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false },
-    global: { headers: { Authorization: `Bearer ${token}` } }
-  });
-  const { data: allowed, error: permissionError } = await client.rpc("has_permission", {
-    p_permission_key: permission
-  });
-  if (permissionError || allowed !== true) {
-    throw new OperationsAuthError(403, "Akses operasional ditolak.");
-  }
-
-  return { user: data.user, role, client };
 }
 
 export class OperationsAuthError extends Error {

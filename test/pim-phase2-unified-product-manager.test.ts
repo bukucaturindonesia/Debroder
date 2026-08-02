@@ -100,7 +100,7 @@ describe("PIM Phase 2 Unified Product Manager", () => {
     for (const action of ["save_draft", "save_variant", "save_sellable", "save_image", "remove_image", "publish", "archive"]) {
       expect(productRoute).toContain(`\"${action}\"`);
     }
-    expect(productRoute).toContain("requirePhase13Actor(request)");
+    expect(productRoute).toContain("requirePhase13Actor(request, permission)");
     expect(productRoute).toContain("requireDependencyRole(actor.role)");
     expect(productRoute).toContain("stock_quantity");
     expect(productRoute).toContain("size_id");

@@ -118,7 +118,7 @@ export async function GET(request: Request) {
 }
 
 async function requireProductLibraryActor(request: Request) {
-  const actor = await requirePhase13Actor(request);
+  const actor = await requirePhase13Actor(request, "product.read");
   if (!PRODUCT_MANAGER_ROLES.includes(actor.role as AdminRole)) {
     throw new Phase13AuthError(403, "Role ini tidak memiliki akses Product Library.");
   }

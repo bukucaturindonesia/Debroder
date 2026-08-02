@@ -12,7 +12,8 @@ export const REPEAT_ORDER_CREATE_ROLES: readonly AdminRole[] = [
   "superadmin",
   "super_admin",
   "admin",
-  "sales_admin"
+  "sales_admin",
+  "order_cs_admin"
 ];
 
 export type RepeatOrderEligibleStatus = (typeof REPEAT_ORDER_ELIGIBLE_STATUSES)[number];

@@ -19,7 +19,7 @@ type SettingInput = {
 
 export async function GET(request: Request) {
   try {
-    const actor = await requirePaymentActor(request);
+    const actor = await requirePaymentActor(request, "payment.settings.read");
     const client = getAdminSupabaseClient();
     if (!client) return Response.json({ error: "Layanan pembayaran belum dikonfigurasi." }, { status: 503 });
     const { data, error } = await client.from("payment_method_settings")
@@ -36,7 +36,7 @@ export async function GET(request: Request) {
 
 export async function POST(request: Request) {
   try {
-    const actor = await requirePaymentActor(request);
+    const actor = await requirePaymentActor(request, "payment.settings.manage");
     if (!isPaymentVerifier(actor.role)) {
       return Response.json({ error: "Role tidak dapat mengubah pengaturan pembayaran." }, { status: 403 });
     }

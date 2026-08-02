@@ -39,7 +39,7 @@ describe("Batch 1 source-side security containment", () => {
   });
 
   it("requires a canonical admin actor before custom-service service-role writes", () => {
-    const actorGuard = customServicesRoute.indexOf("requirePhase13Actor(request)");
+    const actorGuard = customServicesRoute.indexOf("requirePhase13Actor(request,");
     const serviceWrite = customServicesRoute.indexOf(
       'actor.adminClient.from("custom_services").upsert'
     );

@@ -9,6 +9,7 @@ import {
 import { createPaymentToken, hashPaymentToken } from "@/lib/payment-token";
 
 const paymentAuth = readFileSync("lib/payment-auth.ts", "utf8");
+const phase13Auth = readFileSync("lib/phase13-auth.ts", "utf8");
 const verificationRoute = readFileSync(
   "app/api/admin/payments/[id]/verification/route.ts",
   "utf8"
@@ -67,7 +68,8 @@ describe("Phase 5B payment policy", () => {
   });
 
   it("forwards the authenticated Admin JWT to sensitive payment RPCs", () => {
-    expect(paymentAuth).toContain("Authorization: `Bearer ${token}`");
+    expect(paymentAuth).toContain("requirePhase13Actor(request, permission)");
+    expect(phase13Auth).toContain("Authorization: `Bearer ${token}`");
     expect(verificationRoute).toContain('actor.client.rpc("review_order_payment"');
     expect(verificationRoute).not.toContain('actor.client.rpc("verify_order_payment"');
     expect(verificationRoute).not.toContain('actor.client.rpc("reject_order_payment"');

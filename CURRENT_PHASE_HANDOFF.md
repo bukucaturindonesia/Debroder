@@ -1141,3 +1141,81 @@ DEBRODER V1.2 REMAINS NOT COMPLETE**
   browser Console/Issues, LCP after evidence, and Vercel/Supabase logs:
   **PENDING DEPLOYED RUNTIME**.
 - Current GO/NO-GO: **NO-GO UNTIL PRODUCTION RUNTIME MATRIX PASSES**.
+
+---
+
+# Handoff — Admin Account & Role-Based Experience V1
+
+**Date:** 2 August 2026
+
+**Working branch:** `codex/admin-account-role-experience-v1`
+
+**Base HEAD:** `4ce800aadb5a52d5f96dd38c053779484b5816b4`
+
+**Supabase project:** `lzennundwqqtyvvcnzbg`
+
+## Scope inspected and changed
+
+- Audited Admin Auth, profiles, role catalog/matrix, store scope, account
+  status, AdminShell/navigation, route/API guards, RLS/RPC, session handling,
+  Realtime notifications, and append-only audit.
+- Replaced duplicated API authentication paths with the canonical Phase 13
+  actor guard and permission checks; added middleware enforcement backed by a
+  signed-in user token and database access-context RPC.
+- Added six role-specific dashboard/navigation presentations plus account
+  list/detail/lifecycle UI and recovery-password completion.
+- Preserved all commerce routes and transaction RPC names. No public UI, Kaos
+  Polos, order lifecycle, pricing, inventory, or payment-state contract was
+  changed.
+
+## Database and migration
+
+- New local migration:
+  `20260802090000_admin_account_role_experience_v1.sql`.
+- New read-only verifier:
+  `VERIFY_admin_account_role_experience_v1.sql`.
+- Restored immutable sources for remote-applied Admin RBAC history versions
+  `20260725070355`, `20260725073814`, and `20260725074004`; all three local
+  blobs exactly match commit `f77088b` (the first source was renamed only to
+  its actual remote version). None was executed.
+- Purpose: permission definitions/grants, canonical access context, atomic
+  invitation profile+audit initialization, guarded role/scope/status update,
+  session revocation, store-aware notification recipients, and additive
+  CMS/PIM/notification/store RLS alignment.
+- Remote application: **NOT RUN**. Local application: **NOT RUN**. Package
+  migration pending: **YES**.
+- Remote history last observed at
+  `20260801204856_pay_at_store_cash_evidence_alignment_v1`.
+- Auth users/accounts/invitations/passwords/sessions mutated: **NONE**.
+
+## Verification actually run
+
+- Focused account/access suite: **35/35 PASS**.
+- Focused compatibility/role suites: **PASS**; corrected one real unknown
+  nested Product route widening and updated obsolete source-literal assertions.
+- All tests excluding the unchanged Kaos Polos test file: **113 files / 877
+  tests PASS**.
+- Full suite: **1 failure / 887 pass-equivalent assertions after the focused
+  role additions**; the only failure is an LF-only multiline source assertion
+  against unchanged CRLF `components/ProductCatalog.tsx`.
+- Typecheck: **PASS**.
+- Lint: **PASS — 0 errors / 37 existing warnings**.
+- Direct Next.js production build: **PASS — 128 pages**.
+- Runtime role/cross-store/account lifecycle: **NOT RUN** pending migration,
+  Owner activation, safe test identities, and deployment.
+
+## Remaining work and risk
+
+- Owner must review/apply the new migration in a safe environment, run the
+  verifier, deploy the exact branch package, and activate/invite only the
+  approved accounts through the UI.
+- Run the required six-role positive matrix and negative cross-role/cross-store
+  matrix with safe test identities; capture browser console/network evidence.
+- Final Auth roster re-query was blocked by Supabase connector usage quota.
+  Earlier read-only evidence proves eight target profiles exist, but final Auth
+  invite/confirmation state requires Owner-side re-verification.
+- Full `pnpm build` remains blocked at prebuild only by the unrelated CRLF-
+  sensitive Kaos test; direct production compilation/build succeeds.
+- GO/NO-GO: **NO-GO FOR ACTIVATION/DEPLOYMENT UNTIL MIGRATION AND RUNTIME GATES;
+  ADMIN PACKAGE IMPLEMENTED, NOT COMPLETE**.
+- Commit, push, deploy: **NOT PERFORMED**.
