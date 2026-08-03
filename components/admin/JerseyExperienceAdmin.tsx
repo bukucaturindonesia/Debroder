@@ -12,7 +12,7 @@ import {
   saveCmsDraft,
   scheduleCmsPublish
 } from "@/lib/cms-workflow";
-import { JERSEY_ORDER_STEPS, JERSEY_SECTION_TYPES, validJerseyHref } from "@/lib/jersey-experience";
+import { JERSEY_ORDER_STEPS, JERSEY_SECTION_TYPES, jerseySectionFallbacks, validJerseyHref } from "@/lib/jersey-experience";
 import { createSupabaseClient } from "@/lib/supabase";
 import type { CmsBanner } from "@/lib/types";
 
@@ -163,10 +163,11 @@ export function JerseyExperienceAdmin() {
       return;
     }
 
+    const mediaFallbacks = jerseySectionFallbacks(form.section_type);
     const payload = {
       name: form.name.trim(), media_type: form.media_type,
-      desktop_media_url: form.desktop_media_url.trim() || "/debroder/social-preview.png",
-      mobile_media_url: form.mobile_media_url?.trim() || null,
+      desktop_media_url: form.desktop_media_url.trim() || mediaFallbacks.desktop,
+      mobile_media_url: form.mobile_media_url?.trim() || mediaFallbacks.mobile,
       poster_url: form.poster_url?.trim() || null,
       eyebrow: form.eyebrow.trim(), title: form.title.trim(), subtitle: form.subtitle.trim(),
       cta_label: form.cta_label.trim(), cta_url: form.cta_url.trim(),

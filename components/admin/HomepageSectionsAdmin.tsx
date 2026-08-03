@@ -65,10 +65,10 @@ const customCardSectionSlugs = new Set([
   "featured",
   "trending",
   "services-products",
+  PLAIN_CATEGORY_SECTION_SETTING.slug,
 ]);
 const productOnlySectionSlugs = new Set([
   "fresh-drops",
-  PLAIN_CATEGORY_SECTION_SETTING.slug,
 ]);
 const objectPositionOptions = [
   "center center",
@@ -326,7 +326,7 @@ function itemImage(item: EditableItem) {
     item.product?.image_url ||
     item.product?.gambar_url ||
     item.service?.image_url ||
-    "/debroder/open-graph-logo.png"
+    "/debroder/fallback/fallback-editorial-4x5.svg"
   );
 }
 

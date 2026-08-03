@@ -21,7 +21,7 @@ describe("Jersey commerce experience", () => {
       "closing_campaign"
     ]);
     expect(JERSEY_ORDER_STEPS).toHaveLength(7);
-    const fallback = jerseyFallbackSections(undefined, []);
+    const fallback = jerseyFallbackSections([]);
     expect(fallback.filter((item) => item.section_type === "split_campaign")).toHaveLength(4);
     expect(fallback.filter((item) => item.section_type === "poster_carousel")).toHaveLength(14);
     expect(fallback.filter((item) => item.section_type === "centered_editorial_copy")).toHaveLength(1);

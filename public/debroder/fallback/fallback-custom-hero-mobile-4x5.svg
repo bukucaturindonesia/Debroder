@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="2000" viewBox="0 0 1600 2000" role="img" aria-labelledby="title desc">
+  <title id="title">Fallback CUSTOM HERO MOBILE</title>
+  <desc id="desc">Placeholder media DEBRODER dengan rasio 4:5. Ganti melalui admin sebelum go-live.</desc>
+  <rect width="100%" height="100%" fill="#efefec"/>
+  <path d="M0 2000 L1600 0" stroke="#d8d8d3" stroke-width="10"/>
+  <path d="M0 0 L1600 2000" stroke="#e2e2de" stroke-width="10"/>
+  <g fill="#171717" font-family="Arial, sans-serif" text-anchor="middle">
+    <text x="800.0" y="972.0" font-size="46" font-weight="700">DEBRODER</text>
+    <text x="800.0" y="1036.0" font-size="28" letter-spacing="3">CUSTOM HERO MOBILE · 4:5</text>
+  </g>
+</svg>

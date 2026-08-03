@@ -31,6 +31,10 @@ const uploadService = readFileSync(
   "lib/product-media-upload.ts",
   "utf8"
 );
+const uploadRoute = readFileSync(
+  "app/api/admin/media/upload/route.ts",
+  "utf8"
+);
 
 const frontSlot: ProductMediaSlot = {
   id: "11111111-1111-4111-8111-111111111111",
@@ -176,10 +180,13 @@ describe("WP-06 one-color Product Media", () => {
   });
 
   it("reuses Media Library upload and never deletes original assets", () => {
-    expect(uploadService).toContain('from("media_assets")');
-    expect(uploadService).toContain("WEBSITE_IMAGES_BUCKET");
-    expect(uploadService).toContain('folder: "products"');
+    expect(uploadService).toContain('fetch("/api/admin/media/upload"');
+    expect(uploadService).toContain('form.set("slot", "productPrimary")');
+    expect(uploadRoute).toContain('from("media_assets")');
+    expect(uploadRoute).toContain("WEBSITE_IMAGES_BUCKET");
+    expect(uploadRoute).toContain('productPrimary: "products"');
     expect(uploadService).toContain('"image/webp", 0.85');
+    expect(uploadRoute).not.toContain('.from("media_assets").delete');
     expect(mediaServer).not.toContain('.from("media_assets").delete');
     expect(mediaServer).not.toContain("storage.from");
     expect(mediaPanel).toContain("Kosongkan slot");

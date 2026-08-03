@@ -10,6 +10,7 @@ import {
   pimServiceMethods,
   pimSetupSteps
 } from "@/lib/pim-blueprint";
+import { PUBLIC_MEDIA_FALLBACKS } from "@/lib/public-media";
 
 type SetupStats = {
   productCategories: number;
@@ -91,7 +92,7 @@ export function PimManagerAdmin() {
       category_key: model.categoryKey,
       slug: model.slug,
       link_slug: model.linkSlug,
-      gambar_url: "/debroder/open-graph-logo.png",
+      gambar_url: PUBLIC_MEDIA_FALLBACKS.product,
       image_alt: model.name,
       object_fit: "cover",
       object_position: "center center",
@@ -130,7 +131,7 @@ export function PimManagerAdmin() {
       deskripsi: service.description,
       detail_body: service.description,
       production_estimate: service.productionEstimate || "Sesuai antrean produksi",
-      image_url: "/debroder/open-graph-logo.png",
+      image_url: PUBLIC_MEDIA_FALLBACKS.product,
       image_alt: service.name,
       object_fit: "cover",
       object_position: "center center",

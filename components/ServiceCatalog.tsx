@@ -18,7 +18,7 @@ export function ServiceCatalog({ services, whatsapp }: { services: Service[]; wh
             <article key={service.id || service.slug} className="flex flex-col bg-transparent">
               <SafeImage
                 src={service.image_url}
-                fallbackSrc={fallbackImages.product}
+                fallbackSrc={fallbackImages.editorial}
                 alt={service.image_alt || service.nama}
                 className="product-image-frame aspect-[4/5] w-full"
                 objectFit={service.object_fit || "cover"}

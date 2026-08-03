@@ -11,6 +11,11 @@ import {
 } from "@/lib/supabase";
 import { formatRupiah } from "@/lib/url";
 import {
+  mediaSlotContract,
+  mediaSlotForAdminField,
+  validateMediaContract
+} from "@/lib/public-media";
+import {
   cmsBadgeClass,
   cmsStatusLabel,
   isCmsWorkflowTable,
@@ -134,27 +139,22 @@ const objectPositionOptions = [
 ];
 
 const imageGuides = [
-  ["Landing Hero Desktop", "1920 x 900", "32:15", "Hero utama homepage"],
-  ["Landing Hero Mobile", "1080 x 1350", "4:5", "Hero utama homepage mobile"],
-  ["Hero Sablon Desktop", "1920 x 800", "12:5", "Halaman Sablon DTF"],
-  ["Hero Sablon Mobile", "1080 x 1350", "4:5", "Halaman Sablon DTF mobile"],
-  ["Hero Jersey Desktop", "1920 x 800", "12:5", "Halaman Custom Jersey"],
-  ["Hero Jersey Mobile", "1080 x 1350", "4:5", "Halaman Custom Jersey mobile"],
-  ["Hero Maklon Desktop", "1920 x 800", "12:5", "Halaman Maklon DTF"],
-  ["Hero Maklon Mobile", "1080 x 1350", "4:5", "Halaman Maklon DTF mobile"],
-  ["Hero Cetak Sublim Desktop", "1920 x 800", "12:5", "Halaman Cetak Sublim"],
-  ["Hero Cetak Sublim Mobile", "1080 x 1350", "4:5", "Halaman Cetak Sublim mobile"],
-  ["Hero Kaos Polos Desktop", "1920 x 800", "12:5", "Halaman Kaos Polos"],
-  ["Hero Kaos Polos Mobile", "1080 x 1350", "4:5", "Halaman Kaos Polos mobile"],
-  ["Banner Instagram Desktop", "1920 x 800", "12:5", "Banner Instagram homepage"],
-  ["Banner Instagram Mobile", "1080 x 1350", "4:5", "Banner Instagram mobile"],
-  ["Benefit Images", "1200 x 900", "4:3", "Carousel keunggulan"],
-  ["Gambar Produk", "1200 x 1500", "4:5", "Katalog produk"],
-  ["Gambar Toko", "1200 x 800", "3:2", "Kartu toko"],
+  ["Landing Hero Desktop", "2400 × 1050", "16:7", "Hero utama homepage"],
+  ["Landing Hero Mobile", "1600 × 2000", "4:5", "Hero utama homepage mobile"],
+  ["Page Hero Desktop", "2400 × 1000", "12:5", "Hero halaman kategori/layanan"],
+  ["Page Hero Mobile", "1600 × 2000", "4:5", "Hero halaman mobile"],
+  ["Featured Desktop", "2000 × 1600", "5:4", "Featured homepage"],
+  ["Featured Mobile", "1600 × 2000", "4:5", "Featured homepage mobile"],
+  ["Campaign Desktop", "2400 × 1050", "16:7", "Campaign homepage"],
+  ["Campaign Mobile", "1600 × 2000", "4:5", "Campaign mobile"],
+  ["Gambar Produk", "2000 × 2500", "4:5", "Katalog dan PDP"],
+  ["Kategori / Editorial", "2000 × 2500", "4:5", "Card kategori dan editorial"],
+  ["Detail Layanan", "2000 × 1500", "4:3", "Visual detail layanan"],
+  ["About / Store", "2000 × 1500", "4:3", "About homepage dan kartu toko"],
+  ["About Page", "2000 × 2500", "4:5", "Halaman Tentang"],
+  ["Open Graph", "1200 × 630", "1.91:1", "Preview sosial/metadata saja"],
   ["Logo SVG", "Vektor", "Asli", "Navigasi, footer, admin"],
-  ["Logo PNG", "2048 px sisi panjang", "Asli", "Cadangan logo transparan"],
-  ["Favicon", "512 x 512", "1:1", "Ikon browser"],
-  ["Ikon Apple Touch", "180 x 180", "1:1", "Ikon iOS"]
+  ["Favicon", "512 × 512", "1:1", "Ikon browser"]
 ];
 
 const preferredProductCategories = [
@@ -277,7 +277,7 @@ const tableConfigs: TableConfig[] = [
         label: "Unggah Hero Mobile",
         type: "image",
         placeholder: "Pilih dari Galeri Media atau unggah foto",
-        helper: "Rekomendasi 1080x1350."
+        helper: "Rasio 4:5. Gunakan master 1600 × 2000 px."
       },
       {
         name: "image_alt",
@@ -403,7 +403,7 @@ const tableConfigs: TableConfig[] = [
         label: "Gambar produk",
         type: "image",
         placeholder: "Pilih dari Galeri Media atau unggah foto",
-        helper: "Rekomendasi 1200x1200."
+        helper: "Rasio wajib 4:5. Gunakan master 2000 × 2500 px, WebP sRGB, ideal di bawah 400–500 KB."
       },
       {
         name: "image_alt",
@@ -562,14 +562,14 @@ const tableConfigs: TableConfig[] = [
         label: "Unggah Banner Desktop",
         type: "image",
         placeholder: "Pilih dari Galeri Media atau unggah foto",
-        helper: "Rekomendasi 1920x800."
+        helper: "Rasio 12:5. Gunakan master 2400 × 1000 px."
       },
       {
         name: "mobile_image_url",
         label: "Unggah Banner Mobile",
         type: "image",
         placeholder: "Pilih dari Galeri Media atau unggah foto",
-        helper: "Rekomendasi 1080x1350."
+        helper: "Rasio 4:5. Gunakan master 1600 × 2000 px."
       },
       { name: "video_url", label: "Video desktop", type: "video", placeholder: "Pilih video dari Galeri Media" },
       { name: "mobile_video_url", label: "Video mobile", type: "video", placeholder: "Opsional" },
@@ -630,7 +630,8 @@ const tableConfigs: TableConfig[] = [
           "maklon-dtf",
           "cetak-sublim",
           "store",
-          "cara-order"
+          "cara-order",
+          "custom"
         ],
         required: true
       },
@@ -659,14 +660,27 @@ const tableConfigs: TableConfig[] = [
         label: "Unggah Hero Desktop",
         type: "image",
         placeholder: "Pilih dari Galeri Media atau unggah foto",
-        helper: "Rekomendasi 1920x800."
+        helper: "Rasio 12:5. Gunakan master 2400 × 1000 px."
       },
       {
         name: "mobile_image_url",
         label: "Unggah Hero Mobile",
         type: "image",
         placeholder: "Pilih dari Galeri Media atau unggah foto",
-        helper: "Rekomendasi 1080x1350."
+        helper: "Rasio 4:5. Gunakan master 1600 × 2000 px."
+      },
+      {
+        name: "detail_image_url",
+        label: "Gambar detail layanan",
+        type: "image",
+        placeholder: "Gambar independen untuk section detail",
+        helper: "Rasio 4:3. Gunakan master 2000 × 1500 px. Jangan gunakan kembali hero 12:5."
+      },
+      {
+        name: "detail_image_alt",
+        label: "Teks alternatif gambar detail",
+        type: "text",
+        placeholder: "Detail layanan"
       },
       {
         name: "image_alt",
@@ -813,8 +827,10 @@ const tableConfigs: TableConfig[] = [
         placeholder: "De Broder adalah perusahaan percetakan...",
         helper: "Gunakan teks singkat agar landing page tetap ringan."
       },
-      { name: "image_url", label: "Gambar desktop", type: "image", placeholder: "Pilih dari Galeri Media" },
-      { name: "mobile_image_url", label: "Gambar mobile", type: "image", placeholder: "Opsional" },
+      { name: "image_url", label: "About homepage desktop", type: "image", placeholder: "Landscape 4:3", helper: "Gunakan master 2000 × 1500 px." },
+      { name: "mobile_image_url", label: "About homepage mobile", type: "image", placeholder: "Landscape 4:3", helper: "Media homepage tetap terpisah dari halaman Tentang." },
+      { name: "about_page_image_url", label: "Halaman Tentang desktop", type: "image", placeholder: "Portrait 4:5", helper: "Gunakan master 2000 × 2500 px." },
+      { name: "about_page_mobile_image_url", label: "Halaman Tentang mobile", type: "image", placeholder: "Portrait 4:5", helper: "Jangan memakai gambar About homepage 4:3." },
       { name: "video_url", label: "Video", type: "video", placeholder: "Opsional" },
       { name: "cta_label", label: "CTA label", type: "text", placeholder: "Tentang kami" },
       { name: "cta_url", label: "CTA URL", type: "text", placeholder: "/tentang" },
@@ -1317,6 +1333,9 @@ export function AdminDashboard() {
         [
           "image_url",
           "mobile_image_url",
+          "detail_image_url",
+          "about_page_image_url",
+          "about_page_mobile_image_url",
           "gambar_url",
           "desktop_video_url",
           "mobile_video_url",
@@ -1357,7 +1376,7 @@ export function AdminDashboard() {
       payload.gambar_url =
         valueToText(payload.image_url) ||
         valueToText(payload.gambar_url) ||
-        "/debroder/open-graph-logo.png";
+        mediaSlotContract("productPrimary").fallbackPath || "";
       payload.whatsapp_link =
         valueToText(payload.whatsapp_link) || "https://wa.me/6285355333364";
       payload.kategori = valueToText(payload.kategori) || "Produk";
@@ -1375,7 +1394,7 @@ export function AdminDashboard() {
       payload.slug = valueToText(payload.slug) || makeSlug(valueToText(payload.nama));
       payload.image_url =
         valueToText(payload.image_url) ||
-        "/debroder/open-graph-logo.png";
+        mediaSlotContract("editorialPortrait").fallbackPath || "";
       payload.deskripsi = valueToText(payload.deskripsi);
       payload.image_alt = valueToText(payload.image_alt) || valueToText(payload.nama);
       const serviceSlug = valueToText(payload.slug);
@@ -1420,6 +1439,8 @@ export function AdminDashboard() {
         valueToText(payload.mobile_object_position) ||
         valueToText(payload.object_position) ||
         "center center";
+      payload.detail_image_alt =
+        valueToText(payload.detail_image_alt) || valueToText(payload.title);
     }
 
     if (activeKey === "categories") {
@@ -1482,6 +1503,31 @@ export function AdminDashboard() {
       return;
     }
 
+    if (!isVideo) {
+      const slot = mediaSlotForAdminField(activeKey, field.name);
+      if (slot) {
+        try {
+          const bitmap = await createImageBitmap(file);
+          const issues = validateMediaContract({
+            slot,
+            mimeType: file.type,
+            sizeBytes: file.size,
+            width: bitmap.width,
+            height: bitmap.height
+          });
+          bitmap.close();
+          const error = issues.find((issue) => issue.severity === "error");
+          if (error) {
+            setStatus(error.message);
+            return;
+          }
+        } catch {
+          setStatus("File gambar tidak dapat dibaca atau rusak.");
+          return;
+        }
+      }
+    }
+
     const supabase = createSupabaseClient();
     if (!supabase) {
       setStatus("Fitur unggah belum tersedia. Isi URL manual terlebih dahulu.");
@@ -1489,6 +1535,50 @@ export function AdminDashboard() {
     }
 
     setUploadingField(field.name);
+
+    if (!isVideo) {
+      const slot = mediaSlotForAdminField(activeKey, field.name);
+      if (!slot) {
+        setUploadingField(null);
+        setStatus("Jenis slot media belum terdaftar. Hubungi pengelola sistem.");
+        return;
+      }
+      const { data: sessionData } = await supabase.auth.getSession();
+      const accessToken = sessionData.session?.access_token;
+      if (!accessToken) {
+        setUploadingField(null);
+        setStatus("Sesi admin berakhir. Masuk kembali sebelum mengunggah media.");
+        return;
+      }
+      const body = new FormData();
+      body.set("file", file);
+      body.set("slot", slot);
+      body.set("altText", valueToText(form.image_alt) || file.name.replace(/\.[^.]+$/, ""));
+      const response = await fetch("/api/admin/media/upload", {
+        method: "POST",
+        headers: { Authorization: `Bearer ${accessToken}` },
+        body
+      });
+      const payload = await response.json().catch(() => null) as {
+        asset?: { public_url?: string };
+        error?: string;
+      } | null;
+      if (!response.ok || !payload?.asset?.public_url) {
+        setUploadingField(null);
+        setStatus(payload?.error || "Unggah belum berhasil. Periksa rasio, dimensi, format, dan sesi admin.");
+        return;
+      }
+      setForm((current) => ({
+        ...current,
+        [field.name]: payload.asset?.public_url || "",
+        ...(valueToText(current.image_alt) ? {} : { image_alt: file.name.replace(/\.[^.]+$/, "") })
+      }));
+      await loadMediaChoices();
+      setUploadingField(null);
+      setStatus("Unggah berhasil dan telah divalidasi server. Jangan lupa simpan perubahan.");
+      return;
+    }
+
     const safeName = file.name
       .toLowerCase()
       .replace(/[^a-z0-9.]+/g, "-")
@@ -1815,12 +1905,27 @@ export function AdminDashboard() {
           ? valueToText(form.mobile_object_position) || "center center"
           : valueToText(form.object_position) || "center center";
       const objectFit = valueToText(form.object_fit) === "contain" ? "contain" : "cover";
-      const isMobileImage = field.name === "mobile_image_url";
-      const focusPrefix = isMobileImage ? "mobile_" : "";
+      const mediaSlot = mediaSlotForAdminField(activeKey, field.name);
+      const contract = mediaSlot ? mediaSlotContract(mediaSlot) : null;
+      const isMobileImage = field.name === "mobile_image_url" || field.name.endsWith("_mobile_image_url");
+      const focusPrefix = field.name === "detail_image_url"
+        ? "detail_"
+        : field.name === "about_page_mobile_image_url"
+          ? "about_page_mobile_"
+          : field.name === "about_page_image_url"
+            ? "about_page_"
+            : isMobileImage
+              ? "mobile_"
+              : "";
       const editorFocalX = Number(form[`${focusPrefix}focal_x`] ?? (isMobileImage ? form.focal_x : 50));
       const editorFocalY = Number(form[`${focusPrefix}focal_y`] ?? (isMobileImage ? form.focal_y : 50));
       const editorZoom = Number(form[`${focusPrefix}focal_zoom`] ?? 1);
-      const editorRatio = valueToText(form[`${focusPrefix}target_ratio`]) || (isMobileImage ? "4:5-mobile" : activeKey === "banner" ? "12:5" : "16:7");
+      const editorRatio = contract?.aspectRatio || valueToText(form[`${focusPrefix}target_ratio`]) || "4:5";
+      const previewAspectRatio = contract
+        ? `${contract.recommendedWidth} / ${contract.recommendedHeight}`
+        : isMobileImage
+          ? "4 / 5"
+          : "16 / 9";
 
       return (
         <div className="mt-2 grid gap-3">
@@ -1882,8 +1987,8 @@ export function AdminDashboard() {
               <img
                 src={url}
                 alt={`Pratinjau ${field.label}`}
-                className={`${field.name === "mobile_image_url" ? "aspect-[4/5]" : "aspect-video"} w-full bg-brand-offWhite`}
-                style={{ objectFit, objectPosition }}
+                className="w-full bg-brand-offWhite"
+                style={{ objectFit, objectPosition, aspectRatio: previewAspectRatio }}
               />
             )
           ) : null}
@@ -1892,6 +1997,7 @@ export function AdminDashboard() {
               src={url}
               alt={`Atur fokus ${field.label}`}
               compact
+              allowedRatios={contract ? [contract.aspectRatio] : undefined}
               value={{
                 focal_x: Number.isFinite(editorFocalX) ? editorFocalX : 50,
                 focal_y: Number.isFinite(editorFocalY) ? editorFocalY : 50,
@@ -1904,9 +2010,15 @@ export function AdminDashboard() {
                 [`${focusPrefix}focal_y`]: next.focal_y,
                 [`${focusPrefix}focal_zoom`]: next.zoom,
                 [`${focusPrefix}target_ratio`]: next.target_ratio,
-                ...(isMobileImage
-                  ? { mobile_object_position: `${next.focal_x}% ${next.focal_y}%` }
-                  : { object_position: `${next.focal_x}% ${next.focal_y}%` })
+                ...(focusPrefix === "detail_"
+                  ? { detail_object_position: `${next.focal_x}% ${next.focal_y}%` }
+                  : focusPrefix === "about_page_mobile_"
+                    ? { about_page_mobile_object_position: `${next.focal_x}% ${next.focal_y}%` }
+                    : focusPrefix === "about_page_"
+                      ? { about_page_object_position: `${next.focal_x}% ${next.focal_y}%` }
+                      : isMobileImage
+                        ? { mobile_object_position: `${next.focal_x}% ${next.focal_y}%` }
+                        : { object_position: `${next.focal_x}% ${next.focal_y}%` })
               }))}
               onSave={() => setStatus("Fokus diperbarui di formulir. Tekan Simpan Perubahan untuk menerbitkan.")}
             />

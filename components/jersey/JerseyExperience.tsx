@@ -5,12 +5,14 @@ import { JerseyCarousel } from "@/components/jersey/JerseyCarousel";
 import {
   jerseyItemHref,
   jerseyRowsByGroup,
+  jerseySectionFallbacks,
   jerseySectionItems,
   resolvedJerseySections,
   validJerseyHref
 } from "@/lib/jersey-experience";
 import type { CmsBanner, PageHeroContent, PublicContent, ServiceCategory } from "@/lib/types";
 import { whatsappHref } from "@/lib/url";
+import { PUBLIC_MEDIA_FALLBACKS } from "@/lib/public-media";
 
 function ActionLink({ href, children, variant = "white" }: { href: string | null; children: ReactNode; variant?: "white" | "neon" | "outline" }) {
   if (!href) return null;
@@ -28,10 +30,13 @@ function CampaignMedia({ item, className, priority = false }: { item: CmsBanner;
   if (item.media_type === "video") {
     return <video className={className} src={item.desktop_media_url} poster={item.poster_url || undefined} controls muted playsInline preload="metadata" />;
   }
+  const fallbacks = jerseySectionFallbacks(item.section_type);
   return (
     <ResponsivePicture
       desktopSrc={item.desktop_media_url}
-      mobileSrc={item.mobile_media_url || item.desktop_media_url}
+      mobileSrc={item.mobile_media_url}
+      fallbackSrc={fallbacks.desktop}
+      mobileFallbackSrc={fallbacks.mobile}
       alt={item.image_alt || item.title || item.name}
       className={className}
       priority={priority}
@@ -48,8 +53,8 @@ function heroHref(value: string | undefined, fallback: string) {
 }
 
 function JerseyHero({ hero }: { hero: PageHeroContent | undefined }) {
-  const desktopImage = hero?.image_url || "/debroder/social-preview.png";
-  const mobileImage = hero?.mobile_image_url || desktopImage;
+  const desktopImage = hero?.image_url || PUBLIC_MEDIA_FALLBACKS.pageHeroDesktop;
+  const mobileImage = hero?.mobile_image_url || PUBLIC_MEDIA_FALLBACKS.pageHeroMobile;
   const primaryUrl = heroHref(hero?.primary_cta_url, "/jersey/shop");
   const secondaryUrl = heroHref(hero?.secondary_cta_url, "/jersey/configurator");
 
@@ -59,6 +64,8 @@ function JerseyHero({ hero }: { hero: PageHeroContent | undefined }) {
         <ResponsivePicture
           desktopSrc={desktopImage}
           mobileSrc={mobileImage}
+          fallbackSrc={PUBLIC_MEDIA_FALLBACKS.pageHeroDesktop}
+          mobileFallbackSrc={PUBLIC_MEDIA_FALLBACKS.pageHeroMobile}
           alt={hero?.image_alt || hero?.title || "DEBRODER Jersey campaign"}
           className="h-full w-full"
           priority
@@ -203,7 +210,7 @@ function firstByType(items: CmsBanner[], type: string) {
 }
 
 export function JerseyExperience({ content, hero, categories }: { content: PublicContent; hero: PageHeroContent | undefined; categories: ServiceCategory[] }) {
-  const sections = resolvedJerseySections(content.jerseySections, hero, categories);
+  const sections = resolvedJerseySections(content.jerseySections, categories);
   const carousel01 = jerseyRowsByGroup(sections, "poster_carousel", "carousel-01");
   const carousel02 = jerseyRowsByGroup(sections, "poster_carousel", "carousel-02");
   const split01 = jerseyRowsByGroup(sections, "split_campaign", "split-01");

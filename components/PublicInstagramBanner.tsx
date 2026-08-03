@@ -1,4 +1,5 @@
 import { ResponsivePicture } from "@/components/ResponsivePicture";
+import { PUBLIC_MEDIA_FALLBACKS } from "@/lib/public-media";
 import type { InstagramBanner } from "@/lib/types";
 
 export function PublicInstagramBanner({ banner }: { banner: InstagramBanner }) {
@@ -32,8 +33,9 @@ export function PublicInstagramBanner({ banner }: { banner: InstagramBanner }) {
   ) : (
     <ResponsivePicture
       desktopSrc={banner.image_url}
-      mobileSrc={banner.mobile_image_url || banner.image_url}
-      fallbackSrc={banner.image_url}
+      mobileSrc={banner.mobile_image_url}
+      fallbackSrc={PUBLIC_MEDIA_FALLBACKS.instagramBannerDesktop}
+      mobileFallbackSrc={PUBLIC_MEDIA_FALLBACKS.instagramBannerMobile}
       alt={banner.image_alt || banner.title || "Banner Instagram DEBRODER"}
       className="h-full w-full object-cover"
       objectFit={banner.object_fit || "cover"}

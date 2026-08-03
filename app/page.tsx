@@ -11,6 +11,7 @@ import { SiteHeader } from "@/components/SiteHeader";
 import { StorefrontCartBoundary } from "@/components/storefront/StorefrontCartBoundary";
 import { fallbackImages, getProductImage, getStoreImage } from "@/lib/fallback-data";
 import { brandIcons } from "@/lib/icons";
+import { PLAIN_CATEGORY_SECTION_SETTING } from "@/lib/homepage-settings";
 import { getPublicShellPageModel } from "@/lib/public-shell/runtime";
 import { getPublicContent } from "@/lib/public-data";
 import { absoluteUrl, siteConfig } from "@/lib/site";
@@ -33,6 +34,7 @@ type Visual = {
   mobileImage?: string | null;
   imageAlt: string;
   fallbackImage: string;
+  mobileFallbackImage?: string;
   objectFit?: "cover" | "contain";
   objectPosition?: string;
 };
@@ -100,17 +102,22 @@ function serviceHref(service: Service) {
   return `/${service.slug.replace(/^\/+/, "")}`;
 }
 
-function editorialPlacement(item: HomepageSectionItem): EditorialItem | null {
+function editorialPlacement(
+  item: HomepageSectionItem,
+  fallbackImage: string = fallbackImages.editorial,
+  mobileFallbackImage: string = fallbackImage
+): EditorialItem | null {
   if (isCustomHomepageItem(item)) {
     return {
       label: cleanCmsText(item.custom_label),
       title: cleanCmsText(item.custom_title),
       button: cleanCmsText(item.custom_button_label),
       href: item.custom_link_url || "#",
-      image: item.custom_image_url || fallbackImages.product,
+      image: item.custom_image_url || fallbackImage,
       mobileImage: item.custom_mobile_image_url,
       imageAlt: item.custom_image_alt || item.custom_title || "DEBRODER",
-      fallbackImage: fallbackImages.product,
+      fallbackImage,
+      mobileFallbackImage,
       objectFit: item.custom_object_fit || "cover",
       objectPosition: item.custom_object_position || "center center"
     };
@@ -137,7 +144,8 @@ function editorialPlacement(item: HomepageSectionItem): EditorialItem | null {
       href: serviceHref(item.service),
       image: item.service.image_url,
       imageAlt: item.service.image_alt || item.service.nama,
-      fallbackImage: fallbackImages.product,
+      fallbackImage: fallbackImages.editorial,
+      mobileFallbackImage: fallbackImages.editorial,
       objectFit: item.service.object_fit,
       objectPosition: item.service.object_position
     };
@@ -202,8 +210,9 @@ function EditorialCard({
       <Link href={item.href} aria-label={`Lihat ${title || item.imageAlt}`} className="absolute inset-0 z-10" />
       <ResponsivePicture
         desktopSrc={item.image}
-        mobileSrc={item.mobileImage || item.image}
+        mobileSrc={item.mobileImage}
         fallbackSrc={item.fallbackImage}
+        mobileFallbackSrc={item.mobileFallbackImage || item.fallbackImage}
         alt={item.imageAlt}
         className="editorial-card-image h-full w-full object-cover transition duration-500 group-hover:scale-[1.02]"
         objectFit={item.objectFit || "cover"}
@@ -237,6 +246,7 @@ function CategoryEditorialCard({ item }: { item: EditorialItem }) {
             desktopSrc={item.image}
             mobileSrc={item.mobileImage || item.image}
             fallbackSrc={item.fallbackImage}
+            mobileFallbackSrc={item.mobileFallbackImage || item.fallbackImage}
             alt={item.imageAlt}
             className="h-full w-full object-cover transition duration-500 group-hover:scale-[1.02]"
             objectFit={item.objectFit || "cover"}
@@ -271,7 +281,7 @@ function ManagedHomepageSection({ section, setting, fallbackProducts = [] }: { s
 
   if (isEditorial) {
     const sectionItems = preferredHomepageItems(section);
-    const items = sectionItems.map(editorialPlacement).filter((item): item is EditorialItem => Boolean(item));
+    const items = sectionItems.map((item) => editorialPlacement(item)).filter((item): item is EditorialItem => Boolean(item));
     if (!items.length) return null;
 
     if (isFeatured) {
@@ -368,7 +378,7 @@ export default async function Home() {
     image: category.gambar_url,
     mobileImage: category.gambar_url,
     imageAlt: category.image_alt || category.nama_kategori,
-    fallbackImage: fallbackImages.product,
+    fallbackImage: fallbackImages.category,
     objectFit: category.object_fit,
     objectPosition: category.object_position
   }));
@@ -381,15 +391,18 @@ export default async function Home() {
   const shopCategorySection = content.homepageSections.find((section) => section.slug === "services-products");
   const trendingSection = content.homepageSections.find((section) => section.slug === "trending");
   const freshDropSection = content.homepageSections.find((section) => section.slug === "fresh-drops");
+  const plainCategorySection = content.homepageSections.find(
+    (section) => section.slug === PLAIN_CATEGORY_SECTION_SETTING.slug
+  );
   const shopCategoryItems = shopCategorySection
-    ? preferredHomepageItems(shopCategorySection).map(editorialPlacement).filter((item): item is EditorialItem => Boolean(item))
+    ? preferredHomepageItems(shopCategorySection).map((item) => editorialPlacement(item, fallbackImages.category)).filter((item): item is EditorialItem => Boolean(item))
     : [];
   const activeProducts = content.products.filter((product) => product.status_aktif !== false);
   const freshDropFallback = activeProducts
     .sort((a, b) => Number(Boolean(b.fresh_drop)) - Number(Boolean(a.fresh_drop)) || a.urutan - b.urutan)
     .slice(0, 8);
   const featuredEditorialItems = featuredSection
-    ? preferredHomepageItems(featuredSection).map(editorialPlacement).filter((item): item is EditorialItem => Boolean(item))
+    ? preferredHomepageItems(featuredSection).map((item) => editorialPlacement(item, fallbackImages.featuredDesktop, fallbackImages.featuredMobile)).filter((item): item is EditorialItem => Boolean(item))
     : [];
   const homeCategoryEditorialItems: EditorialItem[] = homeCategories.map((item) => ({
     ...item,
@@ -398,14 +411,14 @@ export default async function Home() {
     button: "",
     href: item.href
   }));
-  const plainCategoryCandidates = uniqueEditorialItems([
-    ...featuredEditorialItems,
-    ...homeCategoryEditorialItems
-  ]);
-  const plainCategoryMatches = plainCategoryCandidates.filter((item) =>
-    /(kaos|polos|polo|hoodie|crewneck|jaket)/i.test(`${item.title} ${item.label}`)
-  );
-  const plainCategoryItems = (plainCategoryMatches.length ? plainCategoryMatches : plainCategoryCandidates).slice(0, 7);
+  const plainCategoryItems = plainCategorySection
+    ? uniqueEditorialItems(
+        plainCategorySection.items
+          .filter(isCustomHomepageItem)
+          .map((item) => editorialPlacement(item, fallbackImages.category))
+          .filter((item): item is EditorialItem => Boolean(item))
+      ).slice(0, 7)
+    : [];
   const aboutParagraphs = normalizeAboutParagraphs(content.trustAbout.about_body);
   const heroVisible = landingSection("hero")?.is_visible !== false;
   const heroHasHeading = heroVisible && content.heroes
@@ -457,8 +470,8 @@ export default async function Home() {
       <LandingSectionSlot setting={landingSection("campaign-banners")}>
         <CampaignBanners
           banners={content.campaignBanners}
-          fallbackDesktopSrc={landingSection("campaign-banners")?.desktop_image_url || content.heroes[0]?.image_url || content.hero.image_url || fallbackImages.banner}
-          fallbackMobileSrc={landingSection("campaign-banners")?.mobile_image_url || content.heroes[0]?.mobile_image_url || content.hero.mobile_image_url || fallbackImages.bannerMobile}
+          fallbackDesktopSrc={landingSection("campaign-banners")?.desktop_image_url || fallbackImages.banner}
+          fallbackMobileSrc={landingSection("campaign-banners")?.mobile_image_url || fallbackImages.bannerMobile}
         />
       </LandingSectionSlot>
 
@@ -506,18 +519,18 @@ export default async function Home() {
       ) : null}
 
       {plainCategoryItems.length ? (
-        <LandingSectionSlot setting={landingSection("featured-products")}>
+        <LandingSectionSlot setting={landingSection("plain-category")}>
           <section id="pakaian-polos" className="home-section home-plain-categories section-space bg-white">
             <PublicSectionFrame variant="near-wide" className="plain-category-shell">
               <SectionHeading
-                title="Pakaian Polos berdasarkan Kategori"
-                description={landingSection("featured-products")?.subtitle}
-                textPosition={landingSection("featured-products")?.text_position}
+                title={plainCategorySection?.title || "Pakaian Polos berdasarkan Kategori"}
+                description={landingSection("plain-category")?.subtitle}
+                textPosition={landingSection("plain-category")?.text_position}
                 action={
                   <div className="flex items-center gap-4">
-                    {landingSection("featured-products")?.cta_label && landingSection("featured-products")?.cta_url ? (
-                      <Link href={landingSection("featured-products")!.cta_url!} className="hidden text-sm font-semibold hover:underline sm:block">
-                        {landingSection("featured-products")!.cta_label}
+                    {landingSection("plain-category")?.cta_label && landingSection("plain-category")?.cta_url ? (
+                      <Link href={landingSection("plain-category")!.cta_url!} className="hidden text-sm font-semibold hover:underline sm:block">
+                        {landingSection("plain-category")!.cta_label}
                       </Link>
                     ) : null}
                     <ScrollButtons containerId="plain-category-carousel" largeTargets />
@@ -548,7 +561,13 @@ export default async function Home() {
             {content.trustAbout.video_url ? (
               <video src={content.trustAbout.video_url} autoPlay muted loop playsInline className="about-media aspect-[4/3] w-full object-cover" />
             ) : content.trustAbout.image_url ? (
-              <ResponsivePicture desktopSrc={content.trustAbout.image_url} mobileSrc={content.trustAbout.mobile_image_url || content.trustAbout.image_url} alt="Tentang DEBRODER" className="about-media aspect-[4/3] h-full w-full object-cover" />
+              <ResponsivePicture
+                desktopSrc={content.trustAbout.image_url}
+                mobileSrc={content.trustAbout.mobile_image_url}
+                fallbackSrc={fallbackImages.aboutLandscape}
+                alt="Tentang DEBRODER"
+                className="about-media aspect-[4/3] h-full w-full object-cover"
+              />
             ) : (
               <div className="about-proof-grid grid grid-cols-2 border-l border-t border-black/10">
                 {[[String(stores.length), "Toko Aktif"], [String(activeProducts.length), "Produk Aktif"], ["DTF", "& Apparel"], ["ID", "Kirim Indonesia"]].map(([value, label]) => (

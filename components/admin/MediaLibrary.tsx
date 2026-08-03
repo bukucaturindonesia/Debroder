@@ -3,6 +3,7 @@
 
 import { ChangeEvent, DragEvent, useEffect, useMemo, useRef, useState } from "react";
 import { createSupabaseClient, WEBSITE_IMAGES_BUCKET } from "@/lib/supabase";
+import { mediaSlotContract, type PublicMediaSlot } from "@/lib/public-media";
 
 type MediaAsset = {
   id: string;
@@ -49,6 +50,28 @@ const imageTypes = ["image/jpeg", "image/png", "image/webp"];
 const videoTypes = ["video/mp4", "video/webm"];
 const MB = 1024 * 1024;
 
+const folderSlots: Record<string, PublicMediaSlot> = {
+  hero: "homepageHeroDesktop",
+  "hero-mobile": "homepageHeroMobile",
+  products: "productPrimary",
+  categories: "categoryPortrait",
+  services: "editorialPortrait",
+  "page-hero": "pageHeroDesktop",
+  jersey: "editorialPortrait",
+  featured: "homepageFeaturedDesktop",
+  trending: "trendingPortrait",
+  "fresh-drop": "productPrimary",
+  store: "storeLandscape",
+  banner: "instagramBannerDesktop",
+  about: "aboutHomepageLandscape",
+  benefits: "editorialPortrait",
+  "social-preview": "openGraph"
+};
+
+function mediaSlotForFolder(value: string): PublicMediaSlot {
+  return folderSlots[value] || "editorialPortrait";
+}
+
 function readableSize(bytes: number) {
   if (bytes >= MB) return `${(bytes / MB).toFixed(1)} MB`;
   if (bytes >= 1024) return `${Math.round(bytes / 1024)} KB`;
@@ -88,11 +111,13 @@ async function imageDimensions(file: File) {
   }
 }
 
-async function optimizeImage(file: File) {
+async function optimizeImage(file: File, slot: PublicMediaSlot) {
   if (!imageTypes.includes(file.type)) return file;
   try {
     const bitmap = await createImageBitmap(file);
-    const scale = Math.min(1, 2400 / Math.max(bitmap.width, bitmap.height));
+    const contract = mediaSlotContract(slot);
+    const maxLongEdge = Math.max(contract.recommendedWidth, contract.recommendedHeight);
+    const scale = Math.min(1, maxLongEdge / Math.max(bitmap.width, bitmap.height));
     const canvas = document.createElement("canvas");
     canvas.width = Math.max(1, Math.round(bitmap.width * scale));
     canvas.height = Math.max(1, Math.round(bitmap.height * scale));
@@ -228,22 +253,52 @@ export function MediaLibraryPanel() {
   async function replaceWithFile(asset: MediaAsset, originalFile: File) {
     const supabase = createSupabaseClient();
     if (!supabase) return false;
-    const file = await optimizeImage(originalFile);
-    const dimensions = await imageDimensions(file);
+
+    if (asset.media_type === "image") {
+      const slot = mediaSlotForFolder(asset.folder);
+      const file = await optimizeImage(originalFile, slot);
+      const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
+      const accessToken = sessionData.session?.access_token;
+      if (sessionError || !accessToken) {
+        setStatus("Sesi admin berakhir. Masuk kembali sebelum mengganti media.");
+        return false;
+      }
+      const body = new FormData();
+      body.set("file", file);
+      body.set("slot", slot);
+      body.set("replaceAssetId", asset.id);
+      body.set("altText", asset.alt_text || originalFile.name.replace(/\.[^.]+$/, ""));
+      const response = await fetch("/api/admin/media/upload", {
+        method: "POST",
+        headers: { Authorization: `Bearer ${accessToken}` },
+        body
+      });
+      const payload = (await response.json().catch(() => null)) as { error?: string } | null;
+      if (!response.ok) {
+        setStatus(payload?.error || "Media belum dapat diganti. File lama tetap aman.");
+        return false;
+      }
+      return true;
+    }
+
     const hash = await hashFile(originalFile);
     const bucket = asset.bucket_id || WEBSITE_IMAGES_BUCKET;
-    const { error } = await supabase.storage.from(bucket).upload(asset.storage_path, file, { contentType: file.type, cacheControl: "0", upsert: true });
+    const { error } = await supabase.storage.from(bucket).upload(asset.storage_path, originalFile, {
+      contentType: originalFile.type,
+      cacheControl: "0",
+      upsert: true
+    });
     if (error) {
       setStatus("Media belum dapat diganti. File lama tetap aman.");
       return false;
     }
     const { error: updateError } = await supabase.from("media_assets").update({
       name: originalFile.name,
-      mime_type: file.type,
-      media_type: imageTypes.includes(file.type) ? "image" : "video",
-      size_bytes: file.size,
-      width: dimensions.width,
-      height: dimensions.height,
+      mime_type: originalFile.type,
+      media_type: "video",
+      size_bytes: originalFile.size,
+      width: null,
+      height: null,
       content_hash: hash,
       updated_at: new Date().toISOString()
     }).eq("id", asset.id);
@@ -259,55 +314,81 @@ export function MediaLibraryPanel() {
     if (invalid) { setStatus(invalid); return; }
     const supabase = createSupabaseClient();
     if (!supabase) return;
-    const { data: sessionData } = await supabase.auth.getSession();
+    const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
+    const accessToken = sessionData.session?.access_token;
+    if (sessionError || !accessToken) {
+      setStatus("Sesi admin berakhir. Masuk kembali lalu ulangi upload.");
+      return;
+    }
     setUploading(true);
     setProgress(0);
 
     for (let index = 0; index < files.length; index += 1) {
       const originalFile = files[index];
       setStatus(`Memproses ${originalFile.name}...`);
-      const hash = await hashFile(originalFile);
-      const { data: duplicate } = await supabase.from("media_assets").select("*").eq("content_hash", hash).limit(1).maybeSingle();
-      if (duplicate) {
-        const choice = window.prompt(`File ${originalFile.name} sama dengan ${duplicate.name}. Ketik: reuse, replace, atau new.`, "reuse")?.toLowerCase();
-        if (!choice || choice === "reuse") {
-          setProgress(Math.round(((index + 1) / files.length) * 100));
-          continue;
+
+      if (imageTypes.includes(originalFile.type)) {
+        const slot = mediaSlotForFolder(folder);
+        const image = await optimizeImage(originalFile, slot);
+        const form = new FormData();
+        form.set("slot", slot);
+        form.set("altText", originalFile.name.replace(/\.[^.]+$/, "").replace(/[-_]+/g, " "));
+        form.set("file", image);
+        const response = await fetch("/api/admin/media/upload", {
+          method: "POST",
+          headers: { Authorization: `Bearer ${accessToken}` },
+          body: form
+        });
+        const payload = (await response.json().catch(() => null)) as {
+          error?: string;
+          duplicate?: boolean;
+        } | null;
+        if (!response.ok) {
+          setStatus(payload?.error || `File ${originalFile.name} belum dapat diunggah.`);
+          setUploading(false);
+          return;
         }
-        if (choice === "replace") {
-          await replaceWithFile(duplicate as MediaAsset, originalFile);
-          setProgress(Math.round(((index + 1) / files.length) * 100));
-          continue;
+        if (payload?.duplicate) {
+          setStatus(`${originalFile.name} sudah ada dan dipakai ulang tanpa duplikasi.`);
         }
+        setProgress(Math.round(((index + 1) / files.length) * 100));
+        continue;
       }
 
-      const file = await optimizeImage(originalFile);
-      const mediaType = imageTypes.includes(file.type) ? "image" : "video";
+      const file = originalFile;
       const storageFolder = folder;
       const path = `${slugFolder(storageFolder)}/${Date.now()}-${index}-${safeFileName(file.name)}`;
-      const { error: uploadError } = await supabase.storage.from(WEBSITE_IMAGES_BUCKET).upload(path, file, { cacheControl: "3600", contentType: file.type, upsert: false });
-      if (uploadError) { setStatus(`File ${file.name} belum dapat diunggah. Periksa file lalu coba lagi.`); setUploading(false); return; }
-      const publicUrl = supabase.storage.from(WEBSITE_IMAGES_BUCKET).getPublicUrl(path).data.publicUrl;
-      const dimensions = await imageDimensions(file);
-      let thumbnailUrl: string | null = null;
-      if (mediaType === "video") {
-        const thumbnail = await createVideoThumbnail(file);
-        if (thumbnail) {
-          const thumbnailPath = path.replace(/\.[^.]+$/, "-thumbnail.jpg");
-          const result = await supabase.storage.from(WEBSITE_IMAGES_BUCKET).upload(thumbnailPath, thumbnail, { cacheControl: "3600", contentType: "image/jpeg", upsert: true });
-          if (!result.error) thumbnailUrl = supabase.storage.from(WEBSITE_IMAGES_BUCKET).getPublicUrl(thumbnailPath).data.publicUrl;
-        }
+      const { error: uploadError } = await supabase.storage
+        .from(WEBSITE_IMAGES_BUCKET)
+        .upload(path, file, { cacheControl: "3600", contentType: file.type, upsert: false });
+      if (uploadError) {
+        setStatus(`File ${file.name} belum dapat diunggah. Periksa file lalu coba lagi.`);
+        setUploading(false);
+        return;
       }
+      const publicUrl = supabase.storage.from(WEBSITE_IMAGES_BUCKET).getPublicUrl(path).data.publicUrl;
+      const thumbnail = await createVideoThumbnail(file);
+      let thumbnailUrl: string | null = null;
+      if (thumbnail) {
+        const thumbnailPath = path.replace(/\.[^.]+$/, "-thumbnail.jpg");
+        const result = await supabase.storage.from(WEBSITE_IMAGES_BUCKET).upload(thumbnailPath, thumbnail, {
+          cacheControl: "3600",
+          contentType: "image/jpeg",
+          upsert: true
+        });
+        if (!result.error) thumbnailUrl = supabase.storage.from(WEBSITE_IMAGES_BUCKET).getPublicUrl(thumbnailPath).data.publicUrl;
+      }
+      const hash = await hashFile(originalFile);
       const { error: insertError } = await supabase.from("media_assets").insert({
         name: originalFile.name,
         bucket_id: WEBSITE_IMAGES_BUCKET,
         storage_path: path,
         public_url: publicUrl,
-        media_type: mediaType,
+        media_type: "video",
         mime_type: file.type,
         size_bytes: file.size,
-        width: dimensions.width,
-        height: dimensions.height,
+        width: null,
+        height: null,
         alt_text: originalFile.name.replace(/\.[^.]+$/, "").replace(/[-_]+/g, " "),
         tags: [],
         content_hash: hash,
@@ -383,6 +464,7 @@ export function MediaLibraryPanel() {
       <div onDragOver={(event) => event.preventDefault()} onDrop={handleDrop} className="border border-dashed border-brand-green/40 bg-white p-6 text-center sm:p-8">
         <p className="text-lg font-semibold">Tarik foto atau video ke sini</p>
         <p className="mt-2 text-sm leading-6 text-brand-charcoal/60">Unggah sekali, lalu pilih aset yang sama dari editor produk, kategori, gambar utama, atau banner.</p>
+        <p className="mt-1 text-xs font-semibold text-brand-green">Kontrak folder aktif: {mediaSlotContract(mediaSlotForFolder(folder)).aspectRatio} · rekomendasi {mediaSlotContract(mediaSlotForFolder(folder)).recommendedWidth} × {mediaSlotContract(mediaSlotForFolder(folder)).recommendedHeight} px.</p>
         <div className="mx-auto mt-5 flex max-w-lg flex-col gap-3 sm:flex-row sm:items-center sm:justify-center">
           <select value={folder} onChange={(event) => setFolder(event.target.value)} className="min-h-11 rounded-lg border border-brand-softGray bg-white px-4 text-sm font-semibold">{availableFolders.map((item) => <option key={item}>{item}</option>)}</select>
           <label className="inline-flex min-h-11 cursor-pointer items-center justify-center rounded-full bg-brand-green px-6 text-sm font-semibold text-white">{uploading ? "Mengupload..." : "Pilih File"}<input ref={inputRef} type="file" multiple accept="image/jpeg,image/png,image/webp,video/mp4,video/webm" className="sr-only" disabled={uploading} onChange={(event) => event.target.files && uploadFiles(event.target.files)} /></label>
@@ -404,7 +486,7 @@ export function MediaLibraryPanel() {
           {visibleAssets.map((asset) => {
             const draft = editing[asset.id] || {};
             return <article key={asset.id} className="border border-brand-softGray bg-white p-4">
-              {asset.media_type === "video" ? <video src={asset.public_url} muted playsInline preload="metadata" controls poster={asset.thumbnail_url || undefined} className="aspect-video w-full bg-brand-offWhite object-cover" /> : <img src={asset.public_url} alt={asset.alt_text || asset.name} loading="lazy" onError={(event) => { event.currentTarget.src = "/debroder/open-graph-logo.png"; }} className="aspect-video w-full bg-brand-offWhite object-cover" />}
+              {asset.media_type === "video" ? <video src={asset.public_url} muted playsInline preload="metadata" controls poster={asset.thumbnail_url || undefined} className="aspect-video w-full bg-brand-offWhite object-cover" /> : <img src={asset.public_url} alt={asset.alt_text || asset.name} loading="lazy" onError={(event) => { event.currentTarget.src = "/debroder/fallback/fallback-editorial-4x5.svg"; }} className="aspect-video w-full bg-brand-offWhite object-cover" />}
               <h3 className="mt-3 truncate text-sm font-semibold" title={asset.name}>{asset.name}</h3>
               <dl className="mt-2 grid grid-cols-2 gap-x-3 gap-y-1 text-xs text-brand-charcoal/55"><div><dt className="font-semibold">Dimensi</dt><dd>{asset.width && asset.height ? `${asset.width} × ${asset.height}px` : "—"}</dd></div><div><dt className="font-semibold">Ukuran</dt><dd>{readableSize(asset.size_bytes)}</dd></div><div><dt className="font-semibold">Diunggah</dt><dd>{new Intl.DateTimeFormat("id-ID", { dateStyle: "medium" }).format(new Date(asset.created_at))}</dd></div><div><dt className="font-semibold">Tipe</dt><dd>{asset.mime_type}</dd></div></dl>
               <div className="mt-3 grid gap-2">

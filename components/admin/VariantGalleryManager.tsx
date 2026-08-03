@@ -2,7 +2,7 @@
 "use client";
 
 import { useEffect, useMemo, useState, type ChangeEvent } from "react";
-import { createSupabaseClient, WEBSITE_IMAGES_BUCKET } from "@/lib/supabase";
+import { createSupabaseClient } from "@/lib/supabase";
 import {
   isFourFiveRatio,
   mediaDimensionLabel,
@@ -13,6 +13,10 @@ import {
   type ProductImageRole
 } from "@/lib/product-gallery";
 import type { ProductVariantImage } from "@/lib/types";
+import {
+  ProductMediaUploadError,
+  uploadProductMediaAsset
+} from "@/lib/product-media-upload";
 
 type VariantChoice = {
   id?: string;
@@ -62,35 +66,6 @@ function slotMapForImages(images: ProductVariantImage[]) {
   return result;
 }
 
-function safeFileName(value: string) {
-  return value
-    .toLowerCase()
-    .normalize("NFKD")
-    .replace(/[\u0300-\u036f]/g, "")
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/^-|-$/g, "") || "image";
-}
-
-async function readDimensions(file: File) {
-  return await new Promise<{ width: number; height: number }>((resolve) => {
-    const url = URL.createObjectURL(file);
-    const image = new Image();
-    image.onload = () => {
-      resolve({ width: image.naturalWidth, height: image.naturalHeight });
-      URL.revokeObjectURL(url);
-    };
-    image.onerror = () => {
-      resolve({ width: 0, height: 0 });
-      URL.revokeObjectURL(url);
-    };
-    image.src = url;
-  });
-}
-
-async function fileHash(file: File) {
-  const digest = await crypto.subtle.digest("SHA-256", await file.arrayBuffer());
-  return Array.from(new Uint8Array(digest)).map((byte) => byte.toString(16).padStart(2, "0")).join("");
-}
 
 export function VariantGalleryManager({ variants, images, onChanged, onStatus }: Props) {
   const [selectedVariantId, setSelectedVariantId] = useState(variants[0]?.id || "");
@@ -196,66 +171,42 @@ export function VariantGalleryManager({ variants, images, onChanged, onStatus }:
     const file = event.target.files?.[0];
     event.target.value = "";
     if (!file || !selectedVariantId) return;
-    if (!["image/jpeg", "image/png", "image/webp"].includes(file.type) || file.size > 10 * 1024 * 1024) {
-      onStatus({ type: "error", text: "Gunakan JPG, PNG, atau WebP maksimal 10 MB." });
-      return;
-    }
 
-    const supabase = createSupabaseClient();
-    if (!supabase) return;
     setBusyRole(role);
-    const dimensions = await readDimensions(file);
-    const hash = await fileHash(file);
-    const { data: duplicate } = await supabase.from("media_assets").select("public_url").eq("content_hash", hash).limit(1).maybeSingle();
-    let publicUrl = duplicate?.public_url as string | undefined;
-
-    if (!publicUrl) {
-      const extension = file.name.split(".").pop()?.toLowerCase() || "jpg";
-      const path = `product-variant/${selectedVariantId}/${Date.now()}-${safeFileName(file.name.replace(/\.[^.]+$/, ""))}.${extension}`;
-      const { error: uploadError } = await supabase.storage.from(WEBSITE_IMAGES_BUCKET).upload(path, file, {
-        cacheControl: "3600",
-        contentType: file.type
+    try {
+      const result = await uploadProductMediaAsset({
+        file,
+        variantId: selectedVariantId,
+        role,
+        colorName: variantLabel(selectedVariant)
       });
-      if (uploadError) {
-        setBusyRole(null);
-        onStatus({ type: "error", text: "Foto belum dapat diunggah. Periksa file lalu coba lagi." });
-        return;
-      }
-      publicUrl = supabase.storage.from(WEBSITE_IMAGES_BUCKET).getPublicUrl(path).data.publicUrl;
-      const { data: session } = await supabase.auth.getSession();
-      await supabase.from("media_assets").insert({
-        name: file.name,
-        storage_path: path,
-        bucket_id: WEBSITE_IMAGES_BUCKET,
-        public_url: publicUrl,
-        media_type: "image",
-        mime_type: file.type,
-        size_bytes: file.size,
-        width: dimensions.width,
-        height: dimensions.height,
-        alt_text: `${variantLabel(selectedVariant)} ${PRODUCT_IMAGE_SLOTS[PRODUCT_IMAGE_ROLE_ORDER[role]].shortLabel}`,
-        tags: ["product", "variant", role],
-        content_hash: hash,
-        folder: "Product Variants",
-        uploaded_by: session.session?.user.id || null
+      const asset = result.asset;
+      setMedia((current) => current.some((item) => item.public_url === asset.publicUrl)
+        ? current
+        : [{
+            id: asset.id,
+            name: asset.name,
+            public_url: asset.publicUrl,
+            alt_text: asset.altText,
+            folder: asset.folder,
+            width: asset.width,
+            height: asset.height
+          }, ...current]);
+      await saveSlot(
+        role,
+        asset.publicUrl,
+        asset.altText || `${variantLabel(selectedVariant)} ${PRODUCT_IMAGE_SLOTS[PRODUCT_IMAGE_ROLE_ORDER[role]].shortLabel}`
+      );
+    } catch (error) {
+      onStatus({
+        type: "error",
+        text: error instanceof ProductMediaUploadError
+          ? error.message
+          : "Foto belum dapat diunggah. Periksa file lalu coba lagi."
       });
-      setMedia((current) => [{
-        id: crypto.randomUUID(),
-        name: file.name,
-        public_url: publicUrl || "",
-        alt_text: `${variantLabel(selectedVariant)} ${role}`,
-        folder: "Product Variants",
-        width: dimensions.width,
-        height: dimensions.height
-      }, ...current]);
+    } finally {
+      setBusyRole(null);
     }
-
-    const ratioWarning = isFourFiveRatio(dimensions.width, dimensions.height) === false
-      ? " Foto bukan 4:5 dan akan dicrop pada tampilan publik."
-      : "";
-    await saveSlot(role, publicUrl || "", `${variantLabel(selectedVariant)} ${PRODUCT_IMAGE_SLOTS[PRODUCT_IMAGE_ROLE_ORDER[role]].shortLabel}`);
-    if (ratioWarning) onStatus({ type: "info", text: `Foto berhasil dipasang.${ratioWarning}` });
-    setBusyRole(null);
   }
 
   if (!variants.length) {

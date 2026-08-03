@@ -5,11 +5,13 @@ import { PointerEvent, useMemo, useRef, useState } from "react";
 import type { FocalPoint } from "@/lib/types";
 
 const frameOptions = [
-  { value: "4:5", label: "Catalog 4:5", ratio: 4 / 5 },
-  { value: "16:7", label: "Hero desktop", ratio: 16 / 7 },
-  { value: "4:5-mobile", label: "Hero mobile", ratio: 4 / 5 },
-  { value: "12:5", label: "Banner", ratio: 12 / 5 },
-  { value: "1:1", label: "Thumbnail", ratio: 1 }
+  { value: "4:5", label: "Portrait / katalog 4:5", ratio: 4 / 5 },
+  { value: "16:7", label: "Hero homepage 16:7", ratio: 16 / 7 },
+  { value: "12:5", label: "Page hero 12:5", ratio: 12 / 5 },
+  { value: "5:4", label: "Featured desktop 5:4", ratio: 5 / 4 },
+  { value: "4:3", label: "Landscape 4:3", ratio: 4 / 3 },
+  { value: "1.91:1", label: "Open Graph 1.91:1", ratio: 1200 / 630 },
+  { value: "1:1", label: "Logo / icon 1:1", ratio: 1 }
 ];
 
 type Props = {
@@ -19,6 +21,7 @@ type Props = {
   onChange: (value: FocalPoint) => void;
   onSave?: () => void;
   compact?: boolean;
+  allowedRatios?: string[];
 };
 
 function clamp(value: number, min: number, max: number) {
@@ -57,12 +60,29 @@ function Preview({
   );
 }
 
-export function FocalPointEditor({ src, alt = "Pratinjau titik fokus", value, onChange, onSave, compact = false }: Props) {
+export function FocalPointEditor({
+  src,
+  alt = "Pratinjau titik fokus",
+  value,
+  onChange,
+  onSave,
+  compact = false,
+  allowedRatios
+}: Props) {
   const dragStart = useRef<{ x: number; y: number; focalX: number; focalY: number } | null>(null);
   const [isDragging, setIsDragging] = useState(false);
+  const availableFrames = useMemo(
+    () => allowedRatios?.length
+      ? frameOptions.filter((option) => allowedRatios.includes(option.value))
+      : frameOptions,
+    [allowedRatios]
+  );
+  const normalizedTargetRatio = value.target_ratio === "4:5-mobile"
+    ? "4:5"
+    : value.target_ratio;
   const selectedFrame = useMemo(
-    () => frameOptions.find((option) => option.value === value.target_ratio) || frameOptions[0],
-    [value.target_ratio]
+    () => availableFrames.find((option) => option.value === normalizedTargetRatio) || availableFrames[0] || frameOptions[0],
+    [availableFrames, normalizedTargetRatio]
   );
 
   function startDrag(event: PointerEvent<HTMLDivElement>) {
@@ -97,7 +117,7 @@ export function FocalPointEditor({ src, alt = "Pratinjau titik fokus", value, on
   }
 
   function reset() {
-    onChange({ focal_x: 50, focal_y: 50, zoom: 1, target_ratio: value.target_ratio || "4:5" });
+    onChange({ focal_x: 50, focal_y: 50, zoom: 1, target_ratio: selectedFrame.value });
   }
 
   return (
@@ -108,12 +128,13 @@ export function FocalPointEditor({ src, alt = "Pratinjau titik fokus", value, on
           <p className="mt-1 text-xs text-brand-charcoal/55">Geser gambar di dalam frame. File asli tidak dipotong.</p>
         </div>
         <select
-          value={value.target_ratio}
+          value={selectedFrame.value}
           onChange={(event) => onChange({ ...value, target_ratio: event.target.value })}
-          className="min-h-10 rounded-lg border border-brand-softGray bg-white px-3 text-xs font-semibold"
+          className="min-h-10 rounded-lg border border-brand-softGray bg-white px-3 text-xs font-semibold disabled:cursor-not-allowed disabled:bg-brand-offWhite"
           aria-label="Rasio frame"
+          disabled={availableFrames.length <= 1}
         >
-          {frameOptions.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}
+          {availableFrames.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}
         </select>
       </div>
 
@@ -168,8 +189,16 @@ export function FocalPointEditor({ src, alt = "Pratinjau titik fokus", value, on
 
       {!compact ? (
         <div className="mt-4 grid grid-cols-2 gap-3">
-          <Preview src={src} alt={alt} value={value} ratio="4 / 5" label="Ponsel / katalog" />
-          <Preview src={src} alt={alt} value={value} ratio="16 / 7" label="Desktop" />
+          {(availableFrames.length ? availableFrames : [selectedFrame]).slice(0, 2).map((frame) => (
+            <Preview
+              key={frame.value}
+              src={src}
+              alt={alt}
+              value={value}
+              ratio={String(frame.ratio)}
+              label={frame.label}
+            />
+          ))}
         </div>
       ) : null}
 

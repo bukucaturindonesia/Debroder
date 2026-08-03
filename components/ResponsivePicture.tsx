@@ -1,17 +1,19 @@
 "use client";
 
 import type { CSSProperties } from "react";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { normalizePublicMediaPath } from "@/lib/public-media";
 
 type ResponsivePictureProps = {
-  desktopSrc: string;
-  mobileSrc?: string;
+  desktopSrc?: string | null;
+  mobileSrc?: string | null;
   alt: string;
   className: string;
   priority?: boolean;
   desktopObjectPosition?: string;
   mobileObjectPosition?: string;
-  fallbackSrc?: string;
+  fallbackSrc?: string | null;
+  mobileFallbackSrc?: string | null;
   objectFit?: "cover" | "contain";
   desktopZoom?: number | null;
   mobileZoom?: number | null;
@@ -25,20 +27,36 @@ export function ResponsivePicture({
   priority = false,
   desktopObjectPosition = "center center",
   mobileObjectPosition,
-  fallbackSrc = "/debroder/social-preview.png",
+  fallbackSrc = null,
+  mobileFallbackSrc = null,
   objectFit = "cover",
   desktopZoom = 1,
   mobileZoom
 }: ResponsivePictureProps) {
   const [hasError, setHasError] = useState(false);
-  const resolvedDesktopSrc = desktopSrc || fallbackSrc;
-  const resolvedMobileSrc = mobileSrc || resolvedDesktopSrc;
-  const desktopSource = hasError ? fallbackSrc : resolvedDesktopSrc;
-  const mobileSource = hasError ? fallbackSrc : resolvedMobileSrc;
+  const resolvedFallback = useMemo(
+    () => normalizePublicMediaPath(fallbackSrc),
+    [fallbackSrc]
+  );
+  const resolvedMobileFallback = useMemo(
+    () => normalizePublicMediaPath(mobileFallbackSrc) || resolvedFallback,
+    [mobileFallbackSrc, resolvedFallback]
+  );
+  const resolvedDesktopSrc = useMemo(
+    () => normalizePublicMediaPath(desktopSrc) || resolvedFallback,
+    [desktopSrc, resolvedFallback]
+  );
+  const resolvedMobileSrc = useMemo(
+    () => normalizePublicMediaPath(mobileSrc) || resolvedMobileFallback,
+    [mobileSrc, resolvedMobileFallback]
+  );
+  const desktopSource = hasError ? resolvedFallback : resolvedDesktopSrc;
+  const mobileSource = hasError ? resolvedMobileFallback : resolvedMobileSrc;
 
   useEffect(() => {
     setHasError(false);
-  }, [desktopSrc, mobileSrc]);
+  }, [desktopSrc, mobileSrc, fallbackSrc, mobileFallbackSrc]);
+
   const imageStyle = {
     "--desktop-object-position": desktopObjectPosition,
     "--mobile-object-position": mobileObjectPosition || desktopObjectPosition,
@@ -47,9 +65,21 @@ export function ResponsivePicture({
     objectFit
   } as CSSProperties;
 
+  if (!desktopSource) {
+    return (
+      <span
+        role="img"
+        aria-label={alt}
+        className={`grid h-full w-full place-items-center bg-[#efefec] text-xs font-medium text-black/45 ${className}`}
+      >
+        Gambar belum tersedia
+      </span>
+    );
+  }
+
   return (
     <picture className="block h-full w-full">
-      <source media="(max-width: 767px)" srcSet={mobileSource} />
+      {mobileSource ? <source media="(max-width: 767px)" srcSet={mobileSource} /> : null}
       <img
         src={desktopSource}
         alt={alt}
@@ -58,7 +88,11 @@ export function ResponsivePicture({
         fetchPriority={priority ? "high" : "auto"}
         decoding={priority ? "sync" : "async"}
         style={imageStyle}
-        onError={() => setHasError(true)}
+        onError={() => {
+          if (resolvedFallback && desktopSource !== resolvedFallback) {
+            setHasError(true);
+          }
+        }}
       />
     </picture>
   );

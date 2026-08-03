@@ -1,0 +1,21 @@
+{
+  "command": "tsc --noEmit --pretty false",
+  "exitCode": 2,
+  "status": "NOT_VERIFIED",
+  "reason": "Snapshot has no node_modules; Next.js, React, Zod, Supabase, Vitest, and Node project type declarations cannot be resolved.",
+  "diagnosticLines": 19865,
+  "missingModuleLines": 692,
+  "jsxCascadeLines": 16396,
+  "firstDiagnostics": [
+    "app/account/orders/[id]/page.tsx(1,26): error TS2307: Cannot find module 'next/navigation' or its corresponding type declarations.",
+    "app/account/orders/page.tsx(1,26): error TS2307: Cannot find module 'next/navigation' or its corresponding type declarations.",
+    "app/account/page.tsx(1,31): error TS2307: Cannot find module 'next' or its corresponding type declarations.",
+    "app/account/page.tsx(2,18): error TS2307: Cannot find module 'next/link' or its corresponding type declarations.",
+    "app/account/page.tsx(13,6): error TS2741: Property 'children' is missing in type '{}' but required in type '{ children: ReactNode; theme?: \"default\" | \"jersey\" | \"jersey-commerce\" | undefined; }'.",
+    "app/account/page.tsx(14,7): error TS7026: JSX element implicitly has type 'any' because no interface 'JSX.IntrinsicElements' exists.",
+    "app/account/page.tsx(15,9): error TS7026: JSX element implicitly has type 'any' because no interface 'JSX.IntrinsicElements' exists.",
+    "app/account/page.tsx(16,11): error TS7026: JSX element implicitly has type 'any' because no interface 'JSX.IntrinsicElements' exists.",
+    "app/account/page.tsx(17,13): error TS7026: JSX element implicitly has type 'any' because no interface 'JSX.IntrinsicElements' exists.",
+    "app/account/page.tsx(17,57): error TS7026: JSX element implicitly has type 'any' because no interface 'JSX.IntrinsicElements' exists."
+  ]
+}

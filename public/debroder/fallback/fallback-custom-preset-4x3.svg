@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="1200" viewBox="0 0 1600 1200" role="img" aria-labelledby="title desc">
+<title id="title">Placeholder CUSTOM PRESET DEBRODER</title>
+<desc id="desc">Media sementara dengan rasio sesuai slot. Ganti melalui panel admin sebelum publikasi final.</desc>
+<rect width="1600" height="1200" fill="#f2f2ee"/>
+<rect x="128" y="96" width="1344" height="1008" fill="none" stroke="#171717" stroke-width="4" opacity="0.18"/>
+<path d="M 288 840 L 672 504 L 928 696 L 1216 408 L 1376 840 Z" fill="#d9d9d2"/>
+<circle cx="544" cy="372" r="66" fill="#d0d0ca"/>
+<text x="50%" y="984" text-anchor="middle" font-family="Arial, sans-serif" font-size="42" font-weight="700" letter-spacing="5" fill="#171717">DEBRODER</text>
+<text x="50%" y="1038" text-anchor="middle" font-family="Arial, sans-serif" font-size="22" letter-spacing="2" fill="#55554f">CUSTOM PRESET</text>
+</svg>

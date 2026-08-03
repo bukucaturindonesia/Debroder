@@ -116,7 +116,9 @@ describe("Kaos Polos owner editorial revision", () => {
     expect(catalog).toContain("lg:grid-cols-3 lg:gap-x-4 lg:gap-y-12");
     expect(catalog).toContain("lg:grid-cols-[17rem_minmax(0,1fr)]");
     expect(catalog).not.toContain('filtersOpen ? "lg:grid-cols-2" : "lg:grid-cols-3"');
-    expect(catalog).toContain('isKaosEditorial\n                  ? "lg:grid-cols-3 lg:gap-x-4"');
+    expect(catalog).toContain("const catalogGridClass = isKaosEditorial");
+    expect(catalog).toContain("kaos-editorial-catalog-grid");
+    expect(catalog).toContain("<div className={catalogGridClass}>");
     expect(catalog).toContain('{visible.length} Produk');
     expect(catalog).not.toContain('{title} ({visible.length})');
     expect(css).toContain("aspect-ratio: 4 / 5");

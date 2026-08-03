@@ -23,19 +23,31 @@ type SlotDefinition = {
   label: string;
   description: string;
   ratio: string;
+  aspectRatio: string;
 };
 
 const slots: SlotDefinition[] = [
-  { key: "heroDesktop", label: "Hero default desktop", description: "Dipakai bila slide hero belum memiliki gambar desktop.", ratio: "1920 × 900" },
-  { key: "heroMobile", label: "Hero default mobile", description: "Dipakai bila slide hero belum memiliki gambar mobile.", ratio: "1080 × 1350 (4:5)" },
-  { key: "product", label: "Produk default", description: "Dipakai untuk produk, kategori, atau layanan yang belum memiliki foto.", ratio: "2000 × 2500 (4:5)" },
-  { key: "pageHeroDesktop", label: "Page Hero default desktop", description: "Fallback untuk hero halaman kategori dan layanan.", ratio: "1920 × 800" },
-  { key: "pageHeroMobile", label: "Page Hero default mobile", description: "Fallback mobile untuk hero halaman kategori dan layanan.", ratio: "1080 × 1350 (4:5)" },
-  { key: "bannerDesktop", label: "Banner default desktop", description: "Fallback banner Instagram dan campaign.", ratio: "1920 × 800" },
-  { key: "bannerMobile", label: "Banner default mobile", description: "Fallback banner mobile.", ratio: "1080 × 1350 (4:5)" },
-  { key: "store", label: "Store default", description: "Dipakai apabila foto store belum diatur.", ratio: "1200 × 800" },
-  { key: "benefit", label: "Benefit/About default", description: "Dipakai untuk section benefit atau tentang kami yang belum memiliki foto.", ratio: "1200 × 900" },
-  { key: "socialPreview", label: "Social preview default", description: "Gambar cadangan untuk preview share dan Open Graph.", ratio: "1200 × 630" }
+  { key: "heroDesktop", label: "Hero homepage desktop", description: "Fallback khusus hero homepage desktop.", ratio: "2400 × 1050 (16:7)", aspectRatio: "16 / 7" },
+  { key: "heroMobile", label: "Hero homepage mobile", description: "Fallback khusus hero homepage mobile.", ratio: "1600 × 2000 (4:5)", aspectRatio: "4 / 5" },
+  { key: "product", label: "Produk", description: "Fallback aman untuk produk legacy; tidak digunakan sebagai pengganti Open Graph.", ratio: "2000 × 2500 (4:5)", aspectRatio: "4 / 5" },
+  { key: "category", label: "Kategori", description: "Fallback khusus card kategori.", ratio: "2000 × 2500 (4:5)", aspectRatio: "4 / 5" },
+  { key: "editorial", label: "Editorial", description: "Fallback khusus card editorial/trending.", ratio: "2000 × 2500 (4:5)", aspectRatio: "4 / 5" },
+  { key: "featuredDesktop", label: "Featured desktop", description: "Fallback Featured homepage desktop.", ratio: "2000 × 1600 (5:4)", aspectRatio: "5 / 4" },
+  { key: "featuredMobile", label: "Featured mobile", description: "Fallback Featured homepage mobile.", ratio: "1600 × 2000 (4:5)", aspectRatio: "4 / 5" },
+  { key: "pageHeroDesktop", label: "Page Hero desktop", description: "Fallback hero halaman kategori/layanan.", ratio: "2400 × 1000 (12:5)", aspectRatio: "12 / 5" },
+  { key: "pageHeroMobile", label: "Page Hero mobile", description: "Fallback hero halaman mobile.", ratio: "1600 × 2000 (4:5)", aspectRatio: "4 / 5" },
+  { key: "serviceDetail", label: "Detail layanan", description: "Fallback detail visual layanan, terpisah dari page hero.", ratio: "2000 × 1500 (4:3)", aspectRatio: "4 / 3" },
+  { key: "bannerDesktop", label: "Campaign desktop", description: "Fallback campaign homepage desktop.", ratio: "2400 × 1050 (16:7)", aspectRatio: "16 / 7" },
+  { key: "bannerMobile", label: "Campaign mobile", description: "Fallback campaign homepage mobile.", ratio: "1600 × 2000 (4:5)", aspectRatio: "4 / 5" },
+  { key: "instagramBannerDesktop", label: "Banner Instagram desktop", description: "Fallback khusus banner Instagram desktop, terpisah dari campaign 16:7.", ratio: "2400 × 1000 (12:5)", aspectRatio: "12 / 5" },
+  { key: "instagramBannerMobile", label: "Banner Instagram mobile", description: "Fallback khusus banner Instagram mobile.", ratio: "1600 × 2000 (4:5)", aspectRatio: "4 / 5" },
+  { key: "store", label: "Store", description: "Fallback khusus foto toko.", ratio: "2000 × 1500 (4:3)", aspectRatio: "4 / 3" },
+  { key: "aboutLandscape", label: "About homepage", description: "Fallback About homepage landscape.", ratio: "2000 × 1500 (4:3)", aspectRatio: "4 / 3" },
+  { key: "aboutPortrait", label: "Halaman Tentang", description: "Fallback halaman Tentang portrait.", ratio: "2000 × 2500 (4:5)", aspectRatio: "4 / 5" },
+  { key: "customHeroDesktop", label: "Custom hero desktop", description: "Fallback hero Custom yang independen.", ratio: "2400 × 1000 (12:5)", aspectRatio: "12 / 5" },
+  { key: "customHeroMobile", label: "Custom hero mobile", description: "Fallback hero Custom mobile yang independen.", ratio: "1600 × 2000 (4:5)", aspectRatio: "4 / 5" },
+  { key: "customPreset", label: "Custom preset", description: "Fallback mockup/preset configurator.", ratio: "1600 × 1200 (4:3)", aspectRatio: "4 / 3" },
+  { key: "socialPreview", label: "Social preview", description: "Hanya untuk preview share dan metadata Open Graph.", ratio: "1200 × 630 (1.91:1)", aspectRatio: "1200 / 630" }
 ];
 
 export function SiteMediaSettingsAdmin() {
@@ -91,19 +103,33 @@ export function SiteMediaSettingsAdmin() {
     const supabase = createSupabaseClient();
     if (!supabase) return;
     setSaving(true);
-    const { error } = await supabase.from("website_settings").upsert(
-      {
-        setting_key: SITE_MEDIA_SETTING_KEY,
-        label: "Gambar Default Website",
-        value: values,
-        description: "Fallback media publik yang dapat diatur dari admin.",
-        group_name: "public_media",
-        updated_at: new Date().toISOString()
+    const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
+    const accessToken = sessionData.session?.access_token;
+    if (sessionError || !accessToken) {
+      setSaving(false);
+      setStatus("Sesi admin berakhir. Masuk kembali sebelum menyimpan pengaturan media.");
+      return;
+    }
+
+    const response = await fetch("/api/admin/media/settings", {
+      method: "PUT",
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+        "Content-Type": "application/json"
       },
-      { onConflict: "setting_key" }
-    );
+      body: JSON.stringify(values)
+    });
+    const payload = (await response.json().catch(() => null)) as {
+      values?: SiteMediaDefaults;
+      error?: string;
+    } | null;
     setSaving(false);
-    setStatus(error ? "Gambar website belum dapat disimpan. Coba lagi." : "Gambar default website berhasil disimpan.");
+    if (!response.ok || !payload?.values) {
+      setStatus(payload?.error || "Gambar website belum dapat disimpan. Periksa slot dan media yang dipilih.");
+      return;
+    }
+    setValues(payload.values);
+    setStatus("Gambar default website berhasil divalidasi server dan disimpan.");
   }
 
   if (loading) return <div className="mt-6 h-64 animate-pulse bg-white" />;
@@ -116,7 +142,7 @@ export function SiteMediaSettingsAdmin() {
             <p className="text-xs font-semibold uppercase tracking-[.18em] text-brand-charcoal/45">Media global</p>
             <h2 className="mt-2 text-2xl font-semibold">Gambar Default Website</h2>
             <p className="mt-2 max-w-3xl text-sm leading-6 text-brand-charcoal/65">
-              Gambar khusus konten tetap diatur pada menu Hero, Produk, Kategori, Store, Banner, dan Page Hero. Pengaturan ini menjadi cadangan agar tidak ada foto kosong atau broken image.
+              Gambar khusus konten tetap diatur pada menu Hero, Produk, Kategori, Store, Banner, dan Page Hero. Setiap slot mempunyai fallback dan rasio sendiri. Social preview tidak pernah digunakan sebagai fallback produk, hero, kategori, Store, atau About.
             </p>
           </div>
           <Link href="/admin/media" className="inline-flex min-h-11 items-center justify-center rounded-full border border-brand-softGray px-5 text-sm font-semibold hover:border-brand-charcoal">
@@ -132,7 +158,12 @@ export function SiteMediaSettingsAdmin() {
           return (
             <article key={slot.key} className="border border-brand-softGray bg-white p-4">
               <div className="overflow-hidden bg-brand-offWhite">
-                <img src={url} alt={`Pratinjau ${slot.label}`} className="aspect-[4/3] w-full object-cover" />
+                <img
+                  src={url}
+                  alt={`Pratinjau ${slot.label}`}
+                  className="w-full object-cover"
+                  style={{ aspectRatio: slot.aspectRatio }}
+                />
               </div>
               <h3 className="mt-4 font-semibold">{slot.label}</h3>
               <p className="mt-1 text-xs font-semibold text-brand-green">Rekomendasi {slot.ratio}</p>
@@ -144,7 +175,7 @@ export function SiteMediaSettingsAdmin() {
                   onChange={(event) => setValues((current) => ({ ...current, [slot.key]: event.target.value }))}
                   className="min-h-11 rounded-lg border border-brand-softGray bg-white px-3 text-sm font-normal"
                 >
-                  <option value={DEFAULT_SITE_MEDIA[slot.key]}>Placeholder logo DEBRODER</option>
+                  <option value={DEFAULT_SITE_MEDIA[slot.key]}>Fallback khusus slot</option>
                   {groupedMedia.map(([folder, items]) => (
                     <optgroup key={folder} label={folder}>
                       {items.map((asset) => <option key={asset.id} value={asset.public_url}>{asset.name}</option>)}

@@ -3,6 +3,7 @@ import Link from "next/link";
 import { PublicShell } from "@/components/PublicPage";
 import { ResponsivePicture } from "@/components/ResponsivePicture";
 import { getPublicContent } from "@/lib/public-data";
+import { fallbackImages } from "@/lib/fallback-data";
 
 export const metadata: Metadata = {
   title: "Tentang DEBRODER",
@@ -13,6 +14,8 @@ export const metadata: Metadata = {
 export default async function TentangPage() {
   const content = await getPublicContent();
   const about = content.trustAbout;
+  const aboutPageImage = about.about_page_image_url;
+  const aboutPageMobileImage = about.about_page_mobile_image_url;
   const paragraphs = about.about_body
     .split(/\n\s*\n/)
     .map((paragraph) => paragraph.trim())
@@ -25,7 +28,7 @@ export default async function TentangPage() {
   return (
     <PublicShell>
       <section className="border-b border-black/10 bg-white py-12 sm:py-16 lg:py-24">
-        <div className={`section-shell grid gap-10 ${about.image_url ? "lg:grid-cols-[minmax(0,1fr)_minmax(360px,0.85fr)] lg:items-center" : ""}`}>
+        <div className={`section-shell grid gap-10 ${aboutPageImage ? "lg:grid-cols-[minmax(0,1fr)_minmax(360px,0.85fr)] lg:items-center" : ""}`}>
           <div>
             <p className="public-eyebrow">Profil perusahaan</p>
             <h1 className="home-page-title mt-3">Tentang DEBRODER</h1>
@@ -42,12 +45,17 @@ export default async function TentangPage() {
             ) : null}
           </div>
 
-          {about.image_url ? (
+          {aboutPageImage ? (
             <ResponsivePicture
-              desktopSrc={about.image_url}
-              mobileSrc={about.mobile_image_url || about.image_url}
+              desktopSrc={aboutPageImage}
+              mobileSrc={aboutPageMobileImage}
+              fallbackSrc={fallbackImages.aboutPortrait}
               alt="Tentang DEBRODER"
               className="aspect-[4/5] h-full w-full object-cover"
+              desktopObjectPosition={about.about_page_object_position || undefined}
+              mobileObjectPosition={about.about_page_mobile_object_position || about.about_page_object_position || undefined}
+              desktopZoom={about.about_page_focal_zoom}
+              mobileZoom={about.about_page_mobile_focal_zoom || about.about_page_focal_zoom}
             />
           ) : null}
         </div>

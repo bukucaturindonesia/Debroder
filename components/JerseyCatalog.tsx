@@ -25,7 +25,7 @@ export function JerseyCatalog({ categories }: { categories: ServiceCategory[] })
                   <div className="product-image-frame overflow-hidden">
                     <SafeImage
                       src={category.gambar_url}
-                      fallbackSrc={fallbackImages.product}
+                      fallbackSrc={fallbackImages.category}
                       alt={category.image_alt || category.nama_kategori}
                       className="aspect-[4/5] w-full transition duration-700 group-hover:scale-[1.03]"
                       objectFit={category.object_fit || "cover"}

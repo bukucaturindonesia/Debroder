@@ -1,0 +1,10 @@
+{
+  "status": "PASS",
+  "typescriptFiles": 707,
+  "parseErrors": 0,
+  "brokenLocalImports": 0,
+  "focusedAssertionGaps": 0,
+  "parse": [],
+  "broken": [],
+  "gaps": []
+}

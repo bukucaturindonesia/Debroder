@@ -45,7 +45,7 @@ import {
 } from "@/lib/custom-commerce/design-pairs";
 import { parseCustomProject } from "@/lib/custom-commerce/validation";
 import type { InstantCustomSnapshot } from "@/lib/instant-custom";
-import { fallbackImages, pageHeroImageFallbacks } from "@/lib/fallback-data";
+import { fallbackImages } from "@/lib/fallback-data";
 import { formatRupiah } from "@/lib/url";
 
 export type CartProductInput = {
@@ -166,42 +166,42 @@ const searchSuggestions: SearchSuggestion[] = [
     name: "Jersey Custom",
     label: "Jersey tim, komunitas, dan event",
     href: "/jersey",
-    imageUrl: pageHeroImageFallbacks.jersey || fallbackImages.product
+    imageUrl: fallbackImages.category
   },
   {
     id: "kaos-polos",
     name: "Kaos Polos",
     label: "NSA, cotton combed, dan warna lengkap",
     href: "/kaos-polos",
-    imageUrl: pageHeroImageFallbacks["kaos-polos"] || fallbackImages.product
+    imageUrl: fallbackImages.category
   },
   {
     id: "polo-shirt-nsa",
     name: "Polo Shirt NSA",
     label: "Model di kategori Kaos Polos",
     href: "/kaos-polos",
-    imageUrl: pageHeroImageFallbacks["kaos-polos"] || fallbackImages.product
+    imageUrl: fallbackImages.category
   },
   {
     id: "headwear",
     name: "Headwear",
     label: "Topi, cap, dan aksesori kepala",
     href: "/headwear",
-    imageUrl: pageHeroImageFallbacks.headwear || fallbackImages.product
+    imageUrl: fallbackImages.category
   },
   {
     id: "jaket-hoodie",
     name: "Jaket & Hoodie",
     label: "Outerwear custom untuk brand dan tim",
     href: "/jaket-hoodie",
-    imageUrl: pageHeroImageFallbacks["jaket-hoodie"] || fallbackImages.product
+    imageUrl: fallbackImages.category
   },
   {
     id: "sablon-dtf",
     name: "Sablon DTF",
     label: "Custom desain dengan hasil tajam",
     href: "/sablon-dtf",
-    imageUrl: pageHeroImageFallbacks["sablon-dtf"] || fallbackImages.product
+    imageUrl: fallbackImages.category
   }
 ];
 

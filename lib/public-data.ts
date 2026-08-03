@@ -6,6 +6,7 @@ import {
   pageHeroMobileImageFallbacks
 } from "@/lib/fallback-data";
 import { PLAIN_CATEGORY_SECTION_SETTING } from "@/lib/homepage-settings";
+import { jerseyMediaSlots } from "@/lib/jersey-experience";
 import { productCategoryPresets } from "@/lib/product-category-config";
 import {
   isCmsWorkflowTable,
@@ -13,6 +14,7 @@ import {
   publicCmsStatusFilter
 } from "@/lib/cms-workflow";
 import { createSupabaseServerClient } from "@/lib/supabase";
+import { resolvePublicMediaSrc, type PublicMediaSlot } from "@/lib/public-media";
 import {
   DEFAULT_SITE_MEDIA,
   parseSiteMediaDefaults,
@@ -58,10 +60,28 @@ function rowIsActive(row: Record<string, unknown>, activeField?: ActiveField) {
   return row[activeField] !== false;
 }
 
-function resolveMediaUrl(value: string | null | undefined, fallback: string) {
-  const normalized = (value || "").trim();
-  if (!normalized || normalized.startsWith("/images/debroder/")) return fallback;
-  return normalized;
+function resolveMediaUrl(
+  slot: PublicMediaSlot,
+  value: string | null | undefined,
+  fallback?: string | null
+) {
+  return resolvePublicMediaSrc(slot, value, fallback) || "";
+}
+
+function homepageMediaSlots(sectionSlug: string): {
+  desktop: PublicMediaSlot;
+  mobile: PublicMediaSlot;
+} {
+  if (sectionSlug === "featured") {
+    return { desktop: "homepageFeaturedDesktop", mobile: "homepageFeaturedMobile" };
+  }
+  if (sectionSlug === "trending") {
+    return { desktop: "trendingPortrait", mobile: "trendingPortrait" };
+  }
+  if (sectionSlug === PLAIN_CATEGORY_SECTION_SETTING.slug || sectionSlug === "services-products") {
+    return { desktop: "categoryPortrait", mobile: "categoryPortrait" };
+  }
+  return { desktop: "editorialPortrait", mobile: "editorialPortrait" };
 }
 
 async function readSiteMediaDefaults(): Promise<SiteMediaDefaults> {
@@ -264,7 +284,8 @@ const finalPageHeroKeys = [
   "cetak-sublim",
   "store",
   "cara-order",
-  "kemeja"
+  "kemeja",
+  "custom"
 ];
 
 function displayBrand(value?: string | null) {
@@ -1084,73 +1105,116 @@ export async function getPublicContent(): Promise<PublicContent> {
 
   const cleanHeroes = publicHeroes(heroes).map((hero) => ({
     ...hero,
-    image_url: resolveMediaUrl(hero.image_url, siteMedia.heroDesktop),
-    mobile_image_url: resolveMediaUrl(hero.mobile_image_url, siteMedia.heroMobile)
+    image_url: resolveMediaUrl("homepageHeroDesktop", hero.image_url, siteMedia.heroDesktop),
+    mobile_image_url: resolveMediaUrl("homepageHeroMobile", hero.mobile_image_url, siteMedia.heroMobile)
   }));
   const resolvedInstagramBanner = cleanInstagramBanner(instagramBanner);
-  const resolvedPageHeroes = publicPageHeroes(pageHeroes).map((hero) => ({
-    ...hero,
-    image_url: resolveMediaUrl(hero.image_url, siteMedia.pageHeroDesktop),
-    mobile_image_url: resolveMediaUrl(hero.mobile_image_url, siteMedia.pageHeroMobile)
-  }));
+  const resolvedPageHeroes = publicPageHeroes(pageHeroes).map((hero) => {
+    const desktopSlot: PublicMediaSlot = hero.page_key === "custom"
+      ? "customHeroDesktop"
+      : "pageHeroDesktop";
+    const mobileSlot: PublicMediaSlot = hero.page_key === "custom"
+      ? "customHeroMobile"
+      : "pageHeroMobile";
+    return {
+      ...hero,
+      image_url: resolveMediaUrl(
+        desktopSlot,
+        hero.image_url,
+        hero.page_key === "custom" ? siteMedia.customHeroDesktop : siteMedia.pageHeroDesktop
+      ),
+      mobile_image_url: resolveMediaUrl(
+        mobileSlot,
+        hero.mobile_image_url,
+        hero.page_key === "custom" ? siteMedia.customHeroMobile : siteMedia.pageHeroMobile
+      ),
+      detail_image_url: hero.detail_image_url
+        ? resolveMediaUrl("serviceDetailLandscape", hero.detail_image_url, siteMedia.serviceDetail)
+        : null
+    };
+  });
   const resolvedCategories = publicCategories(categories).map((category) => ({
     ...category,
-    gambar_url: resolveMediaUrl(category.gambar_url, siteMedia.product),
-    gallery_urls: (category.gallery_urls || []).filter((url) => !url.startsWith("/images/debroder/"))
+    gambar_url: resolveMediaUrl("categoryPortrait", category.gambar_url, siteMedia.category),
+    gallery_urls: (category.gallery_urls || [])
+      .map((url) => resolveMediaUrl("categoryPortrait", url, null))
+      .filter(Boolean)
   }));
   const resolvedServices = services.map(cleanService).map((service) => ({
     ...service,
-    image_url: resolveMediaUrl(service.image_url, siteMedia.product)
+    image_url: resolveMediaUrl("editorialPortrait", service.image_url, siteMedia.editorial)
   }));
   const resolvedProducts = publicProducts(products).map((product) => {
-    const primaryImage = resolveMediaUrl(product.image_url || product.gambar_url, siteMedia.product);
+    const primaryImage = resolveMediaUrl(
+      "productPrimary",
+      product.image_url || product.gambar_url,
+      siteMedia.product
+    );
     return {
       ...product,
       image_url: primaryImage,
       gambar_url: primaryImage,
-      gallery_urls: (product.gallery_urls || []).filter((url) => !url.startsWith("/images/debroder/"))
+      gallery_urls: (product.gallery_urls || [])
+        .map((url) => resolveMediaUrl("productGallery", url, null))
+        .filter(Boolean)
     };
   });
-  const resolvedHomepageSections = homepageSections.map((section) => ({
-    ...section,
-    items: section.items.map((item) => ({
-      ...item,
-      custom_image_url: item.custom_image_url
-        ? resolveMediaUrl(item.custom_image_url, siteMedia.product)
-        : item.custom_image_url,
-      custom_mobile_image_url: item.custom_mobile_image_url
-        ? resolveMediaUrl(item.custom_mobile_image_url, siteMedia.product)
-        : item.custom_mobile_image_url,
-      product: item.product
-        ? {
-            ...item.product,
-            image_url: resolveMediaUrl(item.product.image_url || item.product.gambar_url, siteMedia.product),
-            gambar_url: resolveMediaUrl(item.product.image_url || item.product.gambar_url, siteMedia.product)
-          }
-        : item.product,
-      service: item.service
-        ? {
-            ...item.service,
-            image_url: resolveMediaUrl(item.service.image_url, siteMedia.product)
-          }
-        : item.service
-    }))
-  }));
+  const resolvedHomepageSections = homepageSections.map((section) => {
+    const slots = homepageMediaSlots(section.slug);
+    return {
+      ...section,
+      items: section.items.map((item) => ({
+        ...item,
+        custom_image_url: item.custom_image_url
+          ? resolveMediaUrl(slots.desktop, item.custom_image_url, null)
+          : item.custom_image_url,
+        custom_mobile_image_url: item.custom_mobile_image_url
+          ? resolveMediaUrl(slots.mobile, item.custom_mobile_image_url, null)
+          : item.custom_mobile_image_url,
+        product: item.product
+          ? {
+              ...item.product,
+              image_url: resolveMediaUrl("productPrimary", item.product.image_url || item.product.gambar_url, siteMedia.product),
+              gambar_url: resolveMediaUrl("productPrimary", item.product.image_url || item.product.gambar_url, siteMedia.product)
+            }
+          : item.product,
+        service: item.service
+          ? {
+              ...item.service,
+              image_url: resolveMediaUrl("editorialPortrait", item.service.image_url, siteMedia.editorial)
+            }
+          : item.service
+      }))
+    };
+  });
   const resolvedStores = stores.map(cleanStore).map((store) => ({
     ...store,
-    image_url: resolveMediaUrl(store.image_url, siteMedia.store)
+    image_url: resolveMediaUrl("storeLandscape", store.image_url, siteMedia.store)
   }));
+  const cleanedTrustAbout = cleanTrustAbout(trustAbout);
   const resolvedTrustAbout = {
-    ...cleanTrustAbout(trustAbout),
-    image_url: resolveMediaUrl(trustAbout.image_url, siteMedia.benefit),
-    mobile_image_url: resolveMediaUrl(trustAbout.mobile_image_url, siteMedia.benefit)
+    ...cleanedTrustAbout,
+    image_url: resolveMediaUrl("aboutHomepageLandscape", cleanedTrustAbout.image_url, siteMedia.aboutLandscape),
+    mobile_image_url: resolveMediaUrl("aboutHomepageLandscape", cleanedTrustAbout.mobile_image_url, siteMedia.aboutLandscape),
+    about_page_image_url: resolveMediaUrl("aboutPagePortrait", cleanedTrustAbout.about_page_image_url, siteMedia.aboutPortrait),
+    about_page_mobile_image_url: resolveMediaUrl("aboutPagePortrait", cleanedTrustAbout.about_page_mobile_image_url, siteMedia.aboutPortrait)
   };
-  const resolvedCampaignBanners = campaignBanners.map((banner) => ({
-    ...banner,
-    desktop_media_url: resolveMediaUrl(banner.desktop_media_url, siteMedia.bannerDesktop),
-    mobile_media_url: resolveMediaUrl(banner.mobile_media_url, siteMedia.bannerMobile),
-    poster_url: banner.poster_url ? resolveMediaUrl(banner.poster_url, siteMedia.bannerDesktop) : banner.poster_url
-  }));
+  const resolvedCampaignBanners = campaignBanners.map((banner) => {
+    const isJersey = banner.experience_key === "jersey";
+    const slots = isJersey
+      ? jerseyMediaSlots(banner.section_type)
+      : { desktop: "homepageCampaignDesktop" as const, mobile: "homepageCampaignMobile" as const };
+    const desktopFallback = slots.desktop === "editorialPortrait" ? siteMedia.editorial : siteMedia.bannerDesktop;
+    const mobileFallback = slots.mobile === "editorialPortrait" ? siteMedia.editorial : siteMedia.bannerMobile;
+    return {
+      ...banner,
+      desktop_media_url: resolveMediaUrl(slots.desktop, banner.desktop_media_url, desktopFallback),
+      mobile_media_url: resolveMediaUrl(slots.mobile, banner.mobile_media_url, mobileFallback),
+      poster_url: banner.poster_url
+        ? resolveMediaUrl(slots.desktop, banner.poster_url, desktopFallback)
+        : banner.poster_url
+    };
+  });
   const landingCampaignBanners = resolvedCampaignBanners.filter(
     (banner) => !banner.experience_key || banner.experience_key === "landing"
   );
@@ -1169,8 +1233,8 @@ export async function getPublicContent(): Promise<PublicContent> {
     instagramBanner: resolvedInstagramBanner
       ? {
           ...resolvedInstagramBanner,
-          image_url: resolveMediaUrl(resolvedInstagramBanner.image_url, siteMedia.bannerDesktop),
-          mobile_image_url: resolveMediaUrl(resolvedInstagramBanner.mobile_image_url, siteMedia.bannerMobile)
+          image_url: resolveMediaUrl("instagramBannerDesktop", resolvedInstagramBanner.image_url, siteMedia.instagramBannerDesktop),
+          mobile_image_url: resolveMediaUrl("instagramBannerMobile", resolvedInstagramBanner.mobile_image_url, siteMedia.instagramBannerMobile)
         }
       : null,
     pageHeroes: resolvedPageHeroes,

@@ -1,6 +1,7 @@
 /* DEBRODER_LANDING_VISUAL_BATCH_2 */
 import type { CmsBanner } from "@/lib/types";
 import { ResponsivePicture } from "@/components/ResponsivePicture";
+import { PUBLIC_MEDIA_FALLBACKS } from "@/lib/public-media";
 
 function cleanText(value?: string | null) {
   const text = value?.trim();
@@ -10,7 +11,7 @@ function cleanText(value?: string | null) {
 
 function CampaignMedia({ banner }: { banner: CmsBanner }) {
   if (banner.media_type === "video") {
-    const mobileUrl = banner.mobile_media_url || banner.desktop_media_url;
+    const mobileUrl = banner.mobile_media_url || PUBLIC_MEDIA_FALLBACKS.campaignMobile;
 
     return (
       <>
@@ -41,8 +42,10 @@ function CampaignMedia({ banner }: { banner: CmsBanner }) {
   return (
     <ResponsivePicture
       desktopSrc={banner.desktop_media_url}
-      mobileSrc={banner.mobile_media_url || banner.desktop_media_url}
+      mobileSrc={banner.mobile_media_url}
       alt={banner.title || banner.name}
+      fallbackSrc={PUBLIC_MEDIA_FALLBACKS.campaignDesktop}
+      mobileFallbackSrc={PUBLIC_MEDIA_FALLBACKS.campaignMobile}
       className="h-full w-full object-cover"
       objectFit="cover"
     />
@@ -69,7 +72,7 @@ export function CampaignBanners({ banners, fallbackDesktopSrc, fallbackMobileSrc
           name: "Built for Identity",
           media_type: "image",
           desktop_media_url: fallbackDesktopSrc,
-          mobile_media_url: fallbackMobileSrc || fallbackDesktopSrc,
+          mobile_media_url: fallbackMobileSrc || PUBLIC_MEDIA_FALLBACKS.campaignMobile,
           poster_url: null,
           eyebrow: "",
           title: "BUILT FOR IDENTITY",

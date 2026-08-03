@@ -21,6 +21,7 @@ import {
   normalizeProductSwatchDirection
 } from "@/lib/product-variants";
 import type { Phase13Actor } from "@/lib/phase13-auth";
+import { validateMediaContract } from "@/lib/public-media";
 import {
   type ProductMediaAsset,
   type ProductMediaMutationResult,
@@ -101,7 +102,7 @@ const COLOR_MASTER_FIELDS = [
   "pattern_image_url"
 ].join(",");
 const MEDIA_FIELDS =
-  "id,name,public_url,alt_text,folder,width,height,updated_at";
+  "id,name,public_url,alt_text,folder,width,height,mime_type,size_bytes,updated_at";
 const MAX_SLOT_CHANGES = 4;
 
 export class ProductMediaApiError extends Error {
@@ -367,6 +368,22 @@ export async function saveProductMediaSlots(input: {
           422,
           "Media asset tidak valid atau tidak aktif."
         );
+      }
+      const hasCanonicalMetadata = Boolean(
+        asset.mime_type && Number(asset.size_bytes || 0) > 0 &&
+        finiteNumber(asset.width) && finiteNumber(asset.height)
+      );
+      const mediaIssues = validateMediaContract({
+        slot: "productPrimary",
+        mimeType: String(asset.mime_type || ""),
+        sizeBytes: Number(asset.size_bytes || 0),
+        width: finiteNumber(asset.width),
+        height: finiteNumber(asset.height),
+        legacy: !hasCanonicalMetadata
+      });
+      const mediaError = mediaIssues.find((issue) => issue.severity === "error");
+      if (mediaError) {
+        throw new ProductMediaApiError(422, mediaError.message);
       }
       nextUrl = String(asset.public_url);
     } else if (!remove && existing && change.imageUrl === existing.image_url) {

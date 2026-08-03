@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="2000" height="2500" viewBox="0 0 2000 2500" role="img" aria-labelledby="title desc">
+<title id="title">Placeholder PRODUK DEBRODER</title>
+<desc id="desc">Media sementara dengan rasio sesuai slot. Ganti melalui panel admin sebelum publikasi final.</desc>
+<rect width="2000" height="2500" fill="#f2f2ee"/>
+<rect x="160" y="200" width="1680" height="2100" fill="none" stroke="#171717" stroke-width="6" opacity="0.18"/>
+<path d="M 360 1750 L 840 1050 L 1160 1450 L 1520 850 L 1720 1750 Z" fill="#d9d9d2"/>
+<circle cx="680" cy="775" r="110" fill="#d0d0ca"/>
+<text x="50%" y="2050" text-anchor="middle" font-family="Arial, sans-serif" font-size="70" font-weight="700" letter-spacing="8" fill="#171717">DEBRODER</text>
+<text x="50%" y="2162" text-anchor="middle" font-family="Arial, sans-serif" font-size="36" letter-spacing="4" fill="#55554f">PRODUK</text>
+</svg>

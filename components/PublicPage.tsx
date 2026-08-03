@@ -49,7 +49,7 @@ function PublicImage({
   focalY?: number | null;
   zoom?: number | null;
 }) {
-  const imageSrc = src || fallbackImages.product;
+  const imageSrc = src || fallbackSrc;
 
   return (
     <SafeImage
@@ -207,7 +207,7 @@ export function PageHero({
   const primaryHref = cleanCtaText ? actionHref(ctaHref) : undefined;
   const hasCopy = Boolean(cleanLabel || cleanTitle || cleanDescription || primaryHref || (cleanSecondaryCtaText && secondaryCtaHref));
   const desktopImage = imageUrl || fallbackImages.pageHero;
-  const mobileImage = mobileImageUrl || desktopImage;
+  const mobileImage = mobileImageUrl || fallbackImages.pageHeroMobile;
   const categoryHero = variant === "category";
 
   return (
@@ -226,6 +226,7 @@ export function PageHero({
             desktopObjectPosition={objectPosition}
             mobileObjectPosition={mobileObjectPosition || objectPosition}
             fallbackSrc={fallbackImages.pageHero}
+            mobileFallbackSrc={fallbackImages.pageHeroMobile}
             objectFit={objectFit}
             desktopZoom={imageZoom}
             mobileZoom={mobileImageZoom}
@@ -586,12 +587,15 @@ export function CategoryDetailPage({
             </div>
           </div>
           <PublicImage
-            src={getPageHeroImage(pageHero)}
-            alt={visualLabel}
+            src={pageHero?.detail_image_url || undefined}
+            alt={pageHero?.detail_image_alt || visualLabel}
             className="product-image-frame aspect-[4/3] w-full object-cover"
             sizes="(min-width: 1024px) 50vw, 100vw"
-            objectPosition={pageHero?.object_position}
-            fallbackSrc={fallbackImages.pageHero}
+            objectPosition={pageHero?.detail_object_position || "center center"}
+            fallbackSrc={fallbackImages.serviceDetail}
+            focalX={pageHero?.detail_focal_x}
+            focalY={pageHero?.detail_focal_y}
+            zoom={pageHero?.detail_focal_zoom}
           />
         </div>
       </section>

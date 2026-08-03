@@ -20,7 +20,7 @@ with jersey_defaults(nama_kategori, deskripsi, slug, urutan) as (
     category_key = 'jersey',
     link_slug = 'jersey',
     image_alt = coalesce(sc.image_alt, jd.nama_kategori || ' custom DE BRODER'),
-    gambar_url = coalesce(nullif(sc.gambar_url, ''), '/brand/debroder/social-preview.png'),
+    gambar_url = coalesce(nullif(sc.gambar_url, ''), '/debroder/fallback/fallback-category-4x5.svg'),
     color_options = case when coalesce(array_length(sc.color_options, 1), 0) = 0 then array['Warna custom sesuai desain']::text[] else sc.color_options end,
     collar_options = case when coalesce(array_length(sc.collar_options, 1), 0) = 0 then array['O-neck', 'V-neck', 'Polo']::text[] else sc.collar_options end,
     sleeve_options = case when coalesce(array_length(sc.sleeve_options, 1), 0) = 0 then array['Pendek', 'Panjang']::text[] else sc.sleeve_options end,
@@ -58,7 +58,7 @@ insert into public.service_categories (
 select
   jd.nama_kategori,
   jd.deskripsi,
-  '/brand/debroder/social-preview.png',
+  '/debroder/fallback/fallback-category-4x5.svg',
   jd.nama_kategori || ' custom DE BRODER',
   'jersey',
   jd.slug,

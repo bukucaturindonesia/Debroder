@@ -1,4 +1,5 @@
-import type { CmsBanner, PageHeroContent, ServiceCategory } from "@/lib/types";
+import type { CmsBanner, ServiceCategory } from "@/lib/types";
+import { PUBLIC_MEDIA_FALLBACKS, type PublicMediaSlot } from "@/lib/public-media";
 
 export const JERSEY_SECTION_TYPES = [
   "poster_carousel",
@@ -9,6 +10,20 @@ export const JERSEY_SECTION_TYPES = [
   "order_steps",
   "closing_campaign"
 ] as const;
+
+export function jerseyMediaSlots(sectionType: CmsBanner["section_type"]): { desktop: PublicMediaSlot; mobile: PublicMediaSlot } {
+  if (["wide_campaign", "closing_campaign"].includes(sectionType || "")) {
+    return { desktop: "homepageCampaignDesktop", mobile: "homepageCampaignMobile" };
+  }
+  return { desktop: "editorialPortrait", mobile: "editorialPortrait" };
+}
+
+export function jerseySectionFallbacks(sectionType: CmsBanner["section_type"]) {
+  const slots = jerseyMediaSlots(sectionType);
+  return slots.desktop === "homepageCampaignDesktop"
+    ? { desktop: PUBLIC_MEDIA_FALLBACKS.campaignDesktop, mobile: PUBLIC_MEDIA_FALLBACKS.campaignMobile }
+    : { desktop: PUBLIC_MEDIA_FALLBACKS.editorial, mobile: PUBLIC_MEDIA_FALLBACKS.editorial };
+}
 
 export const JERSEY_ORDER_STEPS = [
   "Pilih Jersey atau mulai konfigurasi.",
@@ -62,8 +77,8 @@ export function jerseyItemHref(item: CmsBanner, value: string | null | undefined
   return isFallbackJerseyItem(item) ? safeJerseyHref(value, fallback) : validJerseyHref(value);
 }
 
-function fallbackMedia(pageHero: PageHeroContent | undefined, categories: ServiceCategory[]) {
-  return pageHero?.image_url || categories[0]?.gambar_url || "/debroder/social-preview.png";
+function fallbackMedia() {
+  return PUBLIC_MEDIA_FALLBACKS.editorial;
 }
 
 function banner(
@@ -72,12 +87,13 @@ function banner(
   sortOrder: number,
   source: Partial<CmsBanner>
 ): CmsBanner {
+  const fallbacks = jerseySectionFallbacks(sectionType);
   return {
     id: `jersey-fallback-${sectionKey}-${sortOrder}`,
     name: source.name || sectionKey,
     media_type: source.media_type || "image",
-    desktop_media_url: source.desktop_media_url || "/debroder/social-preview.png",
-    mobile_media_url: source.mobile_media_url || source.desktop_media_url || "/debroder/social-preview.png",
+    desktop_media_url: source.desktop_media_url || fallbacks.desktop,
+    mobile_media_url: source.mobile_media_url || fallbacks.mobile,
     eyebrow: source.eyebrow || "DEBRODER JERSEY",
     title: source.title || "",
     subtitle: source.subtitle || "",
@@ -109,7 +125,7 @@ function categoryFallbacks(media: string, categories: ServiceCategory[]) {
   return categories.length ? categories : [{
     nama_kategori: "Jersey Tim",
     deskripsi: "Jersey untuk tim, komunitas, sekolah, instansi, dan event.",
-    gambar_url: media,
+    gambar_url: PUBLIC_MEDIA_FALLBACKS.category,
     link_slug: "jersey",
     urutan: 0,
     status_aktif: true
@@ -171,8 +187,8 @@ function splitItems(group: string, start: number, sources: ServiceCategory[], me
   });
 }
 
-export function jerseyFallbackSections(pageHero: PageHeroContent | undefined, categories: ServiceCategory[]) {
-  const media = fallbackMedia(pageHero, categories);
+export function jerseyFallbackSections(categories: ServiceCategory[]) {
+  const media = fallbackMedia();
   const sources = categoryFallbacks(media, categories);
   const carousel01 = editorialItems({
     names: ["Football", "Futsal", "Esports", "Komunitas", "Sekolah", "Instansi", "Event"],
@@ -198,7 +214,8 @@ export function jerseyFallbackSections(pageHero: PageHeroContent | undefined, ca
     banner("centered_editorial_copy", "centered-copy", 20, {
       title: "Satu Jersey. Satu Identitas.",
       subtitle: "Bangun tampilan yang menyatukan pemain dan membuat tim mudah dikenali.",
-      desktop_media_url: media,
+      desktop_media_url: PUBLIC_MEDIA_FALLBACKS.campaignDesktop,
+      mobile_media_url: PUBLIC_MEDIA_FALLBACKS.campaignMobile,
       cta_label: "Belanja Jersey",
       cta_url: "/jersey/shop"
     }),
@@ -207,11 +224,11 @@ export function jerseyFallbackSections(pageHero: PageHeroContent | undefined, ca
     banner("wide_campaign", "wide-editorial", 50, {
       title: "Identitas yang Menyatukan Tim",
       subtitle: "Dari ide awal hingga jersey siap dipakai, setiap detail dibangun untuk mewakili tim Anda.",
-      desktop_media_url: media,
-      mobile_media_url: pageHero?.mobile_image_url || media,
-      image_alt: pageHero?.image_alt || "Identitas tim DEBRODER Jersey",
-      object_position: pageHero?.object_position,
-      mobile_object_position: pageHero?.mobile_object_position,
+      desktop_media_url: PUBLIC_MEDIA_FALLBACKS.campaignDesktop,
+      mobile_media_url: PUBLIC_MEDIA_FALLBACKS.campaignMobile,
+      image_alt: "Identitas tim DEBRODER Jersey",
+      object_position: "center center",
+      mobile_object_position: "center center",
       cta_label: "Belanja Jersey",
       cta_url: "/jersey/shop"
     }),
@@ -236,11 +253,11 @@ export function jerseyFallbackSections(pageHero: PageHeroContent | undefined, ca
     banner("closing_campaign", "closing", 90, {
       title: "DEBRODER JERSEY",
       subtitle: "Dibuat untuk tim yang membawa identitasnya ke setiap pertandingan.",
-      desktop_media_url: media,
-      mobile_media_url: pageHero?.mobile_image_url || media,
-      image_alt: pageHero?.image_alt || "Closing campaign DEBRODER Jersey",
-      object_position: pageHero?.object_position,
-      mobile_object_position: pageHero?.mobile_object_position,
+      desktop_media_url: PUBLIC_MEDIA_FALLBACKS.campaignDesktop,
+      mobile_media_url: PUBLIC_MEDIA_FALLBACKS.campaignMobile,
+      image_alt: "Closing campaign DEBRODER Jersey",
+      object_position: "center center",
+      mobile_object_position: "center center",
       cta_label: "Belanja Jersey",
       cta_url: "/jersey/shop",
       secondary_cta_label: "Mulai Jersey Custom",
@@ -249,11 +266,11 @@ export function jerseyFallbackSections(pageHero: PageHeroContent | undefined, ca
   ];
 }
 
-export function resolvedJerseySections(managed: CmsBanner[], pageHero: PageHeroContent | undefined, categories: ServiceCategory[]) {
+export function resolvedJerseySections(managed: CmsBanner[], categories: ServiceCategory[]) {
   const published = managed
     .filter((item) => item.is_active !== false && item.section_type !== "team_package_campaign")
     .sort((a, b) => a.sort_order - b.sort_order);
-  return published.length ? published : jerseyFallbackSections(pageHero, categories);
+  return published.length ? published : jerseyFallbackSections(categories);
 }
 
 export function jerseyRowsByGroup(items: CmsBanner[], type: string, group: string) {

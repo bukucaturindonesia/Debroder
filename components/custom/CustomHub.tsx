@@ -1,9 +1,10 @@
 import Link from "next/link";
 import { PublicProductCard } from "@/components/PublicProductCard";
 import { SafeImage } from "@/components/SafeImage";
+import { ResponsivePicture } from "@/components/ResponsivePicture";
 import type { CustomCategory } from "@/lib/custom-commerce/types";
 import { fallbackImages } from "@/lib/fallback-data";
-import type { Product } from "@/lib/types";
+import type { PageHeroContent, Product } from "@/lib/types";
 
 const customSteps = [
   "Pilih jalur Custom T-Shirt atau Jersey Custom.",
@@ -56,7 +57,7 @@ function CategoryPathCard({
       <div className="relative aspect-[4/5] overflow-hidden bg-[#efefef] md:aspect-auto md:min-h-[420px]">
         <SafeImage
           src={category.imageUrl}
-          fallbackSrc={fallbackImages.product}
+          fallbackSrc={fallbackImages.category}
           alt={category.imageAlt || category.name}
           fill
           className="object-cover transition duration-500 group-hover:scale-[1.02]"
@@ -83,10 +84,12 @@ function CategoryPathCard({
 
 export function CustomHub({
   categories,
-  products
+  products,
+  pageHero
 }: {
   categories: CustomCategory[];
   products: Product[];
+  pageHero?: PageHeroContent | null;
 }) {
   if (!categories.length) {
     return (
@@ -107,7 +110,6 @@ export function CustomHub({
 
   const jerseyCategory = categories.find((category) => category.entryType === "jersey_configurator");
   const apparelCategory = categories.find((category) => category.entryType !== "jersey_configurator");
-  const heroCategory = apparelCategory || jerseyCategory || categories[0];
   const baseProducts = products
     .filter((product) => product.sales_mode === "custom" || product.sales_mode === "both")
     .slice(0, 4);
@@ -138,14 +140,18 @@ export function CustomHub({
           </div>
         </div>
         <div className="relative min-h-[420px] bg-[#171717] lg:min-h-full">
-          <SafeImage
-            src={heroCategory.imageUrl}
-            fallbackSrc={fallbackImages.pageHero}
-            alt={heroCategory.imageAlt || `${heroCategory.name} DEBRODER`}
-            fill
+          <ResponsivePicture
+            desktopSrc={pageHero?.image_url}
+            mobileSrc={pageHero?.mobile_image_url}
+            fallbackSrc={fallbackImages.customHero}
+            mobileFallbackSrc={fallbackImages.customHeroMobile}
+            alt={pageHero?.image_alt || pageHero?.title || "Custom DEBRODER"}
+            className="h-full w-full object-cover"
             priority
-            className="object-cover"
-            sizes="(min-width:1024px) 50vw, 100vw"
+            desktopObjectPosition={pageHero?.object_position}
+            mobileObjectPosition={pageHero?.mobile_object_position}
+            desktopZoom={pageHero?.focal_zoom}
+            mobileZoom={pageHero?.mobile_focal_zoom}
           />
           <div className="absolute inset-0 bg-gradient-to-t from-black/35 via-transparent to-transparent" />
         </div>
@@ -226,7 +232,7 @@ export function CustomHub({
                   <div className="relative aspect-[4/5] overflow-hidden bg-[#efefef]">
                     <SafeImage
                       src={category.imageUrl}
-                      fallbackSrc={fallbackImages.product}
+                      fallbackSrc={fallbackImages.editorial}
                       alt={category.imageAlt || category.name}
                       fill
                       className="object-cover transition duration-500 group-hover:scale-[1.02]"

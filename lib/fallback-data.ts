@@ -19,19 +19,32 @@ import { contactLinks, storeContacts } from "@/lib/contact";
 import { LANDING_SECTION_DEFAULTS } from "@/lib/homepage-settings";
 import { productCategoryPresets } from "@/lib/product-category-config";
 import { whatsappLinkWithMessage } from "@/lib/url";
+import { PUBLIC_MEDIA_FALLBACKS } from "@/lib/public-media";
 
 export const fallbackImages = {
-  hero: "/debroder/social-preview.png",
-  heroMobile: "/debroder/social-preview.png",
-  heroSecondary: "/debroder/social-preview.png",
-  heroSecondaryMobile: "/debroder/social-preview.png",
-  pageHero: "/debroder/social-preview.png",
-  pageHeroMobile: "/debroder/social-preview.png",
-  product: "/debroder/social-preview.png",
-  banner: "/debroder/social-preview.png",
-  bannerMobile: "/debroder/social-preview.png",
-  store: "/debroder/social-preview.png",
-  benefit: "/debroder/social-preview.png"
+  hero: PUBLIC_MEDIA_FALLBACKS.homepageHeroDesktop,
+  heroMobile: PUBLIC_MEDIA_FALLBACKS.homepageHeroMobile,
+  heroSecondary: PUBLIC_MEDIA_FALLBACKS.homepageHeroDesktop,
+  heroSecondaryMobile: PUBLIC_MEDIA_FALLBACKS.homepageHeroMobile,
+  pageHero: PUBLIC_MEDIA_FALLBACKS.pageHeroDesktop,
+  pageHeroMobile: PUBLIC_MEDIA_FALLBACKS.pageHeroMobile,
+  product: PUBLIC_MEDIA_FALLBACKS.product,
+  category: PUBLIC_MEDIA_FALLBACKS.category,
+  editorial: PUBLIC_MEDIA_FALLBACKS.editorial,
+  featuredDesktop: PUBLIC_MEDIA_FALLBACKS.featuredDesktop,
+  featuredMobile: PUBLIC_MEDIA_FALLBACKS.editorial,
+  banner: PUBLIC_MEDIA_FALLBACKS.campaignDesktop,
+  bannerMobile: PUBLIC_MEDIA_FALLBACKS.campaignMobile,
+  instagramBanner: PUBLIC_MEDIA_FALLBACKS.instagramBannerDesktop,
+  instagramBannerMobile: PUBLIC_MEDIA_FALLBACKS.instagramBannerMobile,
+  store: PUBLIC_MEDIA_FALLBACKS.store,
+  benefit: PUBLIC_MEDIA_FALLBACKS.aboutLandscape,
+  aboutLandscape: PUBLIC_MEDIA_FALLBACKS.aboutLandscape,
+  aboutPortrait: PUBLIC_MEDIA_FALLBACKS.aboutPortrait,
+  serviceDetail: PUBLIC_MEDIA_FALLBACKS.serviceDetail,
+  customHero: PUBLIC_MEDIA_FALLBACKS.customHeroDesktop,
+  customHeroMobile: PUBLIC_MEDIA_FALLBACKS.customHeroMobile,
+  customPreset: PUBLIC_MEDIA_FALLBACKS.customPreset
 } as const;
 
 export const fallbackProductFilters: ProductFilter[] = [
@@ -66,58 +79,33 @@ export const fallbackProductCategories: ProductCategory[] = productCategoryPrese
 }));
 
 export const storeImageFallbacks: Record<string, string> = {
-  "STORE PETTARANI": "/debroder/social-preview.png",
-  "STORE TELLO": "/debroder/social-preview.png",
-  "STORE LANDAK": "/debroder/social-preview.png",
-  "STORE PAREPARE": "/debroder/social-preview.png"
+  "STORE PETTARANI": fallbackImages.store,
+  "STORE TELLO": fallbackImages.store,
+  "STORE LANDAK": fallbackImages.store,
+  "STORE PAREPARE": fallbackImages.store
 };
 
 export const productImageFallbacks: Record<string, string> = {
-  "Kaos Polos New State Apparel":
-    "/debroder/open-graph-logo.png",
-  "Kaos Polos Import": "/debroder/open-graph-logo.png",
-  "Kaos Polos Cotton Combed":
-    "/debroder/open-graph-logo.png",
-  "Kaos Cotton Combed": "/debroder/open-graph-logo.png",
-  "Distributor Kaos NSA":
-    "/debroder/open-graph-logo.png",
-  "Sablon DTF Custom": "/debroder/open-graph-logo.png",
-  "Custom Jersey": "/debroder/open-graph-logo.png",
-  "Maklon DTF": "/debroder/open-graph-logo.png",
-  "Cetak Sublim": "/debroder/open-graph-logo.png"
+  "Kaos Polos New State Apparel": fallbackImages.product,
+  "Kaos Polos Import": fallbackImages.product,
+  "Kaos Polos Cotton Combed": fallbackImages.product,
+  "Kaos Cotton Combed": fallbackImages.product,
+  "Distributor Kaos NSA": fallbackImages.product,
+  "Sablon DTF Custom": fallbackImages.product,
+  "Custom Jersey": fallbackImages.product,
+  "Maklon DTF": fallbackImages.product,
+  "Cetak Sublim": fallbackImages.product
 };
 
-export const pageHeroImageFallbacks: Record<string, string> = {
-  koleksi: "/debroder/social-preview.png",
-  "kaos-polos": "/debroder/social-preview.png",
-  "jaket-hoodie": "/debroder/social-preview.png",
-  "polo-shirt": "/debroder/social-preview.png",
-  headwear: "/debroder/social-preview.png",
-  kemeja: "/debroder/social-preview.png",
-  "aksesori-lainnya": "/debroder/social-preview.png",
-  "sablon-dtf": "/debroder/social-preview.png",
-  "maklon-dtf": "/debroder/social-preview.png",
-  jersey: "/debroder/social-preview.png",
-  "cetak-sublim": "/debroder/social-preview.png",
-  store: "/debroder/social-preview.png",
-  "cara-order": "/debroder/social-preview.png"
-};
+export const pageHeroImageFallbacks: Record<string, string> = Object.fromEntries(
+  ["koleksi", "kaos-polos", "jaket-hoodie", "polo-shirt", "headwear", "kemeja", "aksesori-lainnya", "sablon-dtf", "maklon-dtf", "jersey", "cetak-sublim", "store", "cara-order", "custom"]
+    .map((key) => [key, key === "custom" ? fallbackImages.customHero : fallbackImages.pageHero])
+);
 
-export const pageHeroMobileImageFallbacks: Record<string, string> = {
-  koleksi: "/debroder/social-preview.png",
-  "kaos-polos": "/debroder/social-preview.png",
-  "jaket-hoodie": "/debroder/social-preview.png",
-  "polo-shirt": "/debroder/social-preview.png",
-  headwear: "/debroder/social-preview.png",
-  kemeja: "/debroder/social-preview.png",
-  "aksesori-lainnya": "/debroder/social-preview.png",
-  "sablon-dtf": "/debroder/social-preview.png",
-  "maklon-dtf": "/debroder/social-preview.png",
-  jersey: "/debroder/social-preview.png",
-  "cetak-sublim": "/debroder/social-preview.png",
-  store: "/debroder/social-preview.png",
-  "cara-order": "/debroder/social-preview.png"
-};
+export const pageHeroMobileImageFallbacks: Record<string, string> = Object.fromEntries(
+  ["koleksi", "kaos-polos", "jaket-hoodie", "polo-shirt", "headwear", "kemeja", "aksesori-lainnya", "sablon-dtf", "maklon-dtf", "jersey", "cetak-sublim", "store", "cara-order", "custom"]
+    .map((key) => [key, key === "custom" ? fallbackImages.customHeroMobile : fallbackImages.pageHeroMobile])
+);
 
 export function getStoreImage(store: Pick<Store, "nama_store" | "image_url">) {
   return (
@@ -219,7 +207,7 @@ export const fallbackCategories: ServiceCategory[] = [
   {
     nama_kategori: "Kaos Polos",
     deskripsi: "Kaos polos, cotton combed, lengan panjang, kaos anak, dan Polo Shirt NSA.",
-    gambar_url: "/debroder/open-graph-logo.png",
+    gambar_url: fallbackImages.category,
     link_slug: "kaos-polos",
     category_key: "kaos-polos",
     slug: "kaos-polos",
@@ -229,7 +217,7 @@ export const fallbackCategories: ServiceCategory[] = [
   {
     nama_kategori: "Jersey",
     deskripsi: "Jersey custom untuk futsal, sepak bola, basket, voli, badminton, dan esports.",
-    gambar_url: "/debroder/open-graph-logo.png",
+    gambar_url: fallbackImages.category,
     link_slug: "jersey",
     category_key: "jersey",
     slug: "jersey",
@@ -239,7 +227,7 @@ export const fallbackCategories: ServiceCategory[] = [
   {
     nama_kategori: "Jaket & Hoodie",
     deskripsi: "Hoodie, crewneck, bomber, varsity, dan coach custom.",
-    gambar_url: "/debroder/open-graph-logo.png",
+    gambar_url: fallbackImages.category,
     link_slug: "jaket-hoodie",
     category_key: "jaket-hoodie",
     slug: "jaket-hoodie",
@@ -249,7 +237,7 @@ export const fallbackCategories: ServiceCategory[] = [
   {
     nama_kategori: "Kemeja",
     deskripsi: "Kemeja PDH, PDL, kantor, komunitas, dan seragam custom.",
-    gambar_url: "/debroder/open-graph-logo.png",
+    gambar_url: fallbackImages.category,
     link_slug: "kemeja",
     category_key: "kemeja",
     slug: "kemeja",
@@ -259,7 +247,7 @@ export const fallbackCategories: ServiceCategory[] = [
   {
     nama_kategori: "Headwear",
     deskripsi: "Topi trucker, baseball, snapback, bucket hat, dan headwear custom.",
-    gambar_url: "/debroder/open-graph-logo.png",
+    gambar_url: fallbackImages.category,
     link_slug: "headwear",
     category_key: "headwear",
     slug: "headwear",
@@ -269,7 +257,7 @@ export const fallbackCategories: ServiceCategory[] = [
   {
     nama_kategori: "Kaos Cotton Combed",
     deskripsi: "Kaos cotton combed untuk sablon dan kebutuhan apparel.",
-    gambar_url: "/debroder/open-graph-logo.png",
+    gambar_url: fallbackImages.category,
     image_alt: "Kaos cotton combed DE BRODER",
     category_key: "kaos-polos",
     slug: "kaos-cotton-combed",
@@ -280,7 +268,7 @@ export const fallbackCategories: ServiceCategory[] = [
   {
     nama_kategori: "Kaos Lengan Panjang",
     deskripsi: "Kaos lengan panjang untuk komunitas, event, dan custom apparel.",
-    gambar_url: "/debroder/open-graph-logo.png",
+    gambar_url: fallbackImages.category,
     image_alt: "Kaos lengan panjang DE BRODER",
     category_key: "kaos-polos",
     slug: "kaos-lengan-panjang",
@@ -291,7 +279,7 @@ export const fallbackCategories: ServiceCategory[] = [
   {
     nama_kategori: "Kaos Anak",
     deskripsi: "Kaos polos anak untuk custom desain dan kebutuhan keluarga.",
-    gambar_url: "/debroder/open-graph-logo.png",
+    gambar_url: fallbackImages.category,
     image_alt: "Kaos anak DE BRODER",
     category_key: "kaos-polos",
     slug: "kaos-anak",
@@ -302,7 +290,7 @@ export const fallbackCategories: ServiceCategory[] = [
   {
     nama_kategori: "Polo Shirt NSA",
     deskripsi: "Polo Shirt NSA sebagai model di dalam kategori Kaos Polos.",
-    gambar_url: "/debroder/open-graph-logo.png",
+    gambar_url: fallbackImages.category,
     image_alt: "Polo Shirt NSA DE BRODER",
     category_key: "kaos-polos",
     slug: "polo-shirt-nsa",
@@ -313,7 +301,7 @@ export const fallbackCategories: ServiceCategory[] = [
   {
     nama_kategori: "Jersey Futsal",
     deskripsi: "Jersey futsal custom untuk tim dan komunitas.",
-    gambar_url: "/debroder/open-graph-logo.png",
+    gambar_url: fallbackImages.category,
     image_alt: "Jersey futsal custom DE BRODER",
     category_key: "jersey",
     slug: "jersey-futsal",
@@ -324,7 +312,7 @@ export const fallbackCategories: ServiceCategory[] = [
   {
     nama_kategori: "Jersey Sepak Bola",
     deskripsi: "Jersey sepak bola custom dengan nama dan nomor.",
-    gambar_url: "/debroder/open-graph-logo.png",
+    gambar_url: fallbackImages.category,
     image_alt: "Jersey sepak bola custom DE BRODER",
     category_key: "jersey",
     slug: "jersey-sepak-bola",
@@ -335,7 +323,7 @@ export const fallbackCategories: ServiceCategory[] = [
   {
     nama_kategori: "Jersey Basket",
     deskripsi: "Jersey basket custom untuk tim, sekolah, dan event.",
-    gambar_url: "/debroder/open-graph-logo.png",
+    gambar_url: fallbackImages.category,
     image_alt: "Jersey basket custom DE BRODER",
     category_key: "jersey",
     slug: "jersey-basket",
@@ -346,7 +334,7 @@ export const fallbackCategories: ServiceCategory[] = [
   {
     nama_kategori: "Jersey Voli",
     deskripsi: "Jersey voli custom untuk tim dan turnamen.",
-    gambar_url: "/debroder/open-graph-logo.png",
+    gambar_url: fallbackImages.category,
     image_alt: "Jersey voli custom DE BRODER",
     category_key: "jersey",
     slug: "jersey-voli",
@@ -357,7 +345,7 @@ export const fallbackCategories: ServiceCategory[] = [
   {
     nama_kategori: "Jersey Badminton",
     deskripsi: "Jersey badminton untuk klub, komunitas, dan event.",
-    gambar_url: "/debroder/open-graph-logo.png",
+    gambar_url: fallbackImages.category,
     image_alt: "Jersey badminton custom DE BRODER",
     category_key: "jersey",
     slug: "jersey-badminton",
@@ -368,7 +356,7 @@ export const fallbackCategories: ServiceCategory[] = [
   {
     nama_kategori: "Jersey Esports",
     deskripsi: "Jersey esports custom untuk tim dan komunitas gaming.",
-    gambar_url: "/debroder/open-graph-logo.png",
+    gambar_url: fallbackImages.category,
     image_alt: "Jersey esports custom DE BRODER",
     category_key: "jersey",
     slug: "jersey-esports",
@@ -379,7 +367,7 @@ export const fallbackCategories: ServiceCategory[] = [
   {
     nama_kategori: "Hoodie",
     deskripsi: "Hoodie custom untuk komunitas, event, dan brand apparel.",
-    gambar_url: "/debroder/open-graph-logo.png",
+    gambar_url: fallbackImages.category,
     image_alt: "Hoodie custom DE BRODER",
     category_key: "jaket-hoodie",
     slug: "hoodie",
@@ -390,7 +378,7 @@ export const fallbackCategories: ServiceCategory[] = [
   {
     nama_kategori: "Crewneck",
     deskripsi: "Crewneck custom untuk merchandise dan brand apparel.",
-    gambar_url: "/debroder/open-graph-logo.png",
+    gambar_url: fallbackImages.category,
     image_alt: "Crewneck custom DE BRODER",
     category_key: "jaket-hoodie",
     slug: "crewneck",
@@ -401,7 +389,7 @@ export const fallbackCategories: ServiceCategory[] = [
   {
     nama_kategori: "Jaket Bomber",
     deskripsi: "Jaket bomber custom untuk komunitas dan organisasi.",
-    gambar_url: "/debroder/open-graph-logo.png",
+    gambar_url: fallbackImages.category,
     image_alt: "Jaket bomber custom DE BRODER",
     category_key: "jaket-hoodie",
     slug: "jaket-bomber",
@@ -412,7 +400,7 @@ export const fallbackCategories: ServiceCategory[] = [
   {
     nama_kategori: "Jaket Varsity",
     deskripsi: "Jaket varsity custom untuk sekolah, kampus, dan komunitas.",
-    gambar_url: "/debroder/open-graph-logo.png",
+    gambar_url: fallbackImages.category,
     image_alt: "Jaket varsity custom DE BRODER",
     category_key: "jaket-hoodie",
     slug: "jaket-varsity",
@@ -423,7 +411,7 @@ export const fallbackCategories: ServiceCategory[] = [
   {
     nama_kategori: "Jaket Coach",
     deskripsi: "Jaket coach custom untuk event, brand, dan komunitas.",
-    gambar_url: "/debroder/open-graph-logo.png",
+    gambar_url: fallbackImages.category,
     image_alt: "Jaket coach custom DE BRODER",
     category_key: "jaket-hoodie",
     slug: "jaket-coach",
@@ -434,7 +422,7 @@ export const fallbackCategories: ServiceCategory[] = [
   {
     nama_kategori: "Kemeja PDH",
     deskripsi: "Kemeja PDH untuk seragam kantor, instansi, dan organisasi.",
-    gambar_url: "/debroder/open-graph-logo.png",
+    gambar_url: fallbackImages.category,
     image_alt: "Kemeja PDH custom DE BRODER",
     category_key: "kemeja",
     slug: "kemeja-pdh",
@@ -445,7 +433,7 @@ export const fallbackCategories: ServiceCategory[] = [
   {
     nama_kategori: "Kemeja PDL",
     deskripsi: "Kemeja PDL untuk lapangan, komunitas, dan organisasi.",
-    gambar_url: "/debroder/open-graph-logo.png",
+    gambar_url: fallbackImages.category,
     image_alt: "Kemeja PDL custom DE BRODER",
     category_key: "kemeja",
     slug: "kemeja-pdl",
@@ -456,7 +444,7 @@ export const fallbackCategories: ServiceCategory[] = [
   {
     nama_kategori: "Kemeja Kantor",
     deskripsi: "Kemeja kantor custom untuk perusahaan dan tim.",
-    gambar_url: "/debroder/open-graph-logo.png",
+    gambar_url: fallbackImages.category,
     image_alt: "Kemeja kantor custom DE BRODER",
     category_key: "kemeja",
     slug: "kemeja-kantor",
@@ -467,7 +455,7 @@ export const fallbackCategories: ServiceCategory[] = [
   {
     nama_kategori: "Kemeja Komunitas",
     deskripsi: "Kemeja custom untuk komunitas, organisasi, dan event.",
-    gambar_url: "/debroder/open-graph-logo.png",
+    gambar_url: fallbackImages.category,
     image_alt: "Kemeja komunitas custom DE BRODER",
     category_key: "kemeja",
     slug: "kemeja-komunitas",
@@ -478,7 +466,7 @@ export const fallbackCategories: ServiceCategory[] = [
   {
     nama_kategori: "Topi Trucker",
     deskripsi: "Topi trucker untuk merchandise dan bordir logo.",
-    gambar_url: "/debroder/open-graph-logo.png",
+    gambar_url: fallbackImages.category,
     image_alt: "Topi trucker custom DE BRODER",
     category_key: "headwear",
     slug: "topi-trucker",
@@ -489,7 +477,7 @@ export const fallbackCategories: ServiceCategory[] = [
   {
     nama_kategori: "Topi Baseball",
     deskripsi: "Topi baseball custom untuk komunitas dan brand.",
-    gambar_url: "/debroder/open-graph-logo.png",
+    gambar_url: fallbackImages.category,
     image_alt: "Topi baseball custom DE BRODER",
     category_key: "headwear",
     slug: "topi-baseball",
@@ -500,7 +488,7 @@ export const fallbackCategories: ServiceCategory[] = [
   {
     nama_kategori: "Snapback",
     deskripsi: "Snapback custom untuk brand, event, dan komunitas.",
-    gambar_url: "/debroder/open-graph-logo.png",
+    gambar_url: fallbackImages.category,
     image_alt: "Snapback custom DE BRODER",
     category_key: "headwear",
     slug: "snapback",
@@ -511,7 +499,7 @@ export const fallbackCategories: ServiceCategory[] = [
   {
     nama_kategori: "Bucket Hat",
     deskripsi: "Bucket hat custom untuk merchandise dan event.",
-    gambar_url: "/debroder/open-graph-logo.png",
+    gambar_url: fallbackImages.category,
     image_alt: "Bucket hat custom DE BRODER",
     category_key: "headwear",
     slug: "bucket-hat",
@@ -526,7 +514,7 @@ export const fallbackServices: Service[] = [
     nama: "Sablon DTF",
     slug: "sablon-dtf",
     deskripsi: "Hasil tajam dan fleksibel untuk kaos, brand, serta komunitas.",
-    image_url: "/debroder/open-graph-logo.png",
+    image_url: fallbackImages.category,
     image_alt: "Sablon DTF custom DE BRODER",
     category_key: "sablon-dtf",
     detail_body: "Sablon DTF penuh warna untuk kaos custom, brand, komunitas, event, dan produksi satuan maupun partai.",
@@ -541,7 +529,7 @@ export const fallbackServices: Service[] = [
     nama: "Sablon DTF Ukuran A4",
     slug: "sablon-dtf-a4",
     deskripsi: "Pilihan praktis untuk logo, desain dada, dan artwork berukuran kecil.",
-    image_url: "/debroder/open-graph-logo.png",
+    image_url: fallbackImages.category,
     image_alt: "Sablon DTF ukuran A4 DE BRODER",
     category_key: "sablon-dtf",
     detail_body: "Cocok untuk desain depan, belakang, logo komunitas, dan kebutuhan custom dengan bidang cetak hingga A4.",
@@ -556,7 +544,7 @@ export const fallbackServices: Service[] = [
     nama: "Sablon DTF Ukuran A3",
     slug: "sablon-dtf-a3",
     deskripsi: "Bidang cetak lebih besar untuk desain utama pada apparel.",
-    image_url: "/debroder/open-graph-logo.png",
+    image_url: fallbackImages.category,
     image_alt: "Sablon DTF ukuran A3 DE BRODER",
     category_key: "sablon-dtf",
     detail_body: "Pilihan untuk artwork besar dengan detail warna tajam pada kaos dan apparel berbahan sesuai rekomendasi produksi.",
@@ -571,7 +559,7 @@ export const fallbackServices: Service[] = [
     nama: "Sablon DTF Meteran",
     slug: "sablon-dtf-meteran",
     deskripsi: "Efisien untuk banyak desain dan kebutuhan produksi apparel.",
-    image_url: "/debroder/open-graph-logo.png",
+    image_url: fallbackImages.category,
     image_alt: "Sablon DTF meteran DE BRODER",
     category_key: "sablon-dtf",
     detail_body: "Layanan cetak lembaran meteran untuk brand, reseller, dan produksi dengan banyak artwork dalam satu susunan desain.",
@@ -586,7 +574,7 @@ export const fallbackServices: Service[] = [
     nama: "Custom Jersey",
     slug: "jersey",
     deskripsi: "Jersey custom untuk tim olahraga, sekolah, dan instansi.",
-    image_url: "/debroder/open-graph-logo.png",
+    image_url: fallbackImages.category,
     harga_mulai: 75000,
     urutan: 10,
     status_aktif: true
@@ -595,7 +583,7 @@ export const fallbackServices: Service[] = [
     nama: "Maklon DTF",
     slug: "maklon-dtf",
     deskripsi: "Partner produksi DTF untuk reseller dan brand apparel.",
-    image_url: "/debroder/open-graph-logo.png",
+    image_url: fallbackImages.category,
     harga_mulai: 25000,
     urutan: 11,
     status_aktif: true
@@ -604,7 +592,7 @@ export const fallbackServices: Service[] = [
     nama: "Cetak Sublim",
     slug: "cetak-sublim",
     deskripsi: "Cetak warna menyeluruh untuk jersey dan apparel custom.",
-    image_url: "/debroder/open-graph-logo.png",
+    image_url: fallbackImages.category,
     harga_mulai: 35000,
     urutan: 12,
     status_aktif: true
@@ -613,7 +601,7 @@ export const fallbackServices: Service[] = [
     nama: "Kaos NSA",
     slug: "kaos-polos",
     deskripsi: "Kaos New State Apparel siap pakai atau siap custom.",
-    image_url: "/debroder/open-graph-logo.png",
+    image_url: fallbackImages.category,
     harga_mulai: 45000,
     urutan: 13,
     status_aktif: true
@@ -622,7 +610,7 @@ export const fallbackServices: Service[] = [
     nama: "Cotton Combed",
     slug: "kaos-polos",
     deskripsi: "Kaos cotton combed nyaman untuk brand dan kebutuhan harian.",
-    image_url: "/debroder/open-graph-logo.png",
+    image_url: fallbackImages.category,
     harga_mulai: 45000,
     urutan: 14,
     status_aktif: true
@@ -765,6 +753,17 @@ export const fallbackPageHeroes: PageHeroContent[] = [
     status_aktif: true
   },
   {
+    page_key: "custom",
+    label: "CUSTOM",
+    title: "Mulai Custom Sesuai Kebutuhanmu",
+    subtitle: "Pilih jalur Custom T-Shirt atau Jersey Custom dengan media hero independen.",
+    image_url: pageHeroImageFallbacks.custom,
+    mobile_image_url: pageHeroMobileImageFallbacks.custom,
+    object_position: "center center",
+    mobile_object_position: "center center",
+    status_aktif: true
+  },
+  {
     page_key: "store",
     label: "STORE",
     title: "Temukan Store DE BRODER Terdekat",
@@ -830,6 +829,10 @@ export const fallbackTrustAbout: TrustAboutContent = {
     "Maklon DTF"
   ],
   about_body: fallbackAbout.body,
+  image_url: fallbackImages.aboutLandscape,
+  mobile_image_url: fallbackImages.aboutLandscape,
+  about_page_image_url: fallbackImages.aboutPortrait,
+  about_page_mobile_image_url: fallbackImages.aboutPortrait,
   status_aktif: true
 };
 
