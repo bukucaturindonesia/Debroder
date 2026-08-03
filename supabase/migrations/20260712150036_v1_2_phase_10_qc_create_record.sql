@@ -1,3 +1,5 @@
+-- DEBRODER v1.2 Phase 10 — create QC record from Work Item awaiting QC.
+
 create or replace function public.create_qc_record(p_work_item_id uuid,p_checked_quantity integer,p_checklist jsonb,p_defect_notes text default null)
 returns public.qc_records language plpgsql security definer set search_path='' as $$
 declare item_row public.work_items; job_row public.job_orders; result_row public.qc_records; result_id uuid:=gen_random_uuid(); attempt_value integer; number_value text; checklist_item jsonb; supplied_checklist jsonb:=coalesce(p_checklist,'[]'::jsonb);
@@ -31,4 +33,5 @@ begin
  insert into public.qc_status_history(qc_record_id,from_result,to_result,note,changed_by) values(result_row.id,null,'draft','Draft pemeriksaan QC dibuat',auth.uid());
  return result_row;
 end $$;
-grant execute on function public.create_qc_record(uuid,integer,jsonb,text) to authenticated;;
+
+grant execute on function public.create_qc_record(uuid,integer,jsonb,text) to authenticated;

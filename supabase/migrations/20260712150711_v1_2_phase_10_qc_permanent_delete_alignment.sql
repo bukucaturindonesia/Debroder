@@ -1,3 +1,5 @@
+-- DEBRODER v1.2 Phase 10 — QC permanent delete alignment for archived draft only.
+
 create or replace function public.permanently_delete_qc_record(p_qc_record_id uuid)
 returns void language plpgsql security definer set search_path='' as $$
 declare target_row public.qc_records;
@@ -13,5 +15,6 @@ begin
  delete from public.qc_status_history where qc_record_id=target_row.id;
  delete from public.qc_records where id=target_row.id;
 end $$;
+
 revoke all on function public.permanently_delete_qc_record(uuid) from public,anon;
-grant execute on function public.permanently_delete_qc_record(uuid) to authenticated;;
+grant execute on function public.permanently_delete_qc_record(uuid) to authenticated;

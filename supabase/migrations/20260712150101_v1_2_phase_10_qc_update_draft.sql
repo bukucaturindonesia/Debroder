@@ -1,3 +1,5 @@
+-- DEBRODER v1.2 Phase 10 — update QC draft and checklist with immutable revision history.
+
 create or replace function public.update_qc_record_draft(p_qc_record_id uuid,p_checked_quantity integer,p_checklist jsonb,p_defect_notes text default null,p_reason text default null)
 returns public.qc_records language plpgsql security definer set search_path='' as $$
 declare old_row public.qc_records; result_row public.qc_records; item_row public.work_items; checklist_item jsonb; previous_checklist jsonb; next_checklist jsonb; revision_value integer; reason_value text:=nullif(btrim(coalesce(p_reason,'')),'');
@@ -25,4 +27,5 @@ begin
  values(old_row.id,revision_value,coalesce(reason_value,'Pembaruan draft QC'),jsonb_build_object('record',to_jsonb(old_row),'checklist',previous_checklist),jsonb_build_object('record',to_jsonb(result_row),'checklist',next_checklist),auth.uid());
  return result_row;
 end $$;
-grant execute on function public.update_qc_record_draft(uuid,integer,jsonb,text,text) to authenticated;;
+
+grant execute on function public.update_qc_record_draft(uuid,integer,jsonb,text,text) to authenticated;

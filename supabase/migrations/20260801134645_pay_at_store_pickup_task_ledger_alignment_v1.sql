@@ -150,5 +150,3 @@ revoke all on function public.sync_order_operational_task_v1(uuid,uuid)
   from public,anon,authenticated;
 grant execute on function public.sync_order_operational_task_v1(uuid,uuid)
   to service_role;
-
-;

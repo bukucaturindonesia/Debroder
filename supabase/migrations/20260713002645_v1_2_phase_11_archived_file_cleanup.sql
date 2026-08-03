@@ -40,4 +40,4 @@ begin
 end $$;
 
 revoke all on function public.remove_fulfillment_file(uuid) from public,anon;
-grant execute on function public.remove_fulfillment_file(uuid) to authenticated;;
+grant execute on function public.remove_fulfillment_file(uuid) to authenticated;

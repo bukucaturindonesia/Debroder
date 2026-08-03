@@ -76,5 +76,3 @@ where not exists (
 );
 
 commit;
-
-;

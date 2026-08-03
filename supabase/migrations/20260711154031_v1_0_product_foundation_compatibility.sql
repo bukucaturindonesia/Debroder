@@ -215,4 +215,4 @@ on conflict(version_key) do update
 set description = excluded.description,
     applied_at = now();
 
-commit;;
+commit;

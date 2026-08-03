@@ -178,5 +178,3 @@ end;
 $migration$;
 
 commit;
-
-;

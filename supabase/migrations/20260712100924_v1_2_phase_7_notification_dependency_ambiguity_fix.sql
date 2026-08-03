@@ -13,4 +13,3 @@ as $$
 $$;
 revoke all on function public.staff_notification_recipients(text[]) from public,anon;
 grant execute on function public.staff_notification_recipients(text[]) to authenticated,service_role;
-;

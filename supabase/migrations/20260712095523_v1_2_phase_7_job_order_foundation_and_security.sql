@@ -1,39 +1,5 @@
 -- DEBRODER v1.2 Phase 7 — Job Order foundation, lifecycle, security, and audit.
-
-create table if not exists public.job_orders (
-  id uuid primary key default gen_random_uuid(),
-  job_order_number text unique,
-  order_id uuid not null references public.orders(id) on delete restrict,
-  quotation_id uuid references public.quotations(id) on delete restrict,
-  approved_mockup_set_id uuid references public.mockup_sets(id) on delete restrict,
-  status text not null default 'draft' check (status in ('draft','ready','released','in_progress','on_hold','completed','cancelled')),
-  priority text not null default 'normal' check (priority in ('low','normal','high','urgent')),
-  target_date date,
-  internal_notes text,
-  production_notes text,
-  order_snapshot jsonb not null default '{}'::jsonb,
-  mockup_snapshot jsonb not null default '{}'::jsonb,
-  payment_snapshot jsonb not null default '{}'::jsonb,
-  ready_by uuid references auth.users(id) on delete set null,
-  ready_at timestamptz,
-  released_by uuid references auth.users(id) on delete set null,
-  released_at timestamptz,
-  started_at timestamptz,
-  paused_at timestamptz,
-  resumed_at timestamptz,
-  completed_at timestamptz,
-  cancelled_at timestamptz,
-  cancel_reason text,
-  progress_percentage numeric(5,2) not null default 0 check (progress_percentage between 0 and 100),
-  idempotency_key text,
-  created_by uuid references auth.users(id) on delete set null,
-  updated_by uuid references auth.users(id) on delete set null,
-  created_at timestamptz not null default now(),
-  updated_at timestamptz not null default now(),
-  archived_at timestamptz,
-  archived_by uuid references auth.users(id) on delete set null,
-  archive_reason text
-);
+-- Synchronized with the migration already installed on the connected Supabase project.
 
 alter table public.job_orders
   add column if not exists ready_by uuid references auth.users(id) on delete set null,
@@ -41,39 +7,18 @@ alter table public.job_orders
   add column if not exists idempotency_key text;
 
 create unique index if not exists job_orders_number_unique on public.job_orders(job_order_number);
-create unique index if not exists job_orders_idempotency_unique on public.job_orders(idempotency_key) where idempotency_key is not null;
+create unique index if not exists job_orders_idempotency_unique
+  on public.job_orders(idempotency_key) where idempotency_key is not null;
 create unique index if not exists job_orders_one_active_per_order
-  on public.job_orders(order_id)
-  where archived_at is null and status <> 'cancelled';
+  on public.job_orders(order_id) where archived_at is null and status <> 'cancelled';
 create index if not exists job_orders_status_target_idx on public.job_orders(status,target_date);
 create index if not exists job_orders_order_idx on public.job_orders(order_id);
 create index if not exists job_orders_archive_idx on public.job_orders(archived_at,created_at desc);
 
-create table if not exists public.job_order_status_history (
-  id uuid primary key default gen_random_uuid(),
-  job_order_id uuid not null references public.job_orders(id) on delete cascade,
-  from_status text,
-  to_status text not null,
-  note text,
-  reason text,
-  changed_by uuid references auth.users(id) on delete set null,
-  changed_at timestamptz not null default now(),
-  metadata jsonb not null default '{}'::jsonb
-);
-create index if not exists job_order_history_idx on public.job_order_status_history(job_order_id,changed_at desc);
-
-create table if not exists public.job_order_revisions (
-  id uuid primary key default gen_random_uuid(),
-  job_order_id uuid not null references public.job_orders(id) on delete restrict,
-  revision_number integer not null,
-  reason text not null check (btrim(reason) <> ''),
-  previous_snapshot jsonb not null,
-  new_snapshot jsonb not null,
-  created_by uuid references auth.users(id) on delete set null,
-  created_at timestamptz not null default now(),
-  unique(job_order_id,revision_number)
-);
-create index if not exists job_order_revisions_idx on public.job_order_revisions(job_order_id,revision_number desc);
+create index if not exists job_order_history_idx
+  on public.job_order_status_history(job_order_id,changed_at desc);
+create index if not exists job_order_revisions_idx
+  on public.job_order_revisions(job_order_id,revision_number desc);
 
 create table if not exists public.job_order_deletion_audit (
   id uuid primary key default gen_random_uuid(),
@@ -85,7 +30,8 @@ create table if not exists public.job_order_deletion_audit (
   deleted_at timestamptz not null default now(),
   reason text not null default 'Hapus permanen dari Gudang Arsip'
 );
-create index if not exists job_order_deletion_audit_order_idx on public.job_order_deletion_audit(order_id,deleted_at desc);
+create index if not exists job_order_deletion_audit_order_idx
+  on public.job_order_deletion_audit(order_id,deleted_at desc);
 
 create or replace function public.create_job_order(
   p_order_id uuid,
@@ -325,9 +271,7 @@ begin
     when 'on_hold' then p_to_status in ('in_progress','cancelled')
     else false end;
   if not allowed then raise exception 'Perubahan status Job Order tidak diizinkan'; end if;
-  if p_to_status in ('on_hold','cancelled') and reason_value is null then
-    raise exception 'Alasan wajib diisi';
-  end if;
+  if p_to_status in ('on_hold','cancelled') and reason_value is null then raise exception 'Alasan wajib diisi'; end if;
 
   select * into order_row from public.orders where id=job_row.order_id for update;
   if not found or order_row.archived_at is not null or order_row.status in ('dibatalkan','selesai') then
@@ -400,7 +344,8 @@ declare result_row public.job_orders; reason_value text:=nullif(btrim(coalesce(p
 begin
   if not public.has_staff_role(array['owner','superadmin','super_admin','admin']) then raise exception 'Tidak berwenang mengarsipkan Job Order'; end if;
   if reason_value is null then raise exception 'Alasan arsip wajib diisi'; end if;
-  update public.job_orders set archived_at=now(),archived_by=auth.uid(),archive_reason=reason_value,updated_by=auth.uid(),updated_at=now()
+  update public.job_orders set
+    archived_at=now(),archived_by=auth.uid(),archive_reason=reason_value,updated_by=auth.uid(),updated_at=now()
   where id=p_job_order_id and archived_at is null and status in ('draft','completed','cancelled')
   returning * into result_row;
   if not found then raise exception 'Hanya Job Order Draft, Selesai, atau Dibatalkan yang dapat diarsipkan'; end if;
@@ -425,7 +370,8 @@ begin
     where other_row.order_id=archived_row.order_id and other_row.id<>archived_row.id
       and other_row.archived_at is null and other_row.status<>'cancelled'
   ) then raise exception 'Pesanan sudah memiliki Job Order aktif'; end if;
-  update public.job_orders set archived_at=null,archived_by=null,archive_reason=null,updated_by=auth.uid(),updated_at=now()
+  update public.job_orders set
+    archived_at=null,archived_by=null,archive_reason=null,updated_by=auth.uid(),updated_at=now()
   where id=p_job_order_id returning * into result_row;
   insert into public.job_order_status_history(job_order_id,from_status,to_status,note,changed_by,metadata)
   values(result_row.id,result_row.status,result_row.status,'Job Order dipulihkan dari Gudang Arsip',auth.uid(),jsonb_build_object('action','restored'));
@@ -485,9 +431,15 @@ begin
 end $$;
 
 create or replace function public.set_job_order_updated_at()
-returns trigger language plpgsql set search_path='' as $$begin new.updated_at=now(); return new; end $$;
+returns trigger
+language plpgsql
+set search_path=''
+as $$
+begin new.updated_at=now(); return new; end $$;
+
 drop trigger if exists set_job_order_updated_at on public.job_orders;
-create trigger set_job_order_updated_at before update on public.job_orders
+create trigger set_job_order_updated_at
+before update on public.job_orders
 for each row execute function public.set_job_order_updated_at();
 
 alter table public.job_orders enable row level security;
@@ -519,7 +471,9 @@ for select to authenticated
 using(public.has_staff_role(array['owner','superadmin','super_admin','admin']));
 
 revoke all on public.job_orders,public.job_order_status_history,public.job_order_revisions,public.job_order_deletion_audit from public,anon;
-revoke insert,update,delete,truncate,references,trigger on public.job_orders,public.job_order_status_history,public.job_order_revisions,public.job_order_deletion_audit from authenticated;
+revoke insert,update,delete,truncate,references,trigger
+  on public.job_orders,public.job_order_status_history,public.job_order_revisions,public.job_order_deletion_audit
+  from authenticated;
 grant select on public.job_orders,public.job_order_status_history,public.job_order_revisions,public.job_order_deletion_audit to authenticated;
 
 revoke all on function public.create_job_order(uuid,date,text,text,text,text) from public,anon;
@@ -535,6 +489,4 @@ grant execute on function public.archive_job_order(uuid,text) to authenticated;
 grant execute on function public.restore_job_order(uuid) to authenticated;
 grant execute on function public.permanently_delete_job_order(uuid) to authenticated;
 
--- Existing rows are absent at the time of this migration; keep future rows strict.
 alter table public.job_orders alter column job_order_number set not null;
-;

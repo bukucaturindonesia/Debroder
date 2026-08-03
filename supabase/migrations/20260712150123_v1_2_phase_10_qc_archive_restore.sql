@@ -1,3 +1,5 @@
+-- DEBRODER v1.2 Phase 10 — QC evidence registration, archive, and restore.
+
 create or replace function public.register_qc_file(p_qc_record_id uuid,p_path text,p_file_name text,p_mime_type text,p_size_bytes bigint)
 returns public.qc_files language plpgsql security definer set search_path='' as $$
 declare result_row public.qc_files;
@@ -39,4 +41,4 @@ end $$;
 
 grant execute on function public.register_qc_file(uuid,text,text,text,bigint) to authenticated;
 grant execute on function public.archive_qc_record(uuid,text) to authenticated;
-grant execute on function public.restore_qc_record(uuid) to authenticated;;
+grant execute on function public.restore_qc_record(uuid) to authenticated;

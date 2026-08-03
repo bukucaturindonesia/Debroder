@@ -1,5 +1,8 @@
 begin;
 
+-- P7B: align canonical public Ready Stock policy at the database boundary.
+-- Additive only: no historical order, pricing snapshot, or inventory mutation.
+
 create or replace function public.enforce_public_ready_stock_cart_limits_v1()
 returns trigger
 language plpgsql
@@ -266,4 +269,4 @@ values (
   )
 );
 
-commit;;
+commit;

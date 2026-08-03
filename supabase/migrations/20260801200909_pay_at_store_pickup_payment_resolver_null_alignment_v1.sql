@@ -370,5 +370,3 @@ $$;
 
 revoke all on function public._resolve_order_active_stage_v1(uuid) from public, anon, authenticated;
 grant execute on function public._resolve_order_active_stage_v1(uuid) to service_role;
-
-;

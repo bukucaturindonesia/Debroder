@@ -144,4 +144,4 @@ begin
   );
   perform public.refresh_order_fulfillment_status(result_row.order_id);
   return result_row;
-end $$;;
+end $$;

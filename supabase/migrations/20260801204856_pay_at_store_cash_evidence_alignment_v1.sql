@@ -126,5 +126,3 @@ revoke all on function public.record_pay_at_store_payment_v1(uuid, text, timesta
   from public, anon;
 grant execute on function public.record_pay_at_store_payment_v1(uuid, text, timestamptz)
   to authenticated, service_role;
-
-;

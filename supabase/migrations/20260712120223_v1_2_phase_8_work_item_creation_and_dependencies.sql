@@ -163,6 +163,7 @@ begin
   return result_row;
 end $$;
 
+-- Compatibility wrapper for older clients that use the original 8-argument signature.
 create or replace function public.create_work_item(
   p_job_order_id uuid,
   p_title text,
@@ -242,6 +243,7 @@ begin
   return result_row;
 end $$;
 
+-- Compatibility wrapper for the original signature.
 create or replace function public.update_work_item_draft(
   p_work_item_id uuid,
   p_title text,
@@ -375,4 +377,5 @@ begin
   if not found then raise exception 'Dependensi tidak ditemukan'; end if;
   insert into public.work_item_dependency_history(work_item_id,depends_on_work_item_id,action,actor_id)
   values(p_work_item_id,p_depends_on_work_item_id,'removed',auth.uid());
-end $$;;
+end $$;
+

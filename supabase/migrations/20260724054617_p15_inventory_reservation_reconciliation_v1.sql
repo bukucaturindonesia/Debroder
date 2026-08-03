@@ -91,4 +91,4 @@ begin
     jsonb_build_object('reconciled_balance_count', reconciled_count)
   );
 end
-$p15_reconcile$;;
+$p15_reconcile$;

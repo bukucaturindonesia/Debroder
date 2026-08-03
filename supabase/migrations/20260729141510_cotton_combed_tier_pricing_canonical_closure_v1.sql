@@ -84,4 +84,4 @@ begin
     raise exception 'COTTON_TIER_SCOPE_ABORT_POSTCHECK: product scope was not applied';
   end if;
 end
-$migration$;;
+$migration$;

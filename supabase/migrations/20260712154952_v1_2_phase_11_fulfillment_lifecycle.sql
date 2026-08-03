@@ -1,3 +1,5 @@
+-- DEBRODER v1.2 Phase 11 — evidence, archive, and restore lifecycle.
+
 create or replace function public.register_fulfillment_file(
   p_fulfillment_id uuid,p_file_type text,p_path text,p_file_name text,p_mime_type text,p_size_bytes bigint
 )
@@ -102,4 +104,4 @@ begin
   values(result_row.id,result_row.status,result_row.status,'Dipulihkan dari Gudang Arsip',auth.uid(),jsonb_build_object('action','restored','phase','11'));
   perform public.refresh_order_fulfillment_status(result_row.order_id);
   return result_row;
-end $$;;
+end $$;

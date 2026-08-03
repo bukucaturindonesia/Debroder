@@ -38,4 +38,4 @@ select 'payment',to_char(timezone('Asia/Makassar',now()),'YYYY'),
 from public.order_payments
 where payment_number ~ '^PAY-DEB-[0-9]{4}-[0-9]+$'
 on conflict(document_type,period_key)
-do update set last_value=greatest(public.document_number_sequences.last_value,excluded.last_value),updated_at=now();;
+do update set last_value=greatest(public.document_number_sequences.last_value,excluded.last_value),updated_at=now();

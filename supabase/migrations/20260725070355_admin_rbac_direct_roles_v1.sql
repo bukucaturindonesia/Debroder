@@ -1,5 +1,11 @@
 begin;
 
+-- DEBRODER ADMIN-RBAC-01 — direct-role implementation.
+-- Source-only package: this file is NOT applied automatically.
+-- New operational accounts use profiles.role directly; no role alias/canonical shadow field.
+-- Existing legacy roles remain valid for regression compatibility.
+-- fahmi@debroder.com is never updated by this migration.
+
 alter table public.profiles
   add column if not exists display_name text,
   add column if not exists account_status text not null default 'ACTIVE',
@@ -36,10 +42,14 @@ alter table public.profiles add constraint profiles_store_scope_check check (
   or role <> all (array['store_admin','head_store']::text[])
 );
 
-create index if not exists profiles_account_status_idx on public.profiles(account_status);
-create index if not exists profiles_primary_store_id_idx on public.profiles(primary_store_id);
-create index if not exists profiles_role_status_idx on public.profiles(role, account_status);
+create index if not exists profiles_account_status_idx
+  on public.profiles(account_status);
+create index if not exists profiles_primary_store_id_idx
+  on public.profiles(primary_store_id);
+create index if not exists profiles_role_status_idx
+  on public.profiles(role, account_status);
 
+-- Explicit order-to-store ownership for scoped operational access.
 create table if not exists public.order_store_assignments (
   order_id uuid primary key references public.orders(id) on delete cascade,
   receiving_store_id uuid references public.stores(id) on delete restrict,
@@ -59,24 +69,33 @@ alter table public.order_store_assignments enable row level security;
 insert into public.order_store_assignments(order_id, pickup_store_id, reason, updated_at)
 select order_row.id, location_row.store_id, 'Backfill dari orders.pickup_location_id', now()
 from public.orders order_row
-join public.inventory_locations location_row on location_row.id = order_row.pickup_location_id
+join public.inventory_locations location_row
+  on location_row.id = order_row.pickup_location_id
 where location_row.store_id is not null
 on conflict (order_id) do update
-set pickup_store_id = coalesce(public.order_store_assignments.pickup_store_id, excluded.pickup_store_id),
+set pickup_store_id = coalesce(
+      public.order_store_assignments.pickup_store_id,
+      excluded.pickup_store_id
+    ),
     updated_at = now();
 
 insert into public.order_store_assignments(order_id, pickup_store_id, reason, updated_at)
-select reservation.order_id,
-       (array_agg(location_row.store_id order by location_row.store_id))[1],
-       'Backfill dari stock reservation',
-       now()
+select
+  reservation.order_id,
+  (array_agg(location_row.store_id order by location_row.store_id))[1],
+  'Backfill dari stock reservation',
+  now()
 from public.stock_reservations reservation
-join public.inventory_locations location_row on location_row.id = reservation.location_id
+join public.inventory_locations location_row
+  on location_row.id = reservation.location_id
 where reservation.order_id is not null
   and location_row.store_id is not null
 group by reservation.order_id
 on conflict (order_id) do update
-set pickup_store_id = coalesce(public.order_store_assignments.pickup_store_id, excluded.pickup_store_id),
+set pickup_store_id = coalesce(
+      public.order_store_assignments.pickup_store_id,
+      excluded.pickup_store_id
+    ),
     updated_at = now();
 
 create or replace function public.current_request_session_id()
@@ -233,21 +252,24 @@ language sql stable security definer set search_path = '' as $$
     or exists (
       select 1
       from public.orders order_row
-      join public.inventory_locations location_row on location_row.id = order_row.pickup_location_id
+      join public.inventory_locations location_row
+        on location_row.id = order_row.pickup_location_id
       where order_row.id = p_order_id
         and location_row.store_id = public.current_actor_store_id()
     )
     or exists (
       select 1
       from public.stock_reservations reservation
-      join public.inventory_locations location_row on location_row.id = reservation.location_id
+      join public.inventory_locations location_row
+        on location_row.id = reservation.location_id
       where reservation.order_id = p_order_id
         and location_row.store_id = public.current_actor_store_id()
     )
     or exists (
       select 1
       from public.pickup_preparations preparation
-      join public.inventory_locations location_row on location_row.id = preparation.location_id
+      join public.inventory_locations location_row
+        on location_row.id = preparation.location_id
       where preparation.order_id = p_order_id
         and location_row.store_id = public.current_actor_store_id()
     )
@@ -317,6 +339,8 @@ language sql stable security definer set search_path = '' as $$
   ), false)
 $$;
 
+-- Permission rows for direct operational roles. Unknown permission keys remain absent,
+-- therefore deny-by-default continues to apply.
 insert into public.role_permissions(role, permission_key, granted, updated_by, updated_at)
 select role_name.role, definition.permission_key, false, null, now()
 from (
@@ -440,7 +464,6 @@ begin
 
   if not found then raise exception 'Profil tidak ditemukan'; end if;
   target_email := lower(coalesce(target_row.email,''));
-
   if target_email = 'fahmi@debroder.com'
      or target_row.role in ('owner','superadmin','super_admin') then
     raise exception 'Akun Owner/Super Admin dilindungi';
@@ -556,6 +579,8 @@ begin
 end
 $$;
 
+-- Direct roles receive explicit permissive read policies; store boundaries are
+-- enforced by restrictive policies below. Existing legacy policies stay untouched.
 drop policy if exists "rbac direct role assignment read" on public.order_store_assignments;
 create policy "rbac direct role assignment read"
 on public.order_store_assignments for select to authenticated
@@ -564,6 +589,8 @@ using (
   and public.can_access_order(order_id)
 );
 
+-- Store Admin is fail-closed across scoped entities even if another permissive
+-- policy exists. Other roles continue through their existing permission policies.
 drop policy if exists "rbac store scope inventory locations" on public.inventory_locations;
 create policy "rbac store scope inventory locations"
 on public.inventory_locations as restrictive for all to authenticated
@@ -732,4 +759,4 @@ grant execute on function public.assert_admin_session_v1(uuid) to authenticated,
 grant execute on function public.update_admin_account_access_v1(uuid,text,text,uuid,boolean,text) to authenticated, service_role;
 grant execute on function public.complete_admin_password_change_v1() to authenticated;
 
-commit;;
+commit;

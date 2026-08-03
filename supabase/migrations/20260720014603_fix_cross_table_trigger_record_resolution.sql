@@ -1,3 +1,6 @@
+-- Fix all remaining cross-table trigger functions that used CASE
+-- to access incompatible NEW record fields.
+
 create or replace function public.refresh_order_integrity_task_trigger_v1()
 returns trigger
 language plpgsql
@@ -106,9 +109,16 @@ begin
 end;
 $$;
 
-revoke all on function public.refresh_order_integrity_task_trigger_v1() from public, anon, authenticated;
-revoke all on function public.sync_order_handoff_trigger_v2() from public, anon, authenticated;
-revoke all on function public.guard_active_cancellation_progress_v1() from public, anon, authenticated;
-grant execute on function public.refresh_order_integrity_task_trigger_v1() to service_role;
-grant execute on function public.sync_order_handoff_trigger_v2() to service_role;
-grant execute on function public.guard_active_cancellation_progress_v1() to service_role;;
+revoke all on function public.refresh_order_integrity_task_trigger_v1()
+  from public, anon, authenticated;
+revoke all on function public.sync_order_handoff_trigger_v2()
+  from public, anon, authenticated;
+revoke all on function public.guard_active_cancellation_progress_v1()
+  from public, anon, authenticated;
+
+grant execute on function public.refresh_order_integrity_task_trigger_v1()
+  to service_role;
+grant execute on function public.sync_order_handoff_trigger_v2()
+  to service_role;
+grant execute on function public.guard_active_cancellation_progress_v1()
+  to service_role;

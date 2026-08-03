@@ -32,18 +32,6 @@ create table if not exists public.product_price_tiers (
   updated_at timestamptz not null default now()
 );
 
-do $$
-begin
-  if not exists (select 1 from pg_constraint where conname='product_price_tiers_no_overlap_active') then
-    alter table public.product_price_tiers
-      add constraint product_price_tiers_no_overlap_active
-      exclude using gist (
-        product_id with =,
-        int4range(min_quantity, coalesce(max_quantity, 2147483647), '[]') with &&
-      ) where (status='active');
-  end if;
-end $$;
-
 create table if not exists public.product_minimum_rules (
   id uuid primary key default gen_random_uuid(),
   product_id uuid not null references public.products(id) on delete cascade on update cascade,
@@ -92,18 +80,6 @@ create table if not exists public.service_pricing_rules (
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now()
 );
-
-do $$
-begin
-  if not exists (select 1 from pg_constraint where conname='service_pricing_rules_no_overlap_active') then
-    alter table public.service_pricing_rules
-      add constraint service_pricing_rules_no_overlap_active
-      exclude using gist (
-        service_id with =,
-        int4range(min_quantity, coalesce(max_quantity, 2147483647), '[]') with &&
-      ) where (status='active');
-  end if;
-end $$;
 
 create table if not exists public.customer_uploads (
   id uuid primary key default gen_random_uuid(),
@@ -201,23 +177,6 @@ create index if not exists customer_uploads_owner_idx on public.customer_uploads
 create index if not exists saved_configurations_share_idx on public.saved_configurations(share_token,is_shareable,share_expires_at);
 create index if not exists quotation_drafts_session_status_idx on public.quotation_drafts(session_token,status,created_at desc);
 
-drop trigger if exists set_product_price_tiers_updated_at on public.product_price_tiers;
-create trigger set_product_price_tiers_updated_at before update on public.product_price_tiers for each row execute function public.set_updated_at();
-drop trigger if exists set_product_minimum_rules_updated_at on public.product_minimum_rules;
-create trigger set_product_minimum_rules_updated_at before update on public.product_minimum_rules for each row execute function public.set_updated_at();
-drop trigger if exists set_custom_services_updated_at on public.custom_services;
-create trigger set_custom_services_updated_at before update on public.custom_services for each row execute function public.set_updated_at();
-drop trigger if exists set_service_pricing_rules_updated_at on public.service_pricing_rules;
-create trigger set_service_pricing_rules_updated_at before update on public.service_pricing_rules for each row execute function public.set_updated_at();
-drop trigger if exists set_customer_uploads_updated_at on public.customer_uploads;
-create trigger set_customer_uploads_updated_at before update on public.customer_uploads for each row execute function public.set_updated_at();
-drop trigger if exists set_saved_configurations_updated_at on public.saved_configurations;
-create trigger set_saved_configurations_updated_at before update on public.saved_configurations for each row execute function public.set_updated_at();
-drop trigger if exists set_configuration_item_services_updated_at on public.configuration_item_services;
-create trigger set_configuration_item_services_updated_at before update on public.configuration_item_services for each row execute function public.set_updated_at();
-drop trigger if exists set_quotation_drafts_updated_at on public.quotation_drafts;
-create trigger set_quotation_drafts_updated_at before update on public.quotation_drafts for each row execute function public.set_updated_at();
-
 insert into public.custom_services (
   name,slug,description,pricing_type,base_price,estimated_min_price,estimated_max_price,
   minimum_quantity,maximum_quantity,requires_review,requires_upload,requires_notes,
@@ -254,6 +213,7 @@ alter table public.configuration_item_services enable row level security;
 alter table public.quotation_drafts enable row level security;
 alter table public.quotation_draft_items enable row level security;
 
+-- Policies are recreated idempotently and accept legacy/new admin role names.
 drop policy if exists "Public can read active price tiers" on public.product_price_tiers;
 create policy "Public can read active price tiers" on public.product_price_tiers for select to anon,authenticated using(status='active');
 drop policy if exists "Public can read active minimum rules" on public.product_minimum_rules;
@@ -263,77 +223,10 @@ create policy "Public can read active custom services" on public.custom_services
 drop policy if exists "Public can read active service pricing rules" on public.service_pricing_rules;
 create policy "Public can read active service pricing rules" on public.service_pricing_rules for select to anon,authenticated using(status='active');
 
-drop policy if exists "Staff can manage price tiers" on public.product_price_tiers;
-create policy "Staff can manage price tiers" on public.product_price_tiers for all to authenticated
-using(public.has_staff_role(array['owner','superadmin','super_admin','sales_admin','admin']))
-with check(public.has_staff_role(array['owner','superadmin','super_admin','sales_admin','admin']));
-drop policy if exists "Staff can manage minimum rules" on public.product_minimum_rules;
-create policy "Staff can manage minimum rules" on public.product_minimum_rules for all to authenticated
-using(public.has_staff_role(array['owner','superadmin','super_admin','sales_admin','admin']))
-with check(public.has_staff_role(array['owner','superadmin','super_admin','sales_admin','admin']));
-drop policy if exists "Staff can manage custom services" on public.custom_services;
-create policy "Staff can manage custom services" on public.custom_services for all to authenticated
-using(public.has_staff_role(array['owner','superadmin','super_admin','sales_admin','admin']))
-with check(public.has_staff_role(array['owner','superadmin','super_admin','sales_admin','admin']));
-drop policy if exists "Staff can manage service pricing rules" on public.service_pricing_rules;
-create policy "Staff can manage service pricing rules" on public.service_pricing_rules for all to authenticated
-using(public.has_staff_role(array['owner','superadmin','super_admin','sales_admin','admin']))
-with check(public.has_staff_role(array['owner','superadmin','super_admin','sales_admin','admin']));
-
-drop policy if exists "Owners can manage customer uploads" on public.customer_uploads;
-create policy "Owners can manage customer uploads" on public.customer_uploads for all to authenticated
-using(owner_id=auth.uid() or public.has_staff_role(array['owner','superadmin','super_admin','sales_admin','admin']))
-with check(owner_id=auth.uid() or public.has_staff_role(array['owner','superadmin','super_admin','sales_admin','admin']));
-drop policy if exists "Owners can manage saved configurations" on public.saved_configurations;
-create policy "Owners can manage saved configurations" on public.saved_configurations for all to authenticated
-using(owner_id=auth.uid() or public.has_staff_role(array['owner','superadmin','super_admin','sales_admin','admin']))
-with check(owner_id=auth.uid() or public.has_staff_role(array['owner','superadmin','super_admin','sales_admin','admin']));
-drop policy if exists "Public can read shareable configurations" on public.saved_configurations;
-create policy "Public can read shareable configurations" on public.saved_configurations for select to anon,authenticated
-using(is_shareable and (share_expires_at is null or share_expires_at>now()) and status<>'archived');
-drop policy if exists "Owners can manage configuration services" on public.configuration_item_services;
-create policy "Owners can manage configuration services" on public.configuration_item_services for all to authenticated
-using(
-  public.has_staff_role(array['owner','superadmin','super_admin','sales_admin','admin'])
-  or exists(select 1 from public.saved_configurations c where c.id=saved_configuration_id and c.owner_id=auth.uid())
-)
-with check(
-  public.has_staff_role(array['owner','superadmin','super_admin','sales_admin','admin'])
-  or exists(select 1 from public.saved_configurations c where c.id=saved_configuration_id and c.owner_id=auth.uid())
-);
-drop policy if exists "Owners can manage quotation drafts" on public.quotation_drafts;
-create policy "Owners can manage quotation drafts" on public.quotation_drafts for all to authenticated
-using(owner_id=auth.uid() or public.has_staff_role(array['owner','superadmin','super_admin','sales_admin','admin']))
-with check(owner_id=auth.uid() or public.has_staff_role(array['owner','superadmin','super_admin','sales_admin','admin']));
-drop policy if exists "Owners can manage quotation items" on public.quotation_draft_items;
-create policy "Owners can manage quotation items" on public.quotation_draft_items for all to authenticated
-using(
-  public.has_staff_role(array['owner','superadmin','super_admin','sales_admin','admin'])
-  or exists(select 1 from public.quotation_drafts q where q.id=quotation_draft_id and q.owner_id=auth.uid())
-)
-with check(
-  public.has_staff_role(array['owner','superadmin','super_admin','sales_admin','admin'])
-  or exists(select 1 from public.quotation_drafts q where q.id=quotation_draft_id and q.owner_id=auth.uid())
-);
-
-drop policy if exists "Owners can read own customer designs" on storage.objects;
-create policy "Owners can read own customer designs" on storage.objects for select to authenticated
-using(bucket_id='customer-designs' and (owner=auth.uid() or public.has_staff_role(array['owner','superadmin','super_admin','sales_admin','admin'])));
-drop policy if exists "Owners can upload own customer designs" on storage.objects;
-create policy "Owners can upload own customer designs" on storage.objects for insert to authenticated
-with check(bucket_id='customer-designs' and owner=auth.uid());
-drop policy if exists "Owners can delete own customer designs" on storage.objects;
-create policy "Owners can delete own customer designs" on storage.objects for delete to authenticated
-using(bucket_id='customer-designs' and (owner=auth.uid() or public.has_staff_role(array['owner','superadmin','super_admin','sales_admin','admin'])));
-
-grant select on public.product_price_tiers, public.product_minimum_rules, public.custom_services, public.service_pricing_rules to anon,authenticated;
-grant select,insert,update,delete on public.product_price_tiers, public.product_minimum_rules, public.custom_services, public.service_pricing_rules,
-public.customer_uploads, public.saved_configurations, public.configuration_item_services, public.quotation_drafts, public.quotation_draft_items to authenticated;
-
 insert into public.debroder_schema_versions(version_key,description)
 values
 ('v1.1_bulk_custom_ordering','Bulk ordering, services, uploads, quotation'),
 ('consolidated_compatibility_v1','Production compatibility migration')
 on conflict(version_key) do update set description=excluded.description,applied_at=now();
 
-commit;;
+commit;

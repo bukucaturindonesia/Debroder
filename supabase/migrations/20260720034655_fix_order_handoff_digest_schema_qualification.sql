@@ -1,3 +1,7 @@
+-- DEBRODER WhatsApp verification / order handoff digest schema fix
+-- Already applied to Supabase production.
+-- Qualifies pgcrypto digest calls for SECURITY DEFINER functions with an empty search_path.
+
 create or replace function public.sync_order_handoff_v2(
   p_order_id uuid,
   p_source_event_id uuid default null::uuid
@@ -138,4 +142,4 @@ begin
 
   return row_value;
 end;
-$$;;
+$$;

@@ -337,4 +337,4 @@ begin
 end
 $$;
 
-commit;;
+commit;
