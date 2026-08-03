@@ -52,8 +52,6 @@ begin
     raise exception 'Order not found';
   end if;
 
-  -- Idempotent: a repeated cancellation returns the same terminal row and
-  -- does not release stock or create duplicate history/audit records.
   if order_before.status in ('cancelled','dibatalkan') then
     return order_before;
   end if;
@@ -497,4 +495,4 @@ $$;
 revoke all on function public.verify_order_payment(uuid,text)
   from public,anon,authenticated;
 grant execute on function public.verify_order_payment(uuid,text)
-  to authenticated,service_role;
+  to authenticated,service_role;;

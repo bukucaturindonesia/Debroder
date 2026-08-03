@@ -1,0 +1,14 @@
+alter function public.mark_notification_read(uuid) set search_path='';
+alter function public.mark_all_notifications_read() set search_path='';
+alter function public.archive_notification(uuid) set search_path='';
+alter function public.archive_notification(uuid,text) set search_path='';
+alter function public.restore_notification(uuid) set search_path='';
+alter function public.permanently_delete_notification(uuid) set search_path='';
+alter function public.create_notification_template(text,text,text,text,boolean) set search_path='';
+alter function public.update_notification_template(uuid,text,text,boolean,boolean) set search_path='';
+alter function public.archive_notification_template(uuid,text) set search_path='';
+alter function public.restore_notification_template(uuid) set search_path='';
+alter function public.permanently_delete_notification_template(uuid) set search_path='';
+alter function public.emit_notification_event(text,text,uuid,jsonb,text,uuid[],text) set search_path='';
+alter function public.staff_notification_recipients() set search_path='';
+alter function public.staff_notification_recipients(text[]) set search_path='';;

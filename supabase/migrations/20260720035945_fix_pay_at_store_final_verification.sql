@@ -1,8 +1,3 @@
--- DEBRODER Pay-at-Store final verification correction.
--- Already applied to Supabase production.
--- Pickup orders paid at the store may complete packing/final verification before cash is received.
--- Cash is still recorded atomically only during the real pickup handover.
-
 create or replace function public.complete_fulfillment_final_verification(
   p_fulfillment_id uuid,
   p_checklist jsonb,
@@ -112,4 +107,4 @@ begin
 
   return result_row;
 end;
-$$;
+$$;;

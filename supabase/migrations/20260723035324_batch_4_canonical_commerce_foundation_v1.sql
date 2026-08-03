@@ -13,9 +13,11 @@ end;
 update public.products p
 set tier_scope = case
   when exists (
-    select 1 from public.product_price_tiers ppt
+    select 1
+    from public.product_price_tiers ppt
     where ppt.product_id = p.id and ppt.status = 'active'
-  ) then 'product' else 'none'
+  ) then 'product'
+  else 'none'
 end;
 
 alter table public.products
@@ -28,6 +30,11 @@ alter table public.products
   add constraint products_tier_scope_check
     check (tier_scope in ('none','product'));
 
+comment on column public.products.sales_mode is
+  'Canonical selling route: ready_stock, custom, or both.';
+comment on column public.products.tier_scope is
+  'Batch 4 v1 tier aggregation scope. Supported values: none or product.';
+
 alter table public.order_items
   add column if not exists pricing_snapshot jsonb not null default '{}'::jsonb;
 
@@ -37,6 +44,9 @@ alter table public.order_items
 alter table public.order_items
   add constraint order_items_pricing_snapshot_object_check
     check (jsonb_typeof(pricing_snapshot) = 'object');
+
+comment on column public.order_items.pricing_snapshot is
+  'Immutable server-derived pricing evidence for the order line.';
 
 create or replace function public.enforce_public_order_item_commerce_mode_v1()
 returns trigger
@@ -49,8 +59,10 @@ declare
   product_sales_mode text;
   product_pricing_mode text;
 begin
-  select o.checkout_source into order_source
-  from public.orders o where o.id = new.order_id;
+  select o.checkout_source
+  into order_source
+  from public.orders o
+  where o.id = new.order_id;
 
   if coalesce(order_source, '') <> 'public_checkout' or new.product_id is null then
     return new;
@@ -58,9 +70,12 @@ begin
 
   select p.sales_mode, p.pricing_mode
   into product_sales_mode, product_pricing_mode
-  from public.products p where p.id = new.product_id;
+  from public.products p
+  where p.id = new.product_id;
 
-  if not found then raise exception 'Produk canonical tidak ditemukan'; end if;
+  if not found then
+    raise exception 'Produk canonical tidak ditemukan';
+  end if;
 
   if new.custom_project_id is null then
     if product_sales_mode not in ('ready_stock','both') then
@@ -79,18 +94,15 @@ begin
 end;
 $function$;
 
-revoke all on function public.enforce_public_order_item_commerce_mode_v1()
-from public, anon, authenticated;
-grant execute on function public.enforce_public_order_item_commerce_mode_v1()
-to service_role;
+revoke all on function public.enforce_public_order_item_commerce_mode_v1() from public, anon, authenticated;
+grant execute on function public.enforce_public_order_item_commerce_mode_v1() to service_role;
 
-drop trigger if exists trg_enforce_public_order_item_commerce_mode_v1
-on public.order_items;
-
+drop trigger if exists trg_enforce_public_order_item_commerce_mode_v1 on public.order_items;
 create trigger trg_enforce_public_order_item_commerce_mode_v1
 before insert or update of product_id, custom_project_id
 on public.order_items
-for each row execute function public.enforce_public_order_item_commerce_mode_v1();
+for each row
+execute function public.enforce_public_order_item_commerce_mode_v1();
 
 create or replace function public.finalize_public_ready_stock_pricing_v1()
 returns trigger
@@ -109,7 +121,8 @@ declare
   line_subtotal bigint;
   order_total bigint;
 begin
-  select * into order_row
+  select *
+  into order_row
   from public.orders
   where id = new.order_id
   for update;
@@ -137,12 +150,20 @@ begin
     raise exception 'Ready Stock dan Custom Project harus dibuat sebagai pesanan terpisah';
   end if;
 
-  if not has_ready then return null; end if;
+  if not has_ready then
+    return null;
+  end if;
 
   for line_row in
     select
-      oi.id, oi.product_id, oi.variant_id, oi.variant_size_id, oi.quantity,
-      p.sales_mode, p.pricing_mode, p.tier_scope,
+      oi.id,
+      oi.product_id,
+      oi.variant_id,
+      oi.variant_size_id,
+      oi.quantity,
+      p.sales_mode,
+      p.pricing_mode,
+      p.tier_scope,
       coalesce(p.base_price, p.price, p.harga, 0)::bigint as base_price,
       coalesce(pv.price_adjustment, 0)::bigint as variant_adjustment,
       coalesce(pvs.price_adjustment, 0)::bigint as size_adjustment
@@ -176,8 +197,7 @@ begin
         and oi.custom_project_id is null
         and oi.product_id = line_row.product_id;
 
-      select ppt.id, ppt.min_quantity, ppt.max_quantity,
-             ppt.unit_price, ppt.quote_required
+      select ppt.id, ppt.min_quantity, ppt.max_quantity, ppt.unit_price, ppt.quote_required
       into tier_row
       from public.product_price_tiers ppt
       where ppt.product_id = line_row.product_id
@@ -195,8 +215,7 @@ begin
       raise exception 'Jumlah produk memerlukan quotation';
     end if;
 
-    unit_price_value :=
-      coalesce(tier_row.unit_price::bigint, line_row.base_price)
+    unit_price_value := coalesce(tier_row.unit_price::bigint, line_row.base_price)
       + line_row.variant_adjustment
       + line_row.size_adjustment;
 
@@ -207,34 +226,35 @@ begin
     line_subtotal := unit_price_value * line_row.quantity;
 
     update public.order_items
-    set unit_price = unit_price_value,
-        subtotal = line_subtotal,
-        pricing_status = 'final',
-        pricing_snapshot = jsonb_build_object(
-          'schema_version', 1,
-          'calculated_by', 'server',
-          'sales_mode', line_row.sales_mode,
-          'pricing_mode', line_row.pricing_mode,
-          'tier_scope', line_row.tier_scope,
-          'pricing_quantity', scope_quantity,
-          'product_id', line_row.product_id,
-          'variant_id', line_row.variant_id,
-          'variant_size_id', line_row.variant_size_id,
-          'base_price', line_row.base_price,
-          'tier', case when tier_row.id is null then null else jsonb_build_object(
-            'id', tier_row.id,
-            'min_quantity', tier_row.min_quantity,
-            'max_quantity', tier_row.max_quantity,
-            'unit_price', tier_row.unit_price,
-            'quote_required', tier_row.quote_required
-          ) end,
-          'variant_adjustment', line_row.variant_adjustment,
-          'size_adjustment', line_row.size_adjustment,
-          'unit_price', unit_price_value,
-          'quantity', line_row.quantity,
-          'subtotal', line_subtotal
-        ),
-        updated_at = now()
+    set
+      unit_price = unit_price_value,
+      subtotal = line_subtotal,
+      pricing_status = 'final',
+      pricing_snapshot = jsonb_build_object(
+        'schema_version', 1,
+        'calculated_by', 'server',
+        'sales_mode', line_row.sales_mode,
+        'pricing_mode', line_row.pricing_mode,
+        'tier_scope', line_row.tier_scope,
+        'pricing_quantity', scope_quantity,
+        'product_id', line_row.product_id,
+        'variant_id', line_row.variant_id,
+        'variant_size_id', line_row.variant_size_id,
+        'base_price', line_row.base_price,
+        'tier', case when tier_row.id is null then null else jsonb_build_object(
+          'id', tier_row.id,
+          'min_quantity', tier_row.min_quantity,
+          'max_quantity', tier_row.max_quantity,
+          'unit_price', tier_row.unit_price,
+          'quote_required', tier_row.quote_required
+        ) end,
+        'variant_adjustment', line_row.variant_adjustment,
+        'size_adjustment', line_row.size_adjustment,
+        'unit_price', unit_price_value,
+        'quantity', line_row.quantity,
+        'subtotal', line_subtotal
+      ),
+      updated_at = now()
     where id = line_row.id;
   end loop;
 
@@ -245,12 +265,13 @@ begin
     and oi.archived_at is null;
 
   update public.orders
-  set subtotal_amount = order_total,
-      total_amount = order_total,
-      payment_required_amount = order_total,
-      payment_balance = greatest(order_total - coalesce(payment_effective_total, 0), 0),
-      pricing_status = 'final',
-      updated_at = now()
+  set
+    subtotal_amount = order_total,
+    total_amount = order_total,
+    payment_required_amount = order_total,
+    payment_balance = greatest(order_total - coalesce(payment_effective_total, 0), 0),
+    pricing_status = 'final',
+    updated_at = now()
   where id = new.order_id
     and jsonb_array_length(coalesce(custom_project_snapshot, '[]'::jsonb)) = 0;
 
@@ -258,22 +279,20 @@ begin
 end;
 $function$;
 
-revoke all on function public.finalize_public_ready_stock_pricing_v1()
-from public, anon, authenticated;
-grant execute on function public.finalize_public_ready_stock_pricing_v1()
-to service_role;
+revoke all on function public.finalize_public_ready_stock_pricing_v1() from public, anon, authenticated;
+grant execute on function public.finalize_public_ready_stock_pricing_v1() to service_role;
 
-drop trigger if exists trg_finalize_public_ready_stock_pricing_v1
-on public.order_items;
-
+drop trigger if exists trg_finalize_public_ready_stock_pricing_v1 on public.order_items;
 create constraint trigger trg_finalize_public_ready_stock_pricing_v1
 after insert on public.order_items
 deferrable initially deferred
-for each row execute function public.finalize_public_ready_stock_pricing_v1();
+for each row
+execute function public.finalize_public_ready_stock_pricing_v1();
 
 insert into public.system_audit_log(
   entity_type, action, actor_role, source, reason, metadata
-) values (
+)
+values (
   'commerce_foundation',
   'canonical_commerce_foundation_v1_applied',
   'system',
@@ -288,4 +307,4 @@ insert into public.system_audit_log(
   )
 );
 
-commit;
+commit;;

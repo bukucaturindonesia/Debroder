@@ -21,4 +21,4 @@ grant execute on function public.remove_fulfillment_file(uuid) to authenticated;
 grant execute on function public.archive_fulfillment(uuid,text) to authenticated;
 grant execute on function public.restore_fulfillment(uuid) to authenticated;
 grant execute on function public.permanently_delete_fulfillment(uuid) to authenticated;
-grant execute on function public.refresh_order_fulfillment_status(uuid) to service_role;
+grant execute on function public.refresh_order_fulfillment_status(uuid) to service_role;;

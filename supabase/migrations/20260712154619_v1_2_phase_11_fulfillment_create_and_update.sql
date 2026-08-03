@@ -190,4 +190,4 @@ begin
     to_jsonb(old_row),to_jsonb(result_row),auth.uid()
   );
   return result_row;
-end $$;
+end $$;;

@@ -1,6 +1,3 @@
--- P0 Security Stage 4: checkout abuse protection.
--- Keeps checkout pricing/order/reservation semantics unchanged.
-
 create schema if not exists private;
 
 create table if not exists private.checkout_request_ledger (
@@ -158,10 +155,9 @@ revoke all on function public.enforce_public_checkout_abuse_guard(text,text,text
 grant execute on function public.enforce_public_checkout_abuse_guard(text,text,text,text,text)
   to service_role;
 
--- The application Route Handler is the only supported public checkout entry point.
 revoke all on function public.create_public_checkout_order(
   text,text,text,text,text,text,text,text,uuid,text,text,jsonb
 ) from public, anon, authenticated;
 grant execute on function public.create_public_checkout_order(
   text,text,text,text,text,text,text,text,uuid,text,text,jsonb
-) to service_role;
+) to service_role;;

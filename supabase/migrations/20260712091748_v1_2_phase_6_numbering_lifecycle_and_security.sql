@@ -110,4 +110,4 @@ grant execute on function public.create_document_number_rule(text,text,boolean,b
 grant execute on function public.update_document_number_rule(text,text,boolean,boolean,integer,text,text,boolean) to authenticated;
 grant execute on function public.archive_document_number_rule(text,text) to authenticated;
 grant execute on function public.restore_document_number_rule(text) to authenticated;
-grant execute on function public.permanently_delete_document_number_rule(text) to authenticated;
+grant execute on function public.permanently_delete_document_number_rule(text) to authenticated;;

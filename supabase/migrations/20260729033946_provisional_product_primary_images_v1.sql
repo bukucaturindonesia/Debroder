@@ -160,3 +160,5 @@ where not exists (
 );
 
 commit;
+
+;

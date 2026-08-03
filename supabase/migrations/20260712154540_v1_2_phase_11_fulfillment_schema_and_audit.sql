@@ -59,4 +59,4 @@ begin
   end loop;
 end $$;
 
-alter table public.fulfillments alter column fulfillment_number set not null;
+alter table public.fulfillments alter column fulfillment_number set not null;;

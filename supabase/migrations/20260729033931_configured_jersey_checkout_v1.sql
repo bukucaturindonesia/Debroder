@@ -454,3 +454,5 @@ insert into public.system_audit_log(
 );
 
 commit;
+
+;

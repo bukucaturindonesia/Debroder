@@ -136,5 +136,4 @@ end $$;
 drop trigger if exists set_work_item_updated_at on public.work_items;
 create trigger set_work_item_updated_at
 before update on public.work_items
-for each row execute function public.set_work_item_updated_at();
-
+for each row execute function public.set_work_item_updated_at();;

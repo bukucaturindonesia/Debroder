@@ -1244,4 +1244,4 @@ begin
       '{}'::jsonb;
   end if;
 end
-$$;
+$$;;

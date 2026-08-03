@@ -1,5 +1,3 @@
--- DEBRODER v1.2 Phase 11 — immutable histories and controlled permanent deletion.
-
 create or replace function public.prevent_fulfillment_history_mutation()
 returns trigger
 language plpgsql
@@ -52,4 +50,4 @@ begin
   delete from public.fulfillment_items where fulfillment_id=target_row.id;
   delete from public.fulfillments where id=target_row.id;
   perform public.refresh_order_fulfillment_status(target_row.order_id);
-end $$;
+end $$;;

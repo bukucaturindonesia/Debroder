@@ -1,5 +1,3 @@
--- DEBRODER v1.2 Phase 11 — timestamp trigger, audit trigger, RLS, and read policies.
-
 create or replace function public.set_fulfillment_updated_at()
 returns trigger language plpgsql set search_path='' as $$begin new.updated_at=now(); return new; end $$;
 drop trigger if exists set_fulfillment_updated_at on public.fulfillments;
@@ -30,4 +28,4 @@ begin
       table_name_value,table_name_value
     );
   end loop;
-end $$;
+end $$;;

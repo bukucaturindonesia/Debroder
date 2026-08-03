@@ -199,4 +199,4 @@ values(
     'correction', 'ignore unrelated released/restored reservation history',
     'coverage_rule', 'consumed quantity must equal mapped order item quantity'
   )
-);
+);;

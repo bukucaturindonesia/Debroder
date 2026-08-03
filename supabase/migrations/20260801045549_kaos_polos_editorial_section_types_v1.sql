@@ -22,4 +22,4 @@ alter table if exists public.cms_banners
   ));
 
 comment on constraint cms_banners_section_type_check on public.cms_banners is
-  'Allowed shared CMS presentation roles, including Kaos Polos editorial slots.';
+  'Allowed shared CMS presentation roles, including Kaos Polos editorial slots.';;

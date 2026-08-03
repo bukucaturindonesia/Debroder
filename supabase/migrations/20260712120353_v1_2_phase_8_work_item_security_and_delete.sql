@@ -91,5 +91,4 @@ grant execute on function public.archive_work_item(uuid,text) to authenticated;
 grant execute on function public.restore_work_item(uuid) to authenticated;
 grant execute on function public.permanently_delete_work_item(uuid) to authenticated;
 
--- No live Work Item rows existed when Phase 8 was prepared. Keep all future rows strictly numbered.
-alter table public.work_items alter column work_item_number set not null;
+alter table public.work_items alter column work_item_number set not null;;

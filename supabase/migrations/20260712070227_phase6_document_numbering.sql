@@ -165,4 +165,4 @@ using(public.has_staff_role(array['owner','superadmin','super_admin','sales_admi
 
 grant select on public.document_number_rules,public.document_number_issues to authenticated;
 grant execute on function public.issue_document_number(text,text,uuid,text,jsonb) to authenticated;
-grant execute on function public.update_document_number_rule(text,text,boolean,boolean,integer,text,text,boolean) to authenticated;
+grant execute on function public.update_document_number_rule(text,text,boolean,boolean,integer,text,text,boolean) to authenticated;;

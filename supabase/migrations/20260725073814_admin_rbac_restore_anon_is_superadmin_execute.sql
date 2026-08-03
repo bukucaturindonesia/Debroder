@@ -5,4 +5,4 @@ begin;
 -- admin session, so allowing anon to execute it does not grant admin access.
 grant execute on function public.is_superadmin() to anon;
 
-commit;
+commit;;

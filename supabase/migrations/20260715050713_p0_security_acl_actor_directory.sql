@@ -2,9 +2,6 @@
 -- Scope: close privileged internal RPCs and make actor_directory read-only/security-invoker.
 -- This migration intentionally does not clean stale stock reservations.
 
-begin;
-
--- Keep system audit writes behind trusted server-side/service-role execution.
 create or replace function public.write_audit_log(
   p_entity_type text,
   p_entity_id uuid,
@@ -61,30 +58,11 @@ begin
 end;
 $function$;
 
-revoke all on function public.write_audit_log(
-  text,
-  uuid,
-  text,
-  jsonb,
-  jsonb,
-  text,
-  text,
-  text,
-  jsonb
-) from public, anon, authenticated;
-grant execute on function public.write_audit_log(
-  text,
-  uuid,
-  text,
-  jsonb,
-  jsonb,
-  text,
-  text,
-  text,
-  jsonb
-) to service_role;
+revoke all on function public.write_audit_log(text, uuid, text, jsonb, jsonb, text, text, text, jsonb)
+  from public, anon, authenticated;
+grant execute on function public.write_audit_log(text, uuid, text, jsonb, jsonb, text, text, text, jsonb)
+  to service_role;
 
--- Internal commerce lifecycle helpers must never be browser-callable.
 revoke all on function public.refresh_order_payment_summary(uuid)
   from public, anon, authenticated;
 grant execute on function public.refresh_order_payment_summary(uuid)
@@ -110,8 +88,6 @@ revoke all on function public.expire_public_commerce_orders()
 grant execute on function public.expire_public_commerce_orders()
   to service_role;
 
--- The actor directory is a read-only authenticated directory. It must execute
--- using caller privileges so profiles RLS remains the enforcement boundary.
 create or replace view public.actor_directory
 with (security_invoker = true)
 as
@@ -128,9 +104,5 @@ where public.has_staff_role(
 revoke all on table public.actor_directory from public, anon, authenticated;
 grant select on table public.actor_directory to authenticated, service_role;
 
--- Prevent future functions created by the migration owner from silently
--- inheriting browser execution through PostgreSQL's PUBLIC default.
 alter default privileges for role postgres in schema public
-  revoke execute on functions from public;
-
-commit;
+  revoke execute on functions from public;;

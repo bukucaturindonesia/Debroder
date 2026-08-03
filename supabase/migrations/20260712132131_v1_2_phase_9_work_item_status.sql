@@ -110,4 +110,4 @@ end $$;
 
 revoke all on function public.transition_work_item_status_phase8_core(uuid,text,text,text) from public,anon,authenticated;
 revoke all on function public.transition_work_item_status(uuid,text,text,text) from public,anon;
-grant execute on function public.transition_work_item_status(uuid,text,text,text) to authenticated;
+grant execute on function public.transition_work_item_status(uuid,text,text,text) to authenticated;;

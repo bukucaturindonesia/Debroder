@@ -1,0 +1,3 @@
+revoke all on public.notification_templates,public.notification_events,public.notifications,public.notification_deliveries,public.notification_deletion_audit,public.notification_template_deletion_audit from public,anon;
+revoke insert,update,delete,truncate,references,trigger on public.notification_templates,public.notification_events,public.notifications,public.notification_deliveries,public.notification_deletion_audit,public.notification_template_deletion_audit from authenticated;
+grant select on public.notification_templates,public.notification_events,public.notifications,public.notification_deliveries,public.notification_deletion_audit,public.notification_template_deletion_audit to authenticated;;

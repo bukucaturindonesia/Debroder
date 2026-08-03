@@ -118,4 +118,4 @@ end $$;
 revoke all on function public.refresh_job_order_progress(uuid) from public,anon,authenticated;
 revoke all on function public.sync_order_production_status(uuid) from public,anon,authenticated;
 grant execute on function public.refresh_job_order_progress(uuid) to service_role;
-grant execute on function public.sync_order_production_status(uuid) to service_role;
+grant execute on function public.sync_order_production_status(uuid) to service_role;;

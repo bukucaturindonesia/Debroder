@@ -1,5 +1,3 @@
--- DEBRODER v1.2 Phase 10 — begin QC review workflow.
-
 create or replace function public.begin_qc_record(p_qc_record_id uuid,p_note text default null)
 returns public.qc_records language plpgsql security definer set search_path='' as $$
 declare result_row public.qc_records;
@@ -10,5 +8,4 @@ begin
  insert into public.qc_status_history(qc_record_id,from_result,to_result,note,changed_by) values(result_row.id,'draft','in_review',coalesce(nullif(btrim(coalesce(p_note,'')),''),'Pemeriksaan QC dimulai'),auth.uid());
  return result_row;
 end $$;
-
-grant execute on function public.begin_qc_record(uuid,text) to authenticated;
+grant execute on function public.begin_qc_record(uuid,text) to authenticated;;

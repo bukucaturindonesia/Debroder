@@ -137,7 +137,6 @@ create unique index if not exists qc_records_one_active_pending_per_work_item
 create index if not exists qc_record_revisions_idx on public.qc_record_revisions(qc_record_id,revision_number desc);
 create index if not exists qc_deletion_audit_work_item_idx on public.qc_deletion_audit(work_item_id,deleted_at desc);
 
--- The production database has no QC rows when this alignment runs. Keep fresh rows strict.
 do $$
 begin
   if not exists(select 1 from public.qc_records where qc_number is null) then
@@ -262,4 +261,4 @@ using(bucket_id='qc-proofs' and owner=auth.uid() and public.has_permission('qc.u
 
 create policy "super admin delete qc proof objects" on storage.objects
 for delete to authenticated
-using(bucket_id='qc-proofs' and public.has_permission('qc.delete'));
+using(bucket_id='qc-proofs' and public.has_permission('qc.delete'));;

@@ -110,5 +110,4 @@ begin
     jsonb_build_object('action','restored'));
   perform public.refresh_job_order_progress(result_row.job_order_id);
   return result_row;
-end $$;
-
+end $$;;

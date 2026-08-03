@@ -1,7 +1,4 @@
 -- Targeted correction: permissive SELECT policies are OR-combined by Postgres.
--- Store Admin therefore needs restrictive policies so assigned-store scope
--- cannot be bypassed by a broader module permission policy.
-
 do $$
 declare
   policy_row record;
@@ -32,17 +29,8 @@ begin
     ) as policies(table_name, policy_name, predicate)
   loop
     if to_regclass(format('public.%I', policy_row.table_name)) is not null then
-      execute format(
-        'drop policy if exists %I on public.%I',
-        policy_row.policy_name,
-        policy_row.table_name
-      );
-      execute format(
-        'create policy %I on public.%I as restrictive for select to authenticated using (%s)',
-        policy_row.policy_name,
-        policy_row.table_name,
-        policy_row.predicate
-      );
+      execute format('drop policy if exists %I on public.%I', policy_row.policy_name, policy_row.table_name);
+      execute format('create policy %I on public.%I as restrictive for select to authenticated using (%s)', policy_row.policy_name, policy_row.table_name, policy_row.predicate);
     end if;
   end loop;
 end
@@ -57,8 +45,7 @@ begin
       using (
         public.current_actor_role() <> 'store_admin'
         or exists (
-          select 1
-          from public.job_orders job_order
+          select 1 from public.job_orders job_order
           where job_order.id = work_items.job_order_id
             and public.can_access_order(job_order.order_id)
         )
@@ -72,12 +59,11 @@ begin
       using (
         public.current_actor_role() <> 'store_admin'
         or exists (
-          select 1
-          from public.job_orders job_order
+          select 1 from public.job_orders job_order
           where job_order.id = qc_records.job_order_id
             and public.can_access_order(job_order.order_id)
         )
       );
   end if;
 end
-$$;
+$$;;

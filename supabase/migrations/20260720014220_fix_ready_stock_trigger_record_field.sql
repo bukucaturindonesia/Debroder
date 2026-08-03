@@ -1,7 +1,3 @@
--- Fix trigger record resolution for automatic Ready Stock fulfillment.
--- Root cause: CASE referenced NEW.order_id while running on public.orders,
--- where the row only has NEW.id.
-
 create or replace function public.trigger_ensure_ready_stock_fulfillment_v2()
 returns trigger
 language plpgsql
@@ -27,7 +23,5 @@ begin
 end;
 $$;
 
-revoke all on function public.trigger_ensure_ready_stock_fulfillment_v2()
-  from public, anon, authenticated;
-grant execute on function public.trigger_ensure_ready_stock_fulfillment_v2()
-  to service_role;
+revoke all on function public.trigger_ensure_ready_stock_fulfillment_v2() from public, anon, authenticated;
+grant execute on function public.trigger_ensure_ready_stock_fulfillment_v2() to service_role;;

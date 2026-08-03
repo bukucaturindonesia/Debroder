@@ -21,4 +21,4 @@ grant execute on function public.can_access_order(uuid) to anon;
 
 -- Mutating/session lifecycle RPCs intentionally remain unavailable to anon.
 
-commit;
+commit;;

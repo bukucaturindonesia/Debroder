@@ -163,4 +163,4 @@ begin
     raise exception 'Stage 3 cleanup failed: fulfillment rows changed';
   end if;
 end
-$$;
+$$;;
