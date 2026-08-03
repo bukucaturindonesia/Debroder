@@ -2,6 +2,9 @@ import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 
 const read = (path: string) => readFileSync(path, "utf8");
+const compactSql = (value: string) =>
+  value.replace(/\s+/g, " ").trim();
+
 const migrationPath = "supabase/migrations/20260720020000_order_operations_phase4_13.sql";
 
 describe("DEBRODER Order Operations Phase 4-13", () => {
@@ -17,8 +20,9 @@ describe("DEBRODER Order Operations Phase 4-13", () => {
 
   it("keeps exception tasks independent and creates an outbox-failure task until retry succeeds", () => {
     const sql = read(migrationPath);
-    expect(sql).toContain(`task_type in (
-      'review_new_order'`);
+    expect(compactSql(sql)).toContain(
+      "task_type in ( 'review_new_order'"
+    );
     expect(sql).toContain("public.sync_customer_outbox_failure_task_v1");
     expect(sql).toContain("'outbox_failure','open','high','admin'");
     expect(sql).toContain("Outbox tidak lagi berstatus gagal");
@@ -56,7 +60,9 @@ describe("DEBRODER Order Operations Phase 4-13", () => {
     expect(sql).toContain("Stok fisik di lokasi pickup belum lengkap");
     expect(sql).toContain("status='no_show'");
     expect(sql).toContain("reservations belonging to other orders");
-    expect(sql).toContain("and not exists(\n      select 1 from public.pickup_preparation_items pi");
+    expect(compactSql(sql)).toContain(
+      "and not exists( select 1 from public.pickup_preparation_items pi"
+    );
     expect(sql).toContain("debroder.skip_inventory_legacy_sync");
   });
 
