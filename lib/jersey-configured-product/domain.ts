@@ -20,6 +20,7 @@ type JerseyProductSource = {
   slug: string;
   status: string | null;
   status_aktif: boolean | null;
+  sales_mode: string | null;
   product_type: string | null;
   pricing_mode: string | null;
   price: number | null;
@@ -62,6 +63,12 @@ type JerseySizeSource = JerseyOptionSource & {
   size_group: string | null;
 };
 
+export type JerseyConfiguredProductCandidateSource = {
+  product: unknown;
+  isDefault: boolean;
+  sortOrder: number;
+};
+
 export type JerseyConfiguredProductSource = {
   product: unknown;
   packages: unknown;
@@ -100,14 +107,7 @@ export function projectJerseyConfiguredProduct(
   if (!product) {
     return invalid("source_invalid", "Sumber produk Jersey tidak valid.");
   }
-  if (
-    product.status !== "active"
-    || product.status_aktif !== true
-    || product.product_type !== "configurable_product"
-    || product.uses_configurator !== true
-    || product.pricing_mode !== "configurator_based"
-    || !hasJerseyEntryType(product.config_schema)
-  ) {
+  if (!isJerseyConfiguredProductAuthority(product)) {
     return {
       status: "not_found",
       code: "jersey_configured_product.not_available",
@@ -288,6 +288,51 @@ export function projectJerseyConfiguredProduct(
   };
 }
 
+export function selectJerseyConfiguredProductCandidate(
+  candidates: readonly JerseyConfiguredProductCandidateSource[]
+): unknown | null {
+  const eligible = candidates.flatMap((candidate) => {
+    const product = readProduct(candidate.product);
+    if (!product || !isEligibleJerseyConfiguredProduct(product)) return [];
+    return [{
+      product,
+      isDefault: candidate.isDefault,
+      sortOrder: candidate.sortOrder
+    }];
+  });
+
+  eligible.sort((left, right) => (
+    Number(right.isDefault) - Number(left.isDefault)
+    || left.sortOrder - right.sortOrder
+    || left.product.slug.localeCompare(right.product.slug)
+    || left.product.id.localeCompare(right.product.id)
+  ));
+
+  return eligible[0]?.product ?? null;
+}
+
+export function isEligibleJerseyConfiguredProduct(value: unknown): boolean {
+  const product = readProduct(value);
+  return Boolean(
+    product
+    && isJerseyConfiguredProductAuthority(product)
+    && product.minimum_order_qty !== null
+    && Number.isSafeInteger(product.minimum_order_qty)
+    && product.minimum_order_qty >= 1
+    && product.minimum_order_qty <= MAX_CART_LINE_QUANTITY
+  );
+}
+
+function isJerseyConfiguredProductAuthority(product: JerseyProductSource): boolean {
+  return product.status === "active"
+    && product.status_aktif === true
+    && (product.sales_mode === "custom" || product.sales_mode === "both")
+    && product.product_type === "configurable_product"
+    && product.uses_configurator === true
+    && product.pricing_mode === "configurator_based"
+    && hasJerseyEntryType(product.config_schema);
+}
+
 export function validateJerseyConsumerDraft(
   definition: ConfiguredProductDefinition,
   draft: ConfiguredProductDraft
@@ -422,6 +467,7 @@ function readProduct(value: unknown): JerseyProductSource | null {
     || !nullableString(value.nama)
     || !nullableString(value.status)
     || !nullableBoolean(value.status_aktif)
+    || !nullableString(value.sales_mode)
     || !nullableString(value.product_type)
     || !nullableString(value.pricing_mode)
     || !nullableInteger(value.price)
@@ -441,6 +487,7 @@ function readProduct(value: unknown): JerseyProductSource | null {
     slug: value.slug,
     status: value.status,
     status_aktif: value.status_aktif,
+    sales_mode: value.sales_mode,
     product_type: value.product_type,
     pricing_mode: value.pricing_mode,
     price: value.price,

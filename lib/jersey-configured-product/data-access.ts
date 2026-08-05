@@ -7,23 +7,32 @@ import {
 } from "@/lib/contracts";
 import type { ConfiguredProductDefinitionReadResult } from "@/lib/configured-product/data-access";
 import { createSupabaseServerClient } from "@/lib/supabase";
+import type { SupabaseClient } from "@supabase/supabase-js";
 import {
   projectJerseyConfiguredProduct,
+  selectJerseyConfiguredProductCandidate,
   type JerseyConfiguredProductConsumer,
   type JerseyConfiguredProductProjection
 } from "./domain";
 
-const PRODUCT_SELECT = "id,name,nama,slug,status,status_aktif,product_type,pricing_mode,price,harga,base_price,uses_configurator,minimum_order_qty,config_schema,image_url,gambar_url,image_alt,updated_at";
+const JERSEY_CATEGORY_SLUG = "jersey";
+const PRODUCT_SELECT = "id,name,nama,slug,status,status_aktif,sales_mode,product_type,pricing_mode,price,harga,base_price,uses_configurator,minimum_order_qty,config_schema,image_url,gambar_url,image_alt,updated_at";
 const OPTION_SELECT = "id,name,slug,description,is_active,sort_order,updated_at";
+
+type JerseyConfiguredProductFailure = {
+  status: "not_found" | "unavailable" | "invalid";
+  code: string;
+  message: string;
+  retryable: boolean;
+};
 
 export type JerseyConfiguredProductReadResult =
   | { status: "ready"; consumer: JerseyConfiguredProductConsumer }
-  | {
-      status: "not_found" | "unavailable" | "invalid";
-      code: string;
-      message: string;
-      retryable: boolean;
-    };
+  | JerseyConfiguredProductFailure;
+
+type JerseyProductSelectionResult =
+  | { status: "ready"; product: unknown }
+  | JerseyConfiguredProductFailure;
 
 export async function readJerseyConfiguredProduct(
   selector: { productId?: string; productSlug?: string } = {}
@@ -36,42 +45,8 @@ export async function readJerseyConfiguredProduct(
     );
   }
 
-  let productQuery = client
-    .from("products")
-    .select(PRODUCT_SELECT)
-    .eq("status", "active")
-    .eq("status_aktif", true)
-    .eq("product_type", "configurable_product")
-    .eq("pricing_mode", "configurator_based")
-    .eq("uses_configurator", true)
-    .contains("config_schema", { entry_type: "jersey_configurator" })
-    .limit(2);
-  if (selector.productId) productQuery = productQuery.eq("id", selector.productId);
-  if (selector.productSlug) productQuery = productQuery.eq("slug", selector.productSlug);
-
-  const { data: productRows, error: productError } = await productQuery;
-  if (productError) {
-    return unavailable(
-      "jersey_configured_product.product_read_failed",
-      "Produk Jersey gagal dibaca."
-    );
-  }
-  if (!Array.isArray(productRows) || productRows.length === 0) {
-    return {
-      status: "not_found",
-      code: "jersey_configured_product.not_available",
-      message: "Produk Jersey Custom belum tersedia.",
-      retryable: false
-    };
-  }
-  if (productRows.length !== 1) {
-    return {
-      status: "invalid",
-      code: "jersey_configured_product.product_ambiguous",
-      message: "Authority produk Jersey tidak tunggal.",
-      retryable: false
-    };
-  }
+  const selectedProduct = await readSelectedJerseyProduct(client, selector);
+  if (selectedProduct.status !== "ready") return selectedProduct;
 
   const [
     packages,
@@ -106,7 +81,7 @@ export async function readJerseyConfiguredProduct(
   }
 
   return fromProjection(projectJerseyConfiguredProduct({
-    product: productRows[0],
+    product: selectedProduct.product,
     packages: packages.data,
     materials: materials.data,
     collarGroups: collarGroups.data,
@@ -140,15 +115,22 @@ export async function priceJerseyConfiguredProduct(
 
   const { data, error } = await client
     .from("products")
-    .select("id,name,nama,status,status_aktif,product_type,pricing_mode,price,harga,base_price,updated_at")
+    .select("id,name,nama,status,status_aktif,sales_mode,product_type,pricing_mode,price,harga,base_price,uses_configurator,minimum_order_qty,config_schema,updated_at")
     .eq("id", input.definitionId)
     .eq("status", "active")
     .eq("status_aktif", true)
+    .in("sales_mode", ["custom", "both"])
     .eq("product_type", "configurable_product")
     .eq("pricing_mode", "configurator_based")
+    .eq("uses_configurator", true)
+    .contains("config_schema", { entry_type: "jersey_configurator" })
     .maybeSingle();
 
   if (error || !data) throw new Error("Jersey pricing product unavailable");
+  const minimumQuantity = Number(data.minimum_order_qty);
+  if (!Number.isSafeInteger(minimumQuantity) || input.quantity < minimumQuantity) {
+    throw new Error("Jersey pricing minimum quantity invalid");
+  }
   const unitAmount = readCanonicalMoney(data.base_price ?? data.price ?? data.harga);
   const totalAmount = unitAmount * input.quantity;
   if (!Number.isSafeInteger(totalAmount)) throw new Error("Jersey pricing total invalid");
@@ -190,6 +172,138 @@ export async function priceJerseyConfiguredProduct(
   };
 }
 
+async function readSelectedJerseyProduct(
+  client: SupabaseClient,
+  selector: { productId?: string; productSlug?: string }
+): Promise<JerseyProductSelectionResult> {
+  if (selector.productId || selector.productSlug) {
+    let query = client.from("products").select(PRODUCT_SELECT).limit(1);
+    if (selector.productId) query = query.eq("id", selector.productId);
+    if (selector.productSlug) query = query.eq("slug", selector.productSlug);
+
+    const { data, error } = await query.maybeSingle();
+    if (error) {
+      return unavailable(
+        "jersey_configured_product.product_read_failed",
+        "Produk Jersey gagal dibaca."
+      );
+    }
+    if (!data) return notFound();
+    return { status: "ready", product: data };
+  }
+
+  const mappedProduct = await readMappedJerseyProduct(client);
+  if (mappedProduct.status === "ready") return mappedProduct;
+  if (mappedProduct.status !== "not_found") return mappedProduct;
+
+  const { data: fallbackRows, error: fallbackError } = await client
+    .from("products")
+    .select(PRODUCT_SELECT)
+    .eq("status", "active")
+    .eq("status_aktif", true)
+    .in("sales_mode", ["custom", "both"])
+    .eq("product_type", "configurable_product")
+    .eq("pricing_mode", "configurator_based")
+    .eq("uses_configurator", true)
+    .contains("config_schema", { entry_type: "jersey_configurator" })
+    .order("slug")
+    .limit(50);
+  if (fallbackError) {
+    return unavailable(
+      "jersey_configured_product.product_read_failed",
+      "Produk Jersey gagal dibaca."
+    );
+  }
+
+  const product = selectJerseyConfiguredProductCandidate(
+    (Array.isArray(fallbackRows) ? fallbackRows : []).map((row) => ({
+      product: row,
+      isDefault: false,
+      sortOrder: 0
+    }))
+  );
+  return product ? { status: "ready", product } : notFound();
+}
+
+async function readMappedJerseyProduct(
+  client: SupabaseClient
+): Promise<JerseyProductSelectionResult> {
+  const { data: category, error: categoryError } = await client
+    .from("custom_categories")
+    .select("id")
+    .eq("slug", JERSEY_CATEGORY_SLUG)
+    .eq("entry_type", "jersey_configurator")
+    .eq("status", "published")
+    .eq("is_active", true)
+    .limit(1)
+    .maybeSingle();
+  if (categoryError) {
+    return unavailable(
+      "jersey_configured_product.mapping_read_failed",
+      "Pilihan produk Jersey gagal dibaca."
+    );
+  }
+  if (!category || typeof category.id !== "string") return notFound();
+
+  const { data: mappingRows, error: mappingError } = await client
+    .from("custom_category_products")
+    .select("product_id,is_default,sort_order")
+    .eq("custom_category_id", category.id)
+    .eq("is_active", true)
+    .order("is_default", { ascending: false })
+    .order("sort_order")
+    .order("product_id")
+    .limit(100);
+  if (mappingError) {
+    return unavailable(
+      "jersey_configured_product.mapping_read_failed",
+      "Pilihan produk Jersey gagal dibaca."
+    );
+  }
+
+  const mappings = (Array.isArray(mappingRows) ? mappingRows : []).flatMap((row) => {
+    if (!row || typeof row.product_id !== "string") return [];
+    return [{
+      productId: row.product_id,
+      isDefault: row.is_default === true,
+      sortOrder: typeof row.sort_order === "number" && Number.isSafeInteger(row.sort_order)
+        ? row.sort_order
+        : 0
+    }];
+  });
+  if (!mappings.length) return notFound();
+
+  const productIds = Array.from(new Set(mappings.map((mapping) => mapping.productId)));
+  const { data: productRows, error: productError } = await client
+    .from("products")
+    .select(PRODUCT_SELECT)
+    .in("id", productIds);
+  if (productError) {
+    return unavailable(
+      "jersey_configured_product.product_read_failed",
+      "Produk Jersey gagal dibaca."
+    );
+  }
+
+  const productsById = new Map(
+    (Array.isArray(productRows) ? productRows : []).flatMap((row) => (
+      row && typeof row.id === "string" ? [[row.id, row] as const] : []
+    ))
+  );
+  const product = selectJerseyConfiguredProductCandidate(
+    mappings.flatMap((mapping) => {
+      const candidate = productsById.get(mapping.productId);
+      return candidate ? [{
+        product: candidate,
+        isDefault: mapping.isDefault,
+        sortOrder: mapping.sortOrder
+      }] : [];
+    })
+  );
+
+  return product ? { status: "ready", product } : notFound();
+}
+
 function readCanonicalMoney(value: unknown) {
   const amount = typeof value === "number" ? value : Number(value);
   if (!Number.isSafeInteger(amount) || amount < 0) {
@@ -210,6 +324,18 @@ function fromProjection(
   };
 }
 
-function unavailable(code: string, message: string): JerseyConfiguredProductReadResult {
+function notFound(): JerseyConfiguredProductFailure {
+  return {
+    status: "not_found",
+    code: "jersey_configured_product.not_available",
+    message: "Produk Jersey Custom belum tersedia.",
+    retryable: false
+  };
+}
+
+function unavailable(
+  code: string,
+  message: string
+): JerseyConfiguredProductFailure {
   return { status: "unavailable", code, message, retryable: true };
 }

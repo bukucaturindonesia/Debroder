@@ -35,7 +35,7 @@ export default async function JerseyConfiguratorPage({ searchParams }: { searchP
               <p className="text-xs font-semibold uppercase tracking-[0.16em] text-black/42">Belum tersedia</p>
               <h2 className="mt-2 text-2xl font-semibold tracking-tight">Jersey Custom belum dapat digunakan</h2>
               <p className="mt-3 text-sm leading-7 text-black/58">
-                Produk Jersey Custom yang memenuhi syarat publik belum tersedia. Pilih produk lain atau coba kembali setelah data produk dilengkapi.
+                {configuredProduct.message}
               </p>
             </div>
           </div>

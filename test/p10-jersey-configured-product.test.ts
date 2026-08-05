@@ -9,6 +9,7 @@ import {
 import { resolveConfiguredProductOnServer } from "@/lib/configured-product/runtime";
 import {
   projectJerseyConfiguredProduct,
+  selectJerseyConfiguredProductCandidate,
   validateJerseyConsumerDraft
 } from "@/lib/jersey-configured-product/domain";
 import { parseJerseyResolveRequest } from "@/lib/jersey-configured-product/request";
@@ -39,6 +40,7 @@ function source(overrides: Record<string, unknown> = {}) {
       slug: "configured-jersey-fixture",
       status: "active",
       status_aktif: true,
+      sales_mode: "custom",
       product_type: "configurable_product",
       pricing_mode: "configurator_based",
       price: 100_000,
@@ -203,6 +205,63 @@ describe("P10 Jersey configured-product consumer", () => {
     });
   });
 
+  it("requires a Custom-capable sales mode for resolver, pricing, and checkout parity", () => {
+    const readyStockOnly = projectJerseyConfiguredProduct(source({
+      product: {
+        ...source().product,
+        sales_mode: "ready_stock"
+      }
+    }));
+
+    expect(readyStockOnly).toMatchObject({
+      status: "not_found",
+      code: "jersey_configured_product.not_available"
+    });
+  });
+
+  it("selects one deterministic mapped product and skips an ineligible default", () => {
+    const invalidDefault = {
+      ...source().product,
+      id: "10000000-0000-4000-8000-000000001011",
+      name: "Legacy Jersey",
+      nama: "Legacy Jersey",
+      slug: "legacy-jersey",
+      product_type: "standard_product",
+      pricing_mode: "variant_based"
+    };
+    const futsal = {
+      ...source().product,
+      id: "10000000-0000-4000-8000-000000001012",
+      name: "Jersey Futsal",
+      nama: "Jersey Futsal",
+      slug: "jersey-futsal"
+    };
+    const football = {
+      ...source().product,
+      id: "10000000-0000-4000-8000-000000001013",
+      name: "Jersey Sepak Bola",
+      nama: "Jersey Sepak Bola",
+      slug: "jersey-sepak-bola"
+    };
+
+    expect(selectJerseyConfiguredProductCandidate([
+      { product: invalidDefault, isDefault: true, sortOrder: 0 },
+      { product: football, isDefault: false, sortOrder: 20 },
+      { product: futsal, isDefault: false, sortOrder: 10 }
+    ])).toMatchObject({
+      id: futsal.id,
+      slug: futsal.slug
+    });
+
+    expect(selectJerseyConfiguredProductCandidate([
+      { product: football, isDefault: true, sortOrder: 20 },
+      { product: futsal, isDefault: false, sortOrder: 10 }
+    ])).toMatchObject({
+      id: football.id,
+      slug: football.slug
+    });
+  });
+
   it("creates a deterministic immutable server-priced snapshot through P9 runtime", async () => {
     const consumer = readyConsumer();
     const first = projectJerseyConfiguredProduct(source());
@@ -327,6 +386,9 @@ describe("P10 Jersey configured-product consumer", () => {
     expect(page).not.toContain("fallback");
     expect(access).toContain('.eq("pricing_mode", "configurator_based")');
     expect(access).toContain('.eq("status", "active")');
+    expect(access).toContain('.in("sales_mode", ["custom", "both"])');
+    expect(access).toContain("selectJerseyConfiguredProductCandidate");
+    expect(access).not.toContain("product_ambiguous");
     expect(action).toContain("pricingAuthority: priceJerseyConfiguredProduct");
   });
 });

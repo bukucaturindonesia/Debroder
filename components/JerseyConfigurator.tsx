@@ -222,9 +222,11 @@ export function JerseyConfigurator({ consumer }: JerseyConfiguratorProps) {
       <div className="section-shell">
         <div className="mb-7 max-w-3xl">
           <p className="text-xs font-semibold uppercase tracking-[0.18em] text-brand-charcoal/45">Jersey Custom</p>
-          <h2 className="mt-2 text-3xl font-semibold tracking-tight text-brand-charcoal sm:text-4xl">Rakit kebutuhan jersey</h2>
+          <h2 className="mt-2 text-3xl font-semibold tracking-tight text-brand-charcoal sm:text-4xl">
+            Custom {consumer.product.name}
+          </h2>
           <p className="mt-3 text-sm leading-6 text-black/58 sm:text-base sm:leading-7">
-            Pilihan Anda diperiksa oleh server. Harga pasti ditampilkan untuk konfigurasi standar; kebutuhan nonstandar diarahkan ke konsultasi.
+            Produk yang dipilih menjadi preset awal. Pilihan Anda diperiksa oleh server sebelum konfigurasi masuk ke Keranjang.
           </p>
         </div>
 
@@ -302,6 +304,7 @@ export function JerseyConfigurator({ consumer }: JerseyConfiguratorProps) {
                 Harga tidak ditentukan oleh browser. Server memeriksa pilihan dan jumlah sebelum kebutuhan dapat dilanjutkan.
               </p>
               <div className="mt-5 grid gap-3 text-sm">
+                <Summary label="Produk" value={consumer.product.name} />
                 <Summary label="Paket" value={selectedPackage?.label} />
                 <Summary label="Bahan" value={selectedMaterial?.label} />
                 <Summary label="Kerah" value={selectedCollar?.label} />
