@@ -27,11 +27,24 @@ describe("Custom Hub and general cart boundary", () => {
 });
 
 describe("automatic payment eligibility", () => {
-  const order = { id: "11111111-1111-1111-1111-111111111111", order_number: "ORD-1", status: "awaiting_payment", payment_status: "unpaid", pricing_status: "final", total_amount: 100_000, whatsapp_confirmed_at: "2026-07-18T00:00:00Z", archived_at: null };
-  it("fails closed until customer verification and final positive pricing", () => {
-    expect(automaticPaymentBlocker({ ...order, whatsapp_confirmed_at: null })).toContain("verifikasi");
-    expect(automaticPaymentBlocker({ ...order, pricing_status: "estimated" })).toContain("harga final");
-    expect(automaticPaymentBlocker({ ...order, total_amount: 0 })).toContain("harga final");
+  const order = {
+    id: "11111111-1111-1111-1111-111111111111",
+    order_number: "ORD-1",
+    status: "awaiting_payment",
+    payment_status: "unpaid",
+    pricing_status: "final",
+    total_amount: 100_000,
+    checkout_activated_at: "2026-08-06T15:00:00Z",
+    archived_at: null
+  };
+
+  it("fails closed for every unsafe payment state and opens only for a canonical active order", () => {
+    expect(automaticPaymentBlocker({ ...order, checkout_activated_at: null })).toBe("Menunggu aktivasi checkout.");
+    expect(automaticPaymentBlocker({ ...order, pricing_status: "estimated" })).toBe("Menunggu penetapan harga final.");
+    expect(automaticPaymentBlocker({ ...order, total_amount: 0 })).toBe("Menunggu penetapan harga final.");
+    expect(automaticPaymentBlocker({ ...order, payment_status: "paid" })).toBe("Pembayaran pesanan sudah selesai.");
+    expect(automaticPaymentBlocker({ ...order, status: "cancelled" })).toBe("Pesanan tidak aktif.");
+    expect(automaticPaymentBlocker({ ...order, archived_at: "2026-08-06T15:01:00Z" })).toBe("Pesanan tidak aktif.");
     expect(automaticPaymentBlocker(order)).toBeNull();
   });
 

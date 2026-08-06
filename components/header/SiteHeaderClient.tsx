@@ -5,6 +5,7 @@ import dynamic from "next/dynamic";
 import { usePathname } from "next/navigation";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { BrandIcon } from "@/components/BrandIcon";
+import { useCustomerAuth } from "@/components/customer-auth/CustomerAuthProvider";
 import { CartNavButton } from "@/components/CartProvider";
 import { Logo } from "@/components/Logo";
 import { jacketTypeOptions, kaosTypeOptions } from "@/lib/product-taxonomy";
@@ -214,6 +215,7 @@ export function SiteHeaderClient({
   navigationFacets?: PublicNavigationFacets;
 }) {
   const pathname = usePathname();
+  const customerAuth = useCustomerAuth();
   const [isOpen, setIsOpen] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [desktopCollectionOpen, setDesktopCollectionOpen] = useState(false);
@@ -230,6 +232,8 @@ export function SiteHeaderClient({
     "Jaket & Hoodie": buildCategoryMenu("Jaket & Hoodie", "/jaket-hoodie", navigationFacets)
   }), [navigationFacets]);
   const currentNavItems = publicNavItems;
+  const accountHref = customerAuth.profile ? PUBLIC_ROUTES.account : PUBLIC_ROUTES.login;
+  const accountLabel = customerAuth.profile ? "Akun Saya" : "Masuk";
 
   function openSearch(trigger: HTMLButtonElement) {
     searchTriggerRef.current = trigger;
@@ -392,7 +396,7 @@ export function SiteHeaderClient({
           <Link href="/wishlist" className="hidden h-12 w-12 place-items-center rounded-full transition hover:bg-[#f5f5f5] sm:grid" aria-label="Wishlist">
             <BrandIcon name="wishlist" />
           </Link>
-          <Link href="/account" className="hidden h-12 w-12 place-items-center rounded-full transition hover:bg-[#f5f5f5] sm:grid" aria-label="Akun pelanggan">
+          <Link href={accountHref} className="hidden h-12 w-12 place-items-center rounded-full transition hover:bg-[#f5f5f5] sm:grid" aria-label={accountLabel}>
             <BrandIcon name="user" />
           </Link>
           <CartNavButton />
@@ -440,8 +444,8 @@ export function SiteHeaderClient({
                 <span>{item.label}</span><span aria-hidden="true">›</span>
               </Link>
             ))}
-            <Link href="/account" className="flex min-h-12 items-center justify-between text-base font-medium text-[#111] transition active:bg-black active:text-white focus-visible:bg-black focus-visible:text-white">
-              <span>Akun</span><span aria-hidden="true">›</span>
+            <Link href={accountHref} className="flex min-h-12 items-center justify-between text-base font-medium text-[#111] transition active:bg-black active:text-white focus-visible:bg-black focus-visible:text-white">
+              <span>{accountLabel}</span><span aria-hidden="true">›</span>
             </Link>
             <Link href="/wishlist" className="flex min-h-12 items-center justify-between text-base font-medium text-[#111] transition active:bg-black active:text-white focus-visible:bg-black focus-visible:text-white">
               <span>Wishlist</span><span aria-hidden="true">›</span>

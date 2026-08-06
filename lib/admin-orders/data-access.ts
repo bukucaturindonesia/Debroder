@@ -46,7 +46,7 @@ const ADMIN_ORDER_DETAIL_SELECT = [
   "converted_at",
   "archived_at",
   "checkout_source",
-  "whatsapp_confirmed_at",
+  "checkout_activated_at",
   "created_at",
   "updated_at",
   "order_items(id,product_name,variant_name,color,size,sku,quantity,unit_price,subtotal,notes,config_snapshot,required_services,estimated_total,pricing_status,custom_project_id,custom_project_item_id,pricing_snapshot,created_at,archived_at)",

@@ -85,8 +85,7 @@ export type CustomerOrderConfirmationReadModel = CustomerOrderBaseReadModel & {
     shippingCourier: string | null;
     shippingService: string | null;
     shippingEstimate: string | null;
-    whatsappConfirmationExpiresAt: string | null;
-    whatsappConfirmedAt: string | null;
+    checkoutActivatedAt: string | null;
     reservationExpiresAt: string | null;
     finalTotalApprovedAt: string | null;
     trackingTokenExpiresAt: string | null;

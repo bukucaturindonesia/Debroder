@@ -14,7 +14,6 @@ function request(items = [{ variantSizeId: "11111111-1111-4111-8111-111111111111
   return {
     idempotencyKey: "checkout_key_1234567890",
     accessToken: "a".repeat(64),
-    confirmationCode: "AB12CD34",
     customer: { name: "Pelanggan Test", phone: "0812-3456-7890" },
     fulfillment: { method: "pickup", pickupLocationId: "22222222-2222-4222-8222-222222222222", paymentMethod: "pay_at_store" },
     items

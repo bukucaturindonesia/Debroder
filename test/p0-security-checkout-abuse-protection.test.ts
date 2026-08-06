@@ -27,7 +27,6 @@ function checkoutRequest(items: PublicCheckoutRequest["items"] = [{
   return {
     idempotencyKey: "checkout_key_1234567890",
     accessToken: "a".repeat(64),
-    confirmationCode: "AB12CD34",
     customer: { name: "Pelanggan Test", phone: "0812-3456-7890" },
     fulfillment: {
       method: "pickup",

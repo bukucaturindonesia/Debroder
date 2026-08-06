@@ -31,7 +31,7 @@ type Props = {
     payment_effective_total: number;
     payment_production_eligible: boolean;
     checkout_source: string | null;
-    whatsapp_confirmed_at: string | null;
+    checkout_activated_at: string | null;
   };
   jobOrder: Ref;
   qualityControl: (Ref & { result?: string | null }) | null;
@@ -676,7 +676,7 @@ function resolveStage({ order, jobOrder: job, qualityControl: qc, fulfillment }:
   if (qc && qc.result !== "passed") return stage(7, "Pemeriksaan Kualitas", "Menunggu hasil pemeriksaan kualitas", "Buka Pemeriksaan Kualitas", `/admin/quality-control?job_order=${job?.id ?? ""}`);
   if (job && !["completed", "cancelled"].includes(job.status)) return stage(6, "Produksi", "Tidak ada", "Buka Surat Perintah Kerja", `/admin/job-orders/${job.id}`);
   if (!job && order.payment_production_eligible) return stage(5, "Surat Perintah Kerja", "Surat perintah kerja belum dibuat", "Buat / Buka Surat Perintah Kerja", `/admin/job-orders?order=${order.id}`);
-  if (custom && !flow?.custom_review_started_at) return { ...stage(0, "Pesanan Masuk", order.whatsapp_confirmed_at ? "Tidak ada" : "Pelanggan belum diverifikasi", "Mulai Pemeriksaan", "#"), action: "start" };
+  if (custom && !flow?.custom_review_started_at) return { ...stage(0, "Pesanan Masuk", order.checkout_activated_at ? "Tidak ada" : "Aktivasi checkout belum selesai", "Mulai Pemeriksaan", "#"), action: "start" };
   if (custom && !flow?.custom_review_completed_at) return { ...stage(1, "Pemeriksaan Pesanan", "Pemeriksaan belum disetujui", "Setujui Pemeriksaan", "#"), action: "review" };
   if (custom && flow?.custom_quote_status !== "sent" && flow?.custom_quote_status !== "locked") return { ...stage(2, "Penetapan Harga", flow?.custom_pricing_draft_version ? "Draft harus lolos verifikasi sistem" : "Draft harga belum disimpan", "Tetapkan Harga", "#"), action: "pricing" };
   if (custom && flow?.custom_quote_status === "sent") return stage(3, "Persetujuan Pelanggan", "Menunggu keputusan pelanggan", "Pantau Persetujuan", "#commerce");

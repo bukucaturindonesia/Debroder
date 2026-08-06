@@ -7,7 +7,7 @@ const read = (path: string) => readFileSync(path, "utf8");
 
 describe("Custom Order end-to-end revision", () => {
   it("requires an approved and locked Custom quotation before automatic payment", () => {
-    const order = { id:"o",order_number:"ORD",status:"awaiting_payment",payment_status:"unpaid",pricing_status:"final",total_amount:210000,whatsapp_confirmed_at:"2026-07-18T00:00:00Z",custom_project_snapshot:[{id:"p"}],custom_quote_status:"sent",custom_quote_locked_at:null,custom_quote_locked_total:null };
+    const order = { id:"o",order_number:"ORD",status:"awaiting_payment",payment_status:"unpaid",pricing_status:"final",total_amount:210000,checkout_activated_at:"2026-07-18T00:00:00Z",custom_project_snapshot:[{id:"p"}],custom_quote_status:"sent",custom_quote_locked_at:null,custom_quote_locked_total:null };
     expect(automaticPaymentBlocker(order)).toContain("persetujuan penawaran Custom");
     expect(automaticPaymentBlocker({ ...order, custom_quote_status:"locked", custom_quote_locked_at:"2026-07-18T01:00:00Z", custom_quote_locked_total:210000 })).toBeNull();
     expect(automaticPaymentBlocker({ ...order, custom_quote_status:"locked", custom_quote_locked_at:"2026-07-18T01:00:00Z", custom_quote_locked_total:200000 })).toContain("penguncian harga");

@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { type ReactNode, useCallback, useEffect, useState } from "react";
+import { type ReactNode, useCallback, useState } from "react";
 import {
   CustomerOrderReadError,
   CustomerOrderStaleWarning
@@ -16,7 +16,6 @@ import { getOrderStatusLabel } from "@/lib/ui-language";
 import { formatRupiah } from "@/lib/url";
 
 export function OrderConfirmationClient({ token }: { token: string }) {
-  const [confirmationCode, setConfirmationCode] = useState("");
   const [actionError, setActionError] = useState("");
   const [approving, setApproving] = useState(false);
   const [trackingCopied, setTrackingCopied] = useState(false);
@@ -34,22 +33,6 @@ export function OrderConfirmationClient({ token }: { token: string }) {
     staleWarning,
     refresh
   } = useCustomerOrderPolling({ enabled: Boolean(token), load });
-
-  useEffect(() => {
-    try {
-      const value: unknown = JSON.parse(
-        sessionStorage.getItem(`debroder-order-${token}`) || "{}"
-      );
-      const draft = value && typeof value === "object" && !Array.isArray(value)
-        ? Object.fromEntries(Object.entries(value))
-        : {};
-      setConfirmationCode(
-        typeof draft.confirmationCode === "string" ? draft.confirmationCode : ""
-      );
-    } catch {
-      setConfirmationCode("");
-    }
-  }, [token]);
 
   async function approveTotal() {
     if (approving) return;
@@ -139,11 +122,6 @@ export function OrderConfirmationClient({ token }: { token: string }) {
   const pricingIsFinal = order.pricingStatus === "final";
   const productBaseSubtotal = data.items.reduce((sum, item) => sum + Number(item.subtotal || 0), 0);
   const customQuotePreview = customerQuotePreview(data.customQuote?.pricingComponents);
-  const verifyWhatsappHref = `${contactLinks.whatsapp}?text=${encodeURIComponent(
-    confirmationCode
-      ? `Halo DEBRODER, saya ingin verifikasi pesanan ${order.orderNumber}. Kode konfirmasi: ${confirmationCode}. Nomor WhatsApp saya harus dicocokkan dengan data checkout.`
-      : `Halo DEBRODER, saya memerlukan bantuan verifikasi pesanan ${order.orderNumber}.`
-  )}`;
   const pickupWhatsappHref = `${contactLinks.whatsapp}?text=${encodeURIComponent(
     `Halo Admin DEBRODER, saya ingin memastikan kesiapan pesanan ${order.orderNumber} sebelum datang ke toko.`
   )}`;
@@ -165,7 +143,6 @@ export function OrderConfirmationClient({ token }: { token: string }) {
     paymentUrl,
     paymentHelpHref: adminHelpHref,
     pickupWhatsappHref,
-    verifyWhatsappHref,
     orderTotal: order.total,
     paymentStatus: order.paymentStatus
   });
@@ -188,17 +165,6 @@ export function OrderConfirmationClient({ token }: { token: string }) {
           presentation={presentation}
           primaryAction={primaryAction}
         >
-          {presentation.action === "verify_whatsapp" ? (
-            <div className="text-sm leading-6">
-              <p>Kirim pesan dari nomor WhatsApp yang dipakai saat checkout. Nomor pesanan saja tidak cukup.</p>
-              {confirmationCode ? (
-                <p className="mt-3 text-2xl font-bold tracking-[0.2em]">{confirmationCode}</p>
-              ) : (
-                <p className="mt-3">Kode tersimpan pada perangkat checkout. Hubungi Admin bila halaman dibuka dari perangkat lain.</p>
-              )}
-            </div>
-          ) : null}
-
           {presentation.action === "approve_quote" && data.customQuote ? (
             <div className="text-sm">
               <div className="flex flex-wrap items-center justify-between gap-3">
@@ -363,7 +329,6 @@ function renderPrimaryAction({
   paymentUrl,
   paymentHelpHref,
   pickupWhatsappHref,
-  verifyWhatsappHref,
   orderTotal,
   paymentStatus
 }: {
@@ -371,14 +336,10 @@ function renderPrimaryAction({
   paymentUrl: string | null;
   paymentHelpHref: string;
   pickupWhatsappHref: string;
-  verifyWhatsappHref: string;
   orderTotal: number;
   paymentStatus: string;
 }) {
   const primaryClass = "inline-flex min-h-12 items-center justify-center rounded-full bg-black px-6 text-sm font-semibold text-white hover:bg-black/75";
-  if (presentationAction === "verify_whatsapp") {
-    return <a href={verifyWhatsappHref} target="_blank" rel="noopener noreferrer" className={primaryClass}>Verifikasi via WhatsApp</a>;
-  }
   if ((presentationAction === "pay" || presentationAction === "resubmit_payment") && paymentUrl) {
     return (
       <Link href={paymentUrl} className={primaryClass}>

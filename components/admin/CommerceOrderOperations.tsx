@@ -16,8 +16,7 @@ type CommerceOrder = {
   subtotal_amount: number;
   shipping_cost: number | null;
   total_amount: number;
-  whatsapp_confirmed_at: string | null;
-  whatsapp_confirmation_expires_at: string | null;
+  checkout_activated_at: string | null;
   reservation_expires_at: string | null;
 };
 
@@ -54,7 +53,7 @@ export function CommerceOrderOperations({ orderId, onChanged }: { orderId: strin
     const [orderResult, reservationResult, fulfillmentResult] = await Promise.all([
       client
         .from("orders")
-        .select("id,status,delivery_method,payment_method,payment_status,subtotal_amount,shipping_cost,total_amount,whatsapp_confirmed_at,whatsapp_confirmation_expires_at,reservation_expires_at")
+        .select("id,status,delivery_method,payment_method,payment_status,subtotal_amount,shipping_cost,total_amount,checkout_activated_at,reservation_expires_at")
         .eq("id", orderId)
         .maybeSingle(),
       client.from("stock_reservations").select("quantity,expires_at").eq("order_id", orderId).eq("status", "active"),
@@ -101,45 +100,17 @@ export function CommerceOrderOperations({ orderId, onChanged }: { orderId: strin
     }
   }
 
-  async function verify(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    const form = new FormData(event.currentTarget);
-    const code = String(form.get("code") ?? "").trim().toUpperCase();
+  async function activateCheckout() {
     const client = createSupabaseClient();
-    if (!client || busy) return;
-    setBusy(true);
-    setMessage("");
-    try {
-      const { data, error } = await client.rpc("verify_public_order_whatsapp", {
+    if (!client) return;
+    await run(
+      async () => client.rpc("activate_public_checkout_order_v2", {
         p_order_id: orderId,
-        p_confirmation_code: code
-      });
-      if (error) throw new Error(error.message);
-      const result = data as { whatsapp_confirmed_at?: string | null; whatsapp_confirmation_attempts?: number } | null;
-      if (!result?.whatsapp_confirmed_at) {
-        setMessage(`Kode tidak cocok. Percobaan ${result?.whatsapp_confirmation_attempts ?? "-"}/5 tercatat.`);
-      } else {
-        const { data: sessionData } = await client.auth.getSession();
-        const response = await fetch(`/api/admin/orders/${orderId}/payment-links`, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${sessionData.session?.access_token ?? ""}`
-          },
-          body: JSON.stringify({ action: "ensure" })
-        });
-        setMessage(response.ok
-          ? "WhatsApp terverifikasi. Tautan pembayaran otomatis sudah aktif pada tracking pelanggan."
-          : "WhatsApp terverifikasi. Pembayaran menunggu harga final dikunci.");
-      }
-      await Promise.all([load(), onChanged()]);
-    } catch (error) {
-      setMessage(error instanceof Error && error.message
-        ? `Verifikasi belum berhasil: ${error.message}`
-        : "Verifikasi belum berhasil. Periksa kode lalu coba lagi.");
-    } finally {
-      setBusy(false);
-    }
+        p_customer_user_id: null,
+        p_activation_source: "admin_recovery"
+      }),
+      "Pesanan diaktifkan. Tahap berikutnya sudah dibuka."
+    );
   }
 
   async function quote(event: FormEvent<HTMLFormElement>) {
@@ -209,22 +180,21 @@ export function CommerceOrderOperations({ orderId, onChanged }: { orderId: strin
             <Row label="Subtotal" value={money(order.subtotal_amount)} />
             <Row label="Ongkir" value={order.shipping_cost === null ? "Belum ditetapkan" : money(order.shipping_cost)} />
             <Row label="Total" value={money(order.total_amount)} />
-            <Row label="WhatsApp terverifikasi" value={dateTime(order.whatsapp_confirmed_at)} />
+            <Row label="Checkout aktif" value={dateTime(order.checkout_activated_at)} />
             <Row label="Reservasi" value={reservation ? `${reservation.quantity} pcs sampai ${dateTime(reservation.expires_at)}` : "Belum ada"} />
           </dl>
         </div>
 
         {!terminal && order.status === "pending_confirmation" ? (
-          <form onSubmit={verify} className="min-w-0 border border-brand-softGray p-5">
-            <h3 className="font-semibold">Tugas Saat Ini: Verifikasi WhatsApp</h3>
+          <div className="min-w-0 border border-brand-softGray p-5">
+            <h3 className="font-semibold">Tugas Saat Ini: Aktifkan Pesanan</h3>
             <p className="mt-2 text-xs leading-5 text-brand-charcoal/60">
-              Cocokkan nomor pengirim WhatsApp dengan nomor pelanggan, lalu masukkan kode sekali pakai. Kedaluwarsa {dateTime(order.whatsapp_confirmation_expires_at)}.
+              Pesanan lama ini belum melewati aktivasi otomatis. Aktifkan melalui sistem tanpa meminta konfirmasi manual kepada pelanggan.
             </p>
-            <input name="code" minLength={8} maxLength={12} required autoComplete="off" className="mt-4 min-h-11 w-full max-w-full rounded-lg border border-brand-softGray px-3 uppercase tracking-[0.15em]" placeholder="KODE KONFIRMASI" />
-            <button disabled={busy} className="mt-3 min-h-11 w-full rounded-full bg-brand-green px-5 text-sm font-semibold text-white disabled:opacity-50 sm:w-auto">
-              {busy ? "Memproses..." : "Verifikasi WhatsApp"}
+            <button type="button" disabled={busy} onClick={() => void activateCheckout()} className="mt-3 min-h-11 w-full rounded-full bg-brand-green px-5 text-sm font-semibold text-white disabled:opacity-50 sm:w-auto">
+              {busy ? "Memproses..." : "Aktifkan Pesanan"}
             </button>
-          </form>
+          </div>
         ) : null}
 
         {!terminal && order.delivery_method === "shipping" && ["awaiting_shipping_quote", "awaiting_customer_approval"].includes(order.status) ? (
@@ -257,7 +227,7 @@ export function CommerceOrderOperations({ orderId, onChanged }: { orderId: strin
           </form>
         ) : null}
 
-        {!terminal && order.whatsapp_confirmed_at ? (
+        {!terminal && order.checkout_activated_at ? (
           <div className="min-w-0 border border-brand-softGray p-5">
             <h3 className="font-semibold">Pengiriman / Ambil di Toko</h3>
             {fulfillment ? (
@@ -273,7 +243,7 @@ export function CommerceOrderOperations({ orderId, onChanged }: { orderId: strin
               <div className="mt-3 border-l-4 border-blue-500 bg-blue-50 p-4 text-sm text-blue-950">
                 <p className="font-semibold">Dokumen internal dibuat otomatis</p>
                 <p className="mt-1 leading-6">
-                  Sistem akan membuat nomor pengiriman DEBRODER setelah konfirmasi, pembayaran/reservasi, dan metode penyerahan memenuhi syarat. Admin tidak perlu membuat dokumen secara manual.
+                  Sistem akan membuat nomor pengiriman DEBRODER setelah aktivasi checkout, pembayaran/reservasi, dan metode penyerahan memenuhi syarat. Admin tidak perlu membuat dokumen secara manual.
                 </p>
               </div>
             )}

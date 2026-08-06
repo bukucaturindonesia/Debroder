@@ -619,3 +619,39 @@ Last updated: 28 July 2026 (Asia/Makassar)
 - Impact: full `pnpm test` and therefore the scripted `pnpm build` prebuild are
   red; all other 113 test files pass and direct Next production build passes.
 - No Kaos Polos test or public UI file was changed in this Admin package.
+
+## CUSTOMER-ACCOUNT-001 — Public customer identity and order self-service were not implemented
+
+- Severity: **BLOCKER — CUSTOMER IDENTITY / SELF-SERVICE / CHECKOUT**.
+- Status: **IMPLEMENTED LOCALLY; MIGRATION, CONFIGURATION, AND RUNTIME PENDING**.
+- Proven baseline:
+  - the repository exposed an Admin login but no complete customer account
+    implementation;
+  - public customer orders depended on legacy WhatsApp-confirmation state;
+  - `orders` had email/phone snapshots but no authenticated customer owner;
+  - no customer-profile or saved-address authority existed.
+- Resolution:
+  - separate customer email/password registration and login;
+  - mandatory real email-confirmation event plus protected server provisioning;
+  - Admin/staff identity rejection on the customer path;
+  - isolated customer browser session storage;
+  - customer profile, saved addresses, own-order RLS, and exact-email historical
+    order claim;
+  - guest checkout retained and signed-in checkout linked to
+    `orders.customer_user_id`;
+  - automatic checkout activation without customer/manual WhatsApp
+    verification.
+- Migration:
+  `20260806214500_customer_account_email_verification_v1.sql` — **LOCAL ONLY,
+  NOT APPLIED**.
+- Static evidence: syntax **53/53 PASS**, imports **53/53 PASS**, focused
+  contract **103/103 PASS**, existing Jersey contract **18/18 PASS**, production
+  compatibility **PASS read-only**.
+- Blocked gate: frozen dependency installation failed with network/DNS
+  `EAI_AGAIN registry.npmjs.org`; full typecheck, lint, Vitest, and build remain
+  required on the Owner machine.
+- Remaining release gate: migration postcheck, Confirm Email, redirect allowlist,
+  SMTP, reCAPTCHA environment, RLS cross-customer negative tests, Admin/public
+  separation, guest and authenticated checkout E2E, historical claim, recovery,
+  responsive UI, browser console, and production logs.
+- Current verdict: **NO-GO FOR PRODUCTION / NOT COMPLETE**.

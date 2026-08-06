@@ -20,8 +20,15 @@ export const PUBLIC_ROUTES = {
   orderConfirmation: "/order-confirmation",
   orderConfirmationToken: (token: string) =>
     `/order-confirmation/${encodeURIComponent(token)}`,
+  login: "/login",
+  register: "/register",
+  verifyEmail: "/verify-email",
+  forgotPassword: "/forgot-password",
+  resetPassword: "/reset-password",
   account: "/account",
   accountOrders: "/account/orders",
+  accountProfile: "/account/profile",
+  accountAddresses: "/account/addresses",
   accountOrder: (id: string) => `/account/orders/${encodeURIComponent(id)}`,
   tracking: "/track-order",
   trackingOrder: (orderNumber: string) =>
@@ -54,7 +61,6 @@ export const PUBLIC_SITEMAP_ROUTES = [
   PUBLIC_ROUTES.cart,
   PUBLIC_ROUTES.checkout,
   PUBLIC_ROUTES.orderConfirmation,
-  PUBLIC_ROUTES.accountOrders,
   PUBLIC_ROUTES.tracking,
   PUBLIC_ROUTES.search,
   PUBLIC_ROUTES.help,
