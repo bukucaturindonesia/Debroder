@@ -22,6 +22,7 @@ import {
   type ServerRequestContext
 } from "@/lib/observability/server";
 import { publicApiErrorResponse } from "@/lib/public-api-error";
+import { optionalVerifiedCustomer } from "@/lib/customer-auth/server";
 import {
   priceJerseyConfiguredProduct,
   readJerseyConfiguredProductDefinition
@@ -96,7 +97,7 @@ export async function GET(request: Request) {
     }
     const { data, error } = await client
       .from("orders")
-      .select("order_number,status,public_access_token_hash,public_access_token_expires_at")
+      .select("id,order_number,status,public_access_token_hash,public_access_token_expires_at")
       .eq("public_idempotency_key", key)
       .maybeSingle();
     if (error) throw error;
@@ -109,10 +110,18 @@ export async function GET(request: Request) {
     if (data.public_access_token_expires_at && new Date(data.public_access_token_expires_at).getTime() <= Date.now()) {
       return respond({ code: "CHECKOUT_RECOVERY_EXPIRED", error: "Tautan checkout lama telah kedaluwarsa." }, 410);
     }
+    const recoveryCustomer = await optionalVerifiedCustomer(request);
+    const { data: activated, error: activationError } = await client.rpc("activate_public_checkout_order_v2", {
+      p_order_id: data.id,
+      p_customer_user_id: recoveryCustomer?.user.id ?? null,
+      p_activation_source: "checkout_recovery"
+    });
+    if (activationError) throw activationError;
+    const activation = activated as { status?: string } | null;
     return respond({
       found: true,
       orderNumber: data.order_number,
-      status: data.status,
+      status: activation?.status ?? data.status,
       confirmationUrl: `/order-confirmation/${encodeURIComponent(trackingToken)}`,
       trackingUrl: `/track-order/${encodeURIComponent(data.order_number)}?token=${encodeURIComponent(trackingToken)}`,
       trackingToken
@@ -156,6 +165,9 @@ export async function POST(request: Request) {
 
     const body = parsePublicCheckoutRequest(rawBody);
     if (!body) return respond({ code: "CHECKOUT_INVALID_REQUEST", error: "Data checkout tidak valid." }, 400);
+    if (!body.customer.email?.trim()) {
+      return respond({ code: "CHECKOUT_CUSTOMER_EMAIL_REQUIRED", error: "Email diperlukan untuk mengirim status dan riwayat pesanan." }, 400);
+    }
 
     const client = getAdminSupabaseClient();
     const adminEnv = getAdminSupabaseEnv();
@@ -165,6 +177,10 @@ export async function POST(request: Request) {
         503,
         { "retry-after": "30" }
       );
+    }
+    const customerAccount = await optionalVerifiedCustomer(request);
+    if (customerAccount && body.customer.email?.trim().toLowerCase() !== customerAccount.profile.email) {
+      return respond({ code: "CHECKOUT_CUSTOMER_EMAIL_MISMATCH", error: "Email checkout harus sama dengan email akun terverifikasi." }, 409);
     }
 
     const hashes = createCheckoutAbuseHashes(request, body, adminEnv.serviceRoleKey);
@@ -314,10 +330,12 @@ export async function POST(request: Request) {
     const rpcPayload = {
       p_idempotency_key: body.idempotencyKey,
       p_access_token_hash: sha256(trackingToken),
-      p_whatsapp_confirmation_hash: sha256(body.confirmationCode),
+      // Existing create-order RPCs still require this compatibility input. It is
+      // generated only on the server and cleared atomically during activation.
+      p_whatsapp_confirmation_hash: sha256(`legacy-checkout:${trackingToken}`),
       p_customer_name: body.customer.name,
       p_customer_phone: body.customer.phone,
-      p_customer_email: body.customer.email ?? null,
+      p_customer_email: customerAccount?.profile.email ?? body.customer.email ?? null,
       p_delivery_method: body.fulfillment.method,
       p_shipping_address: body.fulfillment.address ?? null,
       p_pickup_location_id: body.fulfillment.pickupLocationId ?? null,
@@ -356,14 +374,39 @@ export async function POST(request: Request) {
       );
     }
 
+    if (!result.order_id) {
+      return respond(
+        { code: "CHECKOUT_UNAVAILABLE", error: "Order belum dapat diaktifkan." },
+        503,
+        { "retry-after": "15" }
+      );
+    }
+    const { data: activated, error: activationError } = await client.rpc("activate_public_checkout_order_v2", {
+      p_order_id: result.order_id,
+      p_customer_user_id: customerAccount?.user.id ?? null,
+      p_activation_source: "public_checkout_auto"
+    });
+    if (activationError) {
+      logServerError(observability, activationError, {
+        event: "checkout.auto_activation_failed",
+        entityType: "order",
+        entityId: result.order_id
+      });
+      return respond(
+        { code: "CHECKOUT_ACTIVATION_PENDING", error: "Pesanan sudah tercatat, tetapi statusnya belum dapat diaktifkan. Coba pulihkan checkout ini." },
+        503,
+        { "retry-after": "15" }
+      );
+    }
+    const activation = activated as { status?: string } | null;
     logServerEvent("info", observability, "checkout.order_created", {
       entityType: "order",
-      entityId: result.order_id ?? null
+      entityId: result.order_id
     });
     return respond({
       orderId: result.order_id,
       orderNumber: result.order_number,
-      status: result.status,
+      status: activation?.status ?? result.status,
       confirmationUrl: `/order-confirmation/${encodeURIComponent(trackingToken)}`,
       trackingUrl: `/track-order/${encodeURIComponent(result.order_number)}?token=${encodeURIComponent(trackingToken)}`,
       trackingToken

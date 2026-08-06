@@ -105,7 +105,6 @@ describe("global Ready Stock and Instant Custom contract", () => {
     const parsed = parsePublicCheckoutRequest({
       idempotencyKey: "checkout_key_123456",
       accessToken: "a".repeat(32),
-      confirmationCode: "ABC12345",
       customer: { name: "QA Owner", phone: "08123456789" },
       fulfillment: {
         method: "pickup",

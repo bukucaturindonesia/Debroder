@@ -52,7 +52,7 @@ export type AdminOrderReadModelOrder = {
   converted_at: string | null;
   archived_at: string | null;
   checkout_source: string | null;
-  whatsapp_confirmed_at: string | null;
+  checkout_activated_at: string | null;
   created_at: string;
   updated_at: string;
 };

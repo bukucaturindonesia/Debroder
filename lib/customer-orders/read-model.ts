@@ -33,7 +33,7 @@ export type CustomerOrderServerProjection = {
     payment_status: string;
     pricing_status: CustomerOrderPricingStatus;
     total_amount: number;
-    whatsapp_confirmed_at: string | null;
+    checkout_activated_at: string | null;
     archived_at: null;
     custom_project_snapshot: unknown;
     custom_quote_status: string | null;
@@ -59,8 +59,7 @@ export type CustomerOrderServerProjection = {
     total: number;
     amountPaid: number;
     remainingBalance: number;
-    whatsappConfirmationExpiresAt: string | null;
-    whatsappConfirmedAt: string | null;
+    checkoutActivatedAt: string | null;
     reservationExpiresAt: string | null;
     finalTotalApprovedAt: string | null;
     trackingTokenExpiresAt: string | null;
@@ -136,7 +135,7 @@ export function projectCustomerOrderServerReadModel(
   const customQuoteVersion = nullableInteger(row.custom_quote_version);
   const customQuoteLockedAt = nullableText(row.custom_quote_locked_at);
   const customQuoteLockedTotal = nullableAmount(row.custom_quote_locked_total);
-  const whatsappConfirmedAt = nullableText(row.whatsapp_confirmed_at);
+  const checkoutActivatedAt = nullableText(row.checkout_activated_at);
   const paymentRequirementMet = boolean(row.payment_requirement_met);
   const paymentProductionEligible = boolean(row.payment_production_eligible);
   const isCustom = items.some((item) => Boolean(item.customProjectId))
@@ -156,7 +155,7 @@ export function projectCustomerOrderServerReadModel(
     customQuoteStatus,
     customQuoteVersion,
     isCustom,
-    whatsappConfirmed: Boolean(whatsappConfirmedAt),
+    checkoutActivated: Boolean(checkoutActivatedAt),
     paymentRequirementMet,
     paymentProductionEligible,
     paymentEffectiveTotal: amountPaid,
@@ -193,7 +192,7 @@ export function projectCustomerOrderServerReadModel(
       payment_status: effectivePayment,
       pricing_status: pricing,
       total_amount: amount(row.total_amount),
-      whatsapp_confirmed_at: whatsappConfirmedAt,
+      checkout_activated_at: checkoutActivatedAt,
       archived_at: null,
       custom_project_snapshot: customProjectSnapshot,
       custom_quote_status: customQuoteStatus,
@@ -219,8 +218,7 @@ export function projectCustomerOrderServerReadModel(
       total: amount(row.total_amount),
       amountPaid,
       remainingBalance: amount(row.payment_balance),
-      whatsappConfirmationExpiresAt: nullableText(row.whatsapp_confirmation_expires_at),
-      whatsappConfirmedAt,
+      checkoutActivatedAt,
       reservationExpiresAt: nullableText(row.reservation_expires_at),
       finalTotalApprovedAt: nullableText(row.final_total_approved_at),
       trackingTokenExpiresAt: nullableText(row.public_access_token_expires_at),
@@ -261,8 +259,7 @@ export function toCustomerOrderConfirmationReadModel(
       shippingCourier: projection.order.shippingCourier,
       shippingService: projection.order.shippingService,
       shippingEstimate: projection.order.shippingEstimate,
-      whatsappConfirmationExpiresAt: projection.order.whatsappConfirmationExpiresAt,
-      whatsappConfirmedAt: projection.order.whatsappConfirmedAt,
+      checkoutActivatedAt: projection.order.checkoutActivatedAt,
       reservationExpiresAt: projection.order.reservationExpiresAt,
       finalTotalApprovedAt: projection.order.finalTotalApprovedAt,
       trackingTokenExpiresAt: projection.order.trackingTokenExpiresAt,

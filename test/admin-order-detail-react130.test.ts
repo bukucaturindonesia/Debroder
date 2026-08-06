@@ -24,7 +24,7 @@ const operationalProps = {
     payment_status: "paid",
     payment_production_eligible: true,
     checkout_source: null,
-    whatsapp_confirmed_at: null
+    checkout_activated_at: null
   },
   jobOrder: null,
   qualityControl: null,

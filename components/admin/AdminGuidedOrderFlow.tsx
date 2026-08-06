@@ -29,7 +29,6 @@ type Props = {
 };
 
 const ACTION_LABELS: Record<Exclude<OrderPrimaryAction, null>, string> = {
-  verify_whatsapp: "Buka Verifikasi WhatsApp",
   review_order: "Periksa Pesanan Sekarang",
   set_shipping_quote: "Tetapkan Ongkir Sekarang",
   prepare_quote: "Siapkan Penawaran Harga",
@@ -161,7 +160,6 @@ function resolveAction(orderId: string, action: OrderPrimaryAction, jobOrderId?:
   if (!action) return null;
   const fulfillmentHref = fulfillmentId ? `/admin/fulfillments/${fulfillmentId}?focus=${action}#guided-action` : `/admin/orders/${orderId}?tab=operations#operations`;
   const hrefs: Record<Exclude<OrderPrimaryAction, null>, string> = {
-    verify_whatsapp: `/admin/orders/${orderId}?tab=operations#operations`,
     review_order: `/admin/orders/${orderId}?tab=summary#summary`,
     set_shipping_quote: `/admin/orders/${orderId}?tab=operations#operations`,
     prepare_quote: `/admin/orders/${orderId}?view=full#custom-pricing`,
@@ -190,7 +188,7 @@ function resolveAction(orderId: string, action: OrderPrimaryAction, jobOrderId?:
 
 function shortAction(action: Exclude<OrderPrimaryAction, null>) {
   return {
-    verify_whatsapp: "Buka Verifikasi", review_order: "Buka Pemeriksaan", set_shipping_quote: "Isi Ongkir",
+    review_order: "Buka Pemeriksaan", set_shipping_quote: "Isi Ongkir",
     prepare_quote: "Buka Penawaran", approve_quote: "Pantau", approve_total: "Pantau", open_payment: "Buka Pembayaran",
     review_payment: "Verifikasi", resubmit_payment: "Pantau", create_job_order: "Buat SPK", prepare_goods: "Lanjutkan",
     run_production: "Buka Produksi", run_quality_control: "Buka QC", pack_order: "Lanjutkan", run_final_check: "Periksa",

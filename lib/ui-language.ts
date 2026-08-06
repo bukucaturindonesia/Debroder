@@ -2,7 +2,7 @@ export type UiAudience = "admin" | "customer";
 
 const ADMIN_ORDER_STATUS_LABELS = {
   baru: "Pesanan Masuk",
-  pending_confirmation: "Menunggu Verifikasi Pelanggan",
+  pending_confirmation: "Menunggu Aktivasi Sistem",
   under_review: "Sedang Diperiksa",
   awaiting_shipping_quote: "Menunggu Penetapan Ongkir",
   awaiting_customer_approval: "Menunggu Persetujuan Pelanggan",
@@ -37,7 +37,7 @@ const ADMIN_ORDER_STATUS_LABELS = {
 
 const CUSTOMER_ORDER_STATUS_LABELS = {
   baru: "Pesanan diterima",
-  pending_confirmation: "Menunggu verifikasi WhatsApp",
+  pending_confirmation: "Pesanan sedang diaktifkan",
   under_review: "Pesanan sedang kami periksa",
   awaiting_shipping_quote: "Ongkir sedang kami periksa",
   awaiting_customer_approval: "Menunggu persetujuan Anda",

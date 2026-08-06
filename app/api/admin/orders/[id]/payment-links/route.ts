@@ -28,7 +28,7 @@ export async function POST(request: Request, context: Context) {
     if (!new Set(["ensure", "reissue"]).has(action)) return Response.json({ error: "Aksi tautan tidak valid." }, { status: 400 });
     const client = getAdminSupabaseClient();
     if (!client) throw new Error("Supabase admin belum dikonfigurasi.");
-    const { data: order } = await client.from("orders").select("id,order_number,status,payment_status,pricing_status,total_amount,whatsapp_confirmed_at,archived_at").eq("id", id).is("archived_at", null).maybeSingle();
+    const { data: order } = await client.from("orders").select("id,order_number,status,payment_status,pricing_status,total_amount,checkout_activated_at,archived_at").eq("id", id).is("archived_at", null).maybeSingle();
     if (!order) return Response.json({ error: "Pesanan aktif tidak ditemukan." }, { status: 404 });
     const result = await ensureAutomaticPaymentLink(client, order as AutomaticPaymentOrder, {
       rotate: action === "reissue", actorId: actor.user.id, reason

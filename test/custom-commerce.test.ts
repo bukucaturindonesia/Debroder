@@ -105,7 +105,6 @@ function checkoutPayload(value: CustomProject) {
   return {
     idempotencyKey: "checkout-custom-design-pair-0001",
     accessToken: "a".repeat(64),
-    confirmationCode: "ABCD1234",
     customer: { name: "Pelanggan Uji", phone: "081234567890" },
     fulfillment: {
       method: "pickup",

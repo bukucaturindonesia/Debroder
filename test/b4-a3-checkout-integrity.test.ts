@@ -9,7 +9,6 @@ function shippingRequest(postalCode = "90111") {
   return {
     idempotencyKey: "checkout_key_1234567890",
     accessToken: "a".repeat(64),
-    confirmationCode: "AB12CD34",
     customer: { name: "Pelanggan Test", phone: "081234567890" },
     fulfillment: {
       method: "shipping",

@@ -26,7 +26,6 @@ export const MAX_CHECKOUT_TOTAL_QUANTITY = MAX_CART_TOTAL_QUANTITY;
 export type PublicCheckoutRequest = {
   idempotencyKey: string;
   accessToken: string;
-  confirmationCode: string;
   customer: {
     name: string;
     phone: string;
@@ -68,7 +67,6 @@ export function parsePublicCheckoutRequest(value: unknown): PublicCheckoutReques
 
   const idempotencyKey = text(value.idempotencyKey);
   const accessToken = text(value.accessToken);
-  const confirmationCode = text(value.confirmationCode).toUpperCase();
   const name = text(value.customer.name);
   const phone = normalizeWhatsapp(text(value.customer.phone));
   const email = text(value.customer.email);
@@ -85,7 +83,6 @@ export function parsePublicCheckoutRequest(value: unknown): PublicCheckoutReques
 
   if (!/^[a-zA-Z0-9_-]{16,100}$/.test(idempotencyKey)) return null;
   if (!/^[a-zA-Z0-9_-]{32,160}$/.test(accessToken)) return null;
-  if (!/^[A-Z0-9]{8,12}$/.test(confirmationCode)) return null;
   if (name.length < 2 || name.length > 150 || phone.length < 9 || phone.length > 15) return null;
   if (email && !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) return null;
   if (method !== "pickup" && method !== "shipping") return null;
@@ -140,7 +137,6 @@ export function parsePublicCheckoutRequest(value: unknown): PublicCheckoutReques
   return {
     idempotencyKey,
     accessToken,
-    confirmationCode,
     customer: { name, phone, email: email || undefined, notes: notes.slice(0, 2000) || undefined },
     fulfillment: {
       method,

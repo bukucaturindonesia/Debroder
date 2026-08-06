@@ -44,9 +44,25 @@ export async function GET(request: Request, context: Context) {
       );
     }
 
+    const accessTokenHash = sha256(token);
+    const { data: checkoutOrder, error: checkoutOrderError } = await client
+      .from("orders")
+      .select("id,status,public_access_token_expires_at")
+      .eq("public_access_token_hash", accessTokenHash)
+      .is("archived_at", null)
+      .maybeSingle();
+    if (checkoutOrderError) throw checkoutOrderError;
+    if (checkoutOrder?.id && checkoutOrder.status === "pending_confirmation" && !isExpired(checkoutOrder.public_access_token_expires_at)) {
+      const { error: activationError } = await client.rpc("activate_public_checkout_order_v2", {
+        p_order_id: checkoutOrder.id,
+        p_customer_user_id: null,
+        p_activation_source: "public_order_recovery"
+      });
+      if (activationError) throw activationError;
+    }
     const projection = await loadCustomerOrderConfirmationProjection(
       client,
-      sha256(token)
+      accessTokenHash
     );
     if (!projection) {
       return customerOrderError(
@@ -60,7 +76,7 @@ export async function GET(request: Request, context: Context) {
       return customerOrderError(
         observability,
         "CUSTOMER_ORDER_ACCESS_EXPIRED",
-        "Tautan order sudah kedaluwarsa. Gunakan nomor WhatsApp atau minta tautan baru.",
+        "Tautan order sudah kedaluwarsa. Masuk ke akun pelanggan atau minta tautan baru melalui bantuan DEBRODER.",
         410
       );
     }

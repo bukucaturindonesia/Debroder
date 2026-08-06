@@ -65,7 +65,8 @@ const PAY_AT_STORE_PICKUP: JourneyDefinition[] = [
 ];
 
 const STAGE_TO_PAY_AT_STORE_PICKUP: Record<string, string> = {
-  whatsapp_confirmation: "order",
+  checkout_activation: "order",
+  whatsapp_confirmation: "order", // legacy server-stage alias
   order_review: "order",
   integrity_review: "order",
   shipping_quote: "order",
@@ -93,7 +94,8 @@ const STAGE_TO_PAY_AT_STORE_PICKUP: Record<string, string> = {
 };
 
 const STAGE_TO_JOURNEY: Record<string, string> = {
-  whatsapp_confirmation: "order_created",
+  checkout_activation: "order_created",
+  whatsapp_confirmation: "order_created", // legacy server-stage alias
   order_review: "order_review",
   integrity_review: "order_review",
   shipping_quote: "order_review",
@@ -123,7 +125,8 @@ const STAGE_TO_JOURNEY: Record<string, string> = {
 };
 
 const STAGE_TO_COMPACT: Record<string, string> = {
-  whatsapp_confirmation: "order",
+  checkout_activation: "order",
+  whatsapp_confirmation: "order", // legacy server-stage alias
   order_review: "verification",
   integrity_review: "verification",
   shipping_quote: "verification",

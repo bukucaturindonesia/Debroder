@@ -1,11 +1,12 @@
-import { redirect } from "next/navigation";
-import { PUBLIC_ROUTES } from "@/lib/public-routes";
+import type { Metadata } from "next";
+import { AccountOrderDetail } from "@/components/customer-account/AccountOrderDetail";
 
-export default async function AccountOrderPage({
-  params
-}: {
-  params: Promise<{ id: string }>;
-}) {
+export const metadata: Metadata = {
+  title: "Detail Pesanan | DEBRODER",
+  robots: { index: false, follow: false }
+};
+
+export default async function AccountOrderPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  redirect(PUBLIC_ROUTES.trackingOrder(id));
+  return <AccountOrderDetail id={id} />;
 }

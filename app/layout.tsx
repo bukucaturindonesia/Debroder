@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import type { ReactNode } from "react";
+import { CustomerAuthProvider } from "@/components/customer-auth/CustomerAuthProvider";
 import { siteConfig } from "@/lib/site";
 import "./globals.css";
 
@@ -98,7 +99,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="id" className={inter.variable}>
-      <body className={inter.className}>{children}</body>
+      <body className={inter.className}><CustomerAuthProvider>{children}</CustomerAuthProvider></body>
     </html>
   );
 }

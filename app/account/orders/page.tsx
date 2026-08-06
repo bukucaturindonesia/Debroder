@@ -1,6 +1,11 @@
-import { redirect } from "next/navigation";
-import { PUBLIC_ROUTES } from "@/lib/public-routes";
+import type { Metadata } from "next";
+import { AccountOrders } from "@/components/customer-account/AccountOrders";
+
+export const metadata: Metadata = {
+  title: "Pesanan Saya | DEBRODER",
+  robots: { index: false, follow: false }
+};
 
 export default function AccountOrdersPage() {
-  redirect(PUBLIC_ROUTES.account);
+  return <AccountOrders />;
 }
