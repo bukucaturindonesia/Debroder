@@ -64,7 +64,10 @@ export async function requireVerifiedCustomer(request: Request): Promise<Verifie
   if (existingError) throw new CustomerAuthError(503, "CUSTOMER_PROFILE_UNAVAILABLE", "Profil pelanggan belum tersedia.");
 
   if (!existing) {
-    const { error: insertError } = await client.from("customer_profiles").insert({
+    // Callback verification and the root customer-auth provider can request the
+    // same profile at nearly the same time. Provision atomically so concurrent
+    // requests converge on one immutable customer identity.
+    const { error: provisionError } = await client.from("customer_profiles").upsert({
       id: user.id,
       email: normalizedEmail,
       full_name: metadataName || fallbackName,
@@ -72,8 +75,13 @@ export async function requireVerifiedCustomer(request: Request): Promise<Verifie
       account_status: "ACTIVE",
       email_verified_at: user.email_confirmed_at,
       terms_accepted_at: termsAcceptedAt
+    }, {
+      onConflict: "id",
+      ignoreDuplicates: true
     });
-    if (insertError) throw new CustomerAuthError(503, "CUSTOMER_PROFILE_UNAVAILABLE", "Profil pelanggan belum dapat dibuat.");
+    if (provisionError) {
+      throw new CustomerAuthError(503, "CUSTOMER_PROFILE_UNAVAILABLE", "Profil pelanggan belum dapat dibuat.");
+    }
   } else if (existing.email !== normalizedEmail) {
     throw new CustomerAuthError(409, "CUSTOMER_EMAIL_CHANGED", "Perubahan email akun belum dapat diproses melalui profil pelanggan.");
   }
