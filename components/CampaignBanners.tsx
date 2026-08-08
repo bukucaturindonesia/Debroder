@@ -1,4 +1,5 @@
-/* DEBRODER_LANDING_VISUAL_BATCH_2 */
+import Link from "next/link";
+import { AccessibleAutoplayVideo } from "@/components/AccessibleAutoplayVideo";
 import type { CmsBanner } from "@/lib/types";
 import { ResponsivePicture } from "@/components/ResponsivePicture";
 
@@ -13,28 +14,12 @@ function CampaignMedia({ banner }: { banner: CmsBanner }) {
     const mobileUrl = banner.mobile_media_url || banner.desktop_media_url;
 
     return (
-      <>
-        <video
-          className="absolute inset-0 hidden h-full w-full object-cover sm:block"
-          src={banner.desktop_media_url}
-          poster={banner.poster_url || undefined}
-          autoPlay
-          muted
-          loop
-          playsInline
-          preload="metadata"
-        />
-        <video
-          className="absolute inset-0 h-full w-full object-cover sm:hidden"
-          src={mobileUrl}
-          poster={banner.poster_url || undefined}
-          autoPlay
-          muted
-          loop
-          playsInline
-          preload="metadata"
-        />
-      </>
+      <AccessibleAutoplayVideo
+        src={banner.desktop_media_url}
+        mobileSrc={mobileUrl}
+        poster={banner.poster_url}
+        label={banner.image_alt || banner.title || banner.name || "Video campaign DEBRODER"}
+      />
     );
   }
 
@@ -42,11 +27,26 @@ function CampaignMedia({ banner }: { banner: CmsBanner }) {
     <ResponsivePicture
       desktopSrc={banner.desktop_media_url}
       mobileSrc={banner.mobile_media_url || banner.desktop_media_url}
-      alt={banner.title || banner.name}
+      alt={banner.image_alt || banner.title || banner.name}
       className="h-full w-full object-cover"
       objectFit="cover"
+      desktopObjectPosition={banner.object_position}
+      mobileObjectPosition={banner.mobile_object_position || banner.object_position}
+      desktopZoom={banner.focal_zoom}
+      mobileZoom={banner.mobile_focal_zoom}
     />
   );
+}
+
+function CampaignAction({ href, children }: { href: string; children: string }) {
+  const className = "landing-campaign-cta mt-7 inline-flex min-h-12 items-center justify-center rounded-full bg-[#111] px-6 py-3 text-sm font-semibold text-white transition-colors hover:bg-[#2a2a2a]";
+  const external = /^(https?:|mailto:|tel:)/.test(href);
+
+  if (external) {
+    return <a href={href} className={className} target="_blank" rel="noopener noreferrer">{children}</a>;
+  }
+
+  return <Link href={href} className={className}>{children}</Link>;
 }
 
 type CampaignBannersProps = {
@@ -104,12 +104,7 @@ export function CampaignBanners({ banners, fallbackDesktopSrc, fallbackMobileSrc
                 <p className="mx-auto mt-4 max-w-2xl text-[15px] leading-6 text-black/70 sm:text-lg sm:leading-7">
                   {subtitle}
                 </p>
-                <a
-                  href={ctaUrl}
-                  className="landing-campaign-cta mt-7 inline-flex min-h-11 items-center justify-center rounded-full bg-[#111] px-6 py-3 text-sm font-semibold text-white transition hover:bg-black/75"
-                >
-                  {ctaLabel}
-                </a>
+                <CampaignAction href={ctaUrl}>{ctaLabel}</CampaignAction>
               </div>
             </article>
           );

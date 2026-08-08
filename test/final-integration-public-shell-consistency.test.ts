@@ -23,8 +23,9 @@ describe("Final Integration public shell consistency", () => {
   });
 
   it("uses the canonical footer for the homepage and every shared public shell theme", () => {
-    expect(homePage).toContain('<PublicFooter model={shellModel.data.footer} />');
+    expect(homePage).toContain('<PublicFooter model={shellModel.data.footer} tone="light" />');
     expect(publicPage).toContain('<PublicFooter model={shellModel.data.footer} />');
     expect(publicPage).not.toContain("variant=");
+    expect(readFileSync("components/PublicFooter.tsx", "utf8")).toContain('tone = "dark"');
   });
 });
