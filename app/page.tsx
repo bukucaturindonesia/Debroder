@@ -1,5 +1,6 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
+import { AccessibleAutoplayVideo } from "@/components/AccessibleAutoplayVideo";
 import { CampaignBanners } from "@/components/CampaignBanners";
 import { HeroSlider } from "@/components/HeroSlider";
 import { PublicProductCard } from "@/components/PublicProductCard";
@@ -199,29 +200,26 @@ function EditorialCard({
 
   return (
     <article className={`editorial-card landing-editorial-card group relative block overflow-hidden bg-[#0a1711] ${mediaClass} ${className}`}>
-      <Link href={item.href} aria-label={`Lihat ${title || item.imageAlt}`} className="absolute inset-0 z-10" />
-      <ResponsivePicture
-        desktopSrc={item.image}
-        mobileSrc={item.mobileImage || item.image}
-        fallbackSrc={item.fallbackImage}
-        alt={item.imageAlt}
-        className="editorial-card-image h-full w-full object-cover transition duration-500 group-hover:scale-[1.02]"
-        objectFit={item.objectFit || "cover"}
-        desktopObjectPosition={item.objectPosition}
-        mobileObjectPosition={item.objectPosition}
-      />
-      {shouldShowCopy ? <div className="editorial-card-overlay pointer-events-none absolute inset-0 z-10" /> : null}
-      {shouldShowCopy ? (
-        <div className="editorial-card-content pointer-events-none absolute z-20 text-white">
-          {label ? <p className="editorial-card-label">{label}</p> : null}
-          {title ? <h3 className="editorial-card-title">{title}</h3> : null}
-          {button ? (
-            <div className="pointer-events-auto relative z-30 mt-3 sm:mt-4">
-              <Link href={item.href} className="editorial-card-cta inline-flex items-center rounded-full bg-white text-[#111] transition hover:bg-[#e9eee9]">{button}</Link>
-            </div>
-          ) : null}
-        </div>
-      ) : null}
+      <Link href={item.href} aria-label={`Lihat ${title || item.imageAlt}`} className="block h-full w-full">
+        <ResponsivePicture
+          desktopSrc={item.image}
+          mobileSrc={item.mobileImage || item.image}
+          fallbackSrc={item.fallbackImage}
+          alt={item.imageAlt}
+          className="editorial-card-image h-full w-full object-cover transition-opacity"
+          objectFit={item.objectFit || "cover"}
+          desktopObjectPosition={item.objectPosition}
+          mobileObjectPosition={item.objectPosition}
+        />
+        {shouldShowCopy ? <span className="editorial-card-overlay pointer-events-none absolute inset-0" aria-hidden="true" /> : null}
+        {shouldShowCopy ? (
+          <span className="editorial-card-content pointer-events-none absolute z-20 block text-white">
+            {label ? <span className="editorial-card-label block">{label}</span> : null}
+            {title ? <span className="editorial-card-title block">{title}</span> : null}
+            {button ? <span className="editorial-card-cta mt-4 inline-flex items-center rounded-full bg-white text-[#111]">{button}</span> : null}
+          </span>
+        ) : null}
+      </Link>
     </article>
   );
 }
@@ -354,9 +352,6 @@ function ManagedHomepageSection({ section, setting, fallbackProducts = [] }: { s
   );
 }
 
-/* DEBRODER_LANDING_VISUAL_BATCH_3_FINAL_FROZEN */
-/* DEBRODER_LANDING_VISUAL_BATCH_2 */
-/* DEBRODER_LANDING_STRUCTURE_V2_APPLIED */
 export default async function Home() {
   const [content, shellModel] = await Promise.all([
     getPublicContent(),
@@ -546,7 +541,13 @@ export default async function Home() {
               {content.trustAbout.cta_label && content.trustAbout.cta_url ? <Link href={content.trustAbout.cta_url} className="about-cta mt-7 inline-flex min-h-12 items-center justify-center rounded-full bg-[#111] px-6 text-[15px] font-semibold text-white transition hover:bg-black/70">{content.trustAbout.cta_label}</Link> : null}
             </div>
             {content.trustAbout.video_url ? (
-              <video src={content.trustAbout.video_url} autoPlay muted loop playsInline className="about-media aspect-[4/3] w-full object-cover" />
+              <div className="about-media aspect-[4/3] w-full overflow-hidden">
+                <AccessibleAutoplayVideo
+                  src={content.trustAbout.video_url}
+                  poster={content.trustAbout.image_url}
+                  label="Video tentang DEBRODER"
+                />
+              </div>
             ) : content.trustAbout.image_url ? (
               <ResponsivePicture desktopSrc={content.trustAbout.image_url} mobileSrc={content.trustAbout.mobile_image_url || content.trustAbout.image_url} alt="Tentang DEBRODER" className="about-media aspect-[4/3] h-full w-full object-cover" />
             ) : (
@@ -563,7 +564,7 @@ export default async function Home() {
         </section>
       </LandingSectionSlot>
 
-      <PublicFooter model={shellModel.data.footer} />
+      <PublicFooter model={shellModel.data.footer} tone="light" />
     </main>
     </StorefrontCartBoundary>
   );

@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { ResponsivePicture } from "@/components/ResponsivePicture";
 import { fallbackImages } from "@/lib/fallback-data";
 import type { HeroBanner } from "@/lib/types";
@@ -55,7 +55,9 @@ export function HeroSlider({ heroes }: { heroes: HeroBanner[] }) {
   const [paused, setPaused] = useState(false);
   const [reducedMotion, setReducedMotion] = useState(false);
   const [touchStart, setTouchStart] = useState<number | null>(null);
+  const videoRefs = useRef<Array<HTMLVideoElement | null>>([]);
   const total = slides.length;
+  const hasMotionMedia = slides.some((slide) => Boolean(slide.desktop_video_url || slide.hero_video_url || slide.video_url));
 
   useEffect(() => {
     const query = window.matchMedia("(prefers-reduced-motion: reduce)");
@@ -74,6 +76,17 @@ export function HeroSlider({ heroes }: { heroes: HeroBanner[] }) {
 
     return () => window.clearTimeout(timer);
   }, [activeIndex, paused, reducedMotion, total]);
+
+  useEffect(() => {
+    videoRefs.current.forEach((video, index) => {
+      if (!video) return;
+      if (index !== activeIndex || paused || reducedMotion) {
+        video.pause();
+        return;
+      }
+      void video.play().catch(() => undefined);
+    });
+  }, [activeIndex, paused, reducedMotion]);
 
   if (!slides.length) return null;
 
@@ -98,7 +111,7 @@ export function HeroSlider({ heroes }: { heroes: HeroBanner[] }) {
   return (
     <section
       id="beranda"
-      className="hero-section landing-hero relative h-[76svh] min-h-[500px] max-h-[680px] w-full overflow-hidden bg-black md:h-[78svh] md:min-h-[580px] md:max-h-[800px]"
+      className="hero-section landing-hero relative h-[76svh] min-h-[500px] max-h-[760px] w-full overflow-hidden bg-black md:h-[78svh] md:min-h-[580px]"
       aria-roledescription="carousel"
       aria-label="Koleksi utama DEBRODER"
       role="region"
@@ -130,10 +143,22 @@ export function HeroSlider({ heroes }: { heroes: HeroBanner[] }) {
             key={`${slide.id || index}-${headline || slide.image_url || "hero"}`}
             className={`relative h-full w-full shrink-0 ${active ? "" : "pointer-events-none"}`}
             aria-hidden={!active}
+            aria-label={`Slide ${index + 1} dari ${total}`}
+            aria-roledescription="slide"
+            role="group"
           >
             <div className="absolute inset-0">
               {desktopVideo ? (
-                <video autoPlay muted loop playsInline preload={index === 0 ? "metadata" : "none"} className="h-full w-full object-cover" style={{ objectPosition: desktopPosition }}>
+                <video
+                  ref={(node) => { videoRefs.current[index] = node; }}
+                  muted
+                  loop
+                  playsInline
+                  preload={index === 0 ? "metadata" : "none"}
+                  className="h-full w-full object-cover"
+                  style={{ objectPosition: desktopPosition }}
+                  aria-hidden="true"
+                >
                   {mobileVideo ? <source src={mobileVideo} media="(max-width: 767px)" /> : null}
                   <source src={desktopVideo} />
                 </video>
@@ -199,18 +224,18 @@ export function HeroSlider({ heroes }: { heroes: HeroBanner[] }) {
       })}
       </div>
 
-      {total > 1 ? (
+      {total > 1 || hasMotionMedia ? (
         <div className="landing-hero-controls absolute bottom-4 right-4 z-30 flex items-center gap-2 text-white sm:bottom-7 sm:right-8 lg:right-12">
-          <button type="button" onClick={() => setPaused((current) => !current)} aria-label={paused ? "Putar slider" : "Jeda slider"} className="grid h-11 w-11 place-items-center rounded-full border border-white/30 bg-black/35 backdrop-blur-md transition hover:bg-white hover:text-[#111]">
+          <button type="button" onClick={() => setPaused((current) => !current)} aria-label={paused ? "Putar media utama" : "Jeda media utama"} className="grid h-12 w-12 place-items-center rounded-full border border-white/35 bg-black/50 transition-colors hover:bg-white hover:text-[#111]">
             <PlayPauseIcon paused={paused} />
           </button>
-          <button type="button" onClick={goPrev} aria-label="Slide sebelumnya" className="grid h-11 w-11 place-items-center rounded-full border border-white/30 bg-black/35 backdrop-blur-md transition hover:bg-white hover:text-[#111]">
+          {total > 1 ? <button type="button" onClick={goPrev} aria-label="Slide sebelumnya" className="grid h-12 w-12 place-items-center rounded-full border border-white/35 bg-black/50 transition-colors hover:bg-white hover:text-[#111]">
             <ArrowIcon direction="left" />
-          </button>
-          <button type="button" onClick={goNext} aria-label="Slide berikutnya" className="grid h-11 w-11 place-items-center rounded-full border border-white/30 bg-black/35 backdrop-blur-md transition hover:bg-white hover:text-[#111]">
+          </button> : null}
+          {total > 1 ? <button type="button" onClick={goNext} aria-label="Slide berikutnya" className="grid h-12 w-12 place-items-center rounded-full border border-white/35 bg-black/50 transition-colors hover:bg-white hover:text-[#111]">
             <ArrowIcon direction="right" />
-          </button>
-          <div className="ml-1 hidden items-center gap-2 sm:flex" aria-label={`Slide ${activeIndex + 1} dari ${total}`}>
+          </button> : null}
+          {total > 1 ? <div className="ml-1 hidden items-center gap-2 sm:flex" aria-label={`Slide ${activeIndex + 1} dari ${total}`}>
             {slides.map((slide, index) => (
               <button
                 key={slide.id || index}
@@ -220,7 +245,7 @@ export function HeroSlider({ heroes }: { heroes: HeroBanner[] }) {
                 className="group grid h-11 w-8 place-items-center"
               ><span className={`h-1.5 rounded-full transition-[width,background-color] duration-200 ${index === activeIndex ? "w-7 bg-white" : "w-1.5 bg-white/50 group-hover:bg-white/80"}`} /></button>
             ))}
-          </div>
+          </div> : null}
         </div>
       ) : null}
     </section>

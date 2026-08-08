@@ -37,12 +37,16 @@ describe("canonical public global shell", () => {
     expect(header).toContain('name={isOpen ? "close" : "menu"}');
   });
 
-  it("locks the only public footer to pure black and preserves footer WhatsApp", () => {
+  it("keeps the canonical footer dark by default and allows the approved light homepage tone", () => {
     expect(footer).toContain("data-public-footer");
-    expect(footer).toContain("bg-black text-white");
-    expect(footer).toContain('variant="primary-white"');
-    expect(footer).not.toMatch(/#050505|publicDark|bg-white text-/);
-    expect(styles).toContain("background: #000000;");
+    expect(footer).toContain('tone = "dark"');
+    expect(footer).toContain("public-footer-dark bg-black text-white");
+    expect(footer).toContain('public-footer-light bg-white text-[#111]');
+    expect(footer).toContain('tone === "light" ? "primary-black" : "primary-white"');
+    expect(home).toContain('<PublicFooter model={shellModel.data.footer} tone="light" />');
+    expect(publicPage).toContain('<PublicFooter model={shellModel.data.footer} />');
+    expect(styles).toContain(".public-footer-light .public-footer-secondary");
+    expect(footer).not.toMatch(/#050505|publicDark/);
     expect(read("lib/public-shell/domain.ts")).toContain('{ label: "WhatsApp"');
   });
 

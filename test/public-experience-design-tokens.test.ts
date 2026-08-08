@@ -56,6 +56,11 @@ describe("DEBRODER Public Experience P0 design tokens", () => {
   it("makes public consumers use the canonical contract", () => {
     expect(globals).toContain("--landing-content-max: var(--content-max);");
     expect(globals).toContain("--landing-page-gutter: var(--content-gutter);");
+    expect(globals).toContain("--landing-canvas: #ffffff;");
+    expect(globals).toContain("--landing-ink: #111111;");
+    expect(globals).toContain("--landing-muted: #757575;");
+    expect(globals).toContain("--landing-rule: #e5e5e5;");
+    expect(globals).toContain("--landing-accent: #063d24;");
     expect(globals).toContain("--category-canvas: var(--color-canvas);");
     expect(globals).toContain("background: var(--color-surface-soft);");
     expect(home).toContain("bg-experience-canvas text-experience-ink");
