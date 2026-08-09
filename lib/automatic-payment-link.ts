@@ -11,7 +11,7 @@ export type AutomaticPaymentOrder = {
   payment_status: string;
   pricing_status: string | null;
   total_amount: number;
-  whatsapp_confirmed_at: string | null;
+  checkout_activated_at: string | null;
   archived_at?: string | null;
 };
 
@@ -20,7 +20,7 @@ const PAID_STATUSES = new Set(["paid", "terverifikasi", "refunded"]);
 
 export function automaticPaymentBlocker(order: AutomaticPaymentOrder): string | null {
   if (order.archived_at || TERMINAL_ORDER_STATUSES.has(order.status)) return "Pesanan tidak aktif.";
-  if (!order.whatsapp_confirmed_at) return "Menunggu verifikasi pelanggan.";
+  if (!order.checkout_activated_at) return "Menunggu aktivasi checkout.";
   if (order.pricing_status !== "final" || Number(order.total_amount) <= 0) return "Menunggu penetapan harga final.";
   if (PAID_STATUSES.has(order.payment_status)) return "Pembayaran pesanan sudah selesai.";
   return null;

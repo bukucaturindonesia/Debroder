@@ -80,7 +80,7 @@ describe("P12 Admin Orders ownership", () => {
       converted_at: null,
       archived_at: null,
       checkout_source: "public_checkout",
-      whatsapp_confirmed_at: "2026-07-20T01:00:00.000Z",
+      checkout_activated_at: "2026-07-20T01:00:00.000Z",
       created_at: "2026-07-20T00:00:00.000Z",
       updated_at: "2026-07-23T00:00:00.000Z",
       order_items: [

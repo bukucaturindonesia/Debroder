@@ -3,7 +3,6 @@ export type OrderResponsibility = "customer" | "debroder" | "none";
 export type OrderStageTone = "action" | "processing" | "success" | "warning";
 
 export type OrderPrimaryAction =
-  | "verify_whatsapp"
   | "review_order"
   | "set_shipping_quote"
   | "prepare_quote"
@@ -64,7 +63,7 @@ export type OrderActiveStageInput = {
   customQuoteStatus?: string | null;
   customQuoteVersion?: number | null;
   isCustom?: boolean;
-  whatsappConfirmed?: boolean;
+  checkoutActivated?: boolean;
   paymentRequirementMet?: boolean;
   paymentProductionEligible?: boolean;
   paymentEffectiveTotal?: number | null;
@@ -882,22 +881,22 @@ export function resolveOrderActiveStage(input: OrderActiveStageInput): OrderActi
     });
   }
 
-  if (orderStatus === "pending_confirmation" || (!input.whatsappConfirmed && orderStatus === "baru")) {
+  if (orderStatus === "pending_confirmation" || (!input.checkoutActivated && orderStatus === "baru")) {
     return finish(input, {
-      activeStage: "whatsapp_confirmation",
-      responsibility: "customer",
-      tone: "action",
-      customerStatusLabel: "Verifikasi WhatsApp",
-      adminStatusLabel: "Menunggu Verifikasi Pelanggan",
-      customerTitle: "Verifikasi nomor WhatsApp",
-      customerDescription: "Konfirmasi nomor yang digunakan saat checkout agar pesanan dapat diproses dengan aman.",
+      activeStage: "checkout_activation",
+      responsibility: "debroder",
+      tone: "processing",
+      customerStatusLabel: "Pesanan Sedang Diaktifkan",
+      adminStatusLabel: "Menunggu Aktivasi Sistem",
+      customerTitle: "Pesanan sedang diaktifkan",
+      customerDescription: "Sistem sedang membuka tahap berikutnya. Pelanggan tidak perlu melakukan konfirmasi manual.",
       adminTaskType: null,
-      primaryAction: "verify_whatsapp",
-      secondaryAction: "track",
+      primaryAction: "track_only",
+      secondaryAction: null,
       previousStage: "Pesanan Dibuat",
       nextStage: "Pemeriksaan Pesanan",
       nextStep: input.isCustom ? "Admin akan memeriksa pesanan custom." : "Stok akan diperiksa dan disimpan sementara.",
-      blockingReason: "Nomor WhatsApp pelanggan belum terverifikasi.",
+      blockingReason: "Aktivasi otomatis belum selesai.",
       warning: warnings[0] ?? null,
       isTerminal: false,
       warnings

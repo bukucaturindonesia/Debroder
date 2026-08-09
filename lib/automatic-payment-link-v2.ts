@@ -19,7 +19,7 @@ const PAID_STATUSES = new Set(["paid", "terverifikasi", "refunded"]);
 
 export function automaticPaymentBlocker(order: AutomaticPaymentOrder): string | null {
   if (order.archived_at || TERMINAL_ORDER_STATUSES.has(order.status)) return "Pesanan tidak aktif.";
-  if (!order.whatsapp_confirmed_at) return "Menunggu verifikasi pelanggan.";
+  if (!order.checkout_activated_at) return "Menunggu aktivasi checkout.";
   if (order.pricing_status !== "final" || Number(order.total_amount) <= 0) return "Menunggu penetapan harga final.";
   if (isCustomOrder(order) && (
     order.custom_quote_status !== "locked"

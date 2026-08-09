@@ -23,8 +23,14 @@ export function AdminAlert({
 
 export function AdminLoadingState({ label = "Memuat data..." }: { label?: string }) {
   return (
-    <div className="border border-brand-softGray bg-white p-8 text-center text-sm font-medium text-brand-charcoal/60">
-      {label}
+    <div className="admin-loading-state border border-zinc-200/70 bg-white p-6 sm:p-8" role="status" aria-live="polite" aria-label={label}>
+      <span className="sr-only">{label}</span>
+      <div className="admin-skeleton-block h-4 w-36" aria-hidden="true" />
+      <div className="mt-6 grid gap-3" aria-hidden="true">
+        <div className="admin-skeleton-block h-12 w-full" />
+        <div className="admin-skeleton-block h-12 w-full" />
+        <div className="admin-skeleton-block h-12 w-[82%]" />
+      </div>
     </div>
   );
 }

@@ -4,6 +4,8 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { type FormEvent, useEffect, useMemo, useRef, useState } from "react";
 import { isCustomProjectCartItem, useCart } from "@/components/CartProvider";
+import { useCustomerAuth } from "@/components/customer-auth/CustomerAuthProvider";
+import type { CustomerAddress } from "@/lib/customer-auth/contracts";
 import { SafeImage } from "@/components/SafeImage";
 import { fallbackImages } from "@/lib/fallback-data";
 import { formatRupiah } from "@/lib/url";
@@ -19,7 +21,6 @@ type StoreOption = { id: string; name: string; address: string; hours: string };
 type CheckoutDraft = {
   idempotencyKey: string;
   accessToken: string;
-  confirmationCode: string;
   createdAt: string;
   payloadHash?: string;
 };
@@ -48,13 +49,13 @@ function createDraft(): CheckoutDraft {
   return {
     idempotencyKey: compact(),
     accessToken: `${compact()}${compact()}`,
-    confirmationCode: compact().slice(0, 8).toUpperCase(),
     createdAt: new Date().toISOString()
   };
 }
 
 export function CheckoutClient({ stores }: { stores: StoreOption[] }) {
   const cart = useCart();
+  const customerAuth = useCustomerAuth();
   const router = useRouter();
   const draft = useRef<CheckoutDraft | null>(null);
   const [fulfillment, setFulfillment] = useState<"pickup" | "shipping">(stores.length ? "pickup" : "shipping");
@@ -65,6 +66,9 @@ export function CheckoutClient({ stores }: { stores: StoreOption[] }) {
   const [structuredAddress, setStructuredAddress] = useState<StructuredIndonesiaAddressInput>(EMPTY_STRUCTURED_ADDRESS);
   const [formattedStructuredAddress, setFormattedStructuredAddress] = useState("");
   const [addressConfirmed, setAddressConfirmed] = useState(false);
+  const [customerName, setCustomerName] = useState("");
+  const [customerPhone, setCustomerPhone] = useState("");
+  const [customerEmail, setCustomerEmail] = useState("");
   const readyItems = useMemo(
     () => cart.items.filter(
       (item): item is typeof item & { lineType: "ready_stock" } =>
@@ -98,6 +102,25 @@ export function CheckoutClient({ stores }: { stores: StoreOption[] }) {
     }, 1000);
     return () => window.clearInterval(timer);
   }, [retryAfter]);
+
+  useEffect(() => {
+    if (!customerAuth.profile) return;
+    setCustomerName((value) => value || customerAuth.profile?.fullName || "");
+    setCustomerPhone((value) => value || customerAuth.profile?.phone || "");
+    setCustomerEmail(customerAuth.profile.email);
+    if (!customerAuth.accessToken) return;
+    void fetch("/api/customer/addresses", {
+      cache: "no-store",
+      headers: { authorization: `Bearer ${customerAuth.accessToken}` }
+    }).then(async (response) => {
+      if (!response.ok) return;
+      const payload = await response.json().catch(() => ({})) as { addresses?: CustomerAddress[] };
+      const saved = payload.addresses?.find((item) => item.isDefault) ?? payload.addresses?.[0];
+      if (!saved) return;
+      setStructuredAddress((current) => current.provinceId ? current : saved.address);
+      setFormattedStructuredAddress((current) => current || saved.formattedAddress);
+    });
+  }, [customerAuth.accessToken, customerAuth.profile]);
 
   useEffect(() => {
     let active = true;
@@ -164,9 +187,9 @@ export function CheckoutClient({ stores }: { stores: StoreOption[] }) {
     }
     const businessPayload = {
       customer: {
-        name: form.get("name"),
-        phone: form.get("phone"),
-        email: form.get("email"),
+        name: customerName,
+        phone: customerPhone,
+        email: customerAuth.profile?.email ?? customerEmail,
         notes: form.get("notes")
       },
       fulfillment: {
@@ -226,7 +249,10 @@ export function CheckoutClient({ stores }: { stores: StoreOption[] }) {
     try {
       const response = await fetch("/api/checkout", {
         method: "POST",
-        headers: { "content-type": "application/json" },
+        headers: {
+          "content-type": "application/json",
+          ...(customerAuth.accessToken ? { authorization: `Bearer ${customerAuth.accessToken}` } : {})
+        },
         body: JSON.stringify({ ...currentDraft, ...businessPayload })
       });
       const payload = await readCheckoutPayload(response);
@@ -277,9 +303,9 @@ export function CheckoutClient({ stores }: { stores: StoreOption[] }) {
   return (
     <section className="bg-[#f6f5f0] px-4 py-10 sm:py-16">
       <div className="mx-auto max-w-6xl">
-        <p className="text-xs font-semibold uppercase tracking-[0.18em] text-black/45">Checkout Tanpa Akun</p>
+        <p className="text-xs font-semibold uppercase tracking-[0.18em] text-black/45">Checkout</p>
         <h1 className="mt-3 text-3xl font-semibold sm:text-5xl">Selesaikan pesanan dengan cepat</h1>
-        <p className="mt-3 max-w-2xl text-sm leading-7 text-black/60">Tidak perlu masuk ke akun. Ketersediaan produk siap beli, konfigurasi custom, jumlah minimum, kecocokan layanan, dan harga akan diperiksa kembali saat pesanan dibuat.</p>
+        <p className="mt-3 max-w-2xl text-sm leading-7 text-black/60">Anda dapat melanjutkan sebagai tamu atau memakai akun pelanggan. Ketersediaan produk, konfigurasi, jumlah, dan harga diperiksa kembali saat pesanan dibuat.</p>
 
         {!cart.checkoutDecision.allowed && cart.checkoutDecision.code === "CART_MIXED_CHECKOUT_MODE" ? (
           <div className="mt-7 border border-amber-300 bg-amber-50 p-5 text-sm text-amber-950">
@@ -301,16 +327,19 @@ export function CheckoutClient({ stores }: { stores: StoreOption[] }) {
           <div className="grid gap-6">
             <Panel title="Data pelanggan">
               <div className="grid gap-4 sm:grid-cols-2">
-                <Field label="Nama lengkap"><input name="name" autoComplete="name" minLength={2} maxLength={150} required /></Field>
-                <Field label="Nomor WhatsApp"><input name="phone" type="tel" autoComplete="tel" placeholder="08xxxxxxxxxx" required /></Field>
-                <Field label="Email (opsional)"><input name="email" type="email" autoComplete="email" /></Field>
+                <Field label="Nama lengkap"><input name="name" value={customerName} onChange={(event) => setCustomerName(event.target.value)} autoComplete="name" minLength={2} maxLength={150} required /></Field>
+                <Field label="Nomor kontak"><input name="phone" value={customerPhone} onChange={(event) => setCustomerPhone(event.target.value)} type="tel" autoComplete="tel" placeholder="08xxxxxxxxxx" required /></Field>
+                <Field label="Email"><input name="email" value={customerEmail} onChange={(event) => setCustomerEmail(event.target.value)} type="email" autoComplete="email" required readOnly={Boolean(customerAuth.profile)} /></Field>
                 <Field label="Catatan (opsional)"><input name="notes" maxLength={2000} /></Field>
+              </div>
+              <div className="mt-4 rounded-2xl bg-brand-offWhite p-4 text-sm leading-6 text-black/60">
+                {customerAuth.profile ? <>Pesanan akan disimpan ke <strong className="text-black">Akun Saya</strong> dengan email terverifikasi.</> : <>Belum masuk. <Link href="/login?next=%2Fcheckout" className="font-semibold text-black underline underline-offset-4">Masuk untuk menyimpan pesanan</Link>, atau lanjutkan sebagai tamu.</>}
               </div>
             </Panel>
 
             <Panel title="Metode Pengiriman">
               <div className="grid gap-3 sm:grid-cols-2">
-                <Choice checked={fulfillment === "pickup"} disabled={!stores.length} onChange={() => setFulfillment("pickup")} title="Ambil di Toko" detail="Tanpa ongkir; stok disimpan selama 12 jam setelah WhatsApp diverifikasi." />
+                <Choice checked={fulfillment === "pickup"} disabled={!stores.length} onChange={() => setFulfillment("pickup")} title="Ambil di Toko" detail="Tanpa ongkir; stok disimpan otomatis selama 12 jam setelah pesanan dibuat." />
                 <Choice checked={fulfillment === "shipping"} onChange={() => setFulfillment("shipping")} title="Kurir Eksternal" detail="Admin mengecek ongkir; stok direservasi 24 jam setelah total disetujui." />
               </div>
               {fulfillment === "pickup" ? (
@@ -443,7 +472,6 @@ async function hashBusinessPayload(value: unknown) {
 function storeOrderSession(draftValue: CheckoutDraft, payload: CheckoutApiPayload) {
   const trackingToken = payload.trackingToken || draftValue.accessToken;
   sessionStorage.setItem(`debroder-order-${trackingToken}`, JSON.stringify({
-    confirmationCode: draftValue.confirmationCode,
     orderNumber: payload.orderNumber,
     trackingUrl: payload.trackingUrl
   }));
@@ -454,7 +482,7 @@ function readStoredDraft(): CheckoutDraft | null {
     const value = sessionStorage.getItem(RECOVERY_KEY);
     if (!value) return null;
     const parsed = JSON.parse(value) as Partial<CheckoutDraft>;
-    if (!parsed.idempotencyKey || !parsed.accessToken || !parsed.confirmationCode || !parsed.createdAt) return null;
+    if (!parsed.idempotencyKey || !parsed.accessToken || !parsed.createdAt) return null;
     return parsed as CheckoutDraft;
   } catch {
     return null;

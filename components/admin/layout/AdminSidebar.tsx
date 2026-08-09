@@ -24,29 +24,27 @@ export function AdminSidebar({
   const pathname = usePathname();
   const role: AdminRole = access.role;
   const groups = getNavigationGroups(role, access.permissions);
-  const globalDashboard = pathname === "/admin" || pathname === "/admin/dashboard";
-
   return (
-    <div className={`flex h-full flex-col ${globalDashboard ? "gad-sidebar" : "bg-white text-brand-charcoal"}`}>
-      <div className="border-b border-brand-softGray p-5">
+    <div className="admin-sidebar flex h-full flex-col bg-white text-zinc-900">
+      <div className="border-b border-zinc-200/70 p-6">
         <Link href={getRoleHome(role)} onClick={onNavigate}>
-          <Logo variant={globalDashboard ? "primary-white" : "primary-dark"} size="md" />
+          <Logo variant="primary-dark" size="md" />
         </Link>
-        <p className="mt-3 text-xs font-semibold uppercase tracking-[0.18em] text-brand-charcoal/45">
-          {globalDashboard ? "GLOBAL ADMIN" : "Area Kerja Admin"}
+        <p className="mt-4 text-[10px] font-semibold uppercase tracking-[0.18em] text-zinc-400">
+          Area Kerja Admin
         </p>
-        <div className="mt-3 border-t border-brand-softGray pt-3 text-xs leading-5 text-brand-charcoal/65">
-          <p className="font-semibold text-brand-charcoal">{access.displayName}</p>
+        <div className="mt-4 border-t border-zinc-200/70 pt-4 text-xs leading-5 text-zinc-500">
+          <p className="font-semibold text-zinc-900">{access.displayName}</p>
           <p>{access.roleLabel}</p>
           <p>{access.scopeLabel}</p>
         </div>
       </div>
 
-      <nav className="min-h-0 flex-1 overflow-y-auto px-4 py-5" aria-label="Menu admin">
-        <div className="grid gap-7">
+      <nav className="admin-sidebar-nav min-h-0 flex-1 overflow-y-auto px-3 py-6" aria-label="Menu admin">
+        <div className="grid gap-8">
           {groups.map((group) => (
             <section key={group.label}>
-              <p className="px-3 text-[11px] font-semibold tracking-[0.18em] text-brand-charcoal/40">
+              <p className="px-3 text-[10px] font-semibold uppercase tracking-[0.18em] text-zinc-400">
                 {group.label}
               </p>
               <div className="mt-2 grid gap-1">
@@ -60,10 +58,10 @@ export function AdminSidebar({
                         href={item.href}
                         onClick={onNavigate}
                         aria-current={active ? "page" : undefined}
-                        className={`rounded-lg px-3 py-2.5 text-sm font-semibold transition ${
+                        className={`admin-nav-link border-l-2 px-3 py-2.5 text-sm font-medium transition-colors duration-150 ${
                           active
-                            ? "bg-brand-charcoal text-white"
-                            : "hover:bg-brand-offWhite"
+                            ? "border-zinc-900 bg-zinc-100 text-zinc-950"
+                            : "border-transparent text-zinc-600 hover:bg-zinc-50 hover:text-zinc-950"
                         }`}
                       >
                         {item.label}
@@ -78,16 +76,16 @@ export function AdminSidebar({
                   return (
                     <div
                       key={item.label}
-                      className={`rounded-xl border p-2 ${
+                      className={`border-l p-2 ${
                         groupActive
-                          ? "border-brand-charcoal/25 bg-brand-offWhite"
-                          : "border-transparent"
+                          ? "border-zinc-300 bg-zinc-50/80"
+                          : "border-zinc-200/70"
                       }`}
                     >
                       <p className="px-2 py-1.5 text-sm font-semibold">
                         {item.label}
                       </p>
-                      <div className="mt-1 grid gap-1 border-l border-brand-softGray pl-2">
+                      <div className="mt-1 grid gap-1 pl-2">
                         {item.children.map((child) => {
                           const active = isNavigationActive(pathname, child);
                           return (
@@ -96,10 +94,10 @@ export function AdminSidebar({
                               href={child.href}
                               onClick={onNavigate}
                               aria-current={active ? "page" : undefined}
-                              className={`rounded-lg px-3 py-2 text-sm font-semibold transition ${
+                              className={`admin-nav-link border-l-2 px-3 py-2 text-sm font-medium transition-colors duration-150 ${
                                 active
-                                  ? "bg-brand-charcoal text-white"
-                                  : "text-brand-charcoal/75 hover:bg-white hover:text-brand-charcoal"
+                                  ? "border-zinc-900 bg-zinc-100 text-zinc-950"
+                                  : "border-transparent text-zinc-600 hover:bg-white hover:text-zinc-950"
                               }`}
                             >
                               {child.label}
@@ -116,11 +114,11 @@ export function AdminSidebar({
         </div>
       </nav>
 
-      <div className="border-t border-brand-softGray p-4">
+      <div className="border-t border-zinc-200/70 p-4">
         <button
           type="button"
           onClick={onLogout}
-          className="inline-flex min-h-11 w-full items-center justify-center rounded-full border border-brand-softGray px-4 text-sm font-semibold text-red-700 transition hover:border-red-200 hover:bg-red-50"
+          className="inline-flex min-h-11 w-full items-center justify-center rounded-lg border border-zinc-200/80 px-4 text-sm font-medium text-zinc-600 transition-colors duration-150 hover:border-zinc-300 hover:bg-zinc-50 hover:text-zinc-950"
         >
           Logout
         </button>

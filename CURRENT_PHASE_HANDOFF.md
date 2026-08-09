@@ -1067,6 +1067,64 @@ DEBRODER V1.2 REMAINS NOT COMPLETE**
 
 ---
 
+# Handoff — Admin Handcrafted UI & Rendering V1
+
+**Date:** 9 August 2026
+
+## Scope inspected and changed
+
+- Refined only the canonical shared Admin shell, navigation, page header,
+  loading feedback, and Global Dashboard presentation.
+- Added an Admin-scoped native system-font stack, zinc/white surfaces,
+  micro-borders, 4/8 px spacing rhythm, tabular table numerals, 150 ms row
+  hover, muted left-border navigation state, and reduced-motion handling.
+- Replaced access and reusable data-loading text states with non-blocking
+  skeleton layouts. The Global Dashboard still uses its existing native SVG
+  chart and native HTML table; no dependency or client boundary was added.
+- Routes, permissions, role/store scope, APIs, CMS/PIM ownership, commerce,
+  pricing, orders, payments, Supabase, and production data were unchanged.
+
+## Files changed
+
+- `app/admin/admin-shell.css`
+- `app/admin/global-dashboard.css`
+- `components/admin/layout/AdminBreadcrumb.tsx`
+- `components/admin/layout/AdminHeader.tsx`
+- `components/admin/layout/AdminPageHeader.tsx`
+- `components/admin/layout/AdminShell.tsx`
+- `components/admin/layout/AdminSidebar.tsx`
+- `components/admin/ui/AdminFeedback.tsx`
+- `test/admin-handcrafted-ui.test.ts`
+- Governance append: `DEBRODER_MASTER_STATE.md`,
+  `CURRENT_PHASE_HANDOFF.md`, and `DEBRODER_V1.2_ISSUE_REGISTER.md`.
+
+## Database, deployment, and verification
+
+- Database/schema/migration local or remote: **NONE**.
+- Production mutation: **NONE**.
+- Commit, push, deploy: **NOT PERFORMED**.
+- Focused final suites: **4 files / 33 tests PASS**.
+- Typecheck: **PASS**.
+- Lint: **PASS — 0 errors / 37 existing warnings**.
+- Full suite: **FAIL — 3 unrelated source-literal assertions**: two
+  LF-only expectations against the CRLF Phase 4–13 SQL migration and one
+  Kaos Polos source-format expectation. No owned Admin UI test failed.
+- Direct Next.js production build: **PASS — compile, type validation, and
+  128/128 static pages generated**.
+- Scripted `pnpm build`: remains transitively blocked because `prebuild` runs
+  the known-red full suite before invoking Next.js.
+- `git diff --check`: **PASS**.
+
+## Status
+
+- Admin UI package: **IMPLEMENTED AND LOCALLY VERIFIED**.
+- Repository-wide scripted quality gate: **BLOCKED BY THREE UNRELATED
+  PORTABILITY/SOURCE-FORMAT ASSERTIONS**.
+- Runtime authenticated visual matrix: **NOT RUN**; no safe Admin credential
+  or production mutation was used.
+
+---
+
 # Handoff — P0 Pay at Store + Store Pickup continuous completion
 
 **Date:** 1 August 2026
@@ -1218,4 +1276,91 @@ DEBRODER V1.2 REMAINS NOT COMPLETE**
   sensitive Kaos test; direct production compilation/build succeeds.
 - GO/NO-GO: **NO-GO FOR ACTIVATION/DEPLOYMENT UNTIL MIGRATION AND RUNTIME GATES;
   ADMIN PACKAGE IMPLEMENTED, NOT COMPLETE**.
+- Commit, push, deploy: **NOT PERFORMED**.
+
+---
+
+# Handoff — Customer Account & Email Verification V1
+
+**Date:** 6 August 2026
+
+**Working branch:** `codex/customer-account-email-verification-v1`
+
+**Base HEAD:** `45b1743` — `fix: support multi-product jersey configurator`
+
+**Supabase project checked read-only:** `lzennundwqqtyvvcnzbg`
+
+## Scope inspected and changed
+
+- Preserved the multi-product Jersey configurator baseline and created the
+  customer-account package on a separate branch.
+- Added a public customer-only login surface, registration, required email
+  verification, resend verification, password recovery, account dashboard,
+  orders, profile, and saved-address management.
+- Kept `/admin/login` and all Admin authorization paths separate and absent
+  from public customer navigation.
+- Added an isolated browser Supabase session key for customer auth so the
+  public account session does not reuse the Admin browser session.
+- Kept guest checkout available. Logged-in checkout requires the verified
+  account email and links the resulting order to the customer identity.
+- Replaced the customer-facing/manual WhatsApp-confirmation dependency with
+  automatic web-checkout activation. WhatsApp remains only as a contact and
+  support channel; legacy database fields remain as compatibility markers.
+- Added exact verified-email claiming for historical orders. Phone number and
+  WhatsApp are not account-claim authority.
+
+## Database and migration
+
+- New additive local migration:
+  `20260806214500_customer_account_email_verification_v1.sql`.
+- Adds `customer_profiles`, `customer_addresses`, and nullable
+  `orders.customer_user_id` plus indexes, guarded functions, and customer-own
+  RLS read paths.
+- Updates both existing restrictive order-scope policies so they do not block
+  the new narrow own-order SELECT policy. Staff write checks remain intact.
+- Existing internal `profiles` remains the Admin/staff authority and is not
+  reused for customer accounts.
+- Production schema/function compatibility was checked read-only for
+  `orders`, `profiles`, `indonesia_regions`, `system_audit_log`,
+  `order_status_history`, `set_updated_at()`, and
+  `reserve_public_order_stock(uuid,interval,uuid)`.
+- Remote application: **NOT RUN**. Local database application: **NOT RUN**.
+  Package migration pending: **YES**.
+- Existing production data, Auth users, migrations, and policies were not
+  mutated during this package preparation.
+
+## Verification actually run
+
+- Changed TypeScript/TSX syntax transpilation: **53 files / 0 syntax errors**.
+- Changed-file local import resolution: **53 files / 0 missing local imports**.
+- Customer-account static contract verification: **103/103 assertions PASS**.
+- Existing Jersey configurator contract verifier: **18/18 assertions PASS**.
+- Production database compatibility queries: **PASS (read-only)**.
+- Focused Vitest regression file added:
+  `test/customer-account-email-verification-v1.test.ts`.
+- Dependency installation attempted with frozen lockfile but blocked by the
+  execution environment DNS/network error `EAI_AGAIN registry.npmjs.org`.
+  Therefore repository typecheck, ESLint, Vitest execution, and Next.js build
+  were **NOT RUN** in this environment; no result was fabricated.
+
+## Remaining work and risk
+
+- Review and apply only migration `20260806214500` in a safe environment;
+  never use `--include-all` to resolve unrelated local migration-history drift.
+- Supabase Auth must require email confirmation before public registration is
+  opened. Configure production Site URL, redirect allowlist, and transactional
+  SMTP sender.
+- Configure `NEXT_PUBLIC_RECAPTCHA_SITE_KEY` and `RECAPTCHA_SECRET_KEY` in the
+  production environment. Production registration and recovery intentionally
+  fail closed when the secret is absent.
+- Run `pnpm typecheck`, `pnpm lint`, focused Vitest, full `pnpm test`,
+  `pnpm build`, and `git diff --check` on the Owner machine with dependencies.
+- Run customer A/customer B RLS isolation, unverified login denial, direct
+  unprovisioned signup denial, Admin-account denial on public login, guest and
+  logged-in checkout, historical-order claim, password recovery, and mobile /
+  desktop browser E2E after migration and Auth configuration.
+- GO/NO-GO: **NO-GO FOR PRODUCTION UNTIL MIGRATION, AUTH/SMTP/RECAPTCHA
+  CONFIGURATION, FULL QUALITY GATES, AND RUNTIME MATRIX PASS**.
+- Package status: **IMPLEMENTED LOCALLY; NOT APPLIED; NOT DEPLOYED; NOT
+  COMPLETE**.
 - Commit, push, deploy: **NOT PERFORMED**.

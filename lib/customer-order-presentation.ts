@@ -11,7 +11,6 @@ const PAYMENT_REVIEW_CUSTOMER_TITLE = "Pembayaran sedang diperiksa";
 export type CustomerOrderResponsibility = "customer" | "debroder" | "none";
 export type CustomerOrderTone = "action" | "processing" | "success" | "warning";
 export type CustomerOrderAction =
-  | "verify_whatsapp"
   | "approve_quote"
   | "approve_total"
   | "pay"
@@ -78,8 +77,6 @@ export function resolveCustomerOrderPresentation(
 
 function customerAction(stage: OrderActiveStageResolution): CustomerOrderAction {
   switch (stage.primaryAction) {
-    case "verify_whatsapp":
-      return "verify_whatsapp";
     case "approve_quote":
       return "approve_quote";
     case "approve_total":

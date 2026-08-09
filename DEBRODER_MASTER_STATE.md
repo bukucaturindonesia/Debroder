@@ -180,6 +180,29 @@ Existing legal, CMS route, Preview performance, remote transaction E2E, data-int
 
 ---
 
+## 20. Admin Handcrafted UI & Rendering V1 — 9 August 2026
+
+- Canonical Admin shell and Global Dashboard now use an Admin-scoped native
+  system font stack, white/zinc surfaces, subtle borders, restrained hover
+  elevation, tabular numerals, muted active navigation, and responsive 4/8 px
+  spacing. Existing role-aware navigation, native tables/SVG, and data paths
+  remain canonical.
+- Reusable Admin loading feedback and access verification now render skeleton
+  structures with screen-reader status text and reduced-motion support; no
+  spinner, external font, chart library, table library, or dependency was
+  added.
+- Database/migration, routes, permissions, APIs, commerce, CMS/PIM ownership,
+  and production data: **UNCHANGED**.
+- Verification: focused final **33/33 PASS**; typecheck **PASS**; lint **0
+  errors / 37 existing warnings**; direct Next production build **PASS — 128
+  pages**; `git diff --check` **PASS**.
+- Full suite remains red on three unrelated source-literal/line-ending
+  assertions (two Phase 4–13 SQL, one Kaos Polos). Admin-owned tests are green.
+- Status: **ADMIN UI IMPLEMENTED AND LOCALLY VERIFIED; REPOSITORY SCRIPTED
+  GATE NOT FULLY GREEN; NO DEPLOYMENT OR PRODUCTION MUTATION**.
+
+---
+
 ## 19. Admin Account & Role-Based Experience V1 — 2 August 2026
 
 - Active scope: audit and local implementation of the canonical Admin Auth →
@@ -551,3 +574,38 @@ Existing legal, CMS route, Preview performance, remote transaction E2E, data-int
   commit is merged and the Current Vercel deployment is verified.
 - Package state before production runtime: **IMPLEMENTED; DATABASE MIGRATED;
   LOCAL QUALITY GATES PASS; NOT YET OWNER QUALITY-GATE COMPLETE**.
+
+---
+
+## 19. Customer Account & Email Verification V1 — 6 August 2026
+
+- Customer account implementation is based on Jersey baseline commit
+  `45b1743` on branch `codex/customer-account-email-verification-v1`; the
+  multi-product Jersey configurator remains preserved.
+- Public navigation now exposes only customer `Masuk` / `Akun Saya`. Admin
+  login remains an internal route and no Admin link is published in the
+  customer account flow.
+- Customer registration uses email/password with mandatory email confirmation,
+  protected server provisioning metadata, reCAPTCHA, generic duplicate/recovery
+  responses, and a customer-specific browser session namespace.
+- Internal Admin/staff identities remain in `profiles`; customer identities use
+  new `customer_profiles` and `customer_addresses`. An internal identity is
+  explicitly rejected from the customer path.
+- Guest checkout remains available. A verified signed-in customer is linked to
+  `orders.customer_user_id`; historical unclaimed orders are attached only by
+  exact verified normalized email. WhatsApp/phone are not identity authority.
+- Customer-facing and Admin manual WhatsApp confirmation actions were removed
+  from the active checkout path. Existing legacy columns and enum keys are
+  retained only for compatibility while checkout activation occurs
+  automatically through the new guarded function.
+- Local additive migration:
+  `20260806214500_customer_account_email_verification_v1.sql` — **PENDING,
+  NOT APPLIED**.
+- Static verification: TypeScript syntax **53/53 PASS**, local import
+  resolution **53/53 PASS**, customer contract **103/103 PASS**, Jersey contract
+  **18/18 PASS**, and production compatibility SQL **PASS read-only**.
+- Full typecheck/lint/Vitest/build are pending because dependency installation
+  was blocked by `EAI_AGAIN registry.npmjs.org` in the execution environment.
+- Release status: **IMPLEMENTED LOCALLY; DATABASE/AUTH CONFIGURATION/RUNTIME
+  AND FULL QUALITY GATES PENDING; NO-GO / NOT COMPLETE**.
+- Commit, push, deploy: **NOT PERFORMED**.

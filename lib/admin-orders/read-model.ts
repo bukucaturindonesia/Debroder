@@ -79,7 +79,7 @@ export function projectAdminOrderDetailReadModel(
     pricingStatus: order.pricing_status,
     customQuoteStatus: order.custom_quote_status,
     isCustom: resolveAdminOrderWorkspaceKind(order.custom_project_snapshot) === "custom",
-    whatsappConfirmed: Boolean(order.whatsapp_confirmed_at),
+    checkoutActivated: Boolean(order.checkout_activated_at),
     paymentRequirementMet: order.payment_requirement_met,
     paymentProductionEligible: order.payment_production_eligible,
     paymentEffectiveTotal: order.payment_effective_total,
@@ -149,7 +149,7 @@ function projectOrder(row: Record<string, unknown>): AdminOrderReadModelOrder {
     converted_at: nullableText(row.converted_at),
     archived_at: nullableText(row.archived_at),
     checkout_source: nullableText(row.checkout_source),
-    whatsapp_confirmed_at: nullableText(row.whatsapp_confirmed_at),
+    checkout_activated_at: nullableText(row.checkout_activated_at),
     created_at: requiredText(row.created_at, `Order ${id} tanpa waktu pembuatan.`),
     updated_at: requiredText(row.updated_at, `Order ${id} tanpa waktu pembaruan.`)
   };

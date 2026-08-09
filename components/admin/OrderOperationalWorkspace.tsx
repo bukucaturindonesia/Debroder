@@ -18,7 +18,7 @@ type Props = {
     payment_method: string | null;
     payment_status: string;
     checkout_source: string | null;
-    whatsapp_confirmed_at: string | null;
+    checkout_activated_at: string | null;
   };
   jobOrder: DomainRef;
   qualityControl: (DomainRef & { result?: string | null }) | null;
@@ -84,7 +84,7 @@ function resolveOperationalState(order: Props["order"], job: DomainRef, qc: Prop
   if (["preparing", "packing", "problem"].includes(fulfillment?.status ?? "")) return result(8, readyStock ? "Pengemasan & Pemeriksaan Akhir" : "Pengemasan", fulfillment?.status === "problem" ? "Pengiriman bermasalah" : "Tidak ada", "Lanjutkan Pengiriman", `/admin/fulfillments/${fulfillment?.id}`, `/admin/fulfillments/${fulfillment?.id}`);
   if (qc && qc.result !== "passed") return result(7, "Pemeriksaan Kualitas", qc.result === "failed" ? "Tidak lulus pemeriksaan kualitas" : "Menunggu hasil pemeriksaan kualitas", "Buka Pemeriksaan Kualitas", `/admin/quality-control?job_order=${job?.id ?? ""}`, `/admin/quality-control?job_order=${job?.id ?? ""}`);
   if (job && !["completed", "cancelled"].includes(job.status)) return result(6, "Produksi", job.status === "on_hold" ? "Produksi ditahan" : "Tidak ada", "Buka Surat Perintah Kerja", `/admin/job-orders/${job.id}`, `/admin/job-orders/${job.id}`);
-  if (order.checkout_source === "public_checkout" && !order.whatsapp_confirmed_at) return result(1, "Pemeriksaan Pesanan", "Pelanggan belum diverifikasi", "Verifikasi Pelanggan", `/admin/orders/${order.id}#commerce`, `/admin/orders/${order.id}#commerce`);
+  if (order.checkout_source === "public_checkout" && !order.checkout_activated_at) return result(1, "Pemeriksaan Pesanan", "Aktivasi checkout belum selesai", "Aktifkan Pesanan", `/admin/orders/${order.id}#commerce`, `/admin/orders/${order.id}#commerce`);
   if (order.pricing_status !== "final") return result(2, "Penetapan Harga", "Harga belum final", "Tinjau Harga", `/admin/orders/${order.id}#custom-pricing`, `/admin/orders/${order.id}#custom-pricing`);
   if (["awaiting_customer_approval"].includes(order.status)) return result(3, "Persetujuan", "Menunggu persetujuan pelanggan", "Pantau Persetujuan", `/admin/orders/${order.id}#commerce`, `/admin/orders/${order.id}#commerce`);
   if (readyStock && order.payment_method === "pay_at_store" && !fulfillment) return result(5, "Persiapan & Pemeriksaan Barang", "Pembayaran diterima saat pickup", "Buat Dokumen Fulfillment", `/admin/orders/${order.id}#commerce`, `/admin/orders/${order.id}#commerce`);

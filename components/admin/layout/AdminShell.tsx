@@ -149,16 +149,26 @@ export function AdminShell({ children }: { children: ReactNode }) {
 
   if (checking) {
     return (
-      <main className="min-h-screen bg-brand-offWhite p-6 text-brand-charcoal">
-        <div className="mx-auto mt-24 max-w-lg border border-brand-softGray bg-white p-8 text-center">
-          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-brand-charcoal/45">
-            DEBRODER Admin
-          </p>
-          <h1 className="mt-3 text-3xl font-semibold">Memeriksa Akses</h1>
-          <p className="mt-3 text-sm text-brand-charcoal/65">
-            Mohon tunggu, sesi dan role admin sedang diverifikasi.
-          </p>
-        </div>
+      <main className="admin-access-skeleton" aria-busy="true" aria-label="Memeriksa akses Panel Admin">
+        <span className="sr-only" role="status" aria-live="polite">Memeriksa sesi dan akses Panel Admin.</span>
+        <aside className="admin-access-skeleton-sidebar" aria-hidden="true">
+          <div className="admin-skeleton-block h-8 w-36" />
+          <div className="mt-10 grid gap-3">
+            {[72, 88, 64, 92, 76, 84].map((width) => (
+              <div key={width} className="admin-skeleton-block h-9" style={{ width: `${width}%` }} />
+            ))}
+          </div>
+        </aside>
+        <section className="admin-access-skeleton-main" aria-hidden="true">
+          <div className="admin-skeleton-block h-16 w-full" />
+          <div className="mt-8 grid gap-6">
+            <div className="admin-skeleton-block h-28 w-full" />
+            <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+              {[1, 2, 3, 4].map((item) => <div key={item} className="admin-skeleton-block h-32 w-full" />)}
+            </div>
+            <div className="admin-skeleton-block h-72 w-full" />
+          </div>
+        </section>
       </main>
     );
   }

@@ -1,7 +1,14 @@
 .admin-shell-root {
+  --admin-bg: #fafafa;
+  --admin-surface: #ffffff;
+  --admin-ink: #18181b;
+  --admin-muted: #71717a;
+  --admin-border: rgba(212, 212, 216, 0.72);
   min-height: 100vh;
-  background: #f7f7f5;
-  color: #151515;
+  background: var(--admin-bg);
+  color: var(--admin-ink);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  font-synthesis: none;
 }
 
 .admin-shell-desktop-sidebar {
@@ -10,7 +17,8 @@
   z-index: 40;
   display: none;
   width: 256px;
-  border-right: 1px solid rgba(21, 21, 21, 0.12);
+  border-right: 1px solid var(--admin-border);
+  background: var(--admin-surface);
 }
 
 .admin-shell-main {
@@ -19,12 +27,28 @@
 }
 
 .admin-shell-content {
+  box-sizing: border-box;
   width: 100%;
   min-width: 0;
   max-width: 1600px;
   margin-inline: auto;
   padding: 16px;
-  box-sizing: border-box;
+}
+
+.admin-header,
+.admin-sidebar,
+.admin-page-header,
+.admin-loading-state {
+  box-shadow: none;
+}
+
+.admin-sidebar-nav {
+  scrollbar-color: #d4d4d8 transparent;
+  scrollbar-width: thin;
+}
+
+.admin-nav-link {
+  border-radius: 0 8px 8px 0;
 }
 
 .admin-shell-mobile-layer {
@@ -38,14 +62,15 @@
   inset: 0;
   width: 100%;
   height: 100%;
-  background: rgba(0, 0, 0, 0.42);
+  background: rgba(24, 24, 27, 0.36);
 }
 
 .admin-shell-mobile-sidebar {
   position: relative;
   width: min(86vw, 320px);
   height: 100%;
-  box-shadow: 16px 0 40px rgba(0, 0, 0, 0.18);
+  border-right: 1px solid var(--admin-border);
+  box-shadow: 8px 0 24px rgba(24, 24, 27, 0.08);
 }
 
 .admin-shell-flash {
@@ -58,15 +83,16 @@
   align-items: center;
   justify-content: space-between;
   border: 1px solid;
+  border-radius: 8px;
   padding: 14px 16px;
   font-size: 14px;
-  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.12);
+  box-shadow: 0 1px 2px rgba(24, 24, 27, 0.05);
 }
 
 .admin-shell-flash-success {
-  border-color: #a7f3d0;
-  background: #ecfdf5;
-  color: #065f46;
+  border-color: #bbf7d0;
+  background: #f0fdf4;
+  color: #166534;
 }
 
 .admin-shell-flash-error {
@@ -76,12 +102,75 @@
 }
 
 .admin-shell-flash-info {
-  border-color: rgba(21, 21, 21, 0.14);
-  background: white;
-  color: #151515;
+  border-color: var(--admin-border);
+  background: var(--admin-surface);
+  color: var(--admin-ink);
 }
 
-/* Adapter untuk halaman AdminDashboard lama agar memakai satu sidebar saja. */
+.admin-access-skeleton {
+  display: grid;
+  min-height: 100vh;
+  grid-template-columns: 256px minmax(0, 1fr);
+  background: var(--admin-bg, #fafafa);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+}
+
+.admin-access-skeleton-sidebar {
+  border-right: 1px solid var(--admin-border, rgba(212, 212, 216, 0.72));
+  background: #fff;
+  padding: 24px;
+}
+
+.admin-access-skeleton-main {
+  min-width: 0;
+  padding: 0 32px 32px;
+}
+
+.admin-skeleton-block {
+  border-radius: 8px;
+  background: #e4e4e7;
+  animation: admin-skeleton-pulse 1.35s ease-in-out infinite;
+}
+
+@keyframes admin-skeleton-pulse {
+  0%, 100% { opacity: 0.58; }
+  50% { opacity: 1; }
+}
+
+/* Keep dense operational data aligned and readable without a table dependency. */
+.admin-shell-content table {
+  font-variant-numeric: tabular-nums;
+}
+
+.admin-shell-content table th {
+  color: #71717a;
+  font-size: 0.6875rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.admin-shell-content table td,
+.admin-shell-content :where(time, [data-numeric="true"], .tabular-nums) {
+  font-variant-numeric: tabular-nums;
+}
+
+.admin-shell-content table tbody tr {
+  transition: background-color 150ms ease;
+}
+
+.admin-shell-content table tbody tr:hover {
+  background: #fafafa;
+}
+
+.admin-shell-content :where(a, button, input, select, textarea):focus-visible,
+.admin-sidebar :where(a, button):focus-visible,
+.admin-header :where(a, button):focus-visible {
+  outline: 2px solid #3f3f46;
+  outline-offset: 2px;
+}
+
+/* Adapter for legacy dashboard pages so the canonical sidebar remains singular. */
 .admin-shell-legacy > main {
   min-height: auto !important;
   background: transparent !important;
@@ -108,7 +197,6 @@
   display: none !important;
 }
 
-/* Halaman quotation baru mengikuti padding Admin Shell. */
 .admin-shell-modern > main {
   min-height: auto !important;
   background: transparent !important;
@@ -120,43 +208,15 @@
   margin: 0 !important;
 }
 
-@media (min-width: 640px) {
-  .admin-shell-content {
-    padding: 24px;
-  }
-
-  .admin-shell-flash {
-    right: 24px;
-  }
-}
-
-@media (min-width: 1024px) {
-  .admin-shell-desktop-sidebar {
-    display: block;
-  }
-
-  .admin-shell-main {
-    margin-left: 256px;
-  }
-
-  .admin-shell-content {
-    padding: 32px;
-  }
-
-  .admin-shell-flash {
-    right: 32px;
-  }
-}
-
 .admin-shell-read-only-banner {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: 10px;
-  border-bottom: 1px solid #f5c96a;
-  background: #fff8e6;
+  gap: 8px;
+  border-bottom: 1px solid var(--admin-border);
+  background: #f4f4f5;
   padding: 12px 16px;
-  color: #6b4600;
+  color: #52525b;
   font-size: 13px;
   font-weight: 600;
 }
@@ -164,12 +224,12 @@
 .admin-shell-read-only-badge {
   display: inline-flex;
   align-items: center;
-  border: 1px solid #e6b94e;
+  border: 1px solid #d4d4d8;
   border-radius: 999px;
-  background: white;
+  background: #fff;
   padding: 5px 10px;
   font-size: 10px;
-  font-weight: 800;
+  font-weight: 700;
   letter-spacing: 0.12em;
 }
 
@@ -179,19 +239,6 @@
   pointer-events: none !important;
 }
 
-@media (min-width: 640px) {
-  .admin-shell-read-only-banner {
-    padding-inline: 24px;
-  }
-}
-
-@media (min-width: 1024px) {
-  .admin-shell-read-only-banner {
-    padding-inline: 32px;
-  }
-}
-
-/* Human-centered responsive safety: content must remain readable without browser zoom. */
 .admin-shell-content,
 .admin-shell-content * {
   box-sizing: border-box;
@@ -214,6 +261,19 @@
   max-width: 100%;
 }
 
+@media (prefers-reduced-motion: reduce) {
+  .admin-skeleton-block {
+    animation: none;
+  }
+
+  .admin-shell-root *,
+  .admin-shell-root *::before,
+  .admin-shell-root *::after {
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
 @media (max-width: 1279px) {
   .admin-shell-content table {
     display: block;
@@ -222,12 +282,65 @@
     overflow-x: auto;
     -webkit-overflow-scrolling: touch;
   }
+}
 
+@media (max-width: 1023px) {
+  .admin-access-skeleton {
+    grid-template-columns: 1fr;
+  }
+
+  .admin-access-skeleton-sidebar {
+    display: none;
+  }
+
+  .admin-access-skeleton-main {
+    padding: 0 24px 24px;
+  }
 }
 
 @media (max-width: 639px) {
   .admin-shell-content :where(button, [role="button"]) {
     white-space: normal;
+  }
+
+  .admin-access-skeleton-main {
+    padding: 0 16px 16px;
+  }
+}
+
+@media (min-width: 640px) {
+  .admin-shell-content {
+    padding: 24px;
+  }
+
+  .admin-shell-flash {
+    right: 24px;
+  }
+
+  .admin-shell-read-only-banner {
+    padding-inline: 24px;
+  }
+}
+
+@media (min-width: 1024px) {
+  .admin-shell-desktop-sidebar {
+    display: block;
+  }
+
+  .admin-shell-main {
+    margin-left: 256px;
+  }
+
+  .admin-shell-content {
+    padding: 32px;
+  }
+
+  .admin-shell-flash {
+    right: 32px;
+  }
+
+  .admin-shell-read-only-banner {
+    padding-inline: 32px;
   }
 }
 

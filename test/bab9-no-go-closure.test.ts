@@ -11,7 +11,6 @@ function configuredCheckout() {
   return {
     idempotencyKey: "configured-checkout-0001",
     accessToken: "a".repeat(64),
-    confirmationCode: "ABC12345",
     customer: {
       name: "Configured Customer",
       phone: "081234567890"
