@@ -10,7 +10,7 @@ export function AdminBreadcrumb() {
 
   return (
     <nav aria-label="Breadcrumb admin" className="min-w-0">
-      <ol className="flex min-w-0 items-center gap-2 overflow-hidden text-xs font-semibold text-brand-charcoal/55">
+      <ol className="flex min-w-0 items-center gap-2 overflow-hidden text-[11px] font-medium text-zinc-400">
         {breadcrumbs.map((item, index) => {
           const last = index === breadcrumbs.length - 1;
           return (
@@ -19,13 +19,13 @@ export function AdminBreadcrumb() {
               {item.href && !last ? (
                 <Link
                   href={item.href}
-                  className="truncate transition hover:text-brand-charcoal"
+                  className="truncate transition-colors duration-150 hover:text-zinc-900"
                 >
                   {item.label}
                 </Link>
               ) : (
                 <span
-                  className={`truncate ${last ? "text-brand-charcoal" : ""}`}
+                  className={`truncate ${last ? "text-zinc-700" : ""}`}
                   aria-current={last ? "page" : undefined}
                 >
                   {item.label}

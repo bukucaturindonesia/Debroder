@@ -1067,6 +1067,64 @@ DEBRODER V1.2 REMAINS NOT COMPLETE**
 
 ---
 
+# Handoff — Admin Handcrafted UI & Rendering V1
+
+**Date:** 9 August 2026
+
+## Scope inspected and changed
+
+- Refined only the canonical shared Admin shell, navigation, page header,
+  loading feedback, and Global Dashboard presentation.
+- Added an Admin-scoped native system-font stack, zinc/white surfaces,
+  micro-borders, 4/8 px spacing rhythm, tabular table numerals, 150 ms row
+  hover, muted left-border navigation state, and reduced-motion handling.
+- Replaced access and reusable data-loading text states with non-blocking
+  skeleton layouts. The Global Dashboard still uses its existing native SVG
+  chart and native HTML table; no dependency or client boundary was added.
+- Routes, permissions, role/store scope, APIs, CMS/PIM ownership, commerce,
+  pricing, orders, payments, Supabase, and production data were unchanged.
+
+## Files changed
+
+- `app/admin/admin-shell.css`
+- `app/admin/global-dashboard.css`
+- `components/admin/layout/AdminBreadcrumb.tsx`
+- `components/admin/layout/AdminHeader.tsx`
+- `components/admin/layout/AdminPageHeader.tsx`
+- `components/admin/layout/AdminShell.tsx`
+- `components/admin/layout/AdminSidebar.tsx`
+- `components/admin/ui/AdminFeedback.tsx`
+- `test/admin-handcrafted-ui.test.ts`
+- Governance append: `DEBRODER_MASTER_STATE.md`,
+  `CURRENT_PHASE_HANDOFF.md`, and `DEBRODER_V1.2_ISSUE_REGISTER.md`.
+
+## Database, deployment, and verification
+
+- Database/schema/migration local or remote: **NONE**.
+- Production mutation: **NONE**.
+- Commit, push, deploy: **NOT PERFORMED**.
+- Focused final suites: **4 files / 33 tests PASS**.
+- Typecheck: **PASS**.
+- Lint: **PASS — 0 errors / 37 existing warnings**.
+- Full suite: **FAIL — 3 unrelated source-literal assertions**: two
+  LF-only expectations against the CRLF Phase 4–13 SQL migration and one
+  Kaos Polos source-format expectation. No owned Admin UI test failed.
+- Direct Next.js production build: **PASS — compile, type validation, and
+  128/128 static pages generated**.
+- Scripted `pnpm build`: remains transitively blocked because `prebuild` runs
+  the known-red full suite before invoking Next.js.
+- `git diff --check`: **PASS**.
+
+## Status
+
+- Admin UI package: **IMPLEMENTED AND LOCALLY VERIFIED**.
+- Repository-wide scripted quality gate: **BLOCKED BY THREE UNRELATED
+  PORTABILITY/SOURCE-FORMAT ASSERTIONS**.
+- Runtime authenticated visual matrix: **NOT RUN**; no safe Admin credential
+  or production mutation was used.
+
+---
+
 # Handoff — P0 Pay at Store + Store Pickup continuous completion
 
 **Date:** 1 August 2026

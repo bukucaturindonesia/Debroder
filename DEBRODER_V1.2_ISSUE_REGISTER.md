@@ -619,3 +619,31 @@ Last updated: 28 July 2026 (Asia/Makassar)
 - Impact: full `pnpm test` and therefore the scripted `pnpm build` prebuild are
   red; all other 113 test files pass and direct Next production build passes.
 - No Kaos Polos test or public UI file was changed in this Admin package.
+
+## ADMIN-UI-001 — Admin shell and Global Dashboard used inconsistent template-heavy presentation
+
+- Severity: **MINOR — ADMIN UI / RENDERING**.
+- Status: **RESOLVED IN CODE; AUTHENTICATED RUNTIME VISUAL MATRIX PENDING**.
+- Root cause: the shared Admin shell retained mixed brand utility styles while
+  `global-dashboard.css` installed a separate dark gradient/glow treatment,
+  special sidebar skin, and hidden desktop header. Loading feedback was often
+  text-only rather than structural skeleton content.
+- Resolution: one canonical Admin-scoped system-font and zinc/white visual
+  layer, micro-borders, 4/8 px spacing, tabular native tables, 150 ms row
+  hover, muted left-border navigation, reusable skeleton feedback, and
+  reduced-motion handling. No data logic, route, permission, or dependency
+  changed.
+- Evidence: focused final **33/33 PASS**; typecheck/lint/direct Next production
+  build **PASS**; `git diff --check` **PASS**.
+
+## QA-CRLF-002 — Phase 4–13 SQL source-literal tests are line-ending sensitive
+
+- Severity: **MINOR — TEST PORTABILITY; UNRELATED TO ADMIN UI PACKAGE**.
+- Status: **OPEN / DEFERRED TO ORDER OPERATIONS TEST MAINTENANCE**.
+- Evidence: two assertions in `test/order-operations-phase4-13.test.ts` embed
+  LF-only multiline literals while the unchanged migration is read as CRLF on
+  Windows. The required SQL fragments are present, but exact source matching
+  fails before semantic evaluation.
+- Impact: together with open `QA-CRLF-001`, full `pnpm test` and scripted
+  `pnpm build` prebuild remain red. Direct Next production compilation passes.
+- No migration or Order Operations source was modified in the Admin UI package.

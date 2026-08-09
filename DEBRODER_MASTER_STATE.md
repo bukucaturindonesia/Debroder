@@ -180,6 +180,29 @@ Existing legal, CMS route, Preview performance, remote transaction E2E, data-int
 
 ---
 
+## 20. Admin Handcrafted UI & Rendering V1 — 9 August 2026
+
+- Canonical Admin shell and Global Dashboard now use an Admin-scoped native
+  system font stack, white/zinc surfaces, subtle borders, restrained hover
+  elevation, tabular numerals, muted active navigation, and responsive 4/8 px
+  spacing. Existing role-aware navigation, native tables/SVG, and data paths
+  remain canonical.
+- Reusable Admin loading feedback and access verification now render skeleton
+  structures with screen-reader status text and reduced-motion support; no
+  spinner, external font, chart library, table library, or dependency was
+  added.
+- Database/migration, routes, permissions, APIs, commerce, CMS/PIM ownership,
+  and production data: **UNCHANGED**.
+- Verification: focused final **33/33 PASS**; typecheck **PASS**; lint **0
+  errors / 37 existing warnings**; direct Next production build **PASS — 128
+  pages**; `git diff --check` **PASS**.
+- Full suite remains red on three unrelated source-literal/line-ending
+  assertions (two Phase 4–13 SQL, one Kaos Polos). Admin-owned tests are green.
+- Status: **ADMIN UI IMPLEMENTED AND LOCALLY VERIFIED; REPOSITORY SCRIPTED
+  GATE NOT FULLY GREEN; NO DEPLOYMENT OR PRODUCTION MUTATION**.
+
+---
+
 ## 19. Admin Account & Role-Based Experience V1 — 2 August 2026
 
 - Active scope: audit and local implementation of the canonical Admin Auth →
