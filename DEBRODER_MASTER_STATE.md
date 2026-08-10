@@ -178,8 +178,6 @@ Existing legal, CMS route, Preview performance, remote transaction E2E, data-int
 - Release status: **PARTIALLY RUNTIME VERIFIED / NOT COMPLETE**.
 - Commit, push, deploy: **NOT PERFORMED**.
 
----
-
 ## 20. Admin Handcrafted UI & Rendering V1 — 9 August 2026
 
 - Canonical Admin shell and Global Dashboard now use an Admin-scoped native
@@ -241,8 +239,6 @@ Existing legal, CMS route, Preview performance, remote transaction E2E, data-int
 - Package state: **IMPLEMENTED AND LOCALLY VERIFIED; OWNER MIGRATION/ACTIVATION
   AND DEPLOYED RUNTIME REQUIRED; PROJECT REMAINS NOT COMPLETE**.
 - Commit, push, deploy: **NOT PERFORMED**.
-
----
 
 ## 14. Kaos Polos editorial commerce category — 30 July 2026
 
@@ -609,3 +605,33 @@ Existing legal, CMS route, Preview performance, remote transaction E2E, data-int
 - Release status: **IMPLEMENTED LOCALLY; DATABASE/AUTH CONFIGURATION/RUNTIME
   AND FULL QUALITY GATES PENDING; NO-GO / NOT COMPLETE**.
 - Commit, push, deploy: **NOT PERFORMED**.
+
+---
+
+## 21. Registered Customer Order Access — 10 August 2026
+
+- Root cause: the three canonical order creators with the legacy guest
+  anti-abuse rule count active unpaid orders by normalized WhatsApp number and
+  reject the next checkout at two. A verified member was linked through
+  `orders.customer_user_id` only after creation, so the account identity could
+  not exempt member checkout from that guest restriction.
+- Targeted correction: the checkout API now passes `customer_user_id` only for
+  a verified signed-in customer. Forward migration
+  `20260810100000_registered_customer_order_access_v1.sql` adds service-role-
+  only member overloads, validates the real confirmed customer account and
+  exact email, and bypasses only the legacy phone-count cap in that verified
+  transaction context.
+- Guest checkout and the existing per-phone guest cap are unchanged. Existing
+  abuse/rate limiting, idempotency, stock, pricing, SKU, Custom/Jersey
+  validation, activation, payment, and order-history linking remain intact.
+- Database tables/schema/data: **UNCHANGED**. Local forward migration:
+  **CREATED; NOT APPLIED LOCALLY OR REMOTELY; PENDING OWNER REVIEW**.
+- Focused verification: **8 files / 89 tests PASS**. Standalone typecheck:
+  **PASS**. Lint through prebuild: **0 errors / 37 existing warnings**. Direct
+  Next production build: **PASS — 138 pages**.
+- Scripted `npm run build`: **FAIL at prebuild** because the known unrelated
+  CRLF-sensitive assertions remain: two Order Operations assertions and one
+  Kaos Polos assertion. No task-owned test failed.
+- Migration execution/database smoke/runtime multi-order E2E/deployment:
+  **NOT RUN**. Package status: **IMPLEMENTED LOCALLY AND CODE-VERIFIED;
+  MIGRATION/RUNTIME PENDING; NO-GO FOR PRODUCTION; NOT COMPLETE**.

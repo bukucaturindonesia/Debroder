@@ -348,6 +348,7 @@ export async function POST(request: Request) {
         services: item.services ?? []
       })),
       p_shipping_address_snapshot: body.fulfillment.addressSnapshot ?? null,
+      ...(customerAccount ? { p_customer_user_id: customerAccount.user.id } : {}),
       ...(pricedProjects.length ? { p_custom_projects: pricedProjects } : {}),
       ...(configuredSnapshots.length ? { p_configured_items: configuredSnapshots } : {})
     };

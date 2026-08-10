@@ -6,6 +6,8 @@ const migrationName = "20260806214500_customer_account_email_verification_v1.sql
 const migrationPath = join("supabase", "migrations", migrationName);
 const activationMigrationPath = join("supabase", "migrations", "20260806234500_customer_checkout_activation_integrity_v2.sql");
 const activationMigration = readFileSync(activationMigrationPath, "utf8");
+const registeredOrderAccessMigrationPath = join("supabase", "migrations", "20260810100000_registered_customer_order_access_v1.sql");
+const registeredOrderAccessMigration = readFileSync(registeredOrderAccessMigrationPath, "utf8");
 const migration = readFileSync(migrationPath, "utf8");
 const compactMigration = migration.replace(/\s+/g, " ").toLowerCase();
 
@@ -161,6 +163,51 @@ describe("Customer Account & Email Verification V1", () => {
     expect(activationMigration).toContain("Checkout web diaktifkan otomatis.");
     expect(activationMigration).toContain("checkout_activated_at");
     expect(migration).toContain("p_customer_user_id uuid default null");
+  });
+
+  it("lets a verified registered customer create multiple independent orders without changing guest limits", () => {
+    const checkout = source("app/api/checkout/route.ts");
+    expect(checkout).toContain(
+      "...(customerAccount ? { p_customer_user_id: customerAccount.user.id } : {})"
+    );
+    expect(checkout).toContain("p_customer_user_id: customerAccount?.user.id ?? null");
+
+    expect(registeredOrderAccessMigration).toContain(
+      "current_setting('debroder.registered_customer_user_id', true)"
+    );
+    expect(registeredOrderAccessMigration).toContain(
+      "active_unpaid >= 2 and public.checkout_phone_limit_applies_v1(p_customer_email)"
+    );
+    expect(registeredOrderAccessMigration).toContain(
+      "active_unpaid>=2 and public.checkout_phone_limit_applies_v1(p_customer_email)"
+    );
+    expect(registeredOrderAccessMigration).toContain(
+      "Maksimal dua pesanan belum dibayar per nomor WhatsApp"
+    );
+
+    for (const rpcName of [
+      "create_public_checkout_order",
+      "create_public_custom_checkout_order",
+      "create_public_instant_checkout_order",
+      "create_public_configured_checkout_order"
+    ]) {
+      expect(registeredOrderAccessMigration).toContain(
+        `create or replace function public.${rpcName}`
+      );
+    }
+
+    expect(registeredOrderAccessMigration).toContain("confirmation_sent_at is not null");
+    expect(registeredOrderAccessMigration).toContain(
+      "email_confirmed_at >= customer_user.confirmation_sent_at"
+    );
+    expect(registeredOrderAccessMigration).toContain(
+      "customer_profile.account_status = 'ACTIVE'"
+    );
+    expect(registeredOrderAccessMigration).toContain("internal_profile.id is null");
+    expect(registeredOrderAccessMigration).toContain("p_idempotency_key");
+    expect(registeredOrderAccessMigration).not.toMatch(
+      /insert into public\.orders|alter table|drop table/i
+    );
   });
 
   it("removes customer-facing and admin manual WhatsApp verification actions", () => {

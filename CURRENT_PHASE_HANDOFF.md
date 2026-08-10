@@ -1065,8 +1065,6 @@ DEBRODER V1.2 REMAINS NOT COMPLETE**
   implementation and static/build verification; NOT COMPLETE**.
 - Commit, push, deploy: **NOT PERFORMED**.
 
----
-
 # Handoff — Admin Handcrafted UI & Rendering V1
 
 **Date:** 9 August 2026
@@ -1363,4 +1361,92 @@ DEBRODER V1.2 REMAINS NOT COMPLETE**
   CONFIGURATION, FULL QUALITY GATES, AND RUNTIME MATRIX PASS**.
 - Package status: **IMPLEMENTED LOCALLY; NOT APPLIED; NOT DEPLOYED; NOT
   COMPLETE**.
+- Commit, push, deploy: **NOT PERFORMED**.
+
+---
+
+# Handoff — Registered Customer Order Access
+
+**Date:** 10 August 2026
+
+## Active scope and audit result
+
+- Audited `customer_user_id`, active-order counts, prior-order restrictions,
+  one-order-per-user patterns, checkout activation, and account quota paths.
+- Proven artificial restriction: Ready Stock, Custom, and configured Jersey
+  order creators inherit a legacy rule that rejects a third active unpaid
+  order for the same normalized WhatsApp number. Instant Custom reaches the
+  same restriction through the Ready Stock creator.
+- Registered-account identity is passed only to checkout activation after the
+  create RPC, so a verified member was blocked before `customer_user_id` could
+  be linked. No separate restriction was found in member Order History or own-
+  order RLS reads.
+
+## Targeted implementation
+
+- `POST /api/checkout` sends `p_customer_user_id` to creation only when
+  `optionalVerifiedCustomer()` returns a verified customer account.
+- New forward migration
+  `20260810100000_registered_customer_order_access_v1.sql`:
+  - validates confirmed Auth metadata, active `customer_profiles`, exact
+    verified email, and absence from internal `profiles`;
+  - adds service-role-only overloads for Ready Stock, Custom, Instant Custom,
+    and configured Jersey checkout;
+  - bypasses only the active-unpaid phone cap inside that verified member
+    transaction context;
+  - leaves guest callers on the existing signatures and existing phone cap;
+  - delegates to the original order creators, preserving all pricing, stock,
+    SKU, minimum quantity, Custom/Jersey validation, and idempotency logic.
+- Guest checkout, payment flow, activation, and Order History linking are not
+  otherwise changed. New/removed public routes: **NONE**.
+
+## Files changed
+
+- `app/api/checkout/route.ts`
+- `supabase/migrations/20260810100000_registered_customer_order_access_v1.sql`
+- `test/customer-account-email-verification-v1.test.ts`
+- Governance append: `DEBRODER_MASTER_STATE.md`,
+  `CURRENT_PHASE_HANDOFF.md`, and `DEBRODER_V1.2_ISSUE_REGISTER.md`.
+
+## Database and migration status
+
+- Table/schema/data change: **NONE**.
+- Local migration: `20260810100000_registered_customer_order_access_v1.sql`.
+- Local applied: **NO**.
+- Remote applied: **NO / NOT RUN**.
+- Pending: **YES**.
+- SQL runtime/migration smoke test: **NOT RUN** because no local `psql` or
+  Supabase CLI was available; no remote mutation was authorized or attempted.
+- Rollback/recovery: do not apply partially; the migration is transactional.
+  If rejected before application, omit this new forward migration and API
+  argument together. Applied historical migrations were not edited.
+
+## Verification actually run
+
+- Focused customer/activation/integrity/Instant Custom suite:
+  **4 files / 29 tests PASS**.
+- Focused abuse guard/pricing/Jersey/Custom suite:
+  **4 files / 60 tests PASS**.
+- Standalone TypeScript typecheck: **PASS**.
+- Prebuild typecheck: **PASS**.
+- Prebuild lint: **PASS — 0 errors / 37 existing warnings**.
+- Full test through `npm run build`: **FAIL — 3 known unrelated CRLF-sensitive
+  assertions** (two `order-operations-phase4-13`, one Kaos Polos). No changed-
+  file or focused task test failed.
+- Scripted `npm run build`: **FAIL at prebuild** because of those three tests;
+  Next compilation was not reached by that command.
+- Direct `.\\node_modules\\.bin\\next.CMD build`: **PASS — compiled, type/lint
+  validation passed, 138/138 pages generated**.
+- Deployment and authenticated runtime A/B/C multi-order E2E: **NOT RUN**.
+
+## Remaining risk and next step
+
+- Owner must review and apply only migration `20260810100000` in a safe
+  environment, run the migration postcheck, then prove one verified customer
+  can create orders A/B/C with distinct idempotency keys and see all three in
+  `/account/orders` while guest cap and abuse guard remain effective.
+- Production remains **NO-GO** until migration execution and authenticated
+  runtime evidence pass. Package status: **IMPLEMENTED LOCALLY; FOCUSED,
+  TYPECHECK, LINT, AND DIRECT BUILD VERIFIED; MIGRATION/RUNTIME PENDING; NOT
+  DEPLOYED; NOT COMPLETE**.
 - Commit, push, deploy: **NOT PERFORMED**.

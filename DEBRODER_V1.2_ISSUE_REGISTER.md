@@ -683,3 +683,34 @@ Last updated: 28 July 2026 (Asia/Makassar)
   separation, guest and authenticated checkout E2E, historical claim, recovery,
   responsive UI, browser console, and production logs.
 - Current verdict: **NO-GO FOR PRODUCTION / NOT COMPLETE**.
+
+## CUSTOMER-ACCOUNT-002 — Verified members inherited the guest active-order cap
+
+- Severity: **BLOCKER — REGISTERED CUSTOMER CHECKOUT ACCESS**.
+- Status: **RESOLVED IN LOCAL CODE; FORWARD MIGRATION AND RUNTIME PENDING**.
+- Root cause:
+  - three canonical order creators reject checkout when the normalized
+    WhatsApp number already has two active unpaid orders;
+  - Instant Custom inherits the same check through Ready Stock creation;
+  - `customer_user_id` was supplied only to the later activation RPC, so the
+    creation RPC could not distinguish a verified member from a guest.
+- Targeted resolution:
+  - member checkout now supplies `customer_user_id` to member-only creation
+    overloads;
+  - migration `20260810100000_registered_customer_order_access_v1.sql`
+    validates confirmed customer Auth metadata, active profile, exact email,
+    and internal-account exclusion before applying the narrow bypass;
+  - the original create functions remain authoritative for stock, minimum
+    quantity, pricing, SKU, Custom/Jersey validation, idempotency, and data
+    creation;
+  - guest checkout still uses the original signatures and the existing active-
+    unpaid phone cap; the API abuse/rate-limit guard is unchanged.
+- Database status: migration **LOCAL ONLY / NOT APPLIED / PENDING**; no table,
+  schema, data, RLS, payment, or historical migration was changed.
+- Evidence: focused **8 files / 89 tests PASS**; typecheck **PASS**; lint **0
+  errors / 37 existing warnings**; direct Next build **138 pages PASS**.
+- Repository scripted gate remains red only on the recorded three unrelated
+  CRLF-sensitive assertions; `npm run build` stops at prebuild before Next.
+- Remaining gate: safe migration apply/postcheck plus verified customer A/B/C
+  checkout and Order History runtime proof, guest-cap regression, database
+  smoke test, and deployment evidence.
