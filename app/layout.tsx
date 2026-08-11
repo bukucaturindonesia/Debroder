@@ -1,16 +1,15 @@
 import type { Metadata } from "next";
-import { Inter } from "next/font/google";
+import { Geist } from "next/font/google";
 import type { ReactNode } from "react";
 import { CustomerAuthProvider } from "@/components/customer-auth/CustomerAuthProvider";
 import { siteConfig } from "@/lib/site";
 import "./globals.css";
 
-const inter = Inter({
+const geist = Geist({
   subsets: ["latin"],
-  weight: ["400", "500", "600", "700", "800"],
   display: "swap",
-  fallback: ["Arial", "Helvetica"],
-  variable: "--font-inter"
+  fallback: ["Inter", "system-ui", "sans-serif"],
+  variable: "--font-geist-sans"
 });
 
 export const metadata: Metadata = {
@@ -98,8 +97,10 @@ export default function RootLayout({
   children: ReactNode;
 }>) {
   return (
-    <html lang="id" className={inter.variable}>
-      <body className={inter.className}><CustomerAuthProvider>{children}</CustomerAuthProvider></body>
+    <html lang="id" className={geist.variable}>
+      <body className={geist.className}>
+        <CustomerAuthProvider>{children}</CustomerAuthProvider>
+      </body>
     </html>
   );
 }

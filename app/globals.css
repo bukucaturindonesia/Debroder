@@ -5,24 +5,37 @@
 :root {
   color-scheme: light;
 
-  /* DEBRODER Design System & Web Experience V1.1 — FINAL FROZEN LOCKED */
-  --font-sans: var(--font-inter), Inter, Arial, Helvetica, sans-serif;
+  /* DEBRODER Deep Modular UI System v1.0 — canonical foundation contract. */
+  --font-sans: var(--font-geist-sans), "Geist Sans", Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   --font-mono: ui-monospace, SFMono-Regular, Consolas, "Liberation Mono", monospace;
   --font-heading: var(--font-sans);
   --font-display: var(--font-sans);
   --font-body: var(--font-sans);
 
-  --text-hero: clamp(2.75rem, 6vw, 5rem);
-  --text-section-display: clamp(2.25rem, 4.5vw, 4rem);
-  --text-h1: clamp(2.25rem, 4vw, 3.25rem);
-  --text-h2: clamp(1.75rem, 3vw, 2.5rem);
-  --text-h3: clamp(1.5rem, 2vw, 1.875rem);
-  --text-h4: 1.375rem;
-  --text-body-lg: 1.125rem;
-  --text-body: 1rem;
-  --text-body-sm: 0.875rem;
-  --text-caption: 0.75rem;
+  --text-hero: 56px;
+  --leading-hero: 62px;
+  --text-h1: 40px;
+  --leading-h1: 44px;
+  --text-h2: 32px;
+  --leading-h2: 38px;
+  --text-h3: 24px;
+  --leading-h3: 30px;
+  --text-h4: 20px;
+  --leading-h4: 26px;
+  --text-body-lg: 18px;
+  --leading-body-lg: 28px;
+  --text-body: 16px;
+  --leading-body: 24px;
+  --text-commerce: 14px;
+  --leading-commerce: 20px;
+  --text-metadata: 13px;
+  --leading-metadata: 18px;
+  --text-caption: 12px;
+  --leading-caption: 16px;
+  --text-body-sm: var(--text-commerce);
 
+  /* Current implementation colors are compatibility values only.
+     Official DEBRODER green HEX and Green 50–950 remain OWNER OPEN. */
   --brand-700: #042518;
   --brand-600: #052f1c;
   --brand-500: #063d24;
@@ -66,19 +79,19 @@
   --font-weight-semibold: 600;
   --font-weight-bold: 700;
   --font-weight-extrabold: 800;
-  --leading-display: 0.95;
-  --leading-body: 1.5;
+  --leading-display: var(--leading-hero);
 
   --type-hero: var(--text-hero);
   --type-page-title: var(--text-h1);
   --type-section-title: var(--text-h2);
   --type-card-title: var(--text-h3);
-  --type-product-title: 1rem;
-  --type-body: 1rem;
-  --type-caption: 0.875rem;
-  --type-utility: 0.75rem;
-  --type-button: 1rem;
+  --type-product-title: 16px;
+  --type-body: var(--text-body);
+  --type-caption: var(--text-caption);
+  --type-utility: var(--text-caption);
+  --type-button: var(--text-commerce);
 
+  /* Canonical spacing vocabulary. */
   --space-0: 0;
   --space-1: 4px;
   --space-2: 8px;
@@ -93,27 +106,39 @@
   --space-20: 80px;
   --space-24: 96px;
   --space-30: 120px;
-  --space-36: 144px;
 
-  --container-max: 1440px;
+  /* Canonical layout geometry. */
+  --container-max: 1280px;
   --content-max: var(--container-max);
   --content-reading: 720px;
   --content-form: 640px;
-  --content-gutter: 20px;
-  --section-space: 64px;
-  --section-space-end: 80px;
+  --content-gutter-small-mobile: 14px;
+  --content-gutter: 16px;
+  --section-space-editorial-min: 80px;
+  --section-space-editorial-max: 96px;
+  --section-space-commerce-min: 64px;
+  --section-space-commerce-max: 80px;
+  --section-space-dense-min: 32px;
+  --section-space-dense-max: 48px;
+  --section-space-mobile-min: 32px;
+  --section-space-mobile-max: 48px;
+  --section-space: 48px;
+  --section-space-end: 48px;
   --grid-gap: 12px;
   --reading-max: var(--content-reading);
 
+  /* Canonical radius scale. Legacy media/card aliases stay local until their owner packages. */
   --radius-none: 0;
   --radius-xs: 4px;
   --radius-sm: 8px;
   --radius-md: 12px;
   --radius-lg: 16px;
-  --radius-xl: 24px;
+  --radius-xl: 20px;
+  --radius-full: 999px;
   --radius-image: 0;
   --radius-card: 0;
-  --radius-pill: 9999px;
+  --radius-pill: var(--radius-full);
+
   --border-default: #e5e5e5;
   --border-strong: #cacaca;
   --shadow-decorative: none;
@@ -121,44 +146,74 @@
   --shadow-sm: 0 4px 12px rgba(0, 0, 0, 0.1);
   --shadow-overlay: 0 16px 40px rgba(0, 0, 0, 0.16);
   --divider-width: 1px;
-  --control-min-size: 48px;
+
+  /* Canonical control and shell dimensions. */
+  --control-sm: 36px;
+  --control-md: 44px;
+  --control-lg: 48px;
+  --control-xl: 52px;
+  --control-min-size: var(--control-md);
+  --nav-desktop: 72px;
+  --nav-tablet: 64px;
+  --nav-mobile: 58px;
+  --sidebar-admin: 248px;
+  --sidebar-admin-collapsed: 72px;
+  --topbar-admin: 64px;
+  --public-header-height: var(--nav-mobile);
+
   --focus-ring-width: 2px;
   --focus-ring-offset: 2px;
-  --public-header-height: 60px;
 
-  --duration-instant: 80ms;
-  --duration-fast: 120ms;
-  --duration-base: 180ms;
-  --duration-slow: 240ms;
+  /* Canonical motion ranges: micro 150–200, standard 200–240, large 240–320. */
+  --duration-fast: 180ms;
+  --duration-base: 220ms;
+  --duration-slow: 280ms;
   --duration-overlay: 320ms;
   --ease-standard: cubic-bezier(0.2, 0, 0, 1);
-  --ease-enter: cubic-bezier(0, 0, 0.2, 1);
+  --ease-enter: ease-out;
   --ease-exit: cubic-bezier(0.4, 0, 1, 1);
   --motion-fast: var(--duration-fast);
   --motion-normal: var(--duration-base);
   --motion-slow: var(--duration-slow);
   --motion-ease: var(--ease-standard);
 
-  --z-base: 0;
-  --z-raised: 10;
-  --z-sticky: 20;
+  /* Canonical global z-index contract. */
+  --z-content: 0;
+  --z-sticky: 10;
+  --z-nav: 20;
   --z-dropdown: 30;
-  --z-overlay: 40;
-  --z-drawer: 50;
+  --z-drawer: 40;
+  --z-overlay: 50;
   --z-modal: 60;
   --z-toast: 70;
+  --z-critical: 80;
 
   /* Compatibility aliases retained while later packages migrate consumers. */
+  --z-base: var(--z-content);
+  --z-raised: var(--z-sticky);
+  --z-legacy-backdrop: var(--z-drawer);
+  --z-legacy-drawer-surface: var(--z-overlay);
   --background: var(--color-canvas);
   --foreground: var(--color-ink);
   --surface-soft: var(--color-surface-soft);
   --surface-muted: var(--color-surface-soft);
-  --space-section-mobile: var(--space-16);
+  --space-section-mobile: var(--space-12);
   --space-section-tablet: var(--space-20);
   --space-section-desktop: var(--space-24);
   --type-home-hero: var(--type-hero);
   --type-home-section: var(--type-section-title);
   --type-home-page: var(--type-page-title);
+}
+
+@media (max-width: 639px) {
+  :root {
+    --text-hero: 36px;
+    --leading-hero: 40px;
+    --text-h1: 30px;
+    --leading-h1: 34px;
+    --text-h2: 26px;
+    --leading-h2: 32px;
+  }
 }
 
 @media (min-width: 640px) {
@@ -169,25 +224,27 @@
 
 @media (min-width: 768px) {
   :root {
-    --content-gutter: 32px;
+    --content-gutter: 24px;
     --section-space: 80px;
     --section-space-end: 80px;
+    --grid-gap: 20px;
+    --public-header-height: var(--nav-tablet);
   }
 }
 
 @media (min-width: 1024px) {
   :root {
-    --content-gutter: 48px;
+    --content-gutter: 32px;
     --section-space: 96px;
     --section-space-end: 96px;
     --grid-gap: 24px;
-    --public-header-height: 72px;
+    --public-header-height: var(--nav-desktop);
   }
 }
 
 @media (min-width: 1280px) {
   :root {
-    --content-gutter: 64px;
+    --content-gutter: 32px;
   }
 }
 
@@ -572,8 +629,8 @@ button,
 .public-site:not(.jersey-theme):not(.jersey-commerce-theme) .public-section-frame {
   box-sizing: border-box;
   margin-inline: auto;
-  max-width: 1920px;
-  padding-inline: 20px;
+  max-width: var(--content-max);
+  padding-inline: var(--content-gutter);
 }
 
 .public-site:not(.jersey-theme):not(.jersey-commerce-theme) .public-section-frame--wide {
@@ -708,10 +765,10 @@ button,
 
 .public-site:not(.jersey-theme):not(.jersey-commerce-theme) .hero-title {
   font-family: var(--font-heading);
-  font-size: 40px;
+  font-size: var(--type-hero);
   font-weight: 600;
   letter-spacing: -0.03em;
-  line-height: 1;
+  line-height: var(--leading-display);
 }
 
 .public-site:not(.jersey-theme):not(.jersey-commerce-theme) :is(.section-title, .landing-section-title, .home-section-title, .public-section-title) {
@@ -1196,7 +1253,7 @@ button,
   }
 
   .public-site:not(.jersey-theme):not(.jersey-commerce-theme) .public-section-frame {
-    padding-inline: 48px;
+    padding-inline: var(--content-gutter);
   }
 
   .campaign-shell {

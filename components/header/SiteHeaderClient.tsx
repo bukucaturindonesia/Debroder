@@ -324,7 +324,7 @@ export function SiteHeaderClient({
   }, [isOpen]);
 
   return (
-    <header ref={headerRef} data-public-header className="sticky top-0 z-[var(--z-sticky)] h-[60px] border-b border-black/10 bg-white text-[#111] lg:h-[72px]">
+    <header ref={headerRef} data-public-header className="sticky top-0 z-[var(--z-nav)] h-[60px] border-b border-black/10 bg-white text-[#111] lg:h-[72px]">
       <nav className="section-shell flex h-[60px] items-center justify-between gap-4 bg-white lg:h-[72px]" aria-label="Navigasi utama">
         <Link href="/" className="shrink-0" aria-label="DEBRODER beranda">
           <Logo variant="primary-dark" size="sm" className="transition duration-200 hover:opacity-70" />
