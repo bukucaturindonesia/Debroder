@@ -635,3 +635,19 @@ Existing legal, CMS route, Preview performance, remote transaction E2E, data-int
 - Migration execution/database smoke/runtime multi-order E2E/deployment:
   **NOT RUN**. Package status: **IMPLEMENTED LOCALLY AND CODE-VERIFIED;
   MIGRATION/RUNTIME PENDING; NO-GO FOR PRODUCTION; NOT COMPLETE**.
+
+## 22. Image Delivery Optimization — 12 August 2026
+
+- `next.config.ts` now delivers raster image transforms as WebP, caches public
+  image paths for one day with stale-while-revalidate, and keeps Supabase
+  remote image support.
+- `ResponsivePicture` and `SafeImage` use Next responsive transforms for local
+  and Supabase imagery. `Logo.tsx` and `BrandIcon.tsx` remain native logo/SVG
+  delivery and are explicitly excluded from conversion.
+- External CMS hosts remain native-image fallbacks until allowlisted. No route,
+  schema, transaction, or security behavior changed.
+- Verification: image contract **2/2 PASS**, UI/media regression **14/14
+  PASS**, typecheck **PASS**, target lint **0 errors**, direct Next build
+  **PASS — 138 pages**. Scripted build remains blocked by three unrelated
+  CRLF-sensitive tests before Next compilation.
+- Status: **IMPLEMENTED LOCALLY; BUILD VERIFIED; NOT DEPLOYED; NOT COMPLETE**.

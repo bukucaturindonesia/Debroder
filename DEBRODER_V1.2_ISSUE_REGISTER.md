@@ -714,3 +714,21 @@ Last updated: 28 July 2026 (Asia/Makassar)
 - Remaining gate: safe migration apply/postcheck plus verified customer A/B/C
   checkout and Order History runtime proof, guest-cap regression, database
   smoke test, and deployment evidence.
+
+## PERF-IMAGE-001 — Optimized raster delivery while preserving logos
+
+- Severity: **MAJOR — PERFORMANCE / DELIVERY**.
+- Status: **RESOLVED IN LOCAL CODE; CDN AND CONCURRENCY RUNTIME PENDING**.
+- Root cause: public CMS hero/editorial images used native `<img>` through
+  `ResponsivePicture`, bypassing Next image transforms. The app already had
+  WebP configuration, but that path did not consume it.
+- Resolution: responsive local/Supabase imagery now uses Next `srcSet` output;
+  WebP is the canonical transformed format; public asset cache headers and
+  optimizer cache were added. `Logo.tsx` and `BrandIcon.tsx` remain native and
+  logo paths are explicitly excluded from `SafeImage` optimization.
+- Evidence: image contract **2/2 PASS**, UI/media regression **14/14 PASS**,
+  typecheck **PASS**, target lint **0 errors**, direct Next build **138 pages
+  PASS**. Full scripted build remains red only on pre-existing CRLF-sensitive
+  tests.
+- Remaining risk: verify CDN cache hit ratio, LCP, image byte reduction, and
+  thousand-user concurrency in the deployed environment before production GO.

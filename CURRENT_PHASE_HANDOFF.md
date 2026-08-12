@@ -1065,6 +1065,37 @@ DEBRODER V1.2 REMAINS NOT COMPLETE**
   implementation and static/build verification; NOT COMPLETE**.
 - Commit, push, deploy: **NOT PERFORMED**.
 
+---
+
+# Handoff — Image Delivery Optimization
+
+**Date:** 12 August 2026
+
+## Scope and changes
+
+- Audited image delivery, `next/image` usage, responsive CMS imagery, and logo
+  paths. Public raster assets were targeted; logo assets were excluded.
+- Changed `next.config.ts` to use WebP transforms, one-month optimizer cache,
+  and one-day public asset cache with stale-while-revalidate.
+- Changed `components/ResponsivePicture.tsx` to emit Next optimizer `srcSet`
+  for local/Supabase CMS imagery. Changed `components/SafeImage.tsx` to bypass
+  optimizer when the source path contains `logo`.
+- Added `test/image-delivery-optimization.test.ts` (2 contract tests).
+- Routes, database, migrations, checkout, payment, security, and guest flow:
+  **UNCHANGED**.
+
+## Verification and release status
+
+- Focused image contract: **2/2 PASS**.
+- UI/media regression: **14/14 PASS**.
+- TypeScript: **PASS**. Target lint: **0 errors**.
+- Direct `.\\node_modules\\.bin\\next.CMD build`: **PASS — 138 pages**.
+- `pnpm build`: **FAIL at prebuild** on the existing three unrelated
+  CRLF-sensitive assertions; Next compilation was verified separately.
+- Database/migration/deployment/browser concurrency test: **NOT RUN**.
+- Status: **IMPLEMENTED LOCALLY; BUILD VERIFIED; NOT DEPLOYED; NO-GO FOR
+  production until owner runtime/CDN verification**.
+
 # Handoff — Admin Handcrafted UI & Rendering V1
 
 **Date:** 9 August 2026
