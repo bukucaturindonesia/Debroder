@@ -355,7 +355,7 @@ export function JerseyShopCatalog({ products }: { products: Product[] }) {
 
           <div className="min-w-0">
             {shown.length ? (
-              <div className="grid grid-cols-2 gap-x-3 gap-y-10 sm:gap-x-5 md:grid-cols-2 lg:grid-cols-3 lg:gap-x-6 lg:gap-y-14">
+              <div data-ui-grid="product" className="grid grid-cols-2 gap-x-3 gap-y-10 sm:gap-x-5 md:grid-cols-2 lg:grid-cols-3 lg:gap-x-6 lg:gap-y-14">
                 {shown.map((product) => (
                   <PublicProductCard
                     key={product.id || product.slug || product.nama}
