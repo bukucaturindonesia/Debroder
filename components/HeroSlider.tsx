@@ -6,7 +6,7 @@ import { ResponsivePicture } from "@/components/ResponsivePicture";
 import { fallbackImages } from "@/lib/fallback-data";
 import type { HeroBanner } from "@/lib/types";
 
-const SLIDE_DURATION = 5600;
+const SLIDE_DURATION = 6000;
 
 function cleanHeroText(value?: string | null) {
   const text = (value || "").trim();
@@ -111,7 +111,7 @@ export function HeroSlider({ heroes }: { heroes: HeroBanner[] }) {
   return (
     <section
       id="beranda"
-      className="hero-section landing-hero relative h-[76svh] min-h-[500px] max-h-[760px] w-full overflow-hidden bg-black md:h-[78svh] md:min-h-[580px]"
+      className="hero-section landing-hero relative w-full overflow-hidden bg-black"
       aria-roledescription="carousel"
       aria-label="Koleksi utama DEBRODER"
       role="region"
@@ -179,11 +179,11 @@ export function HeroSlider({ heroes }: { heroes: HeroBanner[] }) {
               )}
             </div>
 
-            <div className="landing-hero-overlay absolute inset-0 bg-[linear-gradient(0deg,rgba(0,0,0,.50)_0%,rgba(0,0,0,.12)_52%,rgba(0,0,0,.04)_100%)]" />
+            <div className="landing-hero-overlay absolute inset-0" />
             {hasCopy ? (
-              <div className="landing-hero-copy absolute inset-x-0 bottom-[12%] z-10 sm:bottom-[10%] lg:bottom-[9%]">
+              <div className="landing-hero-copy absolute inset-0 z-10 flex items-center">
                 <div className="section-shell">
-                  <div className="hero-content mx-auto max-w-[1120px] text-white">
+                  <div className="hero-content mx-auto max-w-[760px] text-center text-white">
                     {badge ? (
                       <p className="text-[15px] font-medium uppercase tracking-normal text-white/75 sm:text-[17px]">
                         {badge}
@@ -226,13 +226,13 @@ export function HeroSlider({ heroes }: { heroes: HeroBanner[] }) {
 
       {total > 1 || hasMotionMedia ? (
         <div className="landing-hero-controls absolute bottom-4 right-4 z-30 flex items-center gap-2 text-white sm:bottom-7 sm:right-8 lg:right-12">
-          <button type="button" onClick={() => setPaused((current) => !current)} aria-label={paused ? "Putar media utama" : "Jeda media utama"} className="grid h-12 w-12 place-items-center rounded-full border border-white/35 bg-black/50 transition-colors hover:bg-white hover:text-[#111]">
+          <button type="button" onClick={() => setPaused((current) => !current)} aria-label={paused ? "Putar media utama" : "Jeda media utama"} className="grid h-10 w-10 place-items-center rounded-full border border-white/35 bg-black/50 transition-colors hover:bg-white hover:text-[#111]">
             <PlayPauseIcon paused={paused} />
           </button>
-          {total > 1 ? <button type="button" onClick={goPrev} aria-label="Slide sebelumnya" className="grid h-12 w-12 place-items-center rounded-full border border-white/35 bg-black/50 transition-colors hover:bg-white hover:text-[#111]">
+          {total > 1 ? <button type="button" onClick={goPrev} aria-label="Slide sebelumnya" className="grid h-10 w-10 place-items-center rounded-full border border-white/35 bg-black/50 transition-colors hover:bg-white hover:text-[#111]">
             <ArrowIcon direction="left" />
           </button> : null}
-          {total > 1 ? <button type="button" onClick={goNext} aria-label="Slide berikutnya" className="grid h-12 w-12 place-items-center rounded-full border border-white/35 bg-black/50 transition-colors hover:bg-white hover:text-[#111]">
+          {total > 1 ? <button type="button" onClick={goNext} aria-label="Slide berikutnya" className="grid h-10 w-10 place-items-center rounded-full border border-white/35 bg-black/50 transition-colors hover:bg-white hover:text-[#111]">
             <ArrowIcon direction="right" />
           </button> : null}
           {total > 1 ? <div className="ml-1 hidden items-center gap-2 sm:flex" aria-label={`Slide ${activeIndex + 1} dari ${total}`}>

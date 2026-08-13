@@ -2695,6 +2695,11 @@ button,
   padding-top: var(--storefront-card-content-gap) !important;
 }
 
+.debroder-storefront .category-commerce-v1 > section,
+.debroder-storefront .collection-commerce-v2 > section {
+  padding-block: var(--storefront-section-space) !important;
+}
+
 .debroder-storefront .product-image-frame,
 .debroder-storefront .public-product-card .product-image-swap {
   border-radius: var(--public-radius-product);
@@ -2851,4 +2856,65 @@ button,
 .debroder-storefront :is(input, select, textarea):not([type="checkbox"]):not([type="radio"]):not([type="range"]) {
   min-height: 44px;
   border-radius: 8px;
+}
+
+.debroder-storefront .landing-hero {
+  height: min(clamp(440px, 125vw, 560px), calc(100svh - var(--public-header-height)));
+}
+
+.debroder-storefront .landing-hero-overlay {
+  background:
+    linear-gradient(180deg, rgb(0 0 0 / 0.04) 0%, rgb(0 0 0 / 0.08) 14%, rgb(0 0 0 / 0.18) 34%, rgb(0 0 0 / 0.32) 52%, rgb(0 0 0 / 0.08) 100%),
+    rgb(0 0 0 / 0.08);
+}
+
+.debroder-storefront .landing-hero-copy {
+  inset: 0;
+}
+
+.debroder-storefront .landing-hero .hero-content {
+  max-width: 760px;
+}
+
+.debroder-storefront.debroder-landing > header,
+.debroder-storefront.debroder-landing > header nav.section-shell {
+  height: 56px;
+}
+
+@media (min-width: 768px) {
+  .debroder-storefront.debroder-landing > header,
+  .debroder-storefront.debroder-landing > header nav.section-shell {
+    height: 60px;
+  }
+}
+
+@media (min-width: 1024px) {
+  .debroder-storefront.debroder-landing > header,
+  .debroder-storefront.debroder-landing > header nav.section-shell {
+    height: 64px;
+  }
+}
+
+@media (min-width: 768px) {
+  .debroder-storefront .landing-hero {
+    height: clamp(400px, 48vw, 480px);
+  }
+}
+
+@media (min-width: 1280px) {
+  .debroder-storefront .landing-hero {
+    height: clamp(352px, 26vw, 416px);
+  }
+}
+
+@media (max-height: 500px) and (orientation: landscape) {
+  .debroder-storefront .landing-hero {
+    height: clamp(280px, calc(100svh - var(--public-header-height)), 400px);
+  }
+}
+
+@media (max-width: 639px) {
+  .debroder-storefront .landing-hero .hero-content {
+    text-align: center;
+  }
 }
