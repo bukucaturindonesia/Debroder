@@ -776,3 +776,16 @@ Last updated: 28 July 2026 (Asia/Makassar)
   typecheck **PASS**, changed-file lint **0 errors**, and diff check **PASS**.
 - Remaining risk: full baseline suite/build and reachable responsive browser
   runtime remain unverified; no deployment or concurrency claim is made.
+
+## UXUI-NORMALIZE-001 — Verification update — 2026-08-13
+
+- Local implementation completed on `codex/public-ui-normalization-final` with
+  logical checkpoints for foundation, shell/footer, controls, product cards,
+  homepage, route grids, transactional surfaces, and the remaining legacy
+  public product-grid migration.
+- Targeted public UI tests, TypeScript, lint, direct Next build, and diff check
+  pass. Full test still reports only the two baseline Order Operations source
+  assertions; `pnpm build` stops in its prebuild for that same reason.
+- No database, migration, dependency, lockfile, environment, business, or
+  route contract changed. Runtime visual review remains unavailable.
+- Disposition: **IMPLEMENTED LOCALLY; OWNER REVIEW REQUIRED; RELEASE NO-GO**.

@@ -705,3 +705,18 @@ Existing legal, CMS route, Preview performance, remote transaction E2E, data-int
 - Full scripted test/build and browser runtime remain release gates from the
   previous handoff. Status: **IMPLEMENTED LOCALLY; FOCUSED GATES PASS; FULL
   RELEASE GATES INCOMPLETE; NOT DEPLOYED; NO-GO / NOT COMPLETE**.
+
+## 2026-08-13 — Public UI normalization branch update
+
+- Isolated implementation branch: `codex/public-ui-normalization-final`.
+- Public UI normalization is implemented in local checkpoints from the clean
+  `UI-konsisten` baseline; the final public product-grid consumer now uses the
+  canonical `PublicProductCard` with its inquiry CTA preserved.
+- Protected business, database, migration, dependency, environment, route,
+  SEO, analytics, and test-hook contracts were not changed.
+- Direct Next production build passes with 138/138 pages. Full repository test
+  and wrapper build remain red only on the two pre-existing
+  `order-operations-phase4-13` source assertions. Browser visual review is not
+  available in this environment.
+- State: **IMPLEMENTED LOCALLY; READY FOR OWNER VISUAL REVIEW; RELEASE
+  NO-GO UNTIL BASELINE TESTS AND RUNTIME REVIEW ARE CLOSED**.

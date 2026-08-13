@@ -1065,6 +1065,35 @@ DEBRODER V1.2 REMAINS NOT COMPLETE**
   implementation and static/build verification; NOT COMPLETE**.
 - Commit, push, deploy: **NOT PERFORMED**.
 
+## 2026-08-13 — Post-audit public UI normalization execution
+
+- Scope aktif: owner-locked public UI normalization only; business and
+  protected commerce domains were out of scope.
+- Diperiksa: public shell, navbar, footer, container/gutters, grids, spacing,
+  typography, controls, product cards, homepage, search/fresh-drop, cart
+  surfaces, Jersey public state, responsive CSS foundation, and public card
+  consumers.
+- Diubah: one scoped `.debroder-storefront` foundation layer, canonical shell
+  footer/header wiring, canonical product-card variants, route grid hooks,
+  homepage rhythm/hero, cart state markers, and the remaining legacy public
+  product grid migration.
+- Files changed: 16 public presentation files; governance append files are
+  this handoff, `DEBRODER_MASTER_STATE.md`, and
+  `DEBRODER_V1.2_ISSUE_REGISTER.md`.
+- Routes changed: no route paths, redirects, query parameters, or metadata.
+- Database/migration local, remote, applied, pending: **NONE for this UI run**.
+- Typecheck: **PASS**. Lint: **PASS — 34 pre-existing warnings, 0 errors**.
+- Targeted public UI suites: **PASS** (32/32; post-card-migration smoke 12/12).
+- Full test: **FAIL — two baseline `order-operations-phase4-13` source
+  assertions; no new public UI failure**.
+- Direct Next build: **PASS — 138/138 pages generated**. `pnpm build` remains
+  blocked in `prebuild` by the same two baseline tests.
+- Deployment: **NOT RUN**. Runtime visual/browser review: **NOT AVAILABLE**.
+- Remaining risk: owner must perform desktop/mobile visual review and resolve
+  the protected baseline test failures before release GO.
+- Status: **IMPLEMENTED LOCALLY; OWNER VISUAL REVIEW READY; RELEASE NO-GO**.
+- Push, merge, PR, and deployment: **NOT PERFORMED**.
+
 ---
 
 # Handoff — Public UI Foundation Normalization V1
