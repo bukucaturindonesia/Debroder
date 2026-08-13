@@ -3,13 +3,11 @@ import type { ReactNode } from "react";
 import { AccessibleAutoplayVideo } from "@/components/AccessibleAutoplayVideo";
 import { CampaignBanners } from "@/components/CampaignBanners";
 import { HeroSlider } from "@/components/HeroSlider";
+import { PublicShellFrame } from "@/components/PublicPage";
 import { PublicProductCard } from "@/components/PublicProductCard";
-import { PublicFooter } from "@/components/PublicFooter";
 import { PublicSectionFrame } from "@/components/PublicSectionFrame";
 import { ResponsivePicture } from "@/components/ResponsivePicture";
 import { ScrollButtons } from "@/components/ScrollButtons";
-import { SiteHeader } from "@/components/SiteHeader";
-import { StorefrontCartBoundary } from "@/components/storefront/StorefrontCartBoundary";
 import { fallbackImages, getProductImage, getStoreImage } from "@/lib/fallback-data";
 import { brandIcons } from "@/lib/icons";
 import { getPublicShellPageModel } from "@/lib/public-shell/runtime";
@@ -415,11 +413,8 @@ export default async function Home() {
   };
 
   return (
-    <StorefrontCartBoundary>
-    <main data-ui-system="canonical" className="public-site debroder-storefront debroder-landing min-h-screen bg-experience-canvas text-experience-ink">
-      <SiteHeader
-        navigationFacets={shellModel.data.header.navigationFacets}
-      />
+    <PublicShellFrame shellModel={shellModel} footerTone="dark" shellClassName="debroder-landing">
+      <div data-ui-system="landing" className="min-h-screen bg-experience-canvas text-experience-ink">
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(schema).replace(/</g, "\\u003c") }} />
       {!heroHasHeading ? <h1 className="sr-only">DEBRODER</h1> : null}
 
@@ -564,8 +559,7 @@ export default async function Home() {
         </section>
       </LandingSectionSlot>
 
-      <PublicFooter model={shellModel.data.footer} tone="light" />
-    </main>
-    </StorefrontCartBoundary>
+      </div>
+    </PublicShellFrame>
   );
 }

@@ -65,7 +65,7 @@ export function PublicFooter({ model, tone = "dark" }: { model: PublicShellFoote
       data-footer-tone={tone}
       className={`public-footer-system-v1 ${light ? "public-footer-light bg-white text-[#111]" : "public-footer-dark bg-black text-white"}`}
     >
-      <div className="section-shell py-14 sm:py-16 lg:py-20">
+      <div className="section-shell py-10 sm:py-12 lg:py-16">
         <div className="public-footer-grid hidden grid-cols-[1fr_1fr_1.2fr_.7fr] gap-12 md:grid lg:gap-20">
           <FooterBrand description={model.brandDescription} tone={tone} />
 
@@ -97,7 +97,7 @@ export function PublicFooter({ model, tone = "dark" }: { model: PublicShellFoote
           </MobileAccordion>
         </div>
 
-        <div className="public-footer-muted mt-16 flex flex-col gap-6 text-sm lg:mt-20 lg:flex-row lg:items-center lg:justify-between">
+        <div className="public-footer-muted mt-12 flex flex-col gap-6 text-sm lg:mt-16 lg:flex-row lg:items-center lg:justify-between">
           <div className="flex flex-wrap gap-x-6 gap-y-3">
             <p>{model.copyrightText}</p>
             <Link href={model.termsLink.href} className={legalLinkClass}>{model.termsLink.label}</Link>

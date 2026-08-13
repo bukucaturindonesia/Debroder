@@ -326,8 +326,8 @@ export function SiteHeaderClient({
   }, [isOpen]);
 
   return (
-    <header ref={headerRef} data-public-header className="sticky top-0 z-[var(--z-nav)] h-[56px] border-b border-black/10 bg-white/95 text-[#111] backdrop-blur lg:h-[68px]">
-      <nav className="section-shell flex h-[56px] items-center justify-between gap-4 lg:h-[68px]" aria-label="Navigasi utama">
+    <header ref={headerRef} data-public-header className="sticky top-0 z-[var(--z-nav)] h-[56px] border-b border-black/10 bg-white/95 text-[#111] backdrop-blur md:h-[60px] lg:h-[64px]">
+      <nav className="section-shell flex h-[56px] items-center justify-between gap-4 md:h-[60px] lg:h-[64px]" aria-label="Navigasi utama">
         <Link href="/" className="shrink-0" aria-label="DEBRODER beranda">
           <Logo variant="primary-dark" size="sm" className="transition duration-200 hover:opacity-70" />
         </Link>
@@ -408,7 +408,7 @@ export function SiteHeaderClient({
         </div>
       </nav>
 
-      <div id="global-mobile-navigation" aria-hidden={!isOpen} inert={!isOpen} className={`absolute inset-x-0 top-full h-[calc(100dvh-56px)] bg-white transition-transform duration-300 ease-out lg:hidden ${isOpen ? "visible translate-x-0" : "invisible pointer-events-none translate-x-full"}`}>
+      <div id="global-mobile-navigation" aria-hidden={!isOpen} inert={!isOpen} className={`absolute inset-x-0 top-full h-[calc(100dvh-56px)] bg-white transition-transform duration-300 ease-out md:h-[calc(100dvh-60px)] lg:hidden ${isOpen ? "visible translate-x-0" : "invisible pointer-events-none translate-x-full"}`}>
         <div ref={mobileMenuRef} className="section-shell flex h-full flex-col overflow-y-auto py-6">
           <p className="mb-2 text-xs font-semibold uppercase tracking-[0.12em] text-black/45">Belanja</p>
           {currentNavItems.map((item) => {

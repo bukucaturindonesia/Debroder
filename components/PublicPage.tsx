@@ -620,16 +620,34 @@ export async function PublicShell({
   theme?: "default" | "jersey" | "jersey-commerce";
 }) {
   const shellModel = await getPublicShellPageModel();
+  return <PublicShellFrame shellModel={shellModel} theme={theme}>{children}</PublicShellFrame>;
+}
+
+type PublicShellModel = Awaited<ReturnType<typeof getPublicShellPageModel>>;
+
+export function PublicShellFrame({
+  children,
+  shellModel,
+  theme = "default",
+  footerTone = "dark",
+  shellClassName = ""
+}: {
+  children: ReactNode;
+  shellModel: PublicShellModel;
+  theme?: "default" | "jersey" | "jersey-commerce";
+  footerTone?: "dark" | "light";
+  shellClassName?: string;
+}) {
   const jerseyEditorial = theme === "jersey";
   const jerseyCommerce = theme === "jersey-commerce";
   const header = shellModel.data.header;
   return (
     <StorefrontCartBoundary>
-      <main data-ui-system="canonical" className={`public-site debroder-storefront min-h-screen ${jerseyEditorial ? "jersey-theme bg-brand-offWhite text-brand-charcoal" : jerseyCommerce ? "jersey-commerce-theme bg-white text-[#111111]" : "bg-brand-offWhite text-brand-charcoal"}`}>
+      <main data-ui-system="canonical" className={`public-site debroder-storefront min-h-screen ${jerseyEditorial ? "jersey-theme bg-brand-offWhite text-brand-charcoal" : jerseyCommerce ? "jersey-commerce-theme bg-white text-[#111111]" : "bg-brand-offWhite text-brand-charcoal"} ${shellClassName}`.trim()}>
         <SiteHeader navigationFacets={header.navigationFacets} />
         <PageMotion />
         {children}
-        <PublicFooter model={shellModel.data.footer} />
+        <PublicFooter model={shellModel.data.footer} tone={footerTone} />
       </main>
     </StorefrontCartBoundary>
   );
