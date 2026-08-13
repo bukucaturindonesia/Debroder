@@ -81,7 +81,7 @@
   --storefront-line: rgba(23, 23, 23, 0.12);
   --storefront-line-strong: rgba(23, 23, 23, 0.22);
   --storefront-accent: #063d24;
-  --storefront-control-radius: 4px;
+  --storefront-control-radius: 8px;
 
   /* PUBLIC UI FOUNDATION NORMALIZATION V1 — proposed canonical geometry. */
   --public-container-max: 100%;
@@ -105,7 +105,7 @@
   --public-radius-product: 2px;
   --public-radius-editorial: 2px;
   --public-radius-functional: 8px;
-  --public-radius-control: 4px;
+  --public-radius-control: 8px;
   --public-shadow-functional: 0 1px 2px rgba(0, 0, 0, 0.04);
 
   --font-weight-regular: 400;
@@ -2798,4 +2798,49 @@ button,
   .debroder-storefront [data-ui-grid="editorial"] {
     scroll-behavior: auto;
   }
+}
+
+/* Canonical public control roles. Components keep their existing behavior and
+   hooks; these roles only provide shared presentation contracts. */
+.debroder-storefront .public-control,
+.debroder-storefront .premium-input {
+  min-height: 44px;
+  padding-inline: 16px;
+  border-radius: 8px;
+  font-size: 14px;
+  line-height: 20px;
+}
+
+.debroder-storefront .public-secondary-action,
+.debroder-storefront .public-button {
+  min-height: 44px;
+  border-radius: 8px;
+  padding-inline: 20px;
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 20px;
+}
+
+.debroder-storefront .public-icon-button {
+  width: 40px;
+  height: 40px;
+  min-width: 40px;
+  min-height: 40px;
+  border-radius: 8px;
+}
+
+.debroder-storefront .public-badge {
+  display: inline-flex;
+  min-height: 24px;
+  align-items: center;
+  border-radius: 9999px;
+  padding-inline: 10px;
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 16px;
+}
+
+.debroder-storefront :is(input, select, textarea):not([type="checkbox"]):not([type="radio"]):not([type="range"]) {
+  min-height: 44px;
+  border-radius: 8px;
 }
