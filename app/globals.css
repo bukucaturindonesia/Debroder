@@ -2853,6 +2853,11 @@ button,
   line-height: 16px;
 }
 
+.debroder-storefront [data-ui-card="cart-item"],
+.debroder-storefront [data-ui-card="transaction-summary"] {
+  border-radius: 8px;
+}
+
 .debroder-storefront :is(input, select, textarea):not([type="checkbox"]):not([type="radio"]):not([type="range"]) {
   min-height: 44px;
   border-radius: 8px;

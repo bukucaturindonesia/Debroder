@@ -460,7 +460,7 @@ function FullCartItem({ item }: { item: CartItem }) {
   const isJersey = isJerseyConfiguredItem(item);
   const isCustomProject = isCustomProjectCartItem(item);
   return (
-    <article className="rounded-[28px] bg-white/50 p-4 sm:p-6">
+    <article data-ui-card="cart-item" className="rounded-[28px] bg-white/50 p-4 sm:p-6">
       <CartProductHeader item={item} />
       {item.lineType === "legacy_unsupported" ? (
         <div className="mt-5 rounded-[18px] border border-amber-300 bg-amber-50 p-4 text-sm leading-6 text-amber-950">
@@ -604,11 +604,11 @@ function MiniCartContent() {
   return (
     <div className="grid gap-5">
       <CartValidationNotice compact />
-      <section className="rounded-[24px] bg-white/50 p-4">
+      <section data-ui-card="cart-item" className="rounded-[24px] bg-white/50 p-4">
         <CartProductHeader item={primary} compact />
         {additionalCount > 0 ? <p className="mt-4 rounded-full bg-[#f5f5ef] px-3 py-2 text-xs text-black/60">+ {additionalCount} item tambahan ikut di keranjang.</p> : null}
       </section>
-      <section className="rounded-[24px] bg-white/50 p-4">
+      <section data-ui-card="transaction-summary" className="rounded-[24px] bg-white/50 p-4">
         <div className="flex items-center justify-between text-sm">
           <span className="text-black/60">Subtotal Produk</span>
           <span className="font-semibold">{hasPendingCustomPricing ? "Belum ditetapkan" : safeCurrency(totals.productSubtotal)}</span>

@@ -185,7 +185,7 @@ export function CustomHub({
                 <Link href={categoryHref(apparelCategory)} className="hidden text-sm font-semibold underline underline-offset-4 sm:inline-flex">Buka semua pilihan</Link>
               ) : null}
             </div>
-            <div className="mt-7 grid grid-cols-2 gap-x-3 gap-y-8 md:grid-cols-3 lg:grid-cols-4">
+            <div data-ui-grid="product" className="mt-7 grid grid-cols-2 gap-x-3 gap-y-8 md:grid-cols-3 lg:grid-cols-4">
               {baseProducts.map((product) => (
                 <PublicProductCard key={product.id || product.slug || product.nama} product={product} imageSizes="(min-width:1024px) 25vw, 50vw" />
               ))}
