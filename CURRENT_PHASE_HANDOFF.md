@@ -1067,6 +1067,82 @@ DEBRODER V1.2 REMAINS NOT COMPLETE**
 
 ---
 
+# Handoff — Owner-Unlocked UX/UI Rebuild
+
+**Date:** 13 August 2026
+
+## Active scope and audit result
+
+- Reviewed the owner-provided UX/UI register and final-state mandate against
+  the existing public storefront implementation.
+- Presentation was fragmented across legacy rules: shell density, nav active
+  treatment, hero scale, product-card affordance, form controls, cart/checkout
+  panels, and responsive gutters did not share one final contract.
+- Business and security contracts were intentionally kept locked: no schema,
+  migration, API, route, auth, order, payment, inventory, pricing, RLS, or
+  idempotency change was required for this UI pass.
+
+## Targeted implementation
+
+- Added a scoped canonical storefront design layer in `app/globals.css` with
+  shared surface, ink, line, accent, control, focus, spacing, image-frame, and
+  reduced-motion rules. Jersey art direction is explicitly excluded.
+- Connected homepage and `PublicShell` roots to `data-ui-system="canonical"`.
+- Refined `SiteHeaderClient` density and navigation indicators without changing
+  destinations or menu contracts.
+- Added a non-blocking product-card hover affordance and preserved the single
+  product-detail link contract.
+- Marked cart/checkout panels, drawer, icon controls, and empty/message states
+  for the canonical surface treatment.
+
+## Files changed
+
+- `app/globals.css`
+- `app/page.tsx`
+- `components/PublicPage.tsx`
+- `components/PublicProductCard.tsx`
+- `components/header/SiteHeaderClient.tsx`
+- `components/CartProvider.tsx`
+- `components/checkout/CheckoutClient.tsx`
+- This handoff and the corresponding Master State / Issue Register append.
+
+## Database and migration status
+
+- Tables/schema/data: **UNCHANGED**.
+- Local migrations: **NONE CREATED OR APPLIED FOR THIS UX SCOPE**.
+- Remote migrations: **NOT TOUCHED**.
+
+## Verification actually run
+
+- Focused UX, storefront, product, shell, image-delivery suite:
+  **9 files / 39 tests PASS**.
+- TypeScript typecheck: **PASS**.
+- ESLint on all changed TS/TSX files: **PASS — 0 errors**.
+- `git diff --check`: **PASS** (Git reports normal LF→CRLF normalization
+  warnings for these Windows-working-tree files).
+- Full `pnpm test`: **FAIL — 2 unrelated Order Operations assertions** that
+  compare LF-only source literals against CRLF migration text. No focused UX
+  test failed.
+- Direct `next build`: compile and type/lint validation passed, but page-data
+  generation was not a stable pass in this environment: one run reported
+  missing `/_not-found` and `/account/addresses`, and a clean rerun timed out.
+- Browser/runtime: local dev server compiled the homepage, but the in-app
+  browser returned `ERR_CONNECTION_REFUSED` for localhost; responsive and
+  console checks are **NOT VERIFIED**.
+- Deployment, database smoke, and production CDN/concurrency evidence:
+  **NOT RUN**.
+
+## Remaining risk and next step
+
+- Production remains **NO-GO** until the two baseline CRLF assertions are
+  normalized, Next page-data generation completes reliably, and a reachable
+  browser validates desktop/mobile flows and console output.
+- Package status: **IMPLEMENTED LOCALLY; FOCUSED UX GATES VERIFIED; FULL
+  QUALITY/RUNTIME GATES PENDING; NOT DEPLOYED; NOT COMPLETE**.
+- Commit, push, deploy: **NOT PERFORMED**.
+
+---
+
 # Handoff — Image Delivery Optimization
 
 **Date:** 12 August 2026

@@ -62,6 +62,9 @@ export function PublicProductCard({
           zoom={focal?.zoom ?? product.focal_zoom}
           sizes={imageSizes}
         />
+        <span className="public-product-card-hover" aria-hidden="true">
+          Lihat produk <span aria-hidden="true">↗</span>
+        </span>
 
         <div className="public-product-card-body min-w-0 flex-1">
           {visibleSwatches.length ? (

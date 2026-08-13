@@ -732,3 +732,24 @@ Last updated: 28 July 2026 (Asia/Makassar)
   tests.
 - Remaining risk: verify CDN cache hit ratio, LCP, image byte reduction, and
   thousand-user concurrency in the deployed environment before production GO.
+
+## UXUI-UNLOCK-001 — Public storefront presentation was fragmented
+
+- Severity: **MAJOR — PUBLIC UX/UI CONSISTENCY AND RESPONSIVE QUALITY**.
+- Status: **IMPLEMENTED LOCALLY; FOCUSED VERIFICATION PASS; RUNTIME/RELEASE
+  GATES PENDING**.
+- Root cause: shared storefront surfaces relied on several legacy selector
+  groups with inconsistent shell density, navigation emphasis, hero scale,
+  product-card feedback, control sizing, and cart/checkout panel treatment.
+- Resolution: added a scoped canonical storefront layer, wired the public shell
+  and homepage to the canonical marker, normalized header/nav presentation,
+  added product-card hover affordance, and marked cart/checkout state surfaces.
+  Jersey themes remain isolated. No business, auth, order, payment, inventory,
+  pricing, API, route, schema, migration, RLS, or idempotency contract changed.
+- Evidence: focused UX/image **9 files / 39 tests PASS**, typecheck **PASS**,
+  changed-file lint **0 errors**, and `git diff --check` **PASS**.
+- Release risk: full suite still fails on two unrelated CRLF-sensitive Order
+  Operations assertions; Next page-data generation was not stable in this
+  environment; in-app browser access to localhost returned
+  `ERR_CONNECTION_REFUSED`. No deployment or concurrency measurement was
+  performed.

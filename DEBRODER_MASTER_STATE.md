@@ -651,3 +651,32 @@ Existing legal, CMS route, Preview performance, remote transaction E2E, data-int
   **PASS — 138 pages**. Scripted build remains blocked by three unrelated
   CRLF-sensitive tests before Next compilation.
 - Status: **IMPLEMENTED LOCALLY; BUILD VERIFIED; NOT DEPLOYED; NOT COMPLETE**.
+
+## 23. Owner-Unlocked UX/UI Rebuild — 13 August 2026
+
+- Scope: canonical storefront presentation layer across the public shell,
+  navigation, hero typography, product-card affordance, cart, checkout,
+  responsive spacing, focus states, empty states, and panel surfaces.
+- Root cause: public commerce screens had presentation rules distributed across
+  legacy selectors, so hierarchy, control sizing, navigation emphasis, and
+  responsive behavior were inconsistent even though the underlying commerce
+  contracts were already present.
+- Targeted fix: added a scoped canonical storefront layer and connected the
+  homepage, `PublicShell`, cart, checkout, and product-card surfaces to it.
+  Jersey-specific themes remain excluded. Product, pricing, inventory,
+  customer identity, order, payment, route, API, RLS, and idempotency behavior
+  were not changed.
+- Database/migration: **NONE**. Guest checkout and registered-customer order
+  access behavior remain unchanged by this UX package.
+- Verification: focused UX/image suite **9 files / 39 tests PASS**;
+  TypeScript **PASS**; changed-file ESLint **PASS (0 errors)**;
+  `git diff --check` **PASS**. Full `pnpm test` still has two unrelated
+  CRLF-sensitive Order Operations source-literal assertions. Direct Next build
+  compiled and passed type/lint validation but did not complete page-data
+  generation consistently (`/_not-found` and `/account/addresses` missing on
+  one run; a clean rerun timed out).
+- Runtime: dev server compiled locally, but the in-app browser could not reach
+  localhost and returned `ERR_CONNECTION_REFUSED`; responsive browser/runtime
+  evidence is therefore **NOT VERIFIED**.
+- Status: **IMPLEMENTED LOCALLY; FOCUSED GATES PASS; FULL TEST/BUILD/RUNTIME
+  GATES INCOMPLETE; NOT DEPLOYED; NO-GO / NOT COMPLETE**.

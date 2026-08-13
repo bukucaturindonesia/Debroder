@@ -416,7 +416,7 @@ export default async function Home() {
 
   return (
     <StorefrontCartBoundary>
-    <main className="public-site debroder-landing min-h-screen bg-experience-canvas text-experience-ink">
+    <main data-ui-system="canonical" className="public-site debroder-storefront debroder-landing min-h-screen bg-experience-canvas text-experience-ink">
       <SiteHeader
         navigationFacets={shellModel.data.header.navigationFacets}
       />

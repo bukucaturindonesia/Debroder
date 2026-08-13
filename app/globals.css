@@ -73,6 +73,15 @@
   --color-success: var(--success);
   --color-info-focus: var(--brand-500);
   --color-brand-primary: var(--brand-500);
+  --storefront-canvas: #fbfaf7;
+  --storefront-surface: #ffffff;
+  --storefront-surface-muted: #f2f1ed;
+  --storefront-ink: #171717;
+  --storefront-muted: #686861;
+  --storefront-line: rgba(23, 23, 23, 0.12);
+  --storefront-line-strong: rgba(23, 23, 23, 0.22);
+  --storefront-accent: #063d24;
+  --storefront-control-radius: 4px;
 
   --font-weight-regular: 400;
   --font-weight-medium: 500;
@@ -2332,5 +2341,256 @@ button,
 @media (prefers-reduced-motion: reduce) {
   .kaos-editorial-page img {
     transition: none !important;
+  }
+}
+
+/* =========================================================
+   DEBRODER CANONICAL STOREFRONT SYSTEM
+   One presentation layer for public commerce. Jersey keeps its dedicated
+   art direction; business data and transaction components stay untouched.
+   ========================================================= */
+
+.debroder-storefront:not(.jersey-theme):not(.jersey-commerce-theme) {
+  --storefront-page: var(--storefront-canvas);
+  --storefront-header-height: 56px;
+  background: var(--storefront-page);
+  color: var(--storefront-ink);
+}
+
+.debroder-storefront:not(.jersey-theme):not(.jersey-commerce-theme) .section-shell,
+.debroder-storefront:not(.jersey-theme):not(.jersey-commerce-theme) .public-section-frame {
+  width: min(var(--content-max), calc(100% - (var(--content-gutter) * 2)));
+  max-width: var(--content-max);
+  margin-inline: auto;
+}
+
+.debroder-storefront:not(.jersey-theme):not(.jersey-commerce-theme) .public-section-frame {
+  padding-inline: 0;
+}
+
+.debroder-storefront:not(.jersey-theme):not(.jersey-commerce-theme) > header {
+  border-color: var(--storefront-line);
+  background: rgb(255 255 255 / 0.94);
+  box-shadow: 0 1px 0 rgb(23 23 23 / 0.03);
+}
+
+.debroder-storefront:not(.jersey-theme):not(.jersey-commerce-theme) > header nav {
+  background: transparent;
+}
+
+.debroder-storefront:not(.jersey-theme):not(.jersey-commerce-theme) [data-nav-indicator] {
+  min-height: var(--control-md);
+  border-bottom: 1px solid transparent;
+  border-radius: 0;
+  color: var(--storefront-muted);
+}
+
+.debroder-storefront:not(.jersey-theme):not(.jersey-commerce-theme) [data-nav-indicator]:hover,
+.debroder-storefront:not(.jersey-theme):not(.jersey-commerce-theme) [data-nav-indicator]:focus-visible,
+.debroder-storefront:not(.jersey-theme):not(.jersey-commerce-theme) [aria-current="page"] [data-nav-indicator] {
+  color: var(--storefront-ink);
+}
+
+.debroder-storefront:not(.jersey-theme):not(.jersey-commerce-theme) [data-mega-dropdown] > div {
+  border: 1px solid var(--storefront-line);
+  border-top: 2px solid var(--storefront-ink);
+  background: var(--storefront-surface);
+  box-shadow: 0 18px 48px rgb(23 23 23 / 0.12);
+}
+
+.debroder-storefront:not(.jersey-theme):not(.jersey-commerce-theme) .hero-title,
+.debroder-storefront:not(.jersey-theme):not(.jersey-commerce-theme) .home-hero-title,
+.debroder-storefront:not(.jersey-theme):not(.jersey-commerce-theme) .home-page-title {
+  max-width: 12ch;
+  font-size: clamp(2.5rem, 6vw, 5.25rem);
+  letter-spacing: -0.055em;
+  line-height: 0.94;
+  text-wrap: balance;
+}
+
+.debroder-storefront:not(.jersey-theme):not(.jersey-commerce-theme) .hero-subtitle {
+  max-width: 58ch;
+  color: rgb(255 255 255 / 0.82);
+  font-size: clamp(0.95rem, 1.4vw, 1.15rem);
+  line-height: 1.5;
+  text-wrap: balance;
+}
+
+.debroder-storefront:not(.jersey-theme):not(.jersey-commerce-theme) .hero-actions .cta,
+.debroder-storefront:not(.jersey-theme):not(.jersey-commerce-theme) .landing-campaign-cta,
+.debroder-storefront:not(.jersey-theme):not(.jersey-commerce-theme) .about-cta {
+  min-height: var(--control-lg);
+  border-radius: var(--storefront-control-radius);
+  letter-spacing: 0.01em;
+}
+
+.debroder-storefront:not(.jersey-theme):not(.jersey-commerce-theme) .home-section {
+  scroll-margin-top: var(--storefront-header-height);
+}
+
+.debroder-storefront:not(.jersey-theme):not(.jersey-commerce-theme) .landing-section-heading {
+  align-items: baseline;
+  border-bottom: 1px solid var(--storefront-line);
+  padding-bottom: 1rem;
+}
+
+.debroder-storefront:not(.jersey-theme):not(.jersey-commerce-theme) .home-section-title,
+.debroder-storefront:not(.jersey-theme):not(.jersey-commerce-theme) .landing-section-title,
+.debroder-storefront:not(.jersey-theme):not(.jersey-commerce-theme) .section-title {
+  color: var(--storefront-ink);
+  font-size: clamp(1.3rem, 2vw, 1.8rem);
+  font-weight: 600;
+  letter-spacing: -0.035em;
+  line-height: 1.1;
+  text-wrap: balance;
+}
+
+.debroder-storefront:not(.jersey-theme):not(.jersey-commerce-theme) .product-image-frame {
+  aspect-ratio: 4 / 5;
+  background: var(--storefront-surface-muted);
+  border: 0;
+}
+
+.debroder-storefront:not(.jersey-theme):not(.jersey-commerce-theme) .public-product-card-link {
+  position: relative;
+}
+
+.debroder-storefront:not(.jersey-theme):not(.jersey-commerce-theme) .public-product-card-hover {
+  position: absolute;
+  right: 0.75rem;
+  bottom: 5.5rem;
+  z-index: 1;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  min-height: 2rem;
+  padding: 0.4rem 0.65rem;
+  border: 1px solid rgb(255 255 255 / 0.55);
+  border-radius: 999px;
+  background: rgb(255 255 255 / 0.9);
+  color: var(--storefront-ink);
+  font-size: 0.7rem;
+  font-weight: 600;
+  opacity: 0;
+  transform: translateY(0.35rem);
+  transition: opacity var(--duration-fast) var(--ease-standard), transform var(--duration-fast) var(--ease-standard);
+}
+
+.debroder-storefront:not(.jersey-theme):not(.jersey-commerce-theme) .public-product-card-link:hover .public-product-card-hover,
+.debroder-storefront:not(.jersey-theme):not(.jersey-commerce-theme) .public-product-card-link:focus-visible .public-product-card-hover {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.debroder-storefront:not(.jersey-theme):not(.jersey-commerce-theme) .public-product-card-body {
+  padding-top: 0.9rem;
+}
+
+.debroder-storefront:not(.jersey-theme):not(.jersey-commerce-theme) .public-product-name {
+  font-size: 0.95rem;
+  font-weight: 600;
+  letter-spacing: -0.015em;
+}
+
+.debroder-storefront:not(.jersey-theme):not(.jersey-commerce-theme) .public-product-price {
+  color: var(--storefront-ink);
+  font-size: 0.95rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.debroder-storefront:not(.jersey-theme):not(.jersey-commerce-theme) :is(.premium-input, .public-control, input, select, textarea) {
+  min-height: var(--control-md);
+  border-radius: var(--storefront-control-radius);
+  border-color: var(--storefront-line-strong);
+  background: var(--storefront-surface);
+}
+
+.debroder-storefront:not(.jersey-theme):not(.jersey-commerce-theme) :is(.premium-input, .public-control, input, select, textarea):focus {
+  border-color: var(--storefront-accent);
+  box-shadow: 0 0 0 3px rgb(6 61 36 / 0.13);
+}
+
+.debroder-storefront:not(.jersey-theme):not(.jersey-commerce-theme) :is(button, [role="button"]).cta,
+.debroder-storefront:not(.jersey-theme):not(.jersey-commerce-theme) :is(button, [role="button"]).premium-ghost-button {
+  min-height: var(--control-md);
+  border-radius: var(--storefront-control-radius);
+}
+
+.debroder-storefront:not(.jersey-theme):not(.jersey-commerce-theme) :is(a, button, input, select, textarea, summary, [tabindex]):focus-visible {
+  outline: 2px solid var(--storefront-accent);
+  outline-offset: 3px;
+}
+
+.debroder-storefront:not(.jersey-theme):not(.jersey-commerce-theme) .public-panel {
+  border: 1px solid var(--storefront-line);
+  border-radius: var(--radius-md);
+  background: var(--storefront-surface);
+  box-shadow: 0 10px 30px rgb(23 23 23 / 0.04);
+}
+
+.debroder-storefront:not(.jersey-theme):not(.jersey-commerce-theme) .public-cart-summary,
+.debroder-storefront:not(.jersey-theme):not(.jersey-commerce-theme) .public-checkout-summary {
+  border-color: var(--storefront-line-strong);
+  background: var(--storefront-surface);
+}
+
+.debroder-storefront:not(.jersey-theme):not(.jersey-commerce-theme) .public-empty-state {
+  border: 1px dashed var(--storefront-line-strong);
+  background: var(--storefront-surface);
+}
+
+.debroder-storefront:not(.jersey-theme):not(.jersey-commerce-theme) .public-cart-drawer {
+  border-left: 1px solid var(--storefront-line);
+  background: var(--storefront-surface);
+}
+
+.debroder-storefront:not(.jersey-theme):not(.jersey-commerce-theme) .public-cart-drawer > div:first-child {
+  border-bottom: 1px solid var(--storefront-line);
+  background: var(--storefront-surface);
+}
+
+.debroder-storefront:not(.jersey-theme):not(.jersey-commerce-theme) .debroder-checkout-surface {
+  background: var(--storefront-page);
+}
+
+.debroder-storefront:not(.jersey-theme):not(.jersey-commerce-theme) .public-icon-button {
+  min-height: var(--control-md);
+  min-width: var(--control-md);
+}
+
+@media (max-width: 767px) {
+  .debroder-storefront:not(.jersey-theme):not(.jersey-commerce-theme) .section-shell,
+  .debroder-storefront:not(.jersey-theme):not(.jersey-commerce-theme) .public-section-frame {
+    width: min(100% - 2rem, var(--content-max));
+  }
+
+  .debroder-storefront:not(.jersey-theme):not(.jersey-commerce-theme) {
+    --storefront-header-height: 56px;
+  }
+
+  .debroder-storefront:not(.jersey-theme):not(.jersey-commerce-theme) .hero-title,
+  .debroder-storefront:not(.jersey-theme):not(.jersey-commerce-theme) .home-hero-title,
+  .debroder-storefront:not(.jersey-theme):not(.jersey-commerce-theme) .home-page-title {
+    max-width: 10ch;
+    font-size: clamp(2.45rem, 12vw, 3.6rem);
+  }
+
+  .debroder-storefront:not(.jersey-theme):not(.jersey-commerce-theme) .public-product-card-hover {
+    display: none;
+  }
+}
+
+@media (min-width: 1280px) {
+  .debroder-storefront:not(.jersey-theme):not(.jersey-commerce-theme) .section-shell,
+  .debroder-storefront:not(.jersey-theme):not(.jersey-commerce-theme) .public-section-frame {
+    width: min(1240px, calc(100% - 4rem));
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .debroder-storefront:not(.jersey-theme):not(.jersey-commerce-theme) * {
+    scroll-behavior: auto !important;
+    animation-duration: 1ms !important;
+    transition-duration: 1ms !important;
   }
 }
