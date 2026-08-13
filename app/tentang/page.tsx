@@ -53,13 +53,13 @@ export default async function TentangPage() {
         </div>
       </section>
       {about.trust_items.length ? (
-        <section className="bg-black py-12 text-white sm:py-16 lg:py-20" aria-labelledby="about-principles-heading">
+        <section className="bg-brand-offWhite py-12 text-brand-charcoal sm:py-16 lg:py-20" aria-labelledby="about-principles-heading">
           <div className="section-shell">
-            <p className="text-xs font-semibold uppercase tracking-[0.14em] text-white/50">Yang dipublikasikan DEBRODER</p>
-            <h2 id="about-principles-heading" className="section-title mt-3 text-white">Prinsip dan kekuatan layanan</h2>
-            <ul className="mt-8 grid gap-px bg-white/15 sm:grid-cols-2 lg:grid-cols-3">
+            <p className="public-eyebrow">Yang dipublikasikan DEBRODER</p>
+            <h2 id="about-principles-heading" className="section-title mt-3">Prinsip dan kekuatan layanan</h2>
+            <ul className="mt-8 grid gap-px bg-black/10 sm:grid-cols-2 lg:grid-cols-3">
               {about.trust_items.map((item) => (
-                <li key={item} className="bg-black p-6 text-sm font-medium leading-7 text-white/75 sm:p-8">
+                <li key={item} className="bg-white p-6 text-sm font-medium leading-7 text-black/70 sm:p-8">
                   {item}
                 </li>
               ))}

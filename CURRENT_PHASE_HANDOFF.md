@@ -1065,6 +1065,33 @@ DEBRODER V1.2 REMAINS NOT COMPLETE**
   implementation and static/build verification; NOT COMPLETE**.
 - Commit, push, deploy: **NOT PERFORMED**.
 
+## 2026-08-13 — Public UI normalization blocker correction
+
+- Scope: public visual foundation only, using the owner-locked Public UI Design
+  System. Product-mode/configured-product architecture was explicitly kept
+  out of scope and preserved.
+- Normalized residual fragmentation: Jersey branded context bars are now light
+  contextual tabs rather than alternate navbars; Custom starts on the canonical
+  light surface; About principles use the light content surface; the legal
+  help CTA is a section rather than a route-specific footer; Jersey catalog
+  controls and public form geometry use shared control tokens.
+- Files changed: `app/globals.css`, `app/tentang/page.tsx`,
+  `components/custom/CustomHub.tsx`, `components/jersey/JerseyChrome.tsx`,
+  `components/jersey/JerseyCommerceNav.tsx`,
+  `components/jersey/JerseyShopCatalog.tsx`,
+  `components/legal/LegalDocumentPage.tsx`.
+- Database/migration/dependency/environment/business/API/RLS changes: **NONE**.
+- Focused public UI/Jersey suite: **5 files / 34 tests PASS**. Extended UI
+  suite: **11 files / 57 tests PASS**.
+- Typecheck: **PASS**. Lint: **PASS — 0 errors / 34 existing warnings**.
+- Direct Next production build: **PASS — 138/138 pages generated**.
+- Full test: **FAIL only on the two recorded baseline assertions in
+  `test/order-operations-phase4-13.test.ts`**; no new UI regression observed.
+- `git diff --check`: **PASS**. Browser visual review and deployment: **NOT
+  RUN**.
+- Status: **IMPLEMENTED LOCALLY; READY FOR OWNER VISUAL REVIEW; RELEASE
+  NO-GO UNTIL BASELINE TESTS AND RUNTIME REVIEW ARE CLOSED**.
+
 ## 2026-08-13 — Post-audit public UI normalization execution
 
 - Scope aktif: owner-locked public UI normalization only; business and

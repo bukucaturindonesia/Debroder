@@ -115,29 +115,29 @@ export function CustomHub({
 
   return (
     <div className="custom-experience-v2 bg-white text-[#111]">
-      <section className="grid min-h-[min(760px,calc(100svh-60px))] bg-black text-white lg:grid-cols-2">
-        <div className="section-shell flex flex-col justify-center py-16 lg:py-24 lg:pr-12">
-          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-white/60">Custom DEBRODER</p>
-          <h1 className="mt-4 max-w-3xl text-[clamp(3rem,7vw,7rem)] font-semibold leading-[0.92] tracking-[-0.045em]">
+      <section className="grid min-h-[min(620px,calc(100svh-60px))] bg-brand-offWhite text-brand-charcoal lg:grid-cols-2">
+        <div className="section-shell flex flex-col justify-center py-12 lg:py-16 lg:pr-12">
+          <p className="public-eyebrow">Custom DEBRODER</p>
+          <h1 className="home-page-title mt-4 max-w-3xl">
             Mulai dari kebutuhanmu.
           </h1>
-          <p className="mt-6 max-w-xl text-base leading-8 text-white/68 sm:text-lg">
+          <p className="public-secondary-copy mt-5 max-w-xl text-base leading-8 sm:text-lg">
             Pilih jalur yang sesuai. Custom T-Shirt dan Jersey Custom menggunakan konfigurasi, harga, serta alur transaksi canonical yang berbeda.
           </p>
           <div className="mt-8 flex flex-col gap-3 sm:flex-row">
             {apparelCategory ? (
-              <Link href={categoryHref(apparelCategory)} className="inline-flex min-h-12 items-center justify-center rounded-full bg-white px-6 text-sm font-semibold text-black">
+              <Link href={categoryHref(apparelCategory)} className="inline-flex min-h-12 items-center justify-center rounded-full bg-black px-6 text-sm font-semibold text-white transition hover:bg-black/75 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-black">
                 Mulai Custom T-Shirt
               </Link>
             ) : null}
             {jerseyCategory ? (
-              <Link href={categoryHref(jerseyCategory)} className="inline-flex min-h-12 items-center justify-center rounded-full border border-white/35 px-6 text-sm font-semibold text-white">
+              <Link href={categoryHref(jerseyCategory)} className="inline-flex min-h-12 items-center justify-center rounded-full border border-black/20 px-6 text-sm font-semibold text-black transition hover:border-black focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-black">
                 Buka Jersey Configurator
               </Link>
             ) : null}
           </div>
         </div>
-        <div className="relative min-h-[420px] bg-[#171717] lg:min-h-full">
+        <div className="relative min-h-[360px] bg-[#efefef] lg:min-h-full">
           <SafeImage
             src={heroCategory.imageUrl}
             fallbackSrc={fallbackImages.pageHero}
@@ -147,7 +147,7 @@ export function CustomHub({
             className="object-cover"
             sizes="(min-width:1024px) 50vw, 100vw"
           />
-          <div className="absolute inset-0 bg-gradient-to-t from-black/35 via-transparent to-transparent" />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-transparent" />
         </div>
       </section>
 

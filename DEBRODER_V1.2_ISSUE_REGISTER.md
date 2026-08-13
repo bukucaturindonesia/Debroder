@@ -789,3 +789,22 @@ Last updated: 28 July 2026 (Asia/Makassar)
 - No database, migration, dependency, lockfile, environment, business, or
   route contract changed. Runtime visual review remains unavailable.
 - Disposition: **IMPLEMENTED LOCALLY; OWNER REVIEW REQUIRED; RELEASE NO-GO**.
+
+## UXUI-NORMALIZE-002 — Public UI blocker correction package — 2026-08-13
+
+- Severity: **MAJOR — PUBLIC UI CONSISTENCY**.
+- Status: **IMPLEMENTED LOCALLY; FOCUSED GATES PASS; OWNER VISUAL REVIEW
+  PENDING**.
+- Root causes addressed: Jersey context navigation visually presented as a
+  second branded navbar; Custom opened with an unnecessarily dark hero; About
+  used a nonessential full dark content section; legal help CTA used a
+  route-specific `<footer>`; Jersey catalog/forms bypassed shared control
+  geometry.
+- Preserved: all business, product-mode, configured-product, custom-project,
+  Jersey configurator, database, migration, Supabase, RLS, auth, pricing,
+  inventory, stock, SKU, cart, checkout, payment, order, API, and Server Action
+  contracts.
+- Evidence: focused public UI/Jersey **34/34 PASS** (extended **57/57 PASS**),
+  typecheck **PASS**, lint **0 errors**, direct Next build **PASS**, diff check
+  **PASS**. Full test still has only the two known Order Operations baseline
+  assertions. No browser runtime or deployment evidence.

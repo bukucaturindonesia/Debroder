@@ -2853,6 +2853,31 @@ button,
   border-radius: 8px;
 }
 
+/* Context tabs are allowed page-local navigation; they never replace or
+   restyle the canonical global header. */
+.debroder-storefront [data-ui-context-tabs] {
+  position: relative;
+  z-index: 1;
+  background: var(--storefront-surface, #fff);
+  color: var(--storefront-ink, #111);
+}
+
+.debroder-storefront [data-ui-context-tabs] [data-tab-indicator][data-active="true"] {
+  transform: scaleX(1);
+}
+
+.debroder-storefront [data-ui-surface="commerce-catalog"] :is(button, [role="button"]) {
+  min-height: 44px;
+  border-radius: var(--public-radius-control, 8px);
+}
+
+/* Keep form geometry consistent across the Jersey and default storefront
+   themes without changing field names, values, or submission behavior. */
+.debroder-storefront :is(input, select, textarea):not([type="checkbox"]):not([type="radio"]):not([type="range"]) {
+  min-height: 44px;
+  border-radius: var(--public-radius-control, 8px);
+}
+
 .debroder-storefront .public-badge {
   display: inline-flex;
   min-height: 24px;

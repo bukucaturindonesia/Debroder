@@ -276,7 +276,7 @@ export function JerseyShopCatalog({ products }: { products: Product[] }) {
   }
 
   return (
-    <section className="bg-white pb-16 text-black sm:pb-20">
+    <section data-ui-surface="commerce-catalog" className="jersey-commerce-catalog bg-white pb-16 text-black sm:pb-20">
       <header className="section-shell py-10 sm:py-14">
         <p className="text-xs font-bold uppercase tracking-[0.16em] text-black/50">
           DEBRODER JERSEY

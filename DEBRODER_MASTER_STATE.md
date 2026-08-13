@@ -720,3 +720,18 @@ Existing legal, CMS route, Preview performance, remote transaction E2E, data-int
   available in this environment.
 - State: **IMPLEMENTED LOCALLY; READY FOR OWNER VISUAL REVIEW; RELEASE
   NO-GO UNTIL BASELINE TESTS AND RUNTIME REVIEW ARE CLOSED**.
+
+## Public UI normalization correction — 2026-08-13
+
+- The missing product-mode architecture document is irrelevant to this UI
+  package. Configured-product, Jersey configuration, custom project, commerce,
+  pricing, inventory, cart, checkout, payment, order, auth, RLS, and database
+  contracts remain frozen and unchanged.
+- Residual public UI issues corrected: alternate-looking Jersey bars, Custom
+  dark entry surface, About dark principles block, route-specific legal footer,
+  and inconsistent Jersey catalog/form control geometry.
+- Focused UI verification passed; direct production build passed. Full test
+  remains blocked by the two known `order-operations-phase4-13` baseline
+  assertions. Runtime visual review was not performed.
+- Current status: **IMPLEMENTED LOCALLY; READY FOR OWNER VISUAL REVIEW;
+  RELEASE NO-GO**.
