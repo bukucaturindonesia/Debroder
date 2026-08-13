@@ -27,11 +27,13 @@ export function productDetailHref(product: Product) {
 export function PublicProductCard({
   product,
   className = "",
-  imageSizes = "(min-width: 1024px) 25vw, 50vw"
+  imageSizes = "(min-width: 1024px) 25vw, 50vw",
+  variant = "default"
 }: {
   product: Product;
   className?: string;
   imageSizes?: string;
+  variant?: "default" | "rail" | "compact";
 }) {
   const detailHref = productDetailHref(product);
   const focal = product.focal_points?.catalog;
@@ -43,7 +45,7 @@ export function PublicProductCard({
   const price = productCardPriceState(product);
 
   return (
-    <article data-ui-card="product" className={`public-product-card h-full min-w-0 ${className}`.trim()}>
+    <article data-ui-card="product" data-ui-card-variant={variant} className={`public-product-card public-product-card--${variant} h-full min-w-0 ${className}`.trim()}>
       <Link
         href={detailHref}
         aria-label={`Lihat ${product.nama}, ${price.label}`}

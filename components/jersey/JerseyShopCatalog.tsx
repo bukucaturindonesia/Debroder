@@ -360,6 +360,7 @@ export function JerseyShopCatalog({ products }: { products: Product[] }) {
                   <PublicProductCard
                     key={product.id || product.slug || product.nama}
                     product={product}
+                    variant="rail"
                     imageSizes="(min-width: 1280px) 31vw, (min-width: 1024px) 30vw, (min-width: 768px) 48vw, 50vw"
                   />
                 ))}

@@ -136,6 +136,7 @@ export function CollectionCommerceExperience({
                 <PublicProductCard
                   key={product.id || product.slug || product.nama}
                   product={product}
+                  variant="rail"
                   className="category-product-rail-card shrink-0 snap-start"
                   imageSizes="(min-width: 1200px) 25vw, (min-width: 768px) 38vw, 78vw"
                 />
@@ -157,6 +158,7 @@ export function CollectionCommerceExperience({
                 <PublicProductCard
                   key={product.id || product.slug || product.nama}
                   product={product}
+                  variant="rail"
                   className="category-product-rail-card shrink-0 snap-start"
                   imageSizes="(min-width: 1200px) 25vw, (min-width: 768px) 38vw, 78vw"
                 />

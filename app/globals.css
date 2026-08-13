@@ -2687,6 +2687,14 @@ button,
   padding-top: var(--storefront-card-content-gap) !important;
 }
 
+.debroder-storefront .public-product-card--compact .public-product-card-body {
+  padding-top: 10px !important;
+}
+
+.debroder-storefront .public-product-card--rail .public-product-card-body {
+  padding-top: var(--storefront-card-content-gap) !important;
+}
+
 .debroder-storefront .product-image-frame,
 .debroder-storefront .public-product-card .product-image-swap {
   border-radius: var(--public-radius-product);
