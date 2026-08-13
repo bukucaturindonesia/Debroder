@@ -2,7 +2,7 @@ import Link from "next/link";
 import type { ReactNode } from "react";
 import { PageMotion } from "@/components/PageMotion";
 import { ProductCatalog } from "@/components/ProductCatalog";
-import { ProductImageSwap } from "@/components/ProductImageSwap";
+import { PublicProductCard } from "@/components/PublicProductCard";
 import { PublicFooter } from "@/components/PublicFooter";
 import { ResponsivePicture } from "@/components/ResponsivePicture";
 import { SafeImage } from "@/components/SafeImage";
@@ -13,7 +13,6 @@ import {
   getPageHeroImage,
   getStoreImage
 } from "@/lib/fallback-data";
-import { getProductCardImages } from "@/lib/product-gallery";
 import { getPublicShellPageModel } from "@/lib/public-shell/runtime";
 import type {
   PageHeroContent,
@@ -22,7 +21,7 @@ import type {
   ServiceCategory,
   Store
 } from "@/lib/types";
-import { formatRupiah, whatsappLinkWithMessage } from "@/lib/url";
+import { whatsappLinkWithMessage } from "@/lib/url";
 
 function PublicImage({
   src,
@@ -66,74 +65,6 @@ function PublicImage({
       zoom={zoom}
     />
   );
-}
-
-function getProductDetail(product: Product) {
-  return product.short_detail || product.description || product.deskripsi;
-}
-
-function getProductPrice(product: Product) {
-  return formatRupiah(
-    product.price ?? product.harga ?? product.base_price ?? product.price_label
-  );
-}
-
-function normalizeFilterValue(value: string) {
-  return value.toLowerCase().normalize("NFKD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
-}
-
-function colorHex(value: string) {
-  const key = normalizeFilterValue(value);
-  const map: Record<string, string> = {
-    hitam: "#111111",
-    black: "#111111",
-    putih: "#f7f7f7",
-    white: "#f7f7f7",
-    navy: "#1f2a44",
-    biru: "#1d4ed8",
-    blue: "#1d4ed8",
-    merah: "#dc2626",
-    red: "#dc2626",
-    maroon: "#6f1d1b",
-    kuning: "#f59e0b",
-    yellow: "#f59e0b",
-    mustard: "#d97706",
-    abu: "#9ca3af",
-    "abu-muda": "#d1d5db",
-    "abu-tua": "#6b7280",
-    gray: "#9ca3af",
-    grey: "#9ca3af",
-    cream: "#eadfca",
-    beige: "#d6c4a5",
-    hijau: "#166534",
-    "hijau-forest": "#063d24",
-    forest: "#063d24",
-    "forest-green": "#063d24",
-    army: "#4b5320",
-    orange: "#f97316"
-  };
-  return map[key] || "#d1d5db";
-}
-
-function productColors(product: Product) {
-  const variantColors = (product.variants || [])
-    .map((variant) => variant.color_name || variant.variant_name)
-    .filter(Boolean) as string[];
-  return variantColors.length ? Array.from(new Set(variantColors)) : (product.color_tags || []);
-}
-
-function productMetaLine(product: Product) {
-  const colors = productColors(product);
-  const items = [
-    colors.length ? `${colors.length} Warna` : "",
-    product.size_tags?.[0] || "",
-    product.material_tags?.[0] || ""
-  ].filter(Boolean);
-  return items.slice(0, 3).join(" · ");
-}
-
-function productModel(product: Product) {
-  return [product.kategori, product.subcategory].filter(Boolean).join(" · ");
 }
 
 function findPageHero(
@@ -333,75 +264,17 @@ export function ServiceCard({ service }: { service: ServiceCategory }) {
 export function ProductGrid({ products }: { products: Product[] }) {
   return (
     <div className="grid grid-cols-2 gap-x-2 gap-y-6 md:grid-cols-3 lg:grid-cols-4">
-      {products.map((product) => {
-        const price = getProductPrice(product);
-        const cardImages = getProductCardImages(product);
-        const whatsappHref = whatsappLinkWithMessage(
-          product.whatsapp_link || "",
-          `Halo DE BRODER, saya ingin bertanya tentang ${product.nama}.`
-        );
-
-        return (
-          <article key={product.nama} className="bg-transparent">
-            <div className="group">
-              <ProductImageSwap
-                primarySrc={cardImages.primary}
-                hoverSrc={cardImages.hover}
-                fallbackSrc={fallbackImages.product}
-                alt={product.image_alt || product.nama}
-                imageClassName={(product.object_fit || "cover") === "contain" ? "object-contain p-3" : "object-cover"}
-                objectPosition={product.object_position || "center center"}
-                objectFit={product.object_fit || "cover"}
-                focalX={product.focal_points?.catalog?.focal_x ?? product.focal_x}
-                focalY={product.focal_points?.catalog?.focal_y ?? product.focal_y}
-                zoom={product.focal_points?.catalog?.zoom ?? product.focal_zoom}
-                sizes="(min-width: 1024px) 25vw, 50vw"
-              />
-            </div>
-            <div className="mt-3 space-y-2">
-              {productColors(product).length ? (
-                <div className="flex items-center gap-1.5">
-                  {productColors(product).slice(0, 8).map((color) => (
-                    <span
-                      key={color}
-                      title={color}
-                      className="h-3.5 w-3.5 rounded-full border border-black/10 shadow-[inset_0_0_0_1px_rgba(255,255,255,0.45)]"
-                      style={{ backgroundColor: colorHex(color) }}
-                    />
-                  ))}
-                </div>
-              ) : null}
-              {productMetaLine(product) ? (
-                <p className="text-[11px] font-medium tracking-[0.01em] text-brand-charcoal/55 sm:text-xs">{productMetaLine(product)}</p>
-              ) : null}
-              <h2 className="line-clamp-2 text-[15px] font-semibold leading-[1.22] tracking-[-0.01em] text-brand-charcoal sm:text-[17px]">
-                {product.nama}
-              </h2>
-              {productModel(product) ? (
-                <p className="text-xs leading-5 text-brand-charcoal/50 sm:text-[13px]">{productModel(product)}</p>
-              ) : null}
-              {getProductDetail(product) ? (
-                <p className="line-clamp-2 min-h-[2.5rem] text-xs leading-5 text-brand-charcoal/60 sm:text-sm sm:leading-6">
-                  {getProductDetail(product)}
-                </p>
-              ) : null}
-              {price ? (
-                <p className="product-price text-[15px] text-brand-charcoal sm:text-[17px]">
-                  {price}
-                </p>
-              ) : null}
-            </div>
-            <a
-              href={whatsappHref}
-              className="mt-4 inline-flex min-h-10 w-full items-center justify-center bg-black px-3 py-2 text-xs font-semibold text-white transition hover:bg-black/75 sm:px-5 sm:text-sm"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              Pesan Sekarang
-            </a>
-          </article>
-        );
-      })}
+      {products.map((product) => (
+        <PublicProductCard
+          key={product.id || product.slug || product.nama}
+          product={product}
+          imageSizes="(min-width: 1024px) 25vw, 50vw"
+          inquiryHref={whatsappLinkWithMessage(
+            product.whatsapp_link || "",
+            `Halo DE BRODER, saya ingin bertanya tentang ${product.nama}.`
+          )}
+        />
+      ))}
     </div>
   );
 }

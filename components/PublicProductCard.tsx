@@ -28,12 +28,16 @@ export function PublicProductCard({
   product,
   className = "",
   imageSizes = "(min-width: 1024px) 25vw, 50vw",
-  variant = "default"
+  variant = "default",
+  inquiryHref,
+  inquiryLabel = "Pesan Sekarang"
 }: {
   product: Product;
   className?: string;
   imageSizes?: string;
   variant?: "default" | "rail" | "compact";
+  inquiryHref?: string;
+  inquiryLabel?: string;
 }) {
   const detailHref = productDetailHref(product);
   const focal = product.focal_points?.catalog;
@@ -104,6 +108,16 @@ export function PublicProductCard({
           </p>
         </div>
       </Link>
+      {inquiryHref ? (
+        <a
+          href={inquiryHref}
+          className="public-product-card-inquiry mt-4 inline-flex min-h-10 w-full items-center justify-center bg-brand-charcoal px-3 py-2 text-xs font-semibold text-white transition hover:bg-black/75 sm:px-5 sm:text-sm"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          {inquiryLabel}
+        </a>
+      ) : null}
     </article>
   );
 }
