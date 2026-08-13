@@ -641,13 +641,16 @@ export function PublicShellFrame({
   const jerseyEditorial = theme === "jersey";
   const jerseyCommerce = theme === "jersey-commerce";
   const header = shellModel.data.header;
+  if (footerTone === "light") {
+    Object.assign(shellModel.data.footer, { tone: "light" });
+  }
   return (
     <StorefrontCartBoundary>
       <main data-ui-system="canonical" className={`public-site debroder-storefront min-h-screen ${jerseyEditorial ? "jersey-theme bg-brand-offWhite text-brand-charcoal" : jerseyCommerce ? "jersey-commerce-theme bg-white text-[#111111]" : "bg-brand-offWhite text-brand-charcoal"} ${shellClassName}`.trim()}>
         <SiteHeader navigationFacets={header.navigationFacets} />
         <PageMotion />
         {children}
-        <PublicFooter model={shellModel.data.footer} tone={footerTone} />
+          <PublicFooter model={shellModel.data.footer} />
       </main>
     </StorefrontCartBoundary>
   );

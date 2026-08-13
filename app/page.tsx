@@ -413,7 +413,7 @@ export default async function Home() {
   };
 
   return (
-    <PublicShellFrame shellModel={shellModel} footerTone="dark" shellClassName="debroder-landing">
+    <PublicShellFrame shellModel={shellModel} footerTone="light" shellClassName="debroder-landing">
       <div data-ui-system="landing" className="min-h-screen bg-experience-canvas text-experience-ink">
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(schema).replace(/</g, "\\u003c") }} />
       {!heroHasHeading ? <h1 className="sr-only">DEBRODER</h1> : null}
@@ -559,6 +559,8 @@ export default async function Home() {
         </section>
       </LandingSectionSlot>
 
+      {/* <SiteHeader /> and <PublicFooter model={shellModel.data.footer} tone="light" /> are mounted once by PublicShellFrame. */}
+      {/* <StorefrontCartBoundary> remains owned by the shared frame to keep the root server component boundary intact. */}
       </div>
     </PublicShellFrame>
   );

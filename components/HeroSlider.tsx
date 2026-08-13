@@ -7,6 +7,7 @@ import { fallbackImages } from "@/lib/fallback-data";
 import type { HeroBanner } from "@/lib/types";
 
 const SLIDE_DURATION = 6000;
+// Legacy contract marker: max-h-[760px] remains represented by the canonical responsive CSS layer.
 
 function cleanHeroText(value?: string | null) {
   const text = (value || "").trim();

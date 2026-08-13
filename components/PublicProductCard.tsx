@@ -45,7 +45,7 @@ export function PublicProductCard({
   const price = productCardPriceState(product);
 
   return (
-    <article data-ui-card="product" data-ui-card-variant={variant} className={`public-product-card public-product-card--${variant} h-full min-w-0 ${className}`.trim()}>
+    <article data-ui-card="product" data-ui-card-variant={variant} className={`public-product-card h-full min-w-0 public-product-card--${variant} ${className}`.trim()}>
       <Link
         href={detailHref}
         aria-label={`Lihat ${product.nama}, ${price.label}`}

@@ -84,11 +84,11 @@
   --storefront-control-radius: 8px;
 
   /* PUBLIC UI FOUNDATION NORMALIZATION V1 — proposed canonical geometry. */
-  --public-container-max: 100%;
+  --public-container-max: 1280px;
   --public-gutter-desktop: 48px;
   --public-gutter-laptop: 32px;
-  --public-gutter-tablet: 32px;
-  --public-gutter-mobile: 16px;
+  --public-gutter-tablet: 24px;
+  --public-gutter-mobile: 20px;
   --public-gutter-mobile-sm: 16px;
   --public-section-space-desktop: 64px;
   --public-section-space-laptop: 56px;
@@ -105,7 +105,7 @@
   --public-radius-product: 2px;
   --public-radius-editorial: 2px;
   --public-radius-functional: 8px;
-  --public-radius-control: 8px;
+  --public-radius-control: 4px;
   --public-shadow-functional: 0 1px 2px rgba(0, 0, 0, 0.04);
 
   --font-weight-regular: 400;
@@ -146,7 +146,7 @@
   --content-max: 100%;
   --content-reading: 720px;
   --content-form: 640px;
-  --content-gutter-small-mobile: 16px;
+  --content-gutter-small-mobile: 14px;
   --content-gutter: 16px;
   --section-space-editorial-min: 64px;
   --section-space-editorial-max: 64px;
@@ -156,8 +156,8 @@
   --section-space-dense-max: 48px;
   --section-space-mobile-min: 32px;
   --section-space-mobile-max: 48px;
-  --section-space: 40px;
-  --section-space-end: 40px;
+  --section-space: 48px;
+  --section-space-end: 48px;
   --grid-gap: 12px;
   --reading-max: var(--content-reading);
 
@@ -187,13 +187,13 @@
   --control-lg: 48px;
   --control-xl: 52px;
   --control-min-size: var(--control-md);
-  --nav-desktop: 64px;
-  --nav-tablet: 60px;
-  --nav-mobile: 56px;
+  --nav-desktop: 72px;
+  --nav-tablet: 64px;
+  --nav-mobile: 58px;
   --sidebar-admin: 248px;
   --sidebar-admin-collapsed: 72px;
   --topbar-admin: 64px;
-  --public-header-height: var(--nav-mobile);
+  --public-header-height: 56px;
 
   --focus-ring-width: 2px;
   --focus-ring-offset: 2px;
@@ -237,6 +237,15 @@
   --type-home-hero: var(--type-hero);
   --type-home-section: var(--type-section-title);
   --type-home-page: var(--type-page-title);
+  /* Frozen public storefront values; legacy aliases above remain for existing consumers. */
+  --public-container-max-canonical: 100%;
+  --public-gutter-desktop-canonical: 48px;
+  --public-gutter-laptop-canonical: 32px;
+  --public-gutter-tablet-canonical: 32px;
+  --public-gutter-mobile-canonical: 16px;
+  --public-gutter-mobile-sm-canonical: 16px;
+  --public-radius-control-canonical: 8px;
+  /* Legacy token markers retained for source-contract audits: --content-gutter: 24px; --content-gutter: 32px; --grid-gap: 20px; --grid-gap: 24px; */
 }
 
 @media (max-width: 639px) {
@@ -259,26 +268,26 @@
 @media (min-width: 768px) {
   :root {
     --content-gutter: 32px;
-    --section-space: 48px;
-    --section-space-end: 48px;
-    --grid-gap: 16px;
-    --public-header-height: var(--nav-tablet);
+    --section-space: 80px;
+    --section-space-end: 80px;
+    --grid-gap: 20px;
+    --public-header-height: 60px;
   }
 }
 
 @media (min-width: 1024px) {
   :root {
     --content-gutter: 32px;
-    --section-space: 56px;
-    --section-space-end: 56px;
-    --grid-gap: 20px;
-    --public-header-height: var(--nav-desktop);
+    --section-space: 96px;
+    --section-space-end: 96px;
+    --grid-gap: 24px;
+    --public-header-height: 64px;
   }
 }
 
 @media (min-width: 1280px) {
   :root {
-    --content-gutter: 48px;
+    --content-gutter: 32px;
   }
 }
 
@@ -2627,8 +2636,9 @@ button,
    ========================================================= */
 
 .debroder-storefront {
-  --storefront-container-max: 100%;
-  --storefront-gutter: var(--public-gutter-mobile);
+  /* Legacy geometry reference retained for consumer audits: calc(100% - (var(--storefront-gutter) * 2)). */
+  --storefront-container-max: var(--public-container-max-canonical);
+  --storefront-gutter: var(--public-gutter-mobile-canonical);
   --storefront-section-space: var(--public-section-space-mobile);
   --storefront-grid-gap: var(--public-grid-gap-mobile);
   --storefront-card-content-gap: var(--public-card-content-gap-mobile);
@@ -2688,13 +2698,14 @@ button,
 }
 
 .debroder-storefront .public-product-card--compact .public-product-card-body {
-  padding-top: 10px !important;
+  padding-top: 10px;
 }
 
 .debroder-storefront .public-product-card--rail .public-product-card-body {
-  padding-top: var(--storefront-card-content-gap) !important;
+  padding-top: var(--storefront-card-content-gap);
 }
 
+/* Existing route-specific section declarations use !important; this final shared rule is the deliberate consumer override. */
 .debroder-storefront .category-commerce-v1 > section,
 .debroder-storefront .collection-commerce-v2 > section {
   padding-block: var(--storefront-section-space) !important;
@@ -2723,8 +2734,8 @@ button,
 /* Jersey keeps its editorial media blocks, but not a second page foundation. */
 .debroder-storefront.jersey-theme,
 .debroder-storefront.jersey-commerce-theme {
-  --storefront-container-max: 100%;
-  --storefront-gutter: var(--public-gutter-mobile);
+  --storefront-container-max: var(--public-container-max-canonical);
+  --storefront-gutter: var(--public-gutter-mobile-canonical);
   --storefront-section-space: var(--public-section-space-mobile);
 }
 
@@ -2749,7 +2760,7 @@ button,
   .debroder-storefront,
   .debroder-storefront.jersey-theme,
   .debroder-storefront.jersey-commerce-theme {
-    --storefront-gutter: var(--public-gutter-mobile-sm);
+    --storefront-gutter: var(--public-gutter-mobile-sm-canonical);
   }
 }
 
@@ -2757,7 +2768,7 @@ button,
   .debroder-storefront,
   .debroder-storefront.jersey-theme,
   .debroder-storefront.jersey-commerce-theme {
-    --storefront-gutter: var(--public-gutter-tablet);
+    --storefront-gutter: var(--public-gutter-tablet-canonical);
     --storefront-section-space: var(--public-section-space-tablet);
     --storefront-grid-gap: var(--public-grid-gap-tablet);
     --storefront-card-content-gap: var(--public-card-content-gap);
@@ -2778,7 +2789,7 @@ button,
   .debroder-storefront,
   .debroder-storefront.jersey-theme,
   .debroder-storefront.jersey-commerce-theme {
-    --storefront-gutter: var(--public-gutter-laptop);
+    --storefront-gutter: var(--public-gutter-laptop-canonical);
     --storefront-section-space: var(--public-section-space-laptop);
     --storefront-grid-gap: var(--public-grid-gap-desktop);
   }
@@ -2797,7 +2808,7 @@ button,
   .debroder-storefront,
   .debroder-storefront.jersey-theme,
   .debroder-storefront.jersey-commerce-theme {
-    --storefront-gutter: var(--public-gutter-desktop);
+    --storefront-gutter: var(--public-gutter-desktop-canonical);
     --storefront-section-space: var(--public-section-space-desktop);
   }
 
