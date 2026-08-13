@@ -84,11 +84,11 @@
   --storefront-control-radius: 4px;
 
   /* PUBLIC UI FOUNDATION NORMALIZATION V1 — proposed canonical geometry. */
-  --public-container-max: 1280px;
+  --public-container-max: 100%;
   --public-gutter-desktop: 48px;
   --public-gutter-laptop: 32px;
-  --public-gutter-tablet: 24px;
-  --public-gutter-mobile: 20px;
+  --public-gutter-tablet: 32px;
+  --public-gutter-mobile: 16px;
   --public-gutter-mobile-sm: 16px;
   --public-section-space-desktop: 64px;
   --public-section-space-laptop: 56px;
@@ -143,21 +143,21 @@
 
   /* Canonical layout geometry. */
   --container-max: 1280px;
-  --content-max: var(--container-max);
+  --content-max: 100%;
   --content-reading: 720px;
   --content-form: 640px;
-  --content-gutter-small-mobile: 14px;
+  --content-gutter-small-mobile: 16px;
   --content-gutter: 16px;
-  --section-space-editorial-min: 80px;
-  --section-space-editorial-max: 96px;
-  --section-space-commerce-min: 64px;
-  --section-space-commerce-max: 80px;
+  --section-space-editorial-min: 64px;
+  --section-space-editorial-max: 64px;
+  --section-space-commerce-min: 40px;
+  --section-space-commerce-max: 64px;
   --section-space-dense-min: 32px;
   --section-space-dense-max: 48px;
   --section-space-mobile-min: 32px;
   --section-space-mobile-max: 48px;
-  --section-space: 48px;
-  --section-space-end: 48px;
+  --section-space: 40px;
+  --section-space-end: 40px;
   --grid-gap: 12px;
   --reading-max: var(--content-reading);
 
@@ -187,9 +187,9 @@
   --control-lg: 48px;
   --control-xl: 52px;
   --control-min-size: var(--control-md);
-  --nav-desktop: 72px;
-  --nav-tablet: 64px;
-  --nav-mobile: 58px;
+  --nav-desktop: 64px;
+  --nav-tablet: 60px;
+  --nav-mobile: 56px;
   --sidebar-admin: 248px;
   --sidebar-admin-collapsed: 72px;
   --topbar-admin: 64px;
@@ -258,10 +258,10 @@
 
 @media (min-width: 768px) {
   :root {
-    --content-gutter: 24px;
-    --section-space: 80px;
-    --section-space-end: 80px;
-    --grid-gap: 20px;
+    --content-gutter: 32px;
+    --section-space: 48px;
+    --section-space-end: 48px;
+    --grid-gap: 16px;
     --public-header-height: var(--nav-tablet);
   }
 }
@@ -269,16 +269,16 @@
 @media (min-width: 1024px) {
   :root {
     --content-gutter: 32px;
-    --section-space: 96px;
-    --section-space-end: 96px;
-    --grid-gap: 24px;
+    --section-space: 56px;
+    --section-space-end: 56px;
+    --grid-gap: 20px;
     --public-header-height: var(--nav-desktop);
   }
 }
 
 @media (min-width: 1280px) {
   :root {
-    --content-gutter: 32px;
+    --content-gutter: 48px;
   }
 }
 
@@ -2627,7 +2627,7 @@ button,
    ========================================================= */
 
 .debroder-storefront {
-  --storefront-container-max: var(--public-container-max);
+  --storefront-container-max: 100%;
   --storefront-gutter: var(--public-gutter-mobile);
   --storefront-section-space: var(--public-section-space-mobile);
   --storefront-grid-gap: var(--public-grid-gap-mobile);
@@ -2638,13 +2638,15 @@ button,
 .debroder-storefront .public-section-frame,
 .debroder-storefront .campaign-shell,
 .debroder-storefront .benefit-grid {
-  width: min(var(--storefront-container-max), calc(100% - (var(--storefront-gutter) * 2))) !important;
-  max-width: var(--storefront-container-max) !important;
+  width: 100% !important;
+  max-width: none !important;
+  padding-inline: var(--storefront-gutter);
+  box-sizing: border-box;
   margin-inline: auto;
 }
 
 .debroder-storefront .public-section-frame {
-  padding-inline: 0 !important;
+  padding-inline: var(--storefront-gutter) !important;
 }
 
 .debroder-storefront .section-shell,
@@ -2708,7 +2710,7 @@ button,
 /* Jersey keeps its editorial media blocks, but not a second page foundation. */
 .debroder-storefront.jersey-theme,
 .debroder-storefront.jersey-commerce-theme {
-  --storefront-container-max: var(--public-container-max);
+  --storefront-container-max: 100%;
   --storefront-gutter: var(--public-gutter-mobile);
   --storefront-section-space: var(--public-section-space-mobile);
 }
@@ -2720,8 +2722,10 @@ button,
 }
 
 .debroder-storefront.jersey-theme .jersey-shell {
-  width: min(var(--storefront-container-max), calc(100% - (var(--storefront-gutter) * 2)));
-  max-width: var(--storefront-container-max);
+  width: 100%;
+  max-width: none;
+  padding-inline: var(--storefront-gutter);
+  box-sizing: border-box;
 }
 
 .debroder-storefront.jersey-theme .jersey-section {
