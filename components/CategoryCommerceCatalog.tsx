@@ -255,7 +255,7 @@ export function CategoryCommerceCatalog({
                 Lihat Semua
               </Link>
             </div>
-            <div className="category-product-rail no-scrollbar mt-6 flex snap-x snap-mandatory gap-3 overflow-x-auto pb-2 sm:gap-4 lg:mt-8">
+            <div data-ui-grid="product-rail" className="category-product-rail no-scrollbar mt-6 flex snap-x snap-mandatory gap-3 overflow-x-auto pb-2 sm:gap-4 lg:mt-8">
               {newestProducts.map((product) => (
                 <PublicProductCard
                   key={product.id || product.slug || product.nama}

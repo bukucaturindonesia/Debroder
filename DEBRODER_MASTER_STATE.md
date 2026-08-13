@@ -680,3 +680,28 @@ Existing legal, CMS route, Preview performance, remote transaction E2E, data-int
   evidence is therefore **NOT VERIFIED**.
 - Status: **IMPLEMENTED LOCALLY; FOCUSED GATES PASS; FULL TEST/BUILD/RUNTIME
   GATES INCOMPLETE; NOT DEPLOYED; NO-GO / NOT COMPLETE**.
+
+## 24. Public UI Foundation Normalization V1 — 13 August 2026
+
+- Scope: system-wide public shell geometry, container gutters, section rhythm,
+  product/editorial/campaign grid gaps, product image/body spacing, functional
+  card radius/shadow, footer spacing, and loading/error state markers.
+- Root cause: the public layer had a shared shell but still mixed 80–96px
+  section rhythm, 12/16/24px grid gaps, route-local card geometry, and state
+  screens outside the canonical UI marker.
+- Targeted fix: added proposed canonical public tokens (1280px container,
+  48/32/24/20/16px gutters, 64/56/48/40px rhythm, 20/16/12px grids,
+  14/10px product image-to-body gap, restrained 2/8/4px radii), applied them
+  through one scoped `.debroder-storefront` layer, and added shared grid hooks
+  to catalog, collection, homepage, and product listing surfaces.
+- Jersey remains a content/editorial exception, but its root now uses the
+  light public canvas and canonical shell geometry; dark media/editorial blocks
+  remain explicitly local. No product, pricing, inventory, auth, order,
+  payment, API, route, RLS, schema, or migration behavior changed.
+- Database/migration: **NONE**.
+- Verification: normalization + existing public/image suite **10 files / 44
+  tests PASS**; TypeScript **PASS**; changed-file ESLint **PASS (0 errors)**;
+  `git diff --check` **PASS**.
+- Full scripted test/build and browser runtime remain release gates from the
+  previous handoff. Status: **IMPLEMENTED LOCALLY; FOCUSED GATES PASS; FULL
+  RELEASE GATES INCOMPLETE; NOT DEPLOYED; NO-GO / NOT COMPLETE**.

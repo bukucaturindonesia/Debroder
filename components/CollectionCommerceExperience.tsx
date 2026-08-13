@@ -131,7 +131,7 @@ export function CollectionCommerceExperience({
               </div>
               <Link href="#all-products" className="hidden text-sm font-semibold underline underline-offset-4 sm:inline-flex">Lihat semua produk</Link>
             </div>
-            <div className="category-product-rail no-scrollbar mt-6 flex snap-x snap-mandatory gap-3 overflow-x-auto pb-2 sm:gap-4 lg:mt-8">
+            <div data-ui-grid="product-rail" className="category-product-rail no-scrollbar mt-6 flex snap-x snap-mandatory gap-3 overflow-x-auto pb-2 sm:gap-4 lg:mt-8">
               {curated.map((product) => (
                 <PublicProductCard
                   key={product.id || product.slug || product.nama}
@@ -152,7 +152,7 @@ export function CollectionCommerceExperience({
               <h2 id="collection-new-heading" className="public-section-title">Produk terbaru</h2>
               <Link href="/koleksi?sort=newest#all-products" className="hidden text-sm font-semibold underline underline-offset-4 sm:inline-flex">Lihat semua</Link>
             </div>
-            <div className="category-product-rail no-scrollbar mt-6 flex snap-x snap-mandatory gap-3 overflow-x-auto pb-2 sm:gap-4 lg:mt-8">
+            <div data-ui-grid="product-rail" className="category-product-rail no-scrollbar mt-6 flex snap-x snap-mandatory gap-3 overflow-x-auto pb-2 sm:gap-4 lg:mt-8">
               {newest.map((product) => (
                 <PublicProductCard
                   key={product.id || product.slug || product.nama}

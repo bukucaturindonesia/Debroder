@@ -4,7 +4,7 @@ import Link from "next/link";
 
 export default function JerseyError({ reset }: { error: Error & { digest?: string }; reset: () => void }) {
   return (
-    <main className="grid min-h-[70vh] place-items-center bg-[#050505] px-4 py-20 text-center text-white">
+    <main data-ui-system="canonical" className="debroder-storefront grid min-h-[70vh] place-items-center bg-brand-offWhite px-4 py-20 text-center text-brand-charcoal">
       <div className="max-w-xl">
         <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#39FF88]">DEBRODER JERSEY</p>
         <h1 className="mt-4 font-heading text-[clamp(2.5rem,7vw,5rem)] font-extrabold uppercase leading-[.92]">Halaman belum dapat dimuat</h1>

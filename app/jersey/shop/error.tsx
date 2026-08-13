@@ -14,7 +14,7 @@ export default function JerseyShopError({
   }, [error]);
 
   return (
-    <main className="grid min-h-screen place-items-center bg-white px-6 text-center text-black">
+    <main data-ui-system="canonical" className="debroder-storefront grid min-h-screen place-items-center bg-white px-6 text-center text-black">
       <div className="max-w-lg">
         <p className="text-xs font-bold uppercase tracking-[0.16em] text-black/50">DEBRODER JERSEY</p>
         <h1 className="mt-3 text-3xl font-bold">Katalog belum dapat dimuat</h1>

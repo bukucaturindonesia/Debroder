@@ -2,7 +2,7 @@
 
 export function CategoryCommerceError({ reset }: { reset: () => void }) {
   return (
-    <main className="flex min-h-[60vh] items-center justify-center bg-brand-offWhite px-5 py-16">
+    <main data-ui-system="canonical" className="debroder-storefront flex min-h-[60vh] items-center justify-center bg-brand-offWhite px-5 py-16">
       <div className="max-w-lg text-center">
         <p className="text-xs font-semibold uppercase tracking-[0.12em] text-brand-charcoal/50">Katalog Produk</p>
         <h1 className="mt-3 text-3xl font-semibold tracking-[-0.02em] text-brand-charcoal">Katalog belum dapat dimuat</h1>

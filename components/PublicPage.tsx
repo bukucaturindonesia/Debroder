@@ -625,7 +625,7 @@ export async function PublicShell({
   const header = shellModel.data.header;
   return (
     <StorefrontCartBoundary>
-      <main data-ui-system="canonical" className={`public-site debroder-storefront min-h-screen ${jerseyEditorial ? "jersey-theme bg-[#050505] text-white" : jerseyCommerce ? "jersey-commerce-theme bg-white text-[#111111]" : "bg-brand-offWhite text-brand-charcoal"}`}>
+      <main data-ui-system="canonical" className={`public-site debroder-storefront min-h-screen ${jerseyEditorial ? "jersey-theme bg-brand-offWhite text-brand-charcoal" : jerseyCommerce ? "jersey-commerce-theme bg-white text-[#111111]" : "bg-brand-offWhite text-brand-charcoal"}`}>
         <SiteHeader navigationFacets={header.navigationFacets} />
         <PageMotion />
         {children}

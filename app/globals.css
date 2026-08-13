@@ -83,6 +83,31 @@
   --storefront-accent: #063d24;
   --storefront-control-radius: 4px;
 
+  /* PUBLIC UI FOUNDATION NORMALIZATION V1 — proposed canonical geometry. */
+  --public-container-max: 1280px;
+  --public-gutter-desktop: 48px;
+  --public-gutter-laptop: 32px;
+  --public-gutter-tablet: 24px;
+  --public-gutter-mobile: 20px;
+  --public-gutter-mobile-sm: 16px;
+  --public-section-space-desktop: 64px;
+  --public-section-space-laptop: 56px;
+  --public-section-space-tablet: 48px;
+  --public-section-space-mobile: 40px;
+  --public-section-space-hero-follow: 48px;
+  --public-grid-gap-desktop: 20px;
+  --public-grid-gap-tablet: 16px;
+  --public-grid-gap-mobile: 12px;
+  --public-card-content-gap: 14px;
+  --public-card-content-gap-mobile: 10px;
+  --public-card-functional-padding: 16px;
+  --public-card-functional-padding-lg: 24px;
+  --public-radius-product: 2px;
+  --public-radius-editorial: 2px;
+  --public-radius-functional: 8px;
+  --public-radius-control: 4px;
+  --public-shadow-functional: 0 1px 2px rgba(0, 0, 0, 0.04);
+
   --font-weight-regular: 400;
   --font-weight-medium: 500;
   --font-weight-semibold: 600;
@@ -688,12 +713,12 @@ button,
   --jersey-split-gap: clamp(8px, .8vw, 14px);
   --jersey-compact-gap: clamp(12px, 1.25vw, 20px);
   --jersey-header-height: 56px;
-  color-scheme: dark;
-  background: #050505;
+  color-scheme: light;
+  background: var(--storefront-canvas, #f8f7f3);
 }
 
-.jersey-theme section,
-.jersey-theme .section-canvas {
+.jersey-theme .keep-section-bg,
+.jersey-theme .section-canvas.keep-section-bg {
   background-color: #050505;
 }
 
@@ -2592,5 +2617,181 @@ button,
     scroll-behavior: auto !important;
     animation-duration: 1ms !important;
     transition-duration: 1ms !important;
+  }
+}
+
+/* =========================================================
+   PUBLIC UI FOUNDATION NORMALIZATION V1
+   Shared geometry for every public shell. Content and commerce behavior stay
+   page-owned; only the visual foundation is consolidated here.
+   ========================================================= */
+
+.debroder-storefront {
+  --storefront-container-max: var(--public-container-max);
+  --storefront-gutter: var(--public-gutter-mobile);
+  --storefront-section-space: var(--public-section-space-mobile);
+  --storefront-grid-gap: var(--public-grid-gap-mobile);
+  --storefront-card-content-gap: var(--public-card-content-gap-mobile);
+}
+
+.debroder-storefront .section-shell,
+.debroder-storefront .public-section-frame,
+.debroder-storefront .campaign-shell,
+.debroder-storefront .benefit-grid {
+  width: min(var(--storefront-container-max), calc(100% - (var(--storefront-gutter) * 2))) !important;
+  max-width: var(--storefront-container-max) !important;
+  margin-inline: auto;
+}
+
+.debroder-storefront .public-section-frame {
+  padding-inline: 0 !important;
+}
+
+.debroder-storefront .section-shell,
+.debroder-storefront .public-section-frame {
+  box-sizing: border-box;
+}
+
+.debroder-storefront .home-section {
+  padding-top: var(--storefront-section-space) !important;
+}
+
+.debroder-storefront .category-commerce-v1 > :is(.category-discovery-section, .category-color-section, .category-new-section, .category-catalog-section, .category-seo-links, .category-closing-section),
+.debroder-storefront .collection-commerce-v2 > :is(.category-discovery-section, .category-catalog-section) {
+  padding-block: var(--storefront-section-space) !important;
+}
+
+.debroder-storefront [data-ui-grid="product"],
+.debroder-storefront [data-ui-grid="editorial-product"] {
+  column-gap: var(--storefront-grid-gap) !important;
+  row-gap: 24px !important;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.debroder-storefront [data-ui-grid="product-rail"] {
+  gap: var(--storefront-grid-gap) !important;
+}
+
+.debroder-storefront [data-ui-grid="campaign"] {
+  column-gap: var(--storefront-grid-gap) !important;
+  row-gap: var(--storefront-grid-gap) !important;
+}
+
+.debroder-storefront [data-ui-grid="editorial"] {
+  gap: var(--storefront-grid-gap) !important;
+}
+
+.debroder-storefront .public-product-card-body {
+  padding-top: var(--storefront-card-content-gap) !important;
+}
+
+.debroder-storefront .product-image-frame,
+.debroder-storefront .public-product-card .product-image-swap {
+  border-radius: var(--public-radius-product);
+}
+
+.debroder-storefront .public-panel,
+.debroder-storefront .public-cart-summary,
+.debroder-storefront .public-checkout-summary {
+  border-radius: var(--public-radius-functional);
+  box-shadow: var(--public-shadow-functional);
+}
+
+.debroder-storefront :is(.public-control, .public-secondary-action, .public-icon-button) {
+  border-radius: var(--public-radius-control);
+}
+
+.debroder-storefront .public-footer-system-v1 > .section-shell {
+  padding-block: var(--public-section-space-mobile);
+}
+
+/* Jersey keeps its editorial media blocks, but not a second page foundation. */
+.debroder-storefront.jersey-theme,
+.debroder-storefront.jersey-commerce-theme {
+  --storefront-container-max: var(--public-container-max);
+  --storefront-gutter: var(--public-gutter-mobile);
+  --storefront-section-space: var(--public-section-space-mobile);
+}
+
+.debroder-storefront.jersey-theme {
+  color-scheme: light;
+  background: var(--storefront-canvas) !important;
+  color: var(--storefront-ink);
+}
+
+.debroder-storefront.jersey-theme .jersey-shell {
+  width: min(var(--storefront-container-max), calc(100% - (var(--storefront-gutter) * 2)));
+  max-width: var(--storefront-container-max);
+}
+
+.debroder-storefront.jersey-theme .jersey-section {
+  padding-block: var(--storefront-section-space);
+}
+
+@media (max-width: 390px) {
+  .debroder-storefront,
+  .debroder-storefront.jersey-theme,
+  .debroder-storefront.jersey-commerce-theme {
+    --storefront-gutter: var(--public-gutter-mobile-sm);
+  }
+}
+
+@media (min-width: 768px) {
+  .debroder-storefront,
+  .debroder-storefront.jersey-theme,
+  .debroder-storefront.jersey-commerce-theme {
+    --storefront-gutter: var(--public-gutter-tablet);
+    --storefront-section-space: var(--public-section-space-tablet);
+    --storefront-grid-gap: var(--public-grid-gap-tablet);
+    --storefront-card-content-gap: var(--public-card-content-gap);
+  }
+
+  .debroder-storefront [data-ui-grid="product"],
+  .debroder-storefront [data-ui-grid="editorial-product"] {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    row-gap: 28px !important;
+  }
+
+  .debroder-storefront .public-footer-system-v1 > .section-shell {
+    padding-block: var(--public-section-space-tablet);
+  }
+}
+
+@media (min-width: 1024px) {
+  .debroder-storefront,
+  .debroder-storefront.jersey-theme,
+  .debroder-storefront.jersey-commerce-theme {
+    --storefront-gutter: var(--public-gutter-laptop);
+    --storefront-section-space: var(--public-section-space-laptop);
+    --storefront-grid-gap: var(--public-grid-gap-desktop);
+  }
+
+  .debroder-storefront [data-ui-grid="product"],
+  .debroder-storefront [data-ui-grid="editorial-product"] {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+
+  .debroder-storefront .public-footer-system-v1 > .section-shell {
+    padding-block: var(--public-section-space-laptop);
+  }
+}
+
+@media (min-width: 1280px) {
+  .debroder-storefront,
+  .debroder-storefront.jersey-theme,
+  .debroder-storefront.jersey-commerce-theme {
+    --storefront-gutter: var(--public-gutter-desktop);
+    --storefront-section-space: var(--public-section-space-desktop);
+  }
+
+  .debroder-storefront .public-footer-system-v1 > .section-shell {
+    padding-block: var(--public-section-space-desktop);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .debroder-storefront [data-ui-grid="product-rail"],
+  .debroder-storefront [data-ui-grid="editorial"] {
+    scroll-behavior: auto;
   }
 }

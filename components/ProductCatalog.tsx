@@ -744,7 +744,7 @@ export function ProductCatalog({
 
         <div className="min-w-0">
           {visible.length ? (
-            <div className={catalogGridClass}>
+            <div data-ui-grid={isKaosEditorial ? "editorial-product" : "product"} className={catalogGridClass}>
               {displayedProducts.map((product, index) => (
                 <Fragment key={product.id || product.slug || product.nama}>
                   <PublicProductCard

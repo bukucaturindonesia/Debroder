@@ -3,7 +3,7 @@ import { Logo } from "@/components/Logo";
 
 export default function NotFound() {
   return (
-    <main className="min-h-screen bg-brand-offWhite px-4 py-10 text-brand-charcoal">
+    <main data-ui-system="canonical" className="debroder-storefront min-h-screen bg-brand-offWhite px-4 py-10 text-brand-charcoal">
       <div className="mx-auto grid min-h-[calc(100vh-80px)] max-w-2xl place-items-center">
         <section className="w-full rounded-xl  bg-brand-offWhite p-8 text-center  sm:p-12">
           <Logo variant="symbol-black" size="lg" className="justify-center" />

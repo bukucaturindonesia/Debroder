@@ -282,7 +282,7 @@ function ManagedHomepageSection({ section, setting, fallbackProducts = [] }: { s
               textPosition={setting?.text_position}
               action={configuredCta}
             />
-            <div id={carouselId} className="featured-media-grid mt-4 grid grid-cols-1 gap-3 md:mt-6 lg:grid-cols-2 lg:gap-4">
+            <div data-ui-grid="campaign" id={carouselId} className="featured-media-grid mt-4 grid grid-cols-1 gap-3 md:mt-6 lg:grid-cols-2 lg:gap-4">
               {items.slice(0, 2).map((item, index) => (
                 <EditorialCard
                   key={sectionItems[index]?.id || `${item.href}-${index}`}
@@ -305,7 +305,7 @@ function ManagedHomepageSection({ section, setting, fallbackProducts = [] }: { s
             textPosition={setting?.text_position}
             action={configuredCta}
           />
-          <div id={carouselId} className="trending-grid mt-4 md:mt-6">
+          <div data-ui-grid="editorial" id={carouselId} className="trending-grid mt-4 md:mt-6">
             {items.slice(0, 3).map((item, index) => (
               <EditorialCard
                 key={sectionItems[index]?.id || `${item.href}-${index}`}
@@ -338,7 +338,7 @@ function ManagedHomepageSection({ section, setting, fallbackProducts = [] }: { s
             </div>
           }
         />
-        <div id={carouselId} className="home-bleed-rail public-frame-rail fresh-drop-rail landing-commerce-rail no-scrollbar mt-4 flex snap-x snap-mandatory overflow-x-auto md:mt-6">
+        <div data-ui-grid="product-rail" id={carouselId} className="home-bleed-rail public-frame-rail fresh-drop-rail landing-commerce-rail no-scrollbar mt-4 flex snap-x snap-mandatory overflow-x-auto md:mt-6">
           {items.map((item, index) => (
             <ProductCard
               key={section.items[index]?.id || item.product.id || item.product.slug || `${item.product.nama}-${index}`}

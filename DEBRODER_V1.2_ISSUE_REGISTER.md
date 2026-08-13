@@ -753,3 +753,26 @@ Last updated: 28 July 2026 (Asia/Makassar)
   environment; in-app browser access to localhost returned
   `ERR_CONNECTION_REFUSED`. No deployment or concurrency measurement was
   performed.
+
+## UXUI-NORMALIZE-001 — Public foundation and card geometry were fragmented
+
+- Severity: **MAJOR — SYSTEM-WIDE PUBLIC UI CONSISTENCY**.
+- Status: **IMPLEMENTED LOCALLY; FOCUSED VERIFICATION PASS; FULL RUNTIME/BUILD
+  GATES PENDING**.
+- Root cause: shared public routes consumed mixed container gutters, 80–96px
+  section rhythm, 12/16/24px grid gaps, route-local product rails, and
+  inconsistent functional card radii/shadows. Loading/error boundaries were
+  not all connected to the canonical public UI marker. `/jersey` also had a
+  full dark root rather than local editorial dark blocks.
+- Resolution: introduced scoped public foundation tokens and geometry rules;
+  standardized shell/footer/card/product-grid/product-rail spacing; added
+  shared grid hooks; marked public state screens; and moved the Jersey root to
+  the light public canvas while preserving its explicit editorial blocks and
+  configurator behavior.
+- Contracts preserved: no database/schema/migration, auth, RLS, product data,
+  pricing, inventory, SKU, cart, checkout, payment, order, API, route, or
+  idempotency behavior changed.
+- Evidence: normalization/public/image suite **10 files / 44 tests PASS**,
+  typecheck **PASS**, changed-file lint **0 errors**, and diff check **PASS**.
+- Remaining risk: full baseline suite/build and reachable responsive browser
+  runtime remain unverified; no deployment or concurrency claim is made.

@@ -1067,6 +1067,95 @@ DEBRODER V1.2 REMAINS NOT COMPLETE**
 
 ---
 
+# Handoff — Public UI Foundation Normalization V1
+
+**Date:** 13 August 2026
+
+## Active scope and audit result
+
+- Audited the owner-provided public foundation and card-spacing proposals
+  against the shared shell, homepage, category/collection catalog, product
+  listing, Jersey, cart/checkout surfaces, footer, and public loading/error
+  boundaries.
+- Proven fragmentation: the shared shell existed, but route consumers still
+  mixed 80–96px section rhythm, 12/16/24px gaps, inconsistent card radii and
+  functional shadows, and several state screens lacked the canonical public UI
+  marker. Jersey also used a full dark root instead of local editorial blocks.
+
+## Targeted implementation
+
+- Added scoped canonical tokens for 1280px content, responsive gutters,
+  64/56/48/40px section rhythm, 20/16/12px grid gaps, 14/10px product image
+  spacing, and 2/8/4px radius families.
+- Applied one geometry layer to `.section-shell`, `PublicSectionFrame`,
+  campaign/benefit containers, footer, product grids, product rails, panels,
+  image frames, and controls.
+- Added `data-ui-grid` hooks to shared ProductCatalog, category/collection
+  rails, and homepage featured/trending/fresh-drop surfaces.
+- Added the same product-grid hook to the Jersey shop catalog and included
+  editorial-product as a product-grid variant.
+- Marked public loading/error/not-found states, including Jersey states, with
+  the same canonical UI marker.
+- Changed Jersey root presentation to the light public canvas while keeping
+  its explicit editorial media sections and configurator behavior intact;
+  the former blanket dark-section selector now applies only to explicit
+  `.keep-section-bg` blocks.
+
+## Files changed
+
+- `app/globals.css`
+- `app/page.tsx`
+- `app/loading.tsx`
+- `app/error.tsx`
+- `app/not-found.tsx`
+- `app/produk/[slug]/loading.tsx`
+- `app/produk/[slug]/error.tsx`
+- `app/track-order/[order-number]/loading.tsx`
+- `app/track-order/[order-number]/error.tsx`
+- `app/jersey/loading.tsx`
+- `app/jersey/error.tsx`
+- `app/jersey/shop/loading.tsx`
+- `app/jersey/shop/error.tsx`
+- `components/PublicPage.tsx`
+- `components/ProductCatalog.tsx`
+- `components/CategoryCommerceCatalog.tsx`
+- `components/CollectionCommerceExperience.tsx`
+- `components/jersey/JerseyShopCatalog.tsx`
+- `components/CategoryCommerceLoading.tsx`
+- `components/CategoryCommerceError.tsx`
+- `test/public-ui-foundation-normalization-v1.test.ts`
+- This handoff, Master State, and Issue Register append.
+
+## Database and migration status
+
+- Tables/schema/data: **UNCHANGED**.
+- Local migrations: **NONE CREATED OR APPLIED**.
+- Remote migrations: **NOT TOUCHED**.
+
+## Verification actually run
+
+- Focused normalization/public/image suite: **10 files / 44 tests PASS**.
+- TypeScript typecheck: **PASS**.
+- ESLint on all changed TS/TSX files: **PASS — 0 errors**.
+- `git diff --check`: **PASS** (only Windows LF→CRLF normalization warnings).
+- Full `pnpm test`: **FAIL — 2 known baseline CRLF-sensitive Order Operations
+  source assertions**; no focused normalization test failed.
+- `pnpm build`: **FAIL at prebuild** for those same two assertions; Next page
+  generation was not reached.
+- Browser/runtime: no new reachable browser evidence; prior in-app browser
+  localhost access returned `ERR_CONNECTION_REFUSED`.
+- Database smoke, deployment, CDN, and concurrency measurement: **NOT RUN**.
+
+## Remaining risk and next step
+
+- Production remains **NO-GO** until the known full-suite/build baseline and
+  reachable desktop/tablet/mobile runtime matrix are cleared.
+- Package status: **IMPLEMENTED LOCALLY; FOCUSED NORMALIZATION GATES VERIFIED;
+  FULL QUALITY/RUNTIME GATES PENDING; NOT DEPLOYED; NOT COMPLETE**.
+- Commit, push, deploy: **NOT PERFORMED**.
+
+---
+
 # Handoff — Owner-Unlocked UX/UI Rebuild
 
 **Date:** 13 August 2026
