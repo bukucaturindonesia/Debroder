@@ -1065,6 +1065,31 @@ DEBRODER V1.2 REMAINS NOT COMPLETE**
   implementation and static/build verification; NOT COMPLETE**.
 - Commit, push, deploy: **NOT PERFORMED**.
 
+## Final navbar and mega dropdown fix — 2026-08-15
+
+- Scope: active indicator de-duplication and bounded public mega-menu facets.
+- Root cause: landing-only `box-shadow` underline duplicated the existing
+  `PublicNavIndicator` child underline. Collection and category color arrays
+  were also passed to the client without a visible bound.
+- Fix: removed only the duplicate landing underline source; the shared child
+  indicator remains the sole desktop hover/active line. Navigation resolver
+  now sorts deterministically, exposes at most six colors per group, and sends
+  overflow metadata. Mega menus add `Lihat Semua Warna` to `/koleksi`,
+  `/kaos-polos`, or `/jaket-hoodie` when needed. Empty groups remain omitted.
+- Files changed: `app/globals.css`, `components/header/SiteHeaderClient.tsx`,
+  `lib/public-navigation.ts`, `lib/public-shell/model.ts`, focused public
+  navigation tests, plus governance append. No database, migration, route,
+  business, product, cart, checkout, footer, or mobile navigation redesign.
+- Verification: focused navbar **2 files / 14 tests PASS**; full suite
+  **122 files / 935 tests PASS**; typecheck **PASS**; lint **0 errors / 34
+  existing warnings**; `pnpm build` **PASS — 138/138 pages**; diff check
+  **PASS**. Browser sanity passed at **390, 768, 1024, 1280, 1440, and 1920px**
+  with no horizontal overflow; desktop active indicator computed as one child
+  line with no outer box-shadow. Large-data resolver cases cover **0, 1, 6,
+  20, 1,000, and 100,000** colors. Responsive breakpoint classes were not changed.
+- Status: **IMPLEMENTED LOCALLY; OWNER VISUAL REVIEW RECOMMENDED; PRODUCTION
+  RELEASE GATE UNCHANGED**.
+
 ## Custom capability copy contrast fix — 2026-08-15
 
 - Scope: targeted readability correction for the Custom page copy “Satu alur

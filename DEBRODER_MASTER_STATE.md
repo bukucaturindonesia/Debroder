@@ -785,3 +785,21 @@ Existing legal, CMS route, Preview performance, remote transaction E2E, data-int
   PASS with 34 pre-existing warnings, and `pnpm build` PASS (138/138 pages).
 - State: **IMPLEMENTED LOCALLY; OWNER VISUAL REVIEW RECOMMENDED; PRODUCTION
   RELEASE GATE UNCHANGED**.
+
+## Final navbar and mega dropdown fix — 2026-08-15
+
+- Removed the landing-only duplicate `box-shadow` underline; the existing
+  `PublicNavIndicator` child line is now the single desktop active/hover
+  indicator.
+- Public navigation resolver now hard-bounds collection and category color
+  facets to six deterministic items and carries overflow metadata. The
+  existing mega-menu structure renders `Lihat Semua Warna` to canonical
+  category/collection routes when overflow exists; empty groups are omitted.
+- No new navigation engine, schema, migration, route, or unrelated UI change.
+- Evidence: focused navbar **14/14 PASS**, full **122/122 files / 935/935
+  tests PASS**, typecheck PASS, lint 0 errors with 34 existing warnings, and
+  production build PASS (138/138 pages). Browser sanity passed at **390, 768,
+  1024, 1280, 1440, and 1920px** with no horizontal overflow; resolver edge
+  cases cover **0, 1, 6, 20, 1,000, and 100,000** colors.
+- State: **IMPLEMENTED LOCALLY; OWNER VISUAL REVIEW RECOMMENDED; RELEASE GATE
+  UNCHANGED**.

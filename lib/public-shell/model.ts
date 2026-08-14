@@ -7,9 +7,14 @@ export type PublicNavigationColorViewModel = {
 
 export type PublicNavigationFacetsViewModel = {
   colors: readonly PublicNavigationColorViewModel[];
+  hasMoreColors: boolean;
   categoryColors: Readonly<{
     "kaos-polos": readonly PublicNavigationColorViewModel[];
     "jaket-hoodie": readonly PublicNavigationColorViewModel[];
+  }>;
+  categoryColorOverflow: Readonly<{
+    "kaos-polos": boolean;
+    "jaket-hoodie": boolean;
   }>;
   categories: readonly PageLinkViewModel[];
   availability: Readonly<{

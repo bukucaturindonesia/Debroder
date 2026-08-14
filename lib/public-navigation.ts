@@ -42,6 +42,8 @@ const supportedCategoryLabels: Record<string, string> = {
   kemeja: "Kemeja"
 };
 
+export const PUBLIC_NAVIGATION_COLOR_LIMIT = 6;
+
 export function normalizeNavigationValue(value: string) {
   return value
     .trim()
@@ -79,7 +81,11 @@ function navigationColors(products: Product[]) {
     };
     if (!colors.has(canonical.value)) colors.set(canonical.value, canonical);
   });
-  return Array.from(colors.values()).sort((a, b) => a.label.localeCompare(b.label, "id"));
+  const sorted = Array.from(colors.values()).sort((a, b) => a.label.localeCompare(b.label, "id"));
+  return {
+    items: sorted.slice(0, PUBLIC_NAVIGATION_COLOR_LIMIT),
+    hasMore: sorted.length > PUBLIC_NAVIGATION_COLOR_LIMIT
+  };
 }
 
 function canonicalColorValue(value: string) {
@@ -122,11 +128,22 @@ export function buildPublicNavigationFacets(products: Product[], categories: Pro
       href: categoryPath(category.slug)
     }));
 
+  const colors = navigationColors(nonJerseyProducts);
+  const categoryColors = {
+    "kaos-polos": navigationColors(productsForCategoryRoute(nonJerseyProducts, categories, "kaos-polos")),
+    "jaket-hoodie": navigationColors(productsForCategoryRoute(nonJerseyProducts, categories, "jaket-hoodie"))
+  };
+
   return {
-    colors: navigationColors(nonJerseyProducts),
+    colors: colors.items,
+    hasMoreColors: colors.hasMore,
     categoryColors: {
-      "kaos-polos": navigationColors(productsForCategoryRoute(nonJerseyProducts, categories, "kaos-polos")),
-      "jaket-hoodie": navigationColors(productsForCategoryRoute(nonJerseyProducts, categories, "jaket-hoodie"))
+      "kaos-polos": categoryColors["kaos-polos"].items,
+      "jaket-hoodie": categoryColors["jaket-hoodie"].items
+    },
+    categoryColorOverflow: {
+      "kaos-polos": categoryColors["kaos-polos"].hasMore,
+      "jaket-hoodie": categoryColors["jaket-hoodie"].hasMore
     },
     categories: categoryLinks,
     availability: {

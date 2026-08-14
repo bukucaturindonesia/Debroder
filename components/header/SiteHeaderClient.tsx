@@ -52,7 +52,9 @@ type MegaMenuColumn = {
 
 const emptyNavigationFacets: PublicNavigationFacets = {
   colors: [],
+  hasMoreColors: false,
   categoryColors: { "kaos-polos": [], "jaket-hoodie": [] },
+  categoryColorOverflow: { "kaos-polos": false, "jaket-hoodie": false },
   categories: [],
   availability: { readyStock: false, custom: false, hybrid: false },
   collections: { new: false, best: false, popular: false, promo: false }
@@ -81,9 +83,11 @@ function buildCollectionMenu(facets: PublicNavigationFacets): MegaMenuColumn[] {
     columns.push({ title: "Belanja Berdasarkan Produk", links: facets.categories });
   }
   if (facets.colors.length) {
+    const colorLinks: MegaMenuLink[] = facets.colors.map((color) => ({ label: color.label, href: `/koleksi?color=${color.value}` }));
+    if (facets.hasMoreColors) colorLinks.push({ label: "Lihat Semua Warna", href: "/koleksi", highlight: true });
     columns.push({
       title: "Belanja Berdasarkan Warna",
-      links: facets.colors.map((color) => ({ label: color.label, href: `/koleksi?color=${color.value}` }))
+      links: colorLinks
     });
   }
   if (availability.length) {
@@ -117,9 +121,11 @@ function buildCategoryMenu(
   ];
 
   if (facets.categoryColors[routeKey].length) {
+    const colorLinks: MegaMenuLink[] = facets.categoryColors[routeKey].map((color) => ({ label: color.label, href: `${route}?color=${color.value}` }));
+    if (facets.categoryColorOverflow[routeKey]) colorLinks.push({ label: "Lihat Semua Warna", href: route, highlight: true });
     columns.push({
       title: "Belanja Berdasarkan Warna",
-      links: facets.categoryColors[routeKey].map((color) => ({ label: color.label, href: `${route}?color=${color.value}` }))
+      links: colorLinks
     });
   }
 

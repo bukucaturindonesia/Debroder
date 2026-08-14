@@ -860,3 +860,20 @@ Last updated: 28 July 2026 (Asia/Makassar)
   lint 0 errors with 34 existing warnings; build PASS with 138/138 pages;
   diff check PASS.
 - Status: **IMPLEMENTED LOCALLY; OWNER VISUAL REVIEW RECOMMENDED**.
+
+## UXUI-NAV-001 — Active underline and mega-menu bounding — 2026-08-15
+
+- Severity: **MAJOR — PUBLIC NAVIGATION CONSISTENCY / LARGE-DATA SAFETY**.
+- Root causes: landing CSS supplied a second active underline, while resolver
+  color facets were unbounded before mega-menu mapping.
+- Fix: removed only the duplicate landing `box-shadow`; resolver now returns a
+  maximum of six colors per group with overflow flags, and the existing mega
+  menu adds canonical `Lihat Semua Warna` links. No hidden full-color DOM is
+  rendered and empty groups remain absent.
+- Verification: focused navbar **14/14 PASS**; full **122/122 files,
+  935/935 tests PASS**; typecheck PASS; lint 0 errors with 34 existing
+  warnings; build PASS with 138/138 pages; diff check PASS; browser sanity
+  passed at **390, 768, 1024, 1280, 1440, and 1920px** with no horizontal
+  overflow; resolver edge cases cover **0, 1, 6, 20, 1,000, and 100,000**
+  colors.
+- Status: **IMPLEMENTED LOCALLY; OWNER VISUAL REVIEW RECOMMENDED**.

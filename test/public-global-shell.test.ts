@@ -72,6 +72,13 @@ describe("canonical public global shell", () => {
     }
   });
 
+  it("keeps one desktop active indicator and bounds mega-menu color groups", () => {
+    expect(header).toContain("Lihat Semua Warna");
+    expect(header).toContain("facets.hasMoreColors");
+    expect(header).toContain("facets.categoryColorOverflow[routeKey]");
+    expect(styles).not.toContain("box-shadow: inset 0 -2px var(--landing-ink)");
+  });
+
   it("does not mount the public footer in Admin or retain a page-specific footer", () => {
     expect(read("app/admin/layout.tsx")).not.toContain("PublicFooter");
     expect(read("components/public/PublicMockupApproval.tsx")).not.toContain("<footer");
