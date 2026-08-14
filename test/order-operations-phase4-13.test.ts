@@ -1,7 +1,9 @@
 import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 
-const read = (path: string) => readFileSync(path, "utf8");
+// Contract assertions are newline-agnostic so a Windows checkout does not
+// report false failures against the same migration content.
+const read = (path: string) => readFileSync(path, "utf8").replace(/\r\n/g, "\n");
 const migrationPath = "supabase/migrations/20260720020000_order_operations_phase4_13.sql";
 
 describe("DEBRODER Order Operations Phase 4-13", () => {

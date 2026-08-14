@@ -832,3 +832,17 @@ Last updated: 28 July 2026 (Asia/Makassar)
   unrelated Order Operations assertions. Supabase checkout A/B/C and browser
   console verification remain pending because the local service-role key is
   unavailable.
+
+## RELEASE-GATE-001 — Master completion verification — 2026-08-14
+
+- Severity: **RELEASE GATE**.
+- Status: **CODE/TEST/BUILD VERIFIED LOCALLY; PRODUCTION NO-GO**.
+- Resolved: CRLF-sensitive Order Operations contract tests produced two false
+  failures on Windows. The test reader now normalizes line endings; migration
+  content and runtime behavior are unchanged.
+- Evidence: full suite **122/122 files, 931/931 tests PASS**; typecheck PASS;
+  lint 0 errors with 34 pre-existing warnings; production build PASS with
+  138/138 pages; local production smoke routes PASS.
+- Remaining gate: configure a valid Supabase service-role environment and run
+  authenticated checkout/order/payment/RLS A/B/C smoke plus deployment and
+  rollback verification. No data or migration mutation was performed here.
