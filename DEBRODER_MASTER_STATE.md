@@ -772,3 +772,16 @@ Existing legal, CMS route, Preview performance, remote transaction E2E, data-int
   role credential is unavailable; checkout API correctly remains fail-closed.
 - Release state: **CODE/TEST/BUILD STABLE; DATABASE E2E AND DEPLOYMENT
   VERIFICATION PENDING; NO-GO FOR PRODUCTION**.
+
+## Custom capability copy contrast fix — 2026-08-15
+
+- Corrected only the Custom capability section's text readability. The global
+  public section-canvas rule had replaced its intended black background with
+  white, producing white-on-white copy; the overline was also only 50% white.
+- The section now opts out locally with `keep-section-bg`, uses `text-white/75`
+  for “Satu alur transaksi”, and explicitly uses `text-white` for the heading.
+  No layout, route, data, transaction, or business behavior changed.
+- Verification: full **122 test files / 932 tests PASS**, typecheck PASS, lint
+  PASS with 34 pre-existing warnings, and `pnpm build` PASS (138/138 pages).
+- State: **IMPLEMENTED LOCALLY; OWNER VISUAL REVIEW RECOMMENDED; PRODUCTION
+  RELEASE GATE UNCHANGED**.

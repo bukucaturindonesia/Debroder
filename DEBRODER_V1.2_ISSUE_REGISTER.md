@@ -846,3 +846,17 @@ Last updated: 28 July 2026 (Asia/Makassar)
 - Remaining gate: configure a valid Supabase service-role environment and run
   authenticated checkout/order/payment/RLS A/B/C smoke plus deployment and
   rollback verification. No data or migration mutation was performed here.
+
+## UXUI-CONTRAST-001 — Custom capability copy — 2026-08-15
+
+- Severity: **MINOR — PUBLIC UI READABILITY**.
+- Root cause: the shared `.public-site section:not(.keep-section-bg)` cascade
+  changed the target Custom section from black to the canvas white, so its
+  white heading and 50%-white overline had ineffective 1:1 contrast.
+- Fix: one-section `keep-section-bg` opt-out, `text-white/75` overline, and
+  explicit `text-white` heading. No layout, business logic, route, or data
+  contract changed.
+- Verification: full **122/122 files, 932/932 tests PASS**; typecheck PASS;
+  lint 0 errors with 34 existing warnings; build PASS with 138/138 pages;
+  diff check PASS.
+- Status: **IMPLEMENTED LOCALLY; OWNER VISUAL REVIEW RECOMMENDED**.

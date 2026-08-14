@@ -1065,6 +1065,25 @@ DEBRODER V1.2 REMAINS NOT COMPLETE**
   implementation and static/build verification; NOT COMPLETE**.
 - Commit, push, deploy: **NOT PERFORMED**.
 
+## Custom capability copy contrast fix — 2026-08-15
+
+- Scope: targeted readability correction for the Custom page copy “Satu alur
+  transaksi” and “Dari kebutuhan sampai produksi, setiap keputusan tetap
+  tercatat.”
+- Root cause: `.public-site section:not(.keep-section-bg)` overrode the target
+  section's `bg-black` with the public canvas (#fff), leaving white copy on a
+  white surface (effective contrast 1:1). The label also used `text-white/50`.
+- Fix: marked only this section `keep-section-bg`, raised the label to
+  `text-white/75`, and set the heading color explicitly to `text-white`.
+  Layout, spacing, business logic, and all other sections are unchanged.
+- Files changed: `components/custom/CustomHub.tsx`,
+  `test/public-page-experience-v2.test.ts`, plus this governance append.
+- Verification: focused source-contract test (included in full **122 files /
+  932 tests PASS**), typecheck **PASS**, lint **PASS — 0 errors / 34 existing
+  warnings**, `pnpm build` **PASS — 138/138 pages**; `git diff --check` **PASS**.
+- Status: **IMPLEMENTED LOCALLY; VISUAL OWNER REVIEW STILL RECOMMENDED; NO
+  DATABASE, MIGRATION, ROUTE, OR BUSINESS-LOGIC CHANGE**.
+
 ## Handoff — 10,000-line master completion audit — 2026-08-14
 
 - Scope: repository-wide evidence pass over public UI, products, pricing,

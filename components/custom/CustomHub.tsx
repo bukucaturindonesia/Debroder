@@ -194,10 +194,10 @@ export function CustomHub({
         </section>
       ) : null}
 
-      <section className="bg-black py-12 text-white sm:py-16 lg:py-24" aria-labelledby="custom-capability-heading">
+      <section className="keep-section-bg bg-black py-12 text-white sm:py-16 lg:py-24" aria-labelledby="custom-capability-heading">
         <div className="section-shell">
-          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-white/50">Satu alur transaksi</p>
-          <h2 id="custom-capability-heading" className="mt-3 max-w-4xl text-[clamp(2.3rem,5vw,5rem)] font-semibold leading-[0.98] tracking-[-0.04em]">
+          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-white/75">Satu alur transaksi</p>
+          <h2 id="custom-capability-heading" className="mt-3 max-w-4xl text-white text-[clamp(2.3rem,5vw,5rem)] font-semibold leading-[0.98] tracking-[-0.04em]">
             Dari kebutuhan sampai produksi, setiap keputusan tetap tercatat.
           </h2>
           <div className="mt-10 grid gap-px bg-white/15 md:grid-cols-3">
