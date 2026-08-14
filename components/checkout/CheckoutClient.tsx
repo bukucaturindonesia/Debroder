@@ -23,6 +23,7 @@ type CheckoutDraft = {
   accessToken: string;
   createdAt: string;
   payloadHash?: string;
+  lastKnownOutcome?: "rejected";
 };
 type CheckoutApiPayload = {
   code?: string;
@@ -131,6 +132,10 @@ export function CheckoutClient({ stores }: { stores: StoreOption[] }) {
         return;
       }
       draft.current = stored;
+      if (stored.lastKnownOutcome === "rejected") {
+        if (active) setRecovering(false);
+        return;
+      }
       const result = await recoverStoredCheckout(stored);
       if (!active) return;
       if (result.kind === "found") {
@@ -224,25 +229,29 @@ export function CheckoutClient({ stores }: { stores: StoreOption[] }) {
     let currentDraft = draft.current ?? readStoredDraft() ?? createDraft();
 
     if (currentDraft.payloadHash && currentDraft.payloadHash !== payloadHash) {
-      const recovery = await recoverStoredCheckout(currentDraft);
-      if (recovery.kind === "found") {
-        storeOrderSession(currentDraft, recovery.payload);
-        sessionStorage.removeItem(RECOVERY_KEY);
-        router.replace(recovery.payload.confirmationUrl!);
-        setSubmitting(false);
-        return;
-      }
-      if (recovery.kind === "missing" || recovery.kind === "expired") {
+      if (currentDraft.lastKnownOutcome === "rejected") {
         currentDraft = createDraft();
       } else {
-        setError(recovery.message);
-        if (recovery.kind === "temporary") setRetryAfter(recovery.retryAfter);
-        setSubmitting(false);
-        return;
+        const recovery = await recoverStoredCheckout(currentDraft);
+        if (recovery.kind === "found") {
+          storeOrderSession(currentDraft, recovery.payload);
+          sessionStorage.removeItem(RECOVERY_KEY);
+          router.replace(recovery.payload.confirmationUrl!);
+          setSubmitting(false);
+          return;
+        }
+        if (recovery.kind === "missing" || recovery.kind === "expired") {
+          currentDraft = createDraft();
+        } else {
+          setError(recovery.message);
+          if (recovery.kind === "temporary") setRetryAfter(recovery.retryAfter);
+          setSubmitting(false);
+          return;
+        }
       }
     }
 
-    currentDraft = { ...currentDraft, payloadHash };
+    currentDraft = { ...currentDraft, payloadHash, lastKnownOutcome: undefined };
     draft.current = currentDraft;
     sessionStorage.setItem(RECOVERY_KEY, JSON.stringify(currentDraft));
 
@@ -279,6 +288,11 @@ export function CheckoutClient({ stores }: { stores: StoreOption[] }) {
 
         const retrySeconds = retryAfterFromResponse(response);
         if (retrySeconds > 0) setRetryAfter(retrySeconds);
+        if (response.status >= 400 && response.status < 500 && response.status !== 429) {
+          const rejectedDraft = { ...currentDraft, lastKnownOutcome: "rejected" as const };
+          draft.current = rejectedDraft;
+          sessionStorage.setItem(RECOVERY_KEY, JSON.stringify(rejectedDraft));
+        }
         const reference = payload.reference ? ` Referensi: ${payload.reference}.` : "";
         const waiting = retrySeconds > 0 ? ` Coba lagi dalam ${retrySeconds} detik.` : "";
         setError(`${payload.error || "Pesanan belum dapat dibuat."}${waiting}${reference}`);
@@ -430,6 +444,8 @@ async function recoverStoredCheckout(stored: CheckoutDraft): Promise<RecoveryRes
     const response = await fetch(`/api/checkout?idempotencyKey=${encodeURIComponent(stored.idempotencyKey)}`, { cache: "no-store" });
     const payload = await readCheckoutPayload(response);
     if (response.ok && payload.found && payload.confirmationUrl) return { kind: "found", payload };
+    if (response.ok && payload.found === false) return { kind: "missing" };
+    // Keep compatibility with a pre-fix server during a rolling deployment.
     if (response.status === 404) return { kind: "missing" };
     if (response.status === 410) return { kind: "expired" };
     const retryAfter = retryAfterFromResponse(response);

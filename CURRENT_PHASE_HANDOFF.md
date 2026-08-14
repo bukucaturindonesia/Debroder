@@ -1065,6 +1065,32 @@ DEBRODER V1.2 REMAINS NOT COMPLETE**
   implementation and static/build verification; NOT COMPLETE**.
 - Commit, push, deploy: **NOT PERFORMED**.
 
+## Handoff — Checkout runtime recovery — 2026-08-14
+
+- Scope: targeted `/api/checkout` 404/409 audit and idempotency recovery only.
+- Reproduction: local `POST /api/checkout` with a deliberately mixed payload
+  returned `409 CHECKOUT_MIXED_CART`; local recovery GET returned fail-closed
+  `503 CHECKOUT_UNAVAILABLE` because `SUPABASE_SERVICE_ROLE_KEY` is unset.
+  No authenticated database checkout was claimed.
+- Root cause and fix: a known rejected draft remained reusable across changed
+  business payloads, allowing the abuse ledger to reject the stale key. The
+  client now records definitive 4xx rejection state and rotates only for a
+  changed payload; unknown outcomes still recover with the original key. The
+  GET recovery negative result is now `200 { found:false }`, with legacy 404
+  compatibility in the client.
+- Files changed: `app/api/checkout/route.ts`,
+  `components/checkout/CheckoutClient.tsx`,
+  `test/checkout-runtime-recovery.test.ts`, and this governance handoff.
+- Database/migration: **NONE / no local or remote migration run**.
+- Verification: focused checkout suite **21/21 PASS**; typecheck **PASS**;
+  lint **PASS (0 errors, 34 existing warnings)**; full `pnpm test` **FAIL** on
+  two unrelated baseline `order-operations-phase4-13` assertions;
+  `pnpm build` **FAIL** in prebuild for the same assertions; direct Next build
+  **PASS (138/138 pages)**; `git diff --check` **PASS**.
+- Next step: run authenticated checkout A/B/C and duplicate-submit recovery
+  against a configured Supabase environment, then re-run release gates.
+- Status: **NO-GO — RUNTIME DATABASE VERIFICATION PENDING**.
+
 ## 2026-08-13 — Public UI normalization blocker correction
 
 - Scope: public visual foundation only, using the owner-locked Public UI Design

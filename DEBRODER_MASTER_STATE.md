@@ -735,3 +735,24 @@ Existing legal, CMS route, Preview performance, remote transaction E2E, data-int
   assertions. Runtime visual review was not performed.
 - Current status: **IMPLEMENTED LOCALLY; READY FOR OWNER VISUAL REVIEW;
   RELEASE NO-GO**.
+
+## Checkout runtime recovery — 2026-08-14
+
+- Root cause: checkout recovery persisted drafts after a definitive client
+  rejection, then reused the key across a changed payload; the abuse ledger
+  correctly returned `idempotency_payload_conflict`, while the recovery probe
+  returned a handled no-order 404. Explicit 409 domain branches remain
+  fail-closed.
+- Targeted fix: recovery GET now returns `200 { found: false }` for an expected
+  no-order probe; rejected drafts rotate before a new payload while unknown
+  failures keep the same key. Submit locking, abuse guard, stock, pricing,
+  RPC, activation, and payment/order integrity are unchanged.
+- Database/migration/data changes: **NONE**. Runtime database checkout could
+  not be completed locally because `.env.local` has no usable service-role key;
+  the API correctly returned `503 CHECKOUT_UNAVAILABLE`.
+- Focused checkout recovery: **21/21 PASS**; typecheck **PASS**; lint **0
+  errors / 34 existing warnings**; direct Next build **PASS (138/138 pages)**;
+  full test and wrapper build remain blocked by the two pre-existing
+  `order-operations-phase4-13` assertions.
+- State: **IMPLEMENTED LOCALLY; RUNTIME DATABASE VERIFICATION PENDING;
+  NO-GO / NOT COMPLETE**.

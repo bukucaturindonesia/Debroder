@@ -808,3 +808,27 @@ Last updated: 28 July 2026 (Asia/Makassar)
   typecheck **PASS**, lint **0 errors**, direct Next build **PASS**, diff check
   **PASS**. Full test still has only the two known Order Operations baseline
   assertions. No browser runtime or deployment evidence.
+
+## CHECKOUT-RUNTIME-001 — Recovery probe and stale-key conflict — 2026-08-14
+
+- Severity: **MAJOR — CHECKOUT RUNTIME RECOVERY**.
+- Status: **IMPLEMENTED LOCALLY; AUTHENTICATED RUNTIME PENDING**.
+- Evidence: `CheckoutClient` persisted a draft before POST and kept it after
+  definitive 4xx rejection. A later changed payload could reuse that key;
+  `enforce_public_checkout_abuse_guard` correctly returned
+  `idempotency_payload_conflict`, and the GET recovery lookup found no order.
+  The local runtime reproduced the explicit mixed-cart 409 branch. No
+  duplicate-submit path was found: one form `onSubmit`, a submit lock, and one
+  checkout POST caller are present.
+- Fix: rejected drafts are marked and rotate on a changed payload; unknown
+  failures preserve the key for safe recovery. Missing-order recovery is an
+  explicit `200 {found:false}` negative result, while the client still accepts
+  legacy 404 responses during rollout.
+- Preserved: idempotency, duplicate-order protection, stock, pricing, SKU,
+  Custom/Jersey/configured validation, auth, RLS, payment integrity, and guest
+  checkout behavior. Database/migration changes: **NONE**.
+- Verification: focused **21/21 PASS**, typecheck **PASS**, lint **0 errors**,
+  direct build **PASS**. Full suite/build remain blocked only by the two known
+  unrelated Order Operations assertions. Supabase checkout A/B/C and browser
+  console verification remain pending because the local service-role key is
+  unavailable.
