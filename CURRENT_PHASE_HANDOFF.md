@@ -1065,6 +1065,49 @@ DEBRODER V1.2 REMAINS NOT COMPLETE**
   implementation and static/build verification; NOT COMPLETE**.
 - Commit, push, deploy: **NOT PERFORMED**.
 
+## Final performance execution — 2026-08-15
+
+- Scope: production performance hardening for public shell, homepage/content,
+  catalog/category routes, PDP related products, navigation, image/bundle
+  review, and private-route cache safety. No redesign, schema, migration,
+  pricing, stock, payment, order, or checkout-authority rewrite.
+- Root causes found: public shell/catalog/PDP used request-local React
+  memoization only; public shell read all products, variants, and variant
+  sizes for navigation; catalog reads were unbounded; PDP related products
+  rehydrated the whole active catalog; `getPublicContent()` forced no-store and
+  product rows were unbounded; the shared cart/header client boundary remains
+  a measurable bundle cost.
+- Targeted fixes: 60-second tagged `unstable_cache` for public content, shell,
+  catalog, and product reads; shell product cap 250 and category cap 32;
+  removed the shell-only variant-size query; public catalog/content product
+  cap 120; category reads filter by `product_category_id`; PDP related reads
+  filter by category, exclude the current product, and cap at 12; checkout is
+  explicitly `force-dynamic` while consuming only public store options.
+- Files changed: `lib/public-cache.ts`, `lib/public-data.ts`,
+  `lib/public-shell/data-access.ts`, `lib/public-shell/runtime.ts`,
+  `lib/catalog-page/data-access.ts`, `lib/catalog-page/runtime.ts`,
+  `lib/product-read/data-access.ts`,
+  `lib/product-detail-page/data-access.ts`, `app/checkout/page.tsx`,
+  `test/public-catalog-empty-fallback.test.ts`,
+  `test/public-performance-hardening.test.ts`.
+- Database/migration: **NONE**. No schema, data, RLS, function, trigger, or
+  migration was changed or executed. Checkout authoritative revalidation and
+  payment/order idempotency remain untouched.
+- Measurements: static before/after evidence recorded in the final report;
+  live Supabase/HTTP timings were **NOT MEASURED** because the sandbox could
+  not connect to the configured remote Supabase endpoint. No unsafe load test
+  was attempted.
+- Verification: focused performance **9/9 PASS**; full suite **123 files /
+  939 tests PASS**; typecheck **PASS**; lint **PASS, 0 errors / 34 existing
+  warnings**; direct Next production build **PASS, 137/137 pages generated**;
+  diff check **PASS**. Wrapper `pnpm build` exceeded the 120-second command
+  timeout during its duplicated prebuild, while the direct Next build passed.
+- Remaining: explicit admin mutation tag invalidation, real CDN/RUM and
+  concurrency measurements on staging, and a product pagination contract
+  beyond the bounded public catalog cap require owner/staging validation.
+- Status: **IMPLEMENTED LOCALLY; CODE/TEST/BUILD VERIFIED; RUNTIME SCALE AND
+  DEPLOYMENT PENDING; RELEASE NO-GO / NOT COMPLETE**.
+
 ## Final navbar and mega dropdown fix — 2026-08-15
 
 - Scope: active indicator de-duplication and bounded public mega-menu facets.

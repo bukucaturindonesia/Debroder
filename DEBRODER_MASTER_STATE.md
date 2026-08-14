@@ -803,3 +803,23 @@ Existing legal, CMS route, Preview performance, remote transaction E2E, data-int
   cases cover **0, 1, 6, 20, 1,000, and 100,000** colors.
 - State: **IMPLEMENTED LOCALLY; OWNER VISUAL REVIEW RECOMMENDED; RELEASE GATE
   UNCHANGED**.
+
+## Final performance execution — 2026-08-15
+
+- Public performance hardening is **IMPLEMENTED LOCALLY** with no database or
+  migration mutation. Public cache TTL is 60 seconds with separate tags for
+  content, shell, catalog, and products; checkout remains force-dynamic.
+- Bounded reads: shell products 250/categories 32, catalog/content products
+  120, PDP related products 12 with category and current-product exclusion;
+  shell no longer reads variant-size inventory for navigation.
+- Commerce authority unchanged: checkout still revalidates server-side price,
+  stock, SKU, minimum quantity, custom/Jersey validation, idempotency, and
+  payment integrity through the existing paths. No private order/account data
+  is placed in the public cache.
+- Evidence: full **123 test files / 939 tests PASS**, typecheck PASS, lint 0
+  errors with 34 existing warnings, direct Next build PASS (137/137 pages),
+  diff check PASS. Live response/load evidence is pending because remote
+  Supabase was unreachable in the sandbox.
+- Release status remains **NO-GO / NOT COMPLETE** until staging RUM,
+  concurrency/load, cache-hit, mutation-invalidation, and authenticated
+  transaction smoke evidence are available.

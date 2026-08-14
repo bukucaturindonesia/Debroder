@@ -6,7 +6,7 @@ const mocks = vi.hoisted(() => ({
 }));
 
 vi.mock("next/cache", () => ({
-  unstable_noStore: vi.fn()
+  unstable_cache: (fn: (...args: never[]) => unknown) => fn
 }));
 
 vi.mock("@/lib/supabase", () => ({
@@ -49,6 +49,10 @@ function createQuery(
     },
     order: (...args: unknown[]) => {
       calls.push({ table, method: "order", args });
+      return builder;
+    },
+    limit: (...args: unknown[]) => {
+      calls.push({ table, method: "limit", args });
       return builder;
     },
     then: <TResult1 = QueryResult, TResult2 = never>(

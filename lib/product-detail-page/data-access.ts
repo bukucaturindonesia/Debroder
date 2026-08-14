@@ -12,7 +12,13 @@ export async function readProductDetailPageSource(slug: string): Promise<Product
     return {
       status: "unavailable",
       productSource,
-      relatedSource: await readActiveProductSource(),
+      relatedSource: {
+        products: { status: "unavailable", data: [] },
+        variants: { status: "unavailable", data: [] },
+        variantSizes: { status: "unavailable", data: [] },
+        variantImages: { status: "unavailable", data: [] },
+        sizeGuides: { status: "unavailable", data: [] }
+      },
       contact: null,
       customDestination: null
     };
@@ -35,8 +41,13 @@ export async function readProductDetailPageSource(slug: string): Promise<Product
 
   const client = createSupabaseServerClient();
   const productId = productSource.products.data[0]?.id;
+  const productCategory = productSource.products.data[0]?.kategori;
   const [relatedSource, contactResult, customDestination] = await Promise.all([
-    readActiveProductSource(),
+    readActiveProductSource({
+      category: productCategory || undefined,
+      excludeProductId: productId || undefined,
+      limit: 12
+    }),
     client
       ? client
           .from("contact_settings")

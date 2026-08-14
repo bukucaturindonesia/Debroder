@@ -861,6 +861,29 @@ Last updated: 28 July 2026 (Asia/Makassar)
   diff check PASS.
 - Status: **IMPLEMENTED LOCALLY; OWNER VISUAL REVIEW RECOMMENDED**.
 
+## PERF-001 — Public read amplification and cache boundary — 2026-08-15
+
+- Severity: **MAJOR — PRODUCTION PERFORMANCE / SCALE READINESS**.
+- Root causes: request-local-only memoization, unbounded public product reads,
+  shell variant-size read unnecessary for navigation, PDP full-catalog related
+  hydration, and `getPublicContent()` no-store behavior.
+- Targeted correction: tagged 60-second public caches; bounded shell,
+  catalog, content, and PDP reads; category-scoped catalog queries; removed
+  shell-only size query; checkout explicitly force-dynamic. No private order,
+  account, payment, or transaction result is shared through these caches.
+- Files: `lib/public-cache.ts`, public data-access/runtime modules,
+  `app/checkout/page.tsx`, and focused performance tests. Database/migration:
+  **NONE**.
+- Verification: focused 9/9 PASS; full 123/123 files and 939/939 tests PASS;
+  typecheck PASS; lint 0 errors / 34 existing warnings; direct Next build PASS
+  137/137 pages; diff check PASS.
+- Open risks: no live Supabase latency or cache-hit measurements in sandbox;
+  explicit admin mutation invalidation and production load/RUM evidence remain
+  pending; bounded catalog needs an owner-approved pagination follow-up if the
+  product count exceeds 120.
+- Status: **IMPLEMENTED LOCALLY; RUNTIME/STAGING VERIFICATION PENDING;
+  RELEASE NO-GO / NOT COMPLETE**.
+
 ## UXUI-NAV-001 — Active underline and mega-menu bounding — 2026-08-15
 
 - Severity: **MAJOR — PUBLIC NAVIGATION CONSISTENCY / LARGE-DATA SAFETY**.

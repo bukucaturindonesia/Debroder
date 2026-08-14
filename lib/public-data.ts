@@ -1,4 +1,4 @@
-import { unstable_noStore as noStore } from "next/cache";
+import { unstable_cache } from "next/cache";
 import {
   fallbackContent,
   fallbackInstagramBanner,
@@ -13,6 +13,7 @@ import {
   publicCmsStatusFilter
 } from "@/lib/cms-workflow";
 import { createSupabaseServerClient } from "@/lib/supabase";
+import { PUBLIC_CACHE_REVALIDATE_SECONDS, PUBLIC_CACHE_TAGS } from "@/lib/public-cache";
 import {
   DEFAULT_SITE_MEDIA,
   parseSiteMediaDefaults,
@@ -48,6 +49,8 @@ type PublicRevisionRow = {
   publish_at?: string | null;
   created_at?: string | null;
 };
+
+export const PUBLIC_CONTENT_PRODUCT_LIMIT = 120;
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return Boolean(value && typeof value === "object" && !Array.isArray(value));
@@ -434,7 +437,8 @@ export async function readProducts(): Promise<Product[]> {
     .from("products")
     .select("*")
     .eq("status", "active")
-    .order("urutan", { ascending: true });
+    .order("urutan", { ascending: true })
+    .limit(PUBLIC_CONTENT_PRODUCT_LIMIT);
 
   if (error || !data || data.length === 0) return [];
 
@@ -1019,9 +1023,7 @@ async function readCampaignBanners(): Promise<CmsBanner[]> {
     .sort((a, b) => a.sort_order - b.sort_order);
 }
 
-export async function getPublicContent(): Promise<PublicContent> {
-  noStore();
-
+async function readPublicContent(): Promise<PublicContent> {
   const [
     heroes,
     instagramBanner,
@@ -1194,3 +1196,12 @@ export async function getPublicContent(): Promise<PublicContent> {
     })
   };
 }
+
+export const getPublicContent = unstable_cache(
+  readPublicContent,
+  ["public-content-v1"],
+  {
+    revalidate: PUBLIC_CACHE_REVALIDATE_SECONDS,
+    tags: [PUBLIC_CACHE_TAGS.content, PUBLIC_CACHE_TAGS.catalog]
+  }
+);
