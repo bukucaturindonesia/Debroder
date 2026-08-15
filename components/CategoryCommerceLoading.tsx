@@ -12,7 +12,7 @@ function ProductSkeleton({ desktopOnly = false }: { desktopOnly?: boolean }) {
 
 export function CategoryCommerceLoading() {
   return (
-    <main className="min-h-screen bg-brand-offWhite" aria-busy="true" aria-label="Memuat katalog produk">
+    <main data-ui-system="canonical" className="debroder-storefront min-h-screen bg-brand-offWhite" aria-busy="true" aria-label="Memuat katalog produk">
       <div className="aspect-[4/5] w-full animate-pulse bg-brand-charcoal/5 sm:aspect-[16/5] sm:min-h-[260px] lg:aspect-[16/4.5]" />
       <section className="section-shell py-7">
         <div className="h-8 w-72 max-w-full animate-pulse bg-brand-charcoal/5" />

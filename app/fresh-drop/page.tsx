@@ -25,7 +25,7 @@ export default async function FreshDropPage() {
 
   return (
     <PublicShell>
-      <section className="bg-brand-offWhite py-12 sm:py-16 lg:py-20">
+      <section className="bg-brand-offWhite py-10 sm:py-12 lg:py-16">
         <div className="section-shell">
           <p className="public-eyebrow">Pilihan terbaru</p>
           <h1 className="home-page-title mt-3">Fresh Drop</h1>
@@ -34,7 +34,7 @@ export default async function FreshDropPage() {
           </p>
 
           {products.length ? (
-            <div className="mt-10 grid grid-cols-2 gap-x-3 gap-y-8 md:grid-cols-3 lg:grid-cols-4 lg:gap-x-5">
+            <div data-ui-grid="product" className="mt-8 grid grid-cols-2 gap-x-3 gap-y-8 md:grid-cols-3 lg:grid-cols-4 lg:gap-x-5">
               {products.map((product) => (
                 <PublicProductCard
                   key={product.id || product.slug || product.nama}

@@ -460,7 +460,7 @@ function FullCartItem({ item }: { item: CartItem }) {
   const isJersey = isJerseyConfiguredItem(item);
   const isCustomProject = isCustomProjectCartItem(item);
   return (
-    <article className="rounded-[28px] bg-white/50 p-4 sm:p-6">
+    <article data-ui-card="cart-item" className="rounded-[28px] bg-white/50 p-4 sm:p-6">
       <CartProductHeader item={item} />
       {item.lineType === "legacy_unsupported" ? (
         <div className="mt-5 rounded-[18px] border border-amber-300 bg-amber-50 p-4 text-sm leading-6 text-amber-950">
@@ -484,7 +484,7 @@ function CartSummary({ compact = false }: { compact?: boolean }) {
   );
 
   return (
-    <aside className={`rounded-[28px] bg-white/50 ${compact ? "p-4" : "p-5 sm:p-6"}`}>
+    <aside data-ui-surface="cart-summary" className={`public-panel public-cart-summary rounded-[28px] bg-white/50 ${compact ? "p-4" : "p-5 sm:p-6"}`}>
       <h2 className="text-2xl font-semibold tracking-tight">Ringkasan</h2>
       <div className="mt-6 grid gap-4 text-sm">
         <div className="flex items-center justify-between gap-4">
@@ -513,7 +513,7 @@ function CartSummary({ compact = false }: { compact?: boolean }) {
 function EmptyCart({ fullPage = false }: { fullPage?: boolean }) {
   const cart = useCart();
   return (
-    <div className={`grid place-items-center rounded-[28px] bg-white/50 p-8 text-center ${fullPage ? "min-h-[420px]" : "min-h-[280px]"}`}>
+    <div data-ui-state="empty" className={`public-empty-state grid place-items-center rounded-[28px] bg-white/50 p-8 text-center ${fullPage ? "min-h-[420px]" : "min-h-[280px]"}`}>
       <div>
         <div className="mx-auto grid h-14 w-14 place-items-center rounded-full bg-[#f5f5ef]"><CartIcon /></div>
         <p className="mt-5 text-lg font-semibold">Keranjang masih kosong</p>
@@ -604,11 +604,11 @@ function MiniCartContent() {
   return (
     <div className="grid gap-5">
       <CartValidationNotice compact />
-      <section className="rounded-[24px] bg-white/50 p-4">
+      <section data-ui-card="cart-item" className="rounded-[24px] bg-white/50 p-4">
         <CartProductHeader item={primary} compact />
         {additionalCount > 0 ? <p className="mt-4 rounded-full bg-[#f5f5ef] px-3 py-2 text-xs text-black/60">+ {additionalCount} item tambahan ikut di keranjang.</p> : null}
       </section>
-      <section className="rounded-[24px] bg-white/50 p-4">
+      <section data-ui-card="transaction-summary" className="rounded-[24px] bg-white/50 p-4">
         <div className="flex items-center justify-between text-sm">
           <span className="text-black/60">Subtotal Produk</span>
           <span className="font-semibold">{hasPendingCustomPricing ? "Belum ditetapkan" : safeCurrency(totals.productSubtotal)}</span>
@@ -699,10 +699,10 @@ function CartDrawer() {
 
   return (
     <>
-      <div className={`fixed inset-0 z-[var(--z-overlay)] bg-black/35 transition ${isOpen ? "visible opacity-100" : "invisible opacity-0"}`} onMouseDown={(event) => event.target === event.currentTarget && closeCart()} />
+      <div className={`fixed inset-0 z-[var(--z-legacy-backdrop)] bg-black/35 transition ${isOpen ? "visible opacity-100" : "invisible opacity-0"}`} onMouseDown={(event) => event.target === event.currentTarget && closeCart()} />
       <aside
         ref={drawerRef}
-        className={`fixed right-0 top-0 z-[var(--z-drawer)] flex h-dvh w-full max-w-md flex-col bg-brand-offWhite shadow-[var(--shadow-overlay)] transition-transform duration-[var(--duration-overlay)] ${isOpen ? "translate-x-0" : "translate-x-full"}`}
+        className={`public-cart-drawer fixed right-0 top-0 z-[var(--z-legacy-drawer-surface)] flex h-dvh w-full max-w-md flex-col bg-brand-offWhite shadow-[var(--shadow-overlay)] transition-transform duration-[var(--duration-overlay)] ${isOpen ? "translate-x-0" : "translate-x-full"}`}
         role="dialog"
         aria-modal="true"
         aria-label="Keranjang belanja"
@@ -1278,7 +1278,7 @@ export function useCart() {
 export function CartNavButton() {
   const { itemCount, openCart, preserveJerseyInteractions } = useCart();
   return (
-    <button type="button" className="relative grid h-12 w-12 place-items-center rounded-full transition hover:bg-[#f5f5ef]" aria-label={`Buka keranjang, ${itemCount} item`} onClick={openCart}>
+    <button type="button" className="public-icon-button relative grid h-12 w-12 place-items-center rounded-full transition hover:bg-[#f5f5ef]" aria-label={`Buka keranjang, ${itemCount} item`} onClick={openCart}>
       <CartIcon />
       {itemCount > 0 ? <span className={`absolute -right-0.5 -top-0.5 grid h-5 min-w-5 place-items-center rounded-full px-1 text-[10px] font-bold text-white ${preserveJerseyInteractions ? "bg-[#063d24]" : "bg-black"}`}>{itemCount}</span> : null}
     </button>

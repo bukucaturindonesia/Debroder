@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { buildPublicNavigationFacets, productMatchesNavigationColor, productMatchesNavigationStatus } from "@/lib/public-navigation";
+import { buildPublicNavigationFacets, productMatchesNavigationColor, productMatchesNavigationStatus, PUBLIC_NAVIGATION_COLOR_LIMIT } from "@/lib/public-navigation";
 import type { Product, ProductCategory } from "@/lib/types";
 
 const category: ProductCategory = {
@@ -78,5 +78,34 @@ describe("public navigation facets", () => {
     expect(productMatchesNavigationStatus(ready, "ready-stock")).toBe(true);
     expect(productMatchesNavigationStatus(custom, "custom")).toBe(true);
     expect(productMatchesNavigationStatus(ready, "hybrid")).toBe(false);
+  });
+
+  it("bounds collection and category colors at the resolver before they reach the header", () => {
+    for (const count of [0, 1, 6, 20, 1_000, 100_000]) {
+      const colors = Array.from({ length: count }, (_, index) => `Color ${index + 1}`);
+      const facets = buildPublicNavigationFacets([
+        product({ color_tags: colors })
+      ], [category]);
+
+      expect(facets.colors).toHaveLength(Math.min(count, PUBLIC_NAVIGATION_COLOR_LIMIT));
+      expect(facets.hasMoreColors).toBe(count > PUBLIC_NAVIGATION_COLOR_LIMIT);
+    }
+  });
+
+  it("keeps category color groups bounded and reports overflow without inventing empty groups", () => {
+    const colors = Array.from({ length: 20 }, (_, index) => `Color ${index + 1}`);
+    const facets = buildPublicNavigationFacets([
+      product({ product_category_id: category.id, color_tags: colors })
+    ], [category]);
+
+    expect(facets.categoryColors["kaos-polos"]).toHaveLength(PUBLIC_NAVIGATION_COLOR_LIMIT);
+    expect(facets.categoryColorOverflow["kaos-polos"]).toBe(true);
+    expect(facets.categoryColors["jaket-hoodie"]).toEqual([]);
+    expect(facets.categoryColorOverflow["jaket-hoodie"]).toBe(false);
+
+    const empty = buildPublicNavigationFacets([], []);
+    expect(empty.colors).toEqual([]);
+    expect(empty.hasMoreColors).toBe(false);
+    expect(empty.categoryColorOverflow).toEqual({ "kaos-polos": false, "jaket-hoodie": false });
   });
 });

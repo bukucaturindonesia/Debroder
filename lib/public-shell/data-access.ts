@@ -9,9 +9,11 @@ import type {
   PublicShellSource,
   PublicShellSourceSlice,
   PublicShellStoreRow,
-  PublicShellVariantRow,
-  PublicShellVariantSizeRow
+  PublicShellVariantRow
 } from "./source";
+
+export const PUBLIC_SHELL_PRODUCT_LIMIT = 250;
+export const PUBLIC_SHELL_CATEGORY_LIMIT = 32;
 
 function unavailable<T>(data: T): PublicShellSourceSlice<T> {
   return { status: "unavailable", data };
@@ -37,7 +39,8 @@ async function readProductsAndVariants(): Promise<Pick<PublicShellSource, "produ
     .select("id,nama,kategori,subcategory,slug,link_url,product_category_id,status,status_aktif,label_new,label_promo,label_best_seller,sales_count,stock,uses_configurator,product_type,pricing_mode,color_tags,intent_tags,collection_tags,material_tags")
     .eq("status", "active")
     .eq("status_aktif", true)
-    .order("urutan", { ascending: true });
+    .order("urutan", { ascending: true })
+    .limit(PUBLIC_SHELL_PRODUCT_LIMIT);
 
   if (productError || !productData) {
     return {
@@ -73,28 +76,12 @@ async function readProductsAndVariants(): Promise<Pick<PublicShellSource, "produ
   }
 
   const variants = variantData as PublicShellVariantRow[];
-  const variantIds = variants.map((variant) => variant.id).filter(Boolean);
-  if (!variantIds.length) {
-    return {
-      products: availableList(products),
-      variants: availableList(variants),
-      variantSizes: { status: "empty", data: [] }
-    };
-  }
-
-  const { data: sizeData, error: sizeError } = await supabase
-    .from("product_variant_sizes")
-    .select("variant_id,status,is_active,stock,stock_quantity")
-    .in("variant_id", variantIds)
-    .eq("status", "active")
-    .order("sort_order", { ascending: true });
-
   return {
     products: availableList(products),
     variants: availableList(variants),
-    variantSizes: sizeError || !sizeData
-      ? unavailable([])
-      : availableList(sizeData as PublicShellVariantSizeRow[])
+    // Navigation only needs product/variant metadata. Inventory and size
+    // availability remain authoritative in the commerce read path.
+    variantSizes: { status: "empty", data: [] }
   };
 }
 
@@ -107,7 +94,8 @@ async function readCategories(): Promise<PublicShellSource["categories"]> {
     .select("id,name,slug,is_active,sort_order,collection_section_order,public_label")
     .eq("is_active", true)
     .order("collection_section_order", { ascending: true })
-    .order("sort_order", { ascending: true });
+    .order("sort_order", { ascending: true })
+    .limit(PUBLIC_SHELL_CATEGORY_LIMIT);
 
   return error || !data
     ? unavailable([])

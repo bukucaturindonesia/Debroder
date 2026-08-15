@@ -79,7 +79,7 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
 
   return (
     <PublicShell>
-      <section className="bg-brand-offWhite py-12 sm:py-16 lg:py-20">
+      <section className="bg-brand-offWhite py-10 sm:py-12 lg:py-16">
         <div className="section-shell">
           <p className="public-eyebrow">Katalog publik</p>
           <h1 className="home-page-title mt-3">Cari produk</h1>
@@ -106,7 +106,7 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
               {results.length ? (
                 <section className="mt-6" aria-labelledby="product-search-results">
                   <h2 id="product-search-results" className="text-2xl font-semibold">Produk</h2>
-                  <div className="mt-5 grid grid-cols-2 gap-x-3 gap-y-8 md:grid-cols-3 lg:grid-cols-4 lg:gap-x-5">
+                  <div data-ui-grid="product" className="mt-5 grid grid-cols-2 gap-x-3 gap-y-8 md:grid-cols-3 lg:grid-cols-4 lg:gap-x-5">
                     {results.map((product) => (
                       <PublicProductCard
                         key={product.id || product.slug || product.nama}

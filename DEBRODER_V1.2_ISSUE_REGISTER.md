@@ -714,3 +714,210 @@ Last updated: 28 July 2026 (Asia/Makassar)
 - Remaining gate: safe migration apply/postcheck plus verified customer A/B/C
   checkout and Order History runtime proof, guest-cap regression, database
   smoke test, and deployment evidence.
+
+## PERF-IMAGE-001 — Optimized raster delivery while preserving logos
+
+- Severity: **MAJOR — PERFORMANCE / DELIVERY**.
+- Status: **RESOLVED IN LOCAL CODE; CDN AND CONCURRENCY RUNTIME PENDING**.
+- Root cause: public CMS hero/editorial images used native `<img>` through
+  `ResponsivePicture`, bypassing Next image transforms. The app already had
+  WebP configuration, but that path did not consume it.
+- Resolution: responsive local/Supabase imagery now uses Next `srcSet` output;
+  WebP is the canonical transformed format; public asset cache headers and
+  optimizer cache were added. `Logo.tsx` and `BrandIcon.tsx` remain native and
+  logo paths are explicitly excluded from `SafeImage` optimization.
+- Evidence: image contract **2/2 PASS**, UI/media regression **14/14 PASS**,
+  typecheck **PASS**, target lint **0 errors**, direct Next build **138 pages
+  PASS**. Full scripted build remains red only on pre-existing CRLF-sensitive
+  tests.
+- Remaining risk: verify CDN cache hit ratio, LCP, image byte reduction, and
+  thousand-user concurrency in the deployed environment before production GO.
+
+## UXUI-UNLOCK-001 — Public storefront presentation was fragmented
+
+- Severity: **MAJOR — PUBLIC UX/UI CONSISTENCY AND RESPONSIVE QUALITY**.
+- Status: **IMPLEMENTED LOCALLY; FOCUSED VERIFICATION PASS; RUNTIME/RELEASE
+  GATES PENDING**.
+- Root cause: shared storefront surfaces relied on several legacy selector
+  groups with inconsistent shell density, navigation emphasis, hero scale,
+  product-card feedback, control sizing, and cart/checkout panel treatment.
+- Resolution: added a scoped canonical storefront layer, wired the public shell
+  and homepage to the canonical marker, normalized header/nav presentation,
+  added product-card hover affordance, and marked cart/checkout state surfaces.
+  Jersey themes remain isolated. No business, auth, order, payment, inventory,
+  pricing, API, route, schema, migration, RLS, or idempotency contract changed.
+- Evidence: focused UX/image **9 files / 39 tests PASS**, typecheck **PASS**,
+  changed-file lint **0 errors**, and `git diff --check` **PASS**.
+- Release risk: full suite still fails on two unrelated CRLF-sensitive Order
+  Operations assertions; Next page-data generation was not stable in this
+  environment; in-app browser access to localhost returned
+  `ERR_CONNECTION_REFUSED`. No deployment or concurrency measurement was
+  performed.
+
+## UXUI-NORMALIZE-001 — Public foundation and card geometry were fragmented
+
+- Severity: **MAJOR — SYSTEM-WIDE PUBLIC UI CONSISTENCY**.
+- Status: **IMPLEMENTED LOCALLY; FOCUSED VERIFICATION PASS; FULL RUNTIME/BUILD
+  GATES PENDING**.
+- Root cause: shared public routes consumed mixed container gutters, 80–96px
+  section rhythm, 12/16/24px grid gaps, route-local product rails, and
+  inconsistent functional card radii/shadows. Loading/error boundaries were
+  not all connected to the canonical public UI marker. `/jersey` also had a
+  full dark root rather than local editorial dark blocks.
+- Resolution: introduced scoped public foundation tokens and geometry rules;
+  standardized shell/footer/card/product-grid/product-rail spacing; added
+  shared grid hooks; marked public state screens; and moved the Jersey root to
+  the light public canvas while preserving its explicit editorial blocks and
+  configurator behavior.
+- Contracts preserved: no database/schema/migration, auth, RLS, product data,
+  pricing, inventory, SKU, cart, checkout, payment, order, API, route, or
+  idempotency behavior changed.
+- Evidence: normalization/public/image suite **10 files / 44 tests PASS**,
+  typecheck **PASS**, changed-file lint **0 errors**, and diff check **PASS**.
+- Remaining risk: full baseline suite/build and reachable responsive browser
+  runtime remain unverified; no deployment or concurrency claim is made.
+
+## UXUI-NORMALIZE-001 — Verification update — 2026-08-13
+
+- Local implementation completed on `codex/public-ui-normalization-final` with
+  logical checkpoints for foundation, shell/footer, controls, product cards,
+  homepage, route grids, transactional surfaces, and the remaining legacy
+  public product-grid migration.
+- Targeted public UI tests, TypeScript, lint, direct Next build, and diff check
+  pass. Full test still reports only the two baseline Order Operations source
+  assertions; `pnpm build` stops in its prebuild for that same reason.
+- No database, migration, dependency, lockfile, environment, business, or
+  route contract changed. Runtime visual review remains unavailable.
+- Disposition: **IMPLEMENTED LOCALLY; OWNER REVIEW REQUIRED; RELEASE NO-GO**.
+
+## UXUI-NORMALIZE-002 — Public UI blocker correction package — 2026-08-13
+
+- Severity: **MAJOR — PUBLIC UI CONSISTENCY**.
+- Status: **IMPLEMENTED LOCALLY; FOCUSED GATES PASS; OWNER VISUAL REVIEW
+  PENDING**.
+- Root causes addressed: Jersey context navigation visually presented as a
+  second branded navbar; Custom opened with an unnecessarily dark hero; About
+  used a nonessential full dark content section; legal help CTA used a
+  route-specific `<footer>`; Jersey catalog/forms bypassed shared control
+  geometry.
+- Preserved: all business, product-mode, configured-product, custom-project,
+  Jersey configurator, database, migration, Supabase, RLS, auth, pricing,
+  inventory, stock, SKU, cart, checkout, payment, order, API, and Server Action
+  contracts.
+- Evidence: focused public UI/Jersey **34/34 PASS** (extended **57/57 PASS**),
+  typecheck **PASS**, lint **0 errors**, direct Next build **PASS**, diff check
+  **PASS**. Full test still has only the two known Order Operations baseline
+  assertions. No browser runtime or deployment evidence.
+
+## CHECKOUT-RUNTIME-001 — Recovery probe and stale-key conflict — 2026-08-14
+
+- Severity: **MAJOR — CHECKOUT RUNTIME RECOVERY**.
+- Status: **IMPLEMENTED LOCALLY; AUTHENTICATED RUNTIME PENDING**.
+- Evidence: `CheckoutClient` persisted a draft before POST and kept it after
+  definitive 4xx rejection. A later changed payload could reuse that key;
+  `enforce_public_checkout_abuse_guard` correctly returned
+  `idempotency_payload_conflict`, and the GET recovery lookup found no order.
+  The local runtime reproduced the explicit mixed-cart 409 branch. No
+  duplicate-submit path was found: one form `onSubmit`, a submit lock, and one
+  checkout POST caller are present.
+- Fix: rejected drafts are marked and rotate on a changed payload; unknown
+  failures preserve the key for safe recovery. Missing-order recovery is an
+  explicit `200 {found:false}` negative result, while the client still accepts
+  legacy 404 responses during rollout.
+- Preserved: idempotency, duplicate-order protection, stock, pricing, SKU,
+  Custom/Jersey/configured validation, auth, RLS, payment integrity, and guest
+  checkout behavior. Database/migration changes: **NONE**.
+- Verification: focused **21/21 PASS**, typecheck **PASS**, lint **0 errors**,
+  direct build **PASS**. Full suite/build remain blocked only by the two known
+  unrelated Order Operations assertions. Supabase checkout A/B/C and browser
+  console verification remain pending because the local service-role key is
+  unavailable.
+
+## RELEASE-GATE-001 — Master completion verification — 2026-08-14
+
+- Severity: **RELEASE GATE**.
+- Status: **CODE/TEST/BUILD VERIFIED LOCALLY; PRODUCTION NO-GO**.
+- Resolved: CRLF-sensitive Order Operations contract tests produced two false
+  failures on Windows. The test reader now normalizes line endings; migration
+  content and runtime behavior are unchanged.
+- Evidence: full suite **122/122 files, 931/931 tests PASS**; typecheck PASS;
+  lint 0 errors with 34 pre-existing warnings; production build PASS with
+  138/138 pages; local production smoke routes PASS.
+- Remaining gate: configure a valid Supabase service-role environment and run
+  authenticated checkout/order/payment/RLS A/B/C smoke plus deployment and
+  rollback verification. No data or migration mutation was performed here.
+
+## UXUI-CONTRAST-001 — Custom capability copy — 2026-08-15
+
+- Severity: **MINOR — PUBLIC UI READABILITY**.
+- Root cause: the shared `.public-site section:not(.keep-section-bg)` cascade
+  changed the target Custom section from black to the canvas white, so its
+  white heading and 50%-white overline had ineffective 1:1 contrast.
+- Fix: one-section `keep-section-bg` opt-out, `text-white/75` overline, and
+  explicit `text-white` heading. No layout, business logic, route, or data
+  contract changed.
+- Verification: full **122/122 files, 932/932 tests PASS**; typecheck PASS;
+  lint 0 errors with 34 existing warnings; build PASS with 138/138 pages;
+  diff check PASS.
+- Status: **IMPLEMENTED LOCALLY; OWNER VISUAL REVIEW RECOMMENDED**.
+
+## THEME-001 — Public theme engine and Super Admin Tema — 2026-08-15
+
+- Class: **MAJOR / public presentation foundation**.
+- Root cause: public routes shared shell primitives and CSS tokens but had no
+  canonical theme registry, runtime persistence, preview boundary, or cache
+  invalidation contract; visual identity could not switch without code or a
+  redeploy.
+- Fix: ten preset definitions, inherited token engine, Hybrid fallback,
+  existing `website_settings` persistence, scoped `data-public-theme` CSS,
+  `/admin/theme` preview/apply/rollback, role checks, audit log, and
+  presentation-only `public-theme` cache invalidation.
+- Scope guard: no duplicate public routes/components and no product/variant,
+  pricing/inventory, cart/checkout/payment/order, auth/customer, RLS, or
+  configurator change. No migration was created or executed.
+- Verification: focused 4/4, full 943/943 tests, typecheck, lint (0 errors),
+  direct build 139/139 pages, and diff check all pass. Live authenticated E2E,
+  rapid theme switching, and deployment are pending because sandbox Supabase
+  is unavailable.
+- Status: **IMPLEMENTED LOCALLY; RUNTIME/STAGING EVIDENCE PENDING; RELEASE
+  NO-GO / NOT COMPLETE**.
+
+## PERF-001 — Public read amplification and cache boundary — 2026-08-15
+
+- Severity: **MAJOR — PRODUCTION PERFORMANCE / SCALE READINESS**.
+- Root causes: request-local-only memoization, unbounded public product reads,
+  shell variant-size read unnecessary for navigation, PDP full-catalog related
+  hydration, and `getPublicContent()` no-store behavior.
+- Targeted correction: tagged 60-second public caches; bounded shell,
+  catalog, content, and PDP reads; category-scoped catalog queries; removed
+  shell-only size query; checkout explicitly force-dynamic. No private order,
+  account, payment, or transaction result is shared through these caches.
+- Files: `lib/public-cache.ts`, public data-access/runtime modules,
+  `app/checkout/page.tsx`, and focused performance tests. Database/migration:
+  **NONE**.
+- Verification: focused 9/9 PASS; full 123/123 files and 939/939 tests PASS;
+  typecheck PASS; lint 0 errors / 34 existing warnings; direct Next build PASS
+  137/137 pages; diff check PASS.
+- Open risks: no live Supabase latency or cache-hit measurements in sandbox;
+  explicit admin mutation invalidation and production load/RUM evidence remain
+  pending; bounded catalog needs an owner-approved pagination follow-up if the
+  product count exceeds 120.
+- Status: **IMPLEMENTED LOCALLY; RUNTIME/STAGING VERIFICATION PENDING;
+  RELEASE NO-GO / NOT COMPLETE**.
+
+## UXUI-NAV-001 — Active underline and mega-menu bounding — 2026-08-15
+
+- Severity: **MAJOR — PUBLIC NAVIGATION CONSISTENCY / LARGE-DATA SAFETY**.
+- Root causes: landing CSS supplied a second active underline, while resolver
+  color facets were unbounded before mega-menu mapping.
+- Fix: removed only the duplicate landing `box-shadow`; resolver now returns a
+  maximum of six colors per group with overflow flags, and the existing mega
+  menu adds canonical `Lihat Semua Warna` links. No hidden full-color DOM is
+  rendered and empty groups remain absent.
+- Verification: focused navbar **14/14 PASS**; full **122/122 files,
+  935/935 tests PASS**; typecheck PASS; lint 0 errors with 34 existing
+  warnings; build PASS with 138/138 pages; diff check PASS; browser sanity
+  passed at **390, 768, 1024, 1280, 1440, and 1920px** with no horizontal
+  overflow; resolver edge cases cover **0, 1, 6, 20, 1,000, and 100,000**
+  colors.
+- Status: **IMPLEMENTED LOCALLY; OWNER VISUAL REVIEW RECOMMENDED**.

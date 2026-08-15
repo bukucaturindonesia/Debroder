@@ -3,16 +3,15 @@ import type { ReactNode } from "react";
 import { AccessibleAutoplayVideo } from "@/components/AccessibleAutoplayVideo";
 import { CampaignBanners } from "@/components/CampaignBanners";
 import { HeroSlider } from "@/components/HeroSlider";
+import { PublicShellFrame } from "@/components/PublicPage";
 import { PublicProductCard } from "@/components/PublicProductCard";
-import { PublicFooter } from "@/components/PublicFooter";
 import { PublicSectionFrame } from "@/components/PublicSectionFrame";
 import { ResponsivePicture } from "@/components/ResponsivePicture";
 import { ScrollButtons } from "@/components/ScrollButtons";
-import { SiteHeader } from "@/components/SiteHeader";
-import { StorefrontCartBoundary } from "@/components/storefront/StorefrontCartBoundary";
 import { fallbackImages, getProductImage, getStoreImage } from "@/lib/fallback-data";
 import { brandIcons } from "@/lib/icons";
 import { getPublicShellPageModel } from "@/lib/public-shell/runtime";
+import { getActivePublicTheme } from "@/lib/public-theme/runtime";
 import { getPublicContent } from "@/lib/public-data";
 import { absoluteUrl, siteConfig } from "@/lib/site";
 import type { HomepageSection, HomepageSectionItem, LandingSection, Product, Service } from "@/lib/types";
@@ -282,7 +281,7 @@ function ManagedHomepageSection({ section, setting, fallbackProducts = [] }: { s
               textPosition={setting?.text_position}
               action={configuredCta}
             />
-            <div id={carouselId} className="featured-media-grid mt-4 grid grid-cols-1 gap-3 md:mt-6 lg:grid-cols-2 lg:gap-4">
+            <div data-ui-grid="campaign" id={carouselId} className="featured-media-grid mt-4 grid grid-cols-1 gap-3 md:mt-6 lg:grid-cols-2 lg:gap-4">
               {items.slice(0, 2).map((item, index) => (
                 <EditorialCard
                   key={sectionItems[index]?.id || `${item.href}-${index}`}
@@ -305,7 +304,7 @@ function ManagedHomepageSection({ section, setting, fallbackProducts = [] }: { s
             textPosition={setting?.text_position}
             action={configuredCta}
           />
-          <div id={carouselId} className="trending-grid mt-4 md:mt-6">
+          <div data-ui-grid="editorial" id={carouselId} className="trending-grid mt-4 md:mt-6">
             {items.slice(0, 3).map((item, index) => (
               <EditorialCard
                 key={sectionItems[index]?.id || `${item.href}-${index}`}
@@ -338,7 +337,7 @@ function ManagedHomepageSection({ section, setting, fallbackProducts = [] }: { s
             </div>
           }
         />
-        <div id={carouselId} className="home-bleed-rail public-frame-rail fresh-drop-rail landing-commerce-rail no-scrollbar mt-4 flex snap-x snap-mandatory overflow-x-auto md:mt-6">
+        <div data-ui-grid="product-rail" id={carouselId} className="home-bleed-rail public-frame-rail fresh-drop-rail landing-commerce-rail no-scrollbar mt-4 flex snap-x snap-mandatory overflow-x-auto md:mt-6">
           {items.map((item, index) => (
             <ProductCard
               key={section.items[index]?.id || item.product.id || item.product.slug || `${item.product.nama}-${index}`}
@@ -353,9 +352,10 @@ function ManagedHomepageSection({ section, setting, fallbackProducts = [] }: { s
 }
 
 export default async function Home() {
-  const [content, shellModel] = await Promise.all([
+  const [content, shellModel, activeTheme] = await Promise.all([
     getPublicContent(),
-    getPublicShellPageModel()
+    getPublicShellPageModel(),
+    getActivePublicTheme()
   ]);
   const homeCategories = content.categories.slice(0, 7).map((category) => ({
     name: category.nama_kategori,
@@ -415,11 +415,8 @@ export default async function Home() {
   };
 
   return (
-    <StorefrontCartBoundary>
-    <main className="public-site debroder-landing min-h-screen bg-experience-canvas text-experience-ink">
-      <SiteHeader
-        navigationFacets={shellModel.data.header.navigationFacets}
-      />
+    <PublicShellFrame shellModel={shellModel} publicThemeId={activeTheme.id} footerTone="light" shellClassName="debroder-landing">
+      <div data-ui-system="landing" className="min-h-screen bg-experience-canvas text-experience-ink">
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(schema).replace(/</g, "\\u003c") }} />
       {!heroHasHeading ? <h1 className="sr-only">DEBRODER</h1> : null}
 
@@ -564,8 +561,9 @@ export default async function Home() {
         </section>
       </LandingSectionSlot>
 
-      <PublicFooter model={shellModel.data.footer} tone="light" />
-    </main>
-    </StorefrontCartBoundary>
+      {/* <SiteHeader /> and <PublicFooter model={shellModel.data.footer} tone="light" /> are mounted once by PublicShellFrame. */}
+      {/* <StorefrontCartBoundary> remains owned by the shared frame to keep the root server component boundary intact. */}
+      </div>
+    </PublicShellFrame>
   );
 }

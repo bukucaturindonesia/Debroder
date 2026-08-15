@@ -101,7 +101,11 @@ export async function GET(request: Request) {
       .eq("public_idempotency_key", key)
       .maybeSingle();
     if (error) throw error;
-    if (!data) return respond({ found: false }, 404);
+    // A recovery lookup is a state probe, not a resource navigation. A missing
+    // order is an expected negative result after a request was rejected before
+    // order creation, so keep it in the successful recovery contract instead of
+    // emitting a browser-visible 404 for a handled condition.
+    if (!data) return respond({ found: false }, 200);
 
     const trackingToken = deriveCheckoutTrackingToken(key, env.serviceRoleKey);
     if (data.public_access_token_hash !== sha256(trackingToken)) {

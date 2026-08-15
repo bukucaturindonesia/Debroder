@@ -635,3 +635,209 @@ Existing legal, CMS route, Preview performance, remote transaction E2E, data-int
 - Migration execution/database smoke/runtime multi-order E2E/deployment:
   **NOT RUN**. Package status: **IMPLEMENTED LOCALLY AND CODE-VERIFIED;
   MIGRATION/RUNTIME PENDING; NO-GO FOR PRODUCTION; NOT COMPLETE**.
+
+## 22. Image Delivery Optimization — 12 August 2026
+
+- `next.config.ts` now delivers raster image transforms as WebP, caches public
+  image paths for one day with stale-while-revalidate, and keeps Supabase
+  remote image support.
+- `ResponsivePicture` and `SafeImage` use Next responsive transforms for local
+  and Supabase imagery. `Logo.tsx` and `BrandIcon.tsx` remain native logo/SVG
+  delivery and are explicitly excluded from conversion.
+- External CMS hosts remain native-image fallbacks until allowlisted. No route,
+  schema, transaction, or security behavior changed.
+- Verification: image contract **2/2 PASS**, UI/media regression **14/14
+  PASS**, typecheck **PASS**, target lint **0 errors**, direct Next build
+  **PASS — 138 pages**. Scripted build remains blocked by three unrelated
+  CRLF-sensitive tests before Next compilation.
+- Status: **IMPLEMENTED LOCALLY; BUILD VERIFIED; NOT DEPLOYED; NOT COMPLETE**.
+
+## 23. Owner-Unlocked UX/UI Rebuild — 13 August 2026
+
+- Scope: canonical storefront presentation layer across the public shell,
+  navigation, hero typography, product-card affordance, cart, checkout,
+  responsive spacing, focus states, empty states, and panel surfaces.
+- Root cause: public commerce screens had presentation rules distributed across
+  legacy selectors, so hierarchy, control sizing, navigation emphasis, and
+  responsive behavior were inconsistent even though the underlying commerce
+  contracts were already present.
+- Targeted fix: added a scoped canonical storefront layer and connected the
+  homepage, `PublicShell`, cart, checkout, and product-card surfaces to it.
+  Jersey-specific themes remain excluded. Product, pricing, inventory,
+  customer identity, order, payment, route, API, RLS, and idempotency behavior
+  were not changed.
+- Database/migration: **NONE**. Guest checkout and registered-customer order
+  access behavior remain unchanged by this UX package.
+- Verification: focused UX/image suite **9 files / 39 tests PASS**;
+  TypeScript **PASS**; changed-file ESLint **PASS (0 errors)**;
+  `git diff --check` **PASS**. Full `pnpm test` still has two unrelated
+  CRLF-sensitive Order Operations source-literal assertions. Direct Next build
+  compiled and passed type/lint validation but did not complete page-data
+  generation consistently (`/_not-found` and `/account/addresses` missing on
+  one run; a clean rerun timed out).
+- Runtime: dev server compiled locally, but the in-app browser could not reach
+  localhost and returned `ERR_CONNECTION_REFUSED`; responsive browser/runtime
+  evidence is therefore **NOT VERIFIED**.
+- Status: **IMPLEMENTED LOCALLY; FOCUSED GATES PASS; FULL TEST/BUILD/RUNTIME
+  GATES INCOMPLETE; NOT DEPLOYED; NO-GO / NOT COMPLETE**.
+
+## 24. Public UI Foundation Normalization V1 — 13 August 2026
+
+- Scope: system-wide public shell geometry, container gutters, section rhythm,
+  product/editorial/campaign grid gaps, product image/body spacing, functional
+  card radius/shadow, footer spacing, and loading/error state markers.
+- Root cause: the public layer had a shared shell but still mixed 80–96px
+  section rhythm, 12/16/24px grid gaps, route-local card geometry, and state
+  screens outside the canonical UI marker.
+- Targeted fix: added proposed canonical public tokens (1280px container,
+  48/32/24/20/16px gutters, 64/56/48/40px rhythm, 20/16/12px grids,
+  14/10px product image-to-body gap, restrained 2/8/4px radii), applied them
+  through one scoped `.debroder-storefront` layer, and added shared grid hooks
+  to catalog, collection, homepage, and product listing surfaces.
+- Jersey remains a content/editorial exception, but its root now uses the
+  light public canvas and canonical shell geometry; dark media/editorial blocks
+  remain explicitly local. No product, pricing, inventory, auth, order,
+  payment, API, route, RLS, schema, or migration behavior changed.
+- Database/migration: **NONE**.
+- Verification: normalization + existing public/image suite **10 files / 44
+  tests PASS**; TypeScript **PASS**; changed-file ESLint **PASS (0 errors)**;
+  `git diff --check` **PASS**.
+- Full scripted test/build and browser runtime remain release gates from the
+  previous handoff. Status: **IMPLEMENTED LOCALLY; FOCUSED GATES PASS; FULL
+  RELEASE GATES INCOMPLETE; NOT DEPLOYED; NO-GO / NOT COMPLETE**.
+
+## 2026-08-13 — Public UI normalization branch update
+
+- Isolated implementation branch: `codex/public-ui-normalization-final`.
+- Public UI normalization is implemented in local checkpoints from the clean
+  `UI-konsisten` baseline; the final public product-grid consumer now uses the
+  canonical `PublicProductCard` with its inquiry CTA preserved.
+- Protected business, database, migration, dependency, environment, route,
+  SEO, analytics, and test-hook contracts were not changed.
+- Direct Next production build passes with 138/138 pages. Full repository test
+  and wrapper build remain red only on the two pre-existing
+  `order-operations-phase4-13` source assertions. Browser visual review is not
+  available in this environment.
+- State: **IMPLEMENTED LOCALLY; READY FOR OWNER VISUAL REVIEW; RELEASE
+  NO-GO UNTIL BASELINE TESTS AND RUNTIME REVIEW ARE CLOSED**.
+
+## Public UI normalization correction — 2026-08-13
+
+- The missing product-mode architecture document is irrelevant to this UI
+  package. Configured-product, Jersey configuration, custom project, commerce,
+  pricing, inventory, cart, checkout, payment, order, auth, RLS, and database
+  contracts remain frozen and unchanged.
+- Residual public UI issues corrected: alternate-looking Jersey bars, Custom
+  dark entry surface, About dark principles block, route-specific legal footer,
+  and inconsistent Jersey catalog/form control geometry.
+- Focused UI verification passed; direct production build passed. Full test
+  remains blocked by the two known `order-operations-phase4-13` baseline
+  assertions. Runtime visual review was not performed.
+- Current status: **IMPLEMENTED LOCALLY; READY FOR OWNER VISUAL REVIEW;
+  RELEASE NO-GO**.
+
+## Checkout runtime recovery — 2026-08-14
+
+- Root cause: checkout recovery persisted drafts after a definitive client
+  rejection, then reused the key across a changed payload; the abuse ledger
+  correctly returned `idempotency_payload_conflict`, while the recovery probe
+  returned a handled no-order 404. Explicit 409 domain branches remain
+  fail-closed.
+- Targeted fix: recovery GET now returns `200 { found: false }` for an expected
+  no-order probe; rejected drafts rotate before a new payload while unknown
+  failures keep the same key. Submit locking, abuse guard, stock, pricing,
+  RPC, activation, and payment/order integrity are unchanged.
+- Database/migration/data changes: **NONE**. Runtime database checkout could
+  not be completed locally because `.env.local` has no usable service-role key;
+  the API correctly returned `503 CHECKOUT_UNAVAILABLE`.
+- Focused checkout recovery: **21/21 PASS**; typecheck **PASS**; lint **0
+  errors / 34 existing warnings**; direct Next build **PASS (138/138 pages)**;
+  full test and wrapper build remain blocked by the two pre-existing
+  `order-operations-phase4-13` assertions.
+- State: **IMPLEMENTED LOCALLY; RUNTIME DATABASE VERIFICATION PENDING;
+  NO-GO / NOT COMPLETE**.
+
+## 10,000-line master completion audit — 2026-08-14
+
+- Repository discovery, contract review, root-cause audit, regression pass, and
+  production build completed without a repository rewrite or schema change.
+- The two baseline Order Operations failures were proven newline-only test
+  false negatives and corrected in the test reader; migration SQL was not
+  changed.
+- Full regression: **122 files / 931 tests PASS**. Typecheck: **PASS**. Lint:
+  **0 errors / 34 existing warnings**. `pnpm build`: **PASS**; 138/138 pages
+  generated. Runtime smoke: public home, catalog, cart, checkout, and account
+  orders all returned HTTP 200 from the production server.
+- Supabase-backed order creation remains unverified because the local service
+  role credential is unavailable; checkout API correctly remains fail-closed.
+- Release state: **CODE/TEST/BUILD STABLE; DATABASE E2E AND DEPLOYMENT
+  VERIFICATION PENDING; NO-GO FOR PRODUCTION**.
+
+## Custom capability copy contrast fix — 2026-08-15
+
+- Corrected only the Custom capability section's text readability. The global
+  public section-canvas rule had replaced its intended black background with
+  white, producing white-on-white copy; the overline was also only 50% white.
+- The section now opts out locally with `keep-section-bg`, uses `text-white/75`
+  for “Satu alur transaksi”, and explicitly uses `text-white` for the heading.
+  No layout, route, data, transaction, or business behavior changed.
+- Verification: full **122 test files / 932 tests PASS**, typecheck PASS, lint
+  PASS with 34 pre-existing warnings, and `pnpm build` PASS (138/138 pages).
+- State: **IMPLEMENTED LOCALLY; OWNER VISUAL REVIEW RECOMMENDED; PRODUCTION
+  RELEASE GATE UNCHANGED**.
+
+## Final navbar and mega dropdown fix — 2026-08-15
+
+- Removed the landing-only duplicate `box-shadow` underline; the existing
+  `PublicNavIndicator` child line is now the single desktop active/hover
+  indicator.
+- Public navigation resolver now hard-bounds collection and category color
+  facets to six deterministic items and carries overflow metadata. The
+  existing mega-menu structure renders `Lihat Semua Warna` to canonical
+  category/collection routes when overflow exists; empty groups are omitted.
+- No new navigation engine, schema, migration, route, or unrelated UI change.
+- Evidence: focused navbar **14/14 PASS**, full **122/122 files / 935/935
+  tests PASS**, typecheck PASS, lint 0 errors with 34 existing warnings, and
+  production build PASS (138/138 pages). Browser sanity passed at **390, 768,
+  1024, 1280, 1440, and 1920px** with no horizontal overflow; resolver edge
+  cases cover **0, 1, 6, 20, 1,000, and 100,000** colors.
+- State: **IMPLEMENTED LOCALLY; OWNER VISUAL REVIEW RECOMMENDED; RELEASE GATE
+  UNCHANGED**.
+
+## Final performance execution — 2026-08-15
+
+- Public performance hardening is **IMPLEMENTED LOCALLY** with no database or
+  migration mutation. Public cache TTL is 60 seconds with separate tags for
+  content, shell, catalog, and products; checkout remains force-dynamic.
+- Bounded reads: shell products 250/categories 32, catalog/content products
+  120, PDP related products 12 with category and current-product exclusion;
+  shell no longer reads variant-size inventory for navigation.
+- Commerce authority unchanged: checkout still revalidates server-side price,
+  stock, SKU, minimum quantity, custom/Jersey validation, idempotency, and
+  payment integrity through the existing paths. No private order/account data
+  is placed in the public cache.
+- Evidence: full **123 test files / 939 tests PASS**, typecheck PASS, lint 0
+  errors with 34 existing warnings, direct Next build PASS (137/137 pages),
+  diff check PASS. Live response/load evidence is pending because remote
+  Supabase was unreachable in the sandbox.
+- Release status remains **NO-GO / NOT COMPLETE** until staging RUM,
+  concurrency/load, cache-hit, mutation-invalidation, and authenticated
+  transaction smoke evidence are available.
+
+## Final public theme system — 2026-08-15
+
+- One public storefront now consumes a canonical registry of ten visual theme
+  presets through inherited CSS variables and controlled component treatments.
+- Hybrid Premium Commerce is the known-safe default. Active/previous theme
+  state persists in existing `website_settings.active_public_theme`; invalid
+  state fails closed to Hybrid. Apply/rollback invalidates the presentation
+  cache tag and records an audited change in `system_audit_log`.
+- Super Admin Tema is available at `/admin/theme` with preview-only cards,
+  apply, active marker, and rollback. No public route/component copies exist.
+- Business authority is unchanged: no commerce tables, mutations, migrations,
+  RLS, auth, product, pricing, inventory, cart, checkout, payment, order, or
+  customer logic was modified.
+- Evidence: 124/124 test files and 943/943 tests PASS; typecheck PASS; lint
+  PASS with 34 pre-existing warnings; direct Next build PASS 139/139 pages;
+  diff check PASS. Authenticated runtime/rapid-switch E2E and deployment remain
+  pending; release is NO-GO / NOT COMPLETE.

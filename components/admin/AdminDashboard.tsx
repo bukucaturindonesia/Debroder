@@ -56,6 +56,9 @@ const OrderManagementAdmin = dynamic(
 const WebsiteSettingsAdmin = dynamic(
   () => import("@/components/admin/WebsiteSettingsAdmin").then((module) => module.WebsiteSettingsAdmin)
 );
+const PublicThemeAdmin = dynamic(
+  () => import("@/components/admin/PublicThemeAdmin").then((module) => module.PublicThemeAdmin)
+);
 
 type FieldType =
   | "text"
@@ -860,6 +863,15 @@ const tableConfigs: TableConfig[] = [
     fields: []
   },
   {
+    key: "theme",
+    label: "Tema Public Storefront",
+    navLabel: "Tema",
+    href: "/admin/theme",
+    table: "",
+    description: "Preview, terapkan, dan rollback identitas visual public storefront.",
+    fields: []
+  },
+  {
     key: "contact-footer",
     label: "Kontak & Footer",
     navLabel: "Kontak & Footer",
@@ -940,7 +952,8 @@ const primaryNavigationKeys = [
   "site-media",
   "campaign-banners",
   "orders",
-  "website-settings"
+  "website-settings",
+  "theme"
 ];
 
 const primaryNavigation = primaryNavigationKeys
@@ -2101,7 +2114,7 @@ export function AdminDashboard() {
               <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-5">
                 {tableConfigs
                   .filter((config) =>
-                    ["homepage-sections", "page-hero", "products", "categories", "services", "store", "media", "site-media", "campaign-banners", "orders", "website-settings"].includes(
+                    ["homepage-sections", "page-hero", "products", "categories", "services", "store", "media", "site-media", "campaign-banners", "orders", "website-settings", "theme"].includes(
                       config.key
                     )
                   )
@@ -2230,6 +2243,8 @@ export function AdminDashboard() {
             <OrderManagementAdmin />
           ) : activeKey === "website-settings" ? (
             <WebsiteSettingsAdmin />
+          ) : activeKey === "theme" ? (
+            <PublicThemeAdmin />
           ) : (
             <div className="mt-6 grid gap-6 xl:grid-cols-[0.9fr_1.1fr]">
               <form

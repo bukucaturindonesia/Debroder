@@ -62,6 +62,17 @@ describe("public page experience V2", () => {
     expect(hub).not.toContain("wa.me");
   });
 
+  it("keeps the Custom capability copy on its intended dark surface with readable contrast", () => {
+    const hub = read("components/custom/CustomHub.tsx");
+    const capabilityStart = hub.indexOf('<section className="keep-section-bg bg-black');
+    const capability = hub.slice(capabilityStart, hub.indexOf("</section>", capabilityStart) + "</section>".length);
+
+    expect(capabilityStart).toBeGreaterThan(-1);
+    expect(capability).toContain('text-white/75">Satu alur transaksi');
+    expect(capability).toContain('className="mt-3 max-w-4xl text-white text-[clamp(2.3rem,5vw,5rem)]');
+    expect(capability).toContain("Dari kebutuhan sampai produksi, setiap keputusan tetap tercatat.");
+  });
+
   it("publishes accessible legal drafts at existing canonical routes without claiming legal approval", () => {
     const terms = read("app/legal/terms/page.tsx");
     const privacy = read("app/legal/privacy/page.tsx");

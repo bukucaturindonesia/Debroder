@@ -23,6 +23,7 @@ type CheckoutDraft = {
   accessToken: string;
   createdAt: string;
   payloadHash?: string;
+  lastKnownOutcome?: "rejected";
 };
 type CheckoutApiPayload = {
   code?: string;
@@ -131,6 +132,10 @@ export function CheckoutClient({ stores }: { stores: StoreOption[] }) {
         return;
       }
       draft.current = stored;
+      if (stored.lastKnownOutcome === "rejected") {
+        if (active) setRecovering(false);
+        return;
+      }
       const result = await recoverStoredCheckout(stored);
       if (!active) return;
       if (result.kind === "found") {
@@ -224,25 +229,29 @@ export function CheckoutClient({ stores }: { stores: StoreOption[] }) {
     let currentDraft = draft.current ?? readStoredDraft() ?? createDraft();
 
     if (currentDraft.payloadHash && currentDraft.payloadHash !== payloadHash) {
-      const recovery = await recoverStoredCheckout(currentDraft);
-      if (recovery.kind === "found") {
-        storeOrderSession(currentDraft, recovery.payload);
-        sessionStorage.removeItem(RECOVERY_KEY);
-        router.replace(recovery.payload.confirmationUrl!);
-        setSubmitting(false);
-        return;
-      }
-      if (recovery.kind === "missing" || recovery.kind === "expired") {
+      if (currentDraft.lastKnownOutcome === "rejected") {
         currentDraft = createDraft();
       } else {
-        setError(recovery.message);
-        if (recovery.kind === "temporary") setRetryAfter(recovery.retryAfter);
-        setSubmitting(false);
-        return;
+        const recovery = await recoverStoredCheckout(currentDraft);
+        if (recovery.kind === "found") {
+          storeOrderSession(currentDraft, recovery.payload);
+          sessionStorage.removeItem(RECOVERY_KEY);
+          router.replace(recovery.payload.confirmationUrl!);
+          setSubmitting(false);
+          return;
+        }
+        if (recovery.kind === "missing" || recovery.kind === "expired") {
+          currentDraft = createDraft();
+        } else {
+          setError(recovery.message);
+          if (recovery.kind === "temporary") setRetryAfter(recovery.retryAfter);
+          setSubmitting(false);
+          return;
+        }
       }
     }
 
-    currentDraft = { ...currentDraft, payloadHash };
+    currentDraft = { ...currentDraft, payloadHash, lastKnownOutcome: undefined };
     draft.current = currentDraft;
     sessionStorage.setItem(RECOVERY_KEY, JSON.stringify(currentDraft));
 
@@ -279,6 +288,11 @@ export function CheckoutClient({ stores }: { stores: StoreOption[] }) {
 
         const retrySeconds = retryAfterFromResponse(response);
         if (retrySeconds > 0) setRetryAfter(retrySeconds);
+        if (response.status >= 400 && response.status < 500 && response.status !== 429) {
+          const rejectedDraft = { ...currentDraft, lastKnownOutcome: "rejected" as const };
+          draft.current = rejectedDraft;
+          sessionStorage.setItem(RECOVERY_KEY, JSON.stringify(rejectedDraft));
+        }
         const reference = payload.reference ? ` Referensi: ${payload.reference}.` : "";
         const waiting = retrySeconds > 0 ? ` Coba lagi dalam ${retrySeconds} detik.` : "";
         setError(`${payload.error || "Pesanan belum dapat dibuat."}${waiting}${reference}`);
@@ -301,8 +315,8 @@ export function CheckoutClient({ stores }: { stores: StoreOption[] }) {
   if (!cart.items.length) return <CheckoutMessage title="Keranjang masih kosong." action="/koleksi" actionLabel="Lihat Koleksi" />;
 
   return (
-    <section className="bg-[#f6f5f0] px-4 py-10 sm:py-16">
-      <div className="mx-auto max-w-6xl">
+    <section data-ui-surface="checkout" className="debroder-checkout-surface bg-[#f6f5f0] px-4 py-10 sm:py-16">
+      <div className="section-shell">
         <p className="text-xs font-semibold uppercase tracking-[0.18em] text-black/45">Checkout</p>
         <h1 className="mt-3 text-3xl font-semibold sm:text-5xl">Selesaikan pesanan dengan cepat</h1>
         <p className="mt-3 max-w-2xl text-sm leading-7 text-black/60">Anda dapat melanjutkan sebagai tamu atau memakai akun pelanggan. Ketersediaan produk, konfigurasi, jumlah, dan harga diperiksa kembali saat pesanan dibuat.</p>
@@ -358,7 +372,7 @@ export function CheckoutClient({ stores }: { stores: StoreOption[] }) {
             </Panel>
           </div>
 
-          <aside className="h-fit rounded-2xl bg-white p-5 sm:p-6 lg:sticky lg:top-24">
+          <aside data-ui-surface="checkout-summary" className="public-panel public-checkout-summary h-fit rounded-2xl bg-white p-5 sm:p-6 lg:sticky lg:top-24">
             <h2 className="text-xl font-semibold">Ringkasan pesanan</h2>
             <div className="mt-5 grid gap-4">{readyItems.map((item) => (
               <div key={item.lineId} className="grid grid-cols-[minmax(0,1fr)_auto] items-start gap-3 border-b border-black/10 pb-4 text-sm">
@@ -430,6 +444,8 @@ async function recoverStoredCheckout(stored: CheckoutDraft): Promise<RecoveryRes
     const response = await fetch(`/api/checkout?idempotencyKey=${encodeURIComponent(stored.idempotencyKey)}`, { cache: "no-store" });
     const payload = await readCheckoutPayload(response);
     if (response.ok && payload.found && payload.confirmationUrl) return { kind: "found", payload };
+    if (response.ok && payload.found === false) return { kind: "missing" };
+    // Keep compatibility with a pre-fix server during a rolling deployment.
     if (response.status === 404) return { kind: "missing" };
     if (response.status === 410) return { kind: "expired" };
     const retryAfter = retryAfterFromResponse(response);
@@ -490,9 +506,9 @@ function readStoredDraft(): CheckoutDraft | null {
 }
 
 function CheckoutMessage({ title, action, actionLabel }: { title: string; action?: string; actionLabel?: string }) {
-  return <section className="bg-[#f6f5f0] px-4 py-24"><div className="mx-auto max-w-xl rounded-2xl bg-white p-8 text-center"><h1 className="text-2xl font-semibold">{title}</h1>{action ? <Link href={action} className="mt-5 inline-flex rounded-full bg-black px-5 py-3 font-semibold text-white hover:bg-black/75">{actionLabel}</Link> : null}</div></section>;
+  return <section data-ui-state="checkout-message" className="debroder-checkout-surface bg-[#f6f5f0] px-4 py-24"><div className="public-panel mx-auto max-w-xl rounded-2xl bg-white p-8 text-center"><h1 className="text-2xl font-semibold">{title}</h1>{action ? <Link href={action} className="mt-5 inline-flex rounded-full bg-black px-5 py-3 font-semibold text-white hover:bg-black/75">{actionLabel}</Link> : null}</div></section>;
 }
 
-function Panel({ title, children }: { title: string; children: React.ReactNode }) { return <section className="rounded-2xl bg-white p-5 sm:p-6"><h2 className="text-xl font-semibold">{title}</h2><div className="mt-5">{children}</div></section>; }
+function Panel({ title, children }: { title: string; children: React.ReactNode }) { return <section data-ui-surface="checkout-panel" className="public-panel rounded-2xl bg-white p-5 sm:p-6"><h2 className="text-xl font-semibold">{title}</h2><div className="mt-5">{children}</div></section>; }
 function Field({ label, children }: { label: string; children: React.ReactNode }) { return <label className="grid gap-2 text-sm font-semibold [&_input]:min-h-11 [&_input]:rounded-xl [&_input]:border [&_input]:border-black/15 [&_input]:px-3 [&_select]:min-h-11 [&_select]:rounded-xl [&_select]:border [&_select]:border-black/15 [&_select]:px-3 [&_textarea]:rounded-xl [&_textarea]:border [&_textarea]:border-black/15 [&_textarea]:p-3">{label}{children}</label>; }
 function Choice({ checked, disabled, onChange, title, detail }: { checked: boolean; disabled?: boolean; onChange: () => void; title: string; detail: string }) { return <button type="button" disabled={disabled} onClick={onChange} className={`rounded-2xl border p-4 text-left disabled:opacity-40 ${checked ? "border-[#063d24] bg-emerald-50" : "border-black/10"}`}><span className="font-semibold">{title}</span><span className="mt-1 block text-xs leading-5 text-black/55">{detail}</span></button>; }

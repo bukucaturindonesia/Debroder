@@ -77,10 +77,10 @@ export function LegalDocumentPage({
           </div>
         </div>
 
-        <footer className="border-t border-[#e5e5e5] bg-[#f5f5f5] py-10 sm:py-14">
+        <section className="border-t border-[#e5e5e5] bg-[#f5f5f5] py-10 sm:py-14" aria-labelledby="legal-help-heading">
           <div className="section-shell flex flex-col items-start justify-between gap-6 sm:flex-row sm:items-center">
             <div>
-              <h2 className="text-xl font-semibold">Butuh bantuan mengenai transaksi?</h2>
+              <h2 id="legal-help-heading" className="text-xl font-semibold">Butuh bantuan mengenai transaksi?</h2>
               <p className="mt-2 text-sm leading-6 text-black/60">Gunakan kanal bantuan untuk informasi operasional yang saat ini berlaku.</p>
             </div>
             <div className="flex flex-col gap-3 sm:flex-row">
@@ -88,7 +88,7 @@ export function LegalDocumentPage({
               <Link href="/cara-order" className="inline-flex min-h-12 items-center justify-center rounded-full border border-black/20 px-6 text-sm font-semibold">Cara pemesanan</Link>
             </div>
           </div>
-        </footer>
+        </section>
       </article>
     </PublicShell>
   );

@@ -1,5 +1,6 @@
 "use client";
 
+import { getImageProps } from "next/image";
 import type { CSSProperties } from "react";
 import { useEffect, useState } from "react";
 
@@ -47,17 +48,55 @@ export function ResponsivePicture({
     objectFit
   } as CSSProperties;
 
+  const canOptimize = (src: string) => {
+    const isLogoAsset = /(?:^|\/)logo(?:[-_.\/]|$)/i.test(src);
+    return !isLogoAsset && (src.startsWith("/") || /https:\/\/[^/]+\.supabase\.co\//.test(src));
+  };
+  const optimizedDesktop = canOptimize(desktopSource)
+    ? getImageProps({
+        src: desktopSource,
+        alt,
+        fill: true,
+        sizes: "100vw",
+        priority,
+        className: `responsive-picture-img ${className}`,
+        style: {
+          objectFit,
+          objectPosition: desktopObjectPosition,
+          transform: Number(desktopZoom) > 1 ? `scale(${desktopZoom})` : undefined,
+          transformOrigin: desktopObjectPosition
+        }
+      }).props
+    : null;
+  const optimizedMobile = canOptimize(mobileSource)
+    ? getImageProps({
+        src: mobileSource,
+        alt,
+        fill: true,
+        sizes: "100vw",
+        priority,
+        className: `responsive-picture-img ${className}`,
+        style: {
+          objectFit,
+          objectPosition: mobileObjectPosition || desktopObjectPosition,
+          transform: Number(mobileZoom || desktopZoom) > 1 ? `scale(${mobileZoom || desktopZoom})` : undefined,
+          transformOrigin: mobileObjectPosition || desktopObjectPosition
+        }
+      }).props
+    : null;
+
   return (
-    <picture className="block h-full w-full">
-      <source media="(max-width: 767px)" srcSet={mobileSource} />
+    <picture className="relative block h-full w-full">
+      <source media="(max-width: 767px)" srcSet={optimizedMobile?.srcSet || mobileSource} sizes={optimizedMobile?.sizes} />
       <img
-        src={desktopSource}
+        {...optimizedDesktop}
+        src={optimizedDesktop?.src || desktopSource}
         alt={alt}
-        className={`responsive-picture-img ${className}`}
-        loading={priority ? "eager" : "lazy"}
-        fetchPriority={priority ? "high" : "auto"}
-        decoding={priority ? "sync" : "async"}
-        style={imageStyle}
+        className={optimizedDesktop?.className || `responsive-picture-img ${className}`}
+        loading={optimizedDesktop?.loading || (priority ? "eager" : "lazy")}
+        fetchPriority={optimizedDesktop?.fetchPriority || (priority ? "high" : "auto")}
+        decoding={optimizedDesktop?.decoding || (priority ? "sync" : "async")}
+        style={optimizedDesktop?.style || imageStyle}
         onError={() => setHasError(true)}
       />
     </picture>

@@ -1,6 +1,6 @@
 export default function JerseyLoading() {
   return (
-    <main className="min-h-screen bg-[#050505] text-white" aria-busy="true" aria-label="Memuat halaman Jersey">
+    <main data-ui-system="canonical" className="debroder-storefront min-h-screen bg-brand-offWhite text-brand-charcoal" aria-busy="true" aria-label="Memuat halaman Jersey">
       <div className="h-14 bg-[#0a0a0a] md:h-16" />
       <div className="aspect-[4/5] w-full animate-pulse bg-[#101010] motion-reduce:animate-none md:aspect-[16/7]" />
       <div className="mx-auto max-w-4xl px-4 py-10 text-center sm:px-6 md:py-14">

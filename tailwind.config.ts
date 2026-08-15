@@ -27,8 +27,8 @@ const config: Config = {
           charcoal: "#111111",
           softGray: "#E5E5E5",
           muted: "#757575",
-          green: "#063D24",
-          greenDark: "#063D24"
+          green: "var(--color-brand-primary)",
+          greenDark: "var(--color-brand-primary)"
         }
       },
       boxShadow: {

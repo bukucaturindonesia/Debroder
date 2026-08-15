@@ -1,6 +1,6 @@
 export default function Loading() {
   return (
-    <main className="min-h-screen bg-brand-offWhite text-brand-charcoal">
+    <main data-ui-system="canonical" className="debroder-storefront min-h-screen bg-brand-offWhite text-brand-charcoal">
       <div className="section-shell py-10">
         <div className="rounded-[32px]  bg-brand-offWhite p-6  sm:p-10">
           <div className="h-4 w-36 animate-pulse rounded-full bg-brand-softGray" />

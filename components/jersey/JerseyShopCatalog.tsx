@@ -276,7 +276,7 @@ export function JerseyShopCatalog({ products }: { products: Product[] }) {
   }
 
   return (
-    <section className="bg-white pb-16 text-black sm:pb-20">
+    <section data-ui-surface="commerce-catalog" className="jersey-commerce-catalog bg-white pb-16 text-black sm:pb-20">
       <header className="section-shell py-10 sm:py-14">
         <p className="text-xs font-bold uppercase tracking-[0.16em] text-black/50">
           DEBRODER JERSEY
@@ -355,11 +355,12 @@ export function JerseyShopCatalog({ products }: { products: Product[] }) {
 
           <div className="min-w-0">
             {shown.length ? (
-              <div className="grid grid-cols-2 gap-x-3 gap-y-10 sm:gap-x-5 md:grid-cols-2 lg:grid-cols-3 lg:gap-x-6 lg:gap-y-14">
+              <div data-ui-grid="product" className="grid grid-cols-2 gap-x-3 gap-y-10 sm:gap-x-5 md:grid-cols-2 lg:grid-cols-3 lg:gap-x-6 lg:gap-y-14">
                 {shown.map((product) => (
                   <PublicProductCard
                     key={product.id || product.slug || product.nama}
                     product={product}
+                    variant="rail"
                     imageSizes="(min-width: 1280px) 31vw, (min-width: 1024px) 30vw, (min-width: 768px) 48vw, 50vw"
                   />
                 ))}

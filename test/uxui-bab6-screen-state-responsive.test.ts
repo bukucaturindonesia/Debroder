@@ -36,11 +36,11 @@ describe("UX/UI Bab 6 screen, state, and responsive contract", () => {
     const productCard = read("components/PublicProductCard.tsx");
     const serviceCard = read("components/ServiceCatalog.tsx");
 
-    expect(styles).toContain("--content-gutter: 20px;");
+    expect(styles).toContain("--content-gutter: 16px;");
     expect(styles).toContain("@media (min-width: 768px)");
     expect(styles).toContain("@media (min-width: 1024px)");
-    expect(styles).toContain("@media (min-width: 1440px)");
-    expect(styles).toContain("--container-max: 1440px;");
+    expect(styles).toContain("@media (min-width: 1280px)");
+    expect(styles).toContain("--container-max: 1280px;");
     expect(styles).toContain("width: min(var(--content-max)");
     expect(productCard).not.toContain("showActions");
     expect(productCard).toContain("public-product-card-link");

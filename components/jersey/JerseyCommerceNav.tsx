@@ -11,17 +11,12 @@ export function JerseyCommerceNav() {
 
   return (
     <nav
-      aria-label="Navigasi commerce Jersey"
+      aria-label="Tab katalog Jersey"
+      data-ui-context-tabs
       className="border-b border-black/10 bg-white text-[#111111]"
     >
-      <div className="section-shell grid min-h-14 grid-cols-1 items-center gap-x-8 sm:grid-cols-[auto_minmax(0,1fr)]">
-        <Link
-          href="/jersey/shop"
-          className="inline-flex min-h-12 items-center whitespace-nowrap font-heading text-xl font-extrabold uppercase tracking-[0.035em] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-black"
-        >
-          DEBRODER JERSEY
-        </Link>
-        <div className="no-scrollbar flex min-h-12 snap-x snap-proximity items-center gap-6 overflow-x-auto overscroll-x-contain sm:justify-end">
+      <div className="section-shell flex min-h-12 items-center justify-end">
+        <div className="no-scrollbar flex min-h-12 max-w-full snap-x snap-proximity items-center gap-5 overflow-x-auto overscroll-x-contain sm:gap-6">
           {JERSEY_COMMERCE_NAV_ITEMS.map((item) => {
             const category = item.href.match(/category=([^&]+)/)?.[1] || "";
             const active = category

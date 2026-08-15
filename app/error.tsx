@@ -10,7 +10,7 @@ export default function AppError({
   reset: () => void;
 }) {
   return (
-    <main className="grid min-h-[70vh] place-items-center bg-[#f6f5f0] px-5 py-16 text-center">
+    <main data-ui-system="canonical" className="debroder-storefront grid min-h-[70vh] place-items-center bg-[#f6f5f0] px-5 py-16 text-center">
       <section
         role="alert"
         className="w-full max-w-lg rounded-[28px] border border-black/10 bg-white p-7 sm:p-9"

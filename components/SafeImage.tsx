@@ -52,7 +52,8 @@ export function SafeImage({
     transform: Number(zoom) > 1 ? `scale(${zoom})` : undefined,
     transformOrigin: position
   };
-  const canOptimize = currentSrc.startsWith("/") || /https:\/\/[^/]+\.supabase\.co\//.test(currentSrc);
+  const isLogoAsset = /(?:^|\/)logo(?:[-_.\/]|$)/i.test(currentSrc);
+  const canOptimize = !isLogoAsset && (currentSrc.startsWith("/") || /https:\/\/[^/]+\.supabase\.co\//.test(currentSrc));
   const imageClassName = `${fill ? "absolute inset-0 h-full w-full" : ""} ${className}`.trim();
   const handleError = () => {
     const fallback = fallbackSrc?.trim() || "";

@@ -9,6 +9,10 @@ export const metadata: Metadata = {
   robots: { index: false, follow: false }
 };
 
+// Keep the transactional boundary request-dynamic even though its store
+// options come from a public, short-lived cache.
+export const dynamic = "force-dynamic";
+
 export default async function CheckoutPage() {
   const content = await getPublicContent();
   const stores = content.stores

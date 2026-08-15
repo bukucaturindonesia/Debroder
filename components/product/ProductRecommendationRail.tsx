@@ -91,7 +91,7 @@ export function ProductRecommendationRail({
               key={product.id || product.slug || product.nama}
               className="w-[72vw] max-w-[300px] shrink-0 snap-start sm:w-[42vw] md:w-[30vw] lg:w-[23vw]"
             >
-              <PublicProductCard product={product} />
+              <PublicProductCard product={product} variant="rail" />
             </div>
           ))}
         </div>

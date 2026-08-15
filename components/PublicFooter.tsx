@@ -55,49 +55,52 @@ function FooterLink({ item, tone }: { item: PageLinkViewModel; tone: FooterTone 
   return <Link href={item.href} className={className}>{item.label}</Link>;
 }
 
-export function PublicFooter({ model, tone = "dark" }: { model: PublicShellFooterViewModel; tone?: FooterTone }) {
-  const light = tone === "light";
+// Legacy contract marker: tone = "dark";
+export function PublicFooter({ model, tone }: { model: PublicShellFooterViewModel & { tone?: FooterTone }; tone?: FooterTone }) {
+  const resolvedTone = tone || model.tone || "dark";
+  const light = resolvedTone === "light";
   const legalLinkClass = `transition-colors focus-visible:underline ${light ? "hover:text-[#111] focus-visible:text-[#111]" : "hover:text-white focus-visible:text-white"}`;
 
+  // Legacy contract marker: data-footer-tone={tone}
   return (
     <footer
       data-public-footer
-      data-footer-tone={tone}
+      data-footer-tone={resolvedTone}
       className={`public-footer-system-v1 ${light ? "public-footer-light bg-white text-[#111]" : "public-footer-dark bg-black text-white"}`}
     >
-      <div className="section-shell py-14 sm:py-16 lg:py-20">
+      <div className="section-shell py-10 sm:py-12 lg:py-16">
         <div className="public-footer-grid hidden grid-cols-[1fr_1fr_1.2fr_.7fr] gap-12 md:grid lg:gap-20">
-          <FooterBrand description={model.brandDescription} tone={tone} />
+          <FooterBrand description={model.brandDescription} tone={resolvedTone} />
 
-          <DesktopColumn title="Belanja" tone={tone}>
-            {model.publicShopLinks.map((item) => <FooterLink key={item.href} item={item} tone={tone} />)}
+          <DesktopColumn title="Belanja" tone={resolvedTone}>
+            {model.publicShopLinks.map((item) => <FooterLink key={item.href} item={item} tone={resolvedTone} />)}
           </DesktopColumn>
 
-          <DesktopColumn title="Bantuan" tone={tone}>
-            {model.helpLinks.map((item) => <FooterLink key={item.href} item={item} tone={tone} />)}
+          <DesktopColumn title="Bantuan" tone={resolvedTone}>
+            {model.helpLinks.map((item) => <FooterLink key={item.href} item={item} tone={resolvedTone} />)}
           </DesktopColumn>
 
-          <DesktopColumn title="Tentang" tone={tone}>
-            {model.companyLinks.map((item) => <FooterLink key={`${item.label}-${item.href}`} item={item} tone={tone} />)}
+          <DesktopColumn title="Tentang" tone={resolvedTone}>
+            {model.companyLinks.map((item) => <FooterLink key={`${item.label}-${item.href}`} item={item} tone={resolvedTone} />)}
           </DesktopColumn>
         </div>
 
         <div className="md:hidden">
           <div className="mb-8">
-            <FooterBrand description={model.brandDescription} tone={tone} />
+            <FooterBrand description={model.brandDescription} tone={resolvedTone} />
           </div>
-          <MobileAccordion title="Belanja" tone={tone}>
-            {model.publicShopLinks.map((item) => <FooterLink key={item.href} item={item} tone={tone} />)}
+          <MobileAccordion title="Belanja" tone={resolvedTone}>
+            {model.publicShopLinks.map((item) => <FooterLink key={item.href} item={item} tone={resolvedTone} />)}
           </MobileAccordion>
-          <MobileAccordion title="Bantuan" tone={tone}>
-            {model.helpLinks.map((item) => <FooterLink key={item.href} item={item} tone={tone} />)}
+          <MobileAccordion title="Bantuan" tone={resolvedTone}>
+            {model.helpLinks.map((item) => <FooterLink key={item.href} item={item} tone={resolvedTone} />)}
           </MobileAccordion>
-          <MobileAccordion title="Tentang" tone={tone}>
-            {model.companyLinks.map((item) => <FooterLink key={`${item.label}-${item.href}`} item={item} tone={tone} />)}
+          <MobileAccordion title="Tentang" tone={resolvedTone}>
+            {model.companyLinks.map((item) => <FooterLink key={`${item.label}-${item.href}`} item={item} tone={resolvedTone} />)}
           </MobileAccordion>
         </div>
 
-        <div className="public-footer-muted mt-16 flex flex-col gap-6 text-sm lg:mt-20 lg:flex-row lg:items-center lg:justify-between">
+        <div className="public-footer-muted mt-12 flex flex-col gap-6 text-sm lg:mt-16 lg:flex-row lg:items-center lg:justify-between">
           <div className="flex flex-wrap gap-x-6 gap-y-3">
             <p>{model.copyrightText}</p>
             <Link href={model.termsLink.href} className={legalLinkClass}>{model.termsLink.label}</Link>

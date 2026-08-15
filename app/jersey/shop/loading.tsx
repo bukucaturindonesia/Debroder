@@ -1,6 +1,6 @@
 export default function JerseyShopLoading() {
   return (
-    <main className="min-h-screen bg-white text-black" aria-busy="true" aria-label="Memuat katalog Jersey">
+    <main data-ui-system="canonical" className="debroder-storefront min-h-screen bg-white text-black" aria-busy="true" aria-label="Memuat katalog Jersey">
       <div className="h-14 border-b border-black/10" />
       <header className="section-shell py-10 sm:py-14">
         <div className="h-3 w-32 animate-pulse bg-black/10 motion-reduce:animate-none" />

@@ -85,12 +85,12 @@ export function ProductRecommendationDrawer({
       </section>
 
       <div
-        className={`fixed inset-0 z-[var(--z-overlay)] bg-black/45 transition ${isOpen ? "visible opacity-100" : "invisible opacity-0"}`}
+        className={`fixed inset-0 z-[var(--z-legacy-backdrop)] bg-black/45 transition ${isOpen ? "visible opacity-100" : "invisible opacity-0"}`}
         onMouseDown={(event) => event.target === event.currentTarget && setIsOpen(false)}
       />
       <aside
         ref={drawerRef}
-        className={`fixed bottom-0 right-0 z-[var(--z-drawer)] flex max-h-[88dvh] w-full flex-col bg-white shadow-[var(--shadow-overlay)] transition-transform duration-[var(--duration-overlay)] sm:bottom-auto sm:top-0 sm:h-dvh sm:max-h-none sm:max-w-md ${isOpen ? "translate-y-0 sm:translate-x-0" : "translate-y-full sm:translate-x-full sm:translate-y-0"}`}
+        className={`fixed bottom-0 right-0 z-[var(--z-legacy-drawer-surface)] flex max-h-[88dvh] w-full flex-col bg-white shadow-[var(--shadow-overlay)] transition-transform duration-[var(--duration-overlay)] sm:bottom-auto sm:top-0 sm:h-dvh sm:max-h-none sm:max-w-md ${isOpen ? "translate-y-0 sm:translate-x-0" : "translate-y-full sm:translate-x-full sm:translate-y-0"}`}
         role="dialog"
         aria-modal="true"
         aria-label={recommendation.title}

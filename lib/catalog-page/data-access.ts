@@ -20,7 +20,7 @@ export async function readCatalogPageSource(routeKey: string): Promise<CatalogPa
     };
   }
 
-  const [heroResult, campaignResult, categoryResult, productSource] = await Promise.all([
+  const [heroResult, campaignResult, categoryResult] = await Promise.all([
     client
       .from("page_heroes")
       .select("page_key,label,title,subtitle,image_url,mobile_image_url,object_position,mobile_object_position,object_fit,focal_zoom,mobile_focal_zoom,primary_cta_label,primary_cta_url,secondary_cta_label,secondary_cta_url")
@@ -42,8 +42,7 @@ export async function readCatalogPageSource(routeKey: string): Promise<CatalogPa
       .select("id,name,slug,is_active,sort_order")
       .eq("slug", routeKey)
       .eq("is_active", true)
-      .maybeSingle(),
-    readActiveProductSource()
+      .maybeSingle()
   ]);
 
   const hero = !heroResult.error && heroResult.data
@@ -55,9 +54,18 @@ export async function readCatalogPageSource(routeKey: string): Promise<CatalogPa
   const campaigns = !campaignResult.error && Array.isArray(campaignResult.data)
     ? campaignResult.data
     : [];
-  const customDestination = category?.id
-    ? await getCustomDestinationForSourceCategory(category.id)
-    : null;
+  const productSourcePromise = readActiveProductSource(
+    routeKey === "koleksi"
+      ? {}
+      : { productCategoryId: category?.id || undefined }
+  );
+  const customDestinationPromise = category?.id
+    ? getCustomDestinationForSourceCategory(category.id)
+    : Promise.resolve(null);
+  const [productSource, customDestination] = await Promise.all([
+    productSourcePromise,
+    customDestinationPromise
+  ]);
   const unavailable = Boolean(
     heroResult.error
     || categoryResult.error
