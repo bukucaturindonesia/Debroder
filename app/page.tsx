@@ -11,6 +11,7 @@ import { ScrollButtons } from "@/components/ScrollButtons";
 import { fallbackImages, getProductImage, getStoreImage } from "@/lib/fallback-data";
 import { brandIcons } from "@/lib/icons";
 import { getPublicShellPageModel } from "@/lib/public-shell/runtime";
+import { getActivePublicTheme } from "@/lib/public-theme/runtime";
 import { getPublicContent } from "@/lib/public-data";
 import { absoluteUrl, siteConfig } from "@/lib/site";
 import type { HomepageSection, HomepageSectionItem, LandingSection, Product, Service } from "@/lib/types";
@@ -351,9 +352,10 @@ function ManagedHomepageSection({ section, setting, fallbackProducts = [] }: { s
 }
 
 export default async function Home() {
-  const [content, shellModel] = await Promise.all([
+  const [content, shellModel, activeTheme] = await Promise.all([
     getPublicContent(),
-    getPublicShellPageModel()
+    getPublicShellPageModel(),
+    getActivePublicTheme()
   ]);
   const homeCategories = content.categories.slice(0, 7).map((category) => ({
     name: category.nama_kategori,
@@ -413,7 +415,7 @@ export default async function Home() {
   };
 
   return (
-    <PublicShellFrame shellModel={shellModel} footerTone="light" shellClassName="debroder-landing">
+    <PublicShellFrame shellModel={shellModel} publicThemeId={activeTheme.id} footerTone="light" shellClassName="debroder-landing">
       <div data-ui-system="landing" className="min-h-screen bg-experience-canvas text-experience-ink">
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(schema).replace(/</g, "\\u003c") }} />
       {!heroHasHeading ? <h1 className="sr-only">DEBRODER</h1> : null}

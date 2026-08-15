@@ -2388,6 +2388,160 @@ button,
   color: var(--storefront-ink);
 }
 
+/* Theme engine: one inherited token surface for every public route. The
+   registry supplies these variables; components remain shared and commerce
+   behavior is not coupled to a theme id. */
+.debroder-storefront[data-public-theme] {
+  --storefront-canvas: var(--theme-canvas);
+  --storefront-surface: var(--theme-surface);
+  --storefront-surface-muted: var(--theme-surface-muted);
+  --storefront-ink: var(--theme-ink);
+  --storefront-muted: var(--theme-muted);
+  --storefront-line: var(--theme-border);
+  --storefront-line-strong: var(--theme-border-strong);
+  --storefront-accent: var(--theme-accent);
+  --storefront-control-radius: var(--theme-control-radius);
+  --content-max: var(--theme-content-max);
+  --storefront-container-max: var(--theme-content-max);
+  --storefront-grid-gap: var(--theme-grid-gap);
+  --storefront-section-space: calc(var(--public-section-space-mobile) * var(--theme-section-space));
+  --storefront-card-content-gap: calc(var(--public-card-content-gap-mobile) * var(--theme-body-scale));
+  --public-section-space: calc(var(--public-section-space-mobile) * var(--theme-section-space));
+  background-color: var(--theme-canvas);
+  color: var(--theme-ink);
+}
+
+.debroder-storefront[data-public-theme] .bg-brand-offWhite,
+.debroder-storefront[data-public-theme] .section-canvas {
+  background-color: var(--theme-canvas);
+}
+
+.debroder-storefront[data-public-theme] .bg-experience-canvas {
+  background-color: var(--theme-canvas);
+}
+
+.debroder-storefront[data-public-theme] .text-experience-ink {
+  color: var(--theme-ink);
+}
+
+.debroder-storefront[data-public-theme] .text-experience-secondary {
+  color: var(--theme-muted);
+}
+
+.debroder-storefront[data-public-theme] .bg-brand-green,
+.debroder-storefront[data-public-theme] .bg-brand-greenDark {
+  background-color: var(--theme-accent);
+}
+
+.debroder-storefront[data-public-theme] .text-brand-green,
+.debroder-storefront[data-public-theme] .text-brand-greenDark {
+  color: var(--theme-accent);
+}
+
+.debroder-storefront[data-public-theme] .bg-white {
+  background-color: var(--theme-surface);
+}
+
+.debroder-storefront[data-public-theme] .section-shell,
+.debroder-storefront[data-public-theme] .public-section-frame,
+.debroder-storefront[data-public-theme] .campaign-shell,
+.debroder-storefront[data-public-theme] .benefit-grid {
+  width: min(100%, var(--theme-content-max)) !important;
+  max-width: var(--theme-content-max);
+}
+
+.debroder-storefront[data-public-theme] .public-panel,
+.debroder-storefront[data-public-theme] .public-product-card,
+.debroder-storefront[data-public-theme] .public-filter-panel,
+.debroder-storefront[data-public-theme] .public-product-card-link {
+  border-radius: var(--theme-card-radius);
+  box-shadow: var(--theme-shadow);
+}
+
+.debroder-storefront[data-public-theme] .public-product-card-body {
+  font-size: calc(1em * var(--theme-body-scale));
+}
+
+.debroder-storefront[data-public-theme] .product-grid,
+.debroder-storefront[data-public-theme] [data-ui-grid="product"],
+.debroder-storefront[data-public-theme] [data-ui-grid="editorial-product"] {
+  gap: var(--theme-grid-gap);
+}
+
+.debroder-storefront[data-public-theme] :is(.cta, .public-button, .public-secondary-action, .public-control, input, select, textarea) {
+  border-radius: var(--theme-control-radius);
+}
+
+.debroder-storefront[data-theme-button-treatment="pill"] :is(.cta, .public-button, .public-secondary-action, .public-control) {
+  border-radius: 999px;
+}
+
+.debroder-storefront[data-theme-button-treatment="underline"] :is(.cta, .public-button, .public-secondary-action) {
+  border-radius: 0;
+  border-inline: 0;
+  border-top: 0;
+}
+
+.debroder-storefront[data-theme-card-treatment="dense"] .public-product-card-body {
+  padding-top: 10px !important;
+}
+
+.debroder-storefront[data-theme-card-treatment="elevated"] .public-product-card,
+.debroder-storefront[data-theme-card-treatment="elevated"] .public-panel {
+  box-shadow: var(--theme-shadow);
+}
+
+.debroder-storefront[data-theme-nav-treatment="compact"] > header {
+  --storefront-header-height: 52px;
+}
+
+.debroder-storefront[data-theme-nav-treatment="graphic"] [data-nav-indicator] {
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+
+.debroder-storefront[data-theme-footer-treatment="dark"] .public-footer-system-v1 {
+  background: var(--theme-surface-muted);
+  color: var(--theme-ink);
+}
+
+.debroder-storefront[data-public-theme="dark_premium"] > header {
+  background: var(--theme-surface);
+  color: var(--theme-ink);
+}
+
+.debroder-storefront[data-public-theme="dark_premium"] {
+  color-scheme: dark;
+}
+
+.debroder-storefront[data-public-theme]:not([data-public-theme="dark_premium"]) {
+  color-scheme: light;
+}
+
+.debroder-storefront[data-public-theme="dark_premium"] .public-footer,
+.debroder-storefront[data-public-theme="dark_premium"] footer {
+  background-color: var(--theme-surface-muted);
+  color: var(--theme-ink);
+}
+
+@media (min-width: 768px) {
+  .debroder-storefront[data-public-theme] {
+    --storefront-section-space: calc(var(--public-section-space-tablet) * var(--theme-section-space));
+  }
+}
+
+@media (min-width: 1024px) {
+  .debroder-storefront[data-public-theme] {
+    --storefront-section-space: calc(var(--public-section-space-laptop) * var(--theme-section-space));
+  }
+}
+
+@media (min-width: 1280px) {
+  .debroder-storefront[data-public-theme] {
+    --storefront-section-space: calc(var(--public-section-space-desktop) * var(--theme-section-space));
+  }
+}
+
 .debroder-storefront:not(.jersey-theme):not(.jersey-commerce-theme) .section-shell,
 .debroder-storefront:not(.jersey-theme):not(.jersey-commerce-theme) .public-section-frame {
   width: min(var(--content-max), calc(100% - (var(--content-gutter) * 2)));

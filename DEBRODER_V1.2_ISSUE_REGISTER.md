@@ -861,6 +861,27 @@ Last updated: 28 July 2026 (Asia/Makassar)
   diff check PASS.
 - Status: **IMPLEMENTED LOCALLY; OWNER VISUAL REVIEW RECOMMENDED**.
 
+## THEME-001 — Public theme engine and Super Admin Tema — 2026-08-15
+
+- Class: **MAJOR / public presentation foundation**.
+- Root cause: public routes shared shell primitives and CSS tokens but had no
+  canonical theme registry, runtime persistence, preview boundary, or cache
+  invalidation contract; visual identity could not switch without code or a
+  redeploy.
+- Fix: ten preset definitions, inherited token engine, Hybrid fallback,
+  existing `website_settings` persistence, scoped `data-public-theme` CSS,
+  `/admin/theme` preview/apply/rollback, role checks, audit log, and
+  presentation-only `public-theme` cache invalidation.
+- Scope guard: no duplicate public routes/components and no product/variant,
+  pricing/inventory, cart/checkout/payment/order, auth/customer, RLS, or
+  configurator change. No migration was created or executed.
+- Verification: focused 4/4, full 943/943 tests, typecheck, lint (0 errors),
+  direct build 139/139 pages, and diff check all pass. Live authenticated E2E,
+  rapid theme switching, and deployment are pending because sandbox Supabase
+  is unavailable.
+- Status: **IMPLEMENTED LOCALLY; RUNTIME/STAGING EVIDENCE PENDING; RELEASE
+  NO-GO / NOT COMPLETE**.
+
 ## PERF-001 — Public read amplification and cache boundary — 2026-08-15
 
 - Severity: **MAJOR — PRODUCTION PERFORMANCE / SCALE READINESS**.

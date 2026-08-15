@@ -1,5 +1,5 @@
 import Link from "next/link";
-import type { ReactNode } from "react";
+import type { CSSProperties, ReactNode } from "react";
 import { PageMotion } from "@/components/PageMotion";
 import { ProductCatalog } from "@/components/ProductCatalog";
 import { PublicProductCard } from "@/components/PublicProductCard";
@@ -14,6 +14,8 @@ import {
   getStoreImage
 } from "@/lib/fallback-data";
 import { getPublicShellPageModel } from "@/lib/public-shell/runtime";
+import { getActivePublicTheme } from "@/lib/public-theme/runtime";
+import { getPublicTheme, publicThemeCssVariables, type PublicThemeId } from "@/lib/public-theme/registry";
 import type {
   PageHeroContent,
   Product,
@@ -492,8 +494,11 @@ export async function PublicShell({
   children: ReactNode;
   theme?: "default" | "jersey" | "jersey-commerce";
 }) {
-  const shellModel = await getPublicShellPageModel();
-  return <PublicShellFrame shellModel={shellModel} theme={theme}>{children}</PublicShellFrame>;
+  const [shellModel, activeTheme] = await Promise.all([
+    getPublicShellPageModel(),
+    getActivePublicTheme()
+  ]);
+  return <PublicShellFrame shellModel={shellModel} publicThemeId={activeTheme.id} theme={theme}>{children}</PublicShellFrame>;
 }
 
 type PublicShellModel = Awaited<ReturnType<typeof getPublicShellPageModel>>;
@@ -501,16 +506,20 @@ type PublicShellModel = Awaited<ReturnType<typeof getPublicShellPageModel>>;
 export function PublicShellFrame({
   children,
   shellModel,
+  publicThemeId,
   theme = "default",
   footerTone = "dark",
   shellClassName = ""
 }: {
   children: ReactNode;
   shellModel: PublicShellModel;
+  publicThemeId?: PublicThemeId;
   theme?: "default" | "jersey" | "jersey-commerce";
   footerTone?: "dark" | "light";
   shellClassName?: string;
 }) {
+  const publicTheme = getPublicTheme(publicThemeId);
+  const themeStyle = publicThemeCssVariables(publicTheme) as CSSProperties;
   const jerseyEditorial = theme === "jersey";
   const jerseyCommerce = theme === "jersey-commerce";
   const header = shellModel.data.header;
@@ -519,7 +528,18 @@ export function PublicShellFrame({
   }
   return (
     <StorefrontCartBoundary>
-      <main data-ui-system="canonical" className={`public-site debroder-storefront min-h-screen ${jerseyEditorial ? "jersey-theme bg-brand-offWhite text-brand-charcoal" : jerseyCommerce ? "jersey-commerce-theme bg-white text-[#111111]" : "bg-brand-offWhite text-brand-charcoal"} ${shellClassName}`.trim()}>
+      <main
+        data-ui-system="canonical"
+        data-public-theme={publicTheme.id}
+        data-theme-nav-treatment={publicTheme.tokens.navTreatment}
+        data-theme-button-treatment={publicTheme.tokens.buttonTreatment}
+        data-theme-card-treatment={publicTheme.tokens.cardTreatment}
+        data-theme-footer-treatment={publicTheme.tokens.footerTreatment}
+        data-theme-campaign-treatment={publicTheme.tokens.campaignTreatment}
+        data-theme-pdp-density={publicTheme.tokens.pdpDensity}
+        style={themeStyle}
+        className={`public-site debroder-storefront min-h-screen ${jerseyEditorial ? "jersey-theme bg-brand-offWhite text-brand-charcoal" : jerseyCommerce ? "jersey-commerce-theme bg-white text-[#111111]" : "bg-brand-offWhite text-brand-charcoal"} ${shellClassName}`.trim()}
+      >
         <SiteHeader navigationFacets={header.navigationFacets} />
         <PageMotion />
         {children}

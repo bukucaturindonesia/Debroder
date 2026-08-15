@@ -1065,6 +1065,44 @@ DEBRODER V1.2 REMAINS NOT COMPLETE**
   implementation and static/build verification; NOT COMPLETE**.
 - Commit, push, deploy: **NOT PERFORMED**.
 
+## Final public theme system execution — 2026-08-15
+
+- Scope: audited the existing public foundation and implemented one shared
+  storefront engine with ten presets: luxury minimalist, editorial fashion,
+  modern streetwear, clean commerce, dark premium, soft lifestyle, tech
+  commerce, marketplace dense, bold brand commerce, and hybrid premium
+  commerce (failsafe/recommended default).
+- Existing shell/header/footer/cards/commerce routes are **KEEP**; the current
+  CSS foundation is **TOKENIZE**; component appearance is controlled as
+  **VARIANT**; only hardcoded public surface consumers received scoped **FIX**
+  overrides. No duplicate route or component tree was introduced.
+- Persistence uses existing `website_settings.active_public_theme` with current,
+  previous, changed_at, and changed_by. Invalid values fall back to Hybrid.
+  Apply/rollback is restricted to owner/Super Admin roles, audited in
+  `system_audit_log`, and invalidates only the `public-theme` cache tag.
+- `/admin/theme` provides ten visual cards, CSS-only isolated preview, active
+  status, apply, and rollback. Preview does not mutate public settings.
+- No products, variants, pricing, inventory, cart, checkout, payment, orders,
+  auth, customer data, RLS, configurable-product logic, migration, or schema
+  changed.
+- Verification: focused theme contracts **4/4 PASS**; full suite **124 test
+  files / 943 tests PASS**; typecheck **PASS**; lint **PASS (0 errors, 34
+  existing warnings)**; direct Next build **PASS (139/139 pages)**; diff check
+  **PASS**. Build emitted two sandbox EACCES fetch warnings but exited 0.
+- Authenticated Super Admin apply/rollback, rapid-switch, and browser visual
+  E2E were **NOT RUN** because no live Supabase/session environment is available
+  in this sandbox. Deployment was not performed.
+- Exact files changed for this theme package: `lib/public-theme/registry.ts`,
+  `lib/public-theme/runtime.ts`, `app/api/admin/theme/route.ts`,
+  `app/admin/theme/page.tsx`, `components/admin/PublicThemeAdmin.tsx`,
+  `components/admin/AdminDashboard.tsx`,
+  `components/admin/layout/admin-navigation.ts`, `components/PublicPage.tsx`,
+  `app/page.tsx`, `app/globals.css`, `lib/public-cache.ts`, and
+  `test/public-theme-system.test.ts`. Governance append files are this
+  handoff, `DEBRODER_MASTER_STATE.md`, and `DEBRODER_V1.2_ISSUE_REGISTER.md`.
+- Status: **IMPLEMENTED LOCALLY; BUILD VERIFIED; RUNTIME/STAGING E2E PENDING;
+  RELEASE NO-GO / NOT COMPLETE; NOT DEPLOYED**.
+
 ## Final performance execution — 2026-08-15
 
 - Scope: production performance hardening for public shell, homepage/content,

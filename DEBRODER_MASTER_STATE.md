@@ -823,3 +823,21 @@ Existing legal, CMS route, Preview performance, remote transaction E2E, data-int
 - Release status remains **NO-GO / NOT COMPLETE** until staging RUM,
   concurrency/load, cache-hit, mutation-invalidation, and authenticated
   transaction smoke evidence are available.
+
+## Final public theme system — 2026-08-15
+
+- One public storefront now consumes a canonical registry of ten visual theme
+  presets through inherited CSS variables and controlled component treatments.
+- Hybrid Premium Commerce is the known-safe default. Active/previous theme
+  state persists in existing `website_settings.active_public_theme`; invalid
+  state fails closed to Hybrid. Apply/rollback invalidates the presentation
+  cache tag and records an audited change in `system_audit_log`.
+- Super Admin Tema is available at `/admin/theme` with preview-only cards,
+  apply, active marker, and rollback. No public route/component copies exist.
+- Business authority is unchanged: no commerce tables, mutations, migrations,
+  RLS, auth, product, pricing, inventory, cart, checkout, payment, order, or
+  customer logic was modified.
+- Evidence: 124/124 test files and 943/943 tests PASS; typecheck PASS; lint
+  PASS with 34 pre-existing warnings; direct Next build PASS 139/139 pages;
+  diff check PASS. Authenticated runtime/rapid-switch E2E and deployment remain
+  pending; release is NO-GO / NOT COMPLETE.

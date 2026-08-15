@@ -108,6 +108,7 @@ export const adminNavigationGroups: readonly AdminNavigationGroup[] = [
     label: "SISTEM",
     items: [
       { label: "Pengaturan", href: "/admin/website-settings", permission: "settings.read" },
+      { label: "Tema", href: "/admin/theme", permission: "settings.read" },
       { label: "Penomoran Dokumen", href: "/admin/document-numbering", permission: "settings.read" },
       { label: "Akun Admin", href: "/admin/access-control", permission: "access_control.read" },
       { label: "Riwayat Aktivitas", href: "/admin/audit-log", permission: "audit.read" },
@@ -210,7 +211,7 @@ const PATH_PERMISSION_RULES: readonly { test: (pathname: string) => boolean; per
   { test: (path) => path.startsWith("/admin/audit-log"), permission: "audit.read" },
   { test: (path) => path.startsWith("/admin/operations-health"), permission: "operations.health.read" },
   { test: (path) => path.startsWith("/admin/reports"), permission: "report.read" },
-  { test: (path) => path.startsWith("/admin/website-settings") || path.startsWith("/admin/document-numbering"), permission: "settings.read" },
+  { test: (path) => path.startsWith("/admin/website-settings") || path.startsWith("/admin/theme") || path.startsWith("/admin/document-numbering"), permission: "settings.read" },
   { test: (path) => path.startsWith("/admin/store"), permission: "store.read" }
 ];
 
