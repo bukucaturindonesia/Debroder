@@ -502,9 +502,15 @@ function CartSummary({ compact = false }: { compact?: boolean }) {
         Ready Stock memakai harga pasti dari server. Custom nonstandar dibuat sebagai order tanpa nominal dan baru dapat dibayar setelah penawaran resmi disetujui.
       </div>
       {!checkoutAllowed ? <p className="mt-4 text-xs leading-5 text-amber-800">{cart.checkoutDecision.message}</p> : null}
-      <Link href={checkoutAllowed ? "/checkout" : "#"} aria-disabled={!checkoutAllowed} className={`mt-5 inline-flex min-h-12 w-full items-center justify-center rounded-full px-5 text-center text-sm font-semibold ${checkoutAllowed ? cart.preserveJerseyInteractions ? "bg-[#063d24] text-white" : "bg-black text-white hover:bg-black/75" : "pointer-events-none bg-black/10 text-black/35"}`}>
-        Lanjut ke Checkout
-      </Link>
+      {checkoutAllowed ? (
+        <Link href="/checkout" className={`mt-5 inline-flex min-h-12 w-full items-center justify-center rounded-full px-5 text-center text-sm font-semibold ${cart.preserveJerseyInteractions ? "bg-[#063d24] text-white" : "bg-black text-white hover:bg-black/75"}`}>
+          Lanjut ke Checkout
+        </Link>
+      ) : (
+        <span aria-disabled="true" className="mt-5 inline-flex min-h-12 w-full items-center justify-center rounded-full bg-black/10 px-5 text-center text-sm font-semibold text-black/35">
+          Lanjut ke Checkout
+        </span>
+      )}
       {!compact ? <p className="mt-4 text-center text-[11px] leading-5 text-black/45">Guest checkout tersedia. Order dibuat di sistem sebelum pembayaran.</p> : null}
     </aside>
   );
@@ -620,9 +626,15 @@ function MiniCartContent() {
           </div>
         </div>
         <Link href="/keranjang" onClick={cart.closeCart} className="mt-5 inline-flex min-h-11 w-full items-center justify-center rounded-full border border-black/10 px-5 text-sm font-semibold transition hover:border-black">Lihat Keranjang</Link>
-        <Link href={cart.checkoutDecision.allowed ? "/checkout" : "#"} aria-disabled={!cart.checkoutDecision.allowed} onClick={cart.checkoutDecision.allowed ? cart.closeCart : undefined} className={`mt-3 inline-flex min-h-11 w-full items-center justify-center rounded-full px-5 text-center text-sm font-semibold ${cart.checkoutDecision.allowed ? `text-white ${cart.preserveJerseyInteractions ? "bg-[#063d24]" : "bg-black hover:bg-black/75"}` : "pointer-events-none bg-black/10 text-black/35"}`}>
-          Checkout
-        </Link>
+        {cart.checkoutDecision.allowed ? (
+          <Link href="/checkout" onClick={cart.closeCart} className={`mt-3 inline-flex min-h-11 w-full items-center justify-center rounded-full px-5 text-center text-sm font-semibold text-white ${cart.preserveJerseyInteractions ? "bg-[#063d24]" : "bg-black hover:bg-black/75"}`}>
+            Checkout
+          </Link>
+        ) : (
+          <span aria-disabled="true" className="mt-3 inline-flex min-h-11 w-full items-center justify-center rounded-full bg-black/10 px-5 text-center text-sm font-semibold text-black/35">
+            Checkout
+          </span>
+        )}
         {!cart.checkoutDecision.allowed ? <p className="mt-3 text-xs leading-5 text-amber-800">{cart.checkoutDecision.message}</p> : null}
       </section>
     </div>

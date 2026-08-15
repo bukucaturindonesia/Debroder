@@ -921,3 +921,47 @@ Last updated: 28 July 2026 (Asia/Makassar)
   overflow; resolver edge cases cover **0, 1, 6, 20, 1,000, and 100,000**
   colors.
 - Status: **IMPLEMENTED LOCALLY; OWNER VISUAL REVIEW RECOMMENDED**.
+
+## MOBILE-FOUNDATION-001 — Mobile storefront shell implementation — 2026-08-15
+
+- Severity: **MAJOR — MOBILE PUBLIC EXPERIENCE**.
+- Scope: compact mobile header, shared bottom navigation, mobile homepage
+  search entry, responsive hero/rails, safe-area and drawer spacing, and
+  blocked-checkout control semantics.
+- Scope guard: no new commerce route, duplicate state provider, demo data,
+  PIM source, auth system, database object, or migration was introduced.
+  Existing `/produk/[slug]`, cart, checkout, order, payment, account, and
+  catalog paths remain authoritative.
+- Files: `app/globals.css`, `app/page.tsx`, `components/PublicPage.tsx`,
+  `components/header/SiteHeaderClient.tsx`, `components/mobile/MobileBottomNav.tsx`,
+  `components/CartProvider.tsx`, and mobile/public contract tests.
+- Verification: typecheck PASS; lint 0 errors / 34 existing warnings; full
+  **125/125 files and 946/946 tests PASS**; `pnpm build` exit 0 with 139
+  generated routes; diff check PASS. Local static generation emitted fetch
+  `EACCES` warnings but completed.
+- Status: **IMPLEMENTED LOCALLY; RUNTIME/STAGING VERIFICATION PENDING**.
+
+## MOBILE-WISHLIST-001 — Existing wishlist persistence is not activated — 2026-08-15
+
+- Severity: **MAJOR — MANDATE ACCEPTANCE GAP**.
+- Evidence: `/wishlist` exists, but the current page explicitly reports that
+  wishlist storage is not activated; no existing provider/database contract
+  was found that can safely be reused for a real mobile wishlist.
+- Decision: mobile navigation links to the existing honest route, but no fake
+  local state, duplicate backend, or unapproved schema was added.
+- Required next step: owner-approved implementation or activation of the
+  existing wishlist backend/provider, followed by authenticated persistence,
+  cross-device, RLS, and mobile regression tests.
+- Status: **OPEN / NOT VERIFIED**.
+
+## MOBILE-RUNTIME-001 — Mobile browser and authenticated commerce evidence — 2026-08-15
+
+- Severity: **RELEASE GATE**.
+- Missing evidence: browser visual/console checks at 320–430px and 768px,
+  safe-area and keyboard/focus checks, authenticated cart/checkout/order/
+  payment/RLS E2E, Supabase runtime, deployment, and owner visual approval.
+- Local browser automation was not callable because `agent-browser` is not
+  installed/available in this environment.
+- Local code gates are green, but deployment is not proof of COMPLETE and no
+  production release is authorized by this handoff.
+- Status: **NO-GO / OPEN**.

@@ -1065,6 +1065,82 @@ DEBRODER V1.2 REMAINS NOT COMPLETE**
   implementation and static/build verification; NOT COMPLETE**.
 - Commit, push, deploy: **NOT PERFORMED**.
 
+---
+
+# Handoff — DEBRODER Mobile Storefront Foundation
+
+**Date:** 15 August 2026
+
+## Active scope
+
+- Implemented the attached mobile storefront mandate within the existing
+  public application shell. The local `figmaDesign-Main` project was inspected
+  as a visual donor only; its ReadyCab/grocery data and architecture were not
+  used.
+- Added compact mobile header branding, a shared five-item mobile bottom nav,
+  homepage mobile search entry, safe-area/drawer spacing, small-screen hero and
+  rail sizing, and focused-flow nav suppression.
+- Preserved the shared PIM, product detail route, CartProvider, auth provider,
+  checkout/order/payment/account logic, and desktop/admin surfaces. Replaced
+  blocked checkout `#` links with non-interactive disabled states.
+
+## Files changed
+
+- `app/globals.css`
+- `app/page.tsx`
+- `components/CartProvider.tsx`
+- `components/PublicPage.tsx`
+- `components/header/SiteHeaderClient.tsx`
+- `components/mobile/MobileBottomNav.tsx`
+- `test/mobile-storefront-shell.test.ts`
+- `test/commerce-foundation-p0.test.ts`
+- `test/kaos-polos-editorial-commerce.test.ts`
+- Governance append: `DEBRODER_MASTER_STATE.md`,
+  `CURRENT_PHASE_HANDOFF.md`, and `DEBRODER_V1.2_ISSUE_REGISTER.md`.
+
+## Routes and data status
+
+- New public route: **NONE**. Existing links target `/`, `/koleksi`, `/search`,
+  `/wishlist`, `/account` or `/login`, and canonical product/catalog routes.
+- Database/schema/data change: **NONE**.
+- Local migration: **NONE**.
+- Remote migration for this scope: **NONE / NOT APPLIED**; no migration
+  command was run.
+- Deployment: **NOT PERFORMED**.
+
+## Verification actually run
+
+- `pnpm.cmd typecheck`: **PASS**.
+- `pnpm.cmd lint`: **PASS — 0 errors / 34 existing warnings**.
+- Targeted mobile/public/cart suite: **4 files / 29 tests PASS**.
+- Full Vitest suite: **125 files / 946 tests PASS**.
+- `pnpm.cmd build`: **PASS, exit 0**. Prebuild typecheck/lint/full test
+  passed; Next production compilation passed and 139 routes were generated.
+  Static generation logged local `fetch failed` / `EACCES` warnings but did
+  not fail the command.
+- `git diff --check`: **PASS**.
+- Browser, authenticated checkout/payment, RLS, Supabase runtime, deployment,
+  and owner visual review: **NOT RUN**. `agent-browser` and a callable browser
+  connector were unavailable in this environment.
+
+## Remaining risks and next steps
+
+- Existing `/wishlist` storage is not activated. The mobile nav exposes the
+  real existing route without inventing client persistence; wishlist behavior
+  still needs an owner-approved existing backend/provider implementation.
+- Validate mobile visual behavior at 320, 360, 375, 390, 393, 412, 430, and
+  768px, including browser console, keyboard/focus, safe-area, and no-overlay
+  checks. Then run authenticated cart/checkout/order/payment/RLS E2E and
+  staging deployment verification.
+- Resolve or explicitly accept the 34 existing lint warnings and local static
+  generation `EACCES` fetch warnings before production release.
+
+## Status
+
+**IMPLEMENTED LOCALLY; PARTIALLY VERIFIED; NO-GO / NOT COMPLETE.**
+
+Commit, push, and deploy: **NOT PERFORMED**.
+
 ## Final public theme system execution — 2026-08-15
 
 - Scope: audited the existing public foundation and implemented one shared

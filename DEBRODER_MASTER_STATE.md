@@ -841,3 +841,31 @@ Existing legal, CMS route, Preview performance, remote transaction E2E, data-int
   PASS with 34 pre-existing warnings; direct Next build PASS 139/139 pages;
   diff check PASS. Authenticated runtime/rapid-switch E2E and deployment remain
   pending; release is NO-GO / NOT COMPLETE.
+
+## Mobile storefront implementation foundation — 2026-08-15
+
+- Implemented a responsive mobile storefront layer inside the existing public
+  shell. The work covers compact mobile branding, a five-item bottom
+  navigation, a mobile homepage search entry point, safe-area handling, drawer
+  spacing, rail/card sizing, and focused-flow navigation suppression.
+- Existing PIM product truth, canonical product route `/produk/[slug]`, shared
+  cart provider, customer auth provider, checkout, order, payment, and account
+  routes remain the only sources of commerce state. No grocery/demo data,
+  duplicate cart, duplicate backend, duplicate auth, or new commerce route was
+  introduced. The local Figma donor was used only for visual rhythm and mobile
+  composition patterns.
+- Checkout controls no longer render dead `href="#"` links when checkout is
+  blocked; the shared decision state remains authoritative.
+- Database/schema/data/migration changes: **NONE**. Deployment: **NOT
+  PERFORMED**.
+- Evidence: typecheck PASS; lint PASS with 0 errors and 34 existing warnings;
+  full suite **125 test files / 946 tests PASS**; `pnpm build` exit 0 with
+  production compilation and 139 routes generated; `git diff --check` PASS.
+  Static generation emitted local `fetch failed / EACCES` warnings but the
+  build completed successfully.
+- Existing wishlist storage is still not activated in the repository. The new
+  mobile nav links to the honest existing `/wishlist` route and does not fake
+  persistence or wishlist state. Authenticated browser, RLS, checkout/payment,
+  deployment, and owner visual review remain pending.
+- Release state: **IMPLEMENTED LOCALLY; PARTIALLY VERIFIED; NO-GO / NOT
+  COMPLETE**.

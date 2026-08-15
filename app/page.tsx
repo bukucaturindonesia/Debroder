@@ -1,6 +1,7 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
 import { AccessibleAutoplayVideo } from "@/components/AccessibleAutoplayVideo";
+import { BrandIcon } from "@/components/BrandIcon";
 import { CampaignBanners } from "@/components/CampaignBanners";
 import { HeroSlider } from "@/components/HeroSlider";
 import { PublicShellFrame } from "@/components/PublicPage";
@@ -419,6 +420,14 @@ export default async function Home() {
       <div data-ui-system="landing" className="min-h-screen bg-experience-canvas text-experience-ink">
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(schema).replace(/</g, "\\u003c") }} />
       {!heroHasHeading ? <h1 className="sr-only">DEBRODER</h1> : null}
+
+      <div className="mobile-home-search section-shell" role="search">
+        <Link href="/search" className="mobile-home-search-link" aria-label="Cari produk, kategori, atau layanan">
+          <BrandIcon name="search" className="h-5 w-5" />
+          <span className="min-w-0 flex-1 truncate text-left">Cari produk, kategori, atau layanan</span>
+          <span aria-hidden="true" className="text-lg text-black/40">→</span>
+        </Link>
+      </div>
 
       <LandingSectionSlot setting={landingSection("hero")}>
         <HeroSlider heroes={content.heroes} />

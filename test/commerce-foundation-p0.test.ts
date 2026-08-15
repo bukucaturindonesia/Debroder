@@ -72,7 +72,9 @@ describe("Commerce Foundation V1 P0", () => {
   it("routes the canonical cart through internal checkout navigation", () => {
     const cart = readFileSync("components/CartProvider.tsx", "utf8");
     const purchase = readFileSync("components/TieredProductPurchasePanel.tsx", "utf8");
-    expect(cart).toContain('href={checkoutAllowed ? "/checkout" : "#"}');
+    expect(cart).toContain('href="/checkout"');
+    expect(cart).not.toContain('href={checkoutAllowed ? "/checkout" : "#"}');
+    expect(cart).not.toContain('href={cart.checkoutDecision.allowed ? "/checkout" : "#"}');
     expect(cart).toContain("checkoutDecision");
     expect(purchase).toContain("cart.addItem({");
     expect(purchase).toContain('router.push("/checkout")');
