@@ -965,3 +965,34 @@ Last updated: 28 July 2026 (Asia/Makassar)
 - Local code gates are green, but deployment is not proof of COMPLETE and no
   production release is authorized by this handoff.
 - Status: **NO-GO / OPEN**.
+
+## WAVE-0A-RUNTIME-001 — Current-head authenticated runtime evidence — 2026-08-15
+
+- Severity: **BLOCKER / P0**.
+- Finding: local typecheck, lint, unit/contract tests, and production build are
+  green, but current-head authenticated customer transaction, payment replay,
+  RLS A/B, admin RBAC, and store-scope behavior have not been proven against a
+  live Supabase runtime.
+- Evidence: `WAVE_0A_CURRENT_HEAD_EVIDENCE.md`; Playwright harness exists and
+  fails closed when `E2E_ALLOW_MUTATIONS=1` and fixture variables are absent.
+- Recommendation: **ADOPT NOW** — run the suite only against an isolated
+  staging/test runtime with two verified customers and role/store fixtures.
+- Status: **OPEN / NO-GO**.
+
+## WAVE-0A-MIGRATION-001 — Remote migration state unavailable — 2026-08-15
+
+- Severity: **BLOCKER / P0**.
+- Finding: local migration files are present, but remote applied/pending state
+  could not be safely determined because Supabase CLI and `psql` are absent.
+- Recommendation: **ADOPT NOW** — capture migration status from the approved
+  environment without editing or replaying applied migrations.
+- Status: **OPEN / NOT VERIFIED**.
+
+## WAVE-0A-BUILD-001 — Static generation network warning — 2026-08-15
+
+- Severity: **MAJOR / P1**.
+- Finding: direct Next build exits 0 and generates 139 routes, but emits
+  `fetch failed` / `EACCES` during static generation in this environment.
+- Recommendation: **ADOPT NOW** — reproduce in staging/deployment smoke before
+  treating the build as production-safe.
+- Status: **OPEN / ENVIRONMENT CLASSIFICATION PENDING**.

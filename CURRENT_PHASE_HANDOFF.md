@@ -1065,6 +1065,30 @@ DEBRODER V1.2 REMAINS NOT COMPLETE**
   implementation and static/build verification; NOT COMPLETE**.
 - Commit, push, deploy: **NOT PERFORMED**.
 
+## Wave 0A current-head evidence — 2026-08-15
+
+- Scope: production-safety evidence and authenticated Playwright E2E
+  foundation only; reference repositories remained read-only.
+- Examined: current HEAD `82d1e082727ed4afc7989197689777f6b9204fae`, auth,
+  checkout/payment idempotency, customer order ownership, admin permissions,
+  local migration inventory, quality gates, and browser test availability.
+- Changed: Playwright dependency/scripts, E2E harness, and current-head evidence
+  documents only. No commerce route or database code changed.
+- Files changed: see `WAVE_0A_CURRENT_HEAD_EVIDENCE.md`.
+- Routes changed: **NONE**.
+- Local migrations: present and inspected; **no migration executed**.
+- Remote/applied/pending migration status: **NOT DETERMINABLE** because the
+  Supabase CLI and `psql` are unavailable.
+- Typecheck: PASS. Lint: PASS, 0 errors / 34 warnings. Vitest: PASS,
+  125 files / 946 tests. Direct Next build: PASS, 139 routes, with local
+  static-generation `fetch failed` / `EACCES` warnings.
+- Deployment: **NOT PERFORMED**. Authenticated browser/RLS/RBAC/payment
+  runtime: **NOT VERIFIED**.
+- Remaining blocker: **BLOCKED — EXTERNAL RUNTIME EVIDENCE REQUIRED**.
+- Status: **WAVE 0A INCOMPLETE — BLOCKERS REMAIN** / NO-GO.
+- Next step: run the fixture-backed Playwright suite against an isolated
+  Supabase staging runtime and capture remote migration/deployment evidence.
+
 ---
 
 # Handoff — DEBRODER Mobile Storefront Foundation

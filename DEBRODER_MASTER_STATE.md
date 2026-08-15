@@ -869,3 +869,19 @@ Existing legal, CMS route, Preview performance, remote transaction E2E, data-int
   deployment, and owner visual review remain pending.
 - Release state: **IMPLEMENTED LOCALLY; PARTIALLY VERIFIED; NO-GO / NOT
   COMPLETE**.
+
+## Wave 0A current-head safety snapshot — 2026-08-15
+
+- Current HEAD: `82d1e082727ed4afc7989197689777f6b9204fae` on `UI-MIGRATION`.
+- Local gates: typecheck PASS; lint PASS with 0 errors / 34 warnings; Vitest
+  PASS at 125 files / 946 tests; direct Next build PASS at 139 routes.
+- Build limitation: static generation logged local `fetch failed` / `EACCES`
+  warnings while exiting successfully; deployment smoke is still required.
+- Wave 0A added a fail-closed Playwright harness and a single evidence file;
+  no database, migration, route, policy, or reference repository changed.
+- Authenticated customer checkout/payment, duplicate replay, two-customer RLS,
+  admin RBAC, store scope, remote migration state, and deployment remain
+  unverified.
+- Release decision: **WAVE 0A INCOMPLETE — BLOCKERS REMAIN**.
+- Required blocker: **BLOCKED — EXTERNAL RUNTIME EVIDENCE REQUIRED**.
+- Evidence: `WAVE_0A_CURRENT_HEAD_EVIDENCE.md`.
