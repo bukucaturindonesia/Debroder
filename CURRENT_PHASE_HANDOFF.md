@@ -1065,6 +1065,481 @@ DEBRODER V1.2 REMAINS NOT COMPLETE**
   implementation and static/build verification; NOT COMPLETE**.
 - Commit, push, deploy: **NOT PERFORMED**.
 
+---
+
+# Handoff — Authoritative Fresh-Database Baseline Implementation
+
+**Date:** 16 August 2026
+
+## Active scope
+
+- Implemented the owner-approved repository-only fresh-database baseline.
+- Generated migration identity through the official Supabase CLI
+  `2.114.0` using `supabase migration new debroder_fresh_database_baseline`.
+- No staging reset, remote SQL, production access, fixture creation, or
+  authenticated E2E was performed.
+
+## Files changed for this scope
+
+- `supabase/migrations/20260816102253_debroder_fresh_database_baseline.sql`
+- `DEBRODER_FRESH_DATABASE_REPLAY_MANIFEST.md`
+- `DEBRODER_BASELINE_COVERAGE_LEDGER.md`
+- `test/baseline-reconstruction.test.ts`
+- `test/wave-0c-migration-history.test.ts` (updated to keep the generated
+  baseline outside the historical Wave 0C timestamp assertion)
+- Governance append in `DEBRODER_MASTER_STATE.md`,
+  `CURRENT_PHASE_HANDOFF.md`, and `DEBRODER_V1.2_ISSUE_REGISTER.md`.
+
+## Baseline and migration status
+
+- Baseline includes profiles, stores, RBAC prerequisites, unified modern
+  product/category/variant/size foundations, compatibility projections,
+  orders/order items/history, quotation/version/mockup, payment, production,
+  fulfillment, notification, audit, and repeat-order prerequisites.
+- Baseline contains no business/customer/Auth/order/payment/quotation/product
+  rows and no storage objects. The only direct seed is deterministic system
+  permission metadata.
+- RLS is enabled for every baseline public table. Public catalog policies are
+  active-only; other domains fail closed until their incremental policies run.
+- No Auth provisioning trigger was created. Application/server provisioning
+  remains authoritative.
+- `DEBRODER_FRESH_DATABASE_REPLAY_MANIFEST.md` classifies all 133 pre-existing
+  migration files and places Wave 0C after the recovered quotation foundation.
+- `20260711000000` and `20260711154031` remain unchanged and are classified
+  `REPLACED BY BASELINE` for fresh replay only.
+
+## Verification actually run
+
+- Baseline/replay/Wave 0C focused tests: **22/22 PASS**.
+- Full Vitest: **128 files / 967 tests PASS**.
+- TypeScript typecheck: **PASS**.
+- ESLint: **PASS — 0 errors / 34 existing warnings**.
+- `git diff --check`: **PASS** (only existing CRLF conversion warnings).
+- Static table/index collision scan: **no non-idempotent duplicate creators**.
+- Disposable local PostgreSQL/Supabase replay: **NOT RUN**; Docker, `psql`,
+  `pg_isready`, and `supabase/config.toml` are unavailable in this
+  environment. No result was fabricated.
+- Remote migration status/apply: **NOT RUN**.
+
+## Remaining work and risks
+
+- A disposable local PostgreSQL/Supabase replay must validate SQL execution,
+  all incremental ordering, grants, policies, and extension behavior before
+  staging.
+- Owner must separately approve a clean staging reset/replay. The two
+  disposable staging migrations remain remote state and were not changed.
+- Production remains untouched; Wave 1 and authenticated commerce E2E remain
+  prohibited until disposable replay and later staging gates pass.
+
+## Status
+
+**IMPLEMENTED LOCALLY; STATICALLY VERIFIED; READY FOR DISPOSABLE REPLAY;
+REMOTE REPLAY PENDING; NOT DEPLOYED; NOT COMPLETE.**
+
+## Database reconstruction specification — 2026-08-16
+
+- Scope: read-only forensic architecture for one authoritative DEBRODER
+  database model and one logical fresh-install order. No baseline SQL was
+  authored and no historical migration was modified.
+- Artifact created: `DEBRODER_DATABASE_RECONSTRUCTION_SPEC.md`.
+- The specification assigns one authority per domain, maps legacy product
+  fields to modern fields, records status conflicts, inventories archived
+  remote-only foundations, and classifies every repository migration file.
+- The specification confirms that the two product foundation/compatibility
+  migrations cannot execute unchanged together: compatibility SQL expects
+  legacy fields and textual status behavior while later PIM SQL casts to
+  modern enum types. Their complete coverage must be replaced by an approved
+  enum-safe baseline design.
+- Migration local: **NO BASELINE CREATED**. Remote applied: **UNCHANGED**.
+  Staging reset, SQL, fixtures, authenticated E2E, production, and reference
+  repositories: **NOT TOUCHED**.
+- Verification: all files in `supabase/migrations` are represented in the
+  reconstruction manifest; `git diff --check` passed for the new artifact.
+  No database replay or baseline quality gate was run.
+- Remaining work: owner approval of domain authorities, canonical order status,
+  profile provisioning, size authority, archived foundation recovery, and
+  migration-tool identity before any baseline migration is generated.
+- Status: **DATABASE RECONSTRUCTION SPEC COMPLETE — READY FOR ARCHITECTURE
+  REVIEW; BASELINE IMPLEMENTATION NOT STARTED**.
+
+## Fresh-database baseline implementation attempt — 2026-08-16
+
+- Scope: repository-only forensic reconstruction of the authoritative fresh
+  Supabase database baseline required before the CURRENT HEAD migration chain.
+  Remote databases, staging reset, fixtures, authenticated E2E, production,
+  and reference repositories were explicitly out of scope.
+- Historical evidence confirmed that `public.profiles` originated in
+  `supabase/schema.sql` via commit `deff782`, while `public.stores` also
+  originated there. `public.orders` was introduced in the same historical
+  schema lineage via commit `52ffe1b`. No active CURRENT HEAD migration creates
+  those tables.
+- Static review also found missing archived foundations required by later
+  CURRENT HEAD migrations, including quotation, mockup, payment, fulfillment,
+  notification, permission-matrix, audit, and repeat-order objects. Several
+  active migrations additionally reference order/payment columns before the
+  numeric migrations that add those columns.
+- Result: no baseline migration was created. A partial migration or invented
+  timestamp would not provide the requested honest executable replay manifest.
+  The archived/reverted SQL remains evidence until its complete dependency and
+  ordering set is recovered and reviewed.
+- Files changed for this attempt: this handoff, `DEBRODER_MASTER_STATE.md`,
+  and `DEBRODER_V1.2_ISSUE_REGISTER.md`. No migration, application file, route,
+  schema.sql, seed.sql, or reference repository was changed.
+- Migration local: **NONE CREATED**. Migration applied: **NONE**. Migration
+  pending: **NO NEW BASELINE AVAILABLE**. Remote migration/database change:
+  **NO**.
+- Tests and quality gates for a baseline: **NOT RUN** because no baseline
+  artifact was authored. This was a design/blocker stop, not a passing
+  implementation result. Existing repository changes were not re-tested.
+- Remaining blocker: owner decision and repository recovery work are required
+  to establish one complete baseline-plus-replay manifest, including the
+  missing archived foundations and a safe ordering strategy. The separate
+  staging project must remain unchanged until that manifest is reviewed.
+- Status: **BASELINE IMPLEMENTATION INCOMPLETE — DESIGN BLOCKERS REMAIN**.
+
+---
+
+# Handoff — Wave 0B Staging Bootstrap Continuation: CURRENT HEAD Baseline Blocker
+
+**Date:** 16 August 2026
+
+## Scope active
+
+- Resume Wave 0B staging bootstrap from the current Wave 0C checkpoint.
+- Run the fail-closed staging guard and verify the configured Supabase project
+  identity before mutation.
+- Reconcile and apply only repository-controlled CURRENT HEAD migrations,
+  including the Wave 0C quotation RPC security migration, then bootstrap the
+  authenticated fixture contract if the schema is usable.
+- Wave 1 was not started.
+
+## Work inspected
+
+- AGENTS.md and all required blueprint/status documents. The three blueprint
+  files are stored under `docs/` rather than repository root; their contents
+  were inspected from those paths.
+- Current process environment, `e2e/support/env.ts`, CURRENT HEAD, working-tree
+  migration inventory, migration reconciliation evidence, and fixture consumers.
+- Supabase project metadata, project URL, migration history, public table
+  inventory, migration catalog, and quotation RPC presence on the configured
+  staging project only.
+
+## Work changed
+
+- No source, route, or local migration file was changed in this continuation.
+- Two repository migrations were applied to the isolated staging project:
+  `20260711000000_v1_0_product_foundation` and
+  `20260711010000_v1_1_bulk_custom_ordering`.
+- The third migration was attempted and failed before recording because the
+  fresh staging schema lacks `public.profiles`. No historical `_applied.sql`
+  file or `supabase/schema.sql` evidence was replayed.
+
+## Work not completed
+
+- Remaining CURRENT HEAD migrations and
+  `20260815212358_wave_0c_quotation_snapshot_security.sql` were not applied.
+- Quotation RPC post-fix verification, deterministic users/admin roles/scopes,
+  product/variant/size/inventory/store/order fixtures, real pickup/order ID
+  validation, and authenticated commerce E2E were not run.
+- No valid replacement pickup/order IDs were generated because the required
+  `public.stores` and `public.orders` relations are absent.
+
+## Files and routes
+
+- Files changed locally: none by this continuation; this handoff plus the
+  required Master State and Issue Register append were updated.
+- Routes changed: none.
+
+## Database and migration status
+
+- Target: `debroder-staging`, Supabase ref `ykfjgnrigcsapblbxnxb`; production
+  ref was not used.
+- Local migrations: 123 tracked timestamped files at CURRENT HEAD, plus the
+  active checkpoint migration `20260815212358_wave_0c_quotation_snapshot_security.sql`;
+  nine legacy `_applied.sql` files excluded from replay.
+- Remote applied: 2 staging records, the two names listed above.
+- Remote failed/not recorded: `20260711154031_v1_0_product_foundation_compatibility`;
+  error `42P01`, missing `public.profiles`.
+- Remote pending: 122 timestamped repository/checkpoint migrations by inventory,
+  but safe continuation is blocked until an approved repository-controlled
+  baseline prerequisite is available.
+- Database mutation: staging only, two successful migrations; production
+  untouched. No destructive SQL, reset, delete, or migration-history rewrite.
+
+## Verification actually run
+
+- Process guard: **PASS**; runtime mutation guard: **PASS**; safe staging
+  identity: **CONFIRMED**.
+- Supabase URL/project attestation: **PASS**; URL ref matched expected staging
+  ref and did not match the production ref.
+- Wave 0C security contract test: **8/8 PASS**.
+- Wave 0C migration-history test: **3/3 PASS**.
+- Database smoke/reconciliation: **PARTIAL**; staging migration history and
+  schema were inspected, two migrations applied, next migration failed on a
+  missing baseline relation.
+- TypeScript: **NOT RUN in this continuation**.
+- Lint: **NOT RUN in this continuation**.
+- Full/unit/integration/regression tests: **NOT RUN in this continuation**;
+  only the two focused Wave 0C tests above were run.
+- Build: **NOT RUN in this continuation**.
+- Deployment, browser console/responsive checks, authenticated E2E, RLS/RBAC,
+  signed upload, duplicate order/payment, callback/webhook, and rollback:
+  **NOT RUN**.
+
+## Risks and next steps
+
+- BLOCKER: CURRENT HEAD migration replay cannot proceed from the empty staging
+  project because `public.profiles` is not created by any current repository
+  migration and the next migration depends on it. Do not replay `schema.sql`
+  or historical evidence without an owner-approved migration decision.
+- The staging project is partially bootstrapped with two applied migrations;
+  do not rerun them. Preserve the recorded history and continue only after an
+  approved baseline/reconstruction path is supplied.
+- After the baseline is resolved, reconcile again, apply the remaining
+  repository migrations including Wave 0C, verify the RPC ACL/body, validate
+  the supplied `stores.id` and `orders.id` values against real rows, create or
+  replace only deterministic staging fixtures, prove roles/scopes and
+  purchasability/inventory, then run authenticated E2E.
+
+## Status
+
+**NO-GO — WAVE 0B STAGING BOOTSTRAP INCOMPLETE; CURRENT HEAD BASELINE
+RECONSTRUCTION BLOCKER REMAINS.**
+
+## Wave 0B controlled staging bootstrap continuation — 2026-08-16
+
+- Scope checked: current Wave 0C staging guard, effective process environment,
+  required authenticated-fixture contract, role/store model, and bootstrap
+  readiness prerequisites.
+- Files changed: this handoff and the Wave 0B runtime evidence log only.
+- Code, route, migration, database, fixture, deployment, and rollback changes:
+  **NONE**.
+- Current HEAD: `43f935b321906093df13e521f411ca3aa102799e` on `UI-MIGRATION`.
+- The 25 exact guard/fixture environment names were **MISSING** from the
+  effective process environment. The application Supabase names
+  `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, and
+  `SUPABASE_SERVICE_ROLE_KEY` were also **MISSING**. Secret values were not
+  printed.
+- `.env.local` is not loaded by the Wave 0C guard or Playwright configuration;
+  it does not satisfy the process-level staging attestation.
+- Staging identity result: **BLOCKED — SAFE STAGING IDENTITY NOT ESTABLISHED**.
+  Production remained rejected and untouched.
+- Migration local/remote/applied/pending reconciliation: **NOT PERFORMED**;
+  no staging project was accepted. Fixtures and authenticated E2E:
+  **NOT RUN**.
+- Prior completed quality gates remain unchanged; they were not repeated because
+  this continuation made no code changes.
+- Remaining blocker: owner must provide the exact process-level staging
+  configuration and staging Supabase runtime values. Status: **NO-GO / WAVE 0B
+  INCOMPLETE**. Wave 1 remains prohibited.
+
+---
+
+# Handoff — Wave 0C P0 Security Closure and Migration Reconciliation
+
+**Date:** 15 August 2026
+
+## Scope active
+
+- Closed the repository-side root cause for the anonymous quotation snapshot
+  RPC exposure.
+- Reconciled and documented the repository/remote migration-history mismatch
+  without rewriting historical migrations.
+- Hardened the E2E safe-staging identity contract so production project
+  identity, missing fixture namespace attestation, missing credentials, and
+  missing mutation opt-in fail closed.
+- Wave 1 was not started.
+
+## Work examined and changed
+
+- Read-only Supabase catalog/function/ACL/RLS inspection for quotations and
+  related quotation/customer RPCs.
+- Anonymous role reproduction of `public.build_quotation_snapshot(uuid)` with
+  a real existing quotation ID held internally and not printed; arbitrary
+  nonexistent ID returned no data.
+- Added one forward corrective migration, focused security regression tests,
+  migration reconciliation evidence, and staging contract placeholders.
+- No public, commerce, admin, customer, or database route changed.
+
+## Files changed by Wave 0C
+
+- `.env.example`
+- `e2e/support/env.ts`
+- `supabase/migrations/20260815212358_wave_0c_quotation_snapshot_security.sql`
+- `supabase/MIGRATION_RECONCILIATION_WAVE_0C.md`
+- `test/wave-0c-security.test.ts`
+- `test/wave-0c-migration-history.test.ts`
+- `WAVE_0C_P0_SECURITY_RECONCILIATION_EVIDENCE.md`
+- This handoff and the corresponding Master State / Issue Register append.
+
+Existing Wave 0B dirty files were preserved. No reference repository was
+modified.
+
+## Database and migration status
+
+- Local migration created: `20260815212358_wave_0c_quotation_snapshot_security.sql`.
+- Local migration applied: **NO**.
+- Remote applied history observed read-only: **173 records**, unchanged.
+- Remote database changed: **NO**.
+- Remote migration pending/parity: **NOT PROVEN**; the Supabase CLI and `psql`
+  are unavailable and `supabase/config.toml` is absent.
+- Migration reconciliation baseline: 132 local files, 80 exact timestamp
+  matches, 43 local-only keys, and 93 remote-only keys.
+- No migration was deleted, renamed, squashed, reset, marked applied, or
+  executed remotely.
+
+## Verification actually run
+
+- Focused Wave 0C tests: **2 files / 11 tests PASS**.
+- Full Vitest: **127 files / 957 tests PASS**.
+- `pnpm.cmd typecheck`: **PASS**.
+- `pnpm.cmd lint`: **PASS — 0 errors / 34 warnings**.
+- `pnpm.cmd build`: **PASS — 139 routes generated**. Static generation
+  emitted the known local `fetch failed` / `EACCES` environment warnings.
+- Production-like Wave 0A mutation suite pointed at the production project:
+  **blocked before browser/mutation execution** with
+  `BLOCKED — SAFE STAGING IDENTITY NOT ESTABLISHED`; 5 mutation tests did not
+  run.
+- `git diff --check`: **PASS** (only Git LF/CRLF normalization warnings).
+- Deployment, authenticated staging E2E, post-fix remote SQL verification, and
+  rollback evidence: **NOT RUN / BLOCKED**.
+
+## Remaining work and risks
+
+- The corrective migration is ready but not remotely applied; the live
+  quotation vulnerability remains until an owner-approved safe environment is
+  migrated and postchecked.
+- Required post-fix evidence is anonymous denied, arbitrary ID denied,
+  customer A/B denied under the current staff-only contract, store A/B unable
+  to bypass the permission predicate, authorized admin/superadmin allowed,
+  service-role boundary denied, and repeated-call behavior confirmed.
+- Safe staging project ref, namespace attestation, disposable fixtures,
+  customer/admin credentials, and payment proof are still absent.
+- Production deployment identity, immutable commit, build log, and rollback
+  target remain unavailable through the current Vercel connector.
+- Build warnings remain classified as local environment/network warnings only;
+  staging/deployment reproduction is still required.
+
+## Next step and status
+
+1. Owner supplies the isolated staging/test project ref and fixture contract.
+2. Apply only the Wave 0C forward migration there using the approved
+   repository-controlled migration mechanism.
+3. Run catalog postchecks and the authenticated security/E2E matrix, then
+   capture deployment/rollback evidence.
+
+Status: **P0 LOCAL REMEDIATION READY; EXTERNAL VERIFICATION BLOCKED; NO-GO FOR
+PRODUCTION; WAVE 1 PROHIBITED**.
+
+---
+
+# Handoff — Wave 0B Resume Attempt: Safe Staging Activation
+
+**Date:** 15 August 2026
+
+- Scope: inspect the Wave 0C guard, enumerate effective process variables, and
+  attempt safe staging activation only.
+- Current branch/HEAD: `UI-MIGRATION` /
+  `43f935b321906093df13e521f411ca3aa102799e`.
+- All 25 variables required by `e2e/support/env.ts` were **MISSING** from the
+  effective process environment. Names and statuses are recorded in section 27
+  of `WAVE_0B_RUNTIME_RELEASE_EVIDENCE.md`; secret values were not printed.
+- The guard rejected the authenticated suite before browser activity with
+  `BLOCKED — SAFE STAGING IDENTITY NOT ESTABLISHED`.
+- Migration reconciliation, remote migration application, Wave 0C SQL
+  application, fixture creation, authenticated Playwright, deployment, and
+  rollback were **NOT RUN** because staging identity was not proven.
+- Database/migration changes: **NONE**. Remote database changed: **NO**.
+- Files changed in this resume attempt: `WAVE_0B_RUNTIME_RELEASE_EVIDENCE.md`,
+  `CURRENT_PHASE_HANDOFF.md`, `DEBRODER_MASTER_STATE.md`, and
+  `DEBRODER_V1.2_ISSUE_REGISTER.md` only.
+- Next action: inject the exact 25 names into the test process with a dedicated
+  staging ref, confirmed fixture namespace, disposable credentials, and
+  mutation opt-in; rerun the guard before any remote action.
+- Status: **WAVE 0B INCOMPLETE — EXTERNAL RUNTIME BLOCKERS REMAIN**.
+
+## Wave 0B external runtime verification and release evidence — 2026-08-15
+
+### Scope active
+
+- Read-only Supabase project/migration/RLS/RBAC metadata reconciliation.
+- Read-only external deployment route and unauthenticated API verification.
+- Local quality gates after the fail-closed E2E additions.
+- Controlled authenticated/destructive E2E gate evaluation without creating
+  fixtures or mutating data.
+- No Wave 1 work.
+
+### Work inspected
+
+- Current branch/HEAD and baseline working tree.
+- E2E environment contract and Wave 0A transaction/replay suite.
+- Public route shell and canonical route smoke.
+- Supabase project health, applied migration records, table/RLS metadata,
+  policy metadata, and `SECURITY DEFINER` function grants/definitions.
+- Vercel team/project visibility and configured public deployment behavior.
+- Relevant read-only patterns in shadcn/ui, vercel-commerce, Medusa, and
+  Trigger.dev; all references remained read-only.
+
+### Work changed
+
+- `e2e/support/env.ts`: requires an explicit staging/test/preview URL, the
+  exact safe identity marker, and explicit mutation opt-in.
+- `e2e/wave-0a.spec.ts`: adds concurrent/conflicting checkout replay and
+  negative payment assertions.
+- `e2e/public-readonly.spec.ts`: adds a non-mutating public browser smoke.
+- Added `WAVE_0B_RUNTIME_RELEASE_EVIDENCE.md`.
+- Appended this handoff, `DEBRODER_MASTER_STATE.md`, and
+  `DEBRODER_V1.2_ISSUE_REGISTER.md`.
+
+### Routes and migrations
+
+- Application routes changed: **NONE**.
+- Database schema/data/policies/functions/triggers changed: **NONE**.
+- Local migration files added/edited: **NONE**.
+- Local migration files present: 132 total, 123 timestamped and 9 legacy
+  `_applied` names.
+- Remote applied migration records observed: 173.
+- Migration parity: **UNRECONCILED**; exact timestamp comparison yielded 80
+  matches, 43 local-only keys, and 93 remote-only keys.
+- Applied migrations: **NONE by this task**.
+- Pending migrations: **UNKNOWN / NOT SAFE TO ASSERT**.
+
+### Verification
+
+- `pnpm typecheck`: PASS.
+- `pnpm lint`: PASS, 0 errors / 34 warnings.
+- `pnpm test`: PASS, 125 files / 946 tests.
+- `pnpm build`: PASS, 139 routes generated; local static generation emitted
+  `fetch failed` / `EACCES` warnings.
+- Public external Playwright smoke: PASS, 1 test; no captured browser console
+  errors.
+- Unauthenticated external API probes: PASS, admin/customer protected APIs
+  returned 401.
+- Authenticated customer/admin/order/payment/RLS/store-scope E2E: **NOT RUN**;
+  the suite stopped at `BLOCKED — SAFE STAGING IDENTITY NOT ESTABLISHED`.
+- Database smoke mutation: NOT RUN.
+- Deployment verification: public route GETs passed, but deployment project,
+  immutable commit SHA, build log, and rollback version were unavailable.
+
+### Bugs and risks remaining
+
+1. P0: `public.build_quotation_snapshot(uuid)` is an anonymous-executable
+   `SECURITY DEFINER` function returning quotation data without an auth or
+   permission check.
+2. P0: local and remote migration histories are not one-to-one reconcilable.
+3. P0: safe staging identity and authenticated fixtures are missing.
+4. P1: local build-time `fetch failed` / `EACCES` warnings are not classified
+   against a deployment/staging runtime.
+5. Rollback evidence and current-head deployment association are unavailable.
+
+### Next step and status
+
+- Owner must provide an isolated staging/test identity and fixtures, authorize
+  the P0 database ACL correction in that environment, reconcile migration
+  history, then rerun authenticated E2E and release evidence.
+- Wave 1 remains prohibited.
+- Status: **NO-GO / INCOMPLETE / EXTERNAL RUNTIME BLOCKERS REMAIN**.
+
 ## Wave 0A current-head evidence — 2026-08-15
 
 - Scope: production-safety evidence and authenticated Playwright E2E
@@ -1973,3 +2448,2430 @@ Commit, push, and deploy: **NOT PERFORMED**.
   TYPECHECK, LINT, AND DIRECT BUILD VERIFIED; MIGRATION/RUNTIME PENDING; NOT
   DEPLOYED; NOT COMPLETE**.
 - Commit, push, deploy: **NOT PERFORMED**.
+
+---
+
+# HANDOFF UPDATE — 16 AUGUST 2026 19:08 +08:00
+
+## Task / Wave / Phase
+
+**Repository governance — mandatory end-of-task handoff rule**
+
+## Checkpoint identity
+
+- Date/time: **2026-08-16 19:08:28 +08:00 (Asia/Makassar)**
+- Branch: **UI-MIGRATION**
+- Current HEAD commit SHA: **43f935b321906093df13e521f411ca3aa102799e**
+
+## Objective
+
+Add the owner-requested permanent repository rule requiring every Codex task
+to update this handoff after implementation and verification, and record the
+actual checkpoint state without changing application behavior.
+
+## Completed
+
+- Added `## 14. MANDATORY END-OF-TASK HANDOFF` to root `AGENTS.md`.
+- Added the required minimum handoff fields, status-truth categories,
+  continuity instructions, end-of-task order, database/release fields, and
+  explicit `HANDOFF UPDATED: YES/NO` requirement.
+- Verified the added section is present at the end of `AGENTS.md`.
+- Executed `git diff --check -- AGENTS.md`: **EXECUTED AND PASSED**.
+
+## Not completed / not run
+
+- No application code, route, configuration, or migration behavior was
+  changed by this task.
+- Typecheck, lint, unit tests, integration tests, build, browser checks, and
+  deployment checks: **NOT APPLICABLE / NOT RUN** for this documentation-only
+  change.
+- The staging replay was not resumed by this task. Fixtures and authenticated
+  E2E were not run.
+
+## Files changed by this task
+
+- `AGENTS.md`
+- `CURRENT_PHASE_HANDOFF.md`
+
+Pre-existing modified and untracked worktree files were preserved and were
+not treated as changes authored by this task.
+
+## Database, migration, and environment state
+
+- Local migration files changed by this task: **NO**.
+- Remote calls made by this task: **NO**.
+- Staging project: **not contacted by this task**.
+- Current shared staging checkpoint inherited from the interrupted owner-
+  authorized replay: the disposable staging project was reset earlier;
+  baseline transfer attempts then failed during SQL transport before replay
+  completion. Post-failure migration/table emptiness must be re-verified before
+  any retry.
+- Production database/deployment: **NO CHANGE**.
+- Reference repositories: **NO CHANGE**.
+- Rollback: **NOT APPLICABLE to this documentation-only task**; the exact safe
+  resume point is read-only staging migration/table verification.
+
+## Security and data-integrity findings
+
+- This task introduced no application behavior, SQL, grant, RLS, Auth, or
+  data changes.
+- No secrets were printed or added to the repository.
+- The interrupted staging replay remains unresolved; do not assume the
+  baseline was applied or that staging is empty until read-only verification
+  proves the state.
+
+## Known warnings and blockers
+
+- Git reported the existing working-copy line-ending warning that `AGENTS.md`
+  will be normalized from LF to CRLF on a future Git write.
+- The repository-root files `DEBRODER_Landing_Page_Blueprint_v1.0.docx`,
+  `DEBRODER_COMMERCE_BLUEPRINT_FINAL.docx`, and
+  `DEBRODER_Blueprint Panel Admin_v1.0-v1.3_FROZEN.txt` were not present in
+  the current worktree and therefore could not be read here.
+- Fresh staging replay remains **BLOCKED / NOT COMPLETE** pending safe
+  post-failure verification and successful repository-controlled replay.
+- Local disposable PostgreSQL/Supabase validation remains unavailable because
+  Docker, `psql`, `pg_isready`, and local Supabase configuration are absent.
+
+## Owner decisions recorded
+
+- Owner explicitly required this permanent end-of-task handoff rule.
+- Owner explicitly required the handoff update for this AGENTS task.
+- No product, route, database-authority, migration-order, or production
+  decision was made by this task.
+
+## Exact current project state
+
+The repository is on `UI-MIGRATION` at
+`43f935b321906093df13e521f411ca3aa102799e` with the owner-requested
+governance rule added locally and not committed. Existing baseline,
+reconstruction, Wave 0C, and worktree changes remain present. The authorized
+staging replay is incomplete and must be treated as unresolved until the
+database is re-attested read-only.
+
+## Exact next recommended action
+
+Read this handoff and the new `AGENTS.md` rule, then query only the approved
+staging project for migration history and public tables. If the failed
+baseline attempts left any objects, reset only that disposable staging project
+again with owner authorization; otherwise retry the approved baseline using a
+lossless repository-controlled SQL transfer, then follow the replay manifest.
+Stop on the first migration error. Do not touch production, create fixtures,
+or run authenticated E2E before replay verification passes.
+
+## Explicit resume instruction for the next Codex session
+
+Resume from the read-only staging-state check. Do not assume baseline success,
+do not repeat a destructive reset without confirming the target identity and
+current state, and preserve all historical migrations and reference
+repositories.
+
+**HANDOFF UPDATED: YES — `CURRENT_PHASE_HANDOFF.md`**
+
+## FINAL AUTHORITATIVE CHECKPOINT — WAVE 0 MASTER CLOSURE — 2026-08-19
+
+- Branch/HEAD: `UI-MIGRATION` /
+  `43f935b321906093df13e521f411ca3aa102799e`; Wave 1 **NOT STARTED**.
+- Target: `debroder-staging` /
+  `ykfjgnrigcsapblbxnxb`; production
+  `lzennundwqqtyvvcnzbg`: **NO CONTACT / NO MUTATION**.
+- Staging reset, empty proof, corrected baseline, 126-record logical replay,
+  C1, and Wave 0C: **EXECUTED AND PASSED**.
+- Baseline SHA-256:
+  `FF449D72D0E37F31E62A1D91E70BD58EC3519AA1BFEB5A899653CA0D0488FBC7`.
+- Runtime foundations and security postcheck: **EXECUTED AND PASSED**.
+  Retired public RPCs and legacy upload capability remain absent.
+- Five Auth users and namespace-scoped fixtures: **EXECUTED AND PASSED**;
+  cleanup **NOT RUN** because reusable fixtures are retained.
+- Wave 0A authenticated E2E: **6/6 PASS**; public read-only: **1/1 PASS**.
+  Customer isolation, RBAC/store scope, Ready Stock, checkout/order,
+  payment/replay/idempotency, inventory, fulfillment, and notification
+  event/outbox generation: **EXECUTED AND PASSED**.
+- Notification delivery worker/provider webhook: **NOT APPLICABLE / NOT RUN**.
+- Full Vitest 150 files/1040 tests, typecheck, lint (0 errors/34 warnings),
+  production build, and diff check: **EXECUTED AND PASSED**. `.codex/**`
+  is an explicit operational-helper lint ignore; owner files were unchanged.
+- Deployment/rollback: **NOT RUN — not authorized**.
+- Current state: **WAVE 0 COMPLETE — READY FOR WAVE 1**.
+- Exact next action: owner review and separate Wave 1 authorization; do not
+  reset staging or repeat completed Wave 0 work without repository changes.
+
+**HANDOFF UPDATED: YES — `CURRENT_PHASE_HANDOFF.md`**
+
+## LATEST AUTHORITATIVE HANDOFF — WAVE 0 MASTER CLOSURE — 2026-08-19 19:11:09 +08:00
+
+### Checkpoint identity
+
+- Branch: `UI-MIGRATION`
+- Current HEAD: `43f935b321906093df13e521f411ca3aa102799e`
+- Scope: Wave 0 clean database reproducibility, security closure, staging
+  fixtures, authenticated commerce E2E, payment review, and release evidence.
+- Wave 1: **NOT STARTED**.
+
+### Target and mutation truth
+
+- Staging target: `debroder-staging` / `ykfjgnrigcsapblbxnxb`.
+- Production ref: `lzennundwqqtyvvcnzbg`.
+- Production contact/mutation/deployment: **NO**.
+- Staging mutation: **EXECUTED AND PASSED** for disposable reset, fresh
+  baseline/replay, namespace-scoped fixtures, Auth users, test checkout,
+  payment submission, and payment review.
+- No production data was read, copied, or used.
+
+### Database reproducibility
+
+- Clean staging reset and empty-state proof: **EXECUTED AND PASSED**.
+- Baseline source SHA-256:
+  `FF449D72D0E37F31E62A1D91E70BD58EC3519AA1BFEB5A899653CA0D0488FBC7`.
+- Corrected baseline: **EXECUTED AND PASSED**.
+- Approved logical replay: **EXECUTED AND PASSED** — 126 migration records
+  (baseline plus 125 incremental records), maximum recorded migration
+  `20260819095347`.
+- No failed migration remains in the final replay history.
+- C1 legacy containment: **EXECUTED AND PASSED**.
+- Wave 0C quotation security: **EXECUTED AND PASSED**. Anonymous,
+  Customer A, Admin Guest, and Scoped Admin access were denied; Full Admin
+  access was authorized through the intended path.
+
+### Runtime foundations and security
+
+- Pgcrypto, payment Phase 5B, fulfillment Phase 11, and
+  `audit_row_change()` prerequisites: **EXECUTED AND PASSED**.
+- `system_audit_log` is the single audit authority; direct audit execution
+  is not granted. A safe functional audit-event test was **NOT RUN** because
+  it would require leaving business rows; trigger creation, function
+  properties, ACL, and append-only protections were verified.
+- Retired `submit_public_payment_proof` and `create_public_order` remain
+  absent. Legacy upload policy and legacy bucket remain absent.
+- Current structural security review: **EXECUTED AND PASSED** for required
+  RLS, grants, SECURITY DEFINER functions, explicit safe search paths,
+  quotation access, payment mutation boundaries, store scope, and
+  fulfillment/audit protections.
+- `order_payments` is intentionally not directly readable by authenticated
+  clients. The admin verification route uses the already-authorized
+  server/admin client for readback and preserves the protected review RPC for
+  state transition.
+
+### Fixtures and authenticated runtime evidence
+
+- Five deterministic staging Auth users were created and verified:
+  Customer A, Customer B, Full Admin, Admin Guest, and Scoped Admin.
+- Namespace-scoped business fixtures were created and verified:
+  Ready Stock product, variant, size M, inventory, pickup store,
+  out-of-scope order, and quotation security fixture.
+- Store ID `11111111-1111-4111-8111-111111111111` is the checkout pickup
+  selector; inventory location ID `44444444-4444-4444-8444-444444444444`
+  remains the stock location. These IDs are not interchangeable.
+- Playwright Wave 0A: **EXECUTED AND PASSED — 6/6**.
+- Public read-only smoke: **EXECUTED AND PASSED — 1/1**.
+- Customer A/B isolation, admin RBAC, scoped-admin boundary, Ready Stock
+  checkout, order creation, duplicate checkout idempotency, payment
+  submission/replay, inventory integrity, and fulfillment state transition:
+  **EXECUTED AND PASSED**.
+- Full-admin payment review: **EXECUTED AND PASSED**; initial review returned
+  HTTP 200 with `PAYMENT_REVIEW_APPLIED`, and replay returned
+  `PAYMENT_ALREADY_VERIFIED` with `idempotent=true`.
+- Notification event/outbox generation: **EXECUTED AND PASSED**. External
+  delivery worker execution: **NOT APPLICABLE / NOT RUN**; no delivery worker
+  is configured in this Wave 0 runtime.
+- Fixtures cleanup: **NOT RUN — RETAINED AS REUSABLE NAMESPACE-SCOPED STAGING
+  FIXTURES**. No broad deletion was performed.
+
+### Repository changes and verification
+
+- Payment readback correction:
+  `app/api/admin/payments/[id]/verification/route.ts`,
+  `lib/payment-auth.ts`, and
+  `test/payment-review-route-contract.test.ts`.
+- Lint boundary correction:
+  `eslint.config.mjs` ignores only operational owner helper files under
+  `.codex/**`; those files were not edited or deleted.
+- Existing Wave 0 migration, baseline, replay-manifest, coverage, and
+  regression artifacts remain preserved.
+- Full Vitest: **EXECUTED AND PASSED — 150 files / 1040 tests**.
+- Typecheck: **EXECUTED AND PASSED**.
+- Lint: **EXECUTED AND PASSED — 0 errors / 34 warnings**.
+- Production build: **EXECUTED AND PASSED** via `pnpm build`; existing
+  warnings only.
+- `git diff --check`: **EXECUTED AND PASSED**; only normal LF/CRLF
+  normalization warnings were emitted.
+- Deployment and rollback: **NOT RUN — no deployment was authorized**.
+
+### Current state, risks, and next action
+
+- Wave 0 closure evidence is complete:
+  **WAVE 0 COMPLETE — READY FOR WAVE 1**.
+- Known non-blocking warning: no external notification delivery worker or
+  provider webhook runtime was configured; only event/outbox generation was
+  exercised.
+- No open Wave 0 repository, database, security, fixture, or E2E blocker
+  remains from the executed scope.
+- Exact next action: owner review of this evidence and separate
+  authorization/planning for Wave 1. Do not reset staging or rerun the
+  completed Wave 0 replay unless repository state changes.
+
+**HANDOFF UPDATED: YES — `CURRENT_PHASE_HANDOFF.md`**
+
+## LATEST AUTHORITATIVE HANDOFF — WAVE 0 MASTER CLOSURE — 2026-08-19 19:11:09 +08:00
+
+### Checkpoint identity
+
+- Branch: `UI-MIGRATION`
+- Current HEAD: `43f935b321906093df13e521f411ca3aa102799e`
+- Scope: Wave 0 clean database reproducibility, security closure, staging
+  fixtures, authenticated commerce E2E, payment review, and release evidence.
+- Wave 1: **NOT STARTED**.
+
+### Target and mutation truth
+
+- Staging target: `debroder-staging` /
+  `ykfjgnrigcsapblbxnxb`.
+- Production ref: `lzennundwqqtyvvcnzbg`.
+- Production contact/mutation/deployment: **EXECUTED AND NOT PERFORMED**.
+- Staging mutation: **EXECUTED AND PASSED** for disposable reset, fresh
+  baseline/replay, namespace-scoped fixtures, Auth users, test checkout,
+  payment submission, and payment review.
+- No production data was read, copied, or used.
+
+### Database reproducibility
+
+- Clean staging reset and empty-state proof: **EXECUTED AND PASSED**.
+- Baseline source SHA-256:
+  `FF449D72D0E37F31E62A1D91E70BD58EC3519AA1BFEB5A899653CA0D0488FBC7`.
+- Corrected baseline: **EXECUTED AND PASSED**.
+- Approved logical replay: **EXECUTED AND PASSED** — 126 migration records
+  (baseline plus 125 incremental records), maximum recorded migration
+  `20260819095347`.
+- No failed migration remains in the final replay history.
+- C1 legacy containment: **EXECUTED AND PASSED**.
+- Wave 0C quotation security: **EXECUTED AND PASSED**. Anonymous,
+  Customer A, Admin Guest, and Scoped Admin access were denied; Full Admin
+  access was authorized through the intended path.
+
+### Runtime foundations and security
+
+- Pgcrypto, payment Phase 5B, fulfillment Phase 11, and
+  `audit_row_change()` prerequisites: **EXECUTED AND PASSED**.
+- `system_audit_log` is the single audit authority; direct audit execution
+  is not granted. A safe functional audit-event test was **NOT RUN** because
+  it would require leaving business rows; trigger creation, function
+  properties, ACL, and append-only protections were verified.
+- Retired `submit_public_payment_proof` and `create_public_order` remain
+  absent. Legacy upload policy and legacy bucket remain absent.
+- Current structural security review: **EXECUTED AND PASSED** for required
+  RLS, grants, SECURITY DEFINER functions, explicit safe search paths,
+  quotation access, payment mutation boundaries, store scope, and
+  fulfillment/audit protections.
+- `order_payments` is intentionally not directly readable by authenticated
+  clients. The admin verification route now uses the already-authorized
+  server/admin client for readback and preserves the protected review RPC for
+  state transition.
+
+### Fixtures and authenticated runtime evidence
+
+- Five deterministic staging Auth users were created and verified:
+  Customer A, Customer B, Full Admin, Admin Guest, and Scoped Admin.
+- Namespace-scoped business fixtures were created and verified:
+  Ready Stock product, variant, size M, inventory, pickup store,
+  out-of-scope order, and quotation security fixture.
+- Store ID `11111111-1111-4111-8111-111111111111` is the checkout pickup
+  selector; inventory location ID `44444444-4444-4444-8444-444444444444`
+  remains the stock location. This distinction is recorded and no IDs are
+  treated as interchangeable.
+- Playwright Wave 0A: **EXECUTED AND PASSED — 6/6**.
+- Public read-only smoke: **EXECUTED AND PASSED — 1/1**.
+- Customer A/B isolation, admin RBAC, scoped-admin boundary, Ready Stock
+  checkout, order creation, duplicate checkout idempotency, payment
+  submission/replay, inventory integrity, and fulfillment state transition:
+  **EXECUTED AND PASSED**.
+- Full-admin payment review: **EXECUTED AND PASSED**; initial review returned
+  HTTP 200 with `PAYMENT_REVIEW_APPLIED`, and replay returned
+  `PAYMENT_ALREADY_VERIFIED` with `idempotent=true`.
+- Notification event/outbox generation: **EXECUTED AND PASSED**. External
+  delivery worker execution: **NOT APPLICABLE / NOT RUN**; no delivery worker
+  is configured in this Wave 0 runtime.
+- Fixtures cleanup: **NOT RUN — RETAINED AS REUSABLE NAMESPACE-SCOPED STAGING
+  FIXTURES**. No broad deletion was performed.
+
+### Repository changes and verification
+
+- Payment readback correction:
+  `app/api/admin/payments/[id]/verification/route.ts`,
+  `lib/payment-auth.ts`, and
+  `test/payment-review-route-contract.test.ts`.
+- Lint boundary correction:
+  `eslint.config.mjs` now ignores only operational owner helper files under
+  `.codex/**`; those files were not edited or deleted.
+- Existing Wave 0 repository migration, baseline, replay-manifest, coverage,
+  and regression artifacts remain preserved.
+- Full Vitest: **EXECUTED AND PASSED — 150 files / 1040 tests**.
+- Typecheck: **EXECUTED AND PASSED**.
+- Lint: **EXECUTED AND PASSED — 0 errors / 34 warnings** after the explicit
+  `.codex/**` operational-helper ignore.
+- Production build: **EXECUTED AND PASSED** via `pnpm build`; existing
+  warnings only.
+- `git diff --check`: **EXECUTED AND PASSED**; only normal LF/CRLF
+  normalization warnings were emitted.
+- Deployment and rollback: **NOT RUN — no deployment was authorized**.
+
+### Current state, risks, and next action
+
+- Wave 0 closure evidence is complete and the repository/staging state is:
+  **WAVE 0 COMPLETE — READY FOR WAVE 1**.
+- Known non-blocking warning: no external notification delivery worker or
+  provider webhook runtime was configured; only the repository's event/outbox
+  generation contract was exercised.
+- No open Wave 0 repository, database, security, fixture, or E2E blocker
+  remains from the executed scope.
+- Exact next action: owner review of this evidence and separate explicit
+  authorization/planning for Wave 1. Do not reset staging or rerun the
+  completed Wave 0 replay unless repository state changes.
+
+**HANDOFF UPDATED: YES — `CURRENT_PHASE_HANDOFF.md`**
+
+# LATEST AUTHORITATIVE HANDOFF — 2026-08-17 12:26:38 +08:00
+
+## Task identity and objective
+
+- Branch: `UI-MIGRATION`; HEAD SHA: `43f935b321906093df13e521f411ca3aa102799e`.
+- Task / Wave / Phase: **Wave 0B clean runtime replay after audit foundation
+  recovery**.
+- Objective: prove the corrected fresh baseline and approved manifest from
+  empty disposable staging, stopping at the first new SQL failure.
+
+## Executed staging evidence
+
+- Identity gate: **EXECUTED AND PASSED** — `debroder-staging` /
+  `ykfjgnrigcsapblbxnxb`; URL matched; production
+  `lzennundwqqtyvvcnzbg` was rejected/not contacted.
+- Reset: **EXECUTED AND PASSED** — only the authorized staging target was
+  reset. `STAGING_STATE_AFTER_RESET = EMPTY`; migration history was empty,
+  application tables/functions/types/policies were absent, `auth.users = 0`,
+  and no business rows existed.
+- Baseline: **EXECUTED AND PASSED** from the exact repository file. Source
+  and transport SHA-256 matched
+  `013426DB3574398F68AD1E3595F8D66668EC84484B02301E8B05219EBD84780D`.
+  Pgcrypto resolved in `extensions`; baseline tables, RLS, fulfillment audit
+  shape, and zero-row checks passed.
+- Audit foundation: **EXECUTED AND PASSED** — `system_audit_log` exists;
+  `audit_row_change()` returns `trigger`, is `plpgsql SECURITY DEFINER`, has
+  `search_path=""`, and direct `PUBLIC`/`anon`/`authenticated`/
+  `service_role` execute checks are false. The Phase 11 audit trigger was
+  later created successfully.
+- Replay: **36 incremental migrations EXECUTED AND RECORDED** after the
+  baseline (37 total history records), through
+  `20260712155210_v1_2_phase_11_fulfillment_table_grants.sql`.
+
+## First new failure and exact safe state
+
+- First new failure: `20260712155229_v1_2_phase_11_fulfillment_rpc_grants.sql`.
+- SQLSTATE: **42883**.
+- Exact error: `function public.create_fulfillment(uuid, text, text,
+  text, text, text, integer, timestamptz, text, jsonb) does not exist`.
+- Root cause: the creator migration defines the canonical 11-argument
+  function with trailing `p_idempotency_key text`; the RPC-grants migration
+  still targets a nonexistent legacy 10-argument signature.
+- Failure transaction: **ROLLED BACK**. The failed migration was not
+  recorded; history remains 37 records. Staging is preserved at the failure
+  checkpoint and the Phase 11 audit trigger remains present.
+- Likely correction boundary: **INCREMENTAL MIGRATION / RPC GRANT CONTRACT**;
+  investigate `supabase/migrations/20260712155229_v1_2_phase_11_fulfillment_rpc_grants.sql`.
+
+## Scope and verification truth
+
+- C1: **NOT REACHED**. Wave 0C: **NOT RUN**. CURRENT HEAD verification:
+  **NOT REACHED**.
+- Fixtures/Auth users: **NOT RUN / NOT CREATED**. Authenticated E2E:
+  **NOT RUN**.
+- Repository SQL/source mutation: **NO**. Governance documents updated:
+  `CURRENT_PHASE_HANDOFF.md`, `DEBRODER_MASTER_STATE.md`, and
+  `DEBRODER_V1.2_ISSUE_REGISTER.md`. Reference repositories unchanged.
+- Staging mutation: **YES — authorized target only** (reset, baseline,
+  successful replay prefix, and migration-history recording). Production
+  database/deployment/data copy: **NO**.
+- Local Vitest, typecheck, lint, build: **NOT RUN — no repository source
+  change**. `git diff --check`: **EXECUTED AND PASSED** with normal
+  LF/CRLF normalization warnings.
+- Known warning: Supabase CLI reset reported Docker unavailable for local
+  catalog caching; remote evidence came from direct runtime commands.
+
+## Remaining blocker and exact resume instruction
+
+- Status: **NO-GO — NEW REPOSITORY BLOCKER FOUND**.
+- Owner decision used: mutate only disposable staging, use the approved
+  manifest topology, stop at the first new SQL failure, and never contact
+  production.
+- Exact next action: start a repository-only correction task to recover the
+  Phase 11 fulfillment RPC-grants signature/ACL contract. Do not patch,
+  reset, or continue staging until that correction is reviewed and a new
+  clean replay is authorized.
+- Explicit resume instruction: read this handoff, `AGENTS.md`, the replay
+  manifest, coverage ledger, baseline, and the Phase 11 fulfillment RPC
+  creator/grants migrations; continue with repository-only contract recovery,
+  not another replay continuation.
+
+**HANDOFF UPDATED: YES — `CURRENT_PHASE_HANDOFF.md`**
+# LATEST AUTHORITATIVE HANDOFF — 2026-08-17 11:33:32 +08:00
+
+## Task identity and objective
+
+- Branch: `UI-MIGRATION`.
+- Current HEAD commit SHA: `43f935b321906093df13e521f411ca3aa102799e`.
+- Task / Wave / Phase: **DEBRODER Wave 0B audit-row-change foundation
+  recovery**.
+- Objective: recover and implement the legitimate
+  `public.audit_row_change()` prerequisite required by Phase 11, preserving
+  one append-only audit authority and a reproducible fresh replay.
+
+## Completed
+
+- Historical source and ownership were recovered from the reverted
+  `20260712071058_phase13_append_only_audit.sql` in commit `6ba0dee`, removed
+  by `8c1108f`. Current Phase 13 confirms the function and append-only audit
+  foundation are expected to exist before its corrections.
+- `public.system_audit_log` was confirmed as the single audit destination.
+- The fresh baseline now creates `public.audit_row_change()` before the Phase
+  11 consumer. It preserves INSERT/UPDATE/DELETE behavior, archived/restored
+  classification, OLD/NEW snapshots, `TG_TABLE_NAME`, actor fields, trigger
+  source, and trigger row returns.
+- Security was re-derived: `SECURITY DEFINER`, explicit `set search_path = ''`,
+  qualified public/auth objects, trigger-only execution, and revoked direct
+  `PUBLIC`/`anon`/`authenticated`/`service_role` execution.
+- All active Phase 11/Phase 13 consumers were statically inventoried. No
+  manifest reorder, historical migration rewrite, or duplicate audit table was
+  introduced.
+- Coverage ledger and project status documents were synchronized.
+
+## Files changed in this task
+
+- `supabase/migrations/20260816102253_debroder_fresh_database_baseline.sql`
+- `test/audit-row-change-foundation.test.ts`
+- `DEBRODER_BASELINE_COVERAGE_LEDGER.md`
+- `DEBRODER_MASTER_STATE.md`
+- `DEBRODER_V1.2_ISSUE_REGISTER.md`
+- `CURRENT_PHASE_HANDOFF.md`
+
+No routes or application behavior changed. Other worktree changes predate
+this task and were preserved.
+
+## Verification truth
+
+- Focused audit, Phase 11, baseline, payment, containment, manifest, and Wave
+  0C regression suites: **EXECUTED AND PASSED — 8 files / 53 tests**.
+- Full Vitest: **EXECUTED AND PASSED — 132 files / 993 tests**.
+- Typecheck: **EXECUTED AND PASSED**.
+- Lint: **EXECUTED AND PASSED — 0 errors / 34 warnings**. Warnings are
+  existing repository lint warnings outside this migration foundation.
+- Build: **EXECUTED AND PASSED** after the initial bounded attempt timed out
+  during post-compile validation; the longer bounded retry completed.
+- `git diff --check`: **EXECUTED AND PASSED**. Git emitted normal LF/CRLF
+  normalization warnings only.
+- Dependency note: a lockfile-preserving local install attempt reached an
+  interactive reinstall confirmation and timed out; no tracked dependency or
+  lockfile change was made. Existing local binaries were sufficient for all
+  gates above.
+
+## Database, migration, and security state
+
+- Repository migration changed: the fresh baseline only. The replay manifest
+  and historical migrations were not changed.
+- Remote/staging/production changes: **NO**. Supabase was not contacted.
+- Target environment: none for this repository-only task. The prior staging
+  evidence remains preserved at `debroder-staging` / `ykfjgnrigcsapblbxnxb`,
+  baseline plus 34 recorded incremental migrations, with Phase 11 security
+  still failed/not recorded. Production ref `lzennundwqqtyvvcnzbg` remains
+  untouched.
+- Database mutation: **NO**. Staging mutation: **NO**. Production mutation:
+  **NO**.
+- Phase 11 runtime closure: **NOT RUN in this task**. C1, Wave 0C, CURRENT
+  HEAD verification, fixtures, and authenticated E2E: **NOT RUN / NOT REACHED**.
+- Security finding: the restored audit function is logging-only and has no
+  direct API execution grant; `system_audit_log` remains append-only. Runtime
+  proof that Phase 11 can create its trigger is still required.
+
+## Remaining blocker and exact next action
+
+- Status: **IMPLEMENTED LOCALLY / NO-GO UNTIL RUNTIME SQL REPLAY**.
+- Remaining blocker: the repository correction has not yet been executed on a
+  clean disposable staging database. Runtime Phase 11, then C1, Wave 0C, and
+  CURRENT HEAD remain unverified.
+- Owner decisions used: restore the approved reconstructed baseline; keep
+  `system_audit_log` as the single audit authority; preserve least privilege;
+  do not resurrect historical public APIs or contact production.
+- Exact safe resume point: obtain owner authorization for a clean staging reset
+  and replay using the corrected baseline and existing manifest, stop at the
+  first SQL failure, and verify `audit_fulfillments_changes` plus the Phase 11
+  audit security contract before continuing. Do not patch staging manually,
+  create fixtures, or run E2E.
+- Explicit resume instruction: read this handoff, `AGENTS.md`, the replay
+  manifest, coverage ledger, corrected baseline, and
+  `20260712155146_v1_2_phase_11_fulfillment_security.sql`; then perform the
+  owner-authorized runtime replay from empty.
+
+**HANDOFF UPDATED: YES — `CURRENT_PHASE_HANDOFF.md`**
+
+# LATEST AUTHORITATIVE HANDOFF — 2026-08-17 11:14:59 +08:00
+
+## Checkpoint identity and objective
+
+- Branch: `UI-MIGRATION`
+- HEAD SHA: `43f935b321906093df13e521f411ca3aa102799e`
+- Task / phase: **Wave 0B clean runtime replay after Phase 11 fulfillment correction**
+- Objective: prove the corrected baseline and approved fresh-database manifest
+  against disposable staging, stopping at the first new SQL failure.
+
+## Executed staging evidence
+
+- Target identity: **EXECUTED AND PASSED** — `debroder-staging` /
+  `ykfjgnrigcsapblbxnxb`; configured URL matched. Production ref
+  `lzennundwqqtyvvcnzbg` was not contacted.
+- Initial state: old partial replay, with zero Auth/business rows.
+- Staging reset: **EXECUTED AND PASSED** — only the approved disposable target
+  was reset. Post-reset proof: migration history empty, no public application
+  tables/functions/types/policies, and `auth.users = 0`.
+- Baseline: **EXECUTED AND PASSED** from the exact SHA-256-matched transfer
+  (`20260816102253_debroder_fresh_database_baseline.sql`). Pgcrypto resolved
+  in `extensions`; the corrected fulfillment audit shape was present before
+  Phase 11; baseline RLS/policies/security checks passed; no business/Auth
+  rows were created.
+- Replay prefix: **35 migration records EXECUTED AND RECORDED** (baseline plus
+  34 incremental migrations), through
+  `20260712155021_v1_2_phase_11_fulfillment_delete_audit.sql`.
+- Prior runtime closures: pgcrypto migrations, Phase 5B payment completion,
+  and Phase 5B payment audit lock **EXECUTED AND PASSED**. The retired
+  `submit_public_payment_proof` RPC remained absent and public/anon payment
+  mutation grants remained absent.
+- Phase 11 fulfillment correction: migration
+  `20260712154540_v1_2_phase_11_fulfillment_schema_and_audit.sql`
+  **EXECUTED AND RECORDED**. Runtime proof showed
+  `fulfillment_deletion_audit_order_idx` exists and `order_id` is `uuid NOT
+  NULL`.
+
+## First new failure and exact safe state
+
+- First new failure: `20260712155146_v1_2_phase_11_fulfillment_security.sql`.
+- SQLSTATE: **42883**.
+- Exact error: `function public.audit_row_change() does not exist`.
+- Failing statement: creation of `audit_fulfillments_changes` on
+  `public.fulfillments`, executing `public.audit_row_change()`.
+- Failure transaction: **ROLLED BACK**. The failed migration was not
+  recorded; the trigger was absent after attestation. Staging is preserved at
+  baseline plus 34 successful incremental migrations. The likely correction
+  boundary is the missing repository-controlled audit trigger function
+  prerequisite (baseline versus Phase 11 ownership must be resolved in the
+  next repository-only task).
+- Pending replay: 88 manifest entries remain, beginning with the failed
+  migration. C1, Wave 0C, and CURRENT HEAD verification were **NOT REACHED**.
+
+## Security, data, and scope truth
+
+- RLS: **EXECUTED AND PASSED** for the verified payment and fulfillment
+  tables; no public/anon payment mutation routine or table grants were found;
+  retired payment RPC and `audit_row_change()` were both absent at failure.
+- Fixtures/Auth users: **NOT RUN / NOT CREATED**.
+- Authenticated E2E: **NOT RUN**.
+- Repository source/migration correction: **NOT PERFORMED IN THIS RUNTIME
+  TASK**. The temporary CLI workspace was created for transport and removed
+  after evidence capture. Only governance checkpoint documents changed in
+  this continuation.
+- Local tests, typecheck, lint, and build: **NOT RUN in this runtime task — no
+  repository source change**. Prior local PASS results remain historical
+  evidence only.
+- Production database/deployment/data copy: **NO**.
+
+## Remaining blocker and resume instruction
+
+- Status: **NO-GO — NEW REPOSITORY BLOCKER FOUND**.
+- Exact next action: start a repository-only correction task to recover and
+  implement/classify the legitimate `public.audit_row_change()` prerequisite,
+  add static coverage, and then obtain/retain owner authorization for a clean
+  replay from empty. Do not patch staging manually or continue past the
+  preserved failure. Fixtures and E2E remain prohibited.
+- Explicit resume instruction: read this handoff, `AGENTS.md`, the replay
+  manifest, coverage ledger, baseline, and
+  `20260712155146_v1_2_phase_11_fulfillment_security.sql`; continue with
+  repository-only audit-function contract recovery, not another staging
+  attestation.
+
+**HANDOFF UPDATED: YES — `CURRENT_PHASE_HANDOFF.md`**
+
+# LATEST AUTHORITATIVE HANDOFF — 2026-08-17 11:33:32 +08:00
+
+## Task identity and objective
+
+- Branch: `UI-MIGRATION`.
+- Current HEAD commit SHA: `43f935b321906093df13e521f411ca3aa102799e`.
+- Task / Wave / Phase: **DEBRODER Wave 0B audit-row-change foundation
+  recovery**.
+- Objective: recover and implement the legitimate
+  `public.audit_row_change()` prerequisite required by Phase 11, preserving
+  one append-only audit authority and a reproducible fresh replay.
+
+## Completed
+
+- Historical source and ownership were recovered from the reverted
+  `20260712071058_phase13_append_only_audit.sql` in commit `6ba0dee`, removed
+  by `8c1108f`. Current Phase 13 confirms the function and append-only audit
+  foundation are expected to exist before its corrections.
+- `public.system_audit_log` was confirmed as the single audit destination.
+- The fresh baseline now creates `public.audit_row_change()` before the Phase
+  11 consumer. It preserves INSERT/UPDATE/DELETE behavior, archived/restored
+  classification, OLD/NEW snapshots, `TG_TABLE_NAME`, actor fields, trigger
+  source, and trigger row returns.
+- Security was re-derived: `SECURITY DEFINER`, explicit `set search_path = ''`,
+  qualified public/auth objects, trigger-only execution, and revoked direct
+  `PUBLIC`/`anon`/`authenticated`/`service_role` execution.
+- All active Phase 11/Phase 13 consumers were statically inventoried. No
+  manifest reorder, historical migration rewrite, or duplicate audit table was
+  introduced.
+- Coverage ledger and project status documents were synchronized.
+
+## Files changed in this task
+
+- `supabase/migrations/20260816102253_debroder_fresh_database_baseline.sql`
+- `test/audit-row-change-foundation.test.ts`
+- `DEBRODER_BASELINE_COVERAGE_LEDGER.md`
+- `DEBRODER_MASTER_STATE.md`
+- `DEBRODER_V1.2_ISSUE_REGISTER.md`
+- `CURRENT_PHASE_HANDOFF.md`
+
+No routes or application behavior changed. Other worktree changes predate
+this task and were preserved.
+
+## Verification truth
+
+- Focused audit, Phase 11, baseline, payment, containment, manifest, and Wave
+  0C regression suites: **EXECUTED AND PASSED — 8 files / 53 tests**.
+- Full Vitest: **EXECUTED AND PASSED — 132 files / 993 tests**.
+- Typecheck: **EXECUTED AND PASSED**.
+- Lint: **EXECUTED AND PASSED — 0 errors / 34 warnings**. Warnings are
+  existing repository lint warnings outside this migration foundation.
+- Build: **EXECUTED AND PASSED** after the initial bounded attempt timed out
+  during post-compile validation; the longer bounded retry completed.
+- `git diff --check`: **EXECUTED AND PASSED**. Git emitted normal LF/CRLF
+  normalization warnings only.
+- Dependency note: a lockfile-preserving local install attempt reached an
+  interactive reinstall confirmation and timed out; no tracked dependency or
+  lockfile change was made. Existing local binaries were sufficient for all
+  gates above.
+
+## Database, migration, and security state
+
+- Repository migration changed: the fresh baseline only. The replay manifest
+  and historical migrations were not changed.
+- Remote/staging/production changes: **NO**. Supabase was not contacted.
+- Target environment: none for this repository-only task. The prior staging
+  evidence remains preserved at `debroder-staging` / `ykfjgnrigcsapblbxnxb`,
+  baseline plus 34 recorded incremental migrations, with Phase 11 security
+  still failed/not recorded. Production ref `lzennundwqqtyvvcnzbg` remains
+  untouched.
+- Database mutation: **NO**. Staging mutation: **NO**. Production mutation:
+  **NO**.
+- Phase 11 runtime closure: **NOT RUN in this task**. C1, Wave 0C, CURRENT
+  HEAD verification, fixtures, and authenticated E2E: **NOT RUN / NOT REACHED**.
+- Security finding: the restored audit function is logging-only and has no
+  direct API execution grant; `system_audit_log` remains append-only. Runtime
+  proof that Phase 11 can create its trigger is still required.
+
+## Remaining blocker and exact next action
+
+- Status: **IMPLEMENTED LOCALLY / NO-GO UNTIL RUNTIME SQL REPLAY**.
+- Remaining blocker: the repository correction has not yet been executed on a
+  clean disposable staging database. Runtime Phase 11, then C1, Wave 0C, and
+  CURRENT HEAD remain unverified.
+- Owner decisions used: restore the approved reconstructed baseline; keep
+  `system_audit_log` as the single audit authority; preserve least privilege;
+  do not resurrect historical public APIs or contact production.
+- Exact safe resume point: obtain owner authorization for a clean staging reset
+  and replay using the corrected baseline and existing manifest, stop at the
+  first SQL failure, and verify `audit_fulfillments_changes` plus the Phase 11
+  audit security contract before continuing. Do not patch staging manually,
+  create fixtures, or run E2E.
+- Explicit resume instruction: read this handoff, `AGENTS.md`, the replay
+  manifest, coverage ledger, corrected baseline, and
+  `20260712155146_v1_2_phase_11_fulfillment_security.sql`; then perform the
+  owner-authorized runtime replay from empty.
+
+**HANDOFF UPDATED: YES — `CURRENT_PHASE_HANDOFF.md`**
+
+# LATEST AUTHORITATIVE HANDOFF — 2026-08-16 22:40:59 +08:00
+
+## Checkpoint identity and objective
+
+- Branch: `UI-MIGRATION`
+- Current HEAD SHA: `43f935b321906093df13e521f411ca3aa102799e`
+- Task / phase: **Wave 0B Phase 11 fulfillment audit foundation correction — repository-only root-cause remediation**
+- Objective: reconcile the fresh baseline with the historical Phase 11
+  `public.fulfillment_deletion_audit` contract without contacting staging or
+  production.
+
+## Implementation completed
+
+- Confirmed historical Phase 11 migration ownership from Git commits
+  `9262ded`, `6ba0dee`, and reverted remote-history commit `8c1108f`.
+- Classified the current fresh-install design as **BASELINE FOUNDATION WITH
+  PHASE 11 EXTENSIONS**: the baseline establishes the complete pre-existing
+  table shape; Phase 11 remains responsible for lifecycle numbering,
+  immutable audit trigger, permanent-delete function, RLS/policies, grants,
+  and idempotent index execution.
+- Corrected `supabase/migrations/20260816102253_debroder_fresh_database_baseline.sql`
+  so `fulfillment_revisions.reason` has the Phase 11 non-empty check and
+  `fulfillment_deletion_audit` has `fulfillment_number`, non-null `order_id`,
+  the historical reason default, `deleted_at` default, and the required
+  order/time index.
+- Preserved the audit table's intentional lack of `orders`/`fulfillments`
+  foreign keys: the permanent-delete function records the snapshot before
+  deleting the source fulfillment, and restrictive source FKs would violate
+  that append-only audit lifecycle.
+- Added static Phase 11 compatibility/security tests in
+  `test/fulfillment-phase11.test.ts`.
+- Updated `DEBRODER_BASELINE_COVERAGE_LEDGER.md` with the runtime failure,
+  ownership decision, complete contract, compatibility matrix, FK rationale,
+  and regression evidence.
+- Replay manifest order/classifications: **UNCHANGED**.
+
+## Verification status truth
+
+- Focused fulfillment + baseline suites: **EXECUTED AND PASSED — 2 files /
+  22 tests**.
+- Full Vitest: **EXECUTED AND PASSED — 131 files / 988 tests**.
+- Typecheck: **EXECUTED AND PASSED**.
+- Lint: **EXECUTED AND PASSED — 0 errors / 34 warnings**. Warnings are
+  existing repository warnings; no new lint error was introduced.
+- `git diff --check`: **EXECUTED AND PASSED**; Git emitted only normal
+  LF/CRLF working-copy warnings.
+- Build: **NOT RUN — migration/static-test scope; no repository policy
+  requirement to run build for this correction**.
+- Phase 11 runtime SQL after correction: **NOT RUN**.
+- Staging and production: **NOT CONTACTED**.
+
+## Exact current project state
+
+- Repository correction is implemented locally and statically verified.
+- Disposable staging remains preserved at the prior runtime checkpoint:
+  corrected baseline plus 29 successful incremental migrations; Phase 11
+  `20260712154540` failed previously and is not recorded. No patch or reset
+  was performed in this task.
+- C1, Wave 0C, CURRENT HEAD post-replay verification, fixtures, and
+  authenticated E2E remain **NOT RUN**.
+- Production remains untouched.
+- No application route or behavior was changed.
+- Existing unrelated worktree changes remain preserved; this task added or
+  changed only the fulfillment baseline/test/ledger and governance
+  checkpoint content listed below.
+
+## Files changed in this task
+
+- `supabase/migrations/20260816102253_debroder_fresh_database_baseline.sql`
+- `test/fulfillment-phase11.test.ts`
+- `DEBRODER_BASELINE_COVERAGE_LEDGER.md`
+- `CURRENT_PHASE_HANDOFF.md`
+- `DEBRODER_MASTER_STATE.md`
+- `DEBRODER_V1.2_ISSUE_REGISTER.md`
+
+## Security, integrity, warnings, and blockers
+
+- Security decision: no customer/public/anon write path was added. Phase 11
+  later revokes public/anon table access and grants staff read only through
+  its existing authorization policy; the immutable audit trigger remains the
+  protection against update/delete.
+- Integrity decision: `order_id uuid not null` is retained as immutable
+  snapshot identity without an FK to a source row that is intentionally
+  deleted. `deleted_by` keeps its `auth.users ... on delete set null` FK.
+- Known warning: the prior runtime replay failure remains unverified as
+  closed until a newly authorized clean staging replay executes the corrected
+  baseline and Phase 11.
+- Remaining blocker: runtime replay is still NO-GO until owner-authorized
+  staging replay proves Phase 11 and then the rest of the manifest.
+
+## Owner decisions and exact safe resume point
+
+- Owner decisions carried forward: staging is disposable and may be reset
+  only under explicit authorization; no staging contact is authorized in
+  this repository-only correction; no production contact; no fixtures/E2E;
+  preserve migration history; maintain one fulfillment authority and
+  append-only audit semantics.
+- Exact next action: obtain/retain owner authorization for a clean staging
+  replay, apply the corrected baseline losslessly, replay the approved
+  manifest in logical order, and stop at the first new SQL failure. Do not
+  manually patch staging or alter the historical Phase 11 file before that
+  runtime proof.
+- Explicit resume instruction for the next Codex session: read this latest
+  handoff, `AGENTS.md`, the replay manifest, the coverage ledger, the
+  corrected baseline, and Phase 11 migration; then run only the authorized
+  staging replay. Fixtures and authenticated E2E remain prohibited until
+  baseline, complete replay, and Wave 0C security pass at runtime.
+
+**HANDOFF UPDATED: YES — `CURRENT_PHASE_HANDOFF.md`**
+
+---
+
+# LATEST AUTHORITATIVE HANDOFF — 2026-08-16 19:45:05 +08:00
+
+## Checkpoint
+
+- Branch: `UI-MIGRATION`
+- HEAD commit SHA: `43f935b321906093df13e521f411ca3aa102799e`
+- Task / phase: **Wave 0B Payment Foundation Correction — repository-only**
+- Objective: implement the missing historical Phase 5A payment prerequisites
+  required by `20260712143745_v1_2_phase_5b_payment_audit_lock.sql`.
+
+## Status truth
+
+- Repository correction: **EXECUTED AND VERIFIED LOCALLY**.
+- Staging replay/runtime SQL: **NOT RUN in this task**.
+- Fixtures, authenticated E2E, deployment, and rollback: **NOT RUN**.
+- Current release state: **WAVE 0B INCOMPLETE — CLEAN STAGING REPLAY STILL
+  REQUIRED; WAVE 1 PROHIBITED**.
+
+## Completed / not completed
+
+- Implemented the exact Phase 5A family over the single canonical
+  `public.order_payments` authority: draft update, verify, reject, archive,
+  restore, and archived-first permanent delete.
+- Preserved amount/method/date validation, draft/pending-only mutation,
+  store-scope checks, permission gates, safe SECURITY DEFINER paths, closed
+  public/anonymous execution, and later incremental ownership of submission,
+  adjustment, activity, and verified-reference controls.
+- Updated the baseline migration, coverage ledger, replay manifest, static
+  payment contract tests, master state, issue register, and this handoff.
+- No remote database was contacted. No SQL was executed remotely. No staging
+  reset or production action occurred.
+
+## Files changed
+
+- `supabase/migrations/20260816102253_debroder_fresh_database_baseline.sql`
+- `DEBRODER_BASELINE_COVERAGE_LEDGER.md`
+- `DEBRODER_FRESH_DATABASE_REPLAY_MANIFEST.md`
+- `test/payment-foundation-baseline.test.ts`
+- `DEBRODER_MASTER_STATE.md`
+- `DEBRODER_V1.2_ISSUE_REGISTER.md`
+- `CURRENT_PHASE_HANDOFF.md`
+
+Historical migrations, `schema.sql`, seeds, application behavior, production,
+fixtures, and reference repositories were not changed.
+
+## Database / release record
+
+- Target environment for future replay: disposable `debroder-staging`, project
+  `ykfjgnrigcsapblbxnxb`.
+- Staging state before this repository task: **BASELINE_PRESENT WITH PARTIAL
+  REPLAY**, as recorded by the prior attestation; not re-attested here.
+- Migrations attempted/applied in this task: **NONE**.
+- First failing staging migration remains
+  `20260712143745_v1_2_phase_5b_payment_audit_lock.sql`, previously failing
+  because `public.update_order_payment_draft(uuid,bigint,timestamptz,text,text,text,text,text)`
+  was absent.
+- Database mutation: **NO**; staging mutation: **NO**; production mutation:
+  **NO**; production deployment: **NO**; rollback: **NOT PERFORMED**.
+- Exact safe resume point: obtain owner approval, reset only disposable
+  staging, prove empty, apply the corrected baseline losslessly, then follow
+  the replay manifest and stop at the first SQL error.
+
+## Tests and quality gates
+
+- Focused payment/baseline/manifest/ACL/Wave 0C tests: **EXECUTED AND PASSED —
+  5 files / 35 tests**.
+- Full Vitest: **EXECUTED AND PASSED — 129 files / 974 tests**.
+- Typecheck: **EXECUTED AND PASSED**.
+- Lint: **EXECUTED AND PASSED — 0 errors / 34 warnings**.
+- `git diff --check`: **EXECUTED AND PASSED**; Windows line-ending notices
+  only.
+- Build: **NOT RUN**, migration/documentation-only scope.
+- Disposable local SQL replay: **BLOCKED / NOT RUN**; no local PostgreSQL,
+  `psql`, Supabase CLI, Docker, or local Supabase configuration is available.
+
+## Security, integrity, warnings, owner decisions
+
+- Payment authority remains singular; no shadow payment table/lifecycle was
+  introduced. Verified payment rows cannot be rewritten by draft compatibility.
+- No historical broad payment-proof grants or policies were resurrected.
+- Known warnings: 34 existing lint warnings; runtime SQL compatibility remains
+  unproven until clean replay.
+- Previously approved baseline replacement and payment-authority decisions
+  remain unchanged; no new architecture decision was made.
+
+## Explicit next-session instruction
+
+Read `AGENTS.md`, this handoff, `DEBRODER_FRESH_DATABASE_REPLAY_MANIFEST.md`,
+and `DEBRODER_BASELINE_COVERAGE_LEDGER.md`. Treat this correction as locally
+implemented but not remotely/runtime verified. Do not continue the existing
+partial staging database manually, create fixtures, run E2E, or touch
+production. The next authorized replay must reset only the disposable target,
+apply the complete baseline, follow the manifest, and execute Wave 0C only
+ after CURRENT HEAD replay passes.
+# HANDOFF UPDATE — 2026-08-16 19:45:05 +08:00
+
+## Checkpoint identity
+
+- Branch: `UI-MIGRATION`
+- Current HEAD: `43f935b321906093df13e521f411ca3aa102799e`
+- Task / Wave / Phase: **DEBRODER Wave 0B Payment Foundation Correction —
+  repository-only replay blocker remediation**
+- Objective: reconstruct and implement the missing historical Phase 5A
+  payment prerequisite family required by the first failing Phase 5B audit
+  migration, without contacting or mutating any remote database.
+
+## Completed
+
+- Recovered the authoritative Phase 5A contract from Git history, including
+  payment numbering, `public.order_payments`, the summary/create RPCs, and the
+  exact six missing payment lifecycle function signatures.
+- Implemented the six secure compatibility operations in
+  `20260816102253_debroder_fresh_database_baseline.sql` over the existing
+  canonical `public.order_payments` authority.
+- Preserved draft/pending-only edits, amount/method/date validation,
+  payment-specific permission checks, store-scope checks, archived-first
+  deletion, immutable verified-state protection, safe SECURITY DEFINER paths,
+  and no public/anonymous payment mutation execution.
+- Updated the baseline coverage ledger and replay manifest with the Phase 5A
+  object ledger and the unchanged Phase 5B topological dependency.
+- Added static contract tests guarding signatures, tables/columns/indexes/
+  triggers, dependency order, ACLs, store scope, draft immutability, and
+  duplicate/reference safeguards.
+- Updated `DEBRODER_MASTER_STATE.md` and
+  `DEBRODER_V1.2_ISSUE_REGISTER.md` with the local correction status.
+
+## Not completed
+
+- No staging attestation, staging reset, SQL transfer, migration execution,
+  database verification, fixture bootstrap, authenticated E2E, deployment, or
+  rollback was performed in this task.
+- The existing partial staging replay remains unproven after this source
+  correction. The Wave 0C quotation security migration remains unexecuted in
+  that environment.
+- No disposable local SQL replay was possible because local PostgreSQL,
+  `psql`, Supabase CLI, Docker, and local Supabase configuration are
+  unavailable. Static SQL-contract tests are not runtime SQL proof.
+
+## Files changed in this task
+
+- `supabase/migrations/20260816102253_debroder_fresh_database_baseline.sql`
+- `DEBRODER_BASELINE_COVERAGE_LEDGER.md`
+- `DEBRODER_FRESH_DATABASE_REPLAY_MANIFEST.md`
+- `test/payment-foundation-baseline.test.ts`
+- `DEBRODER_MASTER_STATE.md`
+- `DEBRODER_V1.2_ISSUE_REGISTER.md`
+- `CURRENT_PHASE_HANDOFF.md`
+
+Historical migration files, `supabase/schema.sql`, seeds, production data,
+fixtures, reference repositories, application behavior, and production
+configuration were not changed.
+
+## Database and migration state
+
+- Target environment: **disposable staging only for the future replay**;
+  target identity remains `debroder-staging` /
+  `ykfjgnrigcsapblbxnxb` from the previous owner-authorized checkpoint.
+- Migration mutation in this task: **NO**. Only repository migration source
+  and documentation were changed locally.
+- Migrations attempted/applied in this task: **NONE**.
+- Previously recorded staging state before this task: **BASELINE_PRESENT WITH
+  PARTIAL REPLAY**, through `20260712142905_v1_2_phase_5b_payment_completion.sql`.
+  That state was not re-attested here by mandate.
+- Previously recorded first failing migration:
+  `20260712143745_v1_2_phase_5b_payment_audit_lock.sql`, missing
+  `public.update_order_payment_draft(uuid,bigint,timestamptz,text,text,text,text,text)`.
+- Reset required in this task: **NO / NOT PERFORMED**. The next replay must
+  reset only the disposable staging project before proving the corrected
+  chain.
+- Database rollback: **NOT PERFORMED**.
+- Staging mutation: **NO in this task**.
+- Production mutation: **NO**.
+- Production deployment: **NO**.
+- Reference repositories changed: **NO**.
+
+## Verification actually executed
+
+- Focused payment/baseline/manifest/ACL/Wave 0C suite: **EXECUTED AND PASSED —
+  5 files / 35 tests**.
+- Full Vitest: **EXECUTED AND PASSED — 129 files / 974 tests**.
+- Typecheck: **EXECUTED AND PASSED** (`tsc --noEmit`).
+- Lint: **EXECUTED AND PASSED — 0 errors / 34 warnings**.
+- `git diff --check`: **EXECUTED AND PASSED**; only existing Windows
+  line-ending notices were emitted.
+- Build: **NOT RUN**; this was a migration/test/documentation-only correction
+  and repository policy did not require a build after it.
+- Remote SQL/runtime verification: **NOT RUN**.
+
+## Security, integrity, and warnings
+
+- The payment authority remains singular: `public.order_payments` plus the
+  current lifecycle. No payment shadow table or second lifecycle was added.
+- Draft compatibility updates cannot target verified or archived rows.
+- Verified-reference uniqueness and submission idempotency remain owned by
+  their later current migrations; the baseline does not duplicate those
+  authorities.
+- Historical payment-proof storage SQL remains incremental in Phase 5B; broad
+  historical grants/policies were not replayed into the baseline.
+- Known warnings: 34 existing lint warnings; no new lint errors.
+- Runtime SQL syntax and fresh-database replay remain **BLOCKED / NOT PROVEN**
+  until an owner-authorized disposable environment with supported SQL tooling
+  is available.
+- The three blueprint files referenced by AGENTS.md remain unavailable in
+  this worktree, as recorded in prior checkpoints.
+
+## Owner decisions recorded
+
+- The previously approved single payment authority and baseline replacement
+  architecture remain in force.
+- No new architecture decision was made during this repository correction.
+- Remote mutation remains prohibited for this task; future staging reset/replay
+  requires separate owner authorization.
+
+## Exact current project state
+
+Repository implementation is **CORRECTED LOCALLY / STATICALLY VERIFIED**.
+Staging remains **PARTIAL REPLAY / NOT RUNTIME-VERIFIED**. Wave 0B is not
+complete, fixtures and authenticated E2E remain prohibited, Wave 0C remains
+unexecuted in staging, and Wave 1 remains prohibited.
+
+## Exact next recommended action and safe resume point
+
+Obtain owner authorization for a clean reset of only
+`ykfjgnrigcsapblbxnxb`, then execute the complete repository-controlled
+baseline and replay manifest from empty. Stop at the first SQL error; do not
+patch the partial staging database manually. After the replay reaches
+CURRENT HEAD, execute and verify the Wave 0C quotation security migration;
+only then may fixture bootstrap begin.
+
+## Explicit resume instruction for the next Codex session
+
+Read `AGENTS.md`, this handoff, `DEBRODER_FRESH_DATABASE_REPLAY_MANIFEST.md`,
+and `DEBRODER_BASELINE_COVERAGE_LEDGER.md`. Treat the payment foundation
+correction as repository-implemented but not remotely/runtime verified. Do
+not contact Supabase or create fixtures during a repository-only continuation.
+For the authorized replay phase, reset only disposable staging, apply the
+complete baseline losslessly, follow the manifest, and fail fast on the first
+SQL error.
+
+**HANDOFF UPDATED: YES — `CURRENT_PHASE_HANDOFF.md`**
+
+---
+
+# HANDOFF UPDATE — 16 AUGUST 2026 19:29 +08:00
+
+## Task / Wave / Phase
+
+**DEBRODER Wave 0B — resume disposable staging replay from handoff**
+
+## Checkpoint identity
+
+- Date/time: **2026-08-16 19:29:19 +08:00 (Asia/Makassar)**
+- Branch: **UI-MIGRATION**
+- Current HEAD commit SHA: **43f935b321906093df13e521f411ca3aa102799e**
+
+## Read-only attestation result
+
+- Target identity: **EXECUTED AND PASSED** — `debroder-staging`, project
+  `ykfjgnrigcsapblbxnxb`, URL `https://ykfjgnrigcsapblbxnxb.supabase.co`.
+- `STAGING_STATE = BASELINE_PRESENT`.
+- Current state is baseline plus a partial incremental replay, not an empty
+  database: 21 migration records exist through
+  `20260712142905_v1_2_phase_5b_payment_completion`.
+- Public inventory, functions, enums, policies, baseline signatures, and
+  business-count checks were executed read-only.
+
+## Verification result
+
+- Reset required: **NO**. The staging project was not reset in this task.
+- Baseline integrity: **EXECUTED AND PASSED** — no required baseline tables,
+  RLS settings, indexes, or triggers are missing; `pgcrypto` and `btree_gist`
+  are installed; eight enums exist; 174 foreign keys exist; no unsafe
+  SECURITY DEFINER search paths were found; quotation snapshot execution and
+  anonymous quotation table access remain denied.
+- Business data: **EXECUTED AND PASSED** — profiles, stores, products, orders,
+  quotations, and payments remain at zero rows. No fixtures were created.
+- Replay continuation: **BLOCKED**. The previous first failure remains
+  unresolved; no migration was applied in this resume attempt.
+
+## First failing migration and correction boundary
+
+First failing migration remains:
+`supabase/migrations/20260712143745_v1_2_phase_5b_payment_audit_lock.sql`.
+
+The exact missing dependency remains
+`public.update_order_payment_draft(uuid,bigint,timestamptz,text,text,text,text,text)`;
+read-only attestation also confirms the related legacy payment functions
+`verify_order_payment`, `reject_order_payment`, `archive_order_payment`,
+`restore_order_payment`, and `permanently_delete_order_payment` are absent.
+
+Root cause remains a repository baseline coverage gap, not a remote staging
+state issue. The exact repository correction boundary is
+`supabase/migrations/20260816102253_debroder_fresh_database_baseline.sql`,
+followed by coverage-ledger and replay-manifest review. No correction was
+implemented in this task.
+
+## Remote, production, and runtime state
+
+- Remote staging mutations in this task: **NO**; all calls in this resume
+  attempt were read-only.
+- Inherited staging mutations: **YES** — baseline plus 20 incremental
+  migrations remain applied from the prior authorized replay.
+- Production mutation: **NO**.
+- Fixtures: **NOT RUN**.
+- Wave 0C security migration: **NOT RUN**.
+- Authenticated E2E: **NOT RUN**.
+- Deployment and rollback: **NOT RUN / NOT PERFORMED**.
+
+## Repository verification and files
+
+- Migration/application source changed: **NO**.
+- Governance files requiring checkpoint synchronization remain
+  `CURRENT_PHASE_HANDOFF.md`, `DEBRODER_MASTER_STATE.md`, and
+  `DEBRODER_V1.2_ISSUE_REGISTER.md`.
+- Read-only Supabase identity, migration, table, function, enum, policy,
+  baseline-signature, RLS, dependency, grant, and security checks:
+  **EXECUTED**.
+- Typecheck, lint, tests, build, browser, and deployment checks: **NOT RUN**;
+  no repository correction was made.
+
+## Exact safe resume point
+
+Do not reset or continue this partial replay. First implement and verify the
+repository-controlled legacy payment-function coverage in the approved
+baseline, update its coverage evidence, and obtain approval for a clean reset
+of only `ykfjgnrigcsapblbxnxb`. Then replay the corrected manifest from empty,
+stopping at the first error. Fixtures and E2E remain prohibited.
+
+**HANDOFF UPDATED: YES — `CURRENT_PHASE_HANDOFF.md`**
+
+---
+
+# HANDOFF UPDATE — 16 AUGUST 2026 19:23 +08:00
+
+## Task / Wave / Phase
+
+**DEBRODER Wave 0B — disposable staging fresh-database replay**
+
+## Checkpoint identity
+
+- Date/time: **2026-08-16 19:23:51 +08:00 (Asia/Makassar)**
+- Branch: **UI-MIGRATION**
+- Current HEAD commit SHA: **43f935b321906093df13e521f411ca3aa102799e**
+
+## Objective
+
+Resume from the mandatory handoff checkpoint, attest the post-failure state
+read-only, apply the approved baseline to the disposable staging project,
+follow the approved topological replay manifest, and stop at the first
+repository-controlled replay error.
+
+## Pre-retry staging attestation
+
+- Target identity: **EXECUTED AND PASSED** — project
+  `ykfjgnrigcsapblbxnxb`, name `debroder-staging`, URL
+  `https://ykfjgnrigcsapblbxnxb.supabase.co`.
+- Migration history before retry: **EXECUTED AND PASSED — empty**.
+- Public table/function/type/policy/baseline-signature inventory before retry:
+  **EXECUTED AND PASSED — empty**.
+- `STAGING_STATE = EMPTY`.
+- Reset required for this resumed phase: **NO**; the project was already empty.
+
+## Implementation and verification result
+
+- Baseline `20260816102253_debroder_fresh_database_baseline.sql`:
+  **EXECUTED AND PASSED** using a complete lossless 2,372-line transfer.
+- Baseline verification: **EXECUTED AND PASSED** — all 59 expected baseline
+  tables exist with RLS enabled; required extensions and eight enums exist;
+  required triggers and indexes exist; 147 foreign keys and 541 check
+  constraints are present; 20 SECURITY DEFINER functions have explicit
+  `search_path` configuration; business tables are empty; quotation snapshot
+  execution is denied to `PUBLIC`, `anon`, `authenticated`, and `service_role`
+  at baseline.
+- Manifest classification: **EXECUTED AND PASSED** — 133 pre-existing files
+  parsed; 123 executable entries; replaced and historical files were not run;
+  Wave 0C was positioned last.
+- Replay through the first failing migration: **EXECUTED AND FAILED**.
+
+## Replay progress and first failing migration
+
+The baseline plus these 20 incremental migrations were applied successfully:
+
+`20260816102253_debroder_fresh_database_baseline`,
+`20260711010000_v1_1_bulk_custom_ordering`,
+`20260711154141_v1_1_bulk_custom_ordering_compatibility`,
+`20260712070227_phase6_document_numbering`,
+`20260712091640_v1_2_phase_6_numbering_history_and_alignment`,
+`20260712091712_v1_2_phase_6_numbering_allocator_and_registry`,
+`20260712091748_v1_2_phase_6_numbering_lifecycle_and_security`,
+`20260712093500_v1_2_phase_6_permanent_delete_audit_and_sequence_cleanup`,
+`20260712070529_phase7_to_phase9_production_foundation`,
+`20260712095523_v1_2_phase_7_job_order_foundation_and_security`,
+`20260712095652_v1_2_phase_7_job_order_creation_atomic_number`,
+`20260712100924_v1_2_phase_7_notification_dependency_ambiguity_fix`,
+`20260712101029_v1_2_phase_7_job_order_history_trigger_alignment`,
+`20260712115943_v1_2_phase_8_work_item_schema_and_audit`,
+`20260712120223_v1_2_phase_8_work_item_creation_and_dependencies`,
+`20260712120309_v1_2_phase_8_work_item_status_and_archive`,
+`20260712120353_v1_2_phase_8_work_item_security_and_delete`,
+`20260712131753_v1_2_phase_9_production_status_and_progress`,
+`20260712132103_v1_2_phase_9_job_order_status`,
+`20260712132131_v1_2_phase_9_work_item_status`, and
+`20260712142905_v1_2_phase_5b_payment_completion`.
+
+First failing migration:
+`supabase/migrations/20260712143745_v1_2_phase_5b_payment_audit_lock.sql`.
+
+Exact database error:
+
+`42883: function public.update_order_payment_draft(uuid, bigint, timestamp with time zone, text, text, text, text, text) does not exist`.
+
+The failed migration is not recorded in staging and its payment-audit
+constraint count remains zero, confirming transactional failure without a
+partial application. Repository inspection shows the failing migration
+references the legacy Phase 5A payment function signature, while no active
+migration creates that function family and the baseline only creates the
+modern payment API. This is a baseline coverage blocker; the repository file
+requiring correction is
+`supabase/migrations/20260816102253_debroder_fresh_database_baseline.sql`,
+with the manifest/coverage ledger requiring review after that correction.
+
+## Fixtures, E2E, deployment, and rollback
+
+- Fixtures: **NOT RUN** by rule; no customers, admins, products, inventory,
+  orders, payments, or pickup fixtures were created.
+- Authenticated E2E: **NOT RUN** by rule.
+- Wave 0C quotation security migration: **NOT RUN** because replay stopped
+  earlier.
+- Preview/staging deployment and rollback: **NOT RUN**.
+- Database rollback: **NOT PERFORMED**. Staging intentionally remains at the
+  partial replay checkpoint for forensic evidence; do not continue or patch it
+  manually.
+- Exact safe resume point: implement and verify the repository-controlled
+  payment compatibility correction, then obtain approval to reset only this
+  disposable staging project and replay the corrected manifest from empty.
+
+## Remote and production state
+
+- Staging mutation: **YES** — baseline plus 20 incremental migrations applied
+  to `ykfjgnrigcsapblbxnxb`.
+- Staging reset in this resumed phase: **NO**; prior authorized reset was
+  attested empty before baseline application.
+- Production mutation: **NO**.
+- Production deployment: **NO**.
+- Reference repositories: **NO CHANGE**.
+
+## Repository changes and verification
+
+- Migration/application files changed in this task: **NO**.
+- Governance checkpoint files updated: `CURRENT_PHASE_HANDOFF.md`,
+  `DEBRODER_MASTER_STATE.md`, and `DEBRODER_V1.2_ISSUE_REGISTER.md`.
+- Typecheck, lint, tests, build, browser verification, and deployment checks:
+  **NOT RUN** after this replay because no application or migration source was
+  corrected; prior historical results are not reused as current replay proof.
+- Read-only Supabase attestation, baseline apply/verification, migration
+  history checks, and post-failure checks: **EXECUTED** as recorded above.
+
+## Security, integrity, warnings, and blockers
+
+- Baseline RLS, SECURITY DEFINER search paths, grants, and quotation snapshot
+  deny-by-default checks passed before replay continuation.
+- No real customer/business data or Auth identities were copied or created.
+- A replay-driver response parsing defect falsely reported the first
+  incremental success; migration history was reconciled and the migration was
+  not reapplied. No data-integrity impact was observed.
+- Known blocker: missing legacy payment function creators required by
+  `20260712143745_v1_2_phase_5b_payment_audit_lock.sql`.
+- Local disposable PostgreSQL/Supabase validation remains unavailable because
+  Docker, `psql`, `pg_isready`, and local Supabase configuration are absent.
+- The three repository-root blueprint files referenced by AGENTS.md remain
+  unavailable in this worktree.
+
+## Owner decisions
+
+- Owner authorized mutation only for disposable staging project
+  `ykfjgnrigcsapblbxnxb` and prohibited production.
+- Owner authorized fresh replay and required fail-fast behavior.
+- Previously approved baseline/replay architecture remains unchanged; no new
+  architecture decision was made during this failed replay.
+
+## Exact current project state
+
+Staging is healthy but is **PARTIAL REPLAY / NOT COMPLETE**: 21 migration
+records exist through `20260712142905_v1_2_phase_5b_payment_completion`, the
+next migration failed transactionally, baseline and prior domain objects are
+present, and fixtures/E2E/Wave 0C are not run. The repository remains on
+`UI-MIGRATION` at HEAD `43f935b321906093df13e521f411ca3aa102799e` with no
+migration SQL changes from this task.
+
+## Explicit resume instruction
+
+Read this checkpoint and `AGENTS.md`. Do not apply
+`20260712143745_v1_2_phase_5b_payment_audit_lock.sql` again, do not patch
+staging manually, do not create fixtures, and do not run E2E. First correct
+and verify the repository baseline coverage for the missing payment function
+family, then reset only the disposable staging project and replay from empty
+after owner approval.
+
+**HANDOFF UPDATED: YES — `CURRENT_PHASE_HANDOFF.md`**
+
+---
+
+# LATEST AUTHORITATIVE HANDOFF — 2026-08-16 19:45:05 +08:00
+
+## Checkpoint identity and objective
+
+- Branch: `UI-MIGRATION`
+- HEAD SHA: `43f935b321906093df13e521f411ca3aa102799e`
+- Task / phase: **Wave 0B Payment Foundation Correction — repository-only**
+- Objective: implement the missing historical Phase 5A payment prerequisites
+  required by `20260712143745_v1_2_phase_5b_payment_audit_lock.sql`.
+
+## Current status truth
+
+- Repository correction: **EXECUTED AND VERIFIED LOCALLY**.
+- Staging replay/runtime SQL: **NOT RUN in this task**.
+- Fixtures, authenticated E2E, deployment, and rollback: **NOT RUN**.
+- Release state: **WAVE 0B INCOMPLETE — CLEAN STAGING REPLAY REQUIRED; WAVE 1
+  PROHIBITED**.
+
+## Completed and not completed
+
+- Implemented the exact Phase 5A family over one canonical
+  `public.order_payments` authority: draft update, verify, reject, archive,
+  restore, and archived-first permanent delete.
+- Preserved amount/method/date validation, draft/pending-only mutation,
+  store-scope checks, permission gates, safe SECURITY DEFINER paths, closed
+  public/anonymous execution, and later incremental ownership of submission,
+  adjustment, activity, and verified-reference controls.
+- Updated the baseline migration, coverage ledger, replay manifest, static
+  payment contract tests, master state, issue register, and this handoff.
+- No remote database was contacted. No remote SQL was executed. No staging
+  reset or production action occurred.
+- A clean staging replay, runtime SQL verification, Wave 0C execution,
+  fixtures, and authenticated E2E remain outstanding.
+
+## Files changed
+
+- `supabase/migrations/20260816102253_debroder_fresh_database_baseline.sql`
+- `DEBRODER_BASELINE_COVERAGE_LEDGER.md`
+- `DEBRODER_FRESH_DATABASE_REPLAY_MANIFEST.md`
+- `test/payment-foundation-baseline.test.ts`
+- `DEBRODER_MASTER_STATE.md`
+- `DEBRODER_V1.2_ISSUE_REGISTER.md`
+- `CURRENT_PHASE_HANDOFF.md`
+
+Historical migrations, `schema.sql`, seeds, application behavior, production,
+fixtures, and reference repositories were not changed.
+
+## Database and release record
+
+- Future replay target: disposable `debroder-staging`, project
+  `ykfjgnrigcsapblbxnxb`.
+- State before this repository task: **BASELINE_PRESENT WITH PARTIAL REPLAY**,
+  per the previous attestation; not re-attested here.
+- Migrations attempted/applied in this task: **NONE**.
+- First failing staging migration remains
+  `20260712143745_v1_2_phase_5b_payment_audit_lock.sql`, previously failing
+  because `public.update_order_payment_draft(uuid,bigint,timestamptz,text,text,text,text,text)`
+  was absent.
+- Database mutation: **NO**; staging mutation: **NO**; production mutation:
+  **NO**; production deployment: **NO**; rollback: **NOT PERFORMED**.
+- Exact safe resume point: obtain owner approval, reset only disposable
+  staging, prove empty, apply the corrected baseline losslessly, then follow
+  the replay manifest and stop at the first SQL error.
+
+## Verification actually executed
+
+- Focused payment/baseline/manifest/ACL/Wave 0C suite: **EXECUTED AND PASSED —
+  5 files / 35 tests**.
+- Full Vitest: **EXECUTED AND PASSED — 129 files / 974 tests**.
+- Typecheck: **EXECUTED AND PASSED**.
+- Lint: **EXECUTED AND PASSED — 0 errors / 34 warnings**.
+- `git diff --check`: **EXECUTED AND PASSED**; Windows line-ending notices
+  only.
+- Build: **NOT RUN** because this was migration/documentation-only scope.
+- Disposable local SQL replay: **BLOCKED / NOT RUN**; no local PostgreSQL,
+  `psql`, Supabase CLI, Docker, or local Supabase configuration is available.
+
+## Security, integrity, warnings, and owner decisions
+
+- Payment authority remains singular; no shadow payment table/lifecycle was
+  introduced. Verified payment rows cannot be rewritten by draft compatibility.
+- No historical broad payment-proof grants or policies were resurrected.
+- Known warnings: 34 existing lint warnings; runtime SQL compatibility remains
+  unproven until clean replay.
+- Previously approved baseline replacement and payment-authority decisions
+  remain unchanged; no new architecture decision was made.
+
+## Explicit next-session instruction
+
+Read `AGENTS.md`, this handoff, `DEBRODER_FRESH_DATABASE_REPLAY_MANIFEST.md`,
+and `DEBRODER_BASELINE_COVERAGE_LEDGER.md`. Treat this correction as locally
+implemented but not remotely/runtime verified. Do not continue the existing
+partial staging database manually, create fixtures, run E2E, or touch
+production. The next authorized replay must reset only the disposable target,
+apply the complete baseline, follow the manifest, and execute Wave 0C only
+after CURRENT HEAD replay passes.
+
+**HANDOFF UPDATED: YES — `CURRENT_PHASE_HANDOFF.md`**
+---
+
+# LATEST AUTHORITATIVE HANDOFF — 2026-08-16 20:09:35 +08:00
+
+## Checkpoint identity and objective
+
+- Branch: `UI-MIGRATION`; HEAD: `43f935b321906093df13e521f411ca3aa102799e`.
+- Task: **Wave 0B Clean Staging Replay After Payment Foundation Correction**.
+- Objective: reset disposable staging, prove empty, apply the corrected
+  baseline losslessly, follow the approved manifest, and stop at the first
+  new SQL failure.
+
+## Current state
+
+- Target: `debroder-staging` / `ykfjgnrigcsapblbxnxb`; URL identity passed.
+  Production `lzennundwqqtyvvcnzbg` was rejected.
+- Staging reset: **YES**. The final zero-migration temporary CLI workspace
+  reset completed and read-only attestation proved empty migration history,
+  no public application tables/types/functions/policies, and `auth.users = 0`.
+  A prior raw-CLI reset attempt was discarded as evidence after it replayed
+  filename order and failed at `20260711010000...` on
+  `saved_configurations` / `gen_random_bytes`.
+- Baseline `20260816102253_debroder_fresh_database_baseline.sql`:
+  **EXECUTED AND PASSED** losslessly (114,600 characters). Verification:
+  58 tables, RLS enabled, 147 foreign keys, 31 triggers, required enums and
+  policies, explicit SECURITY DEFINER paths, and zero business/Auth rows.
+- Successfully applied: **21 migrations** — baseline plus 20 manifest entries:
+  `20260711010000`, `20260711154141`, `20260712070227`,
+  `20260712091640`, `20260712091712`, `20260712091748`,
+  `20260712093500`, `20260712070529`, `20260712095523`,
+  `20260712095652`, `20260712100924`, `20260712101029`,
+  `20260712115943`, `20260712120223`, `20260712120309`,
+  `20260712120353`, `20260712131753`, `20260712132103`,
+  `20260712132131`, `20260712142905`.
+- Previous payment blocker: **CLOSED** at runtime; all six Phase 5A
+  functions exist with safe search paths and no PUBLIC/anon execution.
+- First new failure: **EXECUTED AND FAILED** at
+  `20260712143745_v1_2_phase_5b_payment_audit_lock.sql`, SQLSTATE **42883**:
+  `public.submit_public_payment_proof(uuid,text,text,text)` does not exist.
+  The failing revoke is line 25; transaction rolled back and the migration is
+  not recorded. Staging is preserved at baseline plus 20 migrations.
+
+## Scope, security, and verification
+
+- No manual staging patch or continuation occurred. No customer, Auth,
+  product, order, payment, or fixture data exists.
+- Wave 0C: **NOT RUN**. Fixtures: **NOT RUN**. Authenticated E2E: **NOT RUN**.
+  Deployment and rollback: **NOT PERFORMED**.
+- Production database/deployment and reference repositories: **NO CHANGE**.
+- Typecheck, lint, tests, build, browser checks, and deployment gates:
+  **NOT RUN** in this staging-only task because no repository source changed.
+- CLI-generated `supabase/.temp` and temporary reset workspace were removed.
+- Root cause: **missing historical Phase 5A payment prerequisite /
+  incomplete baseline coverage**. Raw filename-order reset is a warning and
+  must not replace the manifest.
+
+## Safe resume instruction
+
+Do not continue or patch staging. Perform the next repository-only correction
+for the legitimate `submit_public_payment_proof(uuid,text,text,text)` contract,
+update baseline ledger/tests if required, then obtain/retain owner approval for
+a fresh staging reset and replay. Re-verify the baseline and prior 20-migration
+prefix before retrying the failed migration. Wave 1 remains prohibited.
+
+**HANDOFF UPDATED: YES — `CURRENT_PHASE_HANDOFF.md`**
+
+---
+
+# LATEST AUTHORITATIVE HANDOFF — 2026-08-16 20:32:00 +08:00
+
+## Checkpoint identity and objective
+
+- Branch: `UI-MIGRATION`
+- HEAD SHA: `43f935b321906093df13e521f411ca3aa102799e`
+- Task / phase: **Wave 0B Public Payment Proof Foundation Correction — repository-only**
+- Objective: recover the missing Phase 5B security target honestly without
+  restoring an obsolete public payment mutation API or touching staging.
+
+## Current status truth
+
+- Repository correction: **EXECUTED AND VERIFIED LOCALLY**.
+- Staging/remote SQL: **NOT RUN and NOT CONTACTED in this task**.
+- Fixtures, authenticated E2E, Wave 0C execution, deployment, and rollback:
+  **NOT RUN / NOT PERFORMED**.
+- Release state: **WAVE 0B INCOMPLETE — READY FOR OWNER-AUTHORIZED CLEAN
+  STAGING REPLAY; WAVE 1 PROHIBITED**.
+
+## Forensic result and implementation
+
+- Historical source: `supabase/schema.sql`, preserved through commits
+  `fe8a697`, `8251f0d`, `6ba0dee`, and `8c1108f`.
+- Exact historical contract: `submit_public_payment_proof(p_order_id uuid,
+  p_order_number text, p_customer_phone text, p_payment_proof_path text)`
+  returning `boolean`. The old body writes legacy order proof/status fields,
+  uses order-number/phone matching as authorization, and grants anonymous and
+  authenticated execution.
+- Classification: **C — OBSOLETE HISTORICAL API**. There is no CURRENT HEAD
+  caller. The active public flow uses a hashed payment-submission link,
+  private `payment-proofs` storage, and server-only
+  `submit_customer_order_payment_v2` over canonical `public.order_payments`.
+- Baseline: **UNCHANGED**; no legacy proof function or shadow payment state
+  was added.
+- Repository correction: `20260712143745_v1_2_phase_5b_payment_audit_lock.sql`
+  now conditionally revokes the retired function’s public/anon/authenticated
+  ACL only when the historical object exists. Fresh replay therefore does not
+  require a fake/stub function.
+- Same-migration inventory: all canonical Phase 5A targets are supplied by
+  the baseline; `payment_actor_role` and `payment_actor_has_role` are supplied
+  by the preceding payment-completion migration; the two trigger/helper
+  creators are defined by the audit migration itself; the obsolete proof
+  target is explicitly conditional.
+
+## Files changed in this task
+
+- `supabase/migrations/20260712143745_v1_2_phase_5b_payment_audit_lock.sql`
+- `DEBRODER_BASELINE_COVERAGE_LEDGER.md`
+- `DEBRODER_FRESH_DATABASE_REPLAY_MANIFEST.md`
+- `test/public-payment-proof-foundation.test.ts`
+- `DEBRODER_MASTER_STATE.md`
+- `DEBRODER_V1.2_ISSUE_REGISTER.md`
+- `CURRENT_PHASE_HANDOFF.md`
+
+Existing unrelated working-tree changes were preserved. The baseline,
+`supabase/schema.sql`, seeds, application behavior, fixtures, production,
+and reference repositories were not changed by this task.
+
+## Database and release record
+
+- Target environment for the next authorized replay: disposable staging
+  `debroder-staging`, project `ykfjgnrigcsapblbxnxb`.
+- Staging state at task start: preserved at the previous handoff checkpoint
+  (baseline plus 20 migrations, audit migration rolled back); no new
+  attestation was performed because this task explicitly prohibited remote
+  contact.
+- Migrations attempted/applied in this task: **NONE**.
+- Database mutation: **NO**; staging mutation: **NO**; production mutation:
+  **NO**; production deployment: **NO**; rollback: **NOT PERFORMED**.
+- Exact safe resume point: owner-authorized clean reset of only
+  `ykfjgnrigcsapblbxnxb`, lossless corrected-baseline replay, then execute the
+  approved manifest and verify that `20260712143745_v1_2_phase_5b_payment_audit_lock.sql`
+  now passes. Do not create fixtures or run E2E before replay completion.
+
+## Verification actually executed
+
+- Focused payment/baseline/manifest/Wave 0C/public-proof suite:
+  **EXECUTED AND PASSED — 36 tests**.
+- New public-proof suite: **EXECUTED AND PASSED — 4 tests**.
+- Full Vitest: **EXECUTED AND PASSED — 130 files / 978 tests**.
+- Typecheck: **EXECUTED AND PASSED**.
+- Lint: **EXECUTED AND PASSED — 0 errors / 34 existing warnings**.
+- `git diff --check`: **EXECUTED AND PASSED**; Windows line-ending notices
+  only.
+- Build: **NOT RUN**; migration/documentation/static-test scope did not
+  require a build.
+- Runtime SQL replay: **NOT RUN**; remote access was explicitly forbidden and
+  no local PostgreSQL/Supabase runtime is available.
+
+## Security, integrity, and remaining risks
+
+- No historical broad grant, anonymous payment mutation, storage policy, or
+  second payment authority was resurrected.
+- Canonical payment state remains `public.order_payments`; token/link,
+  ownership, expiry, idempotency, private proof storage, pending-state, and
+  server-role boundaries remain represented by CURRENT HEAD code/migrations.
+- Known warning: the later
+  `20260721090000_p0_security_critical_legacy_containment_c1.sql` still has an
+  independent historical hash/ACL preflight for the retired proof RPC. This
+  is outside the current same-migration correction and must be reconciled in
+  a later repository-only task before full CURRENT HEAD replay.
+
+## Owner decisions and next action
+
+- Existing owner decisions remain in force: one canonical payment authority,
+  fail-closed security, no historical broad public grants, and no production
+  or fixture work in this phase. No new architecture decision was made.
+- Next recommended action: obtain/retain owner approval for a clean disposable
+  staging reset and replay from empty; stop at the first new SQL failure. The
+  next Codex session must read `AGENTS.md`, this handoff, the replay manifest,
+  and the coverage ledger, then perform the approved staging replay only.
+
+**HANDOFF UPDATED: YES — `CURRENT_PHASE_HANDOFF.md`**
+
+---
+
+# LATEST AUTHORITATIVE HANDOFF — 2026-08-16 20:46:58 +08:00
+
+## Checkpoint identity and objective
+
+- Branch: `UI-MIGRATION`
+- HEAD SHA: `43f935b321906093df13e521f411ca3aa102799e`
+- Task / phase: **Wave 0B Retired Public Payment RPC Legacy Containment
+  Reconciliation — repository-only security compatibility correction**
+- Objective: make
+  `20260721090000_p0_security_critical_legacy_containment_c1.sql` valid for
+  both a fresh CURRENT HEAD install with retired objects absent and a legacy
+  upgrade with those objects present, without resurrecting the retired RPC.
+
+## Current status truth
+
+- Repository implementation: **EXECUTED AND VERIFIED LOCALLY**.
+- Staging/remote SQL: **NOT RUN and NOT CONTACTED**.
+- Production: **NOT CONTACTED / NOT MUTATED**.
+- Fixtures, authenticated E2E, deployment, and rollback: **NOT RUN / NOT
+  PERFORMED**.
+- Release state: **WAVE 0B INCOMPLETE — READY FOR OWNER-AUTHORIZED CLEAN
+  STAGING REPLAY; WAVE 1 PROHIBITED**.
+
+## Completed and not completed
+
+- C1 now treats absent `create_public_order`, absent
+  `submit_public_payment_proof`, absent `Customers can upload order files`
+  policy, and absent `order-uploads` bucket as valid fresh-install state.
+- If a legacy RPC exists, C1 preserves its SHA-256 anti-drift check and
+  rejects untrusted owners, and accepts only the known historical or
+  already-contained ACL state before revoking `PUBLIC`/`anon`/`authenticated`
+  and granting/retaining `service_role`. The historical anon/authenticated
+  pair may lack service-role execution before containment, as evidenced by
+  `schema.sql`.
+- If the legacy policy exists, its exact anonymous INSERT semantics are
+  validated before the named policy is dropped. A public legacy bucket and
+  unexpected identity/partial state fail closed.
+- The baseline remains unchanged and does not recreate either retired RPC or
+  the legacy upload surface. Canonical payment authority remains
+  `public.order_payments` and the current server-side token/link flow.
+- Runtime replay of C1 and later CURRENT HEAD migrations remains outstanding;
+  no staging attestation or SQL execution was performed in this task.
+
+## Files changed in this task
+
+- `supabase/migrations/20260721090000_p0_security_critical_legacy_containment_c1.sql`
+- `DEBRODER_FRESH_DATABASE_REPLAY_MANIFEST.md`
+- `DEBRODER_BASELINE_COVERAGE_LEDGER.md`
+- `test/legacy-payment-containment.test.ts`
+- `DEBRODER_MASTER_STATE.md`
+- `DEBRODER_V1.2_ISSUE_REGISTER.md`
+- `CURRENT_PHASE_HANDOFF.md`
+
+No route or application behavior changed. Existing unrelated working-tree
+changes were preserved.
+
+## Database and release record
+
+- Target environment for future replay: disposable staging `debroder-staging`,
+  project `ykfjgnrigcsapblbxnxb`.
+- Staging state at task start: preserved at the previous runtime failure
+  checkpoint; not re-attested because this task explicitly prohibited remote
+  contact.
+- Migrations attempted/applied in this task: **NONE**. The C1 migration was
+  changed in the repository only; it was not executed against any database.
+- Database mutation: **NO**; staging mutation: **NO**; production mutation:
+  **NO**; production deployment: **NO**; rollback: **NOT PERFORMED**.
+- Exact safe resume point: owner-authorized clean reset of only the disposable
+  staging project, prove empty, apply the corrected baseline losslessly, run
+  the approved manifest including C1, and stop at the first real SQL failure.
+  Do not create fixtures or run E2E before replay and Wave 0C pass.
+
+## Verification actually executed
+
+- New C1 static containment suite: **EXECUTED AND PASSED — 5 tests**.
+- Focused payment/baseline/manifest/Wave 0C/public-proof suite:
+  **EXECUTED AND PASSED — 33 tests / 6 files**.
+- Full Vitest: **EXECUTED AND PASSED — 131 files / 983 tests**.
+- Typecheck: **EXECUTED AND PASSED**.
+- Lint: **EXECUTED AND PASSED — 0 errors / 34 existing warnings**.
+- `git diff --check`: **EXECUTED AND PASSED**; Windows line-ending notices
+  only.
+- Build: **NOT RUN**; migration/documentation/static-test scope did not
+  require a build.
+- Runtime SQL replay: **NOT RUN**; remote contact was forbidden and local
+  PostgreSQL/Supabase runtime is unavailable.
+
+## Security, integrity, warnings, and owner decisions
+
+- The C1 hash checks are preserved as legacy anti-drift protection, not as a
+  fresh-install existence requirement.
+- Historical `search_path = public` function definitions are not replaced by
+  this containment-only migration. After containment, untrusted `PUBLIC`,
+  `anon`, and `authenticated` execution is removed; `service_role` remains the
+  only permitted execution boundary. No broad historical grant is restored.
+- No obsolete payment API, shadow payment state, legacy bucket, or anonymous
+  payment mutation path was added.
+- Known warnings: 34 existing lint warnings; runtime SQL compatibility remains
+  unproven until clean staging replay; the three root blueprint files named by
+  AGENTS.md remain unavailable in this worktree.
+- Owner decisions remain in force: canonical payment authority is
+  `public.order_payments`; retired public proof RPC must not be resurrected;
+  fail-closed legacy containment is required; staging/production remain out of
+  scope for this repository-only correction. No new architecture decision was
+  made.
+
+## Explicit next-session instruction
+
+Read `AGENTS.md`, this handoff, `DEBRODER_FRESH_DATABASE_REPLAY_MANIFEST.md`,
+and `DEBRODER_BASELINE_COVERAGE_LEDGER.md`. Do not contact or patch the
+existing staging database in a repository-only continuation. After owner
+approval, reset only disposable staging, prove empty, replay the corrected
+baseline and manifest, verify C1 reaches its fresh absent-object path, and
+stop at the first new SQL failure. Keep fixtures, authenticated E2E, and Wave
+1 prohibited until the full replay and Wave 0C security checks pass.
+
+**HANDOFF UPDATED: YES — `CURRENT_PHASE_HANDOFF.md`**
+
+---
+
+# LATEST AUTHORITATIVE HANDOFF — 2026-08-16 21:02:01 +08:00
+
+## Checkpoint identity and objective
+
+- Branch: `UI-MIGRATION`
+- HEAD SHA: `43f935b321906093df13e521f411ca3aa102799e`
+- Task / phase: **Wave 0B Retired Public Payment RPC Legacy Containment
+  Reconciliation — repository-only security compatibility correction**
+- Objective: reconcile C1 fresh-install absence with fail-closed legacy upgrade
+  containment without recreating the retired public payment RPC.
+
+## Status truth and scope
+
+- Repository correction: **EXECUTED AND VERIFIED LOCALLY**.
+- C1 runtime SQL: **NOT RUN**; staging/remote: **NOT CONTACTED / NO MUTATION**.
+- Production database/deployment: **NO MUTATION / NOT CONTACTED**.
+- Fixtures, authenticated E2E, Wave 0C runtime execution, deployment, and
+  rollback: **NOT RUN / NOT PERFORMED**.
+- Release state: **WAVE 0B INCOMPLETE — READY FOR OWNER-AUTHORIZED CLEAN
+  STAGING REPLAY; WAVE 1 PROHIBITED**.
+
+## Implementation result
+
+- C1 accepts absent retired RPCs, absent historical upload policy, and absent
+  legacy bucket on fresh CURRENT HEAD installs; it creates none of them.
+- When a legacy RPC exists, C1 validates the frozen SHA-256, rejects untrusted
+  owners, and accepts either the historical anon/authenticated ACL pair
+  (service-role may be absent, as evidenced by `schema.sql`) or the already-
+  contained ACL. It then revokes untrusted execution and grants/retains
+  service-role execution.
+- The named legacy upload policy is validated before conditional removal; a
+  public legacy bucket, unexpected identity, or partial ACL/policy state fails
+  closed. Historical `search_path = public` bodies remain unchanged, but
+  untrusted execution is removed by the final ACL.
+- Baseline remains unchanged; canonical payment authority remains
+  `public.order_payments` and the current token/link server flow.
+
+## Files changed
+
+- `supabase/migrations/20260721090000_p0_security_critical_legacy_containment_c1.sql`
+- `DEBRODER_FRESH_DATABASE_REPLAY_MANIFEST.md`
+- `DEBRODER_BASELINE_COVERAGE_LEDGER.md`
+- `test/legacy-payment-containment.test.ts`
+- `DEBRODER_MASTER_STATE.md`
+- `DEBRODER_V1.2_ISSUE_REGISTER.md`
+- `CURRENT_PHASE_HANDOFF.md`
+
+No application routes changed. Existing unrelated working-tree changes remain
+preserved.
+
+## Database and migration record
+
+- Future target: disposable `debroder-staging`, project
+  `ykfjgnrigcsapblbxnxb`.
+- State at task start: prior staging replay failure checkpoint; not re-attested
+  because remote contact was forbidden.
+- Migrations attempted/applied in this task: **NONE**. C1 changed locally only.
+- Database mutation: **NO**; staging mutation: **NO**; production mutation:
+  **NO**; rollback: **NOT PERFORMED**.
+- Safe resume point: owner-authorized clean reset of only staging, empty-state
+  proof, lossless corrected baseline, approved manifest through C1, stop at the
+  first new SQL failure; no fixtures/E2E before full replay and Wave 0C pass.
+
+## Verification actually executed
+
+- Focused payment/baseline/manifest/Wave 0C/public-proof/C1 suite:
+  **EXECUTED AND PASSED — 6 files / 33 tests**.
+- Full Vitest: **EXECUTED AND PASSED — 131 files / 983 tests**.
+- Typecheck: **EXECUTED AND PASSED**.
+- Lint: **EXECUTED AND PASSED — 0 errors / 34 existing warnings**.
+- `git diff --check`: **EXECUTED AND PASSED**; line-ending notices only.
+- Build: **NOT RUN**; migration/documentation/static-test scope.
+- Runtime SQL: **NOT RUN**; no remote contact and no local PostgreSQL/Supabase
+  runtime available.
+
+## Warnings, blockers, owner decisions, and next instruction
+
+- Runtime replay remains the release blocker; no SQL runtime PASS is claimed.
+- Three root blueprint files named by AGENTS.md remain unavailable in this
+  worktree.
+- Existing owner decisions remain: one canonical payment authority, no
+  retired RPC resurrection, fail-closed containment, staging-only future
+  replay, no production/fixture work, and Wave 1 prohibited. No new decision
+  was made.
+- Next session must read `AGENTS.md`, this handoff, the replay manifest, and
+  coverage ledger, then perform only the approved clean staging replay. Do not
+  patch the prior staging checkpoint or create fixtures before replay pass.
+
+**HANDOFF UPDATED: YES — `CURRENT_PHASE_HANDOFF.md`**
+
+---
+
+# LATEST AUTHORITATIVE HANDOFF — 2026-08-16 21:19:53 +08:00
+
+## Checkpoint identity and objective
+
+- Branch: `UI-MIGRATION`
+- HEAD SHA: `43f935b321906093df13e521f411ca3aa102799e`
+- Task / phase: **Wave 0B Clean Staging Replay After Payment + C1
+  Reconciliation — runtime SQL verification**
+- Objective: reset only disposable staging and prove corrected baseline,
+  approved manifest, CURRENT HEAD, and Wave 0C runtime readiness.
+
+## Runtime status truth
+
+- Target: `debroder-staging` / project `ykfjgnrigcsapblbxnxb`; URL identity
+  passed. Production `lzennundwqqtyvvcnzbg` was rejected.
+- Staging reset: **YES — EXECUTED AND PASSED** using a zero-migration
+  temporary CLI workspace.
+- `STAGING_STATE_AFTER_RESET = EMPTY`: **EXECUTED AND PASSED** — migration
+  history, public application tables/functions/types/policies, and
+  `auth.users` were all zero.
+- Baseline lossless transfer: **EXECUTED**; source/copy SHA-256 matched
+  (`2FF9DF289E77FA82F83C9FD5C5A14C13F328B3D5C0838CE7609AFBCD60140006`).
+- Baseline: **EXECUTED AND FAILED** at statement 93 while creating
+  `public.saved_configurations.share_token`.
+- Exact error: SQLSTATE **42883**, `function gen_random_bytes(integer) does not
+  exist`. Read-only post-failure evidence shows
+  `extensions.gen_random_bytes(integer) = present` and
+  `public.gen_random_bytes(integer) = absent`.
+- Transaction: **ROLLED BACK**. Migration history remains empty and no public
+  application objects or Auth users remain.
+
+## Replay progress and required stop
+
+- Migrations successfully applied after this reset: **0**.
+- Phase 5B payment audit lock: **NOT REACHED**.
+- Previous payment runtime blockers: **NOT REACHED in this replay**; no new
+  runtime evidence was collected for them.
+- C1 containment: **NOT REACHED**.
+- Wave 0C: **NOT RUN**.
+- First failure classification: **BASELINE repository defect**. Do not
+  continue, skip, or patch staging in this replay session.
+
+## Security and data integrity
+
+- Reset affected only the authorized staging project. No production project
+  was contacted or mutated.
+- The failed baseline left no application schema or business/Auth data. No
+  fixtures, products, orders, payments, or customer records were created.
+- No ACL was widened, retired RPC was recreated, or manual SQL patch applied.
+- The temporary CLI workspace was removed after evidence capture.
+
+## Files and repository state
+
+- Runtime replay changed no migration or application source.
+- Governance files updated: `CURRENT_PHASE_HANDOFF.md`,
+  `DEBRODER_MASTER_STATE.md`, and `DEBRODER_V1.2_ISSUE_REGISTER.md`.
+- Existing unrelated working-tree changes were preserved.
+
+## Verification and warnings
+
+- Runtime identity/reset/empty-state/post-failure SQL attestations:
+  **EXECUTED AND PASSED** where stated above.
+- Full tests, typecheck, lint, and build: **NOT RUN** in this task because
+  repository source did not change; prior local results are historical
+  evidence only. `git diff --check`: **EXECUTED AND PASSED** (Git emitted only
+  normal LF/CRLF working-copy warnings).
+- New blocker: baseline uses unqualified `gen_random_bytes(24)` despite the
+  installed extension function residing in schema `extensions`.
+
+## Exact safe resume instruction
+
+Read this handoff, `AGENTS.md`, the replay manifest, and the coverage ledger.
+Create a repository-only baseline correction that safely qualifies the
+`pgcrypto` function (or establishes an explicitly safe equivalent), add/update
+static coverage, and verify locally. Do not contact or patch staging again
+until that correction is reviewed; then obtain/retain owner authorization for
+a fresh empty staging replay. Fixtures, authenticated E2E, and Wave 1 remain
+prohibited.
+
+**HANDOFF UPDATED: YES — `CURRENT_PHASE_HANDOFF.md`**
+
+# LATEST AUTHORITATIVE HANDOFF — 2026-08-16 21:31:42 +08:00
+
+## Checkpoint identity and objective
+
+- Branch: `UI-MIGRATION`
+- HEAD SHA: `43f935b321906093df13e521f411ca3aa102799e`
+- Task / phase: **Wave 0B pgcrypto baseline qualification correction —
+  repository-only root-cause fix**
+- Objective: correct the proven Supabase `pgcrypto` schema qualification
+  failure without contacting staging or production, then verify locally.
+
+## Implementation
+
+- Baseline `20260816102253_debroder_fresh_database_baseline.sql` now declares
+  `pgcrypto` with `schema extensions` and explicitly qualifies all baseline
+  `gen_random_bytes` and `digest` calls.
+- Immediate executable migrations
+  `20260711010000_v1_1_bulk_custom_ordering.sql` and
+  `20260711154141_v1_1_bulk_custom_ordering_compatibility.sql` now qualify
+  their `gen_random_bytes` calls.
+- Added static pgcrypto/replay coverage to
+  `test/baseline-reconstruction.test.ts`.
+- Updated `DEBRODER_BASELINE_COVERAGE_LEDGER.md` with runtime evidence,
+  root cause, corrected contract, and regression evidence.
+- Replay manifest ordering/classifications: **UNCHANGED**.
+- No public wrapper, global search-path widening, RLS/grant change, payment
+  authority change, retired RPC recreation, or Wave 0C security change.
+
+## Verification status truth
+
+- Focused baseline/payment/C1/Wave 0C suites: **EXECUTED AND PASSED — 6
+  files / 39 tests**.
+- Full Vitest: **EXECUTED AND PASSED — 131 files / 985 tests**.
+- Typecheck: **EXECUTED AND PASSED**.
+- Lint: **EXECUTED AND PASSED — 0 errors / 34 existing warnings**.
+- `git diff --check`: **EXECUTED AND PASSED**; Git emitted only normal
+  LF/CRLF working-copy warnings.
+- Build: **NOT RUN — not required for this migration/static-test scope**.
+- Runtime SQL verification after the correction: **NOT RUN**.
+
+## Environment and safety
+
+- Target staging: `debroder-staging` / `ykfjgnrigcsapblbxnxb`: **NOT
+  CONTACTED** in this repository-only task. It remains at the prior empty
+  post-rollback checkpoint.
+- Production: **NO MUTATION**.
+- Fixtures, authenticated E2E, deployment, and Wave 1: **NOT RUN**.
+- Repository changes are limited to the baseline, two executable migration
+  qualification corrections, static test coverage, this ledger, and
+  governance checkpoint documents.
+
+## Remaining blocker and exact next action
+
+- The previous runtime blocker is corrected in repository source, but no new
+  runtime replay evidence exists yet. Wave 0B remains **NO-GO until a clean,
+  owner-authorized staging replay** executes the corrected baseline and
+  manifest.
+- Exact next action: obtain/retain owner authorization, reset only disposable
+  staging, prove empty, replay the corrected baseline and approved manifest
+  losslessly, and stop at the first new SQL failure. Do not patch staging,
+  create fixtures, or run authenticated E2E in that replay.
+
+**HANDOFF UPDATED: YES — `CURRENT_PHASE_HANDOFF.md`**
+
+# LATEST AUTHORITATIVE HANDOFF — 2026-08-16 22:18:51 +08:00
+
+## Checkpoint identity and objective
+
+- Branch: `UI-MIGRATION`
+- HEAD SHA: `43f935b321906093df13e521f411ca3aa102799e`
+- Task / phase: **Wave 0B runtime replay after pgcrypto correction**
+- Target: `debroder-staging` / `ykfjgnrigcsapblbxnxb` only.
+- Production `lzennundwqqtyvvcnzbg`: **NOT CONTACTED**.
+
+## Runtime status truth
+
+- Identity gate: **EXECUTED AND PASSED**. Environment was staging, project
+  name/ref/URL matched, and the configured production ref was rejected.
+- Initial `STAGING_STATE = EMPTY`: **EXECUTED AND PASSED**. No reset was
+  performed in this task.
+- Corrected baseline: **EXECUTED AND PASSED**. Lossless source/copy SHA-256
+  matched: `41F6F4A0C0F8676F193C552CCD4660A38F25CF4C7F60A0F23BEDE8C6BD8B42A1`.
+- `PGCRYPTO_BASELINE_RUNTIME = PASS`: `pgcrypto` is installed in
+  `extensions`, `extensions.gen_random_bytes(integer)` resolves,
+  `public.gen_random_bytes(integer)` is absent, and the baseline token/hash
+  objects were created successfully without global search-path widening.
+- Baseline verification: **PASS** — required foundation tables/functions,
+  zero business/Auth rows, RLS enabled on all public tables, required
+  constraints/indexes/triggers present, and no unsafe SECURITY DEFINER
+  function lacking an explicit search path.
+- An initial local replay-driver shape error attempted invalid `[object
+  Object]` filenames; read-only re-attestation proved it applied no
+  incremental migration. The driver was corrected before replay resumed.
+
+## Replay progress
+
+- Successfully applied after baseline: **29 incremental migrations**.
+- The two corrected pgcrypto migrations passed at runtime:
+  `20260711010000_v1_1_bulk_custom_ordering.sql` and
+  `20260711154141_v1_1_bulk_custom_ordering_compatibility.sql`.
+- Phase 5B payment completion: **PASS**.
+- Phase 5B payment audit lock: **PASS**. Previous payment blockers are closed
+  at runtime; the retired `submit_public_payment_proof` RPC remains absent and
+  anon/public payment mutation execution is denied.
+- First new failure: `20260712154540_v1_2_phase_11_fulfillment_schema_and_audit.sql`.
+- SQLSTATE/error: **42703 — column `order_id` does not exist** at statement 10
+  while creating `public.fulfillment_deletion_audit_order_idx`.
+- Root cause classification: **BASELINE / INCREMENTAL SCHEMA COLLISION**.
+  The baseline pre-created `public.fulfillment_deletion_audit` without
+  `order_id`; Phase 11 skips its `CREATE TABLE IF NOT EXISTS` and then indexes
+  the missing column.
+- Transaction: **ROLLED BACK**. Failed migration recorded: **NO**. Its index
+  is absent. Staging is preserved at baseline plus 29 successful migrations.
+- C1: **NOT REACHED**. Wave 0C: **NOT RUN**. CURRENT HEAD verification:
+  **NOT REACHED**.
+
+## Fixtures, repository, and verification
+
+- Fixtures/Auth users: **NOT RUN**.
+- Authenticated E2E: **NOT RUN**.
+- Repository source changes: **NONE**. Only governance checkpoint files were
+  updated after runtime evidence; the temporary replay workspace was removed.
+- Local Vitest, typecheck, lint, and build: **NOT RUN — NO REPOSITORY SOURCE
+  CHANGE**. Existing local results remain historical evidence only.
+- Production mutation: **NO**. Production data copy/deployment: **NO**.
+
+## Exact safe resume instruction
+
+Read this handoff, `AGENTS.md`, the replay manifest, and the coverage ledger.
+Start a repository-only correction task for the baseline/Phase 11
+`fulfillment_deletion_audit` ownership and column contract. Determine whether
+the baseline must carry the full required columns or Phase 11 must add them
+before indexing, add static coverage, and verify locally. Do not patch staging,
+reset staging, skip the failed migration, create fixtures, or continue replay
+until that correction is reviewed.
+
+**HANDOFF UPDATED: YES — `CURRENT_PHASE_HANDOFF.md`**
+
+# LATEST AUTHORITATIVE HANDOFF — 2026-08-16 22:40:59 +08:00
+
+## Task and verified checkpoint
+
+- Branch: `UI-MIGRATION`; HEAD SHA: `43f935b321906093df13e521f411ca3aa102799e`.
+- Task: **Wave 0B Phase 11 fulfillment audit foundation correction —
+  repository-only root-cause remediation**.
+- Objective: reconcile the fresh baseline with the historical Phase 11
+  `public.fulfillment_deletion_audit` contract without contacting staging or
+  production.
+- Historical creator evidence: Phase 11 migration in commits `9262ded`,
+  `6ba0dee`, and reverted remote-history commit `8c1108f`.
+- Ownership decision: **BASELINE FOUNDATION WITH PHASE 11 EXTENSIONS**.
+  The baseline establishes the complete pre-existing shape; Phase 11 owns
+  lifecycle numbering, immutable audit trigger, permanent-delete function,
+  RLS/policies, grants, and idempotent index execution.
+
+## Implementation and verification
+
+- Baseline corrected with `fulfillment_revisions.reason` non-empty check and
+  complete `fulfillment_deletion_audit` shape: `fulfillment_number`, non-null
+  `order_id`, historical reason default, `deleted_at` default, and required
+  order/time index.
+- Audit `order_id` remains `uuid not null` without an `orders` or
+  `fulfillments` FK because the function records the snapshot before deleting
+  the source fulfillment; `deleted_by` retains its `auth.users ... ON DELETE
+  SET NULL` FK.
+- Static tests added to `test/fulfillment-phase11.test.ts`; coverage ledger
+  updated. Replay manifest order/classifications: **UNCHANGED**.
+- Focused tests: **EXECUTED AND PASSED — 2 files / 22 tests**.
+- Full Vitest: **EXECUTED AND PASSED — 131 files / 988 tests**.
+- Typecheck: **EXECUTED AND PASSED**.
+- Lint: **EXECUTED AND PASSED — 0 errors / 34 warnings**.
+- `git diff --check`: **EXECUTED AND PASSED**; only normal LF/CRLF warnings.
+- Build: **NOT RUN — migration/static-test scope**.
+- Phase 11 runtime after correction: **NOT RUN**.
+
+## Files and environment truth
+
+- Files changed by this task: `supabase/migrations/20260816102253_debroder_fresh_database_baseline.sql`,
+  `test/fulfillment-phase11.test.ts`, `DEBRODER_BASELINE_COVERAGE_LEDGER.md`,
+  `CURRENT_PHASE_HANDOFF.md`, `DEBRODER_MASTER_STATE.md`, and
+  `DEBRODER_V1.2_ISSUE_REGISTER.md`. No route/application behavior changed.
+- Database/migration change: repository source only; no migration applied
+  remotely. The historical Phase 11 migration was not rewritten.
+- Staging: **NOT CONTACTED / NO MUTATION**. Prior runtime checkpoint remains
+  baseline plus 29 successful migrations; Phase 11 is not recorded after its
+  previous rollback.
+- Production: **NO CONTACT / NO MUTATION**.
+- Fixtures, authenticated E2E, C1, Wave 0C, CURRENT HEAD verification, and
+  deployment: **NOT RUN**.
+
+## Risks, blockers, and safe resume
+
+- The correction is locally implemented and statically verified, but runtime
+  closure is not claimed until an owner-authorized replay proves Phase 11.
+- Security remains fail-closed: no customer/public/anon write path was added;
+  Phase 11's existing staff-read and immutable-audit controls remain the
+  enforcement boundary.
+- Exact next action: obtain/retain owner authorization, apply the corrected
+  baseline losslessly to disposable staging, replay the approved manifest in
+  logical order, and stop at the first new SQL failure. Do not patch or reset
+  staging in this repository-only checkpoint.
+- Resume instruction: read this handoff, `AGENTS.md`, the replay manifest,
+  coverage ledger, corrected baseline, and Phase 11 migration; then perform
+  only the authorized runtime replay. Fixtures/E2E remain prohibited until
+  baseline, full replay, and Wave 0C pass at runtime.
+
+**HANDOFF UPDATED: YES — `CURRENT_PHASE_HANDOFF.md`**
+
+# LATEST AUTHORITATIVE HANDOFF — 2026-08-17 11:14:59 +08:00
+
+## Checkpoint identity and objective
+
+- Branch: `UI-MIGRATION`; HEAD SHA:
+  `43f935b321906093df13e521f411ca3aa102799e`.
+- Task / phase: **Wave 0B clean runtime replay after Phase 11 fulfillment
+  correction**.
+- Objective: prove the corrected baseline and approved fresh-database
+  manifest against disposable staging, stopping at the first new SQL failure.
+
+## Executed staging evidence
+
+- Target identity: **EXECUTED AND PASSED** — `debroder-staging` /
+  `ykfjgnrigcsapblbxnxb`; configured URL matched. Production ref
+  `lzennundwqqtyvvcnzbg` was not contacted.
+- Initial state: old partial replay with zero Auth/business rows.
+- Reset: **EXECUTED AND PASSED** — only the approved disposable target was
+  reset. Post-reset proof: migration history empty, no public application
+  tables/functions/types/policies, and `auth.users = 0`.
+- Baseline: **EXECUTED AND PASSED** from the exact SHA-256-matched transfer
+  (`F8C91612AB03DF74B367EE4607D8AE3745A82773AAF89766976FAE0A2639E5E1`).
+  Pgcrypto resolved in `extensions`; the corrected fulfillment audit shape
+  was present before Phase 11; baseline RLS/policies/security checks passed;
+  no business/Auth rows were created.
+- Replay prefix: **35 migration records EXECUTED AND RECORDED** (baseline plus
+  34 incremental migrations), through
+  `20260712155021_v1_2_phase_11_fulfillment_delete_audit.sql`.
+- Prior runtime closures: pgcrypto migrations, Phase 5B payment completion,
+  and Phase 5B payment audit lock **EXECUTED AND PASSED**. The retired
+  `submit_public_payment_proof` RPC remained absent and public/anon payment
+  mutation grants remained absent.
+- Phase 11 schema correction: migration
+  `20260712154540_v1_2_phase_11_fulfillment_schema_and_audit.sql`
+  **EXECUTED AND RECORDED**. Runtime proof showed
+  `fulfillment_deletion_audit_order_idx` exists and `order_id` is
+  `uuid NOT NULL`.
+
+## First new failure and exact safe state
+
+- First new failure: `20260712155146_v1_2_phase_11_fulfillment_security.sql`.
+- SQLSTATE: **42883**.
+- Exact error: `function public.audit_row_change() does not exist`.
+- Failing statement: creation of `audit_fulfillments_changes` on
+  `public.fulfillments`, executing `public.audit_row_change()`.
+- Failure transaction: **ROLLED BACK**. The migration was not recorded and
+  the trigger was absent after attestation. Staging is preserved at baseline
+  plus 34 successful incremental migrations. The likely correction boundary
+  is the missing repository-controlled audit trigger function prerequisite;
+  baseline versus Phase 11 ownership must be resolved in the next
+  repository-only task.
+- Pending replay: 88 manifest entries remain, beginning with the failed
+  migration. C1, Wave 0C, and CURRENT HEAD verification were **NOT REACHED**.
+
+## Security, data, and scope truth
+
+- RLS: **EXECUTED AND PASSED** for the verified payment and fulfillment
+  tables; no public/anon payment mutation routine or table grants were
+  found; retired payment RPC and `audit_row_change()` were both absent at
+  failure.
+- Fixtures/Auth users: **NOT RUN / NOT CREATED**.
+- Authenticated E2E: **NOT RUN**.
+- Repository source/migration correction: **NOT PERFORMED IN THIS RUNTIME
+  TASK**. The temporary CLI workspace was created for transport and removed
+  after evidence capture. Only governance checkpoint documents changed in
+  this continuation.
+- Local tests, typecheck, lint, and build: **NOT RUN in this runtime task — no
+  repository source change**. Prior local PASS results remain historical
+  evidence only.
+- Production database/deployment/data copy: **NO**.
+
+## Remaining blocker and resume instruction
+
+- Status: **NO-GO — NEW REPOSITORY BLOCKER FOUND**.
+- Exact next action: start a repository-only correction task to recover and
+  implement/classify the legitimate `public.audit_row_change()` prerequisite,
+  add static coverage, and then obtain/retain owner authorization for a clean
+  replay from empty. Do not patch staging manually or continue past the
+  preserved failure. Fixtures and E2E remain prohibited.
+- Explicit resume instruction: read this handoff, `AGENTS.md`, the replay
+  manifest, coverage ledger, baseline, and
+  `20260712155146_v1_2_phase_11_fulfillment_security.sql`; continue with
+  repository-only audit-function contract recovery, not another staging
+  attestation.
+
+**HANDOFF UPDATED: YES — `CURRENT_PHASE_HANDOFF.md`**
+
+# LATEST AUTHORITATIVE HANDOFF — 2026-08-17 11:33:32 +08:00
+
+## Task identity and objective
+
+- Branch: `UI-MIGRATION`.
+- Current HEAD commit SHA: `43f935b321906093df13e521f411ca3aa102799e`.
+- Task / Wave / Phase: **DEBRODER Wave 0B audit-row-change foundation
+  recovery**.
+- Objective: recover and implement the legitimate
+  `public.audit_row_change()` prerequisite required by Phase 11, preserving
+  one append-only audit authority and a reproducible fresh replay.
+
+## Completed
+
+- Historical source and ownership were recovered from the reverted
+  `20260712071058_phase13_append_only_audit.sql` in commit `6ba0dee`, removed
+  by `8c1108f`. Current Phase 13 confirms the function and append-only audit
+  foundation are expected to exist before its corrections.
+- `public.system_audit_log` was confirmed as the single audit destination.
+- The fresh baseline now creates `public.audit_row_change()` before the Phase
+  11 consumer. It preserves INSERT/UPDATE/DELETE behavior, archived/restored
+  classification, OLD/NEW snapshots, `TG_TABLE_NAME`, actor fields, trigger
+  source, and trigger row returns.
+- Security was re-derived: `SECURITY DEFINER`, explicit `set search_path = ''`,
+  qualified public/auth objects, trigger-only execution, and revoked direct
+  `PUBLIC`/`anon`/`authenticated`/`service_role` execution.
+- All active Phase 11/Phase 13 consumers were statically inventoried. No
+  manifest reorder, historical migration rewrite, or duplicate audit table was
+  introduced.
+- Coverage ledger and project status documents were synchronized.
+
+## Files changed in this task
+
+- `supabase/migrations/20260816102253_debroder_fresh_database_baseline.sql`
+- `test/audit-row-change-foundation.test.ts`
+- `DEBRODER_BASELINE_COVERAGE_LEDGER.md`
+- `DEBRODER_MASTER_STATE.md`
+- `DEBRODER_V1.2_ISSUE_REGISTER.md`
+- `CURRENT_PHASE_HANDOFF.md`
+
+No routes or application behavior changed. Other worktree changes predate
+this task and were preserved.
+
+## Verification truth
+
+- Focused audit, Phase 11, baseline, payment, containment, manifest, and Wave
+  0C regression suites: **EXECUTED AND PASSED — 8 files / 53 tests**.
+- Full Vitest: **EXECUTED AND PASSED — 132 files / 993 tests**.
+- Typecheck: **EXECUTED AND PASSED**.
+- Lint: **EXECUTED AND PASSED — 0 errors / 34 warnings**. Warnings are
+  existing repository lint warnings outside this migration foundation.
+- Build: **EXECUTED AND PASSED** after the initial bounded attempt timed out
+  during post-compile validation; the longer bounded retry completed.
+- `git diff --check`: **EXECUTED AND PASSED**. Git emitted normal LF/CRLF
+  normalization warnings only.
+- Dependency note: a lockfile-preserving local install attempt reached an
+  interactive reinstall confirmation and timed out; no tracked dependency or
+  lockfile change was made. Existing local binaries were sufficient for all
+  gates above.
+
+## Database, migration, and security state
+
+- Repository migration changed: the fresh baseline only. The replay manifest
+  and historical migrations were not changed.
+- Remote/staging/production changes: **NO**. Supabase was not contacted.
+- Target environment: none for this repository-only task. The prior staging
+  evidence remains preserved at `debroder-staging` / `ykfjgnrigcsapblbxnxb`,
+  baseline plus 34 recorded incremental migrations, with Phase 11 security
+  still failed/not recorded. Production ref `lzennundwqqtyvvcnzbg` remains
+  untouched.
+- Database mutation: **NO**. Staging mutation: **NO**. Production mutation:
+  **NO**.
+- Phase 11 runtime closure: **NOT RUN in this task**. C1, Wave 0C, CURRENT
+  HEAD verification, fixtures, and authenticated E2E: **NOT RUN / NOT REACHED**.
+- Security finding: the restored audit function is logging-only and has no
+  direct API execution grant; `system_audit_log` remains append-only. Runtime
+  proof that Phase 11 can create its trigger is still required.
+
+## Remaining blocker and exact next action
+
+- Status: **IMPLEMENTED LOCALLY / NO-GO UNTIL RUNTIME SQL REPLAY**.
+- Remaining blocker: the repository correction has not yet been executed on a
+  clean disposable staging database. Runtime Phase 11, then C1, Wave 0C, and
+  CURRENT HEAD remain unverified.
+- Owner decisions used: restore the approved reconstructed baseline; keep
+  `system_audit_log` as the single audit authority; preserve least privilege;
+  do not resurrect historical public APIs or contact production.
+- Exact safe resume point: obtain owner authorization for a clean staging reset
+  and replay using the corrected baseline and existing manifest, stop at the
+  first SQL failure, and verify `audit_fulfillments_changes` plus the Phase 11
+  audit security contract before continuing. Do not patch staging manually,
+  create fixtures, or run E2E.
+- Explicit resume instruction: read this handoff, `AGENTS.md`, the replay
+  manifest, coverage ledger, corrected baseline, and
+  `20260712155146_v1_2_phase_11_fulfillment_security.sql`; then perform the
+  owner-authorized runtime replay from empty.
+
+**HANDOFF UPDATED: YES — `CURRENT_PHASE_HANDOFF.md`**
+
+# LATEST AUTHORITATIVE HANDOFF — 2026-08-17 11:33:32 +08:00
+
+## Task identity and objective
+
+- Branch: `UI-MIGRATION`.
+- Current HEAD commit SHA: `43f935b321906093df13e521f411ca3aa102799e`.
+- Task / Wave / Phase: **DEBRODER Wave 0B audit-row-change foundation
+  recovery**.
+- Objective: recover and implement the legitimate
+  `public.audit_row_change()` prerequisite required by Phase 11, preserving
+  one append-only audit authority and a reproducible fresh replay.
+
+## Completed
+
+- Historical source and ownership were recovered from the reverted
+  `20260712071058_phase13_append_only_audit.sql` in commit `6ba0dee`, removed
+  by `8c1108f`. Current Phase 13 confirms the function and append-only audit
+  foundation are expected to exist before its corrections.
+- `public.system_audit_log` was confirmed as the single audit destination.
+- The fresh baseline now creates `public.audit_row_change()` before the Phase
+  11 consumer. It preserves INSERT/UPDATE/DELETE behavior, archived/restored
+  classification, OLD/NEW snapshots, `TG_TABLE_NAME`, actor fields, trigger
+  source, and trigger row returns.
+- Security was re-derived: `SECURITY DEFINER`, explicit `set search_path = ''`,
+  qualified public/auth objects, trigger-only execution, and revoked direct
+  `PUBLIC`/`anon`/`authenticated`/`service_role` execution.
+- All active Phase 11/Phase 13 consumers were statically inventoried. No
+  manifest reorder, historical migration rewrite, or duplicate audit table was
+  introduced.
+- Coverage ledger and project status documents were synchronized.
+
+## Files changed in this task
+
+- `supabase/migrations/20260816102253_debroder_fresh_database_baseline.sql`
+- `test/audit-row-change-foundation.test.ts`
+- `DEBRODER_BASELINE_COVERAGE_LEDGER.md`
+- `DEBRODER_MASTER_STATE.md`
+- `DEBRODER_V1.2_ISSUE_REGISTER.md`
+- `CURRENT_PHASE_HANDOFF.md`
+
+No routes or application behavior changed. Other worktree changes predate
+this task and were preserved.
+
+## Verification truth
+
+- Focused audit, Phase 11, baseline, payment, containment, manifest, and Wave
+  0C regression suites: **EXECUTED AND PASSED — 8 files / 53 tests**.
+- Full Vitest: **EXECUTED AND PASSED — 132 files / 993 tests**.
+- Typecheck: **EXECUTED AND PASSED**.
+- Lint: **EXECUTED AND PASSED — 0 errors / 34 warnings**. Warnings are
+  existing repository lint warnings outside this migration foundation.
+- Build: **EXECUTED AND PASSED** after the initial bounded attempt timed out
+  during post-compile validation; the longer bounded retry completed.
+- `git diff --check`: **EXECUTED AND PASSED**. Git emitted normal LF/CRLF
+  normalization warnings only.
+- Dependency note: a lockfile-preserving local install attempt reached an
+  interactive reinstall confirmation and timed out; no tracked dependency or
+  lockfile change was made. Existing local binaries were sufficient for all
+  gates above.
+
+## Database, migration, and security state
+
+- Repository migration changed: the fresh baseline only. The replay manifest
+  and historical migrations were not changed.
+- Remote/staging/production changes: **NO**. Supabase was not contacted.
+- Target environment: none for this repository-only task. The prior staging
+  evidence remains preserved at `debroder-staging` / `ykfjgnrigcsapblbxnxb`,
+  baseline plus 34 recorded incremental migrations, with Phase 11 security
+  still failed/not recorded. Production ref `lzennundwqqtyvvcnzbg` remains
+  untouched.
+- Database mutation: **NO**. Staging mutation: **NO**. Production mutation:
+  **NO**.
+- Phase 11 runtime closure: **NOT RUN in this task**. C1, Wave 0C, CURRENT
+  HEAD verification, fixtures, and authenticated E2E: **NOT RUN / NOT REACHED**.
+- Security finding: the restored audit function is logging-only and has no
+  direct API execution grant; `system_audit_log` remains append-only. Runtime
+  proof that Phase 11 can create its trigger is still required.
+
+## Remaining blocker and exact next action
+
+- Status: **IMPLEMENTED LOCALLY / NO-GO UNTIL RUNTIME SQL REPLAY**.
+- Remaining blocker: the repository correction has not yet been executed on a
+  clean disposable staging database. Runtime Phase 11, then C1, Wave 0C, and
+  CURRENT HEAD remain unverified.
+- Owner decisions used: restore the approved reconstructed baseline; keep
+  `system_audit_log` as the single audit authority; preserve least privilege;
+  do not resurrect historical public APIs or contact production.
+- Exact safe resume point: obtain owner authorization for a clean staging reset
+  and replay using the corrected baseline and existing manifest, stop at the
+  first SQL failure, and verify `audit_fulfillments_changes` plus the Phase 11
+  audit security contract before continuing. Do not patch staging manually,
+  create fixtures, or run E2E.
+- Explicit resume instruction: read this handoff, `AGENTS.md`, the replay
+  manifest, coverage ledger, corrected baseline, and
+  `20260712155146_v1_2_phase_11_fulfillment_security.sql`; then perform the
+  owner-authorized runtime replay from empty.
+
+**HANDOFF UPDATED: YES — `CURRENT_PHASE_HANDOFF.md`**

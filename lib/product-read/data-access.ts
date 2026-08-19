@@ -15,10 +15,10 @@ import type {
   ProductVariantSizeRow
 } from "./source";
 
-const PRODUCT_SELECT = "id,name,nama,kategori,deskripsi,short_detail,description,subcategory,compare_price,specifications,gallery_urls,label_new,label_promo,label_best_seller,seo_title,seo_description,og_image_url,canonical_url,focal_x,focal_y,focal_zoom,target_ratio,focal_points,sales_count,badge,gambar_url,image_url,image_alt,collection_tags,intent_tags,color_tags,size_tags,material_tags,brand,object_fit,object_position,whatsapp_link,link_url,price,harga,base_price,price_label,slug,stock,product_category_id,product_subcategory_id,size_guide_id,product_type,pricing_mode,sales_mode,tier_scope,sku,has_variants,uses_configurator,minimum_order_qty,urutan,status,status_aktif,created_at,updated_at";
-const VARIANT_SELECT = "id,product_id,name,slug,hex_code,status,variant_name,color_name,color_hex,sku,price_adjustment,image_url,images,object_fit,object_position,is_active,sort_order";
+const PRODUCT_SELECT = "id,name,nama,kategori,deskripsi,short_detail,description,subcategory,badge,gambar_url,image_url,image_alt,collection_tags,intent_tags,color_tags,size_tags,material_tags,brand,price,harga,base_price,slug,product_category_id,product_subcategory_id,size_guide_id,product_type,pricing_mode,sales_mode,tier_scope,sku,has_variants,uses_configurator,minimum_order_qty,public_description,status,status_aktif,created_at,updated_at";
+const VARIANT_SELECT = "id,product_id,name,slug,hex_code,status,variant_name,color_name,color_hex,sku,price_adjustment,is_active,sort_order";
 const SIZE_SELECT = "id,variant_id,size_name,sku,stock,stock_quantity,size_id,status,price_adjustment,is_active,sort_order";
-const IMAGE_SELECT = "id,variant_id,image_url,image_role,alt_text,object_fit,object_position,focal_x,focal_y,focal_zoom,target_ratio,is_cover,sort_order";
+const IMAGE_SELECT = "id,variant_id,image_url,image_role,alt_text,is_cover,sort_order";
 const GUIDE_SELECT = "id,product_id,product_category_id,product_subcategory_id,title,description,rows,notes,is_active,sort_order";
 
 export const PUBLIC_CATALOG_PRODUCT_LIMIT = 120;
@@ -154,7 +154,7 @@ async function readActiveProductSourceUncached(
     .from("products")
     .select(PRODUCT_SELECT)
     .eq("status", "active")
-    .order("urutan", { ascending: true });
+    .order("created_at", { ascending: true });
 
   if (options.productCategoryId) {
     productsQuery = productsQuery.eq("product_category_id", options.productCategoryId);
@@ -182,7 +182,7 @@ async function readActiveProductSourceUncached(
     };
   }
 
-  const products = data as ProductRow[];
+  const products = data as unknown as ProductRow[];
   return {
     products: listSlice(products),
     ...(await hydrateProductRelations(products))
@@ -233,7 +233,7 @@ async function readProductBySlugSourceUncached(slug: string): Promise<ProductRea
     };
   }
 
-  const products = data ? [data as ProductRow] : [];
+  const products = data ? [data as unknown as ProductRow] : [];
   return {
     products: listSlice(products),
     ...(await hydrateProductRelations(products))

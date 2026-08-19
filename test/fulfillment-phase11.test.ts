@@ -33,6 +33,28 @@ const migrations = migrationFiles
   .map((file) => readFileSync(resolve("supabase/migrations", file), "utf8"))
   .join("\n")
   .toLowerCase();
+const baseline = readFileSync(
+  resolve("supabase/migrations/20260816102253_debroder_fresh_database_baseline.sql"),
+  "utf8"
+).toLowerCase();
+const phase11Schema = readFileSync(
+  resolve("supabase/migrations/20260712154540_v1_2_phase_11_fulfillment_schema_and_audit.sql"),
+  "utf8"
+).toLowerCase();
+const phase11DeleteAudit = readFileSync(
+  resolve("supabase/migrations/20260712155021_v1_2_phase_11_fulfillment_delete_audit.sql"),
+  "utf8"
+).toLowerCase();
+const phase11RpcGrants = readFileSync(
+  resolve("supabase/migrations/20260712155229_v1_2_phase_11_fulfillment_rpc_grants.sql"),
+  "utf8"
+).toLowerCase();
+const baselineFulfillmentRevisionDefinition = baseline.match(
+  /create table if not exists public\.fulfillment_revisions \([\s\S]*?\n\);/u
+)?.[0] ?? "";
+const baselineFulfillmentDeletionAuditDefinition = baseline.match(
+  /create table if not exists public\.fulfillment_deletion_audit \([\s\S]*?\n\);/u
+)?.[0] ?? "";
 const navigation = readFileSync(resolve("components/admin/layout/admin-navigation.ts"), "utf8");
 const listUi = readFileSync(resolve("components/admin/FulfillmentAdmin.tsx"), "utf8");
 const detailUi = readFileSync(resolve("components/admin/FulfillmentDetailAdmin.tsx"), "utf8");
@@ -73,6 +95,65 @@ describe("Phase 11 database and UI contract", () => {
     expect(migrations).toContain("create or replace function public.permanently_delete_fulfillment");
     expect(migrations).toContain("fulfillment-proofs");
     expect(migrations).toContain("jumlah penyerahan melebihi jumlah yang lulus quality control");
+  });
+
+  it("keeps the baseline and Phase 11 deletion-audit shapes compatible", () => {
+    expect(baselineFulfillmentRevisionDefinition).toMatch(
+      /reason text not null check \(btrim\(reason\) <> ''\)[\s\S]*?unique\(fulfillment_id, revision_number\)/u
+    );
+    expect(baselineFulfillmentDeletionAuditDefinition).toMatch(
+      /fulfillment_id uuid not null,[\s\S]*?fulfillment_number text,[\s\S]*?order_id uuid not null,[\s\S]*?snapshot jsonb not null,[\s\S]*?deleted_by uuid references auth\.users\(id\) on delete set null,[\s\S]*?deleted_at timestamptz not null default now\(\),[\s\S]*?reason text not null default 'hapus permanen dari gudang arsip'/u
+    );
+    expect(baseline).toContain(
+      "create index if not exists fulfillment_deletion_audit_order_idx"
+    );
+    expect(phase11Schema).toContain(
+      "create table if not exists public.fulfillment_deletion_audit"
+    );
+    expect(phase11Schema).toContain(
+      "on public.fulfillment_deletion_audit(order_id,deleted_at desc)"
+    );
+  });
+
+  it("preserves deletion-audit identity after source fulfillment deletion", () => {
+    expect(baselineFulfillmentDeletionAuditDefinition).not.toMatch(
+      /order_id uuid not null references/iu
+    );
+    expect(baselineFulfillmentDeletionAuditDefinition).not.toMatch(
+      /fulfillment_id uuid not null references/iu
+    );
+    expect(phase11DeleteAudit).toContain(
+      "insert into public.fulfillment_deletion_audit(fulfillment_id,fulfillment_number,order_id,snapshot,deleted_by)"
+    );
+    expect(phase11DeleteAudit).toContain(
+      "delete from public.fulfillments where id=target_row.id"
+    );
+  });
+
+  it("keeps the Phase 11 audit table append-only and staff-readable only", () => {
+    expect(migrations).toContain(
+      "create trigger prevent_fulfillment_deletion_audit_mutation"
+    );
+    expect(migrations).toContain(
+      "revoke all on public.fulfillments,public.fulfillment_items,public.fulfillment_files,public.fulfillment_status_history,public.fulfillment_revisions,public.fulfillment_deletion_audit from public,anon"
+    );
+    expect(migrations).toContain(
+      "grant select on public.fulfillments,public.fulfillment_items,public.fulfillment_files,public.fulfillment_status_history,public.fulfillment_revisions,public.fulfillment_deletion_audit to authenticated"
+    );
+  });
+
+  it("contains retired RPC revokes without making fresh replay depend on them", () => {
+    expect(phase11RpcGrants).toContain("if to_regprocedure('public.create_fulfillment(uuid,text,text,text,text,text,integer,timestamptz,text,jsonb)') is not null");
+    expect(phase11RpcGrants).toContain("if to_regprocedure('public.update_fulfillment_draft(uuid,text,text,text,text,integer,timestamptz,text)') is not null");
+    expect(phase11RpcGrants).toContain("if to_regprocedure('public.update_fulfillment_tracking(uuid,text,text,text)') is not null");
+    expect(phase11RpcGrants).toContain("if to_regprocedure('public.transition_fulfillment_status(uuid,text,text)') is not null");
+    expect(phase11RpcGrants).toContain("if to_regprocedure('public.refresh_order_fulfillment_status(uuid)') is not null");
+    expect(phase11RpcGrants).toContain(
+      "grant execute on function public.create_fulfillment(uuid,text,text,text,text,text,integer,timestamptz,text,jsonb,text) to authenticated"
+    );
+    expect(phase11RpcGrants).not.toMatch(
+      /(?<!execute ')(?<!to_regprocedure\(')revoke all on function public\.create_fulfillment\(uuid,text,text,text,text,text,integer,timestamptz,text,jsonb\)/u
+    );
   });
 
   it("keeps Phase 11 discoverable from navigation and order detail", () => {

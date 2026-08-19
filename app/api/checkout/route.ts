@@ -238,6 +238,7 @@ export async function POST(request: Request) {
         { "retry-after": "15" }
       );
     }
+    const existingOrderWasPresent = Boolean(existingOrder);
 
     const storedHash = typeof existingOrder?.public_access_token_hash === "string" ? existingOrder.public_access_token_hash : "";
     const trackingToken = !storedHash || storedHash === sha256(derivedTrackingToken)
@@ -415,7 +416,7 @@ export async function POST(request: Request) {
       confirmationUrl: `/order-confirmation/${encodeURIComponent(trackingToken)}`,
       trackingUrl: `/track-order/${encodeURIComponent(result.order_number)}?token=${encodeURIComponent(trackingToken)}`,
       trackingToken
-    }, 201);
+    }, existingOrderWasPresent ? 200 : 201);
   } catch (error) {
     if (error instanceof CheckoutBodyError) {
       return respond(

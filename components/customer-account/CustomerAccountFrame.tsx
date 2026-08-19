@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { type ReactNode, useEffect } from "react";
+import { type ReactNode, useEffect, useRef } from "react";
 import { useCustomerAuth } from "@/components/customer-auth/CustomerAuthProvider";
 
 const links = [
@@ -16,9 +16,10 @@ export function CustomerAccountFrame({ children }: { children: ReactNode }) {
   const router = useRouter();
   const pathname = usePathname();
   const auth = useCustomerAuth();
+  const isSigningOut = useRef(false);
 
   useEffect(() => {
-    if (!auth.loading && !auth.session) {
+    if (!auth.loading && !auth.session && !isSigningOut.current) {
       router.replace(`/login?next=${encodeURIComponent(pathname || "/account")}`);
     }
   }, [auth.loading, auth.session, pathname, router]);
@@ -49,7 +50,7 @@ export function CustomerAccountFrame({ children }: { children: ReactNode }) {
                 return <Link key={link.href} href={link.href} aria-current={active ? "page" : undefined} className={`flex min-h-11 items-center rounded-xl px-3 text-sm font-semibold ${active ? "bg-black text-white" : "hover:bg-black/5"}`}>{link.label}</Link>;
               })}
             </nav>
-            <button type="button" onClick={async () => { await auth.signOut(); router.replace("/"); router.refresh(); }} className="mt-5 min-h-11 w-full rounded-full border border-black/15 px-4 text-sm font-semibold">Keluar</button>
+            <button type="button" onClick={async () => { isSigningOut.current = true; await auth.signOut(); router.replace("/"); router.refresh(); }} className="mt-5 min-h-11 w-full rounded-full border border-black/15 px-4 text-sm font-semibold">Keluar</button>
           </aside>
           <main className="min-w-0">{children}</main>
         </div>

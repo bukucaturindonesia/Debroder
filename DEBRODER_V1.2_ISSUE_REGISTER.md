@@ -996,3 +996,552 @@ Last updated: 28 July 2026 (Asia/Makassar)
 - Recommendation: **ADOPT NOW** — reproduce in staging/deployment smoke before
   treating the build as production-safe.
 - Status: **OPEN / ENVIRONMENT CLASSIFICATION PENDING**.
+
+## WAVE-0B-SECURITY-001 — Anonymous quotation snapshot RPC exposure — 2026-08-15
+
+- Severity: **BLOCKER / P0**.
+- Evidence: remote `public.build_quotation_snapshot(uuid)` is a `SECURITY
+  DEFINER` function with `search_path=public`, is executable by `anon`, and
+  returns `to_jsonb(q)` quotation data without an authorization or permission
+  predicate. No local caller was found.
+- Required action: revoke anonymous execution and replace with an explicitly
+  authorized path in isolated staging/test, then verify direct RPC denial and
+  authorized operational access before production.
+- Status: **OPEN / NO-GO**.
+
+## WAVE-0B-MIGRATION-001 — Remote/local migration history unreconciled — 2026-08-15
+
+- Severity: **BLOCKER / P0**.
+- Evidence: the read-only Supabase connector reports 173 applied records;
+  repository inventory contains 132 files. Exact timestamp comparison yields
+  80 matches, 43 local-only keys, and 93 remote-only keys. The difference may
+  be historical renaming or squashing, but SQL parity is not proven.
+- Required action: reconcile the approved repository against the target
+  project using read-only migration/schema evidence; do not replay or reset
+  historical migrations.
+- Status: **OPEN / NOT VERIFIED**.
+
+## WAVE-0B-RUNTIME-001 — Safe staging identity and authenticated fixtures absent — 2026-08-15
+
+- Severity: **BLOCKER / P0**.
+- Evidence: all required E2E target, customer, admin, order, variant, pickup,
+  and payment-proof variables are missing. The destructive suite fails closed
+  at `BLOCKED — SAFE STAGING IDENTITY NOT ESTABLISHED`.
+- Required action: provide an isolated staging/test identity and disposable
+  fixtures, then execute the Wave 0B suite without production data.
+- Status: **OPEN / NO-GO**.
+
+## WAVE-0B-DEPLOY-001 — Current-head deployment and rollback evidence unavailable — 2026-08-15
+
+- Severity: **BLOCKER / P0**.
+- Evidence: public read-only routes respond, but the Vercel connector exposes no
+  accessible DEBRODER project, immutable deployment commit, build log, or
+  rollback version. No `.vercel/project.json` exists locally.
+- Required action: make the approved deployment project and rollback target
+  available for read-only evidence capture.
+- Status: **OPEN / NO-GO**.
+
+## WAVE-0B-BUILD-001 — Static-generation network warnings remain unclassified — 2026-08-15
+
+- Severity: **MAJOR / P1**.
+- Evidence: `pnpm build` exits 0 and generates 139 routes, but logs local
+  `fetch failed` / `EACCES` during static generation.
+- Required action: reproduce on the approved staging/deployment runtime and
+  classify whether the warning is environment-only or release-impacting.
+- Status: **OPEN / ENVIRONMENT CLASSIFICATION PENDING**.
+
+## WAVE-0C-SECURITY-001 — Local remediation prepared for anonymous quotation snapshot — 2026-08-15
+
+- Severity: **BLOCKER / P0**.
+- Root cause confirmed: `public.build_quotation_snapshot(uuid)` is a
+  `SECURITY DEFINER` function with `PUBLIC`/`anon` execution and no
+  authorization predicate; quotation IDs are not authorization.
+- Reproduction: anonymous role returned a non-null snapshot for an existing
+  quotation ID; an arbitrary nonexistent ID returned null. No quotation
+  contents or identifier were recorded in the report.
+- Corrective artifact:
+  `supabase/migrations/20260815212358_wave_0c_quotation_snapshot_security.sql`.
+  It requires `quotation.read`, sets an empty `search_path`, revokes
+  `PUBLIC`/`anon`/`service_role`, and retains authenticated execution for the
+  existing staff/admin permission contract.
+- Regression coverage: `test/wave-0c-security.test.ts` covers anonymous,
+  arbitrary ID, customer A/B, store A/B, authorized admin/superadmin,
+  service-role boundary, and function safety as a static migration contract.
+- Status: **LOCAL REMEDIATION READY / REMOTE APPLY AND POST-FIX RUNTIME
+  VERIFICATION OPEN / NO-GO**.
+
+## WAVE-0C-MIGRATION-001 — Migration history reconciliation evidence — 2026-08-15
+
+- Severity: **BLOCKER / P0 RELEASE CONTROL**.
+- Evidence: remote applied history is 173 records; local baseline is 132
+  files; exact timestamp comparison is 80 matches, 43 local-only, and 93
+  remote-only. Local numeric prefixes are unique, but there is no
+  `supabase/config.toml` and historical `_applied.sql`/standalone SQL artifacts
+  prevent a one-to-one replay claim.
+- Artifact: `supabase/MIGRATION_RECONCILIATION_WAVE_0C.md`.
+- Decision: preserve current history and use forward-only corrections; do not
+  delete, rename, squash, reset, or mark applied.
+- Status: **DIAGNOSED / DOCUMENTED / REMOTE PARITY AND SAFE APPLY OPEN**.
+
+## WAVE-0C-STAGING-001 — Fail-closed staging identity contract — 2026-08-15
+
+- Severity: **BLOCKER / P0 RELEASE CONTROL**.
+- Evidence: `e2e/support/env.ts` now requires explicit non-production target
+  identity, matching expected Supabase ref, fixture namespace confirmation,
+  deterministic fixture prefix, all required credentials/fixtures, and
+  mutation opt-in. A production-targeted Wave 0A run stopped before browser or
+  mutation execution with `BLOCKED — SAFE STAGING IDENTITY NOT ESTABLISHED`.
+- Status: **IMPLEMENTED LOCALLY / SAFE STAGING INPUTS MISSING / OPEN**.
+
+## WAVE-0C-BUILD-001 — Build warning classification — 2026-08-15
+
+- Severity: **MAJOR / P1**.
+- Evidence: current build exits 0, compiles successfully, and generates 139
+  routes, but static generation logs `fetch failed` with `EACCES` in the local
+  restricted environment. Lint remains 0 errors / 34 warnings.
+- Decision: classify as an environment/network warning for local verification,
+  not as proof of deployment safety.
+- Status: **OPEN / STAGING OR DEPLOYMENT REPRODUCTION REQUIRED**.
+
+## WAVE-0B-RESUME-001 — Safe staging variables absent — 2026-08-15
+
+- Severity: **BLOCKER / P0 RELEASE CONTROL**.
+- Evidence: all 25 exact variables required by the Wave 0C guard are missing
+  from the effective process environment. The names/status matrix is recorded
+  in section 27 of `WAVE_0B_RUNTIME_RELEASE_EVIDENCE.md`; values were never
+  printed.
+- The current authenticated Playwright suite stopped before browser activity
+  with `BLOCKED — SAFE STAGING IDENTITY NOT ESTABLISHED`.
+- No remote migration, quotation security migration, fixture, checkout,
+  payment, deployment, or rollback action was attempted.
+- Required action: provide the exact process-level staging contract and rerun
+  the guard. Do not use production data.
+- Status: **OPEN / NO-GO / WAVE 0B INCOMPLETE**.
+
+## WAVE-0B-BOOTSTRAP-002 — CURRENT HEAD staging baseline reconstruction gap — 2026-08-16
+
+- Severity: **BLOCKER / P0 RELEASE CONTROL**.
+- The safe staging guard passed and Supabase attestation selected only
+  `debroder-staging` (`ykfjgnrigcsapblbxnxb`), not production.
+- Staging migration history was empty. The first two repository migrations
+  applied successfully, but
+  `20260711154031_v1_0_product_foundation_compatibility.sql` failed with
+  PostgreSQL `42P01` because `public.profiles` does not exist.
+- `public.profiles` is defined in historical `supabase/schema.sql` evidence,
+  while no CURRENT HEAD migration creates it. The historical evidence is
+  explicitly excluded from replay by the Wave 0C reconciliation record. No
+  assumed baseline table or migration was created.
+- The Wave 0C quotation RPC migration was not applied; the RPC is absent on
+  staging. `public.stores` and `public.orders` are also absent, so supplied
+  pickup/order IDs cannot yet be validated against real rows. No replacement
+  IDs were created.
+- Impact: remaining migrations, RPC security verification, admin/customer
+  fixtures, role/store scope proof, purchasability/inventory proof, and
+  authenticated E2E remain blocked. Production and reference repositories
+  were untouched.
+- Required action: owner-approved repository-controlled baseline/reconstruction
+  path for a fresh staging project, followed by no-replay reconciliation of the
+  two already applied staging migrations and continuation from the failed
+  migration.
+- Status: **OPEN / NO-GO / WAVE 0B STAGING BOOTSTRAP INCOMPLETE**.
+
+## WAVE-0B-BOOTSTRAP-001 — Staging identity and bootstrap configuration absent — 2026-08-16
+
+- Severity: **BLOCKER / P0 RELEASE CONTROL**.
+- The resumed controlled staging bootstrap found all 25 exact Wave 0C
+  guard/fixture names missing from the effective process environment. The
+  application Supabase runtime names were also missing; no secret values were
+  printed.
+- The Wave 0C fail-closed guard rejected staging identity before any remote
+  migration, fixture, or E2E action. Production was not accessed or modified.
+- Required action: provide the exact process-level staging contract and staging
+  application Supabase runtime values, then rerun the guard. Do not use
+  production data.
+- Status: **OPEN / NO-GO / WAVE 0B INCOMPLETE**.
+
+## WAVE-0B-BASELINE-001 — Fresh-database baseline cannot yet be authored honestly — 2026-08-16
+
+- Severity: **BLOCKER / P0 RELEASE CONTROL**.
+- Scope: repository-only baseline implementation; no remote database or
+  migration was changed.
+- Evidence: `profiles`, `stores`, and `orders` are historical-schema objects,
+  not active CURRENT HEAD migration creators. Later active migrations also
+  require archived/reverted quotation, mockup, payment, fulfillment,
+  notification, permission, audit, and repeat-order foundations. Independent
+  static review found active migrations that reference order/payment columns
+  before later migrations add them.
+- Root-cause classification: **missing historical migrations; baseline not
+  included in the active replay set; migration-history truncation/repository
+  reconstruction artifact; and ordering problem**. `schema.sql` is mixed
+  historical schema/bootstrap/data evidence and is not an executable baseline.
+- Decision: do not create a partial baseline, invent a migration timestamp, or
+  claim a deterministic fresh replay. No new migration or baseline test was
+  added.
+- Required action: owner approval for recovery and review of the complete
+  archived foundation set, followed by a repository-controlled baseline and
+  explicit manifest that resolves all dependencies before any staging reset or
+  migration apply.
+- Status: **OPEN / NO-GO / DESIGN BLOCKERS REMAIN**.
+
+## WAVE-0B-BASELINE-002 — Authoritative reconstruction requires architecture approval — 2026-08-16
+
+- Severity: **BLOCKER / P0 RELEASE CONTROL**.
+- Artifact: `DEBRODER_DATABASE_RECONSTRUCTION_SPEC.md`.
+- Evidence: the repository now has an explicit ownership matrix, domain
+  authority map, legacy-modern product map, status reconciliation, dependency
+  graph, logical-vs-filename ordering analysis, remote-only object inventory,
+  baseline boundary, and migration manifest covering every migration file.
+- The manifest replaces the incompatible product foundation/compatibility
+  table creators conceptually, but no baseline SQL exists and no historical
+  file was changed. Archived quotation, mockup, payment, fulfillment,
+  notification, permission, audit, and repeat-order creators still require
+  deliberate recovery and security review.
+- Required owner decisions: canonical order status vocabulary, profile
+  provisioning path, product-size authority, archived foundation recovery,
+  migration identity/tooling, and later disposable staging reset.
+- Status: **OPEN / ARCHITECTURE REVIEW REQUIRED / NO-GO**.
+
+## WAVE-0B-BASELINE-003 — Approved baseline implemented; disposable replay pending — 2026-08-16
+
+- Severity: **BLOCKER / P0 RELEASE CONTROL until disposable replay**.
+- The owner-approved reconstruction has been implemented locally in
+  `supabase/migrations/20260816102253_debroder_fresh_database_baseline.sql`.
+- The fresh replay manifest classifies all 133 pre-existing migration files;
+  the two incompatible product foundations are retained unchanged and
+  classified `REPLACED BY BASELINE` for fresh replay only.
+- Static coverage proves foundational tables, columns, enums, indexes,
+  constraints, triggers, functions, RLS, policies, and grants are represented
+  or deliberately mapped in the baseline coverage ledger. No business,
+  customer, Auth, or fixture data is included.
+- Evidence: focused baseline/Wave 0C tests 22/22 PASS; full Vitest 128 files /
+  967 tests PASS; typecheck PASS; lint 0 errors / 34 existing warnings;
+  `git diff --check` PASS.
+- Local disposable replay is blocked by unavailable Docker, `psql`,
+  `pg_isready`, and local Supabase config. No remote SQL was run; staging was
+  not reset; production and reference repositories were untouched.
+- Required next action: owner approval for disposable PostgreSQL/Supabase
+  replay tooling, then a clean staging reset/replay approval after the local
+  replay passes. Authenticated E2E remains prohibited.
+- Status: **IMPLEMENTED LOCALLY / READY FOR DISPOSABLE REPLAY / OPEN / NO-GO
+  FOR REMOTE APPLY**.
+
+## WAVE-0B-REPLAY-001 — Fresh replay payment foundation gap — 2026-08-16
+
+- Severity: **BLOCKER / P0 RELEASE CONTROL**.
+- Target: disposable staging project `ykfjgnrigcsapblbxnxb` only.
+- Evidence: post-failure attestation was `STAGING_STATE = EMPTY`; the
+  repository-controlled baseline applied and passed verification; 20
+  topologically ordered incremental migrations applied successfully.
+- First failing migration:
+  `20260712143745_v1_2_phase_5b_payment_audit_lock.sql`.
+- Exact error: PostgreSQL `42883` because
+  `public.update_order_payment_draft(uuid,bigint,timestamptz,text,text,text,text,text)`
+  does not exist.
+- Root cause: the active migration references a legacy Phase 5A payment
+  function family that has no active creator, while the new baseline provides
+  only the modern payment API. The missing creator must be reconstructed and
+  security-reviewed in the repository baseline before fresh replay can be
+  considered reproducible.
+- Staging mutation: **YES**, baseline plus 20 migrations; failed migration
+  was transactional and not recorded. Production mutation: **NO**.
+- Fixtures, Wave 0C, authenticated E2E, deployment, and rollback:
+  **NOT RUN / NOT PERFORMED**.
+- Required action: update and verify the repository baseline/coverage ledger,
+  then reset only disposable staging and replay from empty after owner
+  approval. Do not patch staging or continue from this partial replay.
+- Status: **OPEN / NO-GO / REPOSITORY CORRECTION REQUIRED**.
+
+## WAVE-0B-REPLAY-010 — `audit_row_change()` foundation recovery — 2026-08-17 11:33:32 +08:00
+
+- Severity: **BLOCKER / P0 RELEASE CONTROL until runtime replay**.
+- Root cause recovered: the reverted historical append-only audit migration
+  `20260712071058_phase13_append_only_audit.sql` created the shared
+  `public.audit_row_change()` trigger function, but that migration is absent
+  from the active fresh replay. Phase 11 consumed the missing function before
+  Phase 13's documented pre-applied foundation.
+- Repository correction: the approved fresh baseline now creates the function
+  after `public.system_audit_log` and its append-only guard. The function
+  preserves historical trigger semantics, records OLD/NEW JSONB snapshots,
+  uses explicit `SECURITY DEFINER SET search_path = ''`, and is trigger-only
+  with direct execution revoked for `PUBLIC`, `anon`, `authenticated`, and
+  `service_role`.
+- Canonical authority: one `public.system_audit_log`; no shadow audit table,
+  public write path, anonymous write path, or authorization use of audit
+  logging. Active Phase 11 and Phase 13 consumers are covered statically.
+- Evidence: focused 8 suites / 53 tests **PASS**; full Vitest 132 files /
+  993 tests **PASS**; typecheck **PASS**; lint **PASS, 0 errors / 34
+  warnings**; build **PASS**; `git diff --check` **PASS**.
+- Staging and production: **NOT CONTACTED / NO MUTATION**. Runtime closure is
+  pending a separately authorized clean replay.
+- Status: **CORRECTED LOCALLY / OPEN UNTIL RUNTIME REPLAY**.
+
+## WAVE-0B-REPLAY-002 — Resume attestation confirms payment gap — 2026-08-16
+
+- Severity: **BLOCKER / P0 RELEASE CONTROL**.
+- Read-only attestation confirms staging project identity and
+  **BASELINE_PRESENT with partial replay**: 21 migration records remain
+  applied through payment completion.
+- Baseline integrity/security checks pass and business/fixture counts remain
+  zero. The six legacy payment function signatures required by
+  `20260712143745_v1_2_phase_5b_payment_audit_lock.sql` remain absent.
+- No reset, replay continuation, fixture, Wave 0C, authenticated E2E, or
+  production action occurred in this resume attempt.
+- Required action remains: correct and verify the repository baseline payment
+  compatibility coverage, then reset only disposable staging and replay from
+  empty after owner approval.
+- Status: **OPEN / NO-GO / REPOSITORY CORRECTION REQUIRED**.
+
+## PAYMENT-FOUNDATION-003 — Phase 5A payment compatibility correction — 2026-08-16
+
+- Severity: **BLOCKER / P0 RELEASE CONTROL**.
+- The repository baseline now reconstructs the historical Phase 5A payment
+  function family required by `20260712143745_v1_2_phase_5b_payment_audit_lock.sql`.
+- The implementation is over the canonical `public.order_payments` table and
+  preserves amount checks, draft/pending-only edits, store scope, archived-
+  first deletion, permission checks, safe SECURITY DEFINER paths, and closed
+  public/anonymous execution.
+- Static replay/coverage/security tests and the full local quality gates pass.
+- Remote replay has **NOT** been retried. The existing disposable staging
+  database remains at the previously recorded partial replay checkpoint and
+  still requires a clean owner-authorized reset/replay to prove runtime SQL.
+- Status: **IMPLEMENTED LOCALLY / STAGING REPLAY PENDING / NO-GO UNTIL
+  CLEAN REPLAY VERIFICATION**.
+
+## WAVE-0B-REPLAY-003 — Second historical payment foundation gap — 2026-08-16
+
+- Severity: **BLOCKER / P0 RELEASE CONTROL**.
+- Target: disposable staging project `ykfjgnrigcsapblbxnxb` only.
+- Evidence: clean staging reset was attested empty; the corrected baseline
+  passed; 20 topologically ordered incremental migrations passed; the
+  previously missing `update_order_payment_draft` family was verified at
+  runtime.
+- First new failing migration:
+  `20260712143745_v1_2_phase_5b_payment_audit_lock.sql`.
+- Exact PostgreSQL error: **42883**, function
+  `public.submit_public_payment_proof(uuid,text,text,text)` does not exist.
+  The failure occurs at the migration's revoke statement and the migration is
+  not recorded because the transaction rolled back.
+- Root cause: the active Phase 5B security migration references an additional
+  historical Phase 5A payment function not yet represented in the approved
+  baseline. This is incomplete baseline coverage, not a staging data issue.
+- Staging mutation: **YES**, reset plus baseline and 20 successful migrations;
+  staging is preserved at the failure point. Production mutation: **NO**.
+- Fixtures, Wave 0C, authenticated E2E, deployment, and rollback:
+  **NOT RUN / NOT PERFORMED**.
+- Required action: repository-only recovery of the legitimate
+  `submit_public_payment_proof` contract, with security/authority review and
+  static coverage tests, followed by a fresh owner-authorized staging replay.
+- Status: **OPEN / NO-GO / REPOSITORY CORRECTION REQUIRED**.
+
+## PAYMENT-FOUNDATION-004 — Obsolete public proof target corrected — 2026-08-16
+
+- Severity: **BLOCKER / P0 RELEASE CONTROL until clean replay**.
+- Forensic evidence from `supabase/schema.sql`, historical commits, the
+  current public payment route, and the active payment migrations classifies
+  `submit_public_payment_proof(uuid,text,text,text)` as an obsolete
+  historical API. It has no CURRENT HEAD caller; the active flow is token/link
+  authorized and calls `submit_customer_order_payment_v2` server-side.
+- Recreating the historical boolean function would restore legacy
+  `orders.payment_proof_path` mutation, order-number/phone authorization, and
+  a second proof authority. That would violate the approved canonical
+  `public.order_payments` architecture and fail-closed payment security.
+- Repository correction: the Phase 5B audit migration now conditionally
+  revokes the retired target only when it exists in a preserved historical
+  database. Fresh replay does not require a fake function. The complete
+  target inventory and security decision are recorded in
+  `DEBRODER_BASELINE_COVERAGE_LEDGER.md`.
+- Evidence: public-proof static contract suite **4/4 PASS**; focused payment,
+  baseline, manifest, and Wave 0C suite **36/36 PASS**; full Vitest **130
+  files / 978 tests PASS**; typecheck PASS; lint 0 errors / 34 warnings;
+  `git diff --check` PASS.
+- Database mutation: **NO**. Staging was not contacted or reset in this
+  repository-only task. Production mutation: **NO**. Fixtures and E2E:
+  **NOT RUN**.
+- Remaining blocker: the later C1 migration still contains a separate
+  historical hash/ACL preflight for this retired target. It requires a later
+  repository-only manifest/security reconciliation and is not silently
+  skipped here.
+- Status: **IMPLEMENTED LOCALLY / OPEN / NO-GO UNTIL CLEAN STAGING REPLAY**.
+
+## WAVE-0B-REPLAY-004 — Retired public payment RPC containment reconciled — 2026-08-16 20:46:58 +08:00
+
+- Severity: **BLOCKER / P0 RELEASE CONTROL until runtime replay**.
+- Root cause: `20260721090000_p0_security_critical_legacy_containment_c1.sql`
+  unconditionally required two historical RPCs and the legacy
+  `order-uploads` storage surface, although the approved fresh baseline
+  intentionally omits them.
+- Correction: C1 now has explicit fresh/legacy dual-mode behavior. Absent
+  retired objects are valid on fresh installs. Existing legacy RPCs must match
+  their frozen SHA-256, trusted owner, and accepted ACL state before
+  containment; the historical anon/authenticated ACL may lack service-role
+  execution, which C1 grants after validation; unexpected hash, owner, ACL,
+  policy shape, or public bucket state fails closed.
+- Security result: no retired function was recreated, no anonymous/public
+  payment mutation was restored, and the canonical payment authority remains
+  `public.order_payments` with the current server-side submission flow.
+- Evidence: new static containment suite **5/5 PASS**; focused suite **33/33
+  PASS**; full Vitest **131 files / 983 tests PASS**; typecheck **PASS**; lint
+  **0 errors / 34 warnings**; `git diff --check` **PASS**.
+- Database state: staging and production were not contacted or mutated;
+  runtime SQL remains unverified. Fixtures, authenticated E2E, deployment, and
+  rollback remain **NOT RUN**.
+- Status: **IMPLEMENTED LOCALLY / READY FOR OWNER-AUTHORIZED CLEAN STAGING
+  REPLAY / NO-GO UNTIL RUNTIME REPLAY**.
+
+## WAVE-0B-REPLAY-005 — Corrected baseline pgcrypto qualification failure — 2026-08-16 21:19:53 +08:00
+
+- Severity: **BLOCKER / P0 RELEASE CONTROL**.
+- Target: disposable staging `debroder-staging` /
+  `ykfjgnrigcsapblbxnxb` only.
+- Evidence: owner-authorized reset passed and empty-state proof passed. The
+  lossless baseline application failed at statement 93 while creating
+  `public.saved_configurations.share_token`:
+  `42883: function gen_random_bytes(integer) does not exist`.
+- Root cause classification: **BASELINE**. Supabase exposes the installed
+  `pgcrypto` function as `extensions.gen_random_bytes(integer)`, while this
+  baseline expression calls `gen_random_bytes(24)` without a schema-qualified
+  reference or a safe search-path guarantee.
+- Transaction state: **ROLLED BACK**. Migration history remains empty; no
+  application schema or business/Auth data remains after failure attestation.
+- No payment, Phase 5B, C1, Wave 0C, fixture, E2E, or production action ran.
+- Required action: repository-only correction of the baseline pgcrypto
+  function qualification/search-path contract, static verification, then a
+  newly authorized clean staging replay. Do not patch or continue staging.
+- Status: **OPEN / NO-GO / REPOSITORY CORRECTION REQUIRED**.
+
+## WAVE-0B-REPLAY-006 — Pgcrypto baseline qualification corrected — 2026-08-16 21:31:42 +08:00
+
+- Severity: **BLOCKER / P0 RELEASE CONTROL until runtime replay**.
+- Root cause confirmed: Supabase's installed `pgcrypto` functions are in the
+  `extensions` schema, while the baseline used unqualified extension calls.
+- Correction: baseline extension declaration is explicit and all baseline
+  `gen_random_bytes`/`digest` calls are qualified. The two immediate
+  executable bulk-ordering migrations were corrected for the same byte-
+  generator dependency. No public wrapper or broad search-path workaround was
+  added.
+- Regression evidence: focused baseline/payment/C1/Wave 0C suite **39/39
+  PASS**; full Vitest **131 files / 985 tests PASS**; typecheck **PASS**;
+  lint **0 errors / 34 warnings**; `git diff --check` **PASS**.
+- Database state: staging **NOT CONTACTED** in this task; production **NO
+  MUTATION**. Runtime SQL remains unverified after correction.
+- Status: **CORRECTED LOCALLY / READY FOR OWNER-AUTHORIZED CLEAN STAGING
+  REPLAY**.
+
+## WAVE-0B-REPLAY-007 — Fulfillment deletion-audit baseline collision — 2026-08-16 22:18:51 +08:00
+
+- Severity: **BLOCKER / P0 RELEASE CONTROL**.
+- Runtime evidence: corrected baseline and 29 incremental migrations passed in
+  disposable staging. Migration
+  `20260712154540_v1_2_phase_11_fulfillment_schema_and_audit.sql` failed at
+  statement 10 with SQLSTATE `42703`: `column "order_id" does not exist` while
+  creating `fulfillment_deletion_audit_order_idx`.
+- Root cause: the baseline already creates
+  `public.fulfillment_deletion_audit` without `order_id`; the Phase 11
+  migration's `CREATE TABLE IF NOT EXISTS` therefore skips its fuller table
+  definition and the subsequent index references a missing column.
+- Rollback/history: transaction rolled back; the failed migration is not
+  recorded and its index is absent. Staging remains at baseline plus 29
+  successful incremental migrations, with no business/Auth fixture rows.
+- Required next action: repository-only reconciliation of the baseline and
+  Phase 11 ownership/column contract. Do not patch, reset, or continue staging
+  until reviewed.
+- Status: **OPEN / NO-GO / REPOSITORY CORRECTION REQUIRED**.
+
+## WAVE-0B-REPLAY-008 — Phase 11 fulfillment audit foundation corrected — 2026-08-16 22:40:59 +08:00
+
+- Severity: **BLOCKER / P0 RELEASE CONTROL until runtime replay**.
+- Repository root cause corrected: the fresh baseline now establishes the
+  complete `fulfillment_deletion_audit` shape expected by Phase 11, including
+  `fulfillment_number`, non-null `order_id`, the historical reason default,
+  `deleted_at` default, and `fulfillment_deletion_audit_order_idx`.
+- Same-migration preflight also corrected the baseline
+  `fulfillment_revisions.reason` non-empty check so the Phase 11 no-op table
+  creator cannot silently omit that constraint.
+- Ownership: one fulfillment authority; baseline foundation with Phase 11
+  lifecycle/security extensions. No duplicate table, shadow state, public
+  write path, or source-row FK that would destroy deletion audit history.
+- Evidence: focused fulfillment/baseline **22/22 PASS**; full Vitest **131
+  files / 988 tests PASS**; typecheck **PASS**; lint **0 errors / 34
+  warnings**; `git diff --check` **PASS**.
+- Staging and production: **NOT CONTACTED / NO MUTATION**. Runtime Phase 11
+  remains unverified; the prior staging checkpoint is preserved at baseline
+  plus 29 successful migrations.
+- Required next action: owner-authorized clean staging replay of the corrected
+  baseline and manifest, stopping at the first new SQL failure.
+- Status: **CORRECTED LOCALLY / NO-GO UNTIL RUNTIME REPLAY**.
+
+## WAVE-0B-REPLAY-009 — Phase 11 fulfillment security audit function missing — 2026-08-17 11:14:59 +08:00
+
+- Severity: **BLOCKER / P0 RELEASE CONTROL**.
+- Target: owner-authorized disposable staging `debroder-staging` /
+  `ykfjgnrigcsapblbxnxb` only. Production was not contacted.
+- Runtime evidence: clean reset and empty-state proof passed; corrected
+  baseline passed; 35 migration records (baseline plus 34 incremental)
+  executed and were recorded. The corrected Phase 11 schema migration and
+  `fulfillment_deletion_audit.order_id` contract passed at runtime.
+- First new failure:
+  `20260712155146_v1_2_phase_11_fulfillment_security.sql`, SQLSTATE 42883,
+  while creating `audit_fulfillments_changes`: `function
+  public.audit_row_change() does not exist`.
+- Rollback/history: the failing migration transaction rolled back and was not
+  recorded; the trigger is absent. Staging remains preserved at the failure
+  checkpoint with no fixture/Auth/business rows.
+- Likely root cause: the Phase 11 security migration assumes a canonical audit
+  trigger function that is not supplied by the fresh baseline or any applied
+  prefix. The next repository-only task must recover ownership, security
+  semantics, and static coverage before replay resumes.
+- C1, Wave 0C, CURRENT HEAD verification, fixtures, and authenticated E2E:
+  **NOT REACHED / NOT RUN**. Production mutation: **NO**.
+- Status: **OPEN / NO-GO / REPOSITORY CORRECTION REQUIRED**.
+
+## WAVE-0B-REPLAY-010 — Phase 11 fulfillment RPC grant signature mismatch — 2026-08-17 12:26:38 +08:00
+
+- Severity: **BLOCKER / P0 RELEASE CONTROL**.
+- Runtime target: disposable staging `debroder-staging` /
+  `ykfjgnrigcsapblbxnxb`; production was not contacted.
+- Clean reset and empty-state proof passed. The corrected baseline and 36
+  incremental manifest migrations executed and were recorded, including the
+  Phase 11 security migration and `audit_fulfillments_changes` trigger.
+- First new failure:
+  `20260712155229_v1_2_phase_11_fulfillment_rpc_grants.sql`, SQLSTATE
+  `42883`, first statement target
+  `public.create_fulfillment(uuid,text,text,text,text,text,integer,timestamptz,
+  text,jsonb)`.
+- Root cause: `20260712154619_v1_2_phase_11_fulfillment_create_and_update.sql`
+  creates only the canonical 11-argument function, adding trailing
+  `p_idempotency_key text`; the next migration's legacy 10-argument revoke
+  target does not exist. The failed transaction rolled back and the
+  migration is not recorded.
+- Required next action: repository-only forensic correction of the Phase 11
+  RPC-grants contract. Do not patch staging, skip the migration, or continue
+  replay. C1, Wave 0C, CURRENT HEAD, fixtures, and E2E remain not reached.
+- Status: **OPEN / NO-GO / REPOSITORY CORRECTION REQUIRED**.
+
+## WAVE-0-MASTER-CLOSURE-012 — Final runtime and release evidence — 2026-08-19
+
+- Severity: **CLOSED WITH EXECUTED EVIDENCE**.
+- Clean disposable staging reconstruction passed from empty through the
+  corrected baseline, 125 incremental migrations, C1, and Wave 0C. Final
+  history contains 126 records and no failed migration.
+- Required staging fixtures and five deterministic Auth identities were
+  created in the approved namespace. Customer A/B isolation, full/admin
+  guest/scoped-admin RBAC, store scope, Ready Stock checkout, order
+  creation, payment submission/replay, inventory integrity, fulfillment
+  transition, and notification event/outbox generation passed at runtime.
+- The payment review route defect (authenticated direct read of protected
+  `order_payments`) was corrected to use the already-authorized
+  `adminClient` for readback while preserving the protected review RPC for
+  mutation. Initial review and idempotent replay passed at runtime.
+- Final security checks passed: no retired public payment/order RPC,
+  anonymous payment mutation, legacy upload policy/bucket, quotation
+  snapshot exposure, audit direct execution, or unsafe SECURITY DEFINER
+  search path was found.
+- Full Vitest, typecheck, lint, production build, and diff check passed.
+  Existing 34 lint warnings remain non-blocking. No production contact,
+  deployment, or production data copy occurred.
+- Notification delivery worker and provider webhook execution are not
+  configured in the current Wave 0 runtime; only event/outbox generation is
+  closed with evidence.
+- Owner decision required: **NONE** for Wave 0 scope. Wave 1 remains
+  prohibited until separately authorized.
+- Status: **CLOSED — WAVE 0 COMPLETE — READY FOR WAVE 1**.

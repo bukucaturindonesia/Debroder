@@ -10,9 +10,9 @@ type Context = { params: Promise<{ id: string }> };
 
 const CANONICAL_PAYMENT_FIELDS = "id,order_id,payment_number,status,review_outcome,verified_amount,verified_destination_account,verified_transaction_at,verified_reference,verified_at,rejection_reason,admin_notes,updated_at" as const;
 
-type PaymentClient = Awaited<ReturnType<typeof requirePaymentActor>>["client"];
+type PaymentAdminClient = Awaited<ReturnType<typeof requirePaymentActor>>["adminClient"];
 
-async function getCanonicalPayment(client: PaymentClient, paymentId: string) {
+async function getCanonicalPayment(client: PaymentAdminClient, paymentId: string) {
   return client
     .from("order_payments")
     .select(CANONICAL_PAYMENT_FIELDS)
@@ -64,7 +64,12 @@ export async function POST(request: Request, context: Context) {
       return Response.json({ error: "Alasan tindak lanjut wajib diisi." }, { status: 400 });
     }
 
-    const currentResult = await getCanonicalPayment(actor.client, id);
+    // order_payments is intentionally not directly readable by authenticated
+    // clients. The actor has already passed the canonical permission, role,
+    // account, session, and store-scope checks above; use the server client
+    // for the narrow canonical readback while keeping the state transition on
+    // the authenticated SECURITY DEFINER RPC below.
+    const currentResult = await getCanonicalPayment(actor.adminClient, id);
     if (currentResult.error) {
       return Response.json(
         {
@@ -106,7 +111,7 @@ export async function POST(request: Request, context: Context) {
       p_reason: body.reason || null,
       p_expected_updated_at: body.expectedUpdatedAt
     });
-    const canonicalResult = await getCanonicalPayment(actor.client, id);
+    const canonicalResult = await getCanonicalPayment(actor.adminClient, id);
     const canonicalPayment = canonicalResult.data ?? currentResult.data;
     if (error) {
       return reviewResponse({

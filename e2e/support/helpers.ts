@@ -3,7 +3,7 @@ import type { Credentials } from "./env";
 
 export async function loginCustomer(page: Page, credentials: Credentials, next = "/account") {
   await page.goto(`/login?next=${encodeURIComponent(next)}`);
-  await page.getByLabel("Email", { exact: true }).fill(credentials.email);
+  await page.getByRole("textbox", { name: "Email", exact: true }).fill(credentials.email);
   await page.getByLabel("Kata sandi", { exact: true }).fill(credentials.password);
   await Promise.all([
     page.waitForURL((url) => url.pathname === new URL(next, page.url()).pathname),
@@ -14,7 +14,7 @@ export async function loginCustomer(page: Page, credentials: Credentials, next =
 
 export async function loginAdmin(page: Page, credentials: Credentials) {
   await page.goto("/admin/login");
-  await page.getByLabel("Email", { exact: true }).fill(credentials.email);
+  await page.getByRole("textbox", { name: "Email", exact: true }).fill(credentials.email);
   await page.getByLabel("Kata sandi", { exact: true }).fill(credentials.password);
   await Promise.all([
     page.waitForURL((url) => url.pathname.startsWith("/admin/") && !url.pathname.startsWith("/admin/login")),

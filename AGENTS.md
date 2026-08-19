@@ -583,3 +583,119 @@ Laporan akhir harus menyebutkan:
 
 Tidak boleh menyembunyikan error, test gagal, migration pending, atau
 pekerjaan yang belum diverifikasi.
+
+---
+
+## 14. MANDATORY END-OF-TASK HANDOFF
+
+For EVERY task performed in this repository, regardless of task size,
+before producing the final response you MUST update:
+
+CURRENT_PHASE_HANDOFF.md
+
+This is mandatory unless the user explicitly says:
+"DO NOT UPDATE HANDOFF".
+
+### HANDOFF MUST RECORD
+
+At minimum record:
+
+1. Date/time of checkpoint
+2. Current branch
+3. Current HEAD commit SHA
+4. Task / Wave / Phase name
+5. Objective
+6. What was completed
+7. What was not completed
+8. Files changed
+9. Database/migrations changed
+10. Remote/staging/production changes
+11. Tests executed
+12. Test results
+13. Build/typecheck/lint results when applicable
+14. Security or data-integrity findings
+15. Known warnings
+16. Remaining blockers
+17. Owner decisions made during the task
+18. Exact current project state
+19. Exact next recommended action
+20. Explicit resume instruction for the next Codex session
+
+### STATUS TRUTH RULE
+
+Never write PASS based on assumptions or historical evidence.
+
+Clearly distinguish:
+
+- EXECUTED AND PASSED
+- EXECUTED AND FAILED
+- BLOCKED
+- NOT RUN
+- NOT APPLICABLE
+
+Never claim remote/staging/production changes unless actually executed.
+
+### CONTINUITY RULE
+
+CURRENT_PHASE_HANDOFF.md is the authoritative continuation checkpoint.
+
+At the beginning of every new task:
+
+1. Read CURRENT_PHASE_HANDOFF.md.
+2. Read DEBRODER_MASTER_STATE.md when relevant.
+3. Read DEBRODER_V1.2_ISSUE_REGISTER.md when relevant.
+4. Inspect current git state.
+5. Continue from the recorded checkpoint rather than restarting previous work.
+
+### END-OF-TASK ORDER
+
+Before final response:
+
+IMPLEMENT
+→ VERIFY
+→ inspect git diff/status
+→ UPDATE CURRENT_PHASE_HANDOFF.md
+→ update MASTER STATE / ISSUE REGISTER if materially required
+→ verify documentation reflects CURRENT HEAD
+→ FINAL RESPONSE
+
+The final response must explicitly state:
+
+HANDOFF UPDATED: YES
+
+and name the handoff file.
+
+If handoff update cannot be performed, state:
+
+HANDOFF UPDATED: NO
+
+and explain the blocker.
+
+### NO DOCUMENTATION DRIFT
+
+Do not leave CURRENT_PHASE_HANDOFF.md describing an earlier HEAD after
+changing repository state.
+
+If code, migration, configuration, architecture decision, Wave status,
+or release evidence materially changes, synchronize the handoff before
+finishing.
+
+### DATABASE / RELEASE WORK
+
+For database, migration, security, staging, deployment, and release
+tasks, the handoff must additionally record:
+
+- target environment
+- project/environment identity
+- migrations attempted/applied
+- first failing migration if any
+- database mutation YES/NO
+- staging mutation YES/NO
+- production mutation YES/NO
+- rollback status
+- exact safe resume point
+
+### FINAL REQUIREMENT
+
+A task is not considered complete until CURRENT_PHASE_HANDOFF.md has
+been updated to match the final verified state of the repository.

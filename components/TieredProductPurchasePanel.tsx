@@ -420,7 +420,10 @@ export function TieredProductPurchasePanel({
       defaultQuantity: quantity,
       variantId: exactPricing.variantId,
       variantSizeId: exactPricing.variantSizeId,
-      variantName: selectedColor.variant.variant_name || selectedColor.variant.color_name,
+      variantName:
+        selectedColor.variant.name
+        || selectedColor.variant.variant_name
+        || selectedColor.variant.color_name,
       variantSku: exactPricing.sku,
       stockLabel: `Stok ${exactPricing.stockAvailable}`,
       stockAvailable: exactPricing.stockAvailable,

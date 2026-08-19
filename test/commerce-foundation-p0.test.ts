@@ -51,6 +51,10 @@ describe("Commerce Foundation V1 P0", () => {
     expect(digestCorrection).toContain("extensions.digest");
     expect(sequenceLock).toContain("order_number_sequences enable row level security");
     expect(sequenceLock).toContain("payment_number_sequences enable row level security");
+    expect(sequenceLock).toContain("if to_regclass('public.order_number_sequences') is not null");
+    expect(sequenceLock).toContain("execute 'revoke all on public.order_number_sequences from anon, authenticated'");
+    expect(sequenceLock).toContain("execute 'grant all on public.order_number_sequences to service_role'");
+    expect(sequenceLock).not.toMatch(/(?:^|\r?\n)revoke\s+all\s+on\s+public\.order_number_sequences\s+from/iu);
     expect(fulfillmentBridge).toContain("create_ready_stock_fulfillment");
     expect(fulfillmentBridge).toContain("complete_ready_stock_pickup_at_store");
     expect(fulfillmentBridge).toContain("ready stock tidak boleh dikirim atau diserahkan sebelum lunas");
