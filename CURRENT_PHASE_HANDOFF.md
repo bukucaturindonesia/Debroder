@@ -2568,6 +2568,141 @@ repositories.
 
 **HANDOFF UPDATED: YES — `CURRENT_PHASE_HANDOFF.md`**
 
+# WAVE 2 STOREFRONT FINALIZATION CLOSURE — 2026-08-24 13:09:52 +08:00
+
+## Checkpoint identity and objective
+
+- Branch / HEAD: `UI-MIGRATION` /
+  `5d3d73bdd62a628e7a8f90ff3441e238f9b8779f`.
+- Task / Wave / Phase: **Wave 2 public storefront finalization**.
+- Objective: finalize the existing customer-facing storefront across the
+  canonical routes, retain the locked W1 commerce authority, verify mobile
+  and desktop behavior, and stop before Wave 3.
+- The W1 baseline was committed and pushed before W2 began. Current W2
+  changes are **UNCOMMITTED AND NOT PUSHED** at this checkpoint.
+
+## Completed work
+
+- The Homepage now follows the frozen composition order: Hero, Trust,
+  Featured, Trending, Campaign, Fresh Drop, Shop by Category, Store/Cara
+  Order, About, and Footer. The duplicate legacy `pakaian-polos` visual
+  section was removed; existing canonical components/data remain authoritative.
+- Global loading, error, and not-found states now retain one canonical public
+  shell with navigation, footer, mobile navigation, cart boundary, theme
+  tokens, and recovery actions through `PublicBoundaryShell`.
+- Catalog text query is a canonical `q` URL state across collection/category
+  routes. Refresh and Back/Forward restore the query. The reproduced clearing
+  race was caused by an unstable empty `productTypeOptions` default and was
+  fixed with one stable module constant; no catalog/data authority changed.
+- Structured Indonesian address mutations now invalidate prior confirmation,
+  and region search/select controls have unique IDs and associated labels.
+- The fresh replay manifest now classifies the three already-existing W1 ACL
+  migrations as `RUN` and truthfully covers all 151 migration files. No SQL
+  migration was edited or executed.
+- Luna (`gpt-5.6-luna`) performed a read-only audit. Its useful findings were
+  reproduced before correction; no delegated write was accepted.
+
+## Reference comparison
+
+- Vercel Commerce URL-backed storefront state: **ADAPTED** to DEBRODER's
+  existing catalog route contract.
+- shadcn/ui semantic label/control association: **ADAPTED** to the existing
+  address component.
+- Existing DEBRODER public shell/recovery chrome: **ADAPTED** rather than
+  introducing a second storefront shell.
+- Medusa and Trigger.dev patterns: **DEFERRED / NOT MATERIAL** to the proven
+  W2 storefront defects. No commerce or workflow architecture was copied.
+
+## Files changed
+
+- Homepage and public boundaries: `app/page.tsx`, `app/loading.tsx`,
+  `app/error.tsx`, `app/not-found.tsx`, and
+  `components/PublicBoundaryShell.tsx`.
+- Catalog URL state: `components/ProductCatalog.tsx`,
+  `components/CategoryCommerceCatalog.tsx`,
+  `components/CategoryCommercePage.tsx`,
+  `components/CollectionCommerceExperience.tsx`,
+  `lib/catalog-page/domain.ts`, `lib/catalog-page/model.ts`, and the existing
+  category routes under `app/koleksi`, `app/headwear`, `app/jaket-hoodie`,
+  `app/kaos-polos`, and `app/sablon-dtf`.
+- Checkout accessibility/invariant:
+  `components/checkout/StructuredIndonesiaAddress.tsx`.
+- Verification: `e2e/wave-2-storefront.spec.ts` and six affected Vitest files
+  under `test/`.
+- Replay metadata: `DEBRODER_FRESH_DATABASE_REPLAY_MANIFEST.md`.
+- Governance: `CURRENT_PHASE_HANDOFF.md`, `DEBRODER_MASTER_STATE.md`, and
+  `DEBRODER_V1.2_ISSUE_REGISTER.md`.
+
+## Database, environment, and release state
+
+- Migration files changed/applied: **NO / NO**. Database mutation: **NO**.
+  Reset, fixture recreation, historical migration replay, and rollback:
+  **NO / NO / NO / NOT REQUIRED**.
+- Browser target: local isolated Next runtime bound to approved staging
+  `debroder-staging` / `ykfjgnrigcsapblbxnxb`. Runtime/browser operations were
+  read-only. Staging mutation: **NO**. The runtime was stopped and port 3100
+  has zero listeners.
+- `.env.e2e.staging.local` remains ignored and untracked. No secret value was
+  printed, copied into tracked content, or added to the diff.
+- Production mutation: **NO**. A successful intermediate `next build` loaded
+  `.env.local`, whose non-secret ref resolves to production
+  `lzennundwqqtyvvcnzbg`; because static generation executes Supabase read
+  paths, production read contact is conservatively classified **YES /
+  READ-ONLY BUILD CONTACT**. This was not hidden or repeated. The final build
+  was rerun with process environment validated as staging before launch and
+  passed. No deployment was performed.
+
+## Verification actually executed
+
+- Focused storefront baseline: **EXECUTED AND PASSED — 26 files / 155 tests**.
+- Focused Homepage, boundary, catalog, address, and model regressions:
+  **EXECUTED AND PASSED**, including 3/3, 4/4, 15/15, and 10/10 targeted
+  groups. Manifest/boundary correction rerun: **22/22 PASSED**.
+- Full Vitest: **EXECUTED AND PASSED — 152 files / 1,054 tests**.
+- TypeScript: **EXECUTED AND PASSED**.
+- Lint: **EXECUTED AND PASSED — 0 errors / 35 existing warnings**.
+- Production build: first sandboxed attempt failed only because Google Fonts
+  HTTPS was denied. The network-enabled compile passed, and the corrective
+  staging-bound final build **EXECUTED AND PASSED — 139 static pages**.
+- Browser suite: the full serial run passed 13/14; the sole query/history race
+  was then reproduced and fixed. Only the affected two viewport cases were
+  rerun and passed 2/2, preserving owner instruction not to repeat passed
+  work. All 14 current cases therefore have executed PASS evidence.
+- Browser coverage: Homepage at 320/390/430/768/1024/1280/1440/1920;
+  public route matrix, PDP, cart redirect, checkout, login/register/account,
+  orders, tracking, help, store, and cara-order at 390 and 1440; not-found and
+  catalog refresh/history at 390 and 1440. Major overflow, duplicate shell,
+  broken loaded images, console errors, page errors, and unexpected
+  same-origin request failures: **0** in the passing evidence.
+- `git diff --check`: **EXECUTED AND PASSED after governance synchronization**
+  with only normal line-ending warnings.
+
+## Known warnings, remaining work, and exact state
+
+- Existing lint backlog: 35 warnings, 0 errors. No new W2 lint error exists.
+- Staging W0 fixtures do not populate every optional Homepage CMS placement;
+  absent Featured/Trending/Fresh Drop fixture rows were not misrepresented as
+  Product/PIM operational acceptance. That acceptance remains Wave 3.
+- The production-bound intermediate build contact above is a recorded process
+  warning. It created no known write and the final build evidence is
+  staging-bound.
+- Storefront blocker: **NONE**. Major UX fragmentation: **0**. Major overflow:
+  **0**. W1 commerce authority remains locked and unchanged.
+- Not completed: deployment, W2 commit/push, Admin/PIM redesign, Product
+  Operational Acceptance, and Wave 3 work were **NOT RUN**.
+- Owner decisions honored: keep existing canonical routes and data authority,
+  do not repeat passed work, do not reset/reseed/reapply migrations, and do
+  not start Wave 3 in this task.
+- Exact current project state: **WAVE 2 COMPLETE — READY FOR WAVE 3**.
+- Exact next recommended action: review the uncommitted W2 diff, commit/push
+  it when authorized, then start Wave 3 only in a separately authorized task.
+- Explicit resume instruction: read this section first; do not replay W0, W1,
+  or W2. Preserve staging and the locked transaction contract. Resume from
+  the current uncommitted W2 diff for owner review/commit, and do not begin
+  Wave 3 without explicit owner authorization.
+
+**HANDOFF UPDATED: YES — `CURRENT_PHASE_HANDOFF.md`**
+
 # LATEST AUTHORITATIVE STATE — W1 FINAL AUTHENTICATED E2E ACTIVATION — 2026-08-20 00:36:54 +08:00
 
 - Branch / HEAD: `UI-MIGRATION` /
@@ -5984,5 +6119,56 @@ this task and were preserved.
 - Explicit resume instruction: read this final section first, preserve the
   retained staging fixtures and applied migration versions, do not replay W1,
   and begin Wave 2 only under a new owner-authorized task.
+
+**HANDOFF UPDATED: YES — `CURRENT_PHASE_HANDOFF.md`**
+
+# LATEST AUTHORITATIVE CHECKPOINT — WAVE 2 — 2026-08-24 13:12:26 +08:00
+
+This final checkpoint supersedes the older W1 entries that follow the detailed
+W2 closure earlier in this append-only history.
+
+1. Date/time: **2026-08-24 13:12:26 +08:00 (Asia/Makassar)**.
+2. Branch: **`UI-MIGRATION`**.
+3. HEAD: **`5d3d73bdd62a628e7a8f90ff3441e238f9b8779f`**.
+4. Task/Wave/Phase: **Wave 2 public storefront finalization**.
+5. Objective: finalize existing public customer routes across all required
+   viewports without changing locked W1 commerce authority.
+6. Completed: canonical Homepage order; shared public recovery shell; durable
+   catalog `q` URL/history state; structured-address confirmation and labels;
+   W2 browser harness; complete 151-file replay-manifest classification.
+7. Not completed: deployment, W2 commit/push, Admin/PIM operational work, and
+   Wave 3 were **NOT RUN**.
+8. Files changed: public Homepage/boundaries, five existing catalog routes,
+   four shared catalog components, catalog model/domain, structured address,
+   one new W2 E2E spec, six Vitest files, replay manifest, and three governance
+   files. The detailed exact list is recorded in the W2 closure above.
+9. Database/migrations: SQL changed **NO**; migration executed/applied **NO**;
+   database mutation **NO**; reset/reseed/replay **NO**.
+10. Remote/environment: staging runtime/read operations only; staging mutation
+    **NO**; production mutation **NO**; deployment **NO**. One intermediate
+    production-ref build is conservatively recorded as read-only contact; the
+    final build was staging-ref validated.
+11. Tests executed: focused suites, full Vitest, W2 Playwright, TypeScript,
+    lint, production build, and diff check.
+12. Test results: focused PASS; full Vitest **152 files / 1,054 tests PASS**;
+    all 14 current browser cases have executed PASS evidence through the
+    13/14 full run plus the affected 2/2 post-fix rerun.
+13. Build/typecheck/lint: staging-bound build **PASS — 139 static pages**;
+    typecheck **PASS**; lint **PASS — 0 errors / 35 existing warnings**;
+    `git diff --check` **PASS** after governance synchronization.
+14. Security/data integrity: W1 pricing/order/payment/inventory/fulfillment,
+    idempotency, snapshots, audit, and RLS are unchanged. Ignored staging env
+    remains untracked; no secret was printed or added to tracked content.
+15. Known warnings: 35 pre-existing lint warnings; intermediate read-only
+    production-bound build contact is recorded in the Issue Register.
+16. Remaining blockers: **NONE for the public storefront**.
+17. Owner decisions: no repeated passed work, no W0/W1 replay, no reset or
+    fixture recreation, no commerce redesign, and no Wave 3 in this task.
+18. Exact project state: **WAVE 2 COMPLETE — READY FOR WAVE 3**.
+19. Exact next recommended action: owner review, then commit/push the current
+    W2 diff when authorized; open Wave 3 only under a separate instruction.
+20. Resume instruction: start from this checkpoint, preserve the current
+    uncommitted W2 diff and staging state, do not rerun completed Waves 0–2,
+    and do not begin Wave 3 without explicit owner authorization.
 
 **HANDOFF UPDATED: YES — `CURRENT_PHASE_HANDOFF.md`**

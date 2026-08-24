@@ -64,12 +64,14 @@ function CollectionCategoryCard({
 
 export function CollectionCommerceExperience({
   products,
+  initialQuery,
   initialColor,
   initialLabel,
   initialSort,
   initialStatus
 }: {
   products: Product[];
+  initialQuery: string;
   initialColor: string;
   initialLabel: "all" | "new" | "promo" | "best";
   initialSort: "order" | "newest" | "best-selling";
@@ -178,6 +180,7 @@ export function CollectionCommerceExperience({
             <ProductCatalog
               products={products}
               showCategoryFilter
+              initialQuery={initialQuery}
               initialColor={initialColor}
               initialLabel={initialLabel}
               initialSort={initialSort}

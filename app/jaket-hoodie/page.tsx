@@ -15,6 +15,7 @@ export const metadata: Metadata = {
 
 type JaketHoodiePageProps = {
   searchParams?: Promise<{
+    q?: string | string[];
     color?: string | string[];
     label?: string | string[];
     sort?: string | string[];

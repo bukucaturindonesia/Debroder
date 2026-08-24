@@ -80,6 +80,7 @@ export function CategoryCommercePage({
           productTypeOptions={config.productTypeOptions}
           typeFilterLabel={config.typeFilterLabel}
           seoLinks={config.seoLinks}
+          initialQuery={filters.query}
           initialColor={filters.color}
           initialLabel={filters.label}
           initialSort={filters.sort}

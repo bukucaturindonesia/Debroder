@@ -1,10 +1,12 @@
 import Link from "next/link";
 import { Logo } from "@/components/Logo";
+import { PublicBoundaryShell } from "@/components/PublicBoundaryShell";
 
 export default function NotFound() {
   return (
-    <main data-ui-system="canonical" className="debroder-storefront min-h-screen bg-brand-offWhite px-4 py-10 text-brand-charcoal">
-      <div className="mx-auto grid min-h-[calc(100vh-80px)] max-w-2xl place-items-center">
+    <PublicBoundaryShell>
+      <section className="bg-brand-offWhite px-4 py-10 text-brand-charcoal">
+        <div className="mx-auto grid min-h-[calc(100vh-80px)] max-w-2xl place-items-center">
         <section className="w-full rounded-xl  bg-brand-offWhite p-8 text-center  sm:p-12">
           <Logo variant="symbol-black" size="lg" className="justify-center" />
           <p className="mt-8 text-sm font-semibold uppercase tracking-[0.24em] text-brand-charcoal/50">
@@ -23,7 +25,8 @@ export default function NotFound() {
             Kembali ke Beranda
           </Link>
         </section>
-      </div>
-    </main>
+        </div>
+      </section>
+    </PublicBoundaryShell>
   );
 }

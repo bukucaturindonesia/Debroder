@@ -23,6 +23,18 @@ describe("UX/UI Bab 6 screen, state, and responsive contract", () => {
     expect(read("components/checkout/CheckoutClient.tsx")).toContain("retryAfter");
   });
 
+  it("keeps global loading, error, and not-found states inside the canonical public shell", () => {
+    for (const path of ["app/loading.tsx", "app/error.tsx", "app/not-found.tsx"]) {
+      expect(read(path), `${path} must use the resilient public boundary shell`).toContain("<PublicBoundaryShell>");
+    }
+
+    const boundaryShell = read("components/PublicBoundaryShell.tsx");
+    expect(boundaryShell).toContain("<StorefrontCartBoundary>");
+    expect(boundaryShell).toContain("<SiteHeader");
+    expect(boundaryShell).toContain("<PublicFooter");
+    expect(boundaryShell).toContain("<MobileBottomNav");
+  });
+
   it("keeps explicit empty and pending states in catalog, cart, checkout, Custom, and tracking", () => {
     expect(read("components/ProductCatalog.tsx")).toContain("Produk tidak ditemukan");
     expect(read("components/CartProvider.tsx")).toContain("Keranjang masih kosong");

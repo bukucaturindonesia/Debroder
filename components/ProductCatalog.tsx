@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import { Fragment, useEffect, useMemo, useRef, useState } from "react";
 import { PublicProductCard } from "@/components/PublicProductCard";
 import { SafeImage } from "@/components/SafeImage";
@@ -23,6 +24,7 @@ import type { Product } from "@/lib/types";
 type SortValue = "order" | "newest" | "best-selling" | "price-low" | "price-high";
 type ProductGroup = "all" | "jaket-hoodie" | "headwear";
 type LabelValue = "all" | "new" | "promo" | "best";
+const EMPTY_PRODUCT_TYPE_OPTIONS: ProductTypeOption[] = [];
 
 function priceOf(product: Product) {
   const value = product.price ?? product.harga ?? product.base_price;
@@ -104,6 +106,7 @@ export function ProductCatalog({
   products,
   title = "Katalog produk",
   showHeading = false,
+  initialQuery = "",
   initialColor = "all",
   initialGroup = "all",
   initialLabel = "all",
@@ -112,7 +115,7 @@ export function ProductCatalog({
   initialStatus = "all",
   initialSize = "all",
   initialPrice = "all",
-  productTypeOptions = [],
+  productTypeOptions = EMPTY_PRODUCT_TYPE_OPTIONS,
   typeFilterLabel = "Semua tipe",
   showCategoryFilter = true,
   showGroupFilter = false,
@@ -126,6 +129,7 @@ export function ProductCatalog({
   products: Product[];
   title?: string;
   showHeading?: boolean;
+  initialQuery?: string;
   initialColor?: string;
   initialGroup?: ProductGroup;
   initialLabel?: LabelValue;
@@ -145,7 +149,9 @@ export function ProductCatalog({
   catalogLayout?: "default" | "kaos-editorial";
   editorialCampaign?: CatalogPageCampaignViewModel | null;
 }) {
-  const [query, setQuery] = useState("");
+  const urlSearchParams = useSearchParams();
+  const urlSearchParamsKey = urlSearchParams.toString();
+  const [query, setQuery] = useState(initialQuery);
   const [color, setColor] = useState(initialColor);
   const [group, setGroup] = useState<ProductGroup>(initialGroup);
   const [category, setCategory] = useState("all");
@@ -261,6 +267,7 @@ export function ProductCatalog({
   }, [activeProductType, activeStatus, category, color, group, isCategoryCatalog, label, price, productTypeOptions, products, query, size, sort]);
 
   useEffect(() => {
+    setQuery(initialQuery);
     setColor(initialColor);
     setSize(initialSize);
     setPrice(initialPrice);
@@ -268,7 +275,7 @@ export function ProductCatalog({
     setLabel(initialLabel);
     setSort(initialSort);
     setProductType(initialProductType);
-  }, [initialColor, initialLabel, initialPrice, initialProductType, initialSize, initialSort, initialStatus]);
+  }, [initialColor, initialLabel, initialPrice, initialProductType, initialQuery, initialSize, initialSort, initialStatus]);
 
   useEffect(() => {
     const desktopQuery = window.matchMedia("(min-width: 1024px)");
@@ -298,6 +305,7 @@ export function ProductCatalog({
     if (!syncUrlState) return;
     const url = new URL(window.location.href);
     const values: Record<string, string> = {
+      q: query.trim(),
       type: activeProductType,
       color,
       size,
@@ -308,74 +316,64 @@ export function ProductCatalog({
     };
 
     Object.entries(values).forEach(([key, value]) => {
-      const defaultValue = key === "sort" ? "order" : "all";
+      const defaultValue = key === "sort" ? "order" : key === "q" ? "" : "all";
       if (!value || value === defaultValue) url.searchParams.delete(key);
       else url.searchParams.set(key, value);
     });
 
     const nextUrl = `${url.pathname}${url.search}${url.hash}`;
     const currentUrl = `${window.location.pathname}${window.location.search}${window.location.hash}`;
-    if (nextUrl === currentUrl) {
-      urlSyncMountedRef.current = true;
-      return;
-    }
-
     if (!urlSyncMountedRef.current) {
-      window.history.replaceState(window.history.state, "", nextUrl);
-      urlSyncMountedRef.current = true;
+      if (nextUrl === currentUrl) urlSyncMountedRef.current = true;
       return;
     }
+    if (nextUrl === currentUrl) return;
 
     window.history.pushState(window.history.state, "", nextUrl);
-  }, [activeProductType, activeStatus, color, label, price, size, sort, syncUrlState]);
+  }, [activeProductType, activeStatus, color, label, price, query, size, sort, syncUrlState]);
 
   useEffect(() => {
     if (!syncUrlState) return;
+    const params = new URLSearchParams(urlSearchParamsKey);
+    const nextLabel = params.get("label");
+    const nextSort = params.get("sort");
+    const nextStatus = params.get("status");
+    const nextPrice = params.get("price");
 
-    const restoreUrlState = () => {
-      const params = new URLSearchParams(window.location.search);
-      const nextLabel = params.get("label");
-      const nextSort = params.get("sort");
-      const nextStatus = params.get("status");
-      const nextPrice = params.get("price");
-
-      setProductType(
-        productTypeValue(params.get("type") || undefined, productTypeOptions) || "all"
-      );
-      setColor(normalizeFilterValue(params.get("color") || "all") || "all");
-      setSize(normalizeFilterValue(params.get("size") || "all") || "all");
-      setPrice(
-        nextPrice === "under-50"
-        || nextPrice === "50-100"
-        || nextPrice === "over-100"
-          ? nextPrice
-          : "all"
-      );
-      setLabel(
-        nextLabel === "new" || nextLabel === "promo" || nextLabel === "best"
-          ? nextLabel
-          : "all"
-      );
-      setSort(
-        nextSort === "newest"
-        || nextSort === "best-selling"
-        || nextSort === "price-low"
-        || nextSort === "price-high"
-          ? nextSort
-          : "order"
-      );
-      setStatus(
-        nextStatus === "ready-stock"
-        || nextStatus === "custom"
-        || nextStatus === "hybrid"
-          ? nextStatus
-          : "all"
-      );
-    };
-
-    window.addEventListener("popstate", restoreUrlState);
-    return () => window.removeEventListener("popstate", restoreUrlState);
-  }, [productTypeOptions, syncUrlState]);
+    setQuery((params.get("q") || "").trim().slice(0, 120));
+    setProductType(
+      productTypeValue(params.get("type") || undefined, productTypeOptions) || "all"
+    );
+    setColor(normalizeFilterValue(params.get("color") || "all") || "all");
+    setSize(normalizeFilterValue(params.get("size") || "all") || "all");
+    setPrice(
+      nextPrice === "under-50"
+      || nextPrice === "50-100"
+      || nextPrice === "over-100"
+        ? nextPrice
+        : "all"
+    );
+    setLabel(
+      nextLabel === "new" || nextLabel === "promo" || nextLabel === "best"
+        ? nextLabel
+        : "all"
+    );
+    setSort(
+      nextSort === "newest"
+      || nextSort === "best-selling"
+      || nextSort === "price-low"
+      || nextSort === "price-high"
+        ? nextSort
+        : "order"
+    );
+    setStatus(
+      nextStatus === "ready-stock"
+      || nextStatus === "custom"
+      || nextStatus === "hybrid"
+        ? nextStatus
+        : "all"
+    );
+  }, [productTypeOptions, syncUrlState, urlSearchParamsKey]);
 
   useEffect(
     () => () => {

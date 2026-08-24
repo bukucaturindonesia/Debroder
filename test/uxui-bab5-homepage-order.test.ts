@@ -8,11 +8,12 @@ describe("UX/UI Bab 5 canonical Homepage composition", () => {
     const orderedMarkers = [
       "<HeroSlider",
       'landingSection("benefits")',
+      'landingSection("featured-products")',
       'landingSection("trending")',
       'landingSection("campaign-banners")',
-      'id="shop-category"',
       'landingSection("fresh-drop")',
-      'id="pakaian-polos"',
+      'id="shop-category"',
+      'landingSection("stores")',
       'id="tentang"',
       "<PublicFooter"
     ];
@@ -24,6 +25,14 @@ describe("UX/UI Bab 5 canonical Homepage composition", () => {
     });
 
     expect(positions).toEqual([...positions].sort((left, right) => left - right));
+  });
+
+  it("renders the canonical Featured and Store/Cara Order sections without the legacy plain-category section", () => {
+    expect(home).toContain("<ManagedHomepageSection section={managedSection} setting={setting} />");
+    expect(home).toContain("<PublicStoreLocator stores={stores} />");
+    expect(home).toContain('href="/cara-order"');
+    expect(home).not.toContain('id="pakaian-polos"');
+    expect(home).not.toContain("plainCategoryItems");
   });
 
   it("keeps CMS visibility/copy around sections while product cards remain data-driven", () => {

@@ -82,6 +82,9 @@ EMPTY SUPABASE
  -> 20260819141725_wave_1_quotation_order_conversion_contract_correction.sql [RUN]
  -> 20260819144205_wave_1_quotation_order_service_snapshot.sql [RUN]
  -> 20260819144405_wave_1_order_item_service_trigger_contract.sql [RUN]
+ -> 20260820063850_wave_1_quotation_admin_read_grants.sql [RUN]
+ -> 20260820064224_wave_1_order_detail_read_grants.sql [RUN]
+ -> 20260820065821_wave_1_admin_shell_read_grants.sql [RUN]
  -> CURRENT HEAD
 ```
 
@@ -160,7 +163,7 @@ remains `RUN` at its existing position, with explicit dual-mode semantics:
 This preserves the historical security-containment intent without adding the
 retired API or legacy upload surface to the fresh-install baseline.
 
-## Exhaustive classification of the 148 repository-controlled migration files
+## Exhaustive classification of the 151 repository-controlled migration files
 
 | File | Class |
 |---|---|
@@ -303,6 +306,9 @@ retired API or legacy upload surface to the fresh-install baseline.
 | `20260819085144_wave_0_admin_order_read_grants.sql` | RUN | Restore authenticated read privilege for RLS-protected order surfaces; policies remain the authorization boundary. |
 | `20260819091348_wave_0_trigger_function_acl_containment.sql` | RUN | Revoke direct browser/service-role execution from trigger-only SECURITY DEFINER functions; table triggers remain their only callers. |
 | `20260819095347_wave_0_payment_adjustments_archive_contract.sql` | RUN | Add the missing archived-at lifecycle field required by CURRENT HEAD payment summary and review execution; preserve Phase 5B ownership and ACLs. |
+| `20260820063850_wave_1_quotation_admin_read_grants.sql` | RUN | Restore authenticated reads for the RLS-protected quotation and mockup graph used by the Admin quotation workspace. |
+| `20260820064224_wave_1_order_detail_read_grants.sql` | RUN | Restore authenticated order-payment reads while retaining the existing payment RLS policy as the authorization boundary. |
+| `20260820065821_wave_1_admin_shell_read_grants.sql` | RUN | Restore authenticated reads for the RLS-protected notification and repeat-order support panels. |
 | `mockup_approval_foundation_phase_3a_applied.sql` | HISTORICAL ONLY |
 | `mockup_public_approval_phase_3b_applied.sql` | HISTORICAL ONLY |
 | `order_conversion_phase_4_applied.sql` | HISTORICAL ONLY |

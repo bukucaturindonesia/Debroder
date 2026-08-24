@@ -58,10 +58,12 @@ describe("DEBRODER public UI foundation normalization V1", () => {
   });
 
   it("marks public loading and recovery boundaries for the same foundation", () => {
+    for (const path of ["app/loading.tsx", "app/error.tsx", "app/not-found.tsx"]) {
+      expect(read(path), `missing shared public boundary shell in ${path}`).toContain("<PublicBoundaryShell>");
+    }
+    expect(read("components/PublicBoundaryShell.tsx")).toContain('data-ui-system="canonical"');
+
     for (const path of [
-      "app/loading.tsx",
-      "app/error.tsx",
-      "app/not-found.tsx",
       "app/produk/[slug]/loading.tsx",
       "app/produk/[slug]/error.tsx",
       "app/track-order/[order-number]/loading.tsx",

@@ -12,6 +12,7 @@ export const metadata: Metadata = {
 
 type KaosPolosPageProps = {
   searchParams?: Promise<{
+    q?: string | string[];
     color?: string | string[];
     size?: string | string[];
     price?: string | string[];

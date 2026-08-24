@@ -1754,6 +1754,58 @@ Last updated: 28 July 2026 (Asia/Makassar)
 
 **HANDOFF UPDATED: YES — `CURRENT_PHASE_HANDOFF.md`**
 
+## WAVE-2-STOREFRONT-001 — Public storefront fragmentation and state defects — 2026-08-24 13:09:52 +08:00
+
+- Severity: **MAJOR / STOREFRONT QUALITY**.
+- Status: **CLOSED — VERIFIED**.
+- Reproduced defects: Homepage canonical sections were out of order and a
+  legacy duplicate category section remained; global loading/error/not-found
+  bypassed canonical recovery chrome; catalog text query was not durable in
+  URL refresh/history; an unstable empty array cleared restored query state;
+  structured region controls lacked complete label association and did not
+  own confirmation invalidation.
+- Minimal corrections: restored frozen Homepage composition with existing
+  canonical sections; introduced one shared public boundary shell; added `q`
+  to existing catalog route state and stabilized its default option identity;
+  routed every address mutation through confirmation invalidation and added
+  unique semantic control IDs/labels.
+- Regression evidence: focused suites passed; full Vitest passed 152 files /
+  1,054 tests; TypeScript passed; lint passed with 0 errors / 35 existing
+  warnings; final staging-bound build passed with 139 static pages.
+- Browser evidence: 13/14 full serial cases passed; the sole query race was
+  fixed and the affected 390/1440 cases passed 2/2. All current 14 cases have
+  executed PASS evidence without repeating already-passed cases. Major
+  overflow, duplicate shell, broken loaded images, browser errors, and
+  unexpected same-origin failures are zero in passing evidence.
+- Commerce/database impact: **NONE**. W1 authority remained locked. No SQL,
+  migration application, reset, fixture recreation, staging mutation,
+  production mutation, or deployment occurred.
+- Remaining storefront blocker: **NONE**. Terminal state:
+  **WAVE 2 COMPLETE — READY FOR WAVE 3**.
+
+## WAVE-2-RELEASE-001 — Intermediate build loaded production-ref environment — 2026-08-24 13:09:52 +08:00
+
+- Severity: **PROCESS / ENVIRONMENT SAFETY WARNING**.
+- Status: **RECORDED — NO STOREFRONT BLOCKER**.
+- Evidence: after the sandboxed build failed on Google Fonts HTTPS, one
+  network-enabled `next build` succeeded while Next loaded `.env.local`. A
+  non-secret check resolved that file to production ref
+  `lzennundwqqtyvvcnzbg`. Since static generation invokes Supabase read paths,
+  production read contact is conservatively classified **YES**.
+- Mutation assessment: production mutation **NO**. The static paths exercised
+  by the build are public read-model paths; no checkout, order, payment,
+  inventory, fixture, migration, or Admin mutation action was invoked.
+- Corrective evidence: the final build loaded the ignored staging credentials
+  into process environment only after validating ref
+  `ykfjgnrigcsapblbxnxb`; it passed compilation, type/lint checks, page data,
+  and 139 static pages. No secret value was printed or tracked.
+- Safe continuation: future non-production verification must validate and
+  inject the staging ref before build startup. This historical read-only
+  contact cannot be undone but is not hidden and does not leave a storefront
+  correctness blocker.
+
+**HANDOFF UPDATED: YES — `CURRENT_PHASE_HANDOFF.md`**
+
 ## WAVE-1-COMMERCE-001 / 002 — Authenticated browser and staging configuration closure — 2026-08-24 00:05:28 +08:00
 
 - Severity: **BLOCKER / RUNTIME VERIFICATION**.
@@ -1790,6 +1842,19 @@ Last updated: 28 July 2026 (Asia/Makassar)
 - Terminal status: **WAVE 1 COMPLETE — READY FOR WAVE 2**.
 
 **HANDOFF UPDATED: YES — `CURRENT_PHASE_HANDOFF.md`**
+
+**HANDOFF UPDATED: YES — `CURRENT_PHASE_HANDOFF.md`**
+
+## CURRENT ISSUE STATE — WAVE 2 CLOSURE — 2026-08-24 13:12:26 +08:00
+
+- The W2 storefront defect set documented above is **CLOSED — VERIFIED**.
+- All 14 current browser cases have PASS evidence; full Vitest, typecheck,
+  lint, staging-bound build, and final diff check pass.
+- Open storefront blockers: **0**. Database, staging, and production mutation:
+  **NO / NO / NO**.
+- The intermediate production-ref read-only build contact remains a visible
+  process warning, not a hidden PASS and not a storefront correctness blocker.
+- Current terminal state: **WAVE 2 COMPLETE — READY FOR WAVE 3**.
 
 **HANDOFF UPDATED: YES — `CURRENT_PHASE_HANDOFF.md`**
 

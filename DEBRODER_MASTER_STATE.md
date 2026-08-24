@@ -1668,6 +1668,40 @@ Existing legal, CMS route, Preview performance, remote transaction E2E, data-int
 
 **HANDOFF UPDATED: YES — `CURRENT_PHASE_HANDOFF.md`**
 
+## LATEST AUTHORITATIVE STATE — WAVE 2 STOREFRONT FINALIZATION — 2026-08-24 13:09:52 +08:00
+
+- W1 remains locked and complete. W2 finalized the existing public storefront
+  without changing pricing, checkout, order, quotation, payment, inventory,
+  fulfillment, idempotency, snapshot, audit, or RLS authority.
+- Homepage canonical order, shared loading/error/not-found recovery chrome,
+  catalog `q` URL persistence with refresh/history restoration, and structured
+  address confirmation/accessibility were corrected with minimal changes.
+- Luna supplied a read-only second audit. Vercel Commerce URL-state patterns
+  and shadcn/ui semantic-control patterns were **ADAPTED**; no reference
+  architecture replaced DEBRODER authority.
+- Browser evidence covers all 14 current W2 cases: 13/14 passed in the full
+  run, then the single reproduced query race was fixed and its two viewport
+  cases passed 2/2. Homepage widths 320 through 1920 and the mobile/desktop
+  storefront route matrix are clean for overflow, duplicate shell, broken
+  loaded images, console/page errors, and unexpected same-origin failures.
+- Current quality gates: TypeScript PASS; lint PASS with 0 errors and 35
+  existing warnings; full Vitest PASS at 152 files / 1,054 tests; final
+  staging-bound production build PASS with 139 static pages; diff check PASS
+  after governance synchronization.
+- No migration SQL or database changed. Staging browser work was read-only,
+  the isolated runtime is stopped, and no deployment occurred. The replay
+  manifest metadata now includes the three existing W1 ACL migrations and
+  classifies all 151 migration files.
+- Production mutation is **NO**. One intermediate successful build loaded the
+  production-ref `.env.local`; static read contact is conservatively recorded
+  as **YES / READ-ONLY BUILD CONTACT**. The final build was explicitly
+  staging-bound and passed. This compliance warning remains visible.
+- W2 source/governance changes are uncommitted and not pushed. Admin/PIM
+  operational acceptance and all Wave 3 work remain unopened.
+- Official state: **WAVE 2 COMPLETE — READY FOR WAVE 3**.
+
+**HANDOFF UPDATED: YES — `CURRENT_PHASE_HANDOFF.md`**
+
 # WAVE 1 FINAL AUTHENTICATED E2E STATE — 2026-08-24 00:05:28 +08:00
 
 - Approved environment: `debroder-staging` / `ykfjgnrigcsapblbxnxb`.
@@ -1698,6 +1732,25 @@ Existing legal, CMS route, Preview performance, remote transaction E2E, data-int
   unopened in this task.
 
 **HANDOFF UPDATED: YES — `CURRENT_PHASE_HANDOFF.md`**
+
+**HANDOFF UPDATED: YES — `CURRENT_PHASE_HANDOFF.md`**
+
+## CURRENT PROJECT STATE — 2026-08-24 13:12:26 +08:00
+
+- The detailed W2 state recorded above supersedes all older W1 status entries
+  in this append-only document.
+- Branch / HEAD: `UI-MIGRATION` /
+  `5d3d73bdd62a628e7a8f90ff3441e238f9b8779f`; W2 working tree changes are
+  uncommitted and not pushed.
+- Final gates: browser current evidence 14/14, Vitest 1,054/1,054, typecheck
+  PASS, lint 0 errors/35 warnings, staging-bound build PASS at 139 static
+  pages, and `git diff --check` PASS.
+- Database/staging/production mutation: **NO / NO / NO**. The recorded
+  production-ref intermediate build contact was read-only; final build target
+  was staging. No deployment occurred.
+- Storefront blocker: **NONE**. Admin/PIM operational acceptance and Wave 3
+  remain unopened.
+- Official state: **WAVE 2 COMPLETE — READY FOR WAVE 3**.
 
 **HANDOFF UPDATED: YES — `CURRENT_PHASE_HANDOFF.md`**
 

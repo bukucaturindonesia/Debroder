@@ -24,6 +24,7 @@ export type CatalogPageHeroViewModel = {
 };
 
 export type CatalogPageFiltersViewModel = {
+  query: string;
   color: string;
   size: string;
   price: string;
