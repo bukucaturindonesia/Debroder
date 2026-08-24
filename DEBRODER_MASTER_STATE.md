@@ -1668,6 +1668,21 @@ Existing legal, CMS route, Preview performance, remote transaction E2E, data-int
 
 **HANDOFF UPDATED: YES — `CURRENT_PHASE_HANDOFF.md`**
 
+## WAVE 2 COMMITTED/PUSHED CHECKPOINT — 2026-08-24 13:20:53 +08:00
+
+- `bee4bc4e7feb847394bd2e0c37816943d70e3185` (`feat: complete wave 2
+  storefront finalization`) is committed and pushed to `origin/UI-MIGRATION`.
+- The pushed package contains exactly the verified 28-file W2 scope. No
+  implementation, migration, database, staging, production, or secret change
+  occurred during this close-checkpoint task.
+- Pre-commit diff, env-ignore, and tracked-content secret checks passed. The
+  only exact env-value match was the non-secret staging URL in governance
+  records; anon/service-role credential matches were zero.
+- Official terminal status: **WAVE 2 COMMITTED AND PUSHED — READY FOR WAVE 3**.
+- Wave 3 remains unopened.
+
+**HANDOFF UPDATED: YES — `CURRENT_PHASE_HANDOFF.md`**
+
 ## LATEST AUTHORITATIVE STATE — WAVE 2 STOREFRONT FINALIZATION — 2026-08-24 13:09:52 +08:00
 
 - W1 remains locked and complete. W2 finalized the existing public storefront
@@ -1755,5 +1770,17 @@ Existing legal, CMS route, Preview performance, remote transaction E2E, data-int
 **HANDOFF UPDATED: YES — `CURRENT_PHASE_HANDOFF.md`**
 
 **HANDOFF UPDATED: YES — `CURRENT_PHASE_HANDOFF.md`**
+
+**HANDOFF UPDATED: YES — `CURRENT_PHASE_HANDOFF.md`**
+
+## FINAL COMMITTED/PUSHED CHECKPOINT — 2026-08-24 13:20:53 +08:00
+
+- Commit `bee4bc4e7feb847394bd2e0c37816943d70e3185` with the requested
+  Wave 2 message is pushed to `origin/UI-MIGRATION`.
+- Close-checkpoint review passed: exactly 28 W2 files, no unrelated file, no
+  tracked staging env/secret, ignored `.env.e2e.staging.local`, and diff check
+  PASS. No tests were rerun.
+- Official terminal status: **WAVE 2 COMMITTED AND PUSHED — READY FOR WAVE 3**.
+- Wave 3 remains unopened.
 
 **HANDOFF UPDATED: YES — `CURRENT_PHASE_HANDOFF.md`**

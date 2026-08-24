@@ -2568,6 +2568,29 @@ repositories.
 
 **HANDOFF UPDATED: YES — `CURRENT_PHASE_HANDOFF.md`**
 
+## WAVE 2 COMMITTED/PUSHED CHECKPOINT — 2026-08-24 13:20:53 +08:00
+
+- Wave 2 package commit: `bee4bc4e7feb847394bd2e0c37816943d70e3185`.
+- Commit message: `feat: complete wave 2 storefront finalization`.
+- Branch: `UI-MIGRATION`.
+- Push: **EXECUTED AND PASSED** to `origin/UI-MIGRATION` at GitHub; remote
+  advanced from `5d3d73b` to `bee4bc4`.
+- The package contained exactly the 28 verified W2 files. No secret-bearing
+  file, `.env.e2e.staging.local`, unrelated file, database migration, or
+  staging/production mutation was included.
+- Pre-commit evidence remained: `git diff --check` PASS; ignored/untracked
+  staging env; exact credential matches in tracked content **0** (the only
+  URL match was the non-secret staging URL recorded in governance docs).
+- W2 tests and build were not rerun in this close-checkpoint task, per owner
+  instruction. Prior completed evidence remains authoritative.
+- Current functional repository checkpoint is the pushed package commit above.
+- Exact final status: **WAVE 2 COMMITTED AND PUSHED — READY FOR WAVE 3**.
+- Do not start Wave 3 in this task. The post-push governance synchronization
+  is intentionally recorded after the package push; no implementation change
+  was made.
+
+**HANDOFF UPDATED: YES — `CURRENT_PHASE_HANDOFF.md`**
+
 # WAVE 2 STOREFRONT FINALIZATION CLOSURE — 2026-08-24 13:09:52 +08:00
 
 ## Checkpoint identity and objective
@@ -6170,5 +6193,22 @@ W2 closure earlier in this append-only history.
 20. Resume instruction: start from this checkpoint, preserve the current
     uncommitted W2 diff and staging state, do not rerun completed Waves 0–2,
     and do not begin Wave 3 without explicit owner authorization.
+
+**HANDOFF UPDATED: YES — `CURRENT_PHASE_HANDOFF.md`**
+
+## FINAL COMMITTED/PUSHED CHECKPOINT — 2026-08-24 13:20:53 +08:00
+
+- Current HEAD/package commit: `bee4bc4e7feb847394bd2e0c37816943d70e3185`.
+- Message: `feat: complete wave 2 storefront finalization`.
+- Branch: `UI-MIGRATION`; push to `origin/UI-MIGRATION`: **EXECUTED AND
+  PASSED** (`5d3d73b..bee4bc4`).
+- The pushed package contains exactly 28 verified W2 files. No unrelated file,
+  secret-bearing tracked file, staging env file, migration, database mutation,
+  staging mutation, or production mutation was included.
+- Close-checkpoint verification: `git diff --check` PASS; staging env
+  ignored/untracked; anon/service-role exact credential matches in tracked
+  content **0**. No W0/W1/W2 tests rerun per owner instruction.
+- This is the final W2 checkpoint. Do not start Wave 3 in this task.
+- Exact final status: **WAVE 2 COMMITTED AND PUSHED — READY FOR WAVE 3**.
 
 **HANDOFF UPDATED: YES — `CURRENT_PHASE_HANDOFF.md`**
