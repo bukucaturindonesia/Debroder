@@ -10,7 +10,7 @@ export async function GET(request: Request, context: Context) {
     const notificationResult = await actor.client
       .from("notifications")
       .select(
-        "id,event_id,recipient_id,channel,title,body,related_path,status,sent_at,read_at,archived_at,archived_by,archive_reason,status_before_archive,error_message,seen_at,acknowledged_at,action_required,resolved_at,priority,action_type,created_at"
+        "id,event_id,recipient_id,channel,title,body,related_path,status,sent_at,read_at,archived_at,archived_by,error_message,seen_at,acknowledged_at,action_required,resolved_at,priority,action_type,created_at"
       )
       .eq("recipient_id", actor.user.id)
       .eq("id", id)

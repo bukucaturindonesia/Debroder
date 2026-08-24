@@ -1545,3 +1545,254 @@ Last updated: 28 July 2026 (Asia/Makassar)
 - Owner decision required: **NONE** for Wave 0 scope. Wave 1 remains
   prohibited until separately authorized.
 - Status: **CLOSED — WAVE 0 COMPLETE — READY FOR WAVE 1**.
+
+## WAVE-1-COMMERCE-001 — Generic quotation-to-order conversion contract — 2026-08-19
+
+- Severity: **BLOCKER / OWNER BUSINESS RULE**.
+- Status: **OPEN — OWNER DECISION REQUIRED**.
+- Current evidence: `components/admin/OrderConversionManager.tsx` calls
+  `convert_quotation_to_order(uuid)`, but the function is absent from the
+  approved staging database. W1 restored the four existing quotation and
+  Repeat Order RPCs without inventing this conversion rule.
+- The generic `quotations` record does not carry explicit delivery method,
+  pickup store, or payment method/requirement inputs. Inferring or defaulting
+  these values would change transaction semantics and could create an invalid
+  order/fulfillment path.
+- Required owner decision: define the exact conversion inputs/validation for
+  pickup versus shipping, pickup store/shipping address, payment method and
+  payment requirement, and the canonical order/item snapshot fields.
+- Safe next action after approval: add one forward migration and regression /
+  concurrency coverage, apply only to staging, then rerun authenticated E2E.
+
+## WAVE-1-COMMERCE-001 — Owner decision implemented; runtime proof remains open — 2026-08-19 22:26:04 +08:00
+
+- Severity: **BLOCKER / RUNTIME VERIFICATION**.
+- Owner decision: **RESOLVED**. The conversion contract now uses one native
+  explicit-input mutation path; quotation remains provenance evidence and the
+  resulting order is transaction authority.
+- Corrective artifacts:
+  `supabase/migrations/20260819141452_wave_1_quotation_order_conversion.sql`,
+  `supabase/migrations/20260819141725_wave_1_quotation_order_conversion_contract_correction.sql`,
+  and `components/admin/OrderConversionManager.tsx`.
+- Staging evidence: both migrations applied to
+  `debroder-staging` / `ykfjgnrigcsapblbxnxb`; function signature, SECURITY
+  DEFINER empty search path, ACL, uniqueness indexes, and unchanged W0/W1
+  aggregate counts were postchecked. The draft quotation negative call failed
+  closed as required.
+- Runtime gap: staging has zero `quotation_versions` and no approved mockup
+  conversion fixture, and no safe authenticated `E2E_*` identity is available.
+  Happy path, pickup/shipping success, replay/conflicting replay,
+  concurrency, duplicate item/history, and payment/inventory/fulfillment
+  side-effect checks are **BLOCKED / NOT RUN**. No fixture was created.
+- Status: **OPEN — RUNTIME VERIFICATION BLOCKED**. This is no longer an owner
+  decision blocker. Wave 2 remains prohibited.
+- Safe next action: provide the approved safe staging identity and permitted
+  quotation/version/mockup fixture, then run the remaining W1 runtime contract
+  matrix from the current migration checkpoint without reset or production
+  contact.
+
+## WAVE-1-COMMERCE-001 — Staging transaction matrix passed; browser E2E remains open — 2026-08-19 22:56:45 +08:00
+
+- Severity: **BLOCKER / RUNTIME VERIFICATION**.
+- Status: **OPEN — AUTHENTICATED BROWSER EVIDENCE REQUIRED**.
+- Disposable staging now proves pickup, shipping, same-key replay,
+  conflicting replay rejection, concurrent first conversion, and all required
+  negative input/authorization/store-scope cases. The postcheck shows one
+  order per successful W1 quotation and zero duplicate quotation or
+  idempotency keys.
+- Two live defects were reproduced and fixed with isolated forward migrations:
+  service snapshot keys were aligned to the existing trigger contract, and the
+  trigger was aligned to the actual canonical `order_item_services` columns.
+  No historical migration was edited and no shadow service columns were added.
+- No W1 payment, stock reservation, inventory movement, or fulfillment side
+  effect was created. Existing aggregate counts remained unchanged for those
+  categories.
+- Remaining gap: database claim/session checks are not browser-authenticated
+  Playwright evidence. Safe `E2E_*` credentials/base URL were unavailable and
+  no credential was guessed. Production remains untouched.
+- Exact next action: provide an authorized safe staging browser identity and
+  base URL, run the Playwright W1 matrix from the current staging checkpoint,
+  and close this issue only from executed browser evidence. Do not reset,
+  reapply migrations, delete fixtures, contact production, or start Wave 2.
+
+## WAVE-1-COMMERCE-001 — Browser E2E environment remains unavailable — 2026-08-19 23:09:06 +08:00
+
+- Severity: **BLOCKER / RUNTIME VERIFICATION**.
+- Status: **OPEN — AUTHENTICATED BROWSER EVIDENCE REQUIRED**.
+- The owner-local Playwright harness was inspected. It discovers 7 existing
+  public/Wave 0A tests, but no W1 browser spec is present; the required W1
+  matrix was **BLOCKED / NOT RUN**.
+- `e2e/support/env.ts` confirms the safe staging guard cannot be established:
+  all required `E2E_*` values are missing. No credentials were printed or
+  guessed, and production `.env.local` was not used.
+- Read-only staging postcheck remains consistent with the prior runtime proof;
+  no database or staging mutation occurred in this attempt.
+- Exact next action: provide authorized non-production browser E2E values and
+  run only the missing W1 matrix, then close this issue from actual browser
+  evidence. Do not reapply migrations, recreate fixtures, reset staging,
+  contact production, or start Wave 2.
+
+## WAVE-1-COMMERCE-001 — Dedicated W1 Playwright harness added; runtime remains blocked — 2026-08-19 23:45:29 +08:00
+
+- Severity: **BLOCKER / RUNTIME VERIFICATION**.
+- Status: **OPEN — AUTHENTICATED BROWSER EVIDENCE REQUIRED**.
+- `e2e/wave-1.spec.ts` now exists with 8 focused tests covering Full Admin,
+  explicit conversion fields, pickup, shipping, same replay, conflicting
+  replay, canonical order/read-model isolation, unauthenticated access, and
+  Admin Guest denial. It uses the current harness and does not recreate
+  fixtures or add credentials.
+- Playwright discovery **EXECUTED AND PASSED** with 15 tests. The targeted W1
+  run **EXECUTED AND BLOCKED** at the existing safe-staging guard with
+  `BLOCKED — SAFE STAGING IDENTITY NOT ESTABLISHED`; 1 test reached the guard
+  and 7 did not run. Browser console and visible-order evidence remain
+  **NOT RUN**.
+- TypeScript, focused W1 static regression (11 tests), and `git diff --check`
+  **EXECUTED AND PASSED**. No database, staging, production, migration,
+  deployment, or fixture mutation occurred.
+- Exact next action: provide the authorized non-production `E2E_*` contract,
+  run only `e2e/wave-1.spec.ts` against retained staging, execute the relevant
+  read-only postcheck, and close this issue only from browser evidence. Do not
+  reset, reapply, recreate, contact production, or start Wave 2.
+
+## WAVE-1-COMMERCE-002 — Authenticated browser activation needs staging server configuration — 2026-08-20 00:36:54 +08:00
+
+- Severity: **BLOCKER / OWNER DECISION REQUIRED**.
+- Status: **OPEN — SAFE STAGING RUNTIME CONFIGURATION REQUIRED**.
+- The retained staging Auth/session contract passed directly for Full Admin:
+  Auth 200, session registration `true`, `session_valid=true`, complete
+  scope, ACTIVE status, and `superadmin` role.
+- The latest Playwright run against a staging-configured temporary local
+  runtime collected 8 tests; 1 executed and failed during Full Admin login
+  navigation, and 7 did not run. The app reached staging Auth but
+  `/api/admin/session` returned `503 ADMIN_SERVICE_UNAVAILABLE` because
+  the route requires a server-side staging service-role key.
+- No approved staging application URL or safe staging service-role source was
+  available. No production or other-ref credential was used. One initial
+  stale-cache diagnostic attempted the production Auth URL before detection;
+  no response/status was observed and no production mutation is known. No
+  source, migration, fixture, or commerce behavior was changed to bypass this
+  dependency.
+- Read-only staging postcheck passed: 3 canonical W1 orders, one per retained
+  quotation, 3 distinct idempotency keys, 3 order items, 3 service snapshots,
+  and zero W1-linked payment, stock-reservation, inventory-movement,
+  fulfillment, or job-order side effects.
+- Exact owner decision / next action: provide an approved staging app URL with
+  server-side configuration or a secure non-printed staging service-role
+  source for one temporary local process. Then rerun only
+  `e2e/wave-1.spec.ts`, capture browser and console evidence, repeat the
+  read-only postcheck, and close this issue only from executed evidence. Do
+  not use production credentials, commit secrets, reapply migrations, recreate
+  fixtures, reset staging, or start Wave 2.
+
+### WAVE-1-COMMERCE-002 FOLLOW-UP — STAGING SERVER CONFIGURATION RECOVERY — 2026-08-20 00:51:20 +08:00
+
+- Status remains **OPEN — SAFE STAGING RUNTIME CONFIGURATION REQUIRED**.
+- Process, user, and machine environment scopes contain no required W1 E2E
+  values and no Supabase server-role configuration. The only repository-local
+  service-role field is in `.env.bootstrap.local`, whose Supabase URL is
+  unresolved/non-canonical; it was not used because staging binding cannot be
+  proven. Production `.env.local` was not used.
+- No secret was printed, copied into tracked content, committed, or guessed.
+  No runtime or Playwright rerun occurred because the mandatory staging
+  server configuration is absent. No database, migration, fixture, staging,
+  production, or business-data mutation occurred in this checkpoint.
+- Exact blocker: **STAGING SERVICE ROLE CONFIGURATION REQUIRED**.
+- Exact next action: obtain secure, non-printed configuration bound solely to
+  `ykfjgnrigcsapblbxnxb`; then activate exactly one runtime, verify
+  `/api/admin/session` is not `ADMIN_SERVICE_UNAVAILABLE`, run only the W1
+  Playwright spec, run the read-only postcheck, clean up, and close this issue
+  only from executed browser evidence. Do not use production/other-ref
+  credentials or start Wave 2.
+
+### WAVE-1-COMMERCE-002 FOLLOW-UP — CONFIGURATION PRESENT BUT INVALID — 2026-08-20 09:06:33 +08:00
+
+- Status remains **OPEN — SAFE STAGING RUNTIME CONFIGURATION REQUIRED**.
+- `.env.e2e.staging.local` is present, ignored, and points to the approved
+  staging ref. Its anon and service-role fields are present but
+  **PLACEHOLDER_LIKE**. Read-only staging Auth admin and settings probes both
+  returned HTTP `401`.
+- The controlled activation stopped before password rotation and before
+  starting Next. Playwright was **NOT RUN**. No SQL, migration, fixture,
+  reset, staging business-data, or production mutation occurred.
+- Exact blocker: **STAGING SERVICE ROLE CONFIGURATION REQUIRED**.
+- Exact next action: provide valid non-printed credentials bound solely to
+  `ykfjgnrigcsapblbxnxb`; validate them, then run exactly one runtime, the
+  existing W1 Playwright spec, and the read-only postcheck. Do not use
+  production/other-ref credentials or start Wave 2.
+
+### WAVE-1-COMMERCE-002 FOLLOW-UP — SUPPLIED CREDENTIALS REJECTED — 2026-08-20 09:21:50 +08:00
+
+- Status remains **OPEN — SAFE STAGING RUNTIME CONFIGURATION REQUIRED**.
+- The ignored local file resolves to the approved staging ref and is not
+  tracked. The publishable field is a short nonstandard 16-character value;
+  the field named `SUPABASE_SERVICE_ROLE_KEY` is a publishable-key format.
+  Read-only Auth settings, Auth admin, and REST probes all returned HTTP
+  `401`.
+- Runtime, `/api/admin/session`, password rotation, Playwright, SQL,
+  migration, fixture, reset, and staging business-data mutation were **NOT
+  RUN**. Production contact was **NO** in this attempt.
+- Exact blocker: **STAGING SERVICE ROLE CONFIGURATION REQUIRED**.
+- Exact next action: provide valid staging publishable/anon and genuine
+  staging server-side service-role/secret credentials, then revalidate before
+  starting the single runtime. Do not use production/other-ref credentials or
+  start Wave 2.
+
+### WAVE-1-COMMERCE-002 FOLLOW-UP — SERVER-SIDE CREDENTIAL STILL REJECTED — 2026-08-20 14:09:18 +08:00
+
+- Status remains **OPEN — SAFE STAGING RUNTIME CONFIGURATION REQUIRED**.
+- Staging URL identity passed; the env file remains ignored/untracked and no
+  exact secret appears in tracked repository content.
+- Publishable/anon credential: **HTTP 200 / USABLE**. Server-side
+  secret/service-role credential: **HTTP 401 / NOT USABLE**.
+- Stop rule applied: no runtime, `/api/admin/session`, Full Admin session,
+  Playwright, postcheck, SQL, migration, fixture, reset, Auth password, or
+  staging business-data mutation ran. Production contact: **NO**.
+- Exact blocker: **STAGING SERVICE ROLE CONFIGURATION REQUIRED**.
+- Exact next action: provide a valid server-side staging credential, rerun the
+  non-secret validation, and continue only after HTTP 200. Do not use
+  production/other-ref credentials or start Wave 2.
+
+**HANDOFF UPDATED: YES — `CURRENT_PHASE_HANDOFF.md`**
+
+## WAVE-1-COMMERCE-001 / 002 — Authenticated browser and staging configuration closure — 2026-08-24 00:05:28 +08:00
+
+- Severity: **BLOCKER / RUNTIME VERIFICATION**.
+- Status: **CLOSED — W1 TRANSACTION CONTRACT VERIFIED**.
+- Approved staging configuration and both credential classes are usable with
+  the installed Supabase SDK. The application uses
+  `ykfjgnrigcsapblbxnxb`; `/api/admin/session` no longer returns
+  `ADMIN_SERVICE_UNAVAILABLE`; Full Admin authentication/session activation
+  passed. Production was not contacted.
+- Browser evidence: all 8 W1 cases have current PASS evidence. The last full
+  execution passed tests 1–7; test 8 correctly reached the Admin Guest
+  read-only viewer but required an oracle correction. Only test-8 harness
+  logic changed afterward, and its targeted rerun passed 1/1. The owner
+  instruction not to repeat passed work was followed; no second full rerun was
+  made and this selective verification fact must remain visible.
+- Resolved defects: missing authenticated quotation/order-detail/Admin-shell
+  SELECT grants were corrected by forward migrations `20260820063850`,
+  `20260820064224`, and `20260820065821`; invalid `orders.converted_at` and
+  nonexistent notification archive-field reads were removed. Existing RLS and
+  DEBRODER domain authority remain intact.
+- Final read-only postcheck passed: 3 canonical orders, 3 distinct quotation
+  IDs, 3 distinct idempotency keys, 3 items, 3 service snapshots, zero
+  duplicate quotation/idempotency groups, and zero payment/reservation/
+  inventory-movement/fulfillment/Job Order side effects.
+- Security: staging env remains ignored/untracked; exact tracked publishable
+  and server-secret matches are zero; no secret was printed or committed.
+  No reset, fixture recreation, historical migration replay, production
+  contact, deployment, or destructive SQL occurred.
+- Deferred non-W1 observation: Admin Guest's initial Product/PIM landing can
+  request `/api/admin/products/library` and receive `403`. This belongs to
+  Wave 3 Product Operational Acceptance and was not repaired or represented
+  as a W1 commerce defect.
+- Remaining W1 blocker: **NONE**. Wave 2 was not started in this task.
+- Terminal status: **WAVE 1 COMPLETE — READY FOR WAVE 2**.
+
+**HANDOFF UPDATED: YES — `CURRENT_PHASE_HANDOFF.md`**
+
+**HANDOFF UPDATED: YES — `CURRENT_PHASE_HANDOFF.md`**
+
+**HANDOFF UPDATED: YES — `CURRENT_PHASE_HANDOFF.md`**
+
+**HANDOFF UPDATED: YES — `CURRENT_PHASE_HANDOFF.md`**

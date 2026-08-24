@@ -1392,3 +1392,315 @@ Existing legal, CMS route, Preview performance, remote transaction E2E, data-int
 - Wave 1 remains unstarted. Exact next action is owner review and separate
   Wave 1 authorization; do not repeat the completed Wave 0 replay without a
   repository change.
+
+## LATEST AUTHORITATIVE STATE — WAVE 1 COMMERCE CORRECTNESS — 2026-08-19
+
+- Branch/HEAD: `UI-MIGRATION` /
+  `bb38650e64dc145486ee6779a2babe88f6343c35`.
+- Approved target: disposable staging `debroder-staging` /
+  `ykfjgnrigcsapblbxnxb`. Production `lzennundwqqtyvvcnzbg` was not
+  contacted or mutated.
+- W1 product evidence is transaction-contract evidence only. W0 fixtures
+  prove product → sellable → price → inventory → cart/checkout; PIM/Admin
+  product creation, media, and publishing acceptance remain Wave 3 scope and
+  were not changed.
+- Audit found four quotation/Repeat Order RPCs used by current application
+  code but absent from staging. Forward migration
+  `20260819132837_wave_1_commerce_quotation_atomicity.sql` was applied to
+  staging successfully; remote Supabase recorded generated version
+  `20260819132837`.
+- Staging postchecks passed for RPC signatures, SECURITY DEFINER safe search
+  path, ACL, and preservation of W0 fixture aggregates. No production,
+  deployment, reset, cleanup, or historical migration rewrite occurred.
+- Current gates: focused 3 files/24 tests PASS; full Vitest 151 files/1,044
+  tests PASS; typecheck PASS; lint 0 errors/34 warnings; production build
+  exit 0; diff check PASS. Authenticated staging E2E is BLOCKED because this
+  session has no safe `E2E_*` identity/credentials/base URL.
+- Required sibling references were consulted read-only from the available
+  `debroder.next` copies. Medusa and Trigger.dev patterns were ADAPTED as
+  review guidance; Vercel Commerce and shadcn/ui patterns were DEFERRED; a
+  domain-authority replacement was REJECTED. No additional proven W1 defect
+  was found and no sibling repository was modified.
+- Remaining W1 blocker: current UI calls `convert_quotation_to_order(uuid)`
+  but the RPC is absent. Generic quotations do not carry explicit delivery,
+  pickup-store, or payment-method inputs, so defaults cannot be invented.
+- Official status: **WAVE 1 BLOCKED — OWNER DECISION REQUIRED**. Wave 2 has
+  not started.
+- Exact next action: obtain the frozen quotation-to-order conversion rule,
+  then implement one forward migration and rerun staging concurrency,
+  security, and authenticated E2E evidence without resetting W0 fixtures.
+
+## LATEST AUTHORITATIVE STATE — WAVE 1 QUOTATION ORDER CONVERSION — 2026-08-19 22:26:04 +08:00
+
+- Branch/HEAD: `UI-MIGRATION` /
+  `bb38650e64dc145486ee6779a2babe88f6343c35`.
+- Owner decision is now applied: quotation is authoritative before conversion,
+  order is authoritative after conversion, and no bidirectional sync or
+  competing payment/inventory/fulfillment authority was introduced.
+- Native conversion is implemented in
+  `20260819141452_wave_1_quotation_order_conversion.sql` with the active
+  constraint correction in
+  `20260819141725_wave_1_quotation_order_conversion_contract_correction.sql`.
+  Both forward migrations are applied to staging only.
+- Conversion inputs are explicit and fail closed: customer identity, delivery,
+  pickup store/shipping address, payment method, resolved shipping cost,
+  resolved price, transaction status, and idempotency key. One quotation and
+  one conversion idempotency key can produce only one order.
+- Conversion writes order/order-item/service snapshots, order and quotation
+  histories, and audit evidence only. It creates no `order_payments`, stock
+  reservation, inventory movement, or fulfillment rows.
+- W1 conversion contract tests (5), focused post-alignment tests (22), full
+  Vitest (152 files / 1,049 tests), typecheck, lint, build, and diff check
+  passed. Existing build fetch/EACCES and 34 lint warnings remain recorded.
+- Staging ACL/function/index/count postchecks passed. The existing staging
+  quotation is draft and staging has zero quotation versions, so authenticated
+  happy-path, replay/concurrency, and aggregate side-effect proof are blocked;
+  no fixture was created and no credentials were guessed.
+- Medusa was consulted read-only. Scoped lock/compensation and aggregate
+  separation were ADAPTED natively; external workflow/return lifecycle was
+  DEFERRED; schema/authority replacement was REJECTED.
+- Official status: **WAVE 1 INCOMPLETE — COMMERCE BLOCKER REMAINS**. Wave 2
+  has not started.
+- Exact next action: obtain the safe authenticated staging identity and a
+  permitted approved quotation/version/mockup fixture, then execute the
+  required positive, negative, replay, concurrency, and no-side-effect
+  runtime contract checks without resetting W0 or contacting production.
+
+## LATEST AUTHORITATIVE STATE — WAVE 1 FINAL RUNTIME CLOSURE — 2026-08-19 22:56:45 +08:00
+
+- Branch/HEAD: `UI-MIGRATION` /
+  `bb38650e64dc145486ee6779a2babe88f6343c35`.
+- The approved W1 quotation-to-order contract is now exercised on disposable
+  staging for pickup, shipping, same-request replay, conflicting replay,
+  concurrent first conversion, and the required negative matrix.
+- Two proven canonical service-contract defects were corrected by new forward
+  migrations. The conversion now creates exactly one canonical service row
+  through the existing trigger contract and no longer targets superseded
+  columns. Local files are `20260819144205...` and `20260819144405...`; the
+  staging migration history records generated versions `20260819144305` and
+  `20260819144442`.
+- Final staging counts prove 3 W1 orders, 3 order items, 3 service rows, 3
+  order-history rows, 3 quotation-history rows, and 3 audit rows, with zero
+  duplicate quotation or idempotency keys. Payment, stock reservation,
+  inventory-movement, and fulfillment totals remained at their pre-W1 values.
+- Database-authenticated session/claim evidence passed. Browser-authenticated
+  Playwright E2E remains unavailable because safe `E2E_*` credentials/config
+  were not present; no secrets were guessed.
+- Production was not contacted, staging was not reset, retained fixtures were
+  not deleted, and Wave 2 has not started.
+- Official status: **WAVE 1 INCOMPLETE — COMMERCE BLOCKER REMAINS**.
+
+# LATEST AUTHORITATIVE STATE — W1 AUTHENTICATED E2E ACTIVATION — 2026-08-20 00:36:54 +08:00
+
+- Branch / HEAD: `UI-MIGRATION` /
+  `bb38650e64dc145486ee6779a2babe88f6343c35`.
+- The existing W1 Playwright harness was activated against disposable staging
+  `debroder-staging` / `ykfjgnrigcsapblbxnxb`. No production mutation or
+  production credential use occurred. One initial stale-cache diagnostic
+  attempted the production Auth URL before detection; no response/status was
+  observed, and all later attempts excluded production.
+- Five retained staging Auth identities were password-rotated in place under
+  the owner-authorized staging-only exception. The Auth/session contract
+  passed directly, but the local app's `/api/admin/session` returned
+  `503 ADMIN_SERVICE_UNAVAILABLE` because no safe staging service-role key
+  or approved staging app URL was available.
+- Latest browser result: 8 tests collected; 1 executed and failed at Full
+  Admin login navigation, 7 did not run. No browser-visible order evidence
+  exists. Read-only commerce postcheck remains clean: 3 orders, 3 distinct
+  quotations, 3 distinct idempotency keys, 3 order items, 3 service snapshots,
+  and no W1-linked payment, reservation, inventory, fulfillment, or job-order
+  side effects.
+- No migration, business fixture, production, deployment, reset, or rollback
+  change occurred in this activation. Temporary credentials and artifacts
+  were removed; local production configuration was restored. The one
+  stale-cache Auth attempt had no observed response/status and produced no
+  known production data change.
+- Official status: **WAVE 1 BLOCKED — OWNER DECISION REQUIRED**. Wave 2 remains
+  unopened.
+- Resume only after an approved staging app URL or secure staging
+  service-role source is provided; then rerun the existing W1 browser spec and
+  update `CURRENT_PHASE_HANDOFF.md` with executed browser evidence.
+- Exact next action: obtain authorized safe staging browser credentials and
+  base URL, execute the missing Playwright W1 matrix from this checkpoint, and
+  update the handoff with actual browser evidence. Do not reapply migrations or
+  begin Wave 2.
+
+## LATEST AUTHORITATIVE STATE — WAVE 1 BROWSER E2E ATTEMPT — 2026-08-19 23:09:06 +08:00
+
+- No browser-authenticated W1 execution was possible from the current process.
+  `e2e/support/env.ts` requires the safe staging contract, but every required
+  `E2E_*` field is missing, including base URL, target environment, safe
+  identity, namespace confirmation, mutation gate, and role credentials.
+- Playwright discovery passed with 7 existing tests across the public/Wave 0A
+  harness; no W1 browser spec exists. The W1 browser matrix is therefore
+  **BLOCKED / NOT RUN**, not passed by inference.
+- A read-only staging postcheck remained consistent: 3 W1 orders, 3 service
+  rows, zero duplicate quotation/idempotency keys, and unchanged payment,
+  reservation, inventory-movement, and fulfillment counts.
+- No source, migration, fixture, route, staging, or production changes were
+  made. Wave 2 remains unopened.
+- Official status: **WAVE 1 INCOMPLETE — COMMERCE BLOCKER REMAINS**.
+- Exact next action: obtain authorized non-production browser E2E configuration
+  and credentials, run only the missing W1 Playwright matrix, and record
+  browser-visible and console evidence. Do not reset or reapply anything.
+
+## LATEST AUTHORITATIVE STATE — W1 FINAL PLAYWRIGHT HARNESS — 2026-08-19 23:45:29 +08:00
+
+- The missing `e2e/wave-1.spec.ts` was added using the existing safe harness
+  and shared helpers. It contributes 8 focused tests for the W1 quotation,
+  conversion, replay, canonical-order, side-effect, and role-boundary paths.
+- Playwright discovery **EXECUTED AND PASSED** with 15 tests across the three
+  E2E specs. The targeted W1 run **EXECUTED AND BLOCKED** at
+  `requireWave0aEnv()` with `BLOCKED — SAFE STAGING IDENTITY NOT ESTABLISHED`;
+  1 test reached the guard and 7 did not run. No browser-authenticated
+  evidence exists.
+- TypeScript **EXECUTED AND PASSED**; focused W1 static regression
+  **EXECUTED AND PASSED** with 11 tests; `git diff --check` **EXECUTED AND
+  PASSED**. No database, migration, fixture, staging, production, or
+  deployment change occurred in this continuation.
+- Prior read-only staging evidence remains authoritative: 3 W1 orders, 3
+  service rows, zero duplicate quotation/idempotency keys, payment `1`,
+  reservation `1`, inventory movements `3`, fulfillment `1`, and migration
+  tail `20260819144305` / `20260819144442`.
+- The safe browser contract still requires the `E2E_*` variables listed in
+  `CURRENT_PHASE_HANDOFF.md`; no secret or production `.env.local` fallback
+  was used. Wave 2 remains unopened.
+- Official status: **WAVE 1 INCOMPLETE — COMMERCE BLOCKER REMAINS**.
+
+# FINAL RESUME CHECKPOINT — W1 AUTHENTICATED E2E ACTIVATION — 2026-08-20 00:36:54 +08:00
+
+- Current status: **WAVE 1 BLOCKED — OWNER DECISION REQUIRED**.
+- The retained staging Auth/session contract passed, and the read-only W1
+  commerce postcheck remains clean. The temporary local app reached staging
+  Auth but its `/api/admin/session` returned `503
+  ADMIN_SERVICE_UNAVAILABLE` because no safe staging service-role key or
+  approved staging app URL was available.
+- Latest browser result: 8 tests collected, 1 executed and failed during Full
+  Admin login navigation, 7 did not run. No browser-visible order evidence
+  exists.
+- Five retained staging Auth password hashes were rotated under owner
+  authorization; temporary credentials and artifacts were removed. No
+  migration, business-data, production, reset, or Wave 2 change occurred.
+  One stale-cache production Auth URL attempt is documented; all later
+  attempts excluded production.
+- Safe resume: obtain approved staging server configuration or secure
+  non-printed staging service-role access, then rerun only the existing W1
+  Playwright spec and update the handoff with browser evidence.
+
+# FINAL STAGING SERVER ACTIVATION CHECKPOINT — W1 — 2026-08-20 00:51:20 +08:00
+
+- Official status: **WAVE 1 BLOCKED — OWNER DECISION REQUIRED**; Wave 2 is
+  unopened.
+- Branch / HEAD: `UI-MIGRATION` /
+  `bb38650e64dc145486ee6779a2babe88f6343c35`.
+- Approved target remains disposable staging `debroder-staging` /
+  `ykfjgnrigcsapblbxnxb`. No valid staging-bound server-side service-role
+  configuration was recovered from process, user, machine, or permitted
+  repository-local configuration. Production `.env.local` was not used;
+  `.env.bootstrap.local` was not used because its Supabase URL is
+  unresolved/non-canonical and cannot prove staging binding.
+- No secret was printed, committed, or written to a tracked file. No runtime,
+  test, migration, fixture, staging, production, reset, or business-data
+  mutation occurred in this checkpoint. Previous direct staging Auth/session
+  success and the prior app `503 ADMIN_SERVICE_UNAVAILABLE` remain the latest
+  runtime evidence; the latest browser attempt remains 1 failed / 7 not run.
+- Exact blocker: **STAGING SERVICE ROLE CONFIGURATION REQUIRED**. The
+  mandatory server-side configuration is required before the single-runtime
+  activation and authenticated Playwright closure can proceed.
+- Exact next action: obtain a secure, non-printed service-role source bound
+  only to the approved staging ref, then run only the existing W1 browser
+  spec and the read-only postcheck. Do not contact production, change W1
+  commerce code, reapply migrations, recreate fixtures, reset staging, or
+  start Wave 2.
+
+# FINAL STAGING CONFIGURATION RECHECK — W1 — 2026-08-20 09:06:33 +08:00
+
+- Official status: **WAVE 1 BLOCKED — OWNER DECISION REQUIRED**; Wave 2 is
+  unopened.
+- Branch / HEAD: `UI-MIGRATION` /
+  `bb38650e64dc145486ee6779a2babe88f6343c35`.
+- The approved staging URL ref was proven as `ykfjgnrigcsapblbxnxb`, but the
+  local anon and service-role fields are placeholder-like. Staging Auth admin
+  and settings probes both returned HTTP `401`; no valid server-side staging
+  credential is established.
+- No password rotation, runtime start, Playwright run, SQL, migration,
+  fixture, reset, staging business-data mutation, or production contact
+  occurred in this checkpoint. No secret value was printed or committed.
+- Exact blocker: **STAGING SERVICE ROLE CONFIGURATION REQUIRED**.
+- Exact next action: install valid staging-only credentials in the ignored
+  local runtime configuration, validate them without printing values, then
+  run only the existing W1 browser spec and read-only postcheck. Do not use
+  production/other-ref credentials or start Wave 2.
+
+# FINAL STAGING CREDENTIAL VALIDATION — W1 — 2026-08-20 09:21:50 +08:00
+
+- Official status: **WAVE 1 BLOCKED — OWNER DECISION REQUIRED**; Wave 2 is
+  unopened.
+- Branch / HEAD: `UI-MIGRATION` /
+  `bb38650e64dc145486ee6779a2babe88f6343c35`.
+- The staging URL ref and Git safety checks passed. The supplied publishable
+  field is a short nonstandard 16-character value; the field named
+  `SUPABASE_SERVICE_ROLE_KEY` is in publishable-key format. Auth settings,
+  Auth admin, and REST probes all returned HTTP `401`.
+- No runtime, password rotation, Playwright run, SQL, migration, fixture,
+  reset, staging mutation, or production contact occurred in this attempt.
+- Exact blocker: **STAGING SERVICE ROLE CONFIGURATION REQUIRED**.
+- Exact next action: provide a valid staging publishable/anon credential and
+  a real staging server-side secret/service-role credential, validate both
+  without printing values, then run only the existing W1 closure.
+
+# FINAL STAGING CREDENTIAL VALIDATION — W1 — 2026-08-20 14:09:18 +08:00
+
+- Official status: **WAVE 1 BLOCKED — OWNER DECISION REQUIRED**; Wave 2 is
+  unopened.
+- Approved staging ref `ykfjgnrigcsapblbxnxb` passed identity validation;
+  production ref was rejected. The ignored env file is untracked and no exact
+  secret appears in tracked content.
+- Publishable/anon credential: **USABLE — HTTP 200**. Server-side
+  secret/service-role credential: **NOT USABLE — HTTP 401**.
+- Runtime, Full Admin session, Playwright, postcheck, SQL, migration, fixture,
+  reset, Auth password rotation, staging business-data mutation, and
+  production contact: **NOT RUN / NO** in this checkpoint.
+- Exact blocker: **STAGING SERVICE ROLE CONFIGURATION REQUIRED**.
+- Exact next action: provide a valid server-side credential bound exclusively
+  to staging, revalidate, then continue the existing W1 closure only after
+  HTTP 200.
+
+**HANDOFF UPDATED: YES — `CURRENT_PHASE_HANDOFF.md`**
+
+# WAVE 1 FINAL AUTHENTICATED E2E STATE — 2026-08-24 00:05:28 +08:00
+
+- Approved environment: `debroder-staging` / `ykfjgnrigcsapblbxnxb`.
+  Production `lzennundwqqtyvvcnzbg` was not contacted or mutated.
+- Staging application configuration, SDK server credential, publishable
+  credential, non-`503` admin session boundary, and retained Full Admin
+  session were proven without printing credentials. The ignored staging env
+  remains untracked; tracked credential matches are zero.
+- W1 browser contract is closed: all 8 current cases have PASS evidence. Per
+  the owner non-repetition instruction, tests 1–7 retain PASS from the final
+  full execution and the isolated test-8 oracle correction was verified by a
+  targeted 1/1 PASS rerun; no second monolithic rerun was performed.
+- The read-only transaction postcheck passed: orders `3`, items `3`, service
+  snapshots `3`, duplicate quotation conversions `0`, duplicate idempotency
+  keys `0`, payments `0`, reservations `0`, inventory movements `0`,
+  fulfillments `0`, and Job Orders `0`.
+- Three forward-only staging ACL migrations are applied and recorded as
+  `20260820063850`, `20260820064224`, and `20260820065821`. Existing RLS stays
+  authoritative. No historical migration was changed or reapplied.
+- Minimal application corrections removed invalid order/notification read
+  columns. No Product/PIM creation, media, publishing, or owner operational
+  acceptance work was performed.
+- Product-library `403` on the Admin Guest login landing path is deferred to
+  Wave 3 Product operational acceptance and is not a W1 transaction blocker.
+- `git diff --check` passed. Typecheck, lint, full regression, and build were
+  not repeated in this final browser-only activation.
+- Official state: **WAVE 1 COMPLETE — READY FOR WAVE 2**. Wave 2 remains
+  unopened in this task.
+
+**HANDOFF UPDATED: YES — `CURRENT_PHASE_HANDOFF.md`**
+
+**HANDOFF UPDATED: YES — `CURRENT_PHASE_HANDOFF.md`**
+
+**HANDOFF UPDATED: YES — `CURRENT_PHASE_HANDOFF.md`**
+
+**HANDOFF UPDATED: YES — `CURRENT_PHASE_HANDOFF.md`**

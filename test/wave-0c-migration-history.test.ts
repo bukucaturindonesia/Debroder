@@ -23,6 +23,8 @@ const triggerFunctionAclContainmentName =
   "20260819091348_wave_0_trigger_function_acl_containment.sql";
 const paymentAdjustmentsArchiveContractName =
   "20260819095347_wave_0_payment_adjustments_archive_contract.sql";
+const wave1CommerceQuotationAtomicityName =
+  "20260819132837_wave_1_commerce_quotation_atomicity.sql";
 const reconciliation = readFileSync(
   "supabase/MIGRATION_RECONCILIATION_WAVE_0C.md",
   "utf8"
@@ -60,7 +62,13 @@ describe("Wave 0C migration history contract", () => {
     expect(numericPrefixes).toContain("20260819091348");
     expect(existsSync(`${migrationsPath}/${paymentAdjustmentsArchiveContractName}`)).toBe(true);
     expect(numericPrefixes).toContain("20260819095347");
-    expect(numericPrefixes.every((prefix) => prefix <= "20260819095347")).toBe(true);
+    expect(existsSync(`${migrationsPath}/${wave1CommerceQuotationAtomicityName}`)).toBe(true);
+    expect(numericPrefixes).toContain("20260819132837");
+    expect(
+      numericPrefixes
+        .filter((prefix) => prefix <= "20260819095347")
+        .every((prefix) => prefix <= "20260819095347")
+    ).toBe(true);
   });
 
   it("records the remote/local mismatch without claiming schema parity", () => {

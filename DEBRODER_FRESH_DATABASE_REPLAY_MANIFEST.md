@@ -77,6 +77,11 @@ EMPTY SUPABASE
  -> 20260817154449_product_compatibility_enum_safety.sql [RUN]
  -> 20260818003941_order_handoff_trigger_record_safety.sql [RUN]
  -> 20260818020559_customer_auth_server_acl_v1.sql [RUN]
+ -> 20260819132837_wave_1_commerce_quotation_atomicity.sql [RUN]
+ -> 20260819141452_wave_1_quotation_order_conversion.sql [RUN]
+ -> 20260819141725_wave_1_quotation_order_conversion_contract_correction.sql [RUN]
+ -> 20260819144205_wave_1_quotation_order_service_snapshot.sql [RUN]
+ -> 20260819144405_wave_1_order_item_service_trigger_contract.sql [RUN]
  -> CURRENT HEAD
 ```
 
@@ -155,7 +160,7 @@ remains `RUN` at its existing position, with explicit dual-mode semantics:
 This preserves the historical security-containment intent without adding the
 retired API or legacy upload surface to the fresh-install baseline.
 
-## Exhaustive classification of the 140 repository-controlled migration files
+## Exhaustive classification of the 148 repository-controlled migration files
 
 | File | Class |
 |---|---|
@@ -287,6 +292,11 @@ retired API or legacy upload surface to the fresh-install baseline.
 | `20260817154449_product_compatibility_enum_safety.sql` | RUN |
 | `20260818003941_order_handoff_trigger_record_safety.sql` | RUN |
 | `20260818020559_customer_auth_server_acl_v1.sql` | RUN |
+| `20260819132837_wave_1_commerce_quotation_atomicity.sql` | RUN |
+| `20260819141452_wave_1_quotation_order_conversion.sql` | RUN | Add the explicit, atomic quotation-to-order transaction boundary and one-order/idempotency guards. |
+| `20260819141725_wave_1_quotation_order_conversion_contract_correction.sql` | RUN | Correct the conversion values to the active order customer and locked custom-quote contracts without rewriting the applied migration. |
+| `20260819144205_wave_1_quotation_order_service_snapshot.sql` | RUN | Align quotation conversion service snapshots with the existing order-item service trigger contract and remove the competing direct service insert. |
+| `20260819144405_wave_1_order_item_service_trigger_contract.sql` | RUN | Correct the applied service-sync trigger to the actual canonical order_item_services columns without adding shadow columns. |
 | `20260818082607_wave_0_public_store_scope_customer_rls.sql` | RUN |
 | `20260819060740_wave_0_ready_stock_pricing_status_compatibility.sql` | RUN |
 | `20260819064125_wave_0_service_role_qc_read_contract.sql` | RUN |
