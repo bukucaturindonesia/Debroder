@@ -2568,6 +2568,127 @@ repositories.
 
 **HANDOFF UPDATED: YES — `CURRENT_PHASE_HANDOFF.md`**
 
+## PHASE A REPLAY CLASSIFICATION CLOSED / W3 NEGATIVE UAT BLOCKED — 2026-09-24 12:19:21 +08:00
+
+- Branch/HEAD: `UI-MIGRATION` / `5775f1aedb8c1539f69044aa7e58cd0e704fe285`. Objective: close only the baseline reconstruction manifest mismatch, then attempt only the two remaining W3 negative runtime gates. Preserve all existing uncommitted W3 and brochure work and retained staging Product `17159506-1b3f-45fd-8a12-8ec1a2531574`.
+- **Phase A EXECUTED AND PASSED:** added `20260824152251_wave_3_product_media_storage.sql` and `20260923172557_wave_3_superadmin_product_publish_grant.sql` as `RUN` in the authoritative fresh-database replay order/classification. Both depend on prior canonical objects and are forward, idempotent W3 changes. Migration SQL, filenames, identity, historical application state, and baseline architecture were not changed. Affected baseline test: **17/17 PASS**. Full Vitest: **152 files/1060 tests PASS**. Typecheck **PASS**. Lint **PASS, 0 errors/36 existing warnings**. `npm run build` including prebuild verification **PASS**, Next 15.5.19 generated **142 static pages**. `git diff --check` **PASS**. Earlier brochure Playwright **NOT RERUN** (no affected brochure source change). Production-ref `.env.local` was isolated during build and restored.
+- **Phase B NOT PASSED / BLOCKED:** started exactly one staging-bound runtime on `127.0.0.1:3101` after isolating `.env.local`; application configuration targeted **only** Supabase `ykfjgnrigcsapblbxnxb`, never production `lzennundwqqtyvvcnzbg`. The retained ignored Full Admin credential state was still marked `VERIFIED`, but the current real `/admin/login` flow displayed **“Email atau password salah”**. No authenticated session was established; `/api/admin/session` could not be proven authenticated in this attempt. Consequently the non-mutating duplicate-sellable changed-row preview was **NOT EXECUTED**. The earlier 401 remains unresolved; this attempt does not prove a Product/PIM defect. Existing Guest credential/session was not present in the retained ignored state; owner input was requested asynchronously, with no credential received by this checkpoint. Admin Guest mutation denial was **NOT EXECUTED**. Neither gate is PASS. Final W3 closure gates were **NOT RUN** because the two prerequisites failed to complete.
+- **Security warning:** the first automated login click occurred before React hydration; the native form submitted credential fields in a query string to the **local staging-bound app URL**. That URL was exposed in transient local process/tool logs. A second attempt waited for hydration and guarded against query-string submission, but the retained credential was rejected. The password value is deliberately omitted from tracked documents. Treat that retained staging credential as exposed and obtain owner-approved secure credential remediation before retrying; **do not rotate it automatically** under this task's explicit no-rotation rule. No evidence of production contact from this event.
+- Files changed **in this task**: `DEBRODER_FRESH_DATABASE_REPLAY_MANIFEST.md` plus `CURRENT_PHASE_HANDOFF.md`, `DEBRODER_MASTER_STATE.md`, and `DEBRODER_V1.2_ISSUE_REGISTER.md`. Pre-existing dirty W3/brochure files were preserved. Database/migrations **attempted/applied this task: NO/NO**; local manifest classification changed only; first failing migration **NONE**; pending remote migration status **NOT QUERIED**. Previously applied staging publish-grant migration remains historical evidence; media migration was not replayed. Staging Auth login **CONTACT YES**, authenticated session **NO**, business-data/database mutation **NO**; staging reset **NO**. Production contact/mutation **NO/NO**. Commit/push/deployment/Wave 4 **NO**. Rollback **NOT APPLICABLE**. Runtime **STOPPED**, port 3101 clear, original `.env.local` **RESTORED**.
+- Exact project state: Phase A repository gate **PASS**; W3 **INCOMPLETE / NO-GO for Wave 4**. Brochure local verification remains intact but not deployed. Remaining W3 blockers: owner-approved existing Guest access; secure restoration of an active authorized Admin session without unapproved password rotation; then only Guest mutation denial and non-mutating duplicate-sellable preview. Next session: first resolve the exposed/rejected staging credential through owner-approved secure process and obtain existing Guest access; isolate `.env.local`, start one staging runtime, execute only these two negative gates, then final W3 closure gates only if both pass. Never repeat passed MEDIA/publish/catalog/PDP/post-publish/duplicate SKU/anonymous denial, reset staging, replay migrations, touch production, commit, push, deploy, or start Wave 4.
+
+**HANDOFF UPDATED: YES — `CURRENT_PHASE_HANDOFF.md`**
+
+## W3 MEDIA-TO-PUBLISH UAT / NEGATIVE-GATE CHECKPOINT — 2026-09-24 01:47 +08:00
+
+- Branch / HEAD: `UI-MIGRATION` / `5775f1aedb8c1539f69044aa7e58cd0e704fe285`. Objective: finish only retained Product `17159506-1b3f-45fd-8a12-8ec1a2531574` from MEDIA, then the remaining W3 negative gates. Target **staging `ykfjgnrigcsapblbxnxb` only**; production `lzennundwqqtyvvcnzbg` was neither contacted nor changed. Owner confirmed official in-app browser permission for the local runtime; no browser-security bypass or further password rotation.
+- Exactly one guarded staging app runtime on `127.0.0.1:3101` used isolated `.env.local` and the retained ignored Full Admin credential. Real `/admin/login` and Admin dashboard showed `DEBRODER E2E Full Admin`, `Super Admin · SEMUA TOKO`, `ACTIVE`; application `/api/admin/session` requests for Dashboard, MEDIA, Information, and Variants returned HTTP 200. Browser session identity/scope is **EXECUTED AND PASSED**; direct JSON `authenticated` field was **NOT INSPECTED**.
+- MEDIA **EXECUTED AND PASSED**: through real Admin file chooser, uploaded existing repository black/red WebP product images, saved Front for black and both red variants, and reloaded. UI showed all three Front images persisted. Initial Review blocked publish because the third pre-existing red variant had no active size/SKU; that empty duplicate variant was set inactive through the Admin UI (not deleted). Review then showed ready with 2 active variants / 2 active SKUs and 3 media rows.
+- First real Publish request **EXECUTED AND FAILED** with HTTP 403 despite Full Admin and ready review. Root cause reproduced in staging: `public.has_permission()` read `role_permissions`, where the exact `superadmin` / `product.publish` grant was absent. Added focused WP-07 regression (initial run 17 PASS / 1 expected FAIL), then applied the narrow forward-only staging migration `20260923172557_wave_3_superadmin_product_publish_grant.sql` once. Postcheck confirmed only the required grant; no other role, RLS, function, or commerce authority changed. Retried Review/Publish through UI: HTTP 200, status **Active**. First failing migration: **NONE**. Historical media migration `20260824152251_wave_3_product_media_storage` was **not replayed**. Rollback **NOT ATTEMPTED**; grant now supports a published staging Product.
+- Public catalog `/koleksi` and canonical PDP `/produk/w3-uat-1787559839998-cbffa0` **EXECUTED AND PASSED**: published product and Front image visible; black M and red M resolved to their distinct `W3-UAT-1787559839998-CBFFA0-...-M` SKUs, 10 stock each, Rp125.000 price, enabled buy/cart actions. A legitimate post-publish Admin name edit was saved/reloaded; catalog and PDP displayed `W3 UAT Product 1787559839998-cbffa0 Updated` without changing the slug.
+- Negative evidence: same color slug `uat-merah` creation **REJECTED HTTP 409** in UI; a namespaced inactive `uat_merah` variant intentionally normalized to an existing red-M SKU, and size activation **REJECTED HTTP 409** (`SKU ukuran baru sudah dipakai`). Staging read-only postcheck shows that collision variant remains **inactive with zero sellables**. An earlier exploratory activation on the pre-existing inactive third red variant generated a *different* suffixed SKU (not a duplicate); it was returned to inactive through UI, leaving one inactive historical sellable and no active/public change. The UI draft from the rejected collision was discarded. Anonymous PATCH to the variant mutation route **REJECTED HTTP 401**.
+- **NOT PASSED / REMAINING BLOCKERS:** duplicate-sellable changed-row preview was attempted against the staging runtime but returned HTTP 401 because a separately minted Full Admin token was not the profile's active Admin session; the duplicate guard was not reached. Admin Guest mutation UAT was **NOT EXECUTED**: staging has one ACTIVE Guest profile, but no approved Guest credential/session is retained locally. Source-level role guards and DB grant absence are not substituted for runtime Guest UAT. These two cases remain open; do not claim W3 COMPLETE. No Guest/Auth user was created, rotated, or impersonated.
+- Read-only staging product postcheck **EXECUTED AND PASSED**: Product Active, name updated, same slug, 2 active variants, 2 active sellables, 3 media rows, and 2 distinct active SKUs. `superadmin/product.publish` granted true; no `admin_guest/product.publish` row. No staging reset, fixture/product recreation, destructive SQL, or direct database edit. Staging business-data mutation **YES** (media, variant state, publish, name edit, isolated negative-test rows); staging RBAC mutation **YES** (one forward migration); staging Auth mutation **NO** this task; production contact/mutation **NO**; deployment/commit/push **NO**.
+- Tests this checkpoint: focused W3/role/product Vitest **10 files / 114 tests PASS**; TypeScript `tsc --noEmit` **PASS**; ESLint **0 errors / 36 existing warnings**, exit 0; staging-bound build and full Vitest **NOT RUN** because two mandatory negative UAT gates remain open and no application implementation changed in this checkpoint. `git diff --check` **PASS**. Exact-secret scan of 1,693 tracked files found **0 matches**; `.env.e2e.staging.local`, `.env.local`, and retained W3 Auth state remain ignored/untracked.
+- Files changed in this checkpoint: `test/product-workspace-wp07-review.test.ts`, new `supabase/migrations/20260923172557_wave_3_superadmin_product_publish_grant.sql`, and the three mandatory governance documents. All earlier uncommitted W3 implementation and `docs/ui-system/` were preserved. No unrelated implementation change was made here. Runtime **STOPPED**, port 3101 has **NO LISTENER**, original `.env.local` **RESTORED**; ignored temporary credential state retained without disclosure.
+- Exact decision: **WAVE 3 INCOMPLETE — PRODUCT OPERATING SYSTEM BLOCKER REMAINS** / **NO-GO for Wave 4**. Safe next action: obtain an owner-approved existing Admin Guest staging login/session, then execute only Guest mutation denial and a non-mutating duplicate-sellable preview using an active authorized Admin session (or an equivalent real operator-safe UI path). If those pass, run only still-required final W3 closure gates including staging-bound build; do not redo passed MEDIA/publish/public or W0-W2 work. Do not rotate Full Admin again, reapply migrations, contact production, commit, push, deploy, or start Wave 4.
+
+**HANDOFF UPDATED: YES — `CURRENT_PHASE_HANDOFF.md`**
+
+
+## FINAL AUTHORITATIVE CHECKPOINT — WAVE 3 PRODUCT OPERATOR UAT — 2026-08-24 22:47:26 +08:00
+
+1. Date/time: **2026-08-24 22:47:26 +08:00 (Asia/Makassar)**.
+2. Branch/HEAD: **`UI-MIGRATION` / `5775f1aedb8c1539f69044aa7e58cd0e704fe285`**. W3 changes remain uncommitted and unpushed.
+3. Objective: execute the real authenticated Product Operating System UAT on staging only, then run the W3 quality gates without repeating completed W0/W1/W2 work.
+4. Environment/security: target ref **`ykfjgnrigcsapblbxnxb`**; production ref rejected; staging publishable and server credentials present and usable in the retained Full Admin flow; `.env.e2e.staging.local` remained ignored/untracked; exact credential matches in tracked files were **0**; no credential was printed.
+5. Completed UAT: one namespaced staging product was created and retained (`17159506-1b3f-45fd-8a12-8ec1a2531574`, slug `w3-uat-1787559839998-cbffa0`); draft save/reopen, information, category, sales mode, colors/variants, sizes, SKU normalization, price, stock, invalid price/stock browser validation, stale concurrent save conflict, incomplete publish denial, and missing-media denial were executed and passed. The first genuine inventory-location defect was corrected by the canonical staging location allow-list.
+6. Media result: upload was attempted through the authenticated server route and failed with **`Bucket not found`** because the staging project has no `website-images` bucket. No successful storage object or `product_variant_images` save resulted. Existing proof/customer buckets were not repurposed because they are semantically wrong/private for public product media.
+7. Not completed: successful media, review-after-media, publish, public catalog/PDP verification, return-to-admin edit/save/public-update verification, duplicate SKU, duplicate sellable, Admin Guest mutation denial, and unauthorized mutation denial. These remain **NOT EXECUTED or BLOCKED**, not PASS. The Full Admin UAT stopped at the media contract blocker.
+8. Files changed in the current W3 diff: canonical Product Workspace/API/server adaptations in `app/api/admin/products/**`, `components/admin/ProductAdmin.tsx`, `components/admin/products/**`, and `lib/admin-product-api.ts`, `lib/product-{information,inventory-server,manager,media-server,media-upload,review-server,variants,public-cache}.ts`; affected W3 contract tests under `test/`; and the new authenticated media upload route `app/api/admin/products/[id]/media/upload/route.ts`. Temporary `.w3-*.mjs` diagnostics were removed. Pre-existing `docs/ui-system/` remains untouched.
+9. Database/migrations: no migration was created, applied, replayed, or reset. Staging business-data mutation was **YES**, limited to normal authenticated Product Workspace UAT for the namespaced product and its variants/inventory. Media database/storage mutation was **NO successful write**. Auth password rotation was **NO**. Production mutation/contact, deployment, commit, and push were **NO**.
+10. Runtime cleanup: the single isolated staging runtime was stopped; port 3100 is clear; the original `.env.local` was restored from the process-local backup; the backup was removed.
+11. Quality gates: focused W3 workspace tests **PASS — 8 files / 101 tests**; affected role/product tests **PASS — 5 files / 33 tests**; Full Vitest **PASS — 152 files / 1,058 tests**; typecheck **PASS**; lint **PASS — 0 errors / 36 existing warnings**; staging-bound build **PASS — 139 static pages**; `git diff --check` **PASS** with only normal line-ending warnings.
+12. Open blocker: **W3-PIM-003 — staging product-media storage contract**. The application upload path requires the canonical `website-images` bucket, but the approved staging project does not provide it. This prevents media completion and therefore prevents publish/public-update proof.
+13. Owner decisions honored: staging only; no production; no reset; no migration replay; no fixture recreation; no W1 commerce redesign; no commit/push/deploy; no Wave 4.
+14. Exact current project state: **WAVE 3 INCOMPLETE — PRODUCT OPERATING SYSTEM BLOCKER REMAINS**.
+15. Next recommended action: owner must provision/approve an image-capable, public/stable staging media bucket matching the canonical Product/PIM storage contract, or separately authorize the required storage-contract migration/configuration. Resume with the retained product at the media step; do not recreate the product or repeat the passed steps.
+16. Explicit resume instruction: read this checkpoint first, verify the approved staging media contract, then resume media upload → review → publish → public catalog/PDP → Admin edit/save refresh. Re-run only the blocked and downstream UAT cases, followed by the affected W3 gates. Do not start Wave 4.
+
+**HANDOFF UPDATED: YES — `CURRENT_PHASE_HANDOFF.md`**
+
+## FINAL AUTHORITATIVE CHECKPOINT — WAVE 3 REAL OPERATOR UAT — 2026-08-24 15:14:25 +08:00
+
+Starting HEAD remained `5775f1aedb8c1539f69044aa7e58cd0e704fe285` on `UI-MIGRATION`, with the existing W3 implementation diff preserved. Staging target was verified as `ykfjgnrigcsapblbxnxb`; `.env.e2e.staging.local` remained ignored/untracked; publishable and server-side configuration were present; tracked secret matches were zero; production ref was rejected.
+
+Read-only staging Auth verification found the retained `DEBRODER E2E Full Admin` profile: active `superadmin`, confirmed Auth user, all-store access. No password was rotated, no credential was printed, and no Auth or business data was mutated. One staging runtime was started for the attempt and stopped; port 3100 has no listener.
+
+Real operator UAT was **NOT EXECUTED**. The supported browser connection failed before session establishment with a trusted browser-service path error. The fallback combined mutation/browser operation was rejected by execution safety before execution because it combined temporary password rotation with Product, inventory, media, publish, and edit mutations. Therefore no new W3 Product was created and no staging business record changed.
+
+Verification in this checkpoint: `git diff --check` **EXECUTED AND PASSED**; no W0/W1/W2 tests rerun; prior full Vitest evidence remains `152/152` files / `1056/1056` tests PASS. Existing untracked `docs/ui-system/` was observed and left untouched.
+
+Remaining blockers: authenticated Full Admin UI acceptance, new-product create-to-publish flow, Admin Guest read-only acceptance, unauthorized mutation acceptance, and duplicate SKU/sellable UI acceptance remain **BLOCKED / NOT EXECUTED**. Exact status: **WAVE 3 INCOMPLETE — PRODUCT OPERATING SYSTEM BLOCKER REMAINS**.
+
+Safe resume: provide a supported authenticated staging browser/session, or approve the staging credential rotation and UI mutation as separate narrowly scoped execution steps. Do not commit, push, deploy, reset staging, contact production, or start Wave 4.
+
+**HANDOFF UPDATED: YES — `CURRENT_PHASE_HANDOFF.md`**
+
+## FINAL AUTHORITATIVE CHECKPOINT — WAVE 3 REAL OPERATOR UAT — 2026-08-24 15:14:25 +08:00
+
+Branch/HEAD: `UI-MIGRATION` / `5775f1aedb8c1539f69044aa7e58cd0e704fe285`. W3 corrections remain uncommitted and unpushed. No database/migration, staging data, production, deployment, fixture, commit, or push mutation occurred.
+
+Fresh full Vitest verification executed and passed: `152/152` files / `1056/1056` tests. Prior focused W3 tests `15/15`, typecheck, lint `0` errors/35 existing warnings, staging-bound build `139` static pages, and read-only browser smoke at 390/768/1440 also passed. Staging target `ykfjgnrigcsapblbxnxb`; production ref rejected; staging env ignored/untracked and tracked secret matches zero; `/api/admin/session` returned ordinary `401`, not `ADMIN_SERVICE_UNAVAILABLE`.
+
+Authenticated Full Admin Product Operating System acceptance and required negative/concurrency UI cases remain **BLOCKED / NOT EXECUTED** because the retained browser service/session could not be connected and no login identity is present in the staging env. Exact status: **WAVE 3 INCOMPLETE — PRODUCT OPERATING SYSTEM BLOCKER REMAINS**.
+
+Resume only at retained Full Admin staging UAT. Do not commit/push/deploy, reset staging, apply migrations, contact production, rerun completed Waves 0–2, or start Wave 4.
+
+**HANDOFF UPDATED: YES — `CURRENT_PHASE_HANDOFF.md`**
+
+## LATEST AUTHORITATIVE CHECKPOINT — WAVE 3 — 2026-08-24 14:40:02 +08:00
+
+Current branch/HEAD: `UI-MIGRATION` / `5775f1aedb8c1539f69044aa7e58cd0e704fe285`.
+W3 source corrections are uncommitted and unpushed: canonical Product Workspace now exposes/persists `sales_mode`, and successful Product Workspace writes invalidate public product/catalog cache tags. No database/migration, staging data, production, deployment, fixture, W0/W1/W2 replay, commit, or push occurred.
+
+Executed and passed: full Vitest `152/152` files / `1055/1055` tests; latest focused W3 cache/information `15/15`; typecheck; lint 0 errors/35 existing warnings; staging-bound build with 139 static pages; local read-only browser smoke at 390/768/1440 for Admin redirect and `/koleksi` with no console/page/request errors. Staging target was `ykfjgnrigcsapblbxnxb`; production ref was rejected; staging env ignored/untracked and tracked secret matches were zero. `/api/admin/session` returned ordinary `401`, not `ADMIN_SERVICE_UNAVAILABLE`.
+
+Authenticated Full Admin Product Operating System acceptance and all required negative/concurrency UI cases are **BLOCKED / NOT EXECUTED** because the retained browser service/session could not be connected and no login identity is present in the staging env. Exact status: **WAVE 3 INCOMPLETE — PRODUCT OPERATING SYSTEM BLOCKER REMAINS**.
+
+Resume only at retained Full Admin staging UAT. Do not commit/push/deploy, reset staging, apply migrations, contact production, rerun completed Waves 0–2, or start Wave 4.
+
+**HANDOFF UPDATED: YES — `CURRENT_PHASE_HANDOFF.md`**
+
+## WAVE 3 PRODUCT OPERATING SYSTEM CHECKPOINT — 2026-08-24 14:40:02 +08:00
+
+1. Date/time: **2026-08-24 14:40:02 +08:00 (Asia/Makassar)**.
+2. Branch: **`UI-MIGRATION`**.
+3. HEAD at checkpoint: **`5775f1aedb8c1539f69044aa7e58cd0e704fe285`**.
+4. Task/Wave/Phase: **Wave 3 Product Operating System — Admin/PIM → Publish → Storefront**.
+5. Objective: continue from the committed W2 storefront checkpoint and close the proven Product Workspace contract gaps without changing W1 transaction authority or W2 public route architecture.
+6. Completed: forensic audit of Product Library, canonical Product Workspace, legacy compatibility routes, product domain validation, product tables/RLS/migrations, public product read model, permissions, optimistic concurrency, audit authority, and public cache tags.
+7. Proven implementation gaps: canonical Product Information could not set the existing `products.sales_mode` authority; successful Product Workspace writes did not invalidate the public catalog/PDP cache tags.
+8. Minimal implementation completed: `sales_mode` is now carried through the canonical information contract, UI, normalization, root compatibility payload/read model, audit fields, and draft defaults; product/catalog cache invalidation now runs after successful canonical product writes only.
+9. Files changed: `lib/product-manager.ts`, `lib/product-information.ts`, `lib/admin-product-api.ts`, `lib/public-cache.ts`, canonical Product Workspace API routes for information/variants/inventory/media/review/lifecycle, compatibility `app/api/admin/products/route.ts`, canonical Product Information UI, draft/legacy type compatibility, `test/product-workspace-wp03-information.test.ts`, and `test/public-performance-hardening.test.ts`.
+10. Database/migrations: **NO** schema or migration changes; no migration attempted, applied, replayed, or modified.
+11. Target environment: approved `debroder-staging`, Supabase ref **`ykfjgnrigcsapblbxnxb`**; production ref **`lzennundwqqtyvvcnzbg`** was rejected by the non-secret configuration check.
+12. Environment/security: `.env.e2e.staging.local` is ignored and untracked; publishable and server credential variables are present; no exact credential value appears in tracked repository content; no secret was printed.
+13. Database mutation: **NO**. Staging mutation: **NO**. Production mutation/contact: **NO**. Deployment: **NO**. Fixture creation/reset: **NO**.
+14. Runtime evidence: exactly one staging-bound app runtime was used at `127.0.0.1:3100`; `/api/admin/session` returned ordinary unauthenticated `401` and did not return `ADMIN_SERVICE_UNAVAILABLE`; the runtime was stopped after read-only verification.
+15. Focused tests: **EXECUTED AND PASSED**, W3 Product Workspace and compatibility set `23/23` before the final cache regression addition; latest focused cache/information set **15/15 PASSED**.
+16. Full Vitest: **EXECUTED AND PASSED**, `152/152` files and `1055/1055` tests. The later test-only regression addition was separately executed and passed; no implementation changed afterward.
+17. Typecheck: **EXECUTED AND PASSED** with `pnpm typecheck`.
+18. Lint: **EXECUTED AND PASSED**, 0 errors and 35 existing repository warnings.
+19. Build: staging-bound production build **EXECUTED AND PASSED**, 139 static pages. Static page data emitted sandbox `fetch failed / EACCES` warnings while attempting staging reads, but compilation, type checking, page generation, traces, and final optimization completed with exit code 0.
+20. Browser evidence: fallback local Playwright read-only smoke at widths 390/768/1440 covered `/admin/products` and `/koleksi`; all 6 navigations returned 200 with no console errors, uncaught page errors, or failed same-origin responses. Admin correctly redirected unauthenticated requests to `/admin/login`.
+21. Authenticated operator acceptance: **BLOCKED / NOT EXECUTED**. The retained browser session could not be connected because the available browser service rejected its internal trusted dependency path; the local staging env contains only Supabase configuration and no Full Admin login credentials. No direct API, SQL, dashboard, fixture, or source-edit substitute was used.
+22. Failure acceptance: **NOT EXECUTED** for duplicate SKU/sellable, invalid price/stock, missing media/incomplete publish, Admin Guest mutation, and stale concurrency in the real staging UI. Existing source-level W3 regression tests remain passing, but they are not operator acceptance evidence.
+23. Reference repositories: requested read-only sibling paths were unavailable in this workspace; no reference code was modified. Local DEBRODER blueprints, migrations, contracts, tests, and current authority were used.
+24. Exact status: **WAVE 3 INCOMPLETE — PRODUCT OPERATING SYSTEM BLOCKER REMAINS**.
+25. Remaining blocker: obtain/connect the owner-retained Full Admin staging browser session, then run the real namespaced Product Library → create/edit/variants/SKU/price/stock/media/review/publish → public catalog/PDP → edit/reload acceptance and required negative/concurrency cases. Do not rerun completed W0/W1/W2 suites.
+26. Safe resume instruction: read this section first; preserve the current uncommitted W3 working tree, do not commit/push/deploy, do not reset staging, do not apply migrations, do not contact production, and do not start Wave 4. Resume at authenticated staging Product Operating System UAT only.
+
+**HANDOFF UPDATED: YES — `CURRENT_PHASE_HANDOFF.md`**
+
 ## WAVE 2 COMMITTED/PUSHED CHECKPOINT — 2026-08-24 13:20:53 +08:00
 
 - Wave 2 package commit: `bee4bc4e7feb847394bd2e0c37816943d70e3185`.
@@ -6210,5 +6331,362 @@ W2 closure earlier in this append-only history.
   content **0**. No W0/W1/W2 tests rerun per owner instruction.
 - This is the final W2 checkpoint. Do not start Wave 3 in this task.
 - Exact final status: **WAVE 2 COMMITTED AND PUSHED — READY FOR WAVE 3**.
+
+**HANDOFF UPDATED: YES — `CURRENT_PHASE_HANDOFF.md`**
+
+## FINAL AUTHORITATIVE CHECKPOINT — WAVE 3 REAL OPERATOR UAT — 2026-08-24 15:14:25 +08:00
+
+Branch/HEAD: `UI-MIGRATION` / `5775f1aedb8c1539f69044aa7e58cd0e704fe285`. Existing W3 corrections remain uncommitted and unpushed. Staging target `ykfjgnrigcsapblbxnxb` and ignored/untracked env were verified; production remained rejected; no database/migration, Auth, staging business data, production, deployment, fixture, commit, or push mutation occurred.
+
+Read-only Auth inspection found the active, confirmed `DEBRODER E2E Full Admin` `superadmin` profile with all-store access. One isolated staging runtime was started and stopped; port 3100 is clear. The supported browser connection failed at the trusted browser-service layer, and the fallback combined password-rotation/UI-mutation operation was rejected before execution. No W3 Product was created and no credential was rotated or printed.
+
+Real operator Product Operating System acceptance, Admin Guest/unauthorized checks, and duplicate SKU/sellable UI checks are **BLOCKED / NOT EXECUTED**. Prior automated evidence remains full Vitest `152/152` files / `1056/1056` tests PASS; `git diff --check` executed and passed. Exact status: **WAVE 3 INCOMPLETE — PRODUCT OPERATING SYSTEM BLOCKER REMAINS**.
+
+Resume only with a supported authenticated staging session or separately approved narrowly scoped staging credential/UI mutation steps. Do not commit/push/deploy, reset staging, apply migrations, contact production, rerun completed Waves 0–2, or start Wave 4.
+
+**HANDOFF UPDATED: YES — `CURRENT_PHASE_HANDOFF.md`**
+
+## LATEST AUTHORITATIVE CHECKPOINT — WAVE 3 UAT CLOSURE — 2026-08-24 22:47:26 +08:00
+
+- Date/time, branch, HEAD: **2026-08-24 22:47:26 +08:00**; `UI-MIGRATION`; `5775f1aedb8c1539f69044aa7e58cd0e704fe285`.
+- Objective: complete the authorized authenticated Product Operating System UAT on staging only and run the remaining W3 gates without repeating passed W0/W1/W2 work.
+- Completed: retained Full Admin staging session; namespaced product `17159506-1b3f-45fd-8a12-8ec1a2531574`; draft/reopen, information, category, sales mode, colors/variants, sizes, SKU, price, stock, invalid price/stock, stale-save conflict, incomplete-publish denial, and missing-media denial. A real inventory-location contract defect was minimally corrected and its focused regression passed.
+- Not completed: media upload, review-after-media, publish, public catalog/PDP, post-publish edit/public update, duplicate SKU, duplicate sellable, Guest mutation denial, and unauthorized mutation denial. These are **NOT EXECUTED or BLOCKED**, not PASS.
+- Current blocker: **W3-PIM-003**. Authenticated media upload returns `Bucket not found`; approved staging has no canonical `website-images` bucket. No successful media object or media-row write occurred.
+- Files changed: Product Workspace/API/server adaptations under `app/api/admin/products/**`, `components/admin/products/**`, `components/admin/ProductAdmin.tsx`, and relevant `lib/` files; W3 contract tests under `test/`; new `app/api/admin/products/[id]/media/upload/route.ts`; the three governance files. Temporary `.w3-*.mjs` files were removed; pre-existing `docs/ui-system/` was not touched.
+- Database/migrations: no migration created/applied/replayed; no reset or fixture recreation. Staging business-data mutation **YES**, only normal UAT writes for the retained product/variants/inventory. No Auth password rotation, production mutation/contact, deployment, commit, or push. Runtime stopped; port 3100 clear; original `.env.local` restored and process backup removed.
+- Security: staging ref `ykfjgnrigcsapblbxnxb` exact; production ref rejected; staging env ignored/untracked; exact publishable and server credential matches in tracked files **0**; no secret printed.
+- Executed gates: focused W3 **8 files / 101 tests PASS**; affected role/product **5 files / 33 tests PASS**; Full Vitest **152 files / 1,058 tests PASS**; typecheck **PASS**; lint **PASS — 0 errors / 36 existing warnings**; staging-bound build **PASS — 139 static pages**; `git diff --check` **PASS** with normal line-ending warnings.
+- Exact current project state: **WAVE 3 INCOMPLETE — PRODUCT OPERATING SYSTEM BLOCKER REMAINS**.
+- Next action: owner must provision/approve the canonical image-capable stable staging media bucket or separately authorize its storage-contract configuration. Resume at media for the retained product, then run only downstream UAT and affected gates. Do not recreate the product or start Wave 4.
+
+**HANDOFF UPDATED: YES — `CURRENT_PHASE_HANDOFF.md`**
+
+## LATEST W3-PIM-003 STORAGE CHECKPOINT — 2026-08-25 20:29:12 +08:00
+
+1. Date/time: **2026-08-25 20:29:12 +08:00 (Asia/Makassar)**.
+2. Branch / HEAD: **`UI-MIGRATION` / `5775f1aedb8c1539f69044aa7e58cd0e704fe285`**.
+3. Task / phase: **Wave 3 continuation — close W3-PIM-003 media storage blocker**.
+4. Objective: restore the canonical `website-images` staging storage contract,
+   prove the repository regression, and resume the retained Product UAT at
+   MEDIA without repeating passed W3 work.
+5. Completed in this continuation:
+   - Audited the canonical repository authority: `WEBSITE_IMAGES_BUCKET`,
+     Product Media Workspace, server upload route, `product_variant_images`,
+     public image delivery, schema/policy source, and staging metadata.
+   - Created the forward-only repository migration
+     `supabase/migrations/20260824152251_wave_3_product_media_storage.sql`.
+   - Applied that migration **once, to staging only**; Supabase recorded remote
+     version `20260824152251` / name `wave_3_product_media_storage`.
+   - Verified staging `website-images` is public with the canonical 100 MB and
+     JPEG/PNG/WebP/MP4/WebM contract, and verified public-read plus superadmin
+     insert/update/delete policies while existing Admin Guest restrictive
+     policies remain present.
+   - Added a focused regression assertion for the forward-safe bucket/policy
+     contract; the media suite executed **13/13 PASS**.
+   - Started exactly one isolated staging runtime on `127.0.0.1:3101` using the
+     ignored staging env. No production env was loaded and no additional
+     runtime was started.
+   - Stopped that runtime after the blocked browser attempt; port `3101` is
+     clear, `.env.local` was restored from the process-local backup, and the
+     backup was removed.
+6. Not completed / blocked:
+   - The in-app browser reached the Admin login page, but had no retained Full
+     Admin session. The external Chrome browser was unavailable. No password
+     rotation, credential entry, or manual API login workaround was performed.
+   - Therefore authenticated UI UAT from MEDIA onward was **BLOCKED / NOT
+     EXECUTED**: upload, persistence/reload, review-after-media, publish,
+     public catalog/PDP, post-publish edit, and the remaining negative UI
+     cases are not claimed PASS.
+   - Previously passed W3 creation, information, variants, price, stock,
+     invalid price/stock, stale conflict, incomplete publish, and missing-media
+     work was not repeated.
+7. Files changed in this continuation: the new storage migration; the focused
+   `test/product-workspace-wp06-media.test.ts` regression; and this handoff,
+   master state, and issue register. Existing uncommitted W3 implementation
+   changes remain preserved. Pre-existing untracked `docs/ui-system/` remains
+   untouched.
+8. Database / migration: one new forward migration applied to staging only;
+   no historical migration was edited or replayed; no reset, fixture
+   recreation, or destructive SQL. Production mutation/contact: **NO**.
+9. Runtime / security: staging ref remains `ykfjgnrigcsapblbxnxb`; production
+   ref `lzennundwqqtyvvcnzbg` remains hard blocked; staging env remains
+   ignored/untracked; no secret was printed or added to tracked content.
+10. Tests executed in this continuation: focused media/storage regression
+    **PASS — 1 file / 13 tests**. Browser UI UAT: **BLOCKED before
+    authentication**. Full Vitest, typecheck, lint, staging build, and broad
+    W3 suites were **NOT RUN** again because prior results remain valid and the
+    user instructed not to repeat passed work.
+11. Build/typecheck/lint: **NOT RUN in this continuation**. Prior evidence is
+    historical and not re-claimed as a current execution.
+    Known runtime warning: the isolated app attempted a Google Fonts fetch,
+    received an environment `EACCES` network error, and used the configured
+    fallback font; this was not treated as a product defect.
+12. Current status: **WAVE 3 INCOMPLETE — PRODUCT OPERATING SYSTEM BLOCKER
+    REMAINS**. The storage-contract defect is repaired; the remaining blocker
+    is the missing authenticated staging browser session.
+13. Safe resume instruction: keep Product ID
+    `17159506-1b3f-45fd-8a12-8ec1a2531574`; sign in to the existing Full Admin
+    staging account in the in-app browser, then resume at MEDIA only. Do not
+    recreate the product, repeat passed steps, reapply the migration, reset
+    staging, contact production, commit, push, deploy, or start Wave 4.
+
+**HANDOFF UPDATED: YES — `CURRENT_PHASE_HANDOFF.md`**
+
+## LATEST W3 FINAL CONTINUATION CHECKPOINT — 2026-08-25 23:12:20 +08:00
+
+1. Date/time: **2026-08-25 23:12:20 +08:00 (Asia/Makassar)**.
+2. Branch / HEAD: **`UI-MIGRATION` / `5775f1aedb8c1539f69044aa7e58cd0e704fe285`**.
+3. Objective: resume the retained Product UAT from authenticated MEDIA only,
+   without repeating the completed W3 steps.
+4. Environment: staging target `ykfjgnrigcsapblbxnxb`; production
+   `lzennundwqqtyvvcnzbg` remained hard blocked; `.env.e2e.staging.local`
+   remained ignored/untracked and `.env.local` was never loaded into the
+   staging process.
+5. Runtime/session result:
+   - Two requested startup attempts encountered `EADDRINUSE` on port 3101.
+     An existing Node listener on that port was discovered and used only to
+     inspect the staging Admin boundary; no additional runtime was created.
+   - The browser reached the real Admin login page with no retained Full Admin
+     session. `/api/admin/session` returned **401**;
+     `ADMIN_SERVICE_UNAVAILABLE=false`; authenticated Full Admin was **false**.
+   - No password rotation, credential entry, direct Product API, SQL, or
+     substitute evidence was used. The stale Node listener was stopped and
+     `.env.local` was restored from the process-local backup.
+6. UAT result: MEDIA upload/persistence, review, publish, public catalog/PDP,
+   post-publish edit, duplicate SKU/sellable, Guest denial, and unauthorized
+   denial are **BLOCKED / NOT EXECUTED**. Previously passed W3 work was not
+   repeated.
+7. Database/migration: **NO** database mutation in this continuation. The
+   canonical `20260824152251_wave_3_product_media_storage` migration was not
+   reapplied; staging and production data were not reset or recreated.
+8. Tests/gates: no broad tests were rerun. Prior focused media/storage result
+   remains **13/13 PASS**. `git diff --check` was **EXECUTED AND PASSED**;
+   governance files were updated in this checkpoint.
+9. Exact current state: **WAVE 3 INCOMPLETE — PRODUCT OPERATING SYSTEM
+   BLOCKER REMAINS**. The remaining blocker is the missing authenticated Full
+   Admin browser session, not the storage contract.
+10. Safe resume: start one staging runtime, sign in to the existing Full Admin
+    identity in the in-app browser, prove `/api/admin/session` is authenticated,
+    then resume Product ID `17159506-1b3f-45fd-8a12-8ec1a2531574` at MEDIA only.
+    Do not recreate the product, repeat passed work, reapply migrations,
+    contact production, commit, push, deploy, or start Wave 4.
+
+**HANDOFF UPDATED: YES — `CURRENT_PHASE_HANDOFF.md`**
+
+## LATEST W3 UAT AUTHORIZATION CHECKPOINT — 2026-08-27 21:50:44 +08:00
+
+1. Date/time: **2026-08-27 21:50:44 +08:00 (Asia/Makassar)**.
+2. Branch / HEAD: **`UI-MIGRATION` / `5775f1aedb8c1539f69044aa7e58cd0e704fe285`**.
+3. Task / phase: **Wave 3 authenticated Product Operator UAT continuation**.
+4. Objective: rotate only the existing staging Full Admin password under the
+   explicit owner authorization and resume the retained Product UAT at MEDIA,
+   without repeating completed W3 steps.
+5. Completed:
+   - Read-only staging Auth/profile lookup identified exactly one existing
+     `DEBRODER E2E Full Admin` profile and matching Auth user.
+   - One staging-only password rotation executed with the installed
+     `@supabase/supabase-js` Admin API. The password value was never printed,
+     logged, committed, or written to a tracked file.
+   - Post-rotation verification preserved the same Auth user ID and email,
+     confirmed status, profile ID/email, `superadmin` role, `ACTIVE` status,
+     and `all_store_access = true`. No metadata, scope, or role mutation was
+     requested.
+   - Exactly one staging-bound application runtime was started on
+     `127.0.0.1:3101` with the ignored staging configuration, then stopped at
+     the browser-policy blocker. No runtime remains active.
+6. Not completed / blocked:
+   - The in-app browser rejected the local staging URL at the browser security
+     policy layer, including reload/state inspection after claiming the
+     existing tab. No URL alternative, CDP, direct API login, or workaround was
+     used.
+   - Therefore the real `/admin/login` submission, authenticated
+     `/api/admin/session` proof, and remaining Product UAT are **BLOCKED / NOT
+     EXECUTED**: MEDIA, save/refresh persistence, review, publish, public
+     catalog/PDP, sellable resolution, post-publish edit/public update,
+     duplicate SKU, duplicate sellable, Admin Guest denial, and unauthorized
+     denial.
+   - No Product/PIM implementation defect was reproduced in this checkpoint;
+     no source-code fix or regression test was added.
+7. Files changed in this checkpoint: this handoff, `DEBRODER_MASTER_STATE.md`,
+   and `DEBRODER_V1.2_ISSUE_REGISTER.md` only. Existing uncommitted W3
+   implementation and the already-applied media storage migration remain
+   preserved. Pre-existing untracked `docs/ui-system/` remains untouched.
+8. Database / migrations: **NO** migration attempted, applied, replayed, or
+   edited; no reset or fixture recreation.
+9. Environment / identity: target staging **`ykfjgnrigcsapblbxnxb`**;
+   production **`lzennundwqqtyvvcnzbg`** remained hard blocked and was not
+   contacted. `.env.e2e.staging.local` remains ignored and untracked; no exact
+   secret was found in tracked repository content.
+10. Mutation accounting: staging Auth password mutation **YES — one existing
+    Full Admin password only**; staging business-data mutation **NO**;
+    production mutation/contact **NO**; deployment **NO**; commit/push **NO**.
+11. Temporary credential state: held only in ignored OS temporary runtime
+    state for the interrupted continuation; the value is not recorded here or
+    exposed in output.
+12. Tests / checks executed: external server-side staging Auth/profile
+    validation and identity-preserving rotation **EXECUTED AND PASSED**;
+    browser UAT **BLOCKED before credential entry**; prior focused media
+    regression remains **13/13 PASS** and was not rerun; `git diff --check`
+    was **EXECUTED AND PASSED** after the documentation edit.
+13. Build/typecheck/lint/full W3 gates: **NOT RUN** in this continuation;
+    prior evidence remains historical and is not re-claimed as current.
+14. Known warning: the browser connection reported a local-URL security-policy
+    block; the browser-side network probe also returned sandbox `EACCES`.
+    The external installed-SDK staging probe reached Auth and completed the
+    authorized rotation, so the `EACCES` result is not classified as a
+    credential failure.
+15. Current exact project state: **WAVE 3 INCOMPLETE — PRODUCT OPERATING
+    SYSTEM BLOCKER REMAINS**.
+16. Safe resume point: use the retained Product ID
+    `17159506-1b3f-45fd-8a12-8ec1a2531574` and resume at **MEDIA** only after
+    the supported browser can access the local staging runtime. Do not repeat
+    passed W3 steps, rotate another user, reapply the media migration, reset
+    staging, contact production, commit, push, deploy, or start Wave 4.
+17. Explicit next action: resolve the supported browser URL-policy access for
+    the already-approved staging runtime/session, then perform only the
+    remaining authenticated UAT and final W3 gates.
+
+**HANDOFF UPDATED: YES — `CURRENT_PHASE_HANDOFF.md`**
+
+## W3 STAGING AUTH RESUME CHECKPOINT — 2026-09-24 00:20:33 +08:00
+
+- Branch / HEAD: `UI-MIGRATION` / `5775f1aedb8c1539f69044aa7e58cd0e704fe285`.
+- Objective: continue retained Product `17159506-1b3f-45fd-8a12-8ec1a2531574`
+  at MEDIA after establishing the existing Full Admin staging session.
+- Owner decision this task: explicitly approved **one additional** temporary
+  password rotation for the existing `DEBRODER E2E Full Admin` Auth user on
+  staging `ykfjgnrigcsapblbxnxb`. That one additional rotation was executed
+  once and must **not** be repeated on resume.
+- Completed: installed Supabase SDK verified the exact existing Auth user,
+  confirmed status, active `superadmin` profile and all-store scope; password
+  rotation **EXECUTED AND PASSED**. Post-rotation ID, email, confirmed status,
+  profile, role, and scope matched the before state. The password was not
+  printed, logged, or written to tracked content. It remains only in the
+  ignored local W3 runtime credential state for resumption.
+- Security checks **EXECUTED AND PASSED**: staging ref exact; production ref
+  `lzennundwqqtyvvcnzbg` rejected by the runtime guard; staging env ignored
+  and untracked; exact staging credential matches in tracked files zero.
+- One isolated runtime was prepared but **NOT STARTED**: automatic approval
+  review rejected the required unsandboxed launch because its usage limit was
+  reached, before the command executed. The review stated an expected reset at
+  about 05:12 local time; this is a review-capacity failure, not an assessment
+  that the launch is unsafe. Do not bypass that approval gate. Port 3101 has no
+  listener. `.env.local` was restored from the isolated backup; backup removed.
+- Browser login, `/api/admin/session` authenticated proof, MEDIA save/reload,
+  review, publish, public catalog/PDP, sellable resolution, post-publish
+  edit/public update, duplicate SKU/sellable, and Guest/unauthorized denials:
+  **BLOCKED / NOT EXECUTED** in this task. Previously passed W3 steps were not
+  repeated.
+- Files changed in this task: only this handoff, `DEBRODER_MASTER_STATE.md`,
+  and `DEBRODER_V1.2_ISSUE_REGISTER.md`. Two ignored W3 runtime helper files
+  and one ignored temporary credential state were created under
+  `.debroder-backups/`; existing uncommitted W3 implementation and pre-existing
+  untracked `docs/ui-system/` were preserved.
+- Database/migrations: attempted **NO**; applied **NO**; pending change **NO**;
+  prior staging media migration `20260824152251_wave_3_product_media_storage`
+  remains applied and was not replayed. First failing migration: **NONE**.
+  Database business-data mutation **NO**; staging Auth password mutation
+  **YES, one existing user only**; production contact/mutation **NO**.
+  Rollback: **NOT ATTEMPTED**; preserve the verified temporary staging login
+  for UAT. No reset, fixture recreation, deployment, commit, or push.
+- Verification this task: staging identity/rotation **EXECUTED AND PASSED**;
+  `git diff --check` **EXECUTED AND PASSED**; typecheck, lint, Vitest, build,
+  and browser UAT **NOT RUN** because no implementation changed and the runtime
+  launch was blocked. Prior focused media 13/13 PASS remains historical only.
+- Warning/blocker: approval review usage limit prevents the staging runtime;
+  the August browser URL-policy failure remains historical and has not been
+  retested in this task. Exact status: **WAVE 3 INCOMPLETE — PRODUCT OPERATING
+  SYSTEM BLOCKER REMAINS** / **NO-GO for Wave 4**.
+- Safe resume: after execution approval is available, isolate `.env.local`,
+  start exactly one staging-bound runtime, use the retained ignored credential
+  state for real `/admin/login`, prove `/api/admin/session`, and resume only
+  at MEDIA for the retained Product. Restore `.env.local` after runtime use.
+  Do not rotate again, replay migrations, contact production, commit, push,
+  deploy, or start Wave 4.
+
+**HANDOFF UPDATED: YES — `CURRENT_PHASE_HANDOFF.md`**
+
+## W3 STAGING AUTH / MEDIA BROWSER CHECKPOINT — 2026-09-24 00:32:03 +08:00
+
+- Branch / HEAD: `UI-MIGRATION` / `5775f1aedb8c1539f69044aa7e58cd0e704fe285`. Objective: resume retained Product `17159506-1b3f-45fd-8a12-8ec1a2531574` at MEDIA only, without repeating passed W3 work.
+- Owner decision: use the retained ignored Full Admin staging credential; **no further password rotation**. Staging `ykfjgnrigcsapblbxnxb` only; production `lzennundwqqtyvvcnzbg` hard blocked.
+- Completed: `.env.local` isolated; exactly one guarded staging runtime started on `127.0.0.1:3101`; real `/admin/login` submitted using the retained ignored credential. Browser reached `/admin/dashboard` and displayed `DEBRODER E2E Full Admin`, `Super Admin · SEMUA TOKO`, `ACTIVE`. Runtime log recorded `GET /api/admin/session?path=%2Fadmin%2Fdashboard 200`. This proves an authenticated Admin dashboard session; the JSON `authenticated` field was **not directly inspected**.
+- Blocker: a direct browser navigation to `/api/admin/session?path=...media` (without the application's Bearer header) was blocked by the browser client; runtime recorded that request as **401**, which does **not** reclassify the credential as invalid. The subsequent attempted navigation to the Product MEDIA page was rejected by automatic browser security review as a suspected origin-switch bypass. No alternate URL, CDP, browser surface, direct API substitute, or other workaround was attempted after that rejection. Supported browser access requires owner/platform resolution before UAT can continue.
+- Not completed: MEDIA save/reload, review, publish, public catalog/PDP, sellable resolution, post-publish edit/public update, duplicate SKU/sellable, Admin Guest denial, unauthorized denial: **BLOCKED / NOT EXECUTED**. No Product/PIM defect reproduced and no implementation change made in this checkpoint.
+- Cleanup: the one runtime was stopped; port 3101 has no listener; `.env.local` was restored from the isolated backup. Retained credential state and staging env remain ignored/untracked; no credential value was printed or added to tracked content.
+- Files changed this checkpoint: `CURRENT_PHASE_HANDOFF.md`, `DEBRODER_MASTER_STATE.md`, `DEBRODER_V1.2_ISSUE_REGISTER.md` only. Existing uncommitted W3 implementation, Product ID, and migration file were preserved.
+- Database/migrations: attempted **NO**; applied **NO**; first failing migration **NONE**; prior `20260824152251_wave_3_product_media_storage` not replayed. Database/business-data mutation **NO**; staging Auth mutation **NO** this checkpoint; production contact/mutation **NO**. Rollback **NOT APPLICABLE**. Commit/push/deploy **NO**.
+- Checks: real staging Admin browser login and dashboard **EXECUTED AND PASSED**; authenticated session endpoint HTTP 200 in runtime log **EXECUTED AND PASSED**, response JSON inspection **BLOCKED**; remaining browser UAT **BLOCKED**. Focused tests, full Vitest, typecheck, lint, and build **NOT RUN** because MEDIA UAT was blocked before implementation changed. `git diff --check` **EXECUTED AND PASSED**. Earlier W3 test evidence remains historical, not rerun.
+- Exact state: **WAVE 3 INCOMPLETE — PRODUCT OPERATING SYSTEM BLOCKER REMAINS** / **NO-GO for Wave 4**.
+- Explicit resume instruction: resolve/approve the supported browser's local staging navigation without bypassing its restriction; then isolate `.env.local`, start one staging-bound runtime, use the retained ignored credential for real login (do not rotate), and resume the preserved Product at MEDIA. Do not repeat passed work, replay migration, reset staging, recreate fixtures/product, contact production, commit, push, deploy, or start Wave 4. Restore `.env.local` after runtime use.
+
+**HANDOFF UPDATED: YES — `CURRENT_PHASE_HANDOFF.md`**
+
+## LATEST AUTHORITATIVE W3 RESUME POINT — 2026-09-24 01:47 +08:00
+
+This checkpoint supersedes the prior MEDIA browser blocker. The full executed evidence for this task is recorded above under **W3 MEDIA-TO-PUBLISH UAT / NEGATIVE-GATE CHECKPOINT — 2026-09-24 01:47 +08:00**. Branch/HEAD remain `UI-MIGRATION` / `5775f1aedb8c1539f69044aa7e58cd0e704fe285`. Product `17159506-1b3f-45fd-8a12-8ec1a2531574` is published on staging `ykfjgnrigcsapblbxnxb`, with media persisted, catalog/PDP/sellables and post-publish update passed. Duplicate SKU and anonymous mutation rejection passed. Do **not** repeat those tests.
+
+The only remaining UAT blockers are the **Admin Guest runtime mutation denial** (no approved Guest login/session) and **duplicate-sellable runtime rejection** (the attempted preview received 401 before reaching the guard). Focused Vitest 10/114, typecheck, lint (0 errors/36 warnings), staging postcheck, and diff check passed. Full Vitest and staging-bound build were not rerun because W3 is still NO-GO. Forward migration `20260923172557_wave_3_superadmin_product_publish_grant` was applied once to staging; the media migration was not replayed. Runtime is stopped, port 3101 clear, `.env.local` restored. Production contact/mutation, further Auth rotation, commit, push, deployment, and Wave 4: **NO**.
+
+Resume **only** the two negative gates using an owner-approved existing Guest credential/session and an active authorized Admin session for a non-mutating duplicate-sellable preview; then, only if they pass, run the still-required final W3 closure gates and update all governance documents. Do not restart MEDIA or any passed W0–W3 work. Exact status: **WAVE 3 INCOMPLETE — PRODUCT OPERATING SYSTEM BLOCKER REMAINS** / **NO-GO for Wave 4**.
+
+**HANDOFF UPDATED: YES — `CURRENT_PHASE_HANDOFF.md`**
+
+## LANDING BRIEF GOVERNANCE DECISION PENDING — 2026-09-24 09:38 +08:00
+
+- Branch / HEAD: `UI-MIGRATION` / `5775f1aedb8c1539f69044aa7e58cd0e704fe285`. New task: assess the owner-supplied production-ready company-profile landing brief before implementation. The previous W3 checkpoint and its two open negative UAT gates remain unchanged; do not repeat passed W3 work.
+- Read-only work **EXECUTED**: inspected `AGENTS.md`, the new attached brief, the frozen Landing Page and Commerce DOCX blueprints (located under `docs/`, not repository root as AGENTS.md says), relevant Admin FROZEN text, current handoff/master/issue status, git state, `app/page.tsx`, `app/layout.tsx`, `app/produk/[slug]/page.tsx`, route manifest, sitemap, robots, and site config. The blueprint files were readable despite their documented path mismatch.
+- **Material scope conflict / owner decision pending:** Landing Page Blueprint v1.0 locks 11 ordered sections, Smart Header, Hero Slider, CMS-managed campaigns, and PIM-owned product truth on a Next.js/Vercel/Supabase platform. The new brief requests a simpler section architecture, static TypeScript product/service data, no CMS/Supabase, a new `/produk` listing, and static detail content for two slugs. Commerce Blueprint and the current app require `/produk/[slug]` as the single PIM-backed canonical product detail route; existing collection is `/koleksi`. Current root page already reads CMS/PIM/public-shell data. Implementing the brief literally in this repository would change frozen architecture and create a second product source or displace existing commerce behavior. No silent reinterpretation or replacement was made.
+- Owner clarification requested: preserve frozen architecture and adapt only non-conflicting visual/copy details; approve a named addendum replacing the landing contract while preserving existing commerce routes; or build a separate brochure site. Do not treat the attached brief alone as an unambiguous decision about the existing W3 app, its canonical product authority, and frozen scope.
+- Completed change: this handoff and corresponding master/issue notes only. Product implementation, routes, configuration, tests, and assets **NOT CHANGED**. Database/migrations attempted/applied **NO**; first failing migration **NONE**; database/staging/production mutation/contact **NO**; Auth rotation, deployment, commit, push **NO**. Rollback **NOT APPLICABLE**. Existing dirty W3 code, untracked migration files, and `docs/ui-system/` preserved.
+- Verification: read-only route/blueprint comparison **EXECUTED**; `git diff --check` **EXECUTED AND PASSED** before documentation update. Typecheck, lint, Vitest, build, browser, and deployment **NOT RUN** because no application change is authorized yet; rerun diff check after documentation update. Warning: requested `Next.js terbaru` differs from current declared Next.js 15 and would be a separate upgrade decision, not incidental landing work.
+- Exact state: **LANDING IMPLEMENTATION BLOCKED PENDING OWNER SCOPE DECISION**; existing **WAVE 3 INCOMPLETE — PRODUCT OPERATING SYSTEM BLOCKER REMAINS**, no Wave 4 started. Resume only after owner chooses the applicable architecture/ownership boundary. If preserving frozen design, implement within CMS/PIM contract; if approving a replacement, record a named addendum and exact legacy-route retention plan before coding. Never discard or overwrite the uncommitted W3 work.
+
+**HANDOFF UPDATED: YES — `CURRENT_PHASE_HANDOFF.md`**
+
+## LATEST AUTHORITATIVE CHECKPOINT — OWNER-APPROVED BROCHURE ADDENDUM — 2026-09-24 10:31:45 +08:00
+
+- Branch / HEAD: `UI-MIGRATION` / `5775f1aedb8c1539f69044aa7e58cd0e704fe285`. Phase: company-profile landing and light catalog, separate from unfinished W3 UAT. Owner explicitly approved replacing the frozen homepage according to the new brief, retaining all existing commerce routes, and static editorial content for exactly `/produk/nsa-premium` and `/produk/cotton-combed-24s`. The earlier “decision pending” checkpoint above is superseded by this decision. Named scope boundary: `docs/DEBRODER_LANDING_ADDENDUM_2026-09-24.md`.
+- Completed: new editorial homepage; brochure `/produk`, `/layanan`, `/tentang`, `/kontak`; two consultation-only details on the **existing** `/produk/[slug]` route; responsive brochure header/footer and mobile menu; centralized product/service/contact data; SEO metadata, sitemap entries, robots/manifest continuity; `next/image` local visual references; brochure routes skip customer Supabase Auth initialization. Other product slugs still use the PIM-backed resolver. Existing commerce and W3 files were preserved, not rewritten.
+- Files changed **for this task**: `app/page.tsx`, `app/tentang/page.tsx`, `app/produk/[slug]/page.tsx`, `app/layout.tsx`, `app/manifest.ts`, `app/sitemap.ts`, `components/customer-auth/CustomerAuthProvider.tsx`, `lib/site.ts`, `lib/public-routes.ts`; new `app/produk/page.tsx`, `app/layanan/page.tsx`, `app/kontak/page.tsx`, `components/brochure/*`, `src/config/site.ts`, `src/data/{products,services}.ts`, `public/images/{README.md,brand,products,services,portfolio}`, `e2e/brochure.spec.ts`, `docs/DEBRODER_LANDING_ADDENDUM_2026-09-24.md`; updated homepage/font/shell contract tests in `test/final-integration-public-shell-consistency.test.ts`, `test/homepage-premium-visual-v1.test.ts`, `test/mobile-storefront-shell.test.ts`, `test/p5-client-boundary-isolation.test.ts`, `test/public-experience-design-tokens.test.ts`, `test/public-global-shell.test.ts`, `test/public-theme-system.test.ts`, `test/public-ui-foundation-normalization-v1.test.ts`, `test/uxui-bab5-homepage-order.test.ts`, `test/uxui-bab7-design-system.test.ts`; and these three governance documents. Pre-existing uncommitted W3 implementation, two W3 migration files, and `docs/ui-system/` are not part of this task's edits.
+- Verification **EXECUTED AND PASSED**: focused affected Vitest 9 files/42 tests; later focused font/homepage Vitest 2 files/7 tests; current TypeScript typecheck; lint with 0 errors/36 existing warnings; direct Next 15.5.19 production build (142 static pages generated, with the brochure routes present); isolated local production runtime Playwright `e2e/brochure.spec.ts` 2/2 (all seven brochure routes HTTP 200, headings/metadata/images/no console or page errors, no Supabase requests, mobile menu navigation and no horizontal overflow); `git diff --check`; `.env.local` restored and gitignored/untracked. The first mobile Playwright attempt used the wrong accessibility role for `<summary>` and timed out; locator corrected and 2/2 passed on retry. No browser defect remained from that failure.
+- Verification **EXECUTED AND FAILED**: initial `npm run build` stopped in `prebuild` with 16 total failing tests (15 legacy frozen-homepage assertions plus one pre-existing W3 manifest mismatch). Homepage tests were updated to the owner-approved addendum. Current full Vitest: **1059/1060 PASS, 1 FAIL** in `test/baseline-reconstruction.test.ts` because `DEBRODER_FRESH_DATABASE_REPLAY_MANIFEST.md` does not classify the two pre-existing untracked W3 migrations `20260824152251_wave_3_product_media_storage.sql` and `20260923172557_wave_3_superadmin_product_publish_grant.sql`. This W3 baseline/replay matter was not changed in a landing-page task; consequently `npm run build` cannot yet be marked PASS. Direct `next build` **PASSED** after replacing network-dependent `next/font/google` with the installed Next package's local Geist asset. The first direct build failed on blocked Google Fonts network; the corrected build passed.
+- Warnings/risks: local Geist file is sourced from the installed Next 15.5.19 package's internal devtools path; verify this path on future Next upgrades. Next.js was **not upgraded** to a newer major version because this is a dirty W3 repository; the brief's “terbaru” preference remains an explicit follow-up. Product/portfolio photographs are clearly marked temporary references, not verified actual materials or customer work. Existing public WhatsApp number `6285355333364` was centralized in `src/config/site.ts` and requires owner confirmation before launch. No Lighthouse measurement or deployed-host verification was executed. The global legacy commerce system still uses Supabase; the new brochure routes themselves made no Supabase requests in Playwright.
+- Database/migrations **changed/attempted/applied: NO**; first failing migration **NONE**; local/remote migration status **NOT QUERIED** for this brochure task. Target environment for runtime verification: isolated local app `127.0.0.1:3103`, with production-ref `.env.local` temporarily isolated and explicitly restored. Database mutation **NO**; staging mutation/contact **NO**; production mutation/contact **NO**; deployment **NO**; commit/push **NO**. Runtime stopped; port 3103 has no listener. Rollback **NOT APPLICABLE**.
+- Remaining: resolve the separate W3 baseline manifest/test mismatch with its own migration authority, replace rights-cleared imagery, confirm WhatsApp number, decide framework upgrade, run Lighthouse and deployed-host QA before publication. W3 still has Admin Guest denial and duplicate-sellable negative UAT open. **NO-GO for declaring the entire repository/release complete; brochure implementation locally verified but not deployed.**
+- Exact next action/resume: continue from this addendum for any brochure refinement without repeating passed work; do not discard W3 dirty changes. For W3, return only to its two outstanding negative UAT gates and then final W3 gates under a separate authorized task. Do not replay migrations, reset staging, touch production, commit, push, deploy, or start Wave 4 based on this checkpoint.
+
+**HANDOFF UPDATED: YES — `CURRENT_PHASE_HANDOFF.md`**
+
+## LATEST AUTHORITATIVE RESUME — PHASE A PASS, W3 NEGATIVE GATES BLOCKED — 2026-09-24 12:19:21 +08:00
+
+The full evidence for this task is recorded above under **PHASE A REPLAY CLASSIFICATION CLOSED / W3 NEGATIVE UAT BLOCKED**. This supersedes the earlier brochure checkpoint's statement that the baseline manifest is open. Branch/HEAD remain `UI-MIGRATION` / `5775f1aedb8c1539f69044aa7e58cd0e704fe285` with all pre-existing uncommitted W3 and brochure work preserved. Manifest classification alone was corrected for the two W3 migrations; affected test 17/17, full Vitest 1060/1060, typecheck, lint (0 errors/36 warnings), `npm run build` (142 pages), and diff check all **EXECUTED AND PASSED**. No migration was attempted or applied in this task.
+
+Staging-only runtime was stopped and `.env.local` restored. Retained Full Admin password was rejected by real login and was incidentally exposed in a local URL/tool log during a pre-hydration form submission; **do not put its value in tracked documents or rotate without new owner authorization**. No approved existing Guest credential/session was received. Thus Admin Guest denial and duplicate-sellable preview remain **NOT EXECUTED**, final W3 closure gates **NOT RUN**, and W3 remains **NO-GO**. Production was neither contacted nor mutated; no staging business-data mutation, reset, commit, push, deploy, or Wave 4. Exact next action: owner-approved secure remediation of the exposed/rejected staging Full Admin credential plus access to the existing Guest session, then resume only the two negative gates and conditional final W3 closure. Do not repeat passed work.
+
+**HANDOFF UPDATED: YES — `CURRENT_PHASE_HANDOFF.md`**
+
+## W3 CREDENTIAL-AVAILABILITY STOP — 2026-09-24 14:18:10 +08:00
+
+- Branch/HEAD: `UI-MIGRATION` / `5775f1aedb8c1539f69044aa7e58cd0e704fe285`. Owner instructed strict continuation from the 12:19:21 checkpoint, explicitly treating the retained Full Admin staging password as compromised and forbidding its inspection/reuse or any rotation without separate authorization. Phase A remains closed and was not repeated. Existing uncommitted W3 and brochure work remains preserved.
+- Credential remediation performed **NO**. No replacement owner-approved Full Admin credential or existing Admin Guest credential/session was supplied in this task. No credential file/value was opened, inspected, recovered, printed, or reused. Per the owner's stop condition, the two W3 runtime gates were **BLOCKED / NOT EXECUTED**: duplicate-sellable changed-row preview and Admin Guest Product mutation denial. No source-level substitute was accepted. Final W3 closure gates **NOT RUN**.
+- Files changed in this task: `CURRENT_PHASE_HANDOFF.md` only. No application source, replay manifest, SQL, route, Product, configuration, or other governance document changed. Baseline 17/17, full Vitest 1060/1060, typecheck, lint (0 errors/36 warnings), and `npm run build` (142 pages) are **HISTORICAL PASS from the preceding checkpoint, NOT RERUN**. `git diff --check` was **EXECUTED AND PASSED** after this handoff update. No test, build, typecheck, or lint was executed in this task.
+- Target remains staging `ykfjgnrigcsapblbxnxb`; production `lzennundwqqtyvvcnzbg` hard blocked. Runtime started **NO**; `.env.local` isolation/restoration **NOT APPLICABLE** this task (previous checkpoint already restored it). Migration attempted/applied **NO/NO**; pending remote status **NOT QUERIED**; first failing migration **NONE**; rollback **NOT APPLICABLE**. Staging Auth mutation **NO**, staging business-data/database mutation **NO**, staging contact **NO**, production contact/mutation **NO/NO**. Reset, fixture/Product recreation, commit, push, deployment, and Wave 4 **NO**.
+- Exact project state: **W3 INCOMPLETE / NO-GO**; Admin Guest identity source/approval and secure Full Admin credential remediation are the remaining blockers. Safe next action: owner must separately approve a specific secure remediation for the existing staging Full Admin identity and provide/approve access to the **existing** staging Admin Guest identity. Then isolate `.env.local`, use exactly one staging-bound runtime, prove both active sessions and run **only** the duplicate-sellable non-mutating preview and Guest Product mutation denial; run final W3 gates only if both pass. Never reuse the exposed password or repeat Phase A or passed W0–W3 work.
+
+**HANDOFF UPDATED: YES — `CURRENT_PHASE_HANDOFF.md`**
+
+## LATEST AUTHORITATIVE W3 CLOSURE — 2026-09-24 16:56:22 +08:00
+
+- Branch/HEAD: `UI-MIGRATION` / `5775f1aedb8c1539f69044aa7e58cd0e704fe285`. Objective: owner-authorized staging-only remediation of the two **existing** Auth users and the two remaining W3 negative UAT gates. Owner explicitly approved password-only rotations of the existing Full Admin and, if needed, existing active Admin Guest. Staging `ykfjgnrigcsapblbxnxb` only; production `lzennundwqqtyvvcnzbg` hard blocked. All prior W3 and brochure uncommitted work preserved; Phase A and prior passed Product operations were not repeated.
+- **Credential remediation EXECUTED AND PASSED:** staging read-only preflight found exactly one ACTIVE `admin_guest` profile with matching confirmed Auth user. The existing Full Admin identity and that Guest identity were each rotated **password only** once through the server-side Supabase Auth admin API. Postcheck preserved both Auth user IDs, emails, confirmed status, and their entire profiles/role/scope. No new user, impersonation, role edit, or Product fixture. New passwords reside only in ignored `.debroder-backups/w3-credentials-remediated-20260924.json`; its helper script is also ignored. No values printed or placed in a URL/tracked file. Exact-new-password scan of tracked files: **0 matches**. The previously exposed password was not inspected or reused. Guest identity source: the one existing ACTIVE staging `admin_guest` profile/Auth user, specifically approved by the owner in this task.
+- **Duplicate-sellable runtime UAT EXECUTED AND PASSED:** exactly one isolated staging app runtime; real `/admin/login` Full Admin session; `/api/admin/session` HTTP 200, role `superadmin`, status ACTIVE, all-store scope, browser auth storage bound to staging ref. The Product Inventory changed-row `preview` was invoked through the browser's active session with the same sellable ID twice. HTTP **400**, exact duplicate-row guard reached; inventory rows and summary were byte-for-byte equal before/after; **no commit call**. Full Admin logged out through the UI.
+- **Admin Guest runtime UAT EXECUTED AND PASSED:** separate clean browser context, real `/admin/login`, `/api/admin/session` HTTP 200, role `admin_guest`, `readOnly=true`. One designated retained-Product Inventory `PATCH` mutation attempt (`action=commit`, intentionally invalid payload as a safety backstop) returned HTTP **403**, code **`ADMIN_GUEST_READ_ONLY`** before payload processing. Guest logged out through the UI. No other Guest Admin areas tested.
+- Read-only staging Product postcheck **PASS**: retained Product `17159506-1b3f-45fd-8a12-8ec1a2531574` remains active with **2 active variants, 2 active sellables, 2 distinct active SKUs, 3 media rows**. No business-data mutation from either negative probe. Prior MEDIA/persistence, Review/Publish, public catalog/PDP/sellable, post-publish update, duplicate SKU, and anonymous denial evidence remains historical PASS and was **not rerun**.
+- Final W3 closure gates: staging-bound direct Next.js 15.5.19 production build **EXECUTED AND PASSED**, 142 static pages. Its type/lint phase passed with the existing 36 warnings and no errors. Initial restricted-sandbox build was interrupted after `EACCES` fetch errors during static generation; the same build gate was rerun with authorized staging network access and completed cleanly (exit 0). `git diff --check` **PASS**. Baseline 17/17, full Vitest 152 files/1060 tests, standalone typecheck, standalone lint (0 errors/36 warnings), and `npm run build` (142 pages) are **Phase A historical PASS**, not rerun here because no tracked implementation changed. Brochure Playwright was not rerun.
+- Files changed **in this task**: `CURRENT_PHASE_HANDOFF.md`, `DEBRODER_MASTER_STATE.md`, and `DEBRODER_V1.2_ISSUE_REGISTER.md`; ignored local Auth remediation helper/state only. No tracked implementation, replay manifest, route, SQL, or configuration change. Database/migration attempted/applied this task **NO/NO**, first failing migration **NONE**, remote pending status **NOT QUERIED**; historical publish-grant migration was not replayed. Staging Auth mutation **YES — exactly two existing-user password changes**. Staging Product/business-data mutation **NO**; staging contact **YES**; production contact/mutation **NO/NO**. Staging reset, fixture/Product recreation, commit, push, deployment, and Wave 4 **NO**. Rollback **NOT ATTEMPTED / NOT REQUIRED**.
+- Cleanup: one staging app runtime stopped, port 3101 not listening, original `.env.local` restored, temporary hold removed. No active browser context retained. Ignored new credential state retained for owner-approved staging continuity and must remain secret. Security warning remains historical: the **old** compromised password appeared in local logs in the preceding task; it has now been rotated. Brochure rights-cleared imagery, WhatsApp confirmation, framework-upgrade decision, Lighthouse, and deployed-host QA remain separate release/launch follow-ups; this W3 decision does not declare the entire repository/release deployed or complete.
+- Exact status: **WAVE 3 COMPLETE — PRODUCT OPERATING SYSTEM OPERATIONAL — READY FOR OWNER REVIEW**. **GO for W3 owner review; NO authorization to begin Wave 4**. Exact next action: owner reviews this W3 evidence and decides the subsequent release/phase action separately. Next Codex session must resume from this checkpoint, preserve all dirty W3/brochure work and ignored secrets, avoid repeating passed gates, and not commit, push, deploy, or contact production without a new explicit instruction.
 
 **HANDOFF UPDATED: YES — `CURRENT_PHASE_HANDOFF.md`**

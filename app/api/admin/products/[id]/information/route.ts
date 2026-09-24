@@ -22,6 +22,7 @@ import {
 import { isValidProductWorkspaceId } from "@/lib/product-workspace";
 import { Phase13AuthError, requirePhase13Actor } from "@/lib/phase13-auth";
 import type { ValidationIssue } from "@/lib/types";
+import { revalidatePublicProductData } from "@/lib/public-cache";
 
 export const dynamic = "force-dynamic";
 
@@ -43,9 +44,8 @@ const PRODUCT_INFORMATION_FIELDS = [
   "sku",
   "product_type",
   "pricing_mode",
+  "sales_mode",
   "minimum_order_qty",
-  "seo_title",
-  "seo_description",
   "image_url",
   "gambar_url",
   "updated_at"
@@ -61,9 +61,8 @@ const INFORMATION_AUDIT_FIELDS = [
   "sku",
   "product_type",
   "pricing_mode",
-  "minimum_order_qty",
-  "seo_title",
-  "seo_description"
+  "sales_mode",
+  "minimum_order_qty"
 ] as const;
 
 export async function GET(request: Request, context: Context) {
@@ -157,9 +156,8 @@ export async function PATCH(request: Request, context: Context) {
       sku: input.sku || null,
       product_type: input.productType || "standard_product",
       pricing_mode: input.pricingMode || "fixed_price",
+      sales_mode: input.salesMode || "ready_stock",
       minimum_order_qty: input.minimumOrderQty || 1,
-      seo_title: input.seoTitle || null,
-      seo_description: input.seoDescription || null,
       updated_at: nextUpdatedAt
     };
 
@@ -192,6 +190,7 @@ export async function PATCH(request: Request, context: Context) {
       after: updated,
       productId: id
     });
+    revalidatePublicProductData();
 
     return noStoreJson({
       ok: true,
@@ -419,9 +418,14 @@ function mapProductInformation(
     sku: textOrNull(row.sku),
     productType: textOrNull(row.product_type) || "standard_product",
     pricingMode: textOrNull(row.pricing_mode) || "fixed_price",
+    salesMode: row.sales_mode === "custom"
+      ? "custom"
+      : row.sales_mode === "both"
+        ? "both"
+        : "ready_stock",
     minimumOrderQty: Math.max(1, finiteNumber(row.minimum_order_qty) || 1),
-    seoTitle: textOrNull(row.seo_title),
-    seoDescription: textOrNull(row.seo_description),
+    seoTitle: null,
+    seoDescription: null,
     imageUrl: textOrNull(row.image_url) || textOrNull(row.gambar_url),
     updatedAt: textOrNull(row.updated_at)
   };

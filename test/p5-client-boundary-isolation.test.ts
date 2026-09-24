@@ -45,7 +45,8 @@ describe("P5 client boundary isolation", () => {
     expect(rootLayout).not.toContain("CartProvider");
     expect(rootLayout).not.toContain("StorefrontCartBoundary");
     expect(publicShell).toContain("<StorefrontCartBoundary>");
-    expect(homePage).toContain("<StorefrontCartBoundary>");
+    expect(homePage).toContain("<BrochureShell>");
+    expect(homePage).not.toContain("<StorefrontCartBoundary>");
     expect(storefrontBoundary).toContain('"use client"');
     expect(storefrontBoundary).toContain("<CartProvider>{children}</CartProvider>");
   });

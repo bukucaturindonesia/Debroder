@@ -2,13 +2,13 @@ import type { MetadataRoute } from "next";
 
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    name: "DE BRODER",
-    short_name: "DE BRODER",
-    description: "Kaos Polos, Sablon DTF, Maklon DTF, dan Custom Jersey",
+    name: "DEBRODER",
+    short_name: "DEBRODER",
+    description: "Bahan tekstil dan produksi apparel untuk brand Anda",
     start_url: "/",
     display: "standalone",
-    background_color: "#F7F7F4",
-    theme_color: "#174C3C",
+    background_color: "#f9f8f5",
+    theme_color: "#f9f8f5",
     icons: [
       {
         src: "/debroder/android-chrome-192x192.png",

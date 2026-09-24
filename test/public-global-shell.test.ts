@@ -37,22 +37,23 @@ describe("canonical public global shell", () => {
     expect(header).toContain('name={isOpen ? "close" : "menu"}');
   });
 
-  it("keeps the canonical footer dark by default and allows the approved light homepage tone", () => {
+  it("keeps the canonical commerce footer while the approved brochure has a light footer", () => {
     expect(footer).toContain("data-public-footer");
     expect(footer).toContain('tone = "dark"');
     expect(footer).toContain("public-footer-dark bg-black text-white");
     expect(footer).toContain('public-footer-light bg-white text-[#111]');
     expect(footer).toContain('tone === "light" ? "primary-black" : "primary-white"');
-    expect(home).toContain('<PublicFooter model={shellModel.data.footer} tone="light" />');
+    expect(home).toContain("<BrochureShell>");
+    expect(read("components/brochure/BrochureShell.tsx")).toContain("<footer");
     expect(publicPage).toContain('<PublicFooter model={shellModel.data.footer} />');
     expect(styles).toContain(".public-footer-light .public-footer-secondary");
     expect(footer).not.toMatch(/#050505|publicDark/);
     expect(read("lib/public-shell/domain.ts")).toContain('{ label: "WhatsApp"');
   });
 
-  it("keeps homepage and shared routes on the same canonical components", () => {
-    expect(home.match(/<SiteHeader\b/g)).toHaveLength(1);
-    expect(home.match(/<PublicFooter\b/g)).toHaveLength(1);
+  it("keeps legacy commerce routes on the canonical shell and isolates the brochure homepage", () => {
+    expect(home).toContain("<BrochureShell>");
+    expect(home).not.toContain("<PublicShell");
     const sharedRoutes = [
       "app/koleksi/page.tsx",
       "app/produk/[slug]/page.tsx",

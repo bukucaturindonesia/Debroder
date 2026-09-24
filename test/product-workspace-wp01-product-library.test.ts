@@ -54,6 +54,7 @@ describe("WP-01 Product Library", () => {
     expect(libraryRoute).toContain('"product_variants"');
     expect(libraryRoute).toContain('"product_variant_sizes"');
     expect(libraryRoute).toContain('"product_variant_images"');
+    expect(libraryRoute).not.toContain("sort_order,image_url");
     expect(libraryRoute).toContain('"product_id"');
     expect(libraryRoute).toContain('"variant_id"');
     expect(libraryRoute).toContain("productIds");

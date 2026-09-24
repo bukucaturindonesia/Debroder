@@ -43,7 +43,8 @@ describe("public theme system", () => {
     expect(shell).toContain("data-public-theme");
     expect(shell).toContain("data-theme-card-treatment");
     expect(shell).toContain("getActivePublicTheme");
-    expect(home).toContain("publicThemeId={activeTheme.id}");
+    expect(home).toContain("<BrochureShell>");
+    expect(home).not.toContain("getActivePublicTheme");
     expect(css).toContain(".debroder-storefront[data-public-theme]");
     expect(api).toContain("website_settings");
     expect(api).toContain("system_audit_log");

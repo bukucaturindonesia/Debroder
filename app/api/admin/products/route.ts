@@ -95,9 +95,8 @@ const PRODUCT_FIELDS = [
   "status",
   "product_type",
   "pricing_mode",
+  "sales_mode",
   "minimum_order_qty",
-  "seo_title",
-  "seo_description",
   "image_url",
   "gambar_url",
   "updated_at"
@@ -117,8 +116,7 @@ const VARIANT_FIELDS = [
   "status",
   "is_active",
   "is_default",
-  "sort_order",
-  "image_url"
+  "sort_order"
 ].join(",");
 
 const SELLABLE_FIELDS = [
@@ -141,9 +139,6 @@ const IMAGE_FIELDS = [
   "image_role",
   "image_url",
   "alt_text",
-  "object_fit",
-  "object_position",
-  "target_ratio",
   "is_cover",
   "sort_order"
 ].join(",");
@@ -417,9 +412,8 @@ async function saveProductRoot(client: SupabaseClient, role: string, input: Prod
     sku: input.sku || null,
     product_type: input.productType || "standard_product",
     pricing_mode: input.pricingMode || "fixed_price",
+    sales_mode: input.salesMode || "ready_stock",
     minimum_order_qty: input.minimumOrderQty || 1,
-    seo_title: input.seoTitle || null,
-    seo_description: input.seoDescription || null,
     status: input.id ? currentStatus : "draft",
     updated_at: new Date().toISOString()
   };
@@ -516,12 +510,8 @@ async function saveVariantImage(client: SupabaseClient, input: VariantImageInput
     image_role: input.imageRole,
     image_url: input.imageUrl.trim(),
     alt_text: input.altText || `${String(variant.name || variant.variant_name || "Variant")} ${input.imageRole}`,
-    object_fit: input.objectFit || "cover",
-    object_position: input.objectPosition || "center center",
-    target_ratio: "4:5",
     is_cover: input.imageRole === "front",
-    sort_order: PRODUCT_IMAGE_ROLES.indexOf(input.imageRole),
-    updated_at: new Date().toISOString()
+    sort_order: PRODUCT_IMAGE_ROLES.indexOf(input.imageRole)
   };
 
   const request = previous?.id
@@ -531,20 +521,6 @@ async function saveVariantImage(client: SupabaseClient, input: VariantImageInput
   if (error || !data?.id) {
     console.error("Variant image save failed", { code: error?.code });
     throw new ProductApiError(409, "Gambar variant gagal disimpan.");
-  }
-
-  if (input.imageRole === "front") {
-    const previousVariantUrl = typeof variant.image_url === "string" ? variant.image_url : null;
-    const { error: variantError } = await client
-      .from("product_variants")
-      .update({ image_url: input.imageUrl.trim(), updated_at: new Date().toISOString() })
-      .eq("id", input.variantId);
-    if (variantError) {
-      await rollbackImageSave(client, String(data.id), previous);
-      await client.from("product_variants").update({ image_url: previousVariantUrl }).eq("id", input.variantId);
-      console.error("Variant front image projection failed", { code: variantError.code });
-      throw new ProductApiError(409, "Gambar front tidak dapat diproyeksikan ke variant. Perubahan dibatalkan.");
-    }
   }
 
   return { id: String(data.id), productId: String(variant.product_id) };
@@ -565,17 +541,6 @@ async function removeVariantImage(client: SupabaseClient, imageId: string) {
     throw new ProductApiError(409, "Slot gambar gagal dikosongkan.");
   }
 
-  if (imageRow.image_role === "front") {
-    const { error: variantError } = await client
-      .from("product_variants")
-      .update({ image_url: null, updated_at: new Date().toISOString() })
-      .eq("id", String(imageRow.variant_id));
-    if (variantError) {
-      await client.from("product_variant_images").insert(restorableImagePayload(imageRow));
-      console.error("Variant front image clear failed", { code: variantError.code });
-      throw new ProductApiError(409, "Slot front tidak dapat dikosongkan. Perubahan dibatalkan.");
-    }
-  }
   return { variantId: String(imageRow.variant_id), productId: String(variant.product_id) };
 }
 
@@ -593,9 +558,6 @@ function restorableImagePayload(row: Record<string, unknown>) {
     image_url: row.image_url,
     image_role: row.image_role,
     alt_text: row.alt_text || "",
-    object_fit: row.object_fit || "cover",
-    object_position: row.object_position || "center center",
-    target_ratio: row.target_ratio || "4:5",
     is_cover: Boolean(row.is_cover),
     sort_order: Number(row.sort_order || 0)
   };
@@ -706,6 +668,11 @@ async function loadManagerPayload(client: SupabaseClient, role: string) {
       status: lifecycle(row.status),
       productType: String(row.product_type || "standard_product"),
       pricingMode: String(row.pricing_mode || "fixed_price"),
+      salesMode: row.sales_mode === "custom"
+        ? "custom"
+        : row.sales_mode === "both"
+          ? "both"
+          : "ready_stock",
       minimumOrderQty: Math.max(1, Number(row.minimum_order_qty || 1)),
       seoTitle: typeof row.seo_title === "string" ? row.seo_title : null,
       seoDescription: typeof row.seo_description === "string" ? row.seo_description : null,
@@ -923,7 +890,7 @@ async function assertProductExists(client: SupabaseClient, productId: string) {
 }
 
 async function variantWithProduct(client: SupabaseClient, variantId: string) {
-  const { data, error } = await client.from("product_variants").select("id,product_id,name,variant_name,image_url").eq("id", variantId).maybeSingle();
+  const { data, error } = await client.from("product_variants").select("id,product_id,name,variant_name").eq("id", variantId).maybeSingle();
   if (error || !data) throw new ProductApiError(404, "Color variant tidak ditemukan.");
   return data;
 }
@@ -1001,7 +968,7 @@ function asRecordArray(value: unknown): Record<string, unknown>[] {
   return Array.isArray(value) ? value.filter((item) => typeof item === "object" && item !== null) as Record<string, unknown>[] : [];
 }
 
-const PRODUCT_AUDIT_FIELDS = ["name", "slug", "product_category_id", "product_subcategory_id", "base_price", "sku", "status", "product_type", "pricing_mode", "minimum_order_qty"] as const;
+const PRODUCT_AUDIT_FIELDS = ["name", "slug", "product_category_id", "product_subcategory_id", "base_price", "sku", "status", "product_type", "pricing_mode", "sales_mode", "minimum_order_qty"] as const;
 const VARIANT_AUDIT_FIELDS = ["name", "slug", "sku", "price_adjustment", "status", "is_active", "sort_order"] as const;
 const SELLABLE_AUDIT_FIELDS = ["size_id", "size_name", "sku", "stock_quantity", "price_adjustment", "status", "is_active", "sort_order"] as const;
 

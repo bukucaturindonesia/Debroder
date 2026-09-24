@@ -34,6 +34,7 @@ import {
 import { isValidProductWorkspaceId } from "@/lib/product-workspace";
 import { buildDeterministicSku, isValidSkuCode } from "@/lib/variant-matrix";
 import { Phase13AuthError, requirePhase13Actor } from "@/lib/phase13-auth";
+import { revalidatePublicProductData } from "@/lib/public-cache";
 
 export const dynamic = "force-dynamic";
 
@@ -57,7 +58,6 @@ const VARIANT_FIELDS = [
   "is_active",
   "is_default",
   "sort_order",
-  "image_url",
   "updated_at"
 ].join(",");
 const COLOR_MASTER_FIELDS = [
@@ -65,12 +65,7 @@ const COLOR_MASTER_FIELDS = [
   "name",
   "slug",
   "color_hex",
-  "color_type",
-  "primary_hex",
-  "secondary_hex",
-  "tertiary_hex",
-  "swatch_direction",
-  "pattern_image_url",
+  "color_group",
   "is_active",
   "sort_order",
   "updated_at"
@@ -117,11 +112,13 @@ export async function PATCH(request: Request, context: Context) {
     if (action === "save_variant") {
       const input = parseVariantInput(body.input);
       const result = await saveVariant(actor, request, id, input);
+      revalidatePublicProductData();
       return noStoreJson(result);
     }
     if (action === "save_sizes") {
       const input = parseSizeInput(body.input);
       const result = await saveSizes(actor, request, id, input);
+      revalidatePublicProductData();
       return noStoreJson(result);
     }
     throw new ProductVariantsApiError(400, "Aksi modul Varian tidak didukung.");
@@ -148,8 +145,8 @@ async function saveVariant(
   const master = input.colorMasterId
     ? await loadActiveColorMaster(actor.adminClient, input.colorMasterId)
     : null;
-  if (!current && !master) {
-    throw new ProductVariantsApiError(422, "Master warna wajib dipilih untuk warna baru.");
+  if (!current && !master && (!input.colorName || !input.colorSlug || !input.colorHex)) {
+    throw new ProductVariantsApiError(422, "Nama, slug, dan hex warna wajib diisi jika Color Master belum tersedia.");
   }
   if (current) {
     requireExpectedVersion(input.expectedUpdatedAt, current.updated_at, "Color variant");
@@ -219,17 +216,20 @@ async function saveVariant(
       });
       variantId = String(after.id);
     } else {
-      const swatch = mapMasterSwatch(master as RecordRow);
-      const colorHex = swatch.primaryHex || swatch.colorHex || "#111111";
+      const name = master ? String(master.name) : input.colorName;
+      const slug = master ? String(master.slug) : input.colorSlug;
+      const colorHex = master
+        ? mapMasterSwatch(master).primaryHex || mapMasterSwatch(master).colorHex || "#111111"
+        : input.colorHex;
       const now = new Date().toISOString();
       const { data, error } = await actor.adminClient
         .from("product_variants")
         .insert({
           product_id: productId,
-          name: String(master?.name || ""),
-          variant_name: String(master?.name || ""),
-          color_name: String(master?.name || ""),
-          slug: String(master?.slug || ""),
+          name,
+          variant_name: name,
+          color_name: name,
+          slug,
           hex_code: colorHex,
           color_hex: colorHex,
           sku: null,
@@ -511,7 +511,7 @@ async function loadProductVariantsPayload(
         status: variantStatus(variant.status, variant.is_active),
         isDefault: variant.is_default === true,
         sortOrder: Number(variant.sort_order || 0),
-        frontImageComplete: frontVariantIds.has(variantId) || Boolean(variant.image_url),
+        frontImageComplete: frontVariantIds.has(variantId),
         activeSizeCount: availability.filter((item) => item.active).length,
         activeSkuCount: availability.filter((item) => item.active && item.sku).length,
         updatedAt: String(variant.updated_at),
@@ -836,6 +836,9 @@ function parseVariantInput(value: unknown): SaveProductVariantInput {
   return {
     variantId,
     colorMasterId: colorMasterId || "",
+    colorName: text(row.colorName),
+    colorSlug: text(row.colorSlug),
+    colorHex: normalizeHex(row.colorHex) || "",
     status,
     isDefault: row.isDefault === true,
     sortOrder,

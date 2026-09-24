@@ -34,8 +34,6 @@ const PRODUCT_FIELDS = [
   "status",
   "product_category_id",
   "base_price",
-  "seo_title",
-  "seo_description",
   "updated_at"
 ].join(",");
 
@@ -60,12 +58,7 @@ const COLOR_MASTER_FIELDS = [
   "name",
   "slug",
   "color_hex",
-  "color_type",
-  "primary_hex",
-  "secondary_hex",
-  "tertiary_hex",
-  "swatch_direction",
-  "pattern_image_url"
+  "color_group"
 ].join(",");
 
 const SELLABLE_FIELDS = [
@@ -89,8 +82,7 @@ const IMAGE_FIELDS = [
   "image_role",
   "image_url",
   "is_cover",
-  "sort_order",
-  "updated_at"
+  "sort_order"
 ].join(",");
 
 const SIZE_FIELDS = "id,name,is_active";

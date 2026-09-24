@@ -31,6 +31,14 @@ const uploadService = readFileSync(
   "lib/product-media-upload.ts",
   "utf8"
 );
+const uploadRoute = readFileSync(
+  "app/api/admin/products/[id]/media/upload/route.ts",
+  "utf8"
+);
+const mediaStorageMigration = readFileSync(
+  "supabase/migrations/20260824152251_wave_3_product_media_storage.sql",
+  "utf8"
+);
 
 const frontSlot: ProductMediaSlot = {
   id: "11111111-1111-4111-8111-111111111111",
@@ -175,18 +183,34 @@ describe("WP-06 one-color Product Media", () => {
     expect(mediaPanel).toContain("Back, Detail, dan Lifestyle disarankan");
   });
 
-  it("reuses Media Library upload and never deletes original assets", () => {
-    expect(uploadService).toContain('from("media_assets")');
-    expect(uploadService).toContain("WEBSITE_IMAGES_BUCKET");
-    expect(uploadService).toContain('folder: "products"');
+  it("uses canonical staging storage upload and never deletes original assets", () => {
+    expect(uploadService).not.toContain('from("media_assets")');
+    expect(uploadService).toContain("/media/upload");
+    expect(uploadRoute).toContain("getAdminSupabaseClient");
+    expect(uploadRoute).toContain("WEBSITE_IMAGES_BUCKET");
+    expect(uploadRoute).toContain('"product-variant"');
+    expect(uploadRoute).toContain('folder: "products"');
     expect(uploadService).toContain('"image/webp", 0.85');
+    expect(mediaServer).toContain("isTrustedProductMediaUrl");
+    expect(mediaServer).toContain("website-images/product-variant");
     expect(mediaServer).not.toContain('.from("media_assets").delete');
     expect(mediaServer).not.toContain("storage.from");
     expect(mediaPanel).toContain("Kosongkan slot");
   });
 
-  it("preserves focal point and 4:5 contract", () => {
-    expect(mediaServer).toContain('target_ratio: "4:5"');
+  it("keeps the canonical website-images bucket and policy contract forward-safe", () => {
+    expect(mediaStorageMigration).toContain("'website-images'");
+    expect(mediaStorageMigration).toContain("on conflict (id) do update");
+    expect(mediaStorageMigration).toContain('"Public can view website images"');
+    expect(mediaStorageMigration).toContain('"Superadmin can upload website images"');
+    expect(mediaStorageMigration).toContain("public.is_superadmin()");
+    expect(mediaStorageMigration).toContain("104857600");
+    expect(mediaStorageMigration).toContain("preserve uploaded product media");
+  });
+
+  it("preserves the UI focal-point contract while using canonical image columns", () => {
+    expect(mediaServer).not.toContain('target_ratio: "4:5"');
+    expect(mediaServer).toContain('"created_at"');
     expect(mediaServer).toContain("focal_x");
     expect(mediaServer).toContain("focal_y");
     expect(mediaServer).toContain("focal_zoom");

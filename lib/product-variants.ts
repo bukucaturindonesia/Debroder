@@ -97,6 +97,9 @@ export type ProductVariantsPayload = {
 
 export type ProductVariantSettingsForm = {
   colorMasterId: string;
+  colorName: string;
+  colorSlug: string;
+  colorHex: string;
   status: ProductVariantStatus;
   isDefault: boolean;
   sortOrder: number;
@@ -131,6 +134,9 @@ export function productVariantFormFromItem(
 ): ProductVariantSettingsForm {
   return {
     colorMasterId: variant.colorMasterId || "",
+    colorName: variant.name,
+    colorSlug: variant.slug,
+    colorHex: variant.colorHex,
     status: variant.status,
     isDefault: variant.isDefault,
     sortOrder: variant.sortOrder
@@ -143,6 +149,9 @@ export function emptyProductVariantForm(input: {
 }): ProductVariantSettingsForm {
   return {
     colorMasterId: "",
+    colorName: "",
+    colorSlug: "",
+    colorHex: "#111111",
     status: "active",
     isDefault: input.firstVariant,
     sortOrder: input.sortOrder
@@ -154,6 +163,9 @@ export function sameProductVariantForm(
   right: ProductVariantSettingsForm
 ) {
   return left.colorMasterId === right.colorMasterId &&
+    left.colorName === right.colorName &&
+    left.colorSlug === right.colorSlug &&
+    left.colorHex === right.colorHex &&
     left.status === right.status &&
     left.isDefault === right.isDefault &&
     Number(left.sortOrder) === Number(right.sortOrder);

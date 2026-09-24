@@ -28,7 +28,8 @@ const CustomerAuthContext = createContext<CustomerAuthContextValue | null>(null)
 
 export function CustomerAuthProvider({ children }: { children: ReactNode }) {
   const pathname = usePathname();
-  const customerAuthEnabled = !pathname.startsWith("/admin");
+  const brochurePaths = ["/", "/produk", "/layanan", "/tentang", "/kontak", "/produk/nsa-premium", "/produk/cotton-combed-24s"];
+  const customerAuthEnabled = !pathname.startsWith("/admin") && !brochurePaths.includes(pathname);
   const [loading, setLoading] = useState(true);
   const [session, setSession] = useState<Session | null>(null);
   const [profile, setProfile] = useState<CustomerProfile | null>(null);

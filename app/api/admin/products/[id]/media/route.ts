@@ -11,6 +11,7 @@ import {
   saveProductMediaSlots
 } from "@/lib/product-media-server";
 import { isValidProductWorkspaceId } from "@/lib/product-workspace";
+import { revalidatePublicProductData } from "@/lib/public-cache";
 import {
   Phase13AuthError,
   requirePhase13Actor
@@ -75,6 +76,7 @@ export async function PATCH(
         ? body.changes as ProductMediaSaveChange[]
         : []
     });
+    revalidatePublicProductData();
     return noStoreJson(result);
   } catch (error) {
     return productMediaErrorResponse(error);

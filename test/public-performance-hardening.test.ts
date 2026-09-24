@@ -38,4 +38,24 @@ describe("public performance hardening contracts", () => {
     expect(cache).not.toMatch(/checkout|payment|order|cart/i);
     expect(read("app/checkout/page.tsx")).toContain('dynamic = "force-dynamic"');
   });
+
+  it("invalidates catalog and PDP projections after canonical Product Workspace writes", () => {
+    const cache = read("lib/public-cache.ts");
+    expect(cache).toContain("revalidatePublicProductData");
+    expect(cache).toContain("PUBLIC_CACHE_TAGS.product");
+    expect(cache).toContain("PUBLIC_CACHE_TAGS.catalog");
+
+    for (const route of [
+      "app/api/admin/products/[id]/information/route.ts",
+      "app/api/admin/products/[id]/variants/route.ts",
+      "app/api/admin/products/[id]/inventory/route.ts",
+      "app/api/admin/products/[id]/media/route.ts",
+      "app/api/admin/products/[id]/review/route.ts",
+      "app/api/admin/products/[id]/lifecycle/route.ts"
+    ]) {
+      expect(read(route), `${route} must invalidate public product data`).toContain(
+        "revalidatePublicProductData"
+      );
+    }
+  });
 });

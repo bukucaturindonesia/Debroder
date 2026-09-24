@@ -14,3 +14,10 @@ export const PUBLIC_CACHE_TAGS = {
 export function revalidatePublicThemeCache() {
   (revalidateTag as unknown as (tag: string) => void)(PUBLIC_CACHE_TAGS.theme);
 }
+
+/** Product/PIM writes must invalidate every public projection that can expose the row. */
+export function revalidatePublicProductData() {
+  const invalidate = revalidateTag as unknown as (tag: string) => void;
+  invalidate(PUBLIC_CACHE_TAGS.product);
+  invalidate(PUBLIC_CACHE_TAGS.catalog);
+}

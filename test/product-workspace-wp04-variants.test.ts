@@ -125,6 +125,16 @@ describe("WP-04 Product Variants and Multi-color", () => {
     expect(variantsRoute).toContain("frontImageComplete");
   });
 
+  it("allows operator-created colors when the canonical Color Master is empty", () => {
+    expect(variantsPanel).toContain("Nama warna");
+    expect(variantsPanel).toContain("Slug warna");
+    expect(variantsPanel).toContain("Hex warna");
+    expect(variantsRoute).toContain("Color Master belum tersedia");
+    expect(variantsRoute).toContain("colorName");
+    expect(variantsRoute).toContain("colorSlug");
+    expect(variantsRoute).toContain("colorHex");
+  });
+
   it("enforces frozen role parity for dependency mutation", () => {
     expect(canManageProductVariants(getProductManagerCapabilities("admin_guest"))).toBe(false);
     expect(canManageProductVariants(getProductManagerCapabilities("admin"))).toBe(false);

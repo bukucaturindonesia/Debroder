@@ -11,6 +11,8 @@ import { ProductRecommendationRail } from "@/components/product/ProductRecommend
 import { ProductStickyPurchasePanel } from "@/components/product/ProductStickyPurchasePanel";
 import { PublicShell } from "@/components/PublicPage";
 import { getProductDetailPageModel } from "@/lib/product-detail-page/runtime";
+import { BrochureProductDetail } from "@/components/brochure/BrochureProductDetail";
+import { getBrochureProduct } from "@/src/data/products";
 
 type PageProps = {
   params: Promise<{ slug: string }>;
@@ -18,6 +20,15 @@ type PageProps = {
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { slug } = await params;
+  const brochureProduct = getBrochureProduct(slug);
+  if (brochureProduct) {
+    return {
+      title: `${brochureProduct.name} — DEBRODER`,
+      description: brochureProduct.description,
+      alternates: { canonical: `/produk/${brochureProduct.slug}` },
+      openGraph: { title: `${brochureProduct.name} — DEBRODER`, description: brochureProduct.description, images: [{ url: brochureProduct.image, alt: brochureProduct.imageAlt }] }
+    };
+  }
   const model = await getProductDetailPageModel(slug);
   const metadata = model.metadata;
 
@@ -84,6 +95,8 @@ function SizeGuideList({ rows }: { rows: string[] }) {
 
 export default async function ProductDetailPage({ params }: PageProps) {
   const { slug } = await params;
+  const brochureProduct = getBrochureProduct(slug);
+  if (brochureProduct) return <BrochureProductDetail product={brochureProduct} />;
   const model = await getProductDetailPageModel(slug);
   if (model.data.state === "not_found") notFound();
 

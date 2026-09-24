@@ -104,7 +104,7 @@ describe("PIM Phase 2 Unified Product Manager", () => {
     expect(productRoute).toContain("requireDependencyRole(actor.role)");
     expect(productRoute).toContain("stock_quantity");
     expect(productRoute).toContain("size_id");
-    expect(productRoute).toContain('target_ratio: "4:5"');
+    expect(productRoute).toContain("image_url: input.imageUrl.trim()");
     expect(productRoute).not.toContain('from("products").delete');
     expect(productUi).not.toContain("createSupabaseClient");
     expect(productUi).not.toContain('.from("products")');

@@ -1,4 +1,4 @@
-import { readFileSync } from "node:fs";
+import { readFileSync, readdirSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 import {
   buildProductReviewDeepLink,
@@ -108,6 +108,19 @@ function payload(input: {
 }
 
 describe("WP-07 Review & Publish", () => {
+  it("restores the canonical superadmin Product publish grant without widening other roles", () => {
+    const migrationName = readdirSync("supabase/migrations").find((name) =>
+      name.endsWith("_wave_3_superadmin_product_publish_grant.sql")
+    );
+    expect(migrationName).toBeDefined();
+    const migration = readFileSync(`supabase/migrations/${migrationName}`, "utf8").toLowerCase();
+    expect(migration).toContain("insert into public.role_permissions");
+    expect(migration).toContain("'superadmin', 'product.publish', true");
+    expect(migration).toContain("on conflict (role, permission_key) do update");
+    expect(migration).not.toContain("disable row level security");
+    expect(migration).not.toContain("product_content_manager");
+  });
+
   it("replaces the read-only shell with the real panel", () => {
     expect(page).toContain("ProductReviewPanel");
     expect(page).not.toContain("ProductWorkspaceReadOnlyModule");

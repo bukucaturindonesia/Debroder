@@ -66,7 +66,6 @@ const VARIANT_FIELDS = [
   "status",
   "is_active",
   "sort_order",
-  "image_url",
   "updated_at"
 ].join(",");
 const IMAGE_SUMMARY_FIELDS =
@@ -77,28 +76,16 @@ const IMAGE_FIELDS = [
   "image_role",
   "image_url",
   "alt_text",
-  "object_fit",
-  "object_position",
-  "focal_x",
-  "focal_y",
-  "focal_zoom",
-  "target_ratio",
   "is_cover",
   "sort_order",
-  "created_at",
-  "updated_at"
+  "created_at"
 ].join(",");
 const COLOR_MASTER_FIELDS = [
   "id",
   "name",
   "slug",
   "color_hex",
-  "color_type",
-  "primary_hex",
-  "secondary_hex",
-  "tertiary_hex",
-  "swatch_direction",
-  "pattern_image_url"
+  "color_group",
 ].join(",");
 const MEDIA_FIELDS =
   "id,name,public_url,alt_text,folder,width,height,updated_at";
@@ -345,7 +332,7 @@ export async function saveProductMediaSlots(input: {
     if (existing) {
       requireVersion(
         change.expectedImageUpdatedAt,
-        existing.updated_at,
+        imageVersion(existing),
         `${change.role} image`
       );
     } else if (change.expectedImageUpdatedAt !== null) {
@@ -371,6 +358,8 @@ export async function saveProductMediaSlots(input: {
       nextUrl = String(asset.public_url);
     } else if (!remove && existing && change.imageUrl === existing.image_url) {
       nextUrl = String(existing.image_url);
+    } else if (!remove && isTrustedProductMediaUrl(change.imageUrl)) {
+      nextUrl = change.imageUrl;
     } else if (!remove) {
       throw new ProductMediaApiError(
         422,
@@ -397,16 +386,11 @@ export async function saveProductMediaSlots(input: {
       ));
     }
 
-    const finalFrontUrl = projectedFrontUrl(
-      existingByRole,
-      plan
-    );
     const nextVariantUpdatedAt = nextTimestamp(variant.updated_at);
     const { data: updatedVariant, error: updateVariantError } =
       await actor.adminClient
         .from("product_variants")
         .update({
-          image_url: finalFrontUrl,
           updated_at: nextVariantUpdatedAt
         })
         .eq("id", input.variantId)
@@ -519,7 +503,7 @@ async function applySlotChange(
       .from("product_variant_images")
       .delete()
       .eq("id", String(item.existing.id))
-      .eq("updated_at", String(item.existing.updated_at))
+      .eq("created_at", String(imageVersion(item.existing)))
       .select(IMAGE_FIELDS)
       .maybeSingle();
     if (error || !data) {
@@ -539,7 +523,7 @@ async function applySlotChange(
       .from("product_variant_images")
       .update(payload)
       .eq("id", String(item.existing.id))
-      .eq("updated_at", String(item.existing.updated_at))
+      .eq("created_at", String(imageVersion(item.existing)))
       .select(IMAGE_FIELDS)
       .maybeSingle();
     if (error || !data) {
@@ -586,15 +570,8 @@ function slotPayload(
     alt_text: item.input.altText ||
       textOrNull(item.asset?.alt_text) ||
       `${role} image`,
-    object_fit: item.input.objectFit,
-    object_position: item.input.objectPosition || "center center",
-    focal_x: item.input.focalX,
-    focal_y: item.input.focalY,
-    focal_zoom: item.input.focalZoom,
-    target_ratio: "4:5",
     is_cover: role === "front",
-    sort_order: PRODUCT_IMAGE_ROLES.indexOf(role),
-    updated_at: nextTimestamp(item.existing?.updated_at)
+    sort_order: PRODUCT_IMAGE_ROLES.indexOf(role)
   };
 }
 
@@ -606,8 +583,7 @@ async function rollbackVariant(
   const { data, error } = await client
     .from("product_variants")
     .update({
-      image_url: before.image_url || null,
-      updated_at: nextTimestamp(after.updated_at)
+      updated_at: nextTimestamp(before.updated_at)
     })
     .eq("id", String(after.id))
     .eq("updated_at", String(after.updated_at))
@@ -627,7 +603,7 @@ async function rollbackSlotChanges(
           .from("product_variant_images")
           .delete()
           .eq("id", String(state.after.id))
-          .eq("updated_at", String(state.after.updated_at));
+          .eq("created_at", String(imageVersion(state.after)));
         if (error) return false;
       } else if (state.deleted && state.before) {
         const { error } = await client
@@ -639,7 +615,7 @@ async function rollbackSlotChanges(
           .from("product_variant_images")
           .update(restorableImagePayload(state.before, false))
           .eq("id", String(state.after.id))
-          .eq("updated_at", String(state.after.updated_at))
+          .eq("created_at", String(imageVersion(state.after)))
           .select("id")
           .maybeSingle();
         if (error || !data) return false;
@@ -660,27 +636,11 @@ function restorableImagePayload(
     image_role: row.image_role,
     image_url: row.image_url,
     alt_text: row.alt_text || "",
-    object_fit: row.object_fit || "cover",
-    object_position: row.object_position || "center center",
-    focal_x: finiteNumber(row.focal_x) ?? 50,
-    focal_y: finiteNumber(row.focal_y) ?? 50,
-    focal_zoom: finiteNumber(row.focal_zoom) ?? 1,
-    target_ratio: row.target_ratio || "4:5",
     is_cover: Boolean(row.is_cover),
-    sort_order: finiteNumber(row.sort_order) || 0,
-    updated_at: new Date().toISOString()
+    sort_order: finiteNumber(row.sort_order) || 0
   };
   if (includeId) payload.id = row.id;
   return payload;
-}
-
-function projectedFrontUrl(
-  existingByRole: Map<ProductImageRole, RecordRow>,
-  plan: PlannedSlotChange[]
-) {
-  const frontChange = plan.find((item) => item.input.role === "front");
-  if (frontChange) return frontChange.remove ? null : frontChange.nextUrl;
-  return textOrNull(existingByRole.get("front")?.image_url);
 }
 
 async function loadSelectedVariantImages(
@@ -723,6 +683,14 @@ async function loadMediaLibrary(
     start + query.pageSize - 1
   );
   if (error) {
+    if (error.code === "PGRST205") {
+      return {
+        assets: [],
+        total: 0,
+        page: 1,
+        pageCount: 1
+      };
+    }
     throw new ProductMediaApiError(
       503,
       "Media Library belum dapat dimuat."
@@ -762,8 +730,12 @@ function mapSelectedSlots(rows: RecordRow[]): ProductMediaSlot[] {
     targetRatio: "4:5",
     isCover: role === "front",
     sortOrder: PRODUCT_IMAGE_ROLES.indexOf(role),
-    updatedAt: textOrNull(row.updated_at)
+    updatedAt: imageVersion(row)
   }));
+}
+
+function imageVersion(row: RecordRow | null | undefined) {
+  return textOrNull(row?.updated_at) || textOrNull(row?.created_at);
 }
 
 function normalizeImageRows(rows: RecordRow[]) {
@@ -847,6 +819,22 @@ async function selectInChunks(
     rows.push(...records(data));
   }
   return rows;
+}
+
+function isTrustedProductMediaUrl(value: string | null) {
+  if (!value) return false;
+  const baseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  if (!baseUrl) return false;
+  try {
+    const url = new URL(value);
+    const base = new URL(baseUrl);
+    return url.origin === base.origin &&
+      url.pathname.startsWith(
+        "/storage/v1/object/public/website-images/product-variant/"
+      );
+  } catch {
+    return false;
+  }
 }
 
 function validateSlotChange(change: ProductMediaSaveChange) {

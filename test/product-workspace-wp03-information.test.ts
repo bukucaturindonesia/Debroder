@@ -36,6 +36,7 @@ const product: ProductInformationProduct = {
   productSubcategoryId: null,
   categoryName: "Kaos Polos",
   subcategoryName: "",
+  salesMode: "ready_stock",
   basePrice: 47000,
   description: "Kaos premium",
   sku: "7200",
@@ -123,6 +124,7 @@ describe("WP-03 Product Information", () => {
       name: product.name,
       slug: product.slug,
       productCategoryId: product.productCategoryId,
+      salesMode: "ready_stock",
       basePrice: 47000
     });
 
@@ -136,6 +138,18 @@ describe("WP-03 Product Information", () => {
     ]) {
       expect(informationForm).not.toContain(forbidden);
     }
+  });
+
+  it("keeps the canonical sales mode editable and in the public invalidation contract", () => {
+    expect(informationForm).toContain("Mode penjualan");
+    expect(informationForm).toContain("Ready Stock + Custom Order");
+    expect(informationRoute).toContain("sales_mode");
+    expect(informationRoute).toContain("revalidatePublicProductData");
+  });
+
+  it("does not request unsupported SEO columns from the canonical products table", () => {
+    expect(informationRoute).not.toContain("seo_title");
+    expect(informationRoute).not.toContain("seo_description");
   });
 
   it("updates the shared workspace header after a successful information save", () => {
