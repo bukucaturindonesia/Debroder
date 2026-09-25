@@ -46,3 +46,19 @@ test("mobile brochure navigation is usable without horizontal overflow", async (
   const overflow = await page.evaluate(() => document.documentElement.scrollWidth > window.innerWidth);
   expect(overflow).toBe(false);
 });
+
+test("release denies direct trial product details and emits only brochure sitemap routes", async ({ request }) => {
+  for (const path of ["/produk/nsa-premium", "/produk/cotton-combed-24s", "/koleksi", "/jersey/shop", "/checkout"]) {
+    const response = await request.get(path);
+    expect(response.status(), path).toBe(404);
+  }
+  const sitemap = await request.get("/sitemap.xml");
+  expect(sitemap.status()).toBe(200);
+  const body = await sitemap.text();
+  for (const path of ["/produk", "/layanan", "/tentang", "/kontak"]) {
+    expect(body).toContain(path);
+  }
+  expect(body).not.toContain("/produk/nsa-premium");
+  expect(body).not.toContain("/produk/cotton-combed-24s");
+  expect(body).not.toContain("/koleksi");
+});

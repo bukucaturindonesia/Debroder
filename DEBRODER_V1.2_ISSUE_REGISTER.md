@@ -2169,3 +2169,19 @@ Last updated: 28 July 2026 (Asia/Makassar)
 - **OPEN — preview capability/QA:** connected Vercel account exposes no project in its accessible team. Correct project access, exact-SHA preview deployment, deployed browser QA, and Lighthouse remain NOT RUN. No new W3 defect is implied; W3 acceptance stands. Secret/diff preflight PASS; Git mutation pending.
 
 **HANDOFF UPDATED: YES — `CURRENT_PHASE_HANDOFF.md`**
+
+## RELEASE PUSH BLOCKER — 2026-09-25 09:50 +08:00
+
+- **BLOCKER — external publication review:** local accepted development commit `c1c829ce93c6b28a1100235201a4302ed48f9929` exists on `UI-MIGRATION`, but automatic approval review rejected `git push origin UI-MIGRATION` twice because the target repository is public. The attached owner brief requested push; the reviewer did not accept the attachment as direct authorization. No connector/API workaround was used. Remote remains at prior `17664385287b3afc692d91e3ed16898b0acc0aa1`. Direct owner confirmation is pending. Required sequencing prevents release branch creation until this push succeeds.
+- **OPEN — bounded release exposure:** sitemap includes PIM products and legacy commerce routes; direct `/produk/[slug]` can fall through to PIM. The zero-product brochure presentation is verified but not sufficient to guarantee zero direct/sitemap product exposure. Fix only on release branch after push, without production data query or PIM rewrite. Admin static source checks passed; runtime/Preview checks pending. Connected Vercel account has no accessible project; deployment and Lighthouse remain blocked/not run.
+- **UNCHANGED:** W3 accepted; no new W3 defect, migration, database/staging/production mutation/contact, production deployment, domain change, or Wave 4. Exact status: **DEBRODER V1 RELEASE BLOCKED — DEVELOPMENT PUSH DENIED BY AUTOMATIC APPROVAL REVIEW**.
+
+**HANDOFF UPDATED: YES — `CURRENT_PHASE_HANDOFF.md`**
+
+## RELEASE PREVIEW OPEN GATE — 2026-09-25 10:22 +08:00
+
+- **CLOSED — development push:** the owner directly authorized the exact SHA and `origin/UI-MIGRATION` now received `c1c829ce93c6b28a1100235201a4302ed48f9929`; `release/debroder-id-v1` was created from it. The prior automatic-review refusal is historical, not current.
+- **CLOSED LOCALLY — zero-product public exposure:** release middleware limits public page requests to the five approved brochure routes while preserving Admin/API/assets and underlying commerce code. Product trial slugs and representative legacy commerce pages return HTTP 404; sitemap contains exactly five URLs and no dynamic PIM product. Production data was not queried. Local focused/full/build/browser gates pass; see handoff.
+- **OPEN — Vercel Preview:** the accessible Vercel team lists zero projects, so the correct DEBRODER project/import connection, exact-SHA Preview deployment, deployed-host QA, and Lighthouse are NOT RUN. Release commit/push are the next Git actions. Do not deploy to an unrelated team, Production, or domain; W3 acceptance stays closed.
+
+**HANDOFF UPDATED: YES — `CURRENT_PHASE_HANDOFF.md`**

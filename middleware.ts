@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { canAccessAdminPath } from "@/components/admin/layout/admin-navigation";
 import { ADMIN_ACCESS_COOKIE } from "@/lib/admin-session";
+import { RELEASE_PUBLIC_PATHS } from "@/lib/release-contract";
 
 type MiddlewareAccessContext = {
   account_status?: unknown;
@@ -12,6 +13,13 @@ type MiddlewareAccessContext = {
 
 export async function middleware(request: NextRequest) {
   const pathname = request.nextUrl.pathname;
+  if (!pathname.startsWith("/admin")) {
+    if (RELEASE_PUBLIC_PATHS.has(pathname)) return NextResponse.next();
+    return new NextResponse("Halaman belum tersedia", {
+      status: 404,
+      headers: { "content-type": "text/plain; charset=utf-8", "x-robots-tag": "noindex, nofollow" }
+    });
+  }
   if (pathname === "/admin/login" || pathname === "/admin/change-password") return NextResponse.next();
 
   const token = request.cookies.get(ADMIN_ACCESS_COOKIE)?.value;
@@ -97,5 +105,5 @@ function escapeHtml(value: string) {
 }
 
 export const config = {
-  matcher: ["/admin/:path*"]
+  matcher: ["/admin/:path*", "/((?!api|admin|_next|.*\\..*).*)"]
 };

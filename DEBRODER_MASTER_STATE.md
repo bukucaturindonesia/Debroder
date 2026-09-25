@@ -2011,3 +2011,18 @@ Resume only with a supported authenticated staging session or separately approve
 - Tracked-secret and diff-integrity preflight passed; no staging or production contact/mutation and no migration attempt. Release-specific sitemap/PIM detail exposure needs bounded release-branch gating and verification. Vercel project access is not yet confirmed. Exact state and next action are in `CURRENT_PHASE_HANDOFF.md`.
 
 **HANDOFF UPDATED: YES — `CURRENT_PHASE_HANDOFF.md`**
+
+## RELEASE PREPARATION STATE — LOCAL DEVELOPMENT COMMIT, PUSH BLOCKED — 2026-09-25 09:50 +08:00
+
+- W3 and visual acceptance remain owner-approved. `UI-MIGRATION` now has local commit `c1c829ce93c6b28a1100235201a4302ed48f9929` from prior `17664385287b3afc692d91e3ed16898b0acc0aa1`; 21 accepted files were audited for secret leakage and committed. The remote branch still points to the prior SHA because automatic approval review denied the same Git push twice. No alternate publication path was attempted. Direct owner confirmation has been requested.
+- Release branch, release-specific product/sitemap gating, release gates, Vercel Preview, Lighthouse, and deployed-host QA are **NOT STARTED**. Connected Vercel account currently has no accessible project. Existing brochure visual tests and W3 UAT remain historical PASS, not rerun. No migration, staging/production contact/mutation, production deployment, domain/DNS change, or Wave 4. Current detailed blocker and safe resume are in `CURRENT_PHASE_HANDOFF.md`. **DEBRODER V1 RELEASE BLOCKED — DEVELOPMENT PUSH DENIED BY AUTOMATIC APPROVAL REVIEW.**
+
+**HANDOFF UPDATED: YES — `CURRENT_PHASE_HANDOFF.md`**
+
+## CURRENT PROJECT STATE — RELEASE BRANCH LOCAL GATES PASS — 2026-09-25 10:22 +08:00
+
+- The owner directly approved and the official Git push of development SHA `c1c829ce93c6b28a1100235201a4302ed48f9929` to `origin/UI-MIGRATION` **PASSED**. `release/debroder-id-v1` was branched from that exact SHA. The preceding push blocker is closed.
+- Bounded release-source changes now enforce only the five approved public brochure pages, no product detail or legacy commerce page exposure through normal public page requests, five-url sitemap without PIM queries, and Preview noindex. The PIM/commerce source and W3 acceptance remain intact.
+- Release local gates **PASS**: focused 44/44, full Vitest 153 files/1063 tests, typecheck, lint 0 errors/36 existing warnings, Next build 142 pages, isolated production-browser brochure 4/4, and diff check. No migration/database/staging/production change. `.env.local` restored; runtime stopped. Release commit/push and Vercel Preview are pending; the connected Vercel team exposes no project. **NOT PREVIEW READY** until correct project access, exact-SHA Preview, deployed QA, and Lighthouse are completed. See the latest `CURRENT_PHASE_HANDOFF.md` for the safe resume point.
+
+**HANDOFF UPDATED: YES — `CURRENT_PHASE_HANDOFF.md`**
