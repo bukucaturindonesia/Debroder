@@ -66,6 +66,7 @@ type AppliedInventoryRow = {
 };
 
 const ALLOWED_LOCATION_NAMES = new Set([
+  "DEBRODER E2E Pickup A",
   "STORE PETTARANI",
   "STORE LANDAK",
   "STORE TELLO",
@@ -126,12 +127,7 @@ const COLOR_MASTER_FIELDS = [
   "name",
   "slug",
   "color_hex",
-  "color_type",
-  "primary_hex",
-  "secondary_hex",
-  "tertiary_hex",
-  "swatch_direction",
-  "pattern_image_url",
+  "color_group",
   "is_active",
   "sort_order"
 ].join(",");

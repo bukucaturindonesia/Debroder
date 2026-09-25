@@ -13,7 +13,13 @@ export const metadata: Metadata = {
   alternates: { canonical: "/sablon-dtf" }
 };
 
-export default async function SablonDtfPage() {
+type SablonDtfPageProps = {
+  searchParams?: Promise<{ q?: string | string[] }>;
+};
+
+export default async function SablonDtfPage({ searchParams }: SablonDtfPageProps) {
+  const params = searchParams ? await searchParams : {};
+  const queryParam = Array.isArray(params.q) ? params.q[0] : params.q;
   const content = await getPublicContent();
   const pageHero = content.pageHeroes.find((hero) => hero.page_key === "sablon-dtf");
   const databaseServices = content.services.filter((service) => {
@@ -54,7 +60,7 @@ export default async function SablonDtfPage() {
               <p className="mt-4 text-sm leading-6 text-brand-charcoal/65">Pilih produk yang cocok untuk custom DTF dan kebutuhan produksi apparel.</p>
             </div>
             <div className="mt-4 md:mt-6">
-              <ProductCatalog products={products} showCategoryFilter={false} catalogStyle="category" syncUrlState />
+              <ProductCatalog products={products} initialQuery={(queryParam || "").trim().slice(0, 120)} showCategoryFilter={false} catalogStyle="category" syncUrlState />
             </div>
           </div>
         </section>

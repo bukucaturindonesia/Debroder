@@ -251,6 +251,9 @@ export function ProductVariantsPanel() {
       const result = await saveProductVariant(product.id, {
         variantId: selectedVariant?.id || null,
         colorMasterId: detailForm.colorMasterId,
+        colorName: detailForm.colorName.trim(),
+        colorSlug: detailForm.colorSlug.trim(),
+        colorHex: detailForm.colorHex.trim(),
         status: detailForm.status,
         isDefault: detailForm.isDefault,
         sortOrder: detailForm.sortOrder,
@@ -489,7 +492,11 @@ export function ProductVariantsPanel() {
                     {creating ? "WARNA BARU" : "DETAIL WARNA TERPILIH"}
                   </p>
                   <h3 className="mt-2 text-xl font-semibold">
-                    {creating ? "Tambahkan warna dari Color Master" : selectedVariant?.name || "Warna"}
+                    {creating
+                      ? selectableMasters.length
+                        ? "Tambahkan warna dari Color Master"
+                        : "Tambahkan warna baru"
+                      : selectedVariant?.name || "Warna"}
                   </h3>
                 </div>
                 {selectedVariant ? <ProductColorSwatch value={selectedVariant} label={selectedVariant.name} className="h-14 w-14" /> : selectedMaster ? <ProductColorSwatch value={selectedMaster} label={selectedMaster.name} className="h-14 w-14" /> : null}
@@ -497,19 +504,51 @@ export function ProductVariantsPanel() {
 
               <div className="mt-6 grid gap-5 sm:grid-cols-2">
                 {creating ? (
-                  <Field label="Master warna" required>
-                    <select
-                      value={detailForm.colorMasterId}
-                      onChange={(event: ChangeEvent<HTMLSelectElement>) => updateDetail({ colorMasterId: event.target.value })}
-                      disabled={!canManage || working}
-                      className={controlClass}
-                    >
-                      <option value="">Pilih master warna</option>
-                      {selectableMasters.map((master) => (
-                        <option key={master.id} value={master.id}>{master.name} · {master.colorType}</option>
-                      ))}
-                    </select>
-                  </Field>
+                  selectableMasters.length ? (
+                    <Field label="Master warna" required>
+                      <select
+                        value={detailForm.colorMasterId}
+                        onChange={(event: ChangeEvent<HTMLSelectElement>) => updateDetail({ colorMasterId: event.target.value })}
+                        disabled={!canManage || working}
+                        className={controlClass}
+                      >
+                        <option value="">Pilih master warna</option>
+                        {selectableMasters.map((master) => (
+                          <option key={master.id} value={master.id}>{master.name} · {master.colorType}</option>
+                        ))}
+                      </select>
+                    </Field>
+                  ) : (
+                    <>
+                      <Field label="Nama warna" required>
+                        <input
+                          value={detailForm.colorName}
+                          onChange={(event: ChangeEvent<HTMLInputElement>) => updateDetail({ colorName: event.target.value })}
+                          disabled={!canManage || working}
+                          className={controlClass}
+                          placeholder="Contoh: Hitam"
+                        />
+                      </Field>
+                      <Field label="Slug warna" required>
+                        <input
+                          value={detailForm.colorSlug}
+                          onChange={(event: ChangeEvent<HTMLInputElement>) => updateDetail({ colorSlug: event.target.value })}
+                          disabled={!canManage || working}
+                          className={controlClass}
+                          placeholder="contoh-hitam"
+                        />
+                      </Field>
+                      <Field label="Hex warna" required>
+                        <input
+                          value={detailForm.colorHex}
+                          onChange={(event: ChangeEvent<HTMLInputElement>) => updateDetail({ colorHex: event.target.value })}
+                          disabled={!canManage || working}
+                          className={controlClass}
+                          placeholder="#111111"
+                        />
+                      </Field>
+                    </>
+                  )
                 ) : (
                   <ReadOnlyField label="Master warna" value={selectedVariant?.colorMasterName || "Fallback legacy"} />
                 )}
@@ -558,7 +597,8 @@ export function ProductVariantsPanel() {
                   data-admin-mutation="true"
                   type="button"
                   onClick={() => void persistDetail()}
-                  disabled={working || !detailDirty || (creating && !detailForm.colorMasterId)}
+                  disabled={working || !detailDirty || (creating && !detailForm.colorMasterId &&
+                    (!detailForm.colorName.trim() || !detailForm.colorSlug.trim() || !detailForm.colorHex.trim()))}
                   className="mt-6 min-h-11 rounded-full bg-brand-green px-6 text-sm font-semibold text-white disabled:cursor-not-allowed disabled:opacity-45"
                 >
                   {detailState === "saving" ? "Menyimpan..." : creating ? "Tambahkan Warna" : "Simpan Detail Warna"}

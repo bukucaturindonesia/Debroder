@@ -62,9 +62,10 @@ export async function readProductDetailPageSource(slug: string): Promise<Product
   ]);
 
   return {
-    status: relatedSource.products.status === "unavailable" || contactResult.error
-      ? "unavailable"
-      : "ready",
+    // Contact CMS content is optional for the canonical product read. A
+    // missing or unavailable contact-settings relation must not hide an
+    // otherwise readable product detail page.
+    status: relatedSource.products.status === "unavailable" ? "unavailable" : "ready",
     productSource,
     relatedSource,
     contact: contactResult.data ? contactResult.data as ProductDetailContactRow : null,

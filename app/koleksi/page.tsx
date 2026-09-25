@@ -15,6 +15,7 @@ export const metadata: Metadata = {
 
 type KoleksiPageProps = {
   searchParams?: Promise<{
+    q?: string | string[];
     color?: string | string[];
     status?: string | string[];
     label?: string | string[];
@@ -48,6 +49,7 @@ export default async function KoleksiPage({ searchParams }: KoleksiPageProps) {
       />
       <CollectionCommerceExperience
         products={products}
+        initialQuery={filters.query}
         initialColor={filters.color}
         initialLabel={filters.label}
         initialSort={filters.sort === "price-low" || filters.sort === "price-high" ? "order" : filters.sort}

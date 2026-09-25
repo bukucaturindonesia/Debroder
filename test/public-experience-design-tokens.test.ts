@@ -22,8 +22,9 @@ describe("DEBRODER Deep Modular UI foundation tokens", () => {
       '--font-sans: var(--font-geist-sans), "Geist Sans", Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;'
     );
     expect(globals).toContain("--font-heading: var(--font-sans);");
-    expect(layout).toContain('import { Geist } from "next/font/google";');
-    expect(layout).toContain("Geist({");
+    expect(layout).toContain('import localFont from "next/font/local";');
+    expect(layout).toContain("localFont({");
+    expect(layout).toContain("geist-latin.woff2");
     expect(layout).toContain('variable: "--font-geist-sans"');
     expect(layout).not.toContain("Inter({");
   });
@@ -125,7 +126,7 @@ describe("DEBRODER Deep Modular UI foundation tokens", () => {
     expect(globals).toContain("--landing-page-gutter: var(--content-gutter);");
     expect(globals).toContain("--category-canvas: var(--color-canvas);");
     expect(globals).toContain("max-width: var(--content-max);");
-    expect(home).toContain("bg-experience-canvas text-experience-ink");
+    expect(home).toContain("<BrochureShell>");
     expect(tailwind).toContain('canvas: "var(--color-canvas)"');
     expect(tailwind).toContain('focus: "var(--color-info-focus)"');
   });
@@ -134,6 +135,6 @@ describe("DEBRODER Deep Modular UI foundation tokens", () => {
     expect(productionContract).not.toMatch(/landing-nike/i);
     expect(productionContract).not.toMatch(/static\.nike|nike\.com|swoosh/i);
     expect(productionContract).not.toMatch(/@font-face[\s\S]*?nike/i);
-    expect(home).toContain("debroder-landing");
+    expect(home).toContain("DEBRODER — Bahan & Produksi Apparel");
   });
 });

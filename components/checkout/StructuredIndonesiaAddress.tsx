@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useId, useMemo, useState } from "react";
 import type { IndonesiaRegionLevel, IndonesiaRegionOption, StructuredIndonesiaAddressInput } from "@/lib/indonesia-address";
 
 export const EMPTY_STRUCTURED_ADDRESS: StructuredIndonesiaAddressInput = {
@@ -45,20 +45,21 @@ export function StructuredIndonesiaAddress({ value, confirmed, onChange, onConfi
 
   useEffect(() => { onFormattedAddressChange?.(summary); }, [onFormattedAddressChange, summary]);
 
-  const setField = (field: keyof StructuredIndonesiaAddressInput, next: string) => {
+  const updateAddress = (next: StructuredIndonesiaAddressInput) => {
     onConfirmedChange(false);
-    onChange({ ...value, [field]: next });
+    onChange(next);
   };
+  const setField = (field: keyof StructuredIndonesiaAddressInput, next: string) => updateAddress({ ...value, [field]: next });
   const complete = Boolean(value.recipientName.trim().length >= 2 && /^\d{9,15}$/.test(value.recipientPhone.replace(/\D/g, "")) && value.provinceId && value.regencyId && value.districtId && value.villageId && /^\d{5}$/.test(value.postalCode) && value.addressDetail.trim().length >= 5 && (!value.rt || /^\d{1,3}$/.test(value.rt)) && (!value.rw || /^\d{1,3}$/.test(value.rw)));
 
   return <div className="grid gap-5">
     <div className="grid gap-4 sm:grid-cols-2">
       <Field label="Nama penerima"><input value={value.recipientName} onChange={(event) => setField("recipientName", event.target.value)} autoComplete="name" minLength={2} maxLength={150} required /></Field>
       <Field label="WhatsApp / telepon penerima"><input value={value.recipientPhone} onChange={(event) => setField("recipientPhone", event.target.value)} autoComplete="tel" inputMode="tel" required /></Field>
-      <RegionField label="Provinsi" options={provinces} value={value.provinceId} loading={loading === "province"} onChange={(code) => onChange({ ...value, provinceId: code, regencyId: "", districtId: "", villageId: "", postalCode: "" })} />
-      <RegionField label="Kabupaten / kota" options={regencies} value={value.regencyId} loading={loading === "regency"} disabled={!value.provinceId} onChange={(code) => onChange({ ...value, regencyId: code, districtId: "", villageId: "", postalCode: "" })} />
-      <RegionField label="Kecamatan" options={districts} value={value.districtId} loading={loading === "district"} disabled={!value.regencyId} onChange={(code) => onChange({ ...value, districtId: code, villageId: "", postalCode: "" })} />
-      <RegionField label="Kelurahan / desa" options={villages} value={value.villageId} loading={loading === "village"} disabled={!value.districtId} onChange={(code) => { const region = villages.find((item) => item.code === code); onChange({ ...value, villageId: code, postalCode: region?.postalCodes.length === 1 ? region.postalCodes[0] : "" }); }} />
+      <RegionField label="Provinsi" options={provinces} value={value.provinceId} loading={loading === "province"} onChange={(code) => updateAddress({ ...value, provinceId: code, regencyId: "", districtId: "", villageId: "", postalCode: "" })} />
+      <RegionField label="Kabupaten / kota" options={regencies} value={value.regencyId} loading={loading === "regency"} disabled={!value.provinceId} onChange={(code) => updateAddress({ ...value, regencyId: code, districtId: "", villageId: "", postalCode: "" })} />
+      <RegionField label="Kecamatan" options={districts} value={value.districtId} loading={loading === "district"} disabled={!value.regencyId} onChange={(code) => updateAddress({ ...value, districtId: code, villageId: "", postalCode: "" })} />
+      <RegionField label="Kelurahan / desa" options={villages} value={value.villageId} loading={loading === "village"} disabled={!value.districtId} onChange={(code) => { const region = villages.find((item) => item.code === code); updateAddress({ ...value, villageId: code, postalCode: region?.postalCodes.length === 1 ? region.postalCodes[0] : "" }); }} />
       <Field label="Kode pos"><input value={value.postalCode} onChange={(event) => setField("postalCode", event.target.value.replace(/\D/g, "").slice(0, 5))} inputMode="numeric" pattern="[0-9]{5}" list="custom-postal-codes" required /><datalist id="custom-postal-codes">{(selectedVillage?.postalCodes ?? []).map((code) => <option key={code} value={code} />)}</datalist></Field>
       <Field label="Nomor rumah / gedung"><input value={value.houseNumber} onChange={(event) => setField("houseNumber", event.target.value)} maxLength={80} /></Field>
       <Field label="RT"><input value={value.rt} onChange={(event) => setField("rt", event.target.value.replace(/\D/g, "").slice(0, 3))} inputMode="numeric" /></Field>
@@ -73,10 +74,13 @@ export function StructuredIndonesiaAddress({ value, confirmed, onChange, onConfi
 }
 
 function RegionField({ label, options, value, loading, disabled, onChange }: { label: string; options: IndonesiaRegionOption[]; value: string; loading: boolean; disabled?: boolean; onChange: (value: string) => void }) {
+  const id = useId();
+  const searchId = `${id}-search`;
+  const selectId = `${id}-select`;
   const [query, setQuery] = useState("");
   useEffect(() => setQuery(""), [options]);
   const visible = query ? options.filter((option) => option.name.toLocaleLowerCase("id").includes(query.toLocaleLowerCase("id"))) : options;
-  return <div className="grid gap-2"><label className="text-sm font-semibold">{label}</label><input type="search" value={query} disabled={disabled || loading} onChange={(event) => setQuery(event.target.value)} placeholder={`Cari ${label.toLowerCase()}`} className="min-h-10 rounded-xl border border-black/10 px-3 text-sm" /><select value={value} disabled={disabled || loading} required onChange={(event) => { onChange(event.target.value); setQuery(""); }} className="min-h-11 rounded-xl border border-black/15 bg-white px-3 text-sm"><option value="">{loading ? "Memuat..." : `Pilih ${label.toLowerCase()}`}</option>{visible.map((option) => <option key={option.code} value={option.code}>{option.name}</option>)}</select></div>;
+  return <div className="grid gap-2"><label htmlFor={selectId} className="text-sm font-semibold">{label}</label><label htmlFor={searchId} className="sr-only">Cari {label}</label><input id={searchId} type="search" value={query} disabled={disabled || loading} onChange={(event) => setQuery(event.target.value)} placeholder={`Cari ${label.toLowerCase()}`} className="min-h-10 rounded-xl border border-black/10 px-3 text-sm" /><select id={selectId} value={value} disabled={disabled || loading} required onChange={(event) => { onChange(event.target.value); setQuery(""); }} className="min-h-11 rounded-xl border border-black/15 bg-white px-3 text-sm"><option value="">{loading ? "Memuat..." : `Pilih ${label.toLowerCase()}`}</option>{visible.map((option) => <option key={option.code} value={option.code}>{option.name}</option>)}</select></div>;
 }
 
 function Field({ label, children }: { label: string; children: React.ReactNode }) {

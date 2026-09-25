@@ -77,6 +77,18 @@ describe("DEBRODER PDP Final Experience V1", () => {
     });
   });
 
+  it("uses the modern variant name before compatibility projections", () => {
+    const options = pdpColorOptions([
+      variant({
+        name: "E2E Ready Stock",
+        variant_name: "Legacy Variant",
+        color_name: "Black"
+      })
+    ]);
+
+    expect(options[0]?.name).toBe("E2E Ready Stock");
+  });
+
   it("keeps supported zero-stock sizes visible and never fabricates unsupported sizes", () => {
     const options = pdpSizeOptions(variant());
 

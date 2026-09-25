@@ -116,6 +116,7 @@ export function CategoryCommerceCatalog({
   productTypeOptions = [],
   typeFilterLabel = "Semua tipe",
   seoLinks = [],
+  initialQuery = "",
   initialColor = "all",
   initialLabel = "all",
   initialSort = "order",
@@ -136,6 +137,7 @@ export function CategoryCommerceCatalog({
   productTypeOptions?: ProductTypeOption[];
   typeFilterLabel?: string;
   seoLinks?: Array<{ label: string; href: string }>;
+  initialQuery?: string;
   initialColor?: string;
   initialLabel?: LabelValue;
   initialSort?: SortValue;
@@ -180,7 +182,7 @@ export function CategoryCommerceCatalog({
     return candidates.length >= 3 ? candidates : [];
   }, [products]);
 
-  const catalogKey = `${initialProductType}|${initialColor}|${initialLabel}|${initialSort}`;
+  const catalogKey = `${initialQuery}|${initialProductType}|${initialColor}|${initialLabel}|${initialSort}`;
 
   return (
     <>
@@ -281,6 +283,7 @@ export function CategoryCommerceCatalog({
               key={catalogKey}
               products={products}
               showCategoryFilter={false}
+              initialQuery={initialQuery}
               initialColor={initialColor}
               initialLabel={initialLabel}
               initialSort={initialSort}

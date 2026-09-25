@@ -1,6 +1,7 @@
 import Link from "next/link";
 import type { CSSProperties, ReactNode } from "react";
 import { PageMotion } from "@/components/PageMotion";
+import { MobileBottomNav } from "@/components/mobile/MobileBottomNav";
 import { ProductCatalog } from "@/components/ProductCatalog";
 import { PublicProductCard } from "@/components/PublicProductCard";
 import { PublicFooter } from "@/components/PublicFooter";
@@ -544,6 +545,7 @@ export function PublicShellFrame({
         <PageMotion />
         {children}
           <PublicFooter model={shellModel.data.footer} />
+        <MobileBottomNav />
       </main>
     </StorefrontCartBoundary>
   );

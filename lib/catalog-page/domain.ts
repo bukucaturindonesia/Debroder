@@ -21,6 +21,7 @@ export type CatalogPageInput = {
   productTypeOptions?: ProductTypeOption[];
   scope?: "route" | "all";
   searchParams?: {
+    q?: string | string[];
     color?: string | string[];
     status?: string | string[];
     size?: string | string[];
@@ -61,6 +62,7 @@ function filters(input: CatalogPageInput): CatalogPageFiltersViewModel {
   const params = input.searchParams || {};
   const price = normalized(firstParam(params.price), "all");
   return {
+    query: (firstParam(params.q) || "").trim().slice(0, 120),
     color: normalized(firstParam(params.color), "all"),
     size: normalized(firstParam(params.size), "all"),
     price: ["under-50", "50-100", "over-100"].includes(price) ? price : "all",

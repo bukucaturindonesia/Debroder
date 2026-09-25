@@ -1,15 +1,16 @@
 import type { Metadata } from "next";
-import { Geist } from "next/font/google";
+import localFont from "next/font/local";
 import type { ReactNode } from "react";
 import { CustomerAuthProvider } from "@/components/customer-auth/CustomerAuthProvider";
 import { siteConfig } from "@/lib/site";
 import "./globals.css";
 
-const geist = Geist({
-  subsets: ["latin"],
+const geist = localFont({
+  src: "../node_modules/next/dist/next-devtools/server/font/geist-latin.woff2",
   display: "swap",
   fallback: ["Inter", "system-ui", "sans-serif"],
-  variable: "--font-geist-sans"
+  variable: "--font-geist-sans",
+  weight: "100 900"
 });
 
 export const metadata: Metadata = {
@@ -39,13 +40,13 @@ export const metadata: Metadata = {
   openGraph: {
     title: siteConfig.defaultMetaTitle,
     description: siteConfig.defaultMetaDescription,
-    siteName: "DE BRODER",
+    siteName: siteConfig.siteName,
     images: [
       {
         url: "/debroder/open-graph-logo.png",
         width: 1200,
         height: 630,
-        alt: "Logo DE BRODER"
+        alt: "Logo DEBRODER"
       }
     ],
     locale: "id_ID",

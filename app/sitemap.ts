@@ -3,6 +3,7 @@ import { getPublicContent } from "@/lib/public-data";
 import { absoluteUrl } from "@/lib/site";
 import { listCustomCategories } from "@/lib/custom-commerce/data";
 import { PUBLIC_ROUTES, PUBLIC_SITEMAP_ROUTES } from "@/lib/public-routes";
+import { brochureProducts } from "@/src/data/products";
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const now = new Date();
@@ -13,7 +14,14 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     changeFrequency: route === PUBLIC_ROUTES.home ? "weekly" : "monthly",
     priority: route === PUBLIC_ROUTES.home ? 1 : route === PUBLIC_ROUTES.collection ? 0.9 : 0.8
   }));
-  const products: MetadataRoute.Sitemap = content.products.filter((product) => product.slug).map((product) => ({
+  const brochureSlugs = new Set(brochureProducts.map((product) => product.slug));
+  const brochureEntries: MetadataRoute.Sitemap = brochureProducts.map((product) => ({
+    url: absoluteUrl(PUBLIC_ROUTES.product(product.slug)),
+    lastModified: now,
+    changeFrequency: "monthly",
+    priority: 0.8
+  }));
+  const products: MetadataRoute.Sitemap = content.products.filter((product) => product.slug && !brochureSlugs.has(product.slug as "nsa-premium" | "cotton-combed-24s")).map((product) => ({
     url: absoluteUrl(PUBLIC_ROUTES.product(product.slug!)),
     lastModified: product.updated_at ? new Date(product.updated_at) : now,
     changeFrequency: "weekly",
@@ -31,5 +39,5 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     changeFrequency: "monthly",
     priority: 0.8
   }));
-  return [...base, ...products, ...jerseyCategories, ...customRoutes];
+  return [...base, ...brochureEntries, ...products, ...jerseyCategories, ...customRoutes];
 }

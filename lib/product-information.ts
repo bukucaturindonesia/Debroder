@@ -1,6 +1,7 @@
 import type {
   ProductLifecycle,
   ProductManagerCapabilities,
+  ProductSalesMode,
   ProductRootInput
 } from "@/lib/product-manager";
 import type { ProductWorkspaceProduct } from "@/lib/product-workspace";
@@ -37,6 +38,7 @@ export type ProductInformationProduct = {
   status: ProductLifecycle;
   productCategoryId: string;
   productSubcategoryId: string | null;
+  salesMode: ProductSalesMode;
   categoryName: string;
   subcategoryName: string;
   basePrice: number;
@@ -70,6 +72,7 @@ export type ProductInformationFormValue = {
   slug: string;
   productCategoryId: string;
   productSubcategoryId: string | null;
+  salesMode: ProductSalesMode;
   basePrice: number;
   description: string;
   sku: string;
@@ -88,6 +91,7 @@ export function productInformationFormFromProduct(
     slug: product.slug,
     productCategoryId: product.productCategoryId,
     productSubcategoryId: product.productSubcategoryId,
+    salesMode: product.salesMode,
     basePrice: product.basePrice,
     description: product.description || "",
     sku: product.sku || "",
@@ -109,6 +113,7 @@ export function productInformationInput(
     slug: value.slug.trim(),
     productCategoryId: value.productCategoryId,
     productSubcategoryId: value.productSubcategoryId || null,
+    salesMode: value.salesMode,
     basePrice: Number(value.basePrice),
     description: nullableText(value.description),
     sku: nullableText(value.sku),
@@ -167,6 +172,7 @@ function canonicalForm(value: ProductInformationFormValue) {
     slug: value.slug.trim(),
     productCategoryId: value.productCategoryId,
     productSubcategoryId: value.productSubcategoryId || null,
+    salesMode: value.salesMode,
     basePrice: Number(value.basePrice),
     description: value.description.trim(),
     sku: value.sku.trim(),

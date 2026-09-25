@@ -1,5 +1,8 @@
 export const PUBLIC_ROUTES = {
   home: "/",
+  products: "/produk",
+  services: "/layanan",
+  contact: "/kontak",
   collection: "/koleksi",
   product: (slug: string) => `/produk/${encodeURIComponent(slug)}`,
   jersey: "/jersey",
@@ -45,6 +48,9 @@ export const PUBLIC_ROUTES = {
 
 export const PUBLIC_SITEMAP_ROUTES = [
   PUBLIC_ROUTES.home,
+  PUBLIC_ROUTES.products,
+  PUBLIC_ROUTES.services,
+  PUBLIC_ROUTES.contact,
   PUBLIC_ROUTES.collection,
   PUBLIC_ROUTES.custom,
   PUBLIC_ROUTES.plainShirts,

@@ -95,13 +95,13 @@ describe("P4 category page isolation", () => {
       customDestination: "/custom/kaos"
     }, {
       routeKey: "kaos-polos",
-      searchParams: { color: "Hitam", label: "new", sort: "price-low" }
+      searchParams: { q: "  Kaos Polos  ", color: "Hitam", label: "new", sort: "price-low" }
     });
 
     expect(model.data.state).toBe("ready");
     expect(model.data.products).toHaveLength(1);
     expect(model.data.products[0]?.nama).toBe("Kaos Polos");
-    expect(model.data.filters).toMatchObject({ color: "hitam", label: "new", sort: "price-low" });
+    expect(model.data.filters).toMatchObject({ query: "Kaos Polos", color: "hitam", label: "new", sort: "price-low" });
     expect(model.data.journeyAvailability.readyStock).toBe(true);
     expect(model.data.customDestination).toBe("/custom/kaos");
   });

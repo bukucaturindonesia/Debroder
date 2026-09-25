@@ -264,6 +264,7 @@ export function ProductMediaPanel() {
     try {
       const result = await uploadProductMediaAsset({
         file,
+        productId: product.id,
         variantId: selectedVariant.id,
         role,
         colorName: selectedVariant.name

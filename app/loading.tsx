@@ -1,14 +1,18 @@
+import { PublicBoundaryShell } from "@/components/PublicBoundaryShell";
+
 export default function Loading() {
   return (
-    <main data-ui-system="canonical" className="debroder-storefront min-h-screen bg-brand-offWhite text-brand-charcoal">
-      <div className="section-shell py-10">
+    <PublicBoundaryShell>
+      <section aria-label="Memuat halaman" aria-busy="true" className="min-h-screen bg-brand-offWhite text-brand-charcoal">
+        <div className="section-shell py-10">
         <div className="rounded-[32px]  bg-brand-offWhite p-6  sm:p-10">
           <div className="h-4 w-36 animate-pulse rounded-full bg-brand-softGray" />
           <div className="mt-6 h-10 w-3/4 animate-pulse rounded-2xl bg-brand-softGray" />
           <div className="mt-4 h-5 w-full max-w-2xl animate-pulse rounded-full bg-brand-softGray" />
           <div className="mt-2 h-5 w-2/3 animate-pulse rounded-full bg-brand-softGray" />
         </div>
-      </div>
-    </main>
+        </div>
+      </section>
+    </PublicBoundaryShell>
   );
 }

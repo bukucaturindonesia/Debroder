@@ -42,6 +42,7 @@ const emptyRoot: ProductRootInput = {
   sku: null,
   productType: "standard_product",
   pricingMode: "fixed_price",
+  salesMode: "ready_stock",
   minimumOrderQty: 1,
   seoTitle: null,
   seoDescription: null
@@ -565,6 +566,7 @@ function rootFromProduct(product: ProductManagerItem): ProductRootInput {
     sku: product.sku,
     productType: product.productType,
     pricingMode: product.pricingMode,
+    salesMode: product.salesMode,
     minimumOrderQty: product.minimumOrderQty,
     seoTitle: product.seoTitle,
     seoDescription: product.seoDescription

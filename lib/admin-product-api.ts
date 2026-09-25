@@ -105,6 +105,7 @@ export type ProductManagerItem = {
   status: ProductLifecycle;
   productType: string;
   pricingMode: string;
+  salesMode: "ready_stock" | "custom" | "both";
   minimumOrderQty: number;
   seoTitle: string | null;
   seoDescription: string | null;

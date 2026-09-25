@@ -122,6 +122,67 @@ describe("Security function reachability ACL V1", () => {
     }
   });
 
+  it("accepts the legitimate pre-cleanup ACL variants before enforcing service_role-only", () => {
+    const preflightStart = migration.indexOf(
+      "if pg_catalog.has_function_privilege('public', next_order_oid"
+    );
+    const preflightEnd = migration.indexOf(
+      "  select count(*)",
+      preflightStart
+    );
+    const numberingPreflight = migration.slice(preflightStart, preflightEnd);
+
+    expect(numberingPreflight).toContain(
+      "pg_catalog.has_function_privilege('public', next_order_oid, 'EXECUTE')"
+    );
+    expect(numberingPreflight).toContain(
+      "pg_catalog.has_function_privilege('anon', next_order_oid, 'EXECUTE')"
+    );
+    expect(numberingPreflight).not.toContain(
+      "not pg_catalog.has_function_privilege('authenticated', next_order_oid, 'EXECUTE')"
+    );
+    expect(numberingPreflight).not.toContain(
+      "not pg_catalog.has_function_privilege('service_role', next_order_oid, 'EXECUTE')"
+    );
+    expect(migration).toContain(
+      "-- The replay prefix has intentionally different trusted-role grants:"
+    );
+    expect(migration).toContain(
+      "The final postflight\n  -- below establishes the single service_role-only contract."
+    );
+  });
+
+  it("treats allowlisted admin ACLs as cleanup targets rather than preconditions", () => {
+    const adminPreflightStart = migration.indexOf(
+      "  -- These functions are an explicit identity allowlist"
+    );
+    const adminPreflightEnd = migration.indexOf(
+      "  if pg_catalog.to_regprocedure('public.get_public_mockup_review(text)')",
+      adminPreflightStart
+    );
+    const adminPreflight = migration.slice(
+      adminPreflightStart,
+      adminPreflightEnd
+    );
+
+    expect(adminPreflight).toContain(
+      "security_function_reachability_acl_v1_admin_functions"
+    );
+    expect(adminPreflight).toContain("not (select p.prosecdef");
+    expect(adminPreflight).not.toContain("unexpected admin ACL baseline");
+    expect(adminPreflight).not.toContain(
+      "pg_catalog.has_function_privilege('anon', function_oid, 'EXECUTE')"
+    );
+    expect(migration.match(/if function_oid is null then/g) ?? []).toHaveLength(3);
+    expect(migration.match(/\bcontinue;/g) ?? []).toHaveLength(3);
+    expect(migration).not.toContain(
+      "expected admin function is missing"
+    );
+    expect(migration).toContain(
+      "-- Targeted admin cleanup. The signatures are explicitly enumerated above."
+    );
+  });
+
   it("does not rewrite or alter numbering function bodies", () => {
     expect(compactMigration).not.toContain("create or replace function");
     expect(compactMigration).not.toContain("alter function");

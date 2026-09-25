@@ -17,7 +17,13 @@ describe("DEBRODER product catalog and PDP clickability", () => {
     const catalog = read("components/ProductCatalog.tsx");
 
     expect(catalog).toContain("window.history.pushState");
-    expect(catalog).toContain('window.addEventListener("popstate", restoreUrlState)');
+    expect(catalog).toContain("useSearchParams");
+    expect(catalog).toContain("const urlSearchParamsKey = urlSearchParams.toString()");
+    expect(catalog).toContain("const EMPTY_PRODUCT_TYPE_OPTIONS: ProductTypeOption[] = []");
+    expect(catalog).toContain("productTypeOptions = EMPTY_PRODUCT_TYPE_OPTIONS");
+    expect(catalog).not.toContain('window.addEventListener("popstate"');
+    expect(catalog).toContain("q: query.trim()");
+    expect(catalog).toContain('setQuery((params.get("q") || "").trim().slice(0, 120))');
     expect(catalog).toContain("productTypeValue(productType, productTypeOptions)");
     expect(catalog).toContain(
       "matchesProductType(product, activeProductType, productTypeOptions)"

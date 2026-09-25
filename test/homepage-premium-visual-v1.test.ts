@@ -26,11 +26,10 @@ describe("DEBRODER Homepage premium visual V1 contract", () => {
     }
   });
 
-  it("keeps editorial cards as one semantic link", () => {
-    const card = home.slice(home.indexOf("function EditorialCard"), home.indexOf("function CategoryEditorialCard"));
-    expect(card.match(/<Link href=\{item\.href\}/g)).toHaveLength(1);
-    expect(card).toContain('<span className="editorial-card-cta');
-    expect(card).not.toContain('className="absolute inset-0 z-10"');
+  it("keeps each approved brochure product card as one semantic link", () => {
+    const brochure = readFileSync("components/brochure/BrochureContent.tsx", "utf8");
+    expect(brochure).toContain('Link href={`/produk/${product.slug}`}');
+    expect(brochure).not.toContain('className="absolute inset-0 z-10"');
   });
 
   it("keeps hero media bounded, restrained, and limited to one priority image", () => {
@@ -55,15 +54,15 @@ describe("DEBRODER Homepage premium visual V1 contract", () => {
     expect(motionVideo).toContain('preload="metadata"');
     expect(motionVideo).toContain("video.pause()");
     expect(motionVideo).not.toContain("autoPlay");
-    expect(home).toContain("<AccessibleAutoplayVideo");
+    expect(home).not.toContain("<AccessibleAutoplayVideo");
     expect(campaign).toContain("<AccessibleAutoplayVideo");
   });
 
-  it("keeps PublicFooter canonical with an explicit light homepage tone", () => {
+  it("keeps the legacy footer canonical while the brochure uses its dedicated light shell", () => {
     expect(footer).toContain('type FooterTone = "dark" | "light"');
     expect(footer).toContain('tone = "dark"');
     expect(footer).toContain("data-footer-tone={tone}");
-    expect(home).toContain('<PublicFooter model={shellModel.data.footer} tone="light" />');
-    expect(home.match(/<PublicFooter/g)).toHaveLength(1);
+    expect(home).toContain("<BrochureShell>");
+    expect(readFileSync("components/brochure/BrochureShell.tsx", "utf8")).toContain("<footer");
   });
 });

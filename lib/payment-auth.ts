@@ -6,7 +6,12 @@ import {
   createServerRequestContext
 } from "@/lib/observability/server";
 
-export type PaymentActor = { user: User; role: string; client: SupabaseClient };
+export type PaymentActor = {
+  user: User;
+  role: string;
+  client: SupabaseClient;
+  adminClient: SupabaseClient;
+};
 
 export async function requirePaymentActor(
   request: Request,

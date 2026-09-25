@@ -60,9 +60,9 @@ export function pdpColorOptions(variants: readonly ProductVariant[]) {
     .map<PdpColorOption>((variant) => {
       const sizes = activeSizes(variant);
       return {
-        name: variant.color_name
+        name: variant.name
           || variant.variant_name
-          || variant.name
+          || variant.color_name
           || "Warna belum dinamai",
         variantId: variant.id as string,
         imageUrl: getVariantGalleryImages(variant)[0] || null,

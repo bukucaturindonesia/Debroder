@@ -7,8 +7,9 @@ const globals = read("app/globals.css");
 describe("DEBRODER Deep Modular UI System foundation", () => {
   it("uses Geist Sans through the Next.js font pipeline", () => {
     const layout = read("app/layout.tsx");
-    expect(layout).toContain('from "next/font/google"');
-    expect(layout).toContain("Geist({");
+    expect(layout).toContain('from "next/font/local"');
+    expect(layout).toContain("localFont({");
+    expect(layout).toContain("geist-latin.woff2");
     expect(layout).toContain('display: "swap"');
     expect(layout).toContain('variable: "--font-geist-sans"');
     expect(globals).not.toMatch(/Barlow|Arial Narrow|Helvetica Neue Condensed/);

@@ -26,6 +26,7 @@ const emptyDraft: ProductRootInput = {
   sku: null,
   productType: "standard_product",
   pricingMode: "fixed_price",
+  salesMode: "ready_stock",
   minimumOrderQty: 1,
   seoTitle: null,
   seoDescription: null

@@ -40,4 +40,17 @@ describe("Unified checkout structured address", () => {
     expect(address).toContain("Provinsi");
     expect(address).toContain("Kelurahan / desa");
   });
+
+  it("invalidates confirmation for every address mutation and labels region controls", () => {
+    const address = read("components/checkout/StructuredIndonesiaAddress.tsx");
+
+    expect(address).toContain("const updateAddress = (next: StructuredIndonesiaAddressInput)");
+    expect(address).toContain("onConfirmedChange(false);");
+    expect(address).toContain("onChange(next);");
+    expect(address.match(/onChange=\{\(code\) => updateAddress/g)).toHaveLength(3);
+    expect(address).toContain("updateAddress({ ...value, villageId: code");
+    expect(address).toContain("useId");
+    expect(address).toContain("htmlFor={searchId}");
+    expect(address).toContain("htmlFor={selectId}");
+  });
 });

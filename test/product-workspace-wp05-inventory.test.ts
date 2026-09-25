@@ -136,6 +136,7 @@ describe("WP-05 Location-aware Inventory", () => {
   it("uses explicit store location and never writes legacy compatibility stock", () => {
     expect(inventoryRoute).toContain("locationId");
     expect(inventoryServer).toContain("LEGACY-SYSTEM");
+    expect(inventoryServer).toContain("DEBRODER E2E Pickup A");
     expect(inventoryServer).toContain("inventory_balances");
     expect(inventoryServer).toContain("inventory_movements");
     expect(inventoryServer).not.toContain("stock_quantity:");

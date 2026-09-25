@@ -143,7 +143,7 @@ async function loadPageDependencySummary(client: SupabaseClient, productIds: str
   const variants = await selectInChunks(
     client,
     "product_variants",
-    "id,product_id,status,is_active,is_default,sort_order,image_url",
+    "id,product_id,status,is_active,is_default,sort_order",
     "product_id",
     productIds,
     "Ringkasan varian belum dapat dimuat."

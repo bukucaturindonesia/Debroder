@@ -19,6 +19,7 @@ import {
   ProductReviewApiError
 } from "@/lib/product-review-server";
 import { isValidProductWorkspaceId } from "@/lib/product-workspace";
+import { revalidatePublicProductData } from "@/lib/public-cache";
 import {
   Phase13AuthError,
   requirePhase13Actor,
@@ -85,6 +86,7 @@ export async function PATCH(request: Request, context: Context) {
       beforeStatus: transition.expectedStatus,
       afterStatus: transition.nextStatus
     });
+    revalidatePublicProductData();
 
     return noStoreJson({
       ok: true,

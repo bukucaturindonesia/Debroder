@@ -20,6 +20,7 @@ import {
 } from "@/lib/product-review-server";
 import type { ProductReviewAction } from "@/lib/product-review";
 import { isValidProductWorkspaceId } from "@/lib/product-workspace";
+import { revalidatePublicProductData } from "@/lib/public-cache";
 import {
   Phase13AuthError,
   requirePhase13Actor,
@@ -75,6 +76,7 @@ export async function PATCH(request: Request, context: Context) {
       expectedReviewVersion
     });
     await auditLifecycleSuccess({ actor, request, action, result });
+    revalidatePublicProductData();
     return noStoreJson({
       ok: true,
       message: action === "publish"

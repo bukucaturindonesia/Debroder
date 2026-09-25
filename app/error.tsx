@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { PublicBoundaryShell } from "@/components/PublicBoundaryShell";
 
 export default function AppError({
   error,
@@ -10,11 +11,12 @@ export default function AppError({
   reset: () => void;
 }) {
   return (
-    <main data-ui-system="canonical" className="debroder-storefront grid min-h-[70vh] place-items-center bg-[#f6f5f0] px-5 py-16 text-center">
-      <section
-        role="alert"
-        className="w-full max-w-lg rounded-[28px] border border-black/10 bg-white p-7 sm:p-9"
-      >
+    <PublicBoundaryShell>
+      <section className="grid min-h-[70vh] place-items-center bg-[#f6f5f0] px-5 py-16 text-center">
+        <div
+          role="alert"
+          className="w-full max-w-lg rounded-[28px] border border-black/10 bg-white p-7 sm:p-9"
+        >
         <p className="text-xs font-semibold uppercase tracking-[0.16em] text-black/45">
           DEBRODER
         </p>
@@ -44,7 +46,8 @@ export default function AppError({
             Kembali ke Beranda
           </Link>
         </div>
+        </div>
       </section>
-    </main>
+    </PublicBoundaryShell>
   );
 }

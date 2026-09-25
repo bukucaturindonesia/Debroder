@@ -43,7 +43,6 @@ const ADMIN_ORDER_DETAIL_SELECT = [
   "payment_production_eligible",
   "payment_requirement_met",
   "currency",
-  "converted_at",
   "archived_at",
   "checkout_source",
   "checkout_activated_at",

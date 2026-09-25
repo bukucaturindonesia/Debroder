@@ -390,6 +390,25 @@ export function ProductInformationForm() {
             </select>
           </Field>
 
+          <Field label="Mode penjualan" required>
+            <select
+              value={form.salesMode}
+              onChange={(event) => updateForm({
+                salesMode: event.target.value as ProductInformationFormValue["salesMode"]
+              })}
+              disabled={readOnly || working}
+              required
+              className={controlClass}
+            >
+              <option value="ready_stock">Ready Stock</option>
+              <option value="custom">Custom Order</option>
+              <option value="both">Ready Stock + Custom Order</option>
+            </select>
+            <span className="mt-1 block text-xs font-normal leading-5 text-brand-charcoal/55">
+              Menentukan jalur penjualan publik. Harga, SKU, varian, dan stok tetap dikelola pada modul masing-masing.
+            </span>
+          </Field>
+
           <Field label="Jumlah minimum pesanan">
             <input
               type="number"

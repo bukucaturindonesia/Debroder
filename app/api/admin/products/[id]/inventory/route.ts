@@ -12,6 +12,7 @@ import {
   ProductInventoryApiError
 } from "@/lib/product-inventory-server";
 import { isValidProductWorkspaceId } from "@/lib/product-workspace";
+import { revalidatePublicProductData } from "@/lib/public-cache";
 import {
   Phase13AuthError,
   requirePhase13Actor
@@ -67,6 +68,7 @@ export async function PATCH(request: Request, context: Context) {
     const result = action === "preview"
       ? await previewProductInventoryMutation(actor, id, input)
       : await commitProductInventoryMutation(actor, request, id, input);
+    if (action === "commit") revalidatePublicProductData();
     return noStoreJson(result);
   } catch (error) {
     return productInventoryErrorResponse(error);

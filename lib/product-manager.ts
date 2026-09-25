@@ -1,8 +1,11 @@
 import type { AdminRole } from "@/lib/access-control";
-import type { ValidationIssue } from "@/lib/types";
+import type { SalesMode, ValidationIssue } from "@/lib/types";
 
 export const PRODUCT_LIFECYCLE = ["draft", "active", "archived"] as const;
 export type ProductLifecycle = (typeof PRODUCT_LIFECYCLE)[number];
+
+export const PRODUCT_SALES_MODES = ["ready_stock", "custom", "both"] as const;
+export type ProductSalesMode = (typeof PRODUCT_SALES_MODES)[number];
 
 export const PRODUCT_VARIANT_STATUS = ["active", "inactive"] as const;
 export type ProductVariantStatus = (typeof PRODUCT_VARIANT_STATUS)[number];
@@ -65,6 +68,7 @@ export type ProductRootInput = {
   sku?: string | null;
   productType?: string | null;
   pricingMode?: string | null;
+  salesMode?: SalesMode | null;
   minimumOrderQty?: number | null;
   seoTitle?: string | null;
   seoDescription?: string | null;
@@ -175,6 +179,7 @@ export function normalizeProductRootInput(value: unknown): ProductRootInput | nu
     sku: nullableText(value.sku),
     productType: nullableText(value.productType),
     pricingMode: nullableText(value.pricingMode),
+    salesMode: salesMode(value.salesMode),
     minimumOrderQty,
     seoTitle: nullableText(value.seoTitle),
     seoDescription: nullableText(value.seoDescription)
@@ -261,6 +266,9 @@ export function validateProductRootDraft(input: ProductRootInput): ValidationIss
   }
   if (!Number.isInteger(input.basePrice) || input.basePrice < 0) {
     issues.push(error("base_price", "Harga dasar wajib berupa integer dan tidak boleh negatif."));
+  }
+  if (input.salesMode && !PRODUCT_SALES_MODES.includes(input.salesMode)) {
+    issues.push(error("sales_mode", "Mode penjualan produk tidak valid."));
   }
   if (
     input.minimumOrderQty !== null && input.minimumOrderQty !== undefined &&
@@ -475,6 +483,11 @@ function integer(value: unknown, fallback: number) {
 }
 function variantStatus(value: unknown): ProductVariantStatus {
   return value === "inactive" ? "inactive" : "active";
+}
+function salesMode(value: unknown): SalesMode {
+  return PRODUCT_SALES_MODES.includes(value as SalesMode)
+    ? value as SalesMode
+    : "ready_stock";
 }
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null && !Array.isArray(value);

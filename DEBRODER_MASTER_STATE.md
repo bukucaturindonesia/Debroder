@@ -841,3 +841,1158 @@ Existing legal, CMS route, Preview performance, remote transaction E2E, data-int
   PASS with 34 pre-existing warnings; direct Next build PASS 139/139 pages;
   diff check PASS. Authenticated runtime/rapid-switch E2E and deployment remain
   pending; release is NO-GO / NOT COMPLETE.
+
+## Mobile storefront implementation foundation — 2026-08-15
+
+- Implemented a responsive mobile storefront layer inside the existing public
+  shell. The work covers compact mobile branding, a five-item bottom
+  navigation, a mobile homepage search entry point, safe-area handling, drawer
+  spacing, rail/card sizing, and focused-flow navigation suppression.
+- Existing PIM product truth, canonical product route `/produk/[slug]`, shared
+  cart provider, customer auth provider, checkout, order, payment, and account
+  routes remain the only sources of commerce state. No grocery/demo data,
+  duplicate cart, duplicate backend, duplicate auth, or new commerce route was
+  introduced. The local Figma donor was used only for visual rhythm and mobile
+  composition patterns.
+- Checkout controls no longer render dead `href="#"` links when checkout is
+  blocked; the shared decision state remains authoritative.
+- Database/schema/data/migration changes: **NONE**. Deployment: **NOT
+  PERFORMED**.
+- Evidence: typecheck PASS; lint PASS with 0 errors and 34 existing warnings;
+  full suite **125 test files / 946 tests PASS**; `pnpm build` exit 0 with
+  production compilation and 139 routes generated; `git diff --check` PASS.
+  Static generation emitted local `fetch failed / EACCES` warnings but the
+  build completed successfully.
+- Existing wishlist storage is still not activated in the repository. The new
+  mobile nav links to the honest existing `/wishlist` route and does not fake
+  persistence or wishlist state. Authenticated browser, RLS, checkout/payment,
+  deployment, and owner visual review remain pending.
+- Release state: **IMPLEMENTED LOCALLY; PARTIALLY VERIFIED; NO-GO / NOT
+  COMPLETE**.
+
+## Wave 0A current-head safety snapshot — 2026-08-15
+
+- Current HEAD: `82d1e082727ed4afc7989197689777f6b9204fae` on `UI-MIGRATION`.
+- Local gates: typecheck PASS; lint PASS with 0 errors / 34 warnings; Vitest
+  PASS at 125 files / 946 tests; direct Next build PASS at 139 routes.
+- Build limitation: static generation logged local `fetch failed` / `EACCES`
+  warnings while exiting successfully; deployment smoke is still required.
+- Wave 0A added a fail-closed Playwright harness and a single evidence file;
+  no database, migration, route, policy, or reference repository changed.
+- Authenticated customer checkout/payment, duplicate replay, two-customer RLS,
+  admin RBAC, store scope, remote migration state, and deployment remain
+  unverified.
+- Release decision: **WAVE 0A INCOMPLETE — BLOCKERS REMAIN**.
+- Required blocker: **BLOCKED — EXTERNAL RUNTIME EVIDENCE REQUIRED**.
+- Evidence: `WAVE_0A_CURRENT_HEAD_EVIDENCE.md`.
+
+## Wave 0B external runtime verification — 2026-08-15
+
+- Current HEAD remains `43f935b321906093df13e521f411ca3aa102799e` on
+  `UI-MIGRATION`; the baseline tree was clean before Wave 0B.
+- Local gates pass: typecheck, lint with 0 errors / 34 warnings, 125 Vitest
+  files / 946 tests, and production build with 139 generated routes.
+- Read-only external deployment smoke passes for the public shell and canonical
+  public routes; unauthenticated admin/customer APIs return 401.
+- Authenticated transaction, payment, replay, RLS A/B, RBAC, and store-scope
+  evidence remains blocked because the safe staging identity and fixtures are
+  absent. The E2E guard reports `BLOCKED — SAFE STAGING IDENTITY NOT
+  ESTABLISHED`.
+- Read-only Supabase metadata shows 173 remote applied migration records, but
+  the repository’s 132 migration files do not reconcile one-to-one with that
+  history. Pending parity is unknown and no migration was executed.
+- P0 security finding: anonymous execution of `build_quotation_snapshot(uuid)`
+  on the live project exposes a quotation snapshot through a SECURITY DEFINER
+  function without an authorization predicate. No database change was made.
+- Wave 0B evidence: `WAVE_0B_RUNTIME_RELEASE_EVIDENCE.md`.
+- Release state: **WAVE 0B INCOMPLETE — EXTERNAL RUNTIME BLOCKERS REMAIN**.
+- Wave 1 remains prohibited.
+
+## Wave 0C P0 security closure and migration reconciliation — 2026-08-15
+
+- Reproduced the live anonymous quotation snapshot exposure through
+  `public.build_quotation_snapshot(uuid)`: it was `SECURITY DEFINER`, owned by
+  `postgres`, configured with `search_path=public`, executable by `PUBLIC`,
+  `anon`, and `authenticated`, and had no authorization predicate. A known
+  existing quotation ID returned data under the anonymous role; a random
+  nonexistent ID returned no data. The quotation ID was never emitted.
+- Created the forward-only corrective migration
+  `20260815212358_wave_0c_quotation_snapshot_security.sql`. It preserves the
+  existing staff/admin quotation contract, sets `search_path=''`, requires
+  `public.has_permission('quotation.read')`, revokes broad execution including
+  `anon` and `service_role`, and grants execution only to `authenticated`.
+- The focused related RPC audit found no second equivalent P0: quotation
+  mutation RPCs enforce staff/identity checks; public mockup RPCs are
+  token-scoped workflows and remain unchanged.
+- Migration reconciliation is documented in
+  `supabase/MIGRATION_RECONCILIATION_WAVE_0C.md`: the read-only remote history
+  has 173 records versus 132 local migration files at baseline, with 80 exact
+  timestamp matches, 43 local-only keys, and 93 remote-only keys. No
+  historical migration was rewritten or replayed.
+- The E2E guard now requires explicit staging/test/preview identity, matching
+  Supabase project attestation that is not the production ref, fixture prefix,
+  confirmed fixture namespace, all disposable credentials/fixtures, and
+  `E2E_ALLOW_MUTATIONS=1`. Production-like execution fails closed.
+- Wave 0C focused tests pass 11/11; full Vitest passes 127/127 files and
+  957/957 tests; typecheck passes; lint has 0 errors and 34 warnings; build
+  passes with 139 generated routes and local `fetch failed`/`EACCES` warnings.
+- Remote database changed: **NO**. Reference repositories changed: **NO**.
+- Release state: **P0 LOCAL REMEDIATION READY FOR EXTERNAL VERIFICATION; NO-GO
+  FOR PRODUCTION UNTIL REMOTE APPLY, POSTCHECK, AUTHENTICATED E2E, AND
+  DEPLOYMENT/ROLLBACK EVIDENCE PASS**. Wave 1 remains prohibited.
+
+## Wave 0B resume attempt — safe staging activation — 2026-08-15
+
+- Current HEAD remains `43f935b321906093df13e521f411ca3aa102799e` on
+  `UI-MIGRATION`.
+- The exact Wave 0C process contract was inspected. All 25 required names were
+  missing from the effective process environment; no secret values were
+  printed. `.env.local` public app keys do not substitute for the explicit E2E
+  staging attestation.
+- The authenticated suite was invoked and stopped before browser activity with
+  `BLOCKED — SAFE STAGING IDENTITY NOT ESTABLISHED`.
+- No staging project was accepted, no remote SQL/migration/fixture action was
+  performed, and no production data was used.
+- Release state: **WAVE 0B INCOMPLETE — EXTERNAL RUNTIME BLOCKERS REMAIN**.
+  Wave 1 remains prohibited.
+
+## Wave 0B controlled staging bootstrap continuation — 2026-08-16
+
+- The continuation resumed from the prior safe-staging block; completed Wave
+  0A/0B/0C local work and quality gates were not repeated.
+- Current HEAD remains `43f935b321906093df13e521f411ca3aa102799e` on
+  `UI-MIGRATION`.
+- All 25 exact Wave 0C guard and authenticated-fixture process environment
+  names were **MISSING**. The three application Supabase runtime names were
+  also **MISSING**. Values, including secrets, were not printed.
+- The Wave 0C guard therefore rejected staging identity. No staging migration,
+  quotation RPC security migration, deterministic fixture, E2E run,
+  deployment, or rollback was performed. Production remained untouched.
+- Release state: **WAVE 0B INCOMPLETE — CONFIGURATION OR FIXTURE BLOCKERS
+  REMAIN**. Wave 1 remains prohibited.
+
+## Wave 0B staging bootstrap continuation — 2026-08-16
+
+- The current process environment was inspected name-only. The Wave 0C
+  staging guard and runtime mutation guard both passed; the safe identity was
+  confirmed and secrets were reported only as PRESENT/MISSING.
+- The configured Supabase URL `https://ykfjgnrigcsapblbxnxb.supabase.co`
+  matched the expected non-production project ref. Supabase metadata identified
+  the target as `debroder-staging`, ACTIVE/HEALTHY, ref
+  `ykfjgnrigcsapblbxnxb`; production ref `lzennundwqqtyvvcnzbg` was rejected.
+- Read-only staging migration history was empty and the public application
+  schema was fresh. CURRENT HEAD is `43f935b321906093df13e521f411ca3aa102799e`
+  on `UI-MIGRATION`. The working checkpoint contains 123 tracked timestamped
+  migrations plus the Wave 0C corrective migration; nine legacy `_applied.sql`
+  files remain historical evidence and were excluded.
+- Only the first two repository migrations were applied to staging. The next
+  repository migration, `20260711154031_v1_0_product_foundation_compatibility.sql`,
+  failed transactionally because `public.profiles` does not exist. That table
+  is present only in the historical `supabase/schema.sql` evidence, not in a
+  CURRENT HEAD migration. No historical evidence file was replayed and no
+  baseline table was invented.
+- Staging now records exactly those two applied migration names. The Wave 0C
+  quotation RPC migration was not applied because its historical RPC and the
+  required baseline schema are absent. The quotation RPC security fix is not
+  verified. Supplied pickup/order identifiers are present and UUID-shaped, but
+  `public.stores` and `public.orders` do not exist, so no real-row validation
+  or replacement fixture IDs were created.
+- No roles, scopes, product purchasability, inventory, deterministic fixtures,
+  authenticated E2E, deployment, or rollback evidence was produced. Production
+  and reference repositories remained untouched.
+- Release state: **WAVE 0B STAGING BOOTSTRAP INCOMPLETE — CURRENT HEAD
+  BASELINE RECONSTRUCTION BLOCKER REMAINS**. Wave 1 remains prohibited.
+
+## Fresh-database baseline implementation attempt — 2026-08-16
+
+- The requested repository-controlled fresh-database baseline was not authored
+  because the current migration directory cannot be made into an honest
+  executable chain by adding only `profiles`, `stores`, and `orders`.
+- Historical `supabase/schema.sql` evidence traces `profiles` and `stores` to
+  commit `deff782`, and `orders` to the historical schema lineage introduced
+  by `52ffe1b`; none is created by an active CURRENT HEAD migration.
+- Later active migrations depend on archived/reverted foundations for
+  quotations, mockup approval, payments, fulfillment, notifications,
+  permissions, append-only audit, and repeat orders. The active numeric order
+  also contains migrations that use order/payment columns before their later
+  additions. Therefore a new baseline needs a reviewed recovery/manifest
+  design, not a partial schema copy or fabricated migration identity.
+- No database, migration history, schema.sql, seed.sql, application route,
+  fixture, production system, or reference repository was changed in this
+  implementation attempt.
+- State: **NO-GO — BASELINE IMPLEMENTATION INCOMPLETE; OWNER REVIEW REQUIRED**.
+  Wave 1 remains prohibited.
+
+## Database reconstruction specification — 2026-08-16
+
+- `DEBRODER_DATABASE_RECONSTRUCTION_SPEC.md` now records the proposed single
+  authority per DEBRODER domain and the logical dependency order for a fresh
+  database.
+- The design places profiles, stores, unified product compatibility,
+  foundational orders, and missing archived quotation/mockup/payment/
+  fulfillment/notification/RBAC/audit/repeat-order creators at the baseline
+  boundary. Later lifecycle work remains incremental.
+- No baseline migration was created. No historical migration, `schema.sql`,
+  `seed.sql`, database, staging project, production system, fixture, or
+  reference repository was changed.
+- State: **ARCHITECTURE REVIEW REQUIRED; NO-GO FOR BASELINE AUTHORING OR
+  STAGING RESET**. Wave 1 remains prohibited.
+
+## Authoritative fresh-database baseline implementation — 2026-08-16
+
+- Owner architecture decisions were accepted and implemented in the new
+  repository-controlled migration
+  `supabase/migrations/20260816102253_debroder_fresh_database_baseline.sql`.
+- The ID was generated by the official Supabase CLI (`2.114.0`), not
+  fabricated. Historical migrations and `schema.sql` were not modified.
+- The baseline covers the approved foundational domains and reconstructed
+  archived prerequisites with modern product authority, apparel-size-master
+  authority, English canonical order statuses, explicit server profile
+  provisioning, fail-closed RLS, and re-derived SECURITY DEFINER grants.
+- `DEBRODER_FRESH_DATABASE_REPLAY_MANIFEST.md` is the executable fresh-install
+  order and `DEBRODER_BASELINE_COVERAGE_LEDGER.md` maps all responsibilities
+  of the two replaced product migrations.
+- Verification: focused baseline/Wave 0C tests 22/22 PASS; full Vitest
+  128/128 files and 967/967 tests PASS; typecheck PASS; lint PASS with 34
+  existing warnings and 0 errors; `git diff --check` PASS.
+- Disposable local replay is **NOT RUN** because Docker, PostgreSQL client
+  tools, and local Supabase config are unavailable. Remote database changes:
+  **NO**. Staging reset: **NO**. Production: **UNTOUCHED**.
+- Release state: **IMPLEMENTED LOCALLY / READY FOR DISPOSABLE REPLAY / NO-GO
+  FOR REMOTE REPLAY UNTIL DISPOSABLE SQL VALIDATION AND OWNER APPROVAL**.
+  Wave 1 remains prohibited.
+
+## Wave 0B disposable staging replay — 2026-08-16
+
+- Safe staging identity was attested as `debroder-staging` /
+  `ykfjgnrigcsapblbxnxb`; pre-retry state was `STAGING_STATE = EMPTY`.
+- The approved baseline applied and passed its schema/security verification.
+- The topological replay applied 20 incremental migrations after the baseline
+  and stopped at the first real SQL failure in
+  `20260712143745_v1_2_phase_5b_payment_audit_lock.sql` because the required
+  `public.update_order_payment_draft(uuid,bigint,timestamptz,text,text,text,text,text)`
+  function does not exist.
+- The failed migration was not recorded and left no partial audit constraint.
+  No fixtures, Wave 0C security migration, authenticated E2E, deployment, or
+  production action was performed.
+- Root cause: the approved baseline does not yet cover the legacy payment
+  function family required by the active payment audit migration. This is a
+  repository correction blocker; Wave 1 remains prohibited.
+- State: **NO-GO — STAGING REPLAY INCOMPLETE; REPOSITORY CORRECTION REQUIRED**.
+
+## Wave 0B replay resume attestation — 2026-08-16 19:29
+
+- Read-only attestation reconfirmed the exact staging identity
+  `debroder-staging` / `ykfjgnrigcsapblbxnxb`.
+- Current staging state is **BASELINE_PRESENT with partial replay**: 21
+  migration records exist through payment completion; no reset or new replay
+  mutation occurred during this resume attempt.
+- Baseline integrity/security checks still pass, business fixture counts remain
+  zero, and the six legacy payment function dependencies required by the
+  first failing payment-audit migration remain absent.
+- No fixtures, Wave 0C, authenticated E2E, deployment, rollback, or production
+  action occurred. Wave 1 remains prohibited.
+- State: **NO-GO — REPLAY BLOCKED ON REPOSITORY BASELINE CORRECTION**.
+
+## Wave 0B payment foundation correction — 2026-08-16
+
+- The missing Phase 5A payment prerequisite family was recovered from the
+  historical `20260712060316_payment_tracking_phase_5a.sql` source and
+  implemented in the repository-controlled baseline
+  `supabase/migrations/20260816102253_debroder_fresh_database_baseline.sql`.
+- The correction defines the exact `update_order_payment_draft`,
+  `verify_order_payment`, `reject_order_payment`, `archive_order_payment`,
+  `restore_order_payment`, and `permanently_delete_order_payment` contracts
+  over the single canonical `public.order_payments` authority. It does not
+  create a parallel payment table or lifecycle.
+- The baseline coverage ledger and fresh replay manifest now record the
+  Phase 5A reconstruction and the unchanged dependency order into Phase 5B.
+  A new static contract suite protects signatures, dependency order, ACLs,
+  store scope, draft immutability, and duplicate-payment safeguards.
+- Verification executed: focused payment/baseline/manifest/Wave 0C suite
+  **35/35 PASS**; full Vitest **129 files / 974 tests PASS**; typecheck
+  **PASS**; lint **PASS, 0 errors / 34 warnings**; `git diff --check`
+  **PASS**.
+- Local disposable SQL replay is **NOT RUN** because no local PostgreSQL,
+  `psql`, Supabase CLI, Docker, or remote database access is permitted for
+  this task. Staging remains at the previously recorded partial replay
+  checkpoint; no staging or production mutation occurred in this correction.
+- Release state: **PAYMENT FOUNDATION CORRECTED LOCALLY / READY FOR OWNER-
+  AUTHORIZED CLEAN STAGING REPLAY; WAVE 0B NOT COMPLETE; WAVE 1 PROHIBITED**.
+
+## Wave 0B clean staging replay — first new blocker — 2026-08-16 20:09
+
+- Owner-authorized reset of disposable `debroder-staging` /
+  `ykfjgnrigcsapblbxnxb` completed through a temporary zero-migration CLI
+  workspace; read-only attestation proved the database empty before replay.
+- The corrected baseline applied and passed runtime verification. Twenty
+  topologically ordered incremental migrations also passed, including payment
+  completion. The prior missing Phase 5A function blocker is therefore
+  **CLOSED** in runtime.
+- Replay stopped at the first new failure in
+  `20260712143745_v1_2_phase_5b_payment_audit_lock.sql`: SQLSTATE 42883,
+  missing `public.submit_public_payment_proof(uuid,text,text,text)`. The
+  migration was transactional and is not recorded.
+- Staging is preserved at baseline plus 20 incremental migrations. No
+  fixtures, Wave 0C, authenticated E2E, deployment, or production action was
+  performed. Production remains untouched.
+- State: **NO-GO — STAGING REPLAY INCOMPLETE; NEW REPOSITORY PAYMENT
+  FOUNDATION BLOCKER**. Wave 1 remains prohibited.
+
+## Wave 0B public payment proof foundation correction — 2026-08-16 20:32
+
+- Repository-only forensic review classified
+  `submit_public_payment_proof(uuid,text,text,text)` as an **obsolete
+  historical API**, not a CURRENT HEAD canonical or compatibility payment
+  operation. Its historical body writes legacy order proof/status fields and
+  authorizes by order number plus phone; CURRENT HEAD has no caller.
+- The canonical public proof flow remains the server-only token-hash/link
+  route and `submit_customer_order_payment_v2` over one
+  `public.order_payments` authority. No legacy function, shadow proof state,
+  broad grant, or anonymous mutation path was added to the baseline.
+- Corrected `20260712143745_v1_2_phase_5b_payment_audit_lock.sql` so legacy
+  proof ACL cleanup runs conditionally only when a preserved historical
+  function exists. All other Phase 5B targets are supplied by the baseline or
+  the preceding payment-completion migration; the full inventory is in the
+  coverage ledger.
+- Updated `DEBRODER_BASELINE_COVERAGE_LEDGER.md`,
+  `DEBRODER_FRESH_DATABASE_REPLAY_MANIFEST.md`, and added
+  `test/public-payment-proof-foundation.test.ts`.
+- Verification: focused payment/baseline/manifest/Wave 0C/public-proof suite
+  **36/36 PASS**; full Vitest **130 files / 978 tests PASS**; typecheck
+  **PASS**; lint **PASS, 0 errors / 34 warnings**; `git diff --check`
+  **PASS**.
+- Database/migration execution in this task: **NONE**. Staging and production
+  were not contacted or mutated; fixtures, Wave 0C, authenticated E2E,
+  deployment, and rollback were not run.
+- Known warning: later `20260721090000_p0_security_critical_legacy_containment_c1.sql`
+  still has an independent historical hash/ACL preflight for this retired RPC.
+  It is outside this task and must be reconciled before a full CURRENT HEAD
+  replay. Wave 1 remains prohibited.
+- Release state: **IMPLEMENTED LOCALLY / READY FOR OWNER-AUTHORIZED CLEAN
+  STAGING REPLAY; WAVE 0B NOT COMPLETE / NO-GO UNTIL RUNTIME REPLAY**.
+
+## Wave 0B clean staging replay — corrected baseline first blocker — 2026-08-16 21:19:53 +08:00
+
+- Target identity passed for disposable `debroder-staging` /
+  `ykfjgnrigcsapblbxnxb`; production `lzennundwqqtyvvcnzbg` was not targeted.
+- Owner-authorized staging reset completed and read-only attestation proved
+  empty migration history, zero public application tables/functions/types/
+  policies, and `auth.users = 0`.
+- Lossless copy SHA-256 matched the repository baseline. The baseline failed
+  transactionally at statement 93 while creating `public.saved_configurations`:
+  `42883: function gen_random_bytes(integer) does not exist`.
+- Post-failure attestation proves rollback: zero migrations, zero public
+  application objects, and zero Auth users remain. The pre-existing function
+  is `extensions.gen_random_bytes(integer)`; `public.gen_random_bytes(integer)`
+  is absent. No manifest migration, Phase 5B, C1, or Wave 0C migration ran.
+- No repository source correction was made during runtime replay. The temporary
+  CLI workspace was removed. Fixtures, E2E, deployment, and production actions
+  were not performed.
+- Status: **NO-GO — NEW BASELINE REPOSITORY BLOCKER; WAVE 0B INCOMPLETE**.
+
+## Wave 0B pgcrypto baseline qualification correction — 2026-08-16 21:31:42 +08:00
+
+- Repository-only correction completed for the proven baseline failure at
+  `public.saved_configurations.share_token`.
+- `pgcrypto` is now explicitly declared in schema `extensions`; baseline
+  `gen_random_bytes` and `digest` calls are schema-qualified. The two
+  immediate executable bulk-ordering migrations use the same qualified
+  `gen_random_bytes` contract.
+- No public wrapper, search-path widening, security/grant change, payment
+  authority change, or retired API recreation was introduced. Replay manifest
+  order/classifications remain unchanged.
+- Static focused coverage: **39/39 PASS**. Full Vitest: **131 files / 985
+  tests PASS**. Typecheck **PASS**. Lint **PASS, 0 errors / 34 warnings**.
+  `git diff --check` **PASS**. Build **NOT RUN**.
+- Staging and production were not contacted or mutated. Runtime replay remains
+  pending owner-authorized execution; fixtures, E2E, deployment, and Wave 1
+  remain prohibited.
+- Status: **IMPLEMENTED LOCALLY / READY FOR CLEAN OWNER-AUTHORIZED STAGING
+  REPLAY / NO-GO UNTIL RUNTIME REPLAY**.
+
+## Wave 0B retired public payment RPC legacy containment reconciliation — 2026-08-16 20:46:58 +08:00
+
+- Repository-only correction completed for
+  `20260721090000_p0_security_critical_legacy_containment_c1.sql`.
+- Fresh CURRENT HEAD installs now accept the intentional absence of both
+  retired RPCs (`create_public_order` and `submit_public_payment_proof`) and
+  the historical `order-uploads` policy/bucket. No obsolete function, policy,
+  bucket, or grant was added to the baseline.
+- Legacy upgrade containment remains fail-closed: present RPCs retain the
+  historical SHA-256 anti-drift checks, trusted-owner check, and accepted ACL
+  states (including the historical anon/authenticated pair without
+  service-role); matching objects are reduced to service-role execution only.
+  The named upload policy is shape-checked before removal, and a public legacy
+  bucket is rejected.
+- Updated `DEBRODER_FRESH_DATABASE_REPLAY_MANIFEST.md` and
+  `DEBRODER_BASELINE_COVERAGE_LEDGER.md`; added focused static C1 coverage in
+  `test/legacy-payment-containment.test.ts`.
+- Verification: focused suite **33/33 PASS**; full Vitest **131 files / 983
+  tests PASS**; typecheck **PASS**; lint **PASS, 0 errors / 34 warnings**;
+  `git diff --check` **PASS**.
+- Staging/remote/production: **NOT CONTACTED / NO MUTATION**. Runtime SQL,
+  fixtures, E2E, deployment, and rollback remain **NOT RUN**.
+- Release state: **IMPLEMENTED LOCALLY / READY FOR OWNER-AUTHORIZED CLEAN
+  STAGING REPLAY; WAVE 0B NOT COMPLETE / NO-GO UNTIL RUNTIME REPLAY**.
+
+## Wave 0B runtime replay — first new fulfillment schema blocker — 2026-08-16 22:18:51 +08:00
+
+- Authorized target identity passed for disposable `debroder-staging` /
+  `ykfjgnrigcsapblbxnxb`; production `lzennundwqqtyvvcnzbg` was not
+  contacted.
+- Initial staging state was **EMPTY**. No reset was performed. The corrected
+  baseline applied successfully with runtime pgcrypto proof; both corrected
+  early pgcrypto migrations also passed.
+- Phase 5B payment completion and audit-lock migrations passed at runtime.
+  The retired `submit_public_payment_proof` RPC remains absent and anon/public
+  payment mutation execution remains denied.
+- Replay stopped at migration
+  `20260712154540_v1_2_phase_11_fulfillment_schema_and_audit.sql`, statement
+  10: `42703: column "order_id" does not exist` while creating
+  `fulfillment_deletion_audit_order_idx`.
+- Root cause classification: **BASELINE / INCREMENTAL SCHEMA COLLISION**.
+  The baseline pre-created `public.fulfillment_deletion_audit` without
+  `order_id`; Phase 11 uses `CREATE TABLE IF NOT EXISTS`, skips creation, and
+  then assumes the later column exists.
+- Failure transaction rolled back. Migration 20260712154540 was not recorded;
+  29 incremental migrations were successfully applied after the baseline.
+  C1, Wave 0C, CURRENT HEAD verification, fixtures, and E2E were not reached.
+- No repository source correction was made during runtime replay. Governance
+  handoff files were updated. Status: **NO-GO — NEW REPOSITORY BLOCKER**.
+
+## Wave 0B Phase 11 fulfillment audit foundation correction — 2026-08-16 22:40:59 +08:00
+
+- Repository-only correction implemented for the runtime collision in
+  `public.fulfillment_deletion_audit`.
+- Current fresh-install ownership is **BASELINE FOUNDATION WITH PHASE 11
+  EXTENSIONS**. The baseline now carries the complete Phase 11-compatible
+  audit shape and required order/time index; Phase 11 retains lifecycle,
+  immutable-trigger, RLS, policy, grant, and permanent-delete ownership.
+- `fulfillment_revisions.reason` now carries the Phase 11 non-empty check,
+  preventing a second hidden same-migration contract drift.
+- Audit `order_id` remains a non-null UUID without source-row FKs so the
+  append-only snapshot survives source fulfillment deletion; actor FK remains
+  `auth.users ... ON DELETE SET NULL`.
+- Static focused tests **22/22 PASS**; full Vitest **131 files / 988 tests
+  PASS**; typecheck **PASS**; lint **PASS, 0 errors / 34 warnings**;
+  `git diff --check` **PASS**; build **NOT RUN**.
+- Staging/production were not contacted or mutated. Runtime Phase 11 closure,
+  C1, Wave 0C, CURRENT HEAD verification, fixtures, and E2E remain pending.
+- Status: **IMPLEMENTED LOCALLY / READY FOR OWNER-AUTHORIZED CLEAN STAGING
+  REPLAY / NO-GO UNTIL RUNTIME REPLAY**.
+
+## WAVE-0B-AUDIT-ROW-CHANGE-010 — Audit trigger foundation recovery — 2026-08-17 11:33:32 +08:00
+
+- Repository-only correction completed for the runtime blocker at
+  `20260712155146_v1_2_phase_11_fulfillment_security.sql`: the active replay
+  chain now receives `public.audit_row_change()` from the fresh baseline.
+- Historical ownership was recovered from the reverted
+  `20260712071058_phase13_append_only_audit.sql` in commit `6ba0dee`, removed
+  by `8c1108f`; current Phase 13 explicitly assumes the foundation is already
+  applied. `public.system_audit_log` remains the single audit authority.
+- The restored function records INSERT/UPDATE/DELETE row snapshots and
+  archived/restored transitions, uses `SECURITY DEFINER SET search_path = ''`,
+  qualifies repository objects, returns the trigger row, and has no direct
+  PUBLIC/anon/authenticated/service-role EXECUTE grant.
+- The replay manifest was not reordered and historical migrations were not
+  rewritten. Static coverage was added in
+  `test/audit-row-change-foundation.test.ts` and the ledger now records the
+  full consumer matrix and security contract.
+- Focused static suites: **8 files / 53 tests PASS**. Full Vitest:
+  **132 files / 993 tests PASS**. Typecheck: **PASS**. Lint:
+  **PASS, 0 errors / 34 existing warnings**. Build: **PASS** after the
+  bounded retry. `git diff --check`: **PASS**.
+- Staging/production were not contacted or mutated. Runtime Phase 11 closure,
+  C1, Wave 0C, CURRENT HEAD verification, fixtures, and E2E remain pending.
+- Status: **IMPLEMENTED LOCALLY / READY FOR OWNER-AUTHORIZED CLEAN STAGING
+  REPLAY / NO-GO UNTIL RUNTIME SQL VERIFICATION**.
+
+## Wave 0B clean runtime replay — first new audit-function blocker — 2026-08-17 11:14:59 +08:00
+
+- Owner-authorized disposable staging target identity passed:
+  `debroder-staging` / `ykfjgnrigcsapblbxnxb`. Production
+  `lzennundwqqtyvvcnzbg` was not contacted.
+- Staging was reset and proved empty. The corrected baseline executed and
+  passed runtime verification. Thirty-five migration records are now
+  recorded: baseline plus 34 incremental migrations.
+- Pgcrypto, both prior payment blockers, and the corrected Phase 11 schema
+  migration executed successfully. The corrected
+  `fulfillment_deletion_audit.order_id` contract and index were proven at
+  runtime.
+- First new SQL failure:
+  `20260712155146_v1_2_phase_11_fulfillment_security.sql`, SQLSTATE 42883,
+  missing `public.audit_row_change()`. The transaction rolled back and the
+  failed migration was not recorded. Staging is preserved at the failure
+  checkpoint; C1, Wave 0C, CURRENT HEAD verification, fixtures, and E2E were
+  not reached.
+- Status: **NO-GO — REPOSITORY CORRECTION REQUIRED**. Exact next action is a
+  repository-only recovery of the audit trigger-function contract, followed
+  by a separately authorized clean replay.
+
+## WAVE-0B-AUDIT-ROW-CHANGE-011 — Clean runtime replay stopped at fulfillment RPC grants — 2026-08-17 12:26:38 +08:00
+
+- Owner-authorized target identity passed for disposable staging
+  `debroder-staging` / `ykfjgnrigcsapblbxnxb`; production
+  `lzennundwqqtyvvcnzbg` was not contacted.
+- Staging was reset and proved empty. The corrected baseline executed from
+  the exact SHA-256-matched repository file; pgcrypto, fulfillment audit
+  foundation, and `audit_row_change()` runtime checks passed.
+- Thirty-six incremental manifest entries executed and were recorded after
+  the baseline. Phase 5B payment completion/audit lock, Phase 11 fulfillment
+  schema/delete-audit, and Phase 11 security all passed. The Phase 11
+  `audit_fulfillments_changes` trigger exists and uses the recovered audit
+  foundation.
+- First new SQL failure:
+  `20260712155229_v1_2_phase_11_fulfillment_rpc_grants.sql`, SQLSTATE
+  `42883`: `public.create_fulfillment(uuid,text,text,text,text,text,integer,
+  timestamptz,text,jsonb)` does not exist. The creator migration provides the
+  canonical 11-argument signature with trailing `text p_idempotency_key`.
+- The failed transaction rolled back and was not recorded. Staging is
+  preserved at baseline plus 36 successful incremental migrations. C1,
+  Wave 0C, CURRENT HEAD verification, fixtures, and E2E were not reached.
+- Status: **NO-GO — NEW REPOSITORY BLOCKER**. Exact next action is a
+  repository-only reconciliation of the Phase 11 RPC-grants signature
+  contract; do not patch or continue staging before that correction.
+
+## LATEST AUTHORITATIVE STATE — WAVE 0 MASTER CLOSURE — 2026-08-19
+
+- Branch/HEAD: `UI-MIGRATION` /
+  `43f935b321906093df13e521f411ca3aa102799e`.
+- Exact staging target: `debroder-staging` /
+  `ykfjgnrigcsapblbxnxb`. Production
+  `lzennundwqqtyvvcnzbg` was not contacted.
+- Empty staging reset, corrected baseline, logical replay, C1, and Wave 0C:
+  **EXECUTED AND PASSED**. Final migration history contains 126 records,
+  baseline plus 125 incremental migrations, through
+  `20260819095347`.
+- Canonical authorities remain singular: modern products,
+  `product_size_master`, inventory ledger, orders/order history,
+  `order_payments`, formal quotations, current fulfillment, and
+  `system_audit_log`.
+- Security postcheck: **EXECUTED AND PASSED**. RLS, least-privilege ACLs,
+  SECURITY DEFINER search paths, payment review boundaries, quotation
+  snapshot security, fulfillment scope, and audit append-only protections
+  were verified. Retired public payment/order RPCs and legacy upload
+  capabilities remain absent.
+- Namespace-scoped staging Auth/business fixtures and authenticated Wave 0A
+  runtime evidence: **EXECUTED AND PASSED**. Payment review initial and
+  idempotent replay also passed.
+- Full Vitest 150 files/1040 tests, typecheck, lint (0 errors/34 warnings),
+  production build, and `git diff --check`: **EXECUTED AND PASSED**.
+  `.codex/**` is explicitly excluded as an operational owner-helper scope;
+  those files were preserved unchanged.
+- Notification event/outbox generation passed. No external delivery worker
+  or provider webhook was configured; delivery execution is **NOT
+  APPLICABLE / NOT RUN**.
+- Fixtures are retained as reusable staging fixtures; no broad cleanup was
+  executed. Deployment/rollback were **NOT RUN** because deployment was not
+  authorized.
+- Official status: **WAVE 0 COMPLETE — READY FOR WAVE 1**.
+- Wave 1 remains unstarted. Exact next action is owner review and separate
+  Wave 1 authorization; do not repeat the completed Wave 0 replay without a
+  repository change.
+
+## LATEST AUTHORITATIVE STATE — WAVE 1 COMMERCE CORRECTNESS — 2026-08-19
+
+- Branch/HEAD: `UI-MIGRATION` /
+  `bb38650e64dc145486ee6779a2babe88f6343c35`.
+- Approved target: disposable staging `debroder-staging` /
+  `ykfjgnrigcsapblbxnxb`. Production `lzennundwqqtyvvcnzbg` was not
+  contacted or mutated.
+- W1 product evidence is transaction-contract evidence only. W0 fixtures
+  prove product → sellable → price → inventory → cart/checkout; PIM/Admin
+  product creation, media, and publishing acceptance remain Wave 3 scope and
+  were not changed.
+- Audit found four quotation/Repeat Order RPCs used by current application
+  code but absent from staging. Forward migration
+  `20260819132837_wave_1_commerce_quotation_atomicity.sql` was applied to
+  staging successfully; remote Supabase recorded generated version
+  `20260819132837`.
+- Staging postchecks passed for RPC signatures, SECURITY DEFINER safe search
+  path, ACL, and preservation of W0 fixture aggregates. No production,
+  deployment, reset, cleanup, or historical migration rewrite occurred.
+- Current gates: focused 3 files/24 tests PASS; full Vitest 151 files/1,044
+  tests PASS; typecheck PASS; lint 0 errors/34 warnings; production build
+  exit 0; diff check PASS. Authenticated staging E2E is BLOCKED because this
+  session has no safe `E2E_*` identity/credentials/base URL.
+- Required sibling references were consulted read-only from the available
+  `debroder.next` copies. Medusa and Trigger.dev patterns were ADAPTED as
+  review guidance; Vercel Commerce and shadcn/ui patterns were DEFERRED; a
+  domain-authority replacement was REJECTED. No additional proven W1 defect
+  was found and no sibling repository was modified.
+- Remaining W1 blocker: current UI calls `convert_quotation_to_order(uuid)`
+  but the RPC is absent. Generic quotations do not carry explicit delivery,
+  pickup-store, or payment-method inputs, so defaults cannot be invented.
+- Official status: **WAVE 1 BLOCKED — OWNER DECISION REQUIRED**. Wave 2 has
+  not started.
+- Exact next action: obtain the frozen quotation-to-order conversion rule,
+  then implement one forward migration and rerun staging concurrency,
+  security, and authenticated E2E evidence without resetting W0 fixtures.
+
+## LATEST AUTHORITATIVE STATE — WAVE 1 QUOTATION ORDER CONVERSION — 2026-08-19 22:26:04 +08:00
+
+- Branch/HEAD: `UI-MIGRATION` /
+  `bb38650e64dc145486ee6779a2babe88f6343c35`.
+- Owner decision is now applied: quotation is authoritative before conversion,
+  order is authoritative after conversion, and no bidirectional sync or
+  competing payment/inventory/fulfillment authority was introduced.
+- Native conversion is implemented in
+  `20260819141452_wave_1_quotation_order_conversion.sql` with the active
+  constraint correction in
+  `20260819141725_wave_1_quotation_order_conversion_contract_correction.sql`.
+  Both forward migrations are applied to staging only.
+- Conversion inputs are explicit and fail closed: customer identity, delivery,
+  pickup store/shipping address, payment method, resolved shipping cost,
+  resolved price, transaction status, and idempotency key. One quotation and
+  one conversion idempotency key can produce only one order.
+- Conversion writes order/order-item/service snapshots, order and quotation
+  histories, and audit evidence only. It creates no `order_payments`, stock
+  reservation, inventory movement, or fulfillment rows.
+- W1 conversion contract tests (5), focused post-alignment tests (22), full
+  Vitest (152 files / 1,049 tests), typecheck, lint, build, and diff check
+  passed. Existing build fetch/EACCES and 34 lint warnings remain recorded.
+- Staging ACL/function/index/count postchecks passed. The existing staging
+  quotation is draft and staging has zero quotation versions, so authenticated
+  happy-path, replay/concurrency, and aggregate side-effect proof are blocked;
+  no fixture was created and no credentials were guessed.
+- Medusa was consulted read-only. Scoped lock/compensation and aggregate
+  separation were ADAPTED natively; external workflow/return lifecycle was
+  DEFERRED; schema/authority replacement was REJECTED.
+- Official status: **WAVE 1 INCOMPLETE — COMMERCE BLOCKER REMAINS**. Wave 2
+  has not started.
+- Exact next action: obtain the safe authenticated staging identity and a
+  permitted approved quotation/version/mockup fixture, then execute the
+  required positive, negative, replay, concurrency, and no-side-effect
+  runtime contract checks without resetting W0 or contacting production.
+
+## LATEST AUTHORITATIVE STATE — WAVE 1 FINAL RUNTIME CLOSURE — 2026-08-19 22:56:45 +08:00
+
+- Branch/HEAD: `UI-MIGRATION` /
+  `bb38650e64dc145486ee6779a2babe88f6343c35`.
+- The approved W1 quotation-to-order contract is now exercised on disposable
+  staging for pickup, shipping, same-request replay, conflicting replay,
+  concurrent first conversion, and the required negative matrix.
+- Two proven canonical service-contract defects were corrected by new forward
+  migrations. The conversion now creates exactly one canonical service row
+  through the existing trigger contract and no longer targets superseded
+  columns. Local files are `20260819144205...` and `20260819144405...`; the
+  staging migration history records generated versions `20260819144305` and
+  `20260819144442`.
+- Final staging counts prove 3 W1 orders, 3 order items, 3 service rows, 3
+  order-history rows, 3 quotation-history rows, and 3 audit rows, with zero
+  duplicate quotation or idempotency keys. Payment, stock reservation,
+  inventory-movement, and fulfillment totals remained at their pre-W1 values.
+- Database-authenticated session/claim evidence passed. Browser-authenticated
+  Playwright E2E remains unavailable because safe `E2E_*` credentials/config
+  were not present; no secrets were guessed.
+- Production was not contacted, staging was not reset, retained fixtures were
+  not deleted, and Wave 2 has not started.
+- Official status: **WAVE 1 INCOMPLETE — COMMERCE BLOCKER REMAINS**.
+
+# LATEST AUTHORITATIVE STATE — W1 AUTHENTICATED E2E ACTIVATION — 2026-08-20 00:36:54 +08:00
+
+- Branch / HEAD: `UI-MIGRATION` /
+  `bb38650e64dc145486ee6779a2babe88f6343c35`.
+- The existing W1 Playwright harness was activated against disposable staging
+  `debroder-staging` / `ykfjgnrigcsapblbxnxb`. No production mutation or
+  production credential use occurred. One initial stale-cache diagnostic
+  attempted the production Auth URL before detection; no response/status was
+  observed, and all later attempts excluded production.
+- Five retained staging Auth identities were password-rotated in place under
+  the owner-authorized staging-only exception. The Auth/session contract
+  passed directly, but the local app's `/api/admin/session` returned
+  `503 ADMIN_SERVICE_UNAVAILABLE` because no safe staging service-role key
+  or approved staging app URL was available.
+- Latest browser result: 8 tests collected; 1 executed and failed at Full
+  Admin login navigation, 7 did not run. No browser-visible order evidence
+  exists. Read-only commerce postcheck remains clean: 3 orders, 3 distinct
+  quotations, 3 distinct idempotency keys, 3 order items, 3 service snapshots,
+  and no W1-linked payment, reservation, inventory, fulfillment, or job-order
+  side effects.
+- No migration, business fixture, production, deployment, reset, or rollback
+  change occurred in this activation. Temporary credentials and artifacts
+  were removed; local production configuration was restored. The one
+  stale-cache Auth attempt had no observed response/status and produced no
+  known production data change.
+- Official status: **WAVE 1 BLOCKED — OWNER DECISION REQUIRED**. Wave 2 remains
+  unopened.
+- Resume only after an approved staging app URL or secure staging
+  service-role source is provided; then rerun the existing W1 browser spec and
+  update `CURRENT_PHASE_HANDOFF.md` with executed browser evidence.
+- Exact next action: obtain authorized safe staging browser credentials and
+  base URL, execute the missing Playwright W1 matrix from this checkpoint, and
+  update the handoff with actual browser evidence. Do not reapply migrations or
+  begin Wave 2.
+
+## LATEST AUTHORITATIVE STATE — WAVE 1 BROWSER E2E ATTEMPT — 2026-08-19 23:09:06 +08:00
+
+- No browser-authenticated W1 execution was possible from the current process.
+  `e2e/support/env.ts` requires the safe staging contract, but every required
+  `E2E_*` field is missing, including base URL, target environment, safe
+  identity, namespace confirmation, mutation gate, and role credentials.
+- Playwright discovery passed with 7 existing tests across the public/Wave 0A
+  harness; no W1 browser spec exists. The W1 browser matrix is therefore
+  **BLOCKED / NOT RUN**, not passed by inference.
+- A read-only staging postcheck remained consistent: 3 W1 orders, 3 service
+  rows, zero duplicate quotation/idempotency keys, and unchanged payment,
+  reservation, inventory-movement, and fulfillment counts.
+- No source, migration, fixture, route, staging, or production changes were
+  made. Wave 2 remains unopened.
+- Official status: **WAVE 1 INCOMPLETE — COMMERCE BLOCKER REMAINS**.
+- Exact next action: obtain authorized non-production browser E2E configuration
+  and credentials, run only the missing W1 Playwright matrix, and record
+  browser-visible and console evidence. Do not reset or reapply anything.
+
+## LATEST AUTHORITATIVE STATE — W1 FINAL PLAYWRIGHT HARNESS — 2026-08-19 23:45:29 +08:00
+
+- The missing `e2e/wave-1.spec.ts` was added using the existing safe harness
+  and shared helpers. It contributes 8 focused tests for the W1 quotation,
+  conversion, replay, canonical-order, side-effect, and role-boundary paths.
+- Playwright discovery **EXECUTED AND PASSED** with 15 tests across the three
+  E2E specs. The targeted W1 run **EXECUTED AND BLOCKED** at
+  `requireWave0aEnv()` with `BLOCKED — SAFE STAGING IDENTITY NOT ESTABLISHED`;
+  1 test reached the guard and 7 did not run. No browser-authenticated
+  evidence exists.
+- TypeScript **EXECUTED AND PASSED**; focused W1 static regression
+  **EXECUTED AND PASSED** with 11 tests; `git diff --check` **EXECUTED AND
+  PASSED**. No database, migration, fixture, staging, production, or
+  deployment change occurred in this continuation.
+- Prior read-only staging evidence remains authoritative: 3 W1 orders, 3
+  service rows, zero duplicate quotation/idempotency keys, payment `1`,
+  reservation `1`, inventory movements `3`, fulfillment `1`, and migration
+  tail `20260819144305` / `20260819144442`.
+- The safe browser contract still requires the `E2E_*` variables listed in
+  `CURRENT_PHASE_HANDOFF.md`; no secret or production `.env.local` fallback
+  was used. Wave 2 remains unopened.
+- Official status: **WAVE 1 INCOMPLETE — COMMERCE BLOCKER REMAINS**.
+
+# FINAL RESUME CHECKPOINT — W1 AUTHENTICATED E2E ACTIVATION — 2026-08-20 00:36:54 +08:00
+
+- Current status: **WAVE 1 BLOCKED — OWNER DECISION REQUIRED**.
+- The retained staging Auth/session contract passed, and the read-only W1
+  commerce postcheck remains clean. The temporary local app reached staging
+  Auth but its `/api/admin/session` returned `503
+  ADMIN_SERVICE_UNAVAILABLE` because no safe staging service-role key or
+  approved staging app URL was available.
+- Latest browser result: 8 tests collected, 1 executed and failed during Full
+  Admin login navigation, 7 did not run. No browser-visible order evidence
+  exists.
+- Five retained staging Auth password hashes were rotated under owner
+  authorization; temporary credentials and artifacts were removed. No
+  migration, business-data, production, reset, or Wave 2 change occurred.
+  One stale-cache production Auth URL attempt is documented; all later
+  attempts excluded production.
+- Safe resume: obtain approved staging server configuration or secure
+  non-printed staging service-role access, then rerun only the existing W1
+  Playwright spec and update the handoff with browser evidence.
+
+# FINAL STAGING SERVER ACTIVATION CHECKPOINT — W1 — 2026-08-20 00:51:20 +08:00
+
+- Official status: **WAVE 1 BLOCKED — OWNER DECISION REQUIRED**; Wave 2 is
+  unopened.
+- Branch / HEAD: `UI-MIGRATION` /
+  `bb38650e64dc145486ee6779a2babe88f6343c35`.
+- Approved target remains disposable staging `debroder-staging` /
+  `ykfjgnrigcsapblbxnxb`. No valid staging-bound server-side service-role
+  configuration was recovered from process, user, machine, or permitted
+  repository-local configuration. Production `.env.local` was not used;
+  `.env.bootstrap.local` was not used because its Supabase URL is
+  unresolved/non-canonical and cannot prove staging binding.
+- No secret was printed, committed, or written to a tracked file. No runtime,
+  test, migration, fixture, staging, production, reset, or business-data
+  mutation occurred in this checkpoint. Previous direct staging Auth/session
+  success and the prior app `503 ADMIN_SERVICE_UNAVAILABLE` remain the latest
+  runtime evidence; the latest browser attempt remains 1 failed / 7 not run.
+- Exact blocker: **STAGING SERVICE ROLE CONFIGURATION REQUIRED**. The
+  mandatory server-side configuration is required before the single-runtime
+  activation and authenticated Playwright closure can proceed.
+- Exact next action: obtain a secure, non-printed service-role source bound
+  only to the approved staging ref, then run only the existing W1 browser
+  spec and the read-only postcheck. Do not contact production, change W1
+  commerce code, reapply migrations, recreate fixtures, reset staging, or
+  start Wave 2.
+
+# FINAL STAGING CONFIGURATION RECHECK — W1 — 2026-08-20 09:06:33 +08:00
+
+- Official status: **WAVE 1 BLOCKED — OWNER DECISION REQUIRED**; Wave 2 is
+  unopened.
+- Branch / HEAD: `UI-MIGRATION` /
+  `bb38650e64dc145486ee6779a2babe88f6343c35`.
+- The approved staging URL ref was proven as `ykfjgnrigcsapblbxnxb`, but the
+  local anon and service-role fields are placeholder-like. Staging Auth admin
+  and settings probes both returned HTTP `401`; no valid server-side staging
+  credential is established.
+- No password rotation, runtime start, Playwright run, SQL, migration,
+  fixture, reset, staging business-data mutation, or production contact
+  occurred in this checkpoint. No secret value was printed or committed.
+- Exact blocker: **STAGING SERVICE ROLE CONFIGURATION REQUIRED**.
+- Exact next action: install valid staging-only credentials in the ignored
+  local runtime configuration, validate them without printing values, then
+  run only the existing W1 browser spec and read-only postcheck. Do not use
+  production/other-ref credentials or start Wave 2.
+
+# FINAL STAGING CREDENTIAL VALIDATION — W1 — 2026-08-20 09:21:50 +08:00
+
+- Official status: **WAVE 1 BLOCKED — OWNER DECISION REQUIRED**; Wave 2 is
+  unopened.
+- Branch / HEAD: `UI-MIGRATION` /
+  `bb38650e64dc145486ee6779a2babe88f6343c35`.
+- The staging URL ref and Git safety checks passed. The supplied publishable
+  field is a short nonstandard 16-character value; the field named
+  `SUPABASE_SERVICE_ROLE_KEY` is in publishable-key format. Auth settings,
+  Auth admin, and REST probes all returned HTTP `401`.
+- No runtime, password rotation, Playwright run, SQL, migration, fixture,
+  reset, staging mutation, or production contact occurred in this attempt.
+- Exact blocker: **STAGING SERVICE ROLE CONFIGURATION REQUIRED**.
+- Exact next action: provide a valid staging publishable/anon credential and
+  a real staging server-side secret/service-role credential, validate both
+  without printing values, then run only the existing W1 closure.
+
+# FINAL STAGING CREDENTIAL VALIDATION — W1 — 2026-08-20 14:09:18 +08:00
+
+- Official status: **WAVE 1 BLOCKED — OWNER DECISION REQUIRED**; Wave 2 is
+  unopened.
+- Approved staging ref `ykfjgnrigcsapblbxnxb` passed identity validation;
+  production ref was rejected. The ignored env file is untracked and no exact
+  secret appears in tracked content.
+- Publishable/anon credential: **USABLE — HTTP 200**. Server-side
+  secret/service-role credential: **NOT USABLE — HTTP 401**.
+- Runtime, Full Admin session, Playwright, postcheck, SQL, migration, fixture,
+  reset, Auth password rotation, staging business-data mutation, and
+  production contact: **NOT RUN / NO** in this checkpoint.
+- Exact blocker: **STAGING SERVICE ROLE CONFIGURATION REQUIRED**.
+- Exact next action: provide a valid server-side credential bound exclusively
+  to staging, revalidate, then continue the existing W1 closure only after
+  HTTP 200.
+
+**HANDOFF UPDATED: YES — `CURRENT_PHASE_HANDOFF.md`**
+
+## CURRENT PROJECT STATE — WAVE 3 PRODUCT OPERATOR UAT — 2026-08-24 22:47:26 +08:00
+
+- Branch/HEAD: `UI-MIGRATION` / `5775f1aedb8c1539f69044aa7e58cd0e704fe285`; current W3 implementation changes are uncommitted and unpushed.
+- W3 authenticated staging UAT partially passed through Product Workspace information, category, sales mode, variants, sizes, SKU, price, stock, validation, conflict, and review-gate checks. The retained staging product is `17159506-1b3f-45fd-8a12-8ec1a2531574`.
+- Media upload is blocked by the staging storage contract: canonical `website-images` is absent and the authenticated server upload returned `Bucket not found`. No successful media object or media-row write occurred. Publish, public catalog/PDP, and edit/public-update proof therefore remain unverified.
+- Duplicate SKU/sellable and Guest/unauthorized mutation UAT are **NOT EXECUTED**; they are not represented as PASS. No password rotation was needed or performed.
+- Final gates executed: focused W3 `8/101` PASS; affected role/product `5/33` PASS; Full Vitest `152/1,058` PASS; typecheck PASS; lint PASS with 0 errors/36 existing warnings; staging-bound build PASS at 139 static pages; diff check PASS.
+- Database/migrations: no migration or reset. Normal staging Product Workspace UAT did mutate only the retained namespaced staging product/variants/inventory. Production, deployment, commit, and push were not performed.
+- Environment safety: staging ref `ykfjgnrigcsapblbxnxb` confirmed; production ref rejected; staging env ignored/untracked; exact credential matches in tracked content are zero; runtime stopped and `.env.local` restored.
+- Official state: **WAVE 3 INCOMPLETE — PRODUCT OPERATING SYSTEM BLOCKER REMAINS**. Open issue: **W3-PIM-003**. Wave 4 must not start.
+
+**HANDOFF UPDATED: YES — `CURRENT_PHASE_HANDOFF.md`**
+
+## FINAL AUTHORITATIVE CHECKPOINT — WAVE 3 REAL OPERATOR UAT — 2026-08-24 15:14:25 +08:00
+
+W3 implementation changes remain uncommitted and unpushed at HEAD `5775f1aedb8c1539f69044aa7e58cd0e704fe285` on `UI-MIGRATION`. Staging target `ykfjgnrigcsapblbxnxb` was verified, the staging env remained ignored/untracked, and no production ref or secret was exposed.
+
+Read-only Auth staging evidence identified the active, confirmed `DEBRODER E2E Full Admin` `superadmin` profile with all-store access. No password rotation was executed. One isolated runtime was started and stopped with no remaining port 3100 listener. No Product, Auth, database, migration, staging business data, production, commit, or push mutation occurred.
+
+The real operator browser UAT remains **NOT EXECUTED**: the supported browser connection failed at the trusted browser-service layer, and the fallback combined mutation/browser command was rejected before execution by execution safety. No W3 Product ID or slug exists from this attempt.
+
+`git diff --check` executed and passed. Prior full Vitest evidence remains `152/152` files / `1056/1056` tests PASS; no completed W0/W1/W2 suite was rerun. Exact status: **WAVE 3 INCOMPLETE — PRODUCT OPERATING SYSTEM BLOCKER REMAINS**.
+
+Resume only after a supported authenticated staging session or separately approved narrowly scoped staging credential/UI mutation steps are available. Do not start Wave 4.
+
+**HANDOFF UPDATED: YES — `CURRENT_PHASE_HANDOFF.md`**
+
+## FINAL AUTHORITATIVE CHECKPOINT — WAVE 3 REAL OPERATOR UAT — 2026-08-24 15:14:25 +08:00
+
+Branch/HEAD: `UI-MIGRATION` / `5775f1aedb8c1539f69044aa7e58cd0e704fe285`. W3 corrections are uncommitted and unpushed. Canonical Product Workspace `sales_mode` and public product/catalog cache invalidation are corrected. Database/migration/staging/production/deployment/fixture mutation: **NO**.
+
+Fresh full Vitest verification PASS: `152/152` files / `1056/1056` tests. Focused latest `15/15` PASS; typecheck PASS; lint PASS with 0 errors/35 existing warnings; staging-bound build PASS at 139 static pages; read-only browser smoke PASS at 390/768/1440. Authenticated Full Admin acceptance and required failure/concurrency cases remain **BLOCKED / NOT EXECUTED** because the retained browser session could not be connected.
+
+Exact status: **WAVE 3 INCOMPLETE — PRODUCT OPERATING SYSTEM BLOCKER REMAINS**. Resume only at retained Full Admin staging UAT. Do not commit/push/deploy, reset staging, apply migrations, contact production, rerun W0/W1/W2, or start Wave 4.
+
+**HANDOFF UPDATED: YES — `CURRENT_PHASE_HANDOFF.md`**
+
+## LATEST AUTHORITATIVE CHECKPOINT — WAVE 3 — 2026-08-24 14:40:02 +08:00
+
+Branch/HEAD: `UI-MIGRATION` / `5775f1aedb8c1539f69044aa7e58cd0e704fe285`. W3 remains an uncommitted, unpushed working tree. The canonical Product Workspace `sales_mode` contract and public product/catalog cache invalidation are corrected. Database/migration/staging/production/deployment/fixture mutation: **NO**.
+
+Evidence: full Vitest `152/152` files / `1055/1055` tests PASS; focused latest `15/15` PASS; typecheck PASS; lint PASS with 0 errors/35 existing warnings; staging-bound build PASS at 139 static pages; read-only browser smoke PASS at 390/768/1440. Authenticated Full Admin Product Operating System acceptance and required failure/concurrency cases are not executed because the retained browser session could not be connected. Official state: **WAVE 3 INCOMPLETE — PRODUCT OPERATING SYSTEM BLOCKER REMAINS**. Resume at retained Full Admin staging UAT only; do not start Wave 4.
+
+**HANDOFF UPDATED: YES — `CURRENT_PHASE_HANDOFF.md`**
+
+## CURRENT PROJECT STATE — WAVE 3 CHECKPOINT — 2026-08-24 14:40:02 +08:00
+
+- Branch/HEAD: `UI-MIGRATION` / `5775f1aedb8c1539f69044aa7e58cd0e704fe285`.
+- W1 commerce and W2 storefront remain protected and were not rerun.
+- W3 audit found and minimally corrected two Product OS defects: canonical Admin could not edit the existing `sales_mode` field, and Product Workspace writes did not invalidate public catalog/PDP cache tags.
+- No schema, migration, RLS, staging data, production data, fixture, deployment, commit, or push changed.
+- Staging target was validated as `ykfjgnrigcsapblbxnxb`; production ref `lzennundwqqtyvvcnzbg` was rejected. Staging env remains ignored/untracked and tracked secret matches are zero.
+- Automated evidence: full Vitest `152/152` files and `1055/1055` tests PASS; focused latest `15/15` PASS; typecheck PASS; lint PASS with 0 errors/35 existing warnings; staging-bound build PASS with 139 static pages.
+- Read-only browser smoke PASS at 390/768/1440 with no console/page/request errors. Authenticated Full Admin operator acceptance and required negative/concurrency cases remain blocked because retained browser service/session access was unavailable and no login credentials were supplied in the staging env.
+- Official state: **WAVE 3 INCOMPLETE — PRODUCT OPERATING SYSTEM BLOCKER REMAINS**.
+- Safe next action: connect the retained Full Admin staging session and execute only the outstanding W3 operator acceptance; do not start Wave 4.
+
+**HANDOFF UPDATED: YES — `CURRENT_PHASE_HANDOFF.md`**
+
+## WAVE 2 COMMITTED/PUSHED CHECKPOINT — 2026-08-24 13:20:53 +08:00
+
+- `bee4bc4e7feb847394bd2e0c37816943d70e3185` (`feat: complete wave 2
+  storefront finalization`) is committed and pushed to `origin/UI-MIGRATION`.
+- The pushed package contains exactly the verified 28-file W2 scope. No
+  implementation, migration, database, staging, production, or secret change
+  occurred during this close-checkpoint task.
+- Pre-commit diff, env-ignore, and tracked-content secret checks passed. The
+  only exact env-value match was the non-secret staging URL in governance
+  records; anon/service-role credential matches were zero.
+- Official terminal status: **WAVE 2 COMMITTED AND PUSHED — READY FOR WAVE 3**.
+- Wave 3 remains unopened.
+
+**HANDOFF UPDATED: YES — `CURRENT_PHASE_HANDOFF.md`**
+
+## FINAL AUTHORITATIVE CHECKPOINT — WAVE 3 — 2026-08-24 14:48:15 +08:00
+
+Branch/HEAD: `UI-MIGRATION` / `5775f1aedb8c1539f69044aa7e58cd0e704fe285`. W3 is uncommitted and unpushed. Canonical Product Workspace `sales_mode` and public product/catalog cache invalidation remain corrected. Database/migration/Auth/staging business data/production/deployment/fixture mutation: **NO**.
+
+Read-only staging Auth inspection found the active, confirmed `DEBRODER E2E Full Admin` `superadmin` profile with all-store access. The supported browser connection failed at the trusted browser-service layer; the fallback combined password-rotation/UI-mutation operation was rejected before execution. No W3 Product was created and no credential was rotated or printed. Prior full Vitest evidence remains `152/152` files / `1056/1056` tests PASS; `git diff --check` executed and passed. Exact status: **WAVE 3 INCOMPLETE — PRODUCT OPERATING SYSTEM BLOCKER REMAINS**.
+
+Resume only with a supported authenticated staging session or separately approved narrowly scoped staging credential/UI mutation steps. Do not commit/push/deploy, reset staging, apply migrations, contact production, rerun W0/W1/W2, or start Wave 4.
+
+**HANDOFF UPDATED: YES — `CURRENT_PHASE_HANDOFF.md`**
+
+## LATEST PROJECT STATE — WAVE 3 UAT CLOSURE — 2026-08-24 22:47:26 +08:00
+
+- Branch/HEAD: `UI-MIGRATION` / `5775f1aedb8c1539f69044aa7e58cd0e704fe285`; W3 changes remain uncommitted and unpushed.
+- Authenticated staging Product Workspace UAT passed through product data, variants, sizes, SKU, price, inventory, validation, conflict, and review-gate steps for retained product `17159506-1b3f-45fd-8a12-8ec1a2531574`.
+- **W3-PIM-003** blocks media: staging lacks canonical `website-images`; upload returned `Bucket not found`; publish, public catalog/PDP, and post-publish edit/update remain unverified.
+- Focused W3 `8/101`, affected role/product `5/33`, Full Vitest `152/1,058`, typecheck, staging-bound build `139 pages`, and diff check passed. Lint passed with 0 errors/36 existing warnings.
+- No migration/reset/fixture replay, Auth password rotation, production mutation/contact, deployment, commit, or push. Normal staging Product Workspace UAT writes were authorized and limited to the retained product/variants/inventory.
+- Official state: **WAVE 3 INCOMPLETE — PRODUCT OPERATING SYSTEM BLOCKER REMAINS**. Resolve W3-PIM-003, resume at media, and do not start Wave 4.
+
+**HANDOFF UPDATED: YES — `CURRENT_PHASE_HANDOFF.md`**
+
+## LATEST PROJECT STATE — WAVE 3 UAT CLOSURE — 2026-08-24 22:47:26 +08:00
+
+- `UI-MIGRATION` / `5775f1aedb8c1539f69044aa7e58cd0e704fe285`; W3 changes remain uncommitted and unpushed.
+- Authenticated staging Product Workspace UAT passed through product data, variants, sizes, SKU, price, inventory, validation, conflict, and review-gate steps for retained product `17159506-1b3f-45fd-8a12-8ec1a2531574`.
+- W3-PIM-003 blocks media: staging lacks canonical `website-images`; upload returned `Bucket not found`; publish, public catalog/PDP, and post-publish edit/update remain unverified.
+- Focused W3 `8/101`, affected role/product `5/33`, Full Vitest `152/1,058`, typecheck, staging-bound build `139 pages`, and diff check passed. Lint passed with 0 errors/36 existing warnings.
+- No migration/reset/fixture replay, Auth password rotation, production mutation/contact, deployment, commit, or push. Normal staging Product Workspace UAT writes were authorized and limited to the retained product/variants/inventory.
+- Official state: **WAVE 3 INCOMPLETE — PRODUCT OPERATING SYSTEM BLOCKER REMAINS**. Resolve W3-PIM-003, resume at media, and do not start Wave 4.
+
+**HANDOFF UPDATED: YES — `CURRENT_PHASE_HANDOFF.md`**
+
+## FINAL AUTHORITATIVE CHECKPOINT — WAVE 3 — 2026-08-24 14:40:02 +08:00
+
+Branch/HEAD: `UI-MIGRATION` / `5775f1aedb8c1539f69044aa7e58cd0e704fe285`. W3 is an uncommitted, unpushed working tree. Canonical Product Workspace `sales_mode` and public product/catalog cache invalidation are corrected. Database/migration/staging/production/deployment/fixture mutation: **NO**.
+
+Evidence: full Vitest `152/152` files / `1055/1055` tests PASS; focused latest `15/15` PASS; typecheck PASS; lint PASS with 0 errors/35 existing warnings; staging-bound build PASS at 139 static pages; read-only browser smoke PASS at 390/768/1440. Authenticated Full Admin acceptance and required failure/concurrency cases are not executed because the retained browser session could not be connected. Official state: **WAVE 3 INCOMPLETE — PRODUCT OPERATING SYSTEM BLOCKER REMAINS**. Resume at retained Full Admin staging UAT only; do not start Wave 4.
+
+**HANDOFF UPDATED: YES — `CURRENT_PHASE_HANDOFF.md`**
+
+## LATEST AUTHORITATIVE STATE — WAVE 2 STOREFRONT FINALIZATION — 2026-08-24 13:09:52 +08:00
+
+- W1 remains locked and complete. W2 finalized the existing public storefront
+  without changing pricing, checkout, order, quotation, payment, inventory,
+  fulfillment, idempotency, snapshot, audit, or RLS authority.
+- Homepage canonical order, shared loading/error/not-found recovery chrome,
+  catalog `q` URL persistence with refresh/history restoration, and structured
+  address confirmation/accessibility were corrected with minimal changes.
+- Luna supplied a read-only second audit. Vercel Commerce URL-state patterns
+  and shadcn/ui semantic-control patterns were **ADAPTED**; no reference
+  architecture replaced DEBRODER authority.
+- Browser evidence covers all 14 current W2 cases: 13/14 passed in the full
+  run, then the single reproduced query race was fixed and its two viewport
+  cases passed 2/2. Homepage widths 320 through 1920 and the mobile/desktop
+  storefront route matrix are clean for overflow, duplicate shell, broken
+  loaded images, console/page errors, and unexpected same-origin failures.
+- Current quality gates: TypeScript PASS; lint PASS with 0 errors and 35
+  existing warnings; full Vitest PASS at 152 files / 1,054 tests; final
+  staging-bound production build PASS with 139 static pages; diff check PASS
+  after governance synchronization.
+- No migration SQL or database changed. Staging browser work was read-only,
+  the isolated runtime is stopped, and no deployment occurred. The replay
+  manifest metadata now includes the three existing W1 ACL migrations and
+  classifies all 151 migration files.
+- Production mutation is **NO**. One intermediate successful build loaded the
+  production-ref `.env.local`; static read contact is conservatively recorded
+  as **YES / READ-ONLY BUILD CONTACT**. The final build was explicitly
+  staging-bound and passed. This compliance warning remains visible.
+- W2 source/governance changes are uncommitted and not pushed. Admin/PIM
+  operational acceptance and all Wave 3 work remain unopened.
+- Official state: **WAVE 2 COMPLETE — READY FOR WAVE 3**.
+
+**HANDOFF UPDATED: YES — `CURRENT_PHASE_HANDOFF.md`**
+
+# WAVE 1 FINAL AUTHENTICATED E2E STATE — 2026-08-24 00:05:28 +08:00
+
+- Approved environment: `debroder-staging` / `ykfjgnrigcsapblbxnxb`.
+  Production `lzennundwqqtyvvcnzbg` was not contacted or mutated.
+- Staging application configuration, SDK server credential, publishable
+  credential, non-`503` admin session boundary, and retained Full Admin
+  session were proven without printing credentials. The ignored staging env
+  remains untracked; tracked credential matches are zero.
+- W1 browser contract is closed: all 8 current cases have PASS evidence. Per
+  the owner non-repetition instruction, tests 1–7 retain PASS from the final
+  full execution and the isolated test-8 oracle correction was verified by a
+  targeted 1/1 PASS rerun; no second monolithic rerun was performed.
+- The read-only transaction postcheck passed: orders `3`, items `3`, service
+  snapshots `3`, duplicate quotation conversions `0`, duplicate idempotency
+  keys `0`, payments `0`, reservations `0`, inventory movements `0`,
+  fulfillments `0`, and Job Orders `0`.
+- Three forward-only staging ACL migrations are applied and recorded as
+  `20260820063850`, `20260820064224`, and `20260820065821`. Existing RLS stays
+  authoritative. No historical migration was changed or reapplied.
+- Minimal application corrections removed invalid order/notification read
+  columns. No Product/PIM creation, media, publishing, or owner operational
+  acceptance work was performed.
+- Product-library `403` on the Admin Guest login landing path is deferred to
+  Wave 3 Product operational acceptance and is not a W1 transaction blocker.
+- `git diff --check` passed. Typecheck, lint, full regression, and build were
+  not repeated in this final browser-only activation.
+- Official state: **WAVE 1 COMPLETE — READY FOR WAVE 2**. Wave 2 remains
+  unopened in this task.
+
+**HANDOFF UPDATED: YES — `CURRENT_PHASE_HANDOFF.md`**
+
+**HANDOFF UPDATED: YES — `CURRENT_PHASE_HANDOFF.md`**
+
+## CURRENT PROJECT STATE — 2026-08-24 13:12:26 +08:00
+
+- The detailed W2 state recorded above supersedes all older W1 status entries
+  in this append-only document.
+- Branch / HEAD: `UI-MIGRATION` /
+  `5d3d73bdd62a628e7a8f90ff3441e238f9b8779f`; W2 working tree changes are
+  uncommitted and not pushed.
+- Final gates: browser current evidence 14/14, Vitest 1,054/1,054, typecheck
+  PASS, lint 0 errors/35 warnings, staging-bound build PASS at 139 static
+  pages, and `git diff --check` PASS.
+- Database/staging/production mutation: **NO / NO / NO**. The recorded
+  production-ref intermediate build contact was read-only; final build target
+  was staging. No deployment occurred.
+- Storefront blocker: **NONE**. Admin/PIM operational acceptance and Wave 3
+  remain unopened.
+- Official state: **WAVE 2 COMPLETE — READY FOR WAVE 3**.
+
+**HANDOFF UPDATED: YES — `CURRENT_PHASE_HANDOFF.md`**
+
+**HANDOFF UPDATED: YES — `CURRENT_PHASE_HANDOFF.md`**
+
+**HANDOFF UPDATED: YES — `CURRENT_PHASE_HANDOFF.md`**
+
+## FINAL COMMITTED/PUSHED CHECKPOINT — 2026-08-24 13:20:53 +08:00
+
+- Commit `bee4bc4e7feb847394bd2e0c37816943d70e3185` with the requested
+  Wave 2 message is pushed to `origin/UI-MIGRATION`.
+- Close-checkpoint review passed: exactly 28 W2 files, no unrelated file, no
+  tracked staging env/secret, ignored `.env.e2e.staging.local`, and diff check
+  PASS. No tests were rerun.
+- Official terminal status: **WAVE 2 COMMITTED AND PUSHED — READY FOR WAVE 3**.
+- Wave 3 remains unopened.
+
+**HANDOFF UPDATED: YES — `CURRENT_PHASE_HANDOFF.md`**
+
+## FINAL AUTHORITATIVE CHECKPOINT — WAVE 3 REAL OPERATOR UAT — 2026-08-24 15:14:25 +08:00
+
+Branch/HEAD: `UI-MIGRATION` / `5775f1aedb8c1539f69044aa7e58cd0e704fe285`. W3 is uncommitted and unpushed. Canonical Product Workspace `sales_mode` and public product/catalog cache invalidation remain corrected. Database/migration/Auth/staging business data/production/deployment/fixture mutation: **NO**.
+
+Read-only staging Auth inspection found the active, confirmed `DEBRODER E2E Full Admin` `superadmin` profile with all-store access. The supported browser connection failed at the trusted browser-service layer; the fallback combined password-rotation/UI-mutation operation was rejected before execution. No W3 Product was created and no credential was rotated or printed. Prior full Vitest evidence remains `152/152` files / `1056/1056` tests PASS; `git diff --check` executed and passed. Exact status: **WAVE 3 INCOMPLETE — PRODUCT OPERATING SYSTEM BLOCKER REMAINS**.
+
+Resume only with a supported authenticated staging session or separately approved narrowly scoped staging credential/UI mutation steps. Do not commit/push/deploy, reset staging, apply migrations, contact production, rerun W0/W1/W2, or start Wave 4.
+
+**HANDOFF UPDATED: YES — `CURRENT_PHASE_HANDOFF.md`**
+
+## FINAL VERIFIED W3 STATE — 2026-08-24 22:47:26 +08:00
+
+- W3 UAT stopped at **W3-PIM-003**: staging lacks canonical `website-images`; media upload returned `Bucket not found`.
+- Product/variant/inventory UAT writes were staging-only and authorized; no migrations, reset, fixtures, Auth rotation, production, deployment, commit, or push.
+- Gates: focused W3 `8/101` PASS; affected `5/33` PASS; Full Vitest `152/1,058` PASS; typecheck PASS; lint 0 errors/36 warnings; staging build 139 pages PASS; diff check PASS.
+- Official state: **WAVE 3 INCOMPLETE — PRODUCT OPERATING SYSTEM BLOCKER REMAINS**. Resume at media after owner-approved storage configuration. Do not start Wave 4.
+
+**HANDOFF UPDATED: YES — `CURRENT_PHASE_HANDOFF.md`**
+
+## CURRENT PROJECT STATE — W3-PIM-003 STORAGE CONTINUATION — 2026-08-25 20:29:12 +08:00
+
+- Branch / HEAD: **`UI-MIGRATION` / `5775f1aedb8c1539f69044aa7e58cd0e704fe285`**. Existing W3 implementation remains uncommitted and unpushed.
+- The canonical `website-images` Product/PIM storage contract was restored by the forward-only migration `20260824152251_wave_3_product_media_storage.sql`, applied once to staging project `ykfjgnrigcsapblbxnxb`; production `lzennundwqqtyvvcnzbg` was not contacted.
+- Staging verification confirmed the bucket, canonical limits/MIME types, public-read policy, superadmin write policies, and preservation of existing Admin Guest restrictions. No reset, historical migration replay, fixture recreation, or destructive SQL occurred.
+- Focused media/storage regression: **EXECUTED AND PASSED — 13/13**.
+- Real authenticated Product UAT from MEDIA onward: **BLOCKED / NOT EXECUTED** because the in-app browser had no retained Full Admin session and the external Chrome browser was unavailable. No password rotation or credential entry was performed.
+- Prior W3 PASS evidence remains unchanged and was not rerun. No claim is made for media persistence, publish, public catalog/PDP, post-publish update, duplicate SKU/sellable, Guest denial, or unauthorized denial.
+- Staging env remains ignored/untracked; no secret was printed or added to tracked content. One isolated staging runtime was used; no deployment, commit, push, or Wave 4 occurred.
+- Official state: **WAVE 3 INCOMPLETE — PRODUCT OPERATING SYSTEM BLOCKER REMAINS**. The storage defect is repaired; authenticated browser session is the remaining blocker.
+- Safe resume: sign in to the existing Full Admin staging account in the in-app browser and resume the retained product `17159506-1b3f-45fd-8a12-8ec1a2531574` at MEDIA only. Do not recreate or repeat passed work.
+
+**HANDOFF UPDATED: YES — `CURRENT_PHASE_HANDOFF.md`**
+
+## CURRENT PROJECT STATE — W3 AUTHENTICATED MEDIA RESUME — 2026-08-25 23:12:20 +08:00
+
+- Branch / HEAD remain **`UI-MIGRATION` / `5775f1aedb8c1539f69044aa7e58cd0e704fe285`**. Existing W3 implementation and storage migration remain uncommitted and unpushed.
+- Staging ref `ykfjgnrigcsapblbxnxb` and production ref `lzennundwqqtyvvcnzbg` were verified without printing secrets; production remained hard blocked. `.env.e2e.staging.local` remains ignored/untracked and `.env.local` was restored after the attempt.
+- The retained staging Product ID and slug were preserved. No Product recreation, media mutation, migration replay, reset, fixture recreation, or direct Product API/SQL substitute occurred.
+- Browser reached the real Admin login page without a retained Full Admin session. `/api/admin/session` returned **401**, `ADMIN_SERVICE_UNAVAILABLE=false`, and authenticated Full Admin was **false**. Media UAT, review, publish, public verification, post-publish edit, and remaining negative cases remain **BLOCKED / NOT EXECUTED**.
+- Two startup attempts encountered `EADDRINUSE`; an existing Node listener was stopped at cleanup. No runtime remains active. Prior focused media/storage regression remains **13/13 PASS**; `git diff --check` **EXECUTED AND PASSED**.
+- Official state: **WAVE 3 INCOMPLETE — PRODUCT OPERATING SYSTEM BLOCKER REMAINS**. Remaining blocker is authenticated Full Admin browser access, not the storage contract.
+- Safe resume: start one staging runtime, establish the existing Full Admin browser session, prove `/api/admin/session` authenticated, then resume the retained Product at MEDIA only. Do not start Wave 4.
+
+## CURRENT PROJECT STATE — W3 AUTHORIZATION CHECKPOINT — 2026-08-27 21:50:44 +08:00
+
+- Branch / HEAD remain **`UI-MIGRATION` / `5775f1aedb8c1539f69044aa7e58cd0e704fe285`**; W3 implementation remains uncommitted and unpushed.
+- On staging `ykfjgnrigcsapblbxnxb`, exactly one existing `DEBRODER E2E Full Admin` Auth user was verified and its password was rotated once under explicit owner authorization. Same identity, confirmed status, profile, `superadmin` role, `ACTIVE` status, and all-store scope were preserved. The temporary password is not recorded or exposed.
+- Exactly one staging runtime was started and stopped. The supported in-app browser rejected the local URL at its security-policy layer before login, so `/api/admin/session` authenticated proof and all remaining UAT were **BLOCKED / NOT EXECUTED**.
+- No Product/PIM source defect was reproduced; no source or migration change was made. The existing storage migration was not replayed. Production `lzennundwqqtyvvcnzbg` was not contacted; no deployment, commit, or push occurred.
+- `.env.e2e.staging.local` remains ignored/untracked and no exact secret appears in tracked content. Prior focused media regression remains 13/13 PASS and was not rerun.
+- Official state: **WAVE 3 INCOMPLETE — PRODUCT OPERATING SYSTEM BLOCKER REMAINS**. Resume the retained Product `17159506-1b3f-45fd-8a12-8ec1a2531574` at MEDIA only after supported browser access is available. Wave 4 remains unopened.
+
+**HANDOFF UPDATED: YES — `CURRENT_PHASE_HANDOFF.md`**
+
+## CURRENT PROJECT STATE — 2026-09-24 00:20:33 +08:00
+
+- `UI-MIGRATION` at `5775f1aedb8c1539f69044aa7e58cd0e704fe285` remains uncommitted/unpushed. Owner approved one additional staging Full Admin password rotation; it executed once and preserved identity, confirmed status, profile, role, and all-store scope. The temporary credential remains only in ignored local runtime state.
+- One staging runtime was prepared, but its launch was rejected before execution by automatic approval review because of its usage limit. No runtime is active; `.env.local` is restored.
+- Retained Product UAT from MEDIA onward and final W3 gates remain **BLOCKED / NOT EXECUTED**. No new Product/PIM defect was established; no implementation or migration was changed. Production was not contacted.
+- Current state: **WAVE 3 INCOMPLETE — PRODUCT OPERATING SYSTEM BLOCKER REMAINS**. Resume at MEDIA after approval capacity is restored; do not rotate again or start Wave 4.
+
+**HANDOFF UPDATED: YES — `CURRENT_PHASE_HANDOFF.md`**
+
+## CURRENT PROJECT STATE — W3 AUTH LOGIN SUCCEEDED, MEDIA BROWSER BLOCKED — 2026-09-24 00:32:03 +08:00
+
+- Branch/HEAD remain `UI-MIGRATION` / `5775f1aedb8c1539f69044aa7e58cd0e704fe285`; uncommitted W3 implementation and retained Product `17159506-1b3f-45fd-8a12-8ec1a2531574` preserved.
+- One staging-bound runtime and real `/admin/login` succeeded with the retained ignored credential. Dashboard displayed Full Admin / `Super Admin · SEMUA TOKO` / `ACTIVE`; runtime logged `/api/admin/session?path=%2Fadmin%2Fdashboard` HTTP 200. A separate direct browser endpoint request lacking Bearer returned 401; its response was not proof of credential failure.
+- Automatic browser review rejected the subsequent MEDIA navigation as a suspected security-policy bypass. No workaround was used. Remaining MEDIA-to-public-update and negative-case UAT and final W3 gates are **BLOCKED / NOT EXECUTED**. No Product/PIM defect or implementation change was established.
+- Runtime stopped, `.env.local` restored; no migration replay, database/business-data or Auth mutation, production contact, deployment, commit, push, or Wave 4. Exact state: **WAVE 3 INCOMPLETE — PRODUCT OPERATING SYSTEM BLOCKER REMAINS**. Resume at MEDIA only after supported browser access is resolved; do not rotate again.
+
+**HANDOFF UPDATED: YES — `CURRENT_PHASE_HANDOFF.md`**
+
+## CURRENT PROJECT STATE — W3 MEDIA/PUBLISH COMPLETED, NEGATIVE GATES OPEN — 2026-09-24 01:47 +08:00
+
+- `UI-MIGRATION` / `5775f1aedb8c1539f69044aa7e58cd0e704fe285`; uncommitted W3 implementation preserved. With owner-approved in-app browser access, retained staging Product `17159506-1b3f-45fd-8a12-8ec1a2531574` passed real Full Admin MEDIA upload/save/reload, Review, Publish, public catalog/PDP sellable resolution, and post-publish edit/public update. Staging postcheck: Active Product, 2 active variants, 2 distinct active sellables, 3 media rows.
+- Publish initially failed 403 because staging lacked the canonical `superadmin/product.publish` grant. Focused regression and forward migration `20260923172557_wave_3_superadmin_product_publish_grant` corrected that exact staging RBAC row; publish then passed. No other role or commerce authority changed. Prior media migration not replayed. Production never contacted.
+- UI duplicate color and duplicate SKU attempts were rejected 409; anonymous mutation rejected 401. The duplicate-sellable preview did **not** reach its guard (inactive separately minted Admin session, 401), and Admin Guest mutation UAT was **NOT EXECUTED** because no approved Guest credential/session is available. These are the only remaining W3 acceptance blockers. Focused W3/role/product Vitest 10 files/114 tests PASS, typecheck PASS, lint 0 errors/36 warnings, diff check PASS; full Vitest/build not rerun while NO-GO.
+- The single staging runtime was stopped, port 3101 cleared, `.env.local` restored; retained Auth credential remains ignored. No additional password rotation, staging reset, production contact, commit, push, deploy, or Wave 4. Exact state: **WAVE 3 INCOMPLETE — PRODUCT OPERATING SYSTEM BLOCKER REMAINS**. Resume only the two remaining negative checks, then final W3 gates if they pass.
+
+**HANDOFF UPDATED: YES — `CURRENT_PHASE_HANDOFF.md`**
+
+## LANDING BRIEF SCOPE DECISION PENDING — 2026-09-24 09:38 +08:00
+
+- Owner supplied a new production-ready company-profile landing brief. It materially conflicts with frozen Landing Page v1.0 section order, Smart Header/Hero Slider, CMS campaign ownership, and PIM product truth; the requested static two-product detail model also conflicts with the existing PIM-backed canonical `/produk/[slug]` route and `/koleksi` collection authority.
+- No landing implementation or database/production change was made while owner chooses whether to preserve the frozen design, approve a named replacement addendum, or build a separate brochure site. Existing uncommitted W3 work and W3 NO-GO state are preserved. Exact state: **LANDING IMPLEMENTATION BLOCKED PENDING OWNER SCOPE DECISION**; **WAVE 3 INCOMPLETE — PRODUCT OPERATING SYSTEM BLOCKER REMAINS**.
+
+**HANDOFF UPDATED: YES — `CURRENT_PHASE_HANDOFF.md`**
+
+## OWNER-APPROVED BROCHURE ADDENDUM — 2026-09-24 10:31:45 +08:00
+
+- Owner superseded the frozen homepage contract for the new company-profile/light-catalog scope while explicitly preserving other commerce routes and permitting static editorial product data for exactly two `/produk/[slug]` values. The earlier “decision pending” entry is resolved. Scope is documented in `docs/DEBRODER_LANDING_ADDENDUM_2026-09-24.md`.
+- Brochure homepage, `/produk`, `/layanan`, `/tentang`, `/kontak`, and the two static consultation-only details are **IMPLEMENTED AND LOCALLY VERIFIED**. Existing commerce/PIM route behavior for all other product slugs remains in place. No commerce, W3 transaction, database, or production changes were made for this task.
+- Typecheck PASS; lint 0 errors/36 existing warnings; direct production `next build` PASS; browser brochure Playwright 2/2 PASS; full Vitest 1059/1060 PASS with one separate W3 baseline manifest mismatch. `npm run build` is **NOT PASS** because its prebuild includes that full test gate. No deployment, commit, or push.
+- W3 remains **INCOMPLETE / NO-GO for Wave 4** with Admin Guest denial and duplicate-sellable UAT open. The brochure is not a claim that W3 or the whole release is complete. Confirm WhatsApp number, replace reference photos, and run Lighthouse/deployed QA before a brochure launch.
+
+**HANDOFF UPDATED: YES — `CURRENT_PHASE_HANDOFF.md`**
+
+## CURRENT PROJECT STATE — REPLAY MANIFEST GATE PASS / W3 UAT BLOCKED — 2026-09-24 12:19:21 +08:00
+
+- `UI-MIGRATION` / `5775f1aedb8c1539f69044aa7e58cd0e704fe285`. The authoritative fresh-database replay manifest now classifies both existing W3 migrations as `RUN`; no migration SQL or applied state was changed. Baseline 17/17, full Vitest 1060/1060, typecheck, lint (0 errors/36 warnings), `npm run build` (142 pages), and diff check **PASS**. Brochure browser tests were already passed and were not rerun.
+- W3 retained Product and all prior MEDIA-to-public-update evidence remain unchanged. Only Guest mutation denial and duplicate-sellable preview remain. A single staging runtime was used; retained Full Admin login was rejected, and no approved Guest credential/session was available. Neither negative gate was executed; W3 final closure gates were not run. A pre-hydration local form submission exposed the retained staging password in transient local logs; secure owner-approved remediation is required, with no automatic rotation. Runtime stopped and `.env.local` restored. No staging business-data mutation, migration application, production contact/mutation, commit, push, deployment, or Wave 4. **W3 INCOMPLETE / NO-GO**; brochure remains locally verified, not deployed.
+
+**HANDOFF UPDATED: YES — `CURRENT_PHASE_HANDOFF.md`**
+
+## CURRENT PROJECT STATE — W3 PRODUCT OPERATING SYSTEM READY FOR OWNER REVIEW — 2026-09-24 16:56:22 +08:00
+
+- Owner-authorized staging-only password remediation completed for the existing Full Admin and existing ACTIVE Admin Guest Auth identities; their IDs, emails, confirmation, profiles, roles, and scopes were preserved. The old compromised password was not reused. New credentials are retained only in ignored local state; no exact new password appears in tracked files. Production not contacted.
+- Both remaining W3 runtime gates **PASS**: active real Full Admin session reached the duplicate-sellable changed-row preview guard (HTTP 400) with no inventory change/commit; separate real Admin Guest session received `ADMIN_GUEST_READ_ONLY` HTTP 403 on the designated Product mutation. Both sessions logged out. Read-only staging postcheck retained Product `17159506-1b3f-45fd-8a12-8ec1a2531574` active with 2 active variants, 2 distinct active sellables, and 3 media rows. All previously passed MEDIA-to-public-update and negative gates remain historical evidence, not rerun.
+- Final staging-bound Next build **PASS** (142 pages; type/lint phase passed with 36 existing warnings); diff check **PASS**. Phase A baseline 17/17, full Vitest 1060/1060, standalone typecheck/lint, and `npm run build` remain historical PASS and were not rerun. One initial sandbox build encountered `EACCES` and was superseded by a clean authorized staging build. No tracked application or migration change, staging business-data mutation, production contact/mutation, reset, commit, push, deployment, or Wave 4. Staging Auth mutation: exactly two password-only rotations.
+- **WAVE 3 COMPLETE — PRODUCT OPERATING SYSTEM OPERATIONAL — READY FOR OWNER REVIEW.** This is W3 staging operational acceptance, not a claim that the brochure/release is deployed or launch-ready. Owner review is the next decision; brochure imagery/WhatsApp/Lighthouse/deployed QA remain separate follow-ups. Runtime stopped, `.env.local` restored.
+
+**HANDOFF UPDATED: YES — `CURRENT_PHASE_HANDOFF.md`**
