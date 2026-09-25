@@ -1996,3 +1996,18 @@ Resume only with a supported authenticated staging session or separately approve
 - **WAVE 3 COMPLETE — PRODUCT OPERATING SYSTEM OPERATIONAL — READY FOR OWNER REVIEW.** This is W3 staging operational acceptance, not a claim that the brochure/release is deployed or launch-ready. Owner review is the next decision; brochure imagery/WhatsApp/Lighthouse/deployed QA remain separate follow-ups. Runtime stopped, `.env.local` restored.
 
 **HANDOFF UPDATED: YES — `CURRENT_PHASE_HANDOFF.md`**
+
+## CURRENT PROJECT STATE — VISUAL EXPERIENCE OWNER REVIEW READY — 2026-09-25 08:45 +08:00
+
+- `UI-MIGRATION` / `17664385287b3afc692d91e3ed16898b0acc0aa1`. Owner-approved first-launch brochure now intentionally presents zero editorial products; the two former static examples and unverified imagery are not surfaced. `/produk` shows a premium coming-soon state; brochure contact uses confirmed `hello@debroder.id`, not the unconfirmed WhatsApp number. Existing commerce/PIM detail authority and W3 Product Operating System remain unchanged. W3 retains its previous **COMPLETE — READY FOR OWNER REVIEW** acceptance; no W3 gate was repeated.
+- Local verification: brochure Playwright 3/3, 20 required-size public-route renders and 12 extra-width Home/Produk renders without overflow/error/broken image/product card/commerce CTA; full Vitest 152 files/1060 tests; typecheck; lint 0 errors/36 existing warnings; isolated 142-page production build; diff check. The initial concurrent test/dev run exhausted memory and ended the single runtime; constrained test rerun passed. Direct dynamic-detail denial and final Admin login screenshot were not completed; authenticated Admin/dashboard, Lighthouse, production data/publication state, and deployed-host QA not verified.
+- No migration, database change, staging/production contact or mutation, commit, push, deploy, or Wave 4. Runtime stopped, `.env.local` restored and ignored. **DEBRODER VISUAL EXPERIENCE — OWNER REVIEW READY** locally; **release/deployment NO-GO until explicit owner decision**. Detailed scope, file list, exact gates, and resume point are in `CURRENT_PHASE_HANDOFF.md`.
+
+**HANDOFF UPDATED: YES — `CURRENT_PHASE_HANDOFF.md`**
+
+## OWNER ACCEPTANCE FOR RELEASE PREPARATION — 2026-09-25 09:45 +08:00
+
+- Owner accepted W3 and the current five-route, zero-product visual experience. This authorizes safe Git checkpointing, creation of `release/debroder-id-v1`, release gates, and a Vercel **Preview**, not Wave 4, production deployment, domain changes, or production database cleanup. Current pre-commit HEAD `UI-MIGRATION` / `17664385287b3afc692d91e3ed16898b0acc0aa1`. The accepted visual diff remains uncommitted at this preflight.
+- Tracked-secret and diff-integrity preflight passed; no staging or production contact/mutation and no migration attempt. Release-specific sitemap/PIM detail exposure needs bounded release-branch gating and verification. Vercel project access is not yet confirmed. Exact state and next action are in `CURRENT_PHASE_HANDOFF.md`.
+
+**HANDOFF UPDATED: YES — `CURRENT_PHASE_HANDOFF.md`**

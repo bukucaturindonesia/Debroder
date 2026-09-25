@@ -2153,3 +2153,19 @@ Last updated: 28 July 2026 (Asia/Makassar)
 - **W3 Product Operating System operational acceptance: GO for owner review.** This closes the two named W3 UAT blockers, not separate brochure launch concerns. Brochure reference imagery rights, public WhatsApp confirmation, Lighthouse, deployed-host QA, and framework-upgrade decision remain open release follow-ups. Do not infer production verification or release completeness.
 
 **HANDOFF UPDATED: YES — `CURRENT_PHASE_HANDOFF.md`**
+
+## VISUAL EXPERIENCE RELEASE FOLLOW-UPS — 2026-09-25 08:45 +08:00
+
+- **RESOLVED FOR LOCAL BROCHURE PRESENTATION:** first-launch editorial product count is zero; NSA Premium/Cotton Combed 24s cards and unverified product/portfolio imagery are omitted. The unconfirmed WhatsApp number is no longer a brochure CTA; confirmed contact email is `hello@debroder.id`. This supersedes the prior brochure launch assumptions, not the canonical PIM/product database. Five brochure routes, responsive matrix, browser suite, full Vitest, typecheck, lint, 142-page build, and diff check passed; see authoritative handoff.
+- **OPEN — deployment/release evidence:** production PIM publication state and direct dynamic product slugs were not queried; no production contact was allowed. Direct dynamic-detail denial and final Admin-login screenshot were interrupted by local runtime memory exhaustion; authenticated Admin/dashboard visual QA, Lighthouse, and deployed-host QA remain NOT RUN. These are release review limits, not a newly reproduced W3 defect. Existing 36 lint warnings remain non-blocking for this visual task. Owner decision required before any deployment or deployed-host validation.
+- **UNCHANGED:** W3 negative gates and operational acceptance remain closed/ready for owner review. No staging or production mutation/contact, migration, commit, push, deployment, or Wave 4 in this visual task. **DEBRODER VISUAL EXPERIENCE — OWNER REVIEW READY** locally; release/deployment remains **NO-GO pending owner direction**.
+
+**HANDOFF UPDATED: YES — `CURRENT_PHASE_HANDOFF.md`**
+
+## RELEASE PREPARATION OPEN GATES — 2026-09-25 09:45 +08:00
+
+- **OWNER DECISION RESOLVED:** W3 and the visual experience are accepted for release preparation. Public brochure product count remains zero; no test product, staging product, unconfirmed WhatsApp CTA, or unverified imagery may be promoted. Production deployment/domain/database cleanup are not authorized.
+- **OPEN — release-specific product exposure:** current sitemap still includes PIM-derived products and commerce routes, while `/produk/[slug]` still resolves canonical PIM data. Empty brochure cards alone do not prove no trial/test product is reachable or indexable. Bound the release branch only; do not query production business records or rewrite PIM.
+- **OPEN — preview capability/QA:** connected Vercel account exposes no project in its accessible team. Correct project access, exact-SHA preview deployment, deployed browser QA, and Lighthouse remain NOT RUN. No new W3 defect is implied; W3 acceptance stands. Secret/diff preflight PASS; Git mutation pending.
+
+**HANDOFF UPDATED: YES — `CURRENT_PHASE_HANDOFF.md`**

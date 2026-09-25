@@ -4,10 +4,16 @@ import { ConsultationSection, PageIntro, ServiceSection } from "@/components/bro
 
 export const metadata: Metadata = {
   title: "Layanan — DEBRODER",
-  description: "Layanan cetak DTF, produksi jersey, dan maklon sublim untuk kebutuhan apparel dan brand Anda.",
+  description: "Kenali layanan Cetak DTF, Produksi Jersey, dan Maklon Sublim dari DEBRODER.",
   alternates: { canonical: "/layanan" }
 };
 
 export default function ServicesPage() {
-  return <BrochureShell><PageIntro eyebrow="Layanan produksi" title="Produksi untuk kebutuhan Anda." description="Mulai dari kebutuhan desain hingga proses produksi, mari diskusikan pilihan layanan yang paling sesuai." /><ServiceSection fullPage /><ConsultationSection /></BrochureShell>;
+  return (
+    <BrochureShell>
+      <PageIntro eyebrow="Layanan produksi" title="Buat ide menjadi langkah nyata." description="Cetak dan produksi apparel untuk kebutuhan brand, komunitas, dan usaha. Pilih layanan yang ingin Anda diskusikan." />
+      <ServiceSection fullPage />
+      <ConsultationSection />
+    </BrochureShell>
+  );
 }

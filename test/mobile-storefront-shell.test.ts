@@ -37,10 +37,12 @@ describe("mobile storefront shell", () => {
   it("keeps the brochure homepage focused and provides a keyboard-accessible mobile menu", () => {
     const home = read("app/page.tsx");
     const brochureShell = read("components/brochure/BrochureShell.tsx");
+    const brochureNav = read("components/brochure/BrochureNav.tsx");
     expect(home).toContain("<BrochureShell>");
-    expect(brochureShell).toContain("<details");
-    expect(brochureShell).toContain('aria-label="Navigasi mobile"');
-    expect(brochureShell).toContain('label: "Produk", href: "/produk"');
+    expect(brochureShell).toContain("<BrochureNav />");
+    expect(brochureNav).toContain("<details");
+    expect(brochureNav).toContain('aria-label="Navigasi mobile"');
+    expect(brochureNav).toContain('label: "Produk", href: "/produk"');
     expect(home).not.toContain("ReadyCab");
     expect(home).not.toContain("grocery");
   });

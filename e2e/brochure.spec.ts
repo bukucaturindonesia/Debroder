@@ -1,6 +1,6 @@
 import { expect, test } from "@playwright/test";
 
-const routes = ["/", "/produk", "/layanan", "/tentang", "/kontak", "/produk/nsa-premium", "/produk/cotton-combed-24s"];
+const routes = ["/", "/produk", "/layanan", "/tentang", "/kontak"];
 
 test("brochure routes render without client errors or Supabase requests", async ({ page }) => {
   const errors: string[] = [];
@@ -21,6 +21,17 @@ test("brochure routes render without client errors or Supabase requests", async 
 
   expect(errors).toEqual([]);
   expect(supabaseRequests).toEqual([]);
+});
+
+test("first-launch products remain empty and consultation stays non-transactional", async ({ page }) => {
+  await page.goto("/produk", { waitUntil: "networkidle" });
+  await expect(page.getByRole("heading", { name: "Produk segera hadir." })).toBeVisible();
+  await expect(page.getByText("Koleksi DEBRODER sedang kami siapkan.", { exact: false })).toBeVisible();
+  await expect(page.getByRole("link", { name: /Lihat Layanan/ })).toHaveAttribute("href", "/layanan");
+  await expect(page.getByRole("link", { name: "Hubungi Kami" })).toHaveAttribute("href", "/kontak");
+  await expect(page.getByText("NSA PREMIUM")).toHaveCount(0);
+  await expect(page.getByText("Cotton Combed 24s")).toHaveCount(0);
+  await expect(page.getByRole("link", { name: /keranjang|beli sekarang|checkout/i })).toHaveCount(0);
 });
 
 test("mobile brochure navigation is usable without horizontal overflow", async ({ page }) => {

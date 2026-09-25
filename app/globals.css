@@ -3304,3 +3304,314 @@ button,
     transition: none;
   }
 }
+
+/* DEBRODER brochure — owner-approved quiet premium visual layer.
+   Scoped so the canonical storefront and Admin token contracts remain intact. */
+.brochure-shell {
+  --brochure-canvas: #f8f7f3;
+  --brochure-paper: #ffffff;
+  --brochure-soft: #f0ede6;
+  --brochure-ink: #20231f;
+  --brochure-muted: #5d625b;
+  --brochure-rule: #d8d8d0;
+  --brochure-accent: #776b56;
+  min-height: 100vh;
+  background: var(--brochure-canvas);
+  color: var(--brochure-ink);
+}
+
+.brochure-shell * { box-sizing: border-box; }
+.brochure-shell a { text-decoration: none; }
+.brochure-shell a:focus-visible,
+.brochure-shell summary:focus-visible {
+  outline: 2px solid var(--brochure-accent);
+  outline-offset: 4px;
+}
+
+.brochure-container {
+  width: min(100%, 1480px);
+  margin-inline: auto;
+  padding-inline: clamp(20px, 4vw, 64px);
+}
+
+.brochure-skip-link {
+  position: fixed;
+  z-index: 100;
+  top: 12px;
+  left: 12px;
+  transform: translateY(-160%);
+  padding: 12px 16px;
+  background: var(--brochure-paper);
+  color: var(--brochure-ink);
+}
+.brochure-skip-link:focus { transform: translateY(0); }
+
+.brochure-header {
+  position: sticky;
+  z-index: 40;
+  top: 0;
+  border-bottom: 1px solid var(--brochure-rule);
+  background: rgba(248, 247, 243, 0.97);
+  backdrop-filter: blur(10px);
+}
+.brochure-header-inner {
+  display: flex;
+  min-height: 72px;
+  align-items: center;
+  justify-content: space-between;
+  gap: 32px;
+}
+.brochure-brand { display: inline-flex; flex: none; align-items: center; }
+.brochure-brand img { display: block; width: 148px; height: auto; }
+.brochure-desktop-nav { display: flex; height: 72px; align-items: stretch; gap: clamp(18px, 2.8vw, 38px); }
+.brochure-nav-link {
+  display: inline-flex;
+  align-items: center;
+  border-bottom: 2px solid transparent;
+  padding-top: 2px;
+  color: var(--brochure-muted);
+  font-size: 14px;
+  font-weight: 550;
+  transition: color 180ms ease, border-color 180ms ease;
+}
+.brochure-nav-link:hover { color: var(--brochure-ink); }
+.brochure-nav-link[aria-current="page"] { border-bottom-color: var(--brochure-ink); color: var(--brochure-ink); }
+.brochure-mobile-menu { display: none; position: relative; }
+.brochure-menu-trigger {
+  display: grid;
+  width: 44px;
+  height: 44px;
+  place-items: center;
+  border: 1px solid var(--brochure-rule);
+  cursor: pointer;
+  list-style: none;
+}
+.brochure-menu-trigger::-webkit-details-marker { display: none; }
+.brochure-menu-icon { display: grid; width: 20px; gap: 5px; }
+.brochure-menu-icon span { height: 1px; background: currentColor; }
+.brochure-mobile-panel {
+  position: absolute;
+  top: 52px;
+  right: 0;
+  display: grid;
+  width: min(300px, calc(100vw - 40px));
+  border: 1px solid var(--brochure-rule);
+  background: var(--brochure-canvas);
+  padding: 12px 20px;
+  box-shadow: 0 18px 32px rgba(32, 35, 31, 0.1);
+}
+.brochure-mobile-link {
+  display: flex;
+  min-height: 48px;
+  align-items: center;
+  border-bottom: 1px solid var(--brochure-rule);
+  color: var(--brochure-muted);
+  font-size: 16px;
+  font-weight: 550;
+}
+.brochure-mobile-link:last-child { border-bottom: 0; }
+.brochure-mobile-link[aria-current="page"] { color: var(--brochure-ink); font-weight: 700; }
+
+.brochure-eyebrow {
+  margin: 0;
+  color: var(--brochure-accent);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  line-height: 1.5;
+  text-transform: uppercase;
+}
+.brochure-display { margin: 0; font-weight: 550; letter-spacing: -0.055em; }
+.brochure-lead { margin: 0; color: var(--brochure-muted); font-size: clamp(16px, 1.35vw, 19px); line-height: 1.65; }
+.brochure-section-title { max-width: 760px; font-size: clamp(38px, 4.45vw, 72px); line-height: 1.06; }
+.brochure-text-link {
+  display: inline-flex;
+  min-height: 44px;
+  align-items: center;
+  gap: 18px;
+  border-bottom: 1px solid currentColor;
+  color: var(--brochure-ink);
+  font-size: 15px;
+  font-weight: 650;
+  transition: gap 180ms ease, color 180ms ease;
+}
+.brochure-text-link:hover { gap: 24px; color: var(--brochure-accent); }
+.brochure-actions { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 32px; }
+.brochure-button {
+  display: inline-flex;
+  min-height: 48px;
+  align-items: center;
+  justify-content: center;
+  gap: 28px;
+  border: 1px solid var(--brochure-ink);
+  border-radius: 4px;
+  padding: 11px 22px;
+  font-size: 14px;
+  font-weight: 650;
+  line-height: 1.35;
+  transition: background-color 180ms ease, color 180ms ease, border-color 180ms ease;
+}
+.brochure-button-primary { background: var(--brochure-ink); color: #fff; }
+.brochure-button-primary:hover { background: #3a3f38; border-color: #3a3f38; }
+.brochure-button-secondary { background: transparent; color: var(--brochure-ink); }
+.brochure-button-secondary:hover { background: var(--brochure-soft); }
+
+.brochure-hero { border-bottom: 1px solid var(--brochure-rule); }
+.brochure-hero-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.06fr) minmax(0, 0.94fr);
+  align-items: center;
+  gap: clamp(36px, 5vw, 84px);
+  padding-block: clamp(64px, 7vw, 112px);
+}
+.brochure-hero-copy { min-width: 0; }
+.brochure-hero-title { max-width: 760px; margin-top: 25px; font-size: clamp(52px, 5.4vw, 93px); line-height: 1.01; }
+.brochure-hero-copy .brochure-lead { max-width: 560px; margin-top: 30px; }
+.brochure-hero-composition {
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+  min-height: clamp(420px, 39vw, 590px);
+  padding: clamp(28px, 3vw, 44px);
+  background: #222620;
+  color: #f7f5ef;
+}
+.brochure-composition-top,
+.brochure-composition-bottom { display: flex; justify-content: space-between; gap: 12px; font-size: 11px; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase; }
+.brochure-composition-top { border-bottom: 1px solid rgba(255,255,255,0.25); padding-bottom: 18px; }
+.brochure-composition-bottom { border-top: 1px solid rgba(255,255,255,0.25); padding-top: 18px; color: #c8cbc3; }
+.brochure-composition-main { display: flex; flex-direction: column; justify-content: center; padding-block: 36px; }
+.brochure-composition-main span { font-size: clamp(47px, 5.2vw, 86px); font-weight: 500; letter-spacing: -0.075em; line-height: 1.06; }
+.brochure-composition-main span:nth-child(2) { color: #b6b9ad; }
+
+.brochure-page-intro { border-bottom: 1px solid var(--brochure-rule); padding-block: clamp(76px, 9vw, 132px); }
+.brochure-page-title { max-width: 940px; margin-top: 22px; font-size: clamp(52px, 6vw, 94px); line-height: 1.03; }
+.brochure-page-description { max-width: 650px; margin-top: 30px; }
+.brochure-services-section { background: var(--brochure-soft); padding-block: clamp(78px, 8vw, 124px); }
+.brochure-services-full { background: var(--brochure-paper); }
+.brochure-services-layout { display: grid; grid-template-columns: minmax(0, 0.85fr) minmax(0, 1.15fr); gap: clamp(56px, 7vw, 110px); }
+.brochure-services-intro .brochure-section-title { margin-top: 18px; }
+.brochure-services-intro .brochure-lead { max-width: 430px; margin-top: 23px; }
+.brochure-services-intro .brochure-text-link { margin-top: 25px; }
+.brochure-service-list { border-top: 1px solid #c9cbc3; }
+.brochure-service-row { display: grid; grid-template-columns: 54px minmax(0, 1fr); gap: 18px; border-bottom: 1px solid #c9cbc3; padding-block: 30px; }
+.brochure-service-number { padding-top: 7px; color: var(--brochure-accent); font-size: 13px; font-weight: 700; }
+.brochure-service-row h3 { margin: 0; font-size: clamp(26px, 2.2vw, 36px); font-weight: 550; letter-spacing: -0.04em; line-height: 1.15; }
+.brochure-service-row p { max-width: 540px; margin: 13px 0 0; color: var(--brochure-muted); font-size: 16px; line-height: 1.65; }
+.brochure-service-row .brochure-text-link { margin-top: 15px; }
+
+.brochure-approach-section,
+.brochure-about-section { background: var(--brochure-paper); padding-block: clamp(80px, 8vw, 124px); }
+.brochure-section-heading { display: flex; align-items: end; justify-content: space-between; gap: 50px; }
+.brochure-section-heading .brochure-section-title { margin-top: 18px; }
+.brochure-section-heading > p { max-width: 390px; margin: 0; color: var(--brochure-muted); font-size: 16px; line-height: 1.65; }
+.brochure-approach-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); margin-top: 62px; border-top: 1px solid var(--brochure-rule); }
+.brochure-approach-item { border-right: 1px solid var(--brochure-rule); padding: 27px 32px 20px 0; }
+.brochure-approach-item + .brochure-approach-item { padding-left: 32px; }
+.brochure-approach-item:last-child { border-right: 0; }
+.brochure-approach-item > span { color: var(--brochure-accent); font-size: 13px; font-weight: 700; }
+.brochure-approach-item h3 { margin: 30px 0 0; font-size: 23px; font-weight: 550; letter-spacing: -0.03em; }
+.brochure-approach-item p { max-width: 310px; margin: 13px 0 0; color: var(--brochure-muted); font-size: 16px; line-height: 1.65; }
+
+.brochure-product-teaser { border-block: 1px solid var(--brochure-rule); padding-block: clamp(72px, 7vw, 108px); }
+.brochure-product-teaser-inner { display: grid; grid-template-columns: minmax(0, 1.2fr) minmax(0, 0.8fr); align-items: end; gap: 52px; }
+.brochure-product-teaser .brochure-section-title { margin-top: 17px; }
+.brochure-teaser-aside p { max-width: 410px; margin: 0 0 18px; color: var(--brochure-muted); font-size: 17px; line-height: 1.65; }
+.brochure-empty-section { background: var(--brochure-paper); padding-block: clamp(56px, 7vw, 112px); }
+.brochure-empty-panel { display: grid; grid-template-columns: minmax(0, 0.34fr) minmax(0, 0.66fr); gap: 30px; min-height: 430px; padding: clamp(32px, 5vw, 80px); background: #eeece5; }
+.brochure-empty-index { color: var(--brochure-accent); font-size: 12px; font-weight: 700; letter-spacing: 0.14em; }
+.brochure-empty-title { max-width: 720px; margin-top: 16px; font-size: clamp(46px, 5.3vw, 84px); line-height: 1.04; }
+.brochure-empty-copy { max-width: 560px; margin-top: 24px; }
+
+.brochure-company-section { padding-block: clamp(80px, 8vw, 124px); }
+.brochure-company-grid { display: grid; grid-template-columns: minmax(0, 0.38fr) minmax(0, 0.62fr); gap: clamp(40px, 7vw, 100px); }
+.brochure-company-grid .brochure-section-title { margin-bottom: 26px; }
+.brochure-company-grid .brochure-lead { max-width: 680px; }
+.brochure-company-grid .brochure-text-link { margin-top: 23px; }
+.brochure-about-links { display: flex; flex-wrap: wrap; gap: 20px 35px; }
+.brochure-contact-band { background: #e1dbcf; padding-block: clamp(76px, 7vw, 108px); }
+.brochure-contact-band-inner { display: flex; align-items: end; justify-content: space-between; gap: 36px; }
+.brochure-contact-band .brochure-section-title { max-width: 790px; margin-top: 17px; }
+.brochure-contact-band .brochure-lead { max-width: 540px; margin-top: 23px; }
+.brochure-contact-band .brochure-button { flex: none; }
+.brochure-contact-page-section { background: var(--brochure-paper); padding-block: clamp(80px, 8vw, 124px); }
+.brochure-contact-page-grid { display: grid; grid-template-columns: minmax(0, 1.2fr) minmax(0, 0.8fr); gap: clamp(48px, 8vw, 120px); }
+.brochure-contact-page-grid .brochure-section-title { margin-top: 18px; }
+.brochure-contact-page-grid .brochure-lead { max-width: 600px; margin-top: 23px; }
+.brochure-contact-email { display: inline-flex; min-height: 54px; align-items: center; gap: 24px; margin-top: 34px; border-bottom: 1px solid var(--brochure-ink); color: var(--brochure-ink); font-size: clamp(23px, 3vw, 39px); font-weight: 550; letter-spacing: -0.04em; overflow-wrap: anywhere; }
+.brochure-contact-aside { align-self: start; border-top: 1px solid var(--brochure-rule); padding-top: 24px; }
+.brochure-contact-aside p { max-width: 390px; margin: 20px 0 0; color: var(--brochure-muted); font-size: 16px; line-height: 1.65; }
+.brochure-contact-aside .brochure-text-link { margin-top: 23px; }
+
+.brochure-footer { background: #20231f; color: #f7f6f1; }
+.brochure-footer-grid { display: grid; grid-template-columns: minmax(0, 1.7fr) repeat(3, minmax(0, 1fr)); gap: clamp(28px, 4vw, 70px); padding-block: 64px; }
+.brochure-footer-brand p { margin: 0; font-size: 25px; font-weight: 650; letter-spacing: -0.045em; }
+.brochure-footer-brand span { display: block; max-width: 290px; margin-top: 16px; color: #c3c7bf; font-size: 15px; line-height: 1.65; }
+.brochure-footer-group { display: flex; flex-direction: column; align-items: flex-start; gap: 13px; }
+.brochure-footer-group h2 { margin: 0 0 7px; color: #aeb5ab; font-size: 12px; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; }
+.brochure-footer-group a { color: #f7f6f1; font-size: 15px; line-height: 1.5; }
+.brochure-footer-group a:hover { text-decoration: underline; text-underline-offset: 4px; }
+.brochure-footer-bottom { display: flex; justify-content: space-between; gap: 16px; border-top: 1px solid #4c514a; padding-block: 20px; color: #aeb5ab; font-size: 13px; }
+
+@media (max-width: 1023px) {
+  .brochure-desktop-nav { display: none; }
+  .brochure-mobile-menu { display: block; }
+  .brochure-hero-grid { grid-template-columns: 1fr; }
+  .brochure-hero-copy { max-width: 760px; }
+  .brochure-hero-composition { min-height: 430px; }
+  .brochure-services-layout { grid-template-columns: 1fr; gap: 45px; }
+  .brochure-services-intro .brochure-lead { max-width: 650px; }
+}
+
+@media (max-width: 767px) {
+  .brochure-header-inner { min-height: 64px; }
+  .brochure-brand img { width: 135px; }
+  .brochure-hero-grid { gap: 46px; padding-block: 62px 72px; }
+  .brochure-hero-title { font-size: clamp(47px, 11vw, 67px); line-height: 1.02; }
+  .brochure-hero-copy .brochure-lead { margin-top: 23px; }
+  .brochure-hero-composition { min-height: 330px; padding: 27px; }
+  .brochure-composition-main span { font-size: clamp(45px, 11vw, 67px); }
+  .brochure-composition-bottom { font-size: 10px; }
+  .brochure-page-intro { padding-block: 72px; }
+  .brochure-page-title { font-size: clamp(50px, 11vw, 70px); }
+  .brochure-page-description { margin-top: 23px; }
+  .brochure-services-section,
+  .brochure-approach-section,
+  .brochure-about-section,
+  .brochure-company-section,
+  .brochure-contact-band,
+  .brochure-contact-page-section { padding-block: 76px; }
+  .brochure-section-heading { display: block; }
+  .brochure-section-heading > p { margin-top: 25px; }
+  .brochure-approach-grid { grid-template-columns: 1fr; margin-top: 42px; }
+  .brochure-approach-item,
+  .brochure-approach-item + .brochure-approach-item { border-right: 0; border-bottom: 1px solid var(--brochure-rule); padding: 25px 0; }
+  .brochure-approach-item:last-child { border-bottom: 0; }
+  .brochure-approach-item h3 { margin-top: 16px; }
+  .brochure-product-teaser-inner,
+  .brochure-company-grid,
+  .brochure-contact-page-grid { grid-template-columns: 1fr; gap: 30px; }
+  .brochure-empty-panel { grid-template-columns: 1fr; gap: 42px; min-height: 0; padding: 32px 25px 46px; }
+  .brochure-contact-band-inner { display: block; }
+  .brochure-contact-band .brochure-button { margin-top: 30px; }
+  .brochure-footer-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 38px 24px; padding-block: 55px; }
+  .brochure-footer-brand { grid-column: 1 / -1; }
+  .brochure-footer-bottom { display: block; }
+  .brochure-footer-bottom span + span { display: block; margin-top: 6px; }
+}
+
+@media (max-width: 359px) {
+  .brochure-container { padding-inline: 16px; }
+  .brochure-actions .brochure-button { width: 100%; }
+  .brochure-hero-title { font-size: 46px; }
+  .brochure-composition-top,
+  .brochure-composition-bottom { font-size: 9px; }
+  .brochure-contact-email { font-size: 22px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .brochure-shell *, .brochure-shell *::before, .brochure-shell *::after {
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+  }
+}

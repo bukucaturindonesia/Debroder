@@ -26,9 +26,10 @@ describe("DEBRODER Homepage premium visual V1 contract", () => {
     }
   });
 
-  it("keeps each approved brochure product card as one semantic link", () => {
+  it("does not surface unverified editorial product cards for first launch", () => {
     const brochure = readFileSync("components/brochure/BrochureContent.tsx", "utf8");
-    expect(brochure).toContain('Link href={`/produk/${product.slug}`}');
+    expect(brochure).toContain("Produk segera hadir.");
+    expect(brochure).not.toContain('Link href={`/produk/${product.slug}`}');
     expect(brochure).not.toContain('className="absolute inset-0 z-10"');
   });
 
@@ -58,7 +59,7 @@ describe("DEBRODER Homepage premium visual V1 contract", () => {
     expect(campaign).toContain("<AccessibleAutoplayVideo");
   });
 
-  it("keeps the legacy footer canonical while the brochure uses its dedicated light shell", () => {
+  it("keeps the legacy footer canonical while the brochure uses its dedicated shell", () => {
     expect(footer).toContain('type FooterTone = "dark" | "light"');
     expect(footer).toContain('tone = "dark"');
     expect(footer).toContain("data-footer-tone={tone}");
