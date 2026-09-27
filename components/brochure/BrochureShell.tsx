@@ -1,7 +1,7 @@
-import Image from "next/image";
 import Link from "next/link";
 import type { ReactNode } from "react";
 import { BrochureNav } from "@/components/brochure/BrochureNav";
+import { Logo } from "@/components/Logo";
 import { brochureSite } from "@/src/config/site";
 import { brochureServices } from "@/src/data/services";
 
@@ -19,7 +19,7 @@ export function BrochureShell({ children }: { children: ReactNode }) {
       <header className="brochure-header">
         <div className="brochure-container brochure-header-inner">
           <Link href="/" aria-label="DEBRODER — Beranda" className="brochure-brand">
-            <Image src="/debroder/logo-wordmark-black.svg" alt="" width={154} height={30} priority />
+            <Logo variant="primary-black" size="sm" />
           </Link>
           <BrochureNav />
         </div>
@@ -28,8 +28,8 @@ export function BrochureShell({ children }: { children: ReactNode }) {
       <footer className="brochure-footer">
         <div className="brochure-container brochure-footer-grid">
           <div className="brochure-footer-brand">
-            <p>DEBRODER</p>
-            <span>Bahan dan produksi apparel untuk kebutuhan brand, komunitas, dan usaha.</span>
+            <Logo variant="primary-white" size="md" />
+            <span className="brochure-footer-description">Bahan dan produksi apparel untuk kebutuhan brand, komunitas, dan usaha.</span>
           </div>
           <nav aria-label="Navigasi footer" className="brochure-footer-group">
             <h2>Jelajahi</h2>

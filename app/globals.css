@@ -3362,7 +3362,7 @@ button,
   gap: 32px;
 }
 .brochure-brand { display: inline-flex; flex: none; align-items: center; }
-.brochure-brand img { display: block; width: 148px; height: auto; }
+.brochure-brand img { display: block; }
 .brochure-desktop-nav { display: flex; height: 72px; align-items: stretch; gap: clamp(18px, 2.8vw, 38px); }
 .brochure-nav-link {
   display: inline-flex;
@@ -3544,8 +3544,7 @@ button,
 
 .brochure-footer { background: #20231f; color: #f7f6f1; }
 .brochure-footer-grid { display: grid; grid-template-columns: minmax(0, 1.7fr) repeat(3, minmax(0, 1fr)); gap: clamp(28px, 4vw, 70px); padding-block: 64px; }
-.brochure-footer-brand p { margin: 0; font-size: 25px; font-weight: 650; letter-spacing: -0.045em; }
-.brochure-footer-brand span { display: block; max-width: 290px; margin-top: 16px; color: #c3c7bf; font-size: 15px; line-height: 1.65; }
+.brochure-footer-brand > .brochure-footer-description { display: block; max-width: 290px; margin-top: 16px; color: #c3c7bf; font-size: 15px; line-height: 1.65; }
 .brochure-footer-group { display: flex; flex-direction: column; align-items: flex-start; gap: 13px; }
 .brochure-footer-group h2 { margin: 0 0 7px; color: #aeb5ab; font-size: 12px; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; }
 .brochure-footer-group a { color: #f7f6f1; font-size: 15px; line-height: 1.5; }
@@ -3564,7 +3563,6 @@ button,
 
 @media (max-width: 767px) {
   .brochure-header-inner { min-height: 64px; }
-  .brochure-brand img { width: 135px; }
   .brochure-hero-grid { gap: 46px; padding-block: 62px 72px; }
   .brochure-hero-title { font-size: clamp(47px, 11vw, 67px); line-height: 1.02; }
   .brochure-hero-copy .brochure-lead { margin-top: 23px; }
