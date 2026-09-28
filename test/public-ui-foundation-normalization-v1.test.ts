@@ -44,7 +44,8 @@ describe("DEBRODER public UI foundation normalization V1", () => {
     expect(read("components/jersey/JerseyShopCatalog.tsx")).toContain('data-ui-grid="product"');
     expect(read("app/page.tsx")).toContain("<ProductSection />");
     expect(read("app/page.tsx")).toContain("<ServiceSection />");
-    expect(read("components/brochure/BrochureContent.tsx")).toContain("md:grid-cols-2");
+    expect(read("components/brochure/BrochureContent.tsx")).toContain("brochure-services-layout");
+    expect(styles).toContain(".brochure-services-layout { display: grid;");
   });
 
   it("keeps Jersey as a content exception without a second public shell geometry", () => {

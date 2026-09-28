@@ -1,6 +1,6 @@
 import { expect, test } from "@playwright/test";
 
-const routes = ["/", "/produk", "/layanan", "/tentang", "/kontak", "/produk/nsa-premium", "/produk/cotton-combed-24s"];
+const routes = ["/", "/produk", "/layanan", "/tentang", "/kontak"];
 
 test("brochure routes render without client errors or Supabase requests", async ({ page }) => {
   const errors: string[] = [];
@@ -23,6 +23,17 @@ test("brochure routes render without client errors or Supabase requests", async 
   expect(supabaseRequests).toEqual([]);
 });
 
+test("first-launch products remain empty and consultation stays non-transactional", async ({ page }) => {
+  await page.goto("/produk", { waitUntil: "networkidle" });
+  await expect(page.getByRole("heading", { name: "Produk segera hadir." })).toBeVisible();
+  await expect(page.getByText("Koleksi DEBRODER sedang kami siapkan.", { exact: false })).toBeVisible();
+  await expect(page.getByRole("link", { name: /Lihat Layanan/ })).toHaveAttribute("href", "/layanan");
+  await expect(page.getByRole("link", { name: "Hubungi Kami" })).toHaveAttribute("href", "/kontak");
+  await expect(page.getByText("NSA PREMIUM")).toHaveCount(0);
+  await expect(page.getByText("Cotton Combed 24s")).toHaveCount(0);
+  await expect(page.getByRole("link", { name: /keranjang|beli sekarang|checkout/i })).toHaveCount(0);
+});
+
 test("mobile brochure navigation is usable without horizontal overflow", async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto("/", { waitUntil: "networkidle" });
@@ -34,4 +45,71 @@ test("mobile brochure navigation is usable without horizontal overflow", async (
   await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
   const overflow = await page.evaluate(() => document.documentElement.scrollWidth > window.innerWidth);
   expect(overflow).toBe(false);
+});
+
+test("release denies direct trial product details and emits only brochure sitemap routes", async ({ request }) => {
+  for (const path of ["/produk/nsa-premium", "/produk/cotton-combed-24s", "/koleksi", "/jersey/shop", "/checkout"]) {
+    const response = await request.get(path);
+    expect(response.status(), path).toBe(404);
+  }
+  const sitemap = await request.get("/sitemap.xml");
+  expect(sitemap.status()).toBe(200);
+  const body = await sitemap.text();
+  for (const path of ["/produk", "/layanan", "/tentang", "/kontak"]) {
+    expect(body).toContain(path);
+  }
+  expect(body).not.toContain("/produk/nsa-premium");
+  expect(body).not.toContain("/produk/cotton-combed-24s");
+  expect(body).not.toContain("/koleksi");
+});
+
+test("canonical graphical logo stays visible in header and dark footer across release pages and viewports", async ({ page }) => {
+  const errors: string[] = [];
+  page.on("pageerror", (error) => errors.push(error.message));
+  page.on("console", (message) => { if (message.type() === "error") errors.push(message.text()); });
+
+  for (const viewport of [
+    { width: 390, height: 844 },
+    { width: 768, height: 1024 },
+    { width: 1440, height: 1000 },
+    { width: 1920, height: 1080 }
+  ]) {
+    await page.setViewportSize(viewport);
+    for (const route of routes) {
+      const response = await page.goto(route, { waitUntil: "networkidle" });
+      expect(response?.status(), `${route} at ${viewport.width}px`).toBe(200);
+      const header = page.locator(".brochure-brand");
+      const footer = page.locator(".brochure-footer-brand");
+      await expect(header).toHaveAttribute("href", "/");
+      await expect(header.getByRole("img", { name: "Logo DE BRODER" })).toBeVisible();
+      await expect(footer.getByRole("img", { name: "Logo DE BRODER" })).toBeVisible();
+      expect(await header.locator("img").evaluateAll((images) => images.map((image) => ({
+        src: image.getAttribute("src"),
+        ready: image instanceof HTMLImageElement && image.complete && image.naturalWidth > 0
+      })))).toEqual([
+        { src: "/brand/debroder/logo-symbol-black.svg", ready: true },
+        { src: "/brand/debroder/logo-wordmark-black.svg", ready: true }
+      ]);
+      expect(await footer.locator("img").evaluateAll((images) => images.map((image) => ({
+        src: image.getAttribute("src"),
+        ready: image instanceof HTMLImageElement && image.complete && image.naturalWidth > 0
+      })))).toEqual([
+        { src: "/brand/debroder/logo-symbol-white.svg", ready: true },
+        { src: "/brand/debroder/logo-wordmark-white.svg", ready: true }
+      ]);
+      expect(await footer.evaluate((node) => getComputedStyle(node.closest(".brochure-footer")!).backgroundColor)).toBe("rgb(32, 35, 31)");
+      expect(await page.evaluate(() => document.documentElement.scrollWidth > innerWidth), `${route} at ${viewport.width}px`).toBe(false);
+
+      if (route === "/" && (viewport.width === 390 || viewport.width === 1440)) {
+        await page.locator(".brochure-header").screenshot({ path: `test-results/brochure-header-${viewport.width}.png` });
+        await page.locator(".brochure-footer-grid").screenshot({ path: `test-results/brochure-footer-${viewport.width}.png` });
+      }
+    }
+    if (viewport.width <= 768) {
+      await page.goto("/");
+      await page.locator('summary[aria-label="Buka menu navigasi"]').click();
+      await expect(page.getByRole("navigation", { name: "Navigasi mobile" }).getByRole("link", { name: "Produk" })).toBeVisible();
+    }
+  }
+  expect(errors).toEqual([]);
 });

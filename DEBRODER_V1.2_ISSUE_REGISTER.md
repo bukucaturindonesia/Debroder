@@ -2153,3 +2153,56 @@ Last updated: 28 July 2026 (Asia/Makassar)
 - **W3 Product Operating System operational acceptance: GO for owner review.** This closes the two named W3 UAT blockers, not separate brochure launch concerns. Brochure reference imagery rights, public WhatsApp confirmation, Lighthouse, deployed-host QA, and framework-upgrade decision remain open release follow-ups. Do not infer production verification or release completeness.
 
 **HANDOFF UPDATED: YES — `CURRENT_PHASE_HANDOFF.md`**
+
+## VISUAL EXPERIENCE RELEASE FOLLOW-UPS — 2026-09-25 08:45 +08:00
+
+- **RESOLVED FOR LOCAL BROCHURE PRESENTATION:** first-launch editorial product count is zero; NSA Premium/Cotton Combed 24s cards and unverified product/portfolio imagery are omitted. The unconfirmed WhatsApp number is no longer a brochure CTA; confirmed contact email is `hello@debroder.id`. This supersedes the prior brochure launch assumptions, not the canonical PIM/product database. Five brochure routes, responsive matrix, browser suite, full Vitest, typecheck, lint, 142-page build, and diff check passed; see authoritative handoff.
+- **OPEN — deployment/release evidence:** production PIM publication state and direct dynamic product slugs were not queried; no production contact was allowed. Direct dynamic-detail denial and final Admin-login screenshot were interrupted by local runtime memory exhaustion; authenticated Admin/dashboard visual QA, Lighthouse, and deployed-host QA remain NOT RUN. These are release review limits, not a newly reproduced W3 defect. Existing 36 lint warnings remain non-blocking for this visual task. Owner decision required before any deployment or deployed-host validation.
+- **UNCHANGED:** W3 negative gates and operational acceptance remain closed/ready for owner review. No staging or production mutation/contact, migration, commit, push, deployment, or Wave 4 in this visual task. **DEBRODER VISUAL EXPERIENCE — OWNER REVIEW READY** locally; release/deployment remains **NO-GO pending owner direction**.
+
+**HANDOFF UPDATED: YES — `CURRENT_PHASE_HANDOFF.md`**
+
+## RELEASE PREPARATION OPEN GATES — 2026-09-25 09:45 +08:00
+
+- **OWNER DECISION RESOLVED:** W3 and the visual experience are accepted for release preparation. Public brochure product count remains zero; no test product, staging product, unconfirmed WhatsApp CTA, or unverified imagery may be promoted. Production deployment/domain/database cleanup are not authorized.
+- **OPEN — release-specific product exposure:** current sitemap still includes PIM-derived products and commerce routes, while `/produk/[slug]` still resolves canonical PIM data. Empty brochure cards alone do not prove no trial/test product is reachable or indexable. Bound the release branch only; do not query production business records or rewrite PIM.
+- **OPEN — preview capability/QA:** connected Vercel account exposes no project in its accessible team. Correct project access, exact-SHA preview deployment, deployed browser QA, and Lighthouse remain NOT RUN. No new W3 defect is implied; W3 acceptance stands. Secret/diff preflight PASS; Git mutation pending.
+
+**HANDOFF UPDATED: YES — `CURRENT_PHASE_HANDOFF.md`**
+
+## RELEASE PUSH BLOCKER — 2026-09-25 09:50 +08:00
+
+- **BLOCKER — external publication review:** local accepted development commit `c1c829ce93c6b28a1100235201a4302ed48f9929` exists on `UI-MIGRATION`, but automatic approval review rejected `git push origin UI-MIGRATION` twice because the target repository is public. The attached owner brief requested push; the reviewer did not accept the attachment as direct authorization. No connector/API workaround was used. Remote remains at prior `17664385287b3afc692d91e3ed16898b0acc0aa1`. Direct owner confirmation is pending. Required sequencing prevents release branch creation until this push succeeds.
+- **OPEN — bounded release exposure:** sitemap includes PIM products and legacy commerce routes; direct `/produk/[slug]` can fall through to PIM. The zero-product brochure presentation is verified but not sufficient to guarantee zero direct/sitemap product exposure. Fix only on release branch after push, without production data query or PIM rewrite. Admin static source checks passed; runtime/Preview checks pending. Connected Vercel account has no accessible project; deployment and Lighthouse remain blocked/not run.
+- **UNCHANGED:** W3 accepted; no new W3 defect, migration, database/staging/production mutation/contact, production deployment, domain change, or Wave 4. Exact status: **DEBRODER V1 RELEASE BLOCKED — DEVELOPMENT PUSH DENIED BY AUTOMATIC APPROVAL REVIEW**.
+
+**HANDOFF UPDATED: YES — `CURRENT_PHASE_HANDOFF.md`**
+
+## RELEASE PREVIEW OPEN GATE — 2026-09-25 10:22 +08:00
+
+- **CLOSED — development push:** the owner directly authorized the exact SHA and `origin/UI-MIGRATION` now received `c1c829ce93c6b28a1100235201a4302ed48f9929`; `release/debroder-id-v1` was created from it. The prior automatic-review refusal is historical, not current.
+- **CLOSED LOCALLY — zero-product public exposure:** release middleware limits public page requests to the five approved brochure routes while preserving Admin/API/assets and underlying commerce code. Product trial slugs and representative legacy commerce pages return HTTP 404; sitemap contains exactly five URLs and no dynamic PIM product. Production data was not queried. Local focused/full/build/browser gates pass; see handoff.
+- **OPEN — Vercel Preview:** the accessible Vercel team lists zero projects, so the correct DEBRODER project/import connection, exact-SHA Preview deployment, deployed-host QA, and Lighthouse are NOT RUN. Release commit/push are the next Git actions. Do not deploy to an unrelated team, Production, or domain; W3 acceptance stays closed.
+
+**HANDOFF UPDATED: YES — `CURRENT_PHASE_HANDOFF.md`**
+
+## RELEASE PUBLICATION / PREVIEW BLOCKERS — 2026-09-25 10:27 +08:00
+
+- **OPEN — release Git push:** local `release/debroder-id-v1` commit `b3bee9788c3b9a1fa919a7eb1a8cda45df31baf3` passed local quality/secret checks; official `git push -u origin release/debroder-id-v1` was blocked by auto-review because the public-repository release payload lacks trusted direct approval specific to this SHA/destination. The owner has been asked directly. No indirect publication, remote release SHA, or deployment. Development push remains CLOSED/PASS.
+- **OPEN — Vercel project/Preview:** connected team has zero projects and the correct DEBRODER Vercel project is not established. Exact-SHA Preview, deployed QA, Lighthouse, and owner Preview review cannot be claimed. Local zero-product/five-route contract remains PASS; W3 acceptance unchanged. No production contact/mutation, staging mutation, migration, DNS, or Wave 4.
+
+**HANDOFF UPDATED: YES — `CURRENT_PHASE_HANDOFF.md`**
+
+## RELEASE VERCEL ACCESS BLOCKER — 2026-09-27 13:34 +08:00
+
+- **CLOSED — release Git publication:** owner directly authorized exact `b3bee9788c3b9a1fa919a7eb1a8cda45df31baf3`; official `git push -u origin release/debroder-id-v1` passed, and independent `git ls-remote` confirmed the remote SHA. No payload change, bypass, or production deployment.
+- **OPEN — correct Vercel project identity/access:** the connected account offers only unrelated team OKDEAL with zero projects; no DEBRODER project, local Vercel link, or CLI credentials are available. Owner instruction requires STOP, so Preview, deployed-host QA, and Lighthouse are NOT RUN. Obtain correct DEBRODER Vercel access before any import/deploy. No database/staging/production contact or mutation, migration, DNS, or Wave 4. Current exact status: **DEBRODER V1 RELEASE BLOCKED — CORRECT DEBRODER VERCEL PROJECT/ACCOUNT NOT ACCESSIBLE**.
+
+**HANDOFF UPDATED: YES — `CURRENT_PHASE_HANDOFF.md`**
+
+## BRAND LOGO HOTFIX / PREVIEW REVIEW GATE — 2026-09-27 14:20 +08:00
+
+- **CLOSED LOCALLY — missing graphical brand mark:** brochure header used wordmark alone and footer plain text. Existing canonical symbol+wordmark black/white SVG composition now renders in both. Hotfix SHA `4dde0392246e595cce0197c926d2359c821d63c1` was pushed and remote SHA verified. Focused tests 8/8, local brochure browser 5/5 (20 route/viewport combinations), typecheck, lint, 142-page build, and diff check passed; local broken required images/overflow/console errors were zero, product count zero, commerce gate unchanged.
+- **OPEN — deployed Preview verification:** owner reported a Preview, but no URL or deployment identity was supplied. Connected Vercel account still exposes only unrelated OKDEAL/zero projects. Auto Preview deployment, deployed SHA, deployed-host logo QA, and Lighthouse are **NOT VERIFIED/NOT RUN**. Obtain the correct DEBRODER Preview URL or account/project access and verify exact SHA before owner-facing deployed acceptance. No production deployment, database/staging/production mutation or contact, DNS, migration, or Wave 4.
+
+**HANDOFF UPDATED: YES — `CURRENT_PHASE_HANDOFF.md`**

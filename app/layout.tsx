@@ -14,6 +14,7 @@ const geist = localFont({
 });
 
 export const metadata: Metadata = {
+  robots: process.env.VERCEL_ENV === "preview" ? { index: false, follow: false } : undefined,
   metadataBase: new URL(siteConfig.siteUrl),
   title: siteConfig.defaultMetaTitle,
   manifest: "/manifest.webmanifest",
