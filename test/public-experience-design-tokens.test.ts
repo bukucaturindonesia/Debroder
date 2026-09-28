@@ -135,6 +135,6 @@ describe("DEBRODER Deep Modular UI foundation tokens", () => {
     expect(productionContract).not.toMatch(/landing-nike/i);
     expect(productionContract).not.toMatch(/static\.nike|nike\.com|swoosh/i);
     expect(productionContract).not.toMatch(/@font-face[\s\S]*?nike/i);
-    expect(home).toContain("DEBRODER — Bahan & Produksi Apparel");
+    expect(home).toContain("DEBRODER — Apparel & Custom Production");
   });
 });

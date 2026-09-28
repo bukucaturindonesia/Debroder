@@ -2,11 +2,11 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { BrochureShell } from "@/components/brochure/BrochureShell";
 import { container, Eyebrow, PageIntro } from "@/components/brochure/BrochureContent";
-import { brochureSite } from "@/src/config/site";
+import { brochureSite, brochureWhatsappHref } from "@/src/config/site";
 
 export const metadata: Metadata = {
   title: "Kontak — DEBRODER",
-  description: "Hubungi DEBRODER melalui hello@debroder.id untuk mendiskusikan bahan dan produksi apparel.",
+  description: "Pesan apparel atau diskusikan produksi custom melalui WhatsApp DEBRODER. Email alternatif: hello@debroder.id.",
   alternates: { canonical: "/kontak" }
 };
 
@@ -18,8 +18,10 @@ export default function ContactPage() {
         <div className={`${container} brochure-contact-page-grid`}>
           <div>
             <Eyebrow>Hubungi DEBRODER</Eyebrow>
-            <h2 className="brochure-display brochure-section-title">Tulis kepada kami.</h2>
-            <p className="brochure-lead">Sampaikan kebutuhan dan pertanyaan Anda melalui email. Tidak perlu formulir yang panjang untuk memulai.</p>
+            <h2 className="brochure-display brochure-section-title">Mulai lewat WhatsApp.</h2>
+            <p className="brochure-lead">Sampaikan produk atau layanan, ukuran, warna, dan jumlah yang Anda butuhkan. Tim akan membantu membahas detail pemesanan.</p>
+            <div className="brochure-actions"><a href={brochureWhatsappHref()} className="brochure-button brochure-button-primary">Pesan via WhatsApp <span aria-hidden="true">↗</span></a></div>
+            <p className="brochure-lead">Atau hubungi kami melalui email:</p>
             <a href={`mailto:${brochureSite.email}`} className="brochure-contact-email">{brochureSite.email} <span aria-hidden="true">↗</span></a>
           </div>
           <aside className="brochure-contact-aside">

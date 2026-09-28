@@ -1,6 +1,6 @@
 import { expect, test } from "@playwright/test";
 
-const routes = ["/", "/produk", "/layanan", "/tentang", "/kontak"];
+const routes = ["/", "/produk", "/layanan", "/tentang", "/kontak", "/produk/nsa-premium", "/produk/cotton-combed-24s"];
 
 test("brochure routes render without client errors or Supabase requests", async ({ page }) => {
   const errors: string[] = [];
@@ -15,6 +15,10 @@ test("brochure routes render without client errors or Supabase requests", async 
     await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
     await expect(page.getByRole("navigation", { name: "Navigasi utama" })).toBeAttached();
     expect(await page.title(), route).toContain("DEBRODER");
+    for (const image of await page.locator("main img").all()) {
+      await image.scrollIntoViewIfNeeded();
+      await expect.poll(() => image.evaluate((node: HTMLImageElement) => node.complete && node.naturalWidth > 0)).toBe(true);
+    }
     const broken = await page.evaluate(() => [...document.images].filter((image) => image.complete && image.naturalWidth === 0).map((image) => image.getAttribute("src")));
     expect(broken, route).toEqual([]);
   }
@@ -23,15 +27,32 @@ test("brochure routes render without client errors or Supabase requests", async 
   expect(supabaseRequests).toEqual([]);
 });
 
-test("first-launch products remain empty and consultation stays non-transactional", async ({ page }) => {
+test("products open a detail and prepare the exact WhatsApp inquiry without submitting an order", async ({ page }) => {
   await page.goto("/produk", { waitUntil: "networkidle" });
-  await expect(page.getByRole("heading", { name: "Produk segera hadir." })).toBeVisible();
-  await expect(page.getByText("Koleksi DEBRODER sedang kami siapkan.", { exact: false })).toBeVisible();
-  await expect(page.getByRole("link", { name: /Lihat Layanan/ })).toHaveAttribute("href", "/layanan");
-  await expect(page.getByRole("link", { name: "Hubungi Kami" })).toHaveAttribute("href", "/kontak");
-  await expect(page.getByText("NSA PREMIUM")).toHaveCount(0);
-  await expect(page.getByText("Cotton Combed 24s")).toHaveCount(0);
+  await expect(page.locator(".brochure-product-card")).toHaveCount(2);
   await expect(page.getByRole("link", { name: /keranjang|beli sekarang|checkout/i })).toHaveCount(0);
+  await page.getByRole("link", { name: "Lihat NSA Premium", exact: true }).click();
+  await expect(page).toHaveURL(/\/produk\/nsa-premium$/);
+  await expect(page.getByRole("heading", { level: 1, name: "NSA Premium" })).toBeVisible();
+  await page.getByLabel("Ukuran", { exact: true }).fill("M & L");
+  await page.getByLabel("Warna", { exact: true }).fill("Hitam");
+  await page.getByLabel("Jumlah", { exact: true }).fill("24");
+  await page.getByLabel("Catatan", { exact: true }).fill("Logo tim #1");
+  const action = page.getByRole("link", { name: "Pesan via WhatsApp" });
+  const url = new URL((await action.getAttribute("href"))!);
+  expect(`${url.origin}${url.pathname}`).toBe("https://wa.me/6285355333364");
+  expect(url.searchParams.get("text")).toBe("Halo DEBRODER,\nsaya ingin menanyakan/pesan:\n\nProduk/Layanan: NSA Premium\nUkuran: M & L\nWarna: Hitam\nJumlah: 24\nCatatan: Logo tim #1");
+  await page.getByLabel("Jumlah", { exact: true }).fill("0");
+  await expect(page.getByRole("alert")).toBeVisible();
+  await expect(page.getByRole("link", { name: "Pesan via WhatsApp" })).toHaveCount(0);
+  await expect(page.getByRole("button", { name: "Pesan via WhatsApp" })).toBeDisabled();
+  await page.getByLabel("Jumlah", { exact: true }).fill("1.5");
+  await expect(page.getByRole("button", { name: "Pesan via WhatsApp" })).toBeDisabled();
+  await page.getByLabel("Jumlah", { exact: true }).fill("24");
+  // Inspect the navigation handoff locally; never send a message or contact WhatsApp during QA.
+  await page.route("https://wa.me/**", (route) => route.fulfill({ status: 200, contentType: "text/plain", body: "WhatsApp handoff captured by test" }));
+  await action.click();
+  await expect(page).toHaveURL(url.toString());
 });
 
 test("mobile brochure navigation is usable without horizontal overflow", async ({ page }) => {
@@ -47,8 +68,8 @@ test("mobile brochure navigation is usable without horizontal overflow", async (
   expect(overflow).toBe(false);
 });
 
-test("release denies direct trial product details and emits only brochure sitemap routes", async ({ request }) => {
-  for (const path of ["/produk/nsa-premium", "/produk/cotton-combed-24s", "/koleksi", "/jersey/shop", "/checkout"]) {
+test("release denies unknown and trial product details while allowing the two inquiry products", async ({ request }) => {
+  for (const path of ["/produk/w3-test", "/produk/17159506-1b3f-45fd-8a12-8ec1a2531574", "/koleksi", "/jersey/shop", "/checkout", "/cart", "/account/orders"]) {
     const response = await request.get(path);
     expect(response.status(), path).toBe(404);
   }
@@ -58,12 +79,13 @@ test("release denies direct trial product details and emits only brochure sitema
   for (const path of ["/produk", "/layanan", "/tentang", "/kontak"]) {
     expect(body).toContain(path);
   }
-  expect(body).not.toContain("/produk/nsa-premium");
-  expect(body).not.toContain("/produk/cotton-combed-24s");
+  expect(body).toContain("/produk/nsa-premium");
+  expect(body).toContain("/produk/cotton-combed-24s");
+  expect((body.match(/<loc>/g) || []).length).toBe(7);
   expect(body).not.toContain("/koleksi");
 });
 
-test("canonical graphical logo stays visible in header and dark footer across release pages and viewports", async ({ page }) => {
+test("canonical graphical logo stays visible in header and dark footer across release pages and viewports", async ({ page }, testInfo) => {
   const errors: string[] = [];
   page.on("pageerror", (error) => errors.push(error.message));
   page.on("console", (message) => { if (message.type() === "error") errors.push(message.text()); });
@@ -101,8 +123,8 @@ test("canonical graphical logo stays visible in header and dark footer across re
       expect(await page.evaluate(() => document.documentElement.scrollWidth > innerWidth), `${route} at ${viewport.width}px`).toBe(false);
 
       if (route === "/" && (viewport.width === 390 || viewport.width === 1440)) {
-        await page.locator(".brochure-header").screenshot({ path: `test-results/brochure-header-${viewport.width}.png` });
-        await page.locator(".brochure-footer-grid").screenshot({ path: `test-results/brochure-footer-${viewport.width}.png` });
+        await page.locator(".brochure-header").screenshot({ path: testInfo.outputPath(`brochure-header-${viewport.width}.png`) });
+        await page.locator(".brochure-footer-grid").screenshot({ path: testInfo.outputPath(`brochure-footer-${viewport.width}.png`) });
       }
     }
     if (viewport.width <= 768) {
@@ -112,4 +134,33 @@ test("canonical graphical logo stays visible in header and dark footer across re
     }
   }
   expect(errors).toEqual([]);
+});
+
+test("mobile service links close the menu and reach the requested service", async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto("/layanan", { waitUntil: "networkidle" });
+  await page.locator('summary[aria-label="Buka menu navigasi"]').click();
+  await page.getByRole("navigation", { name: "Navigasi mobile" }).getByRole("link", { name: "DTF / Sablon" }).click();
+  await expect(page).toHaveURL(/\/layanan#dtf-sablon$/);
+  await expect(page.locator(".brochure-mobile-menu")).not.toHaveAttribute("open", "");
+  await expect(page.locator("#dtf-sablon")).toBeInViewport();
+  const href = await page.locator("#dtf-sablon a").getAttribute("href");
+  expect(new URL(href!).searchParams.get("text")).toContain("Produk/Layanan: DTF / Sablon");
+});
+
+test("homepage and product detail are usable on small mobile and desktop", async ({ page }, testInfo) => {
+  for (const viewport of [{ width: 320, height: 780 }, { width: 390, height: 844 }, { width: 1440, height: 1000 }]) {
+    await page.setViewportSize(viewport);
+    for (const path of ["/", "/produk/cotton-combed-24s"]) {
+      await page.goto(path, { waitUntil: "networkidle" });
+      expect(await page.evaluate(() => document.documentElement.scrollWidth > innerWidth), `${path} at ${viewport.width}`).toBe(false);
+      await expect(page.locator(".brochure-header-cta")).toBeVisible();
+      for (const image of await page.locator("main img").all()) {
+        await image.scrollIntoViewIfNeeded();
+        await expect.poll(() => image.evaluate((node: HTMLImageElement) => node.complete && node.naturalWidth > 0)).toBe(true);
+      }
+      await page.evaluate(() => scrollTo(0, 0));
+      await page.screenshot({ path: testInfo.outputPath(`${path === "/" ? "homepage" : "product"}-${viewport.width}.png`), fullPage: true });
+    }
+  }
 });

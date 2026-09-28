@@ -26,10 +26,10 @@ describe("DEBRODER Homepage premium visual V1 contract", () => {
     }
   });
 
-  it("does not surface unverified editorial product cards for first launch", () => {
+  it("keeps inquiry product imagery labelled and cards on the canonical detail route", () => {
     const brochure = readFileSync("components/brochure/BrochureContent.tsx", "utf8");
-    expect(brochure).toContain("Produk segera hadir.");
-    expect(brochure).not.toContain('Link href={`/produk/${product.slug}`}');
+    expect(brochure).toContain("product.imageCaption");
+    expect(brochure).toContain('Link href={`/produk/${product.slug}`}');
     expect(brochure).not.toContain('className="absolute inset-0 z-10"');
   });
 

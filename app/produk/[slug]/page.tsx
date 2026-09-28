@@ -20,9 +20,6 @@ type PageProps = {
 };
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
-  if (!PUBLIC_PRODUCT_DETAILS_ENABLED) {
-    return { title: "Produk belum tersedia — DEBRODER", robots: { index: false, follow: false } };
-  }
   const { slug } = await params;
   const brochureProduct = getBrochureProduct(slug);
   if (brochureProduct) {
@@ -32,6 +29,9 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
       alternates: { canonical: `/produk/${brochureProduct.slug}` },
       openGraph: { title: `${brochureProduct.name} — DEBRODER`, description: brochureProduct.description, images: [{ url: brochureProduct.image, alt: brochureProduct.imageAlt }] }
     };
+  }
+  if (!PUBLIC_PRODUCT_DETAILS_ENABLED) {
+    return { title: "Produk belum tersedia — DEBRODER", robots: { index: false, follow: false } };
   }
   const model = await getProductDetailPageModel(slug);
   const metadata = model.metadata;
@@ -98,10 +98,10 @@ function SizeGuideList({ rows }: { rows: string[] }) {
 }
 
 export default async function ProductDetailPage({ params }: PageProps) {
-  if (!PUBLIC_PRODUCT_DETAILS_ENABLED) notFound();
   const { slug } = await params;
   const brochureProduct = getBrochureProduct(slug);
   if (brochureProduct) return <BrochureProductDetail product={brochureProduct} />;
+  if (!PUBLIC_PRODUCT_DETAILS_ENABLED) notFound();
   const model = await getProductDetailPageModel(slug);
   if (model.data.state === "not_found") notFound();
 

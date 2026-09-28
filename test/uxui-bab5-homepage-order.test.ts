@@ -9,10 +9,8 @@ describe("Owner-approved brochure homepage addendum", () => {
   it("renders the first-launch editorial sections in order", () => {
     const markers = [
       "<h1",
-      "<ServiceSection />",
-      'id="brochure-approach-title"',
       "<ProductSection />",
-      'id="brochure-company-title"',
+      "<ServiceSection />",
       "<ConsultationSection />"
     ];
     const positions = markers.map((marker) => {
@@ -23,15 +21,15 @@ describe("Owner-approved brochure homepage addendum", () => {
     expect(positions).toEqual([...positions].sort((a, b) => a - b));
   });
 
-  it("keeps first-launch brochure products empty without changing commerce authority", () => {
-    expect(brochureProducts).toEqual([]);
-    expect(getBrochureProduct("nsa-premium")).toBeUndefined();
+  it("exposes only the owner's two inquiry products without changing commerce authority", () => {
+    expect(brochureProducts.map((product) => product.slug)).toEqual(["nsa-premium", "cotton-combed-24s"]);
+    expect(getBrochureProduct("nsa-premium")?.name).toBe("NSA Premium");
     expect(getBrochureProduct("other-product")).toBeUndefined();
     expect(home).not.toContain("getPublicContent");
     expect(home).not.toContain("<StorefrontCartBoundary>");
   });
 
   it("keeps services limited to the owner's three requested offerings", () => {
-    expect(brochureServices.map((service) => service.name)).toEqual(["Cetak DTF", "Produksi Jersey", "Maklon Sublim"]);
+    expect(brochureServices.map((service) => service.name)).toEqual(["Custom Jersey", "DTF / Sablon", "Maklon Sublim"]);
   });
 });

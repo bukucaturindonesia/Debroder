@@ -2,7 +2,7 @@ import Link from "next/link";
 import type { ReactNode } from "react";
 import { BrochureNav } from "@/components/brochure/BrochureNav";
 import { Logo } from "@/components/Logo";
-import { brochureSite } from "@/src/config/site";
+import { brochureSite, brochureWhatsappHref } from "@/src/config/site";
 import { brochureServices } from "@/src/data/services";
 
 const footerNavigation = [
@@ -37,10 +37,11 @@ export function BrochureShell({ children }: { children: ReactNode }) {
           </nav>
           <nav aria-label="Layanan footer" className="brochure-footer-group">
             <h2>Layanan</h2>
-            {brochureServices.map((service) => <Link key={service.name} href="/layanan">{service.name}</Link>)}
+            {brochureServices.map((service) => <Link key={service.name} href={`/layanan#${service.id}`}>{service.name}</Link>)}
           </nav>
           <div className="brochure-footer-group">
             <h2>Kontak</h2>
+            <a href={brochureWhatsappHref()}>WhatsApp DEBRODER</a>
             <a href={`mailto:${brochureSite.email}`}>{brochureSite.email}</a>
           </div>
         </div>

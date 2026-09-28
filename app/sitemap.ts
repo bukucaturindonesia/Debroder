@@ -1,10 +1,12 @@
 import type { MetadataRoute } from "next";
 import { absoluteUrl } from "@/lib/site";
 import { PUBLIC_ROUTES, PUBLIC_SITEMAP_ROUTES } from "@/lib/public-routes";
+import { brochureProducts } from "@/src/data/products";
 
 export default function sitemap(): MetadataRoute.Sitemap {
   const now = new Date();
-  return PUBLIC_SITEMAP_ROUTES.map((route) => ({
+  const routes = [...PUBLIC_SITEMAP_ROUTES, ...brochureProducts.map((product) => PUBLIC_ROUTES.product(product.slug))];
+  return routes.map((route) => ({
     url: absoluteUrl(route),
     lastModified: now,
     changeFrequency: route === PUBLIC_ROUTES.home ? "weekly" : "monthly",

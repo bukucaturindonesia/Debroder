@@ -4,14 +4,14 @@ import { PageIntro, ProductSection } from "@/components/brochure/BrochureContent
 
 export const metadata: Metadata = {
   title: "Produk — DEBRODER",
-  description: "Koleksi produk DEBRODER sedang disiapkan. Kenali layanan kami atau hubungi tim untuk mendiskusikan kebutuhan Anda.",
+  description: "Kenali NSA Premium dan Cotton Combed 24s. Pilih kebutuhan apparel Anda dan diskusikan pemesanan melalui WhatsApp DEBRODER.",
   alternates: { canonical: "/produk" }
 };
 
 export default function ProductsPage() {
   return (
     <BrochureShell>
-      <PageIntro eyebrow="Katalog DEBRODER" title="Produk." description="Kami sedang menyiapkan koleksi yang akan ditampilkan di sini." />
+      <PageIntro eyebrow="Katalog DEBRODER" title="Apparel untuk cerita Anda." description="Pilih produk, ceritakan kebutuhan Anda, lalu diskusikan harga dan ketersediaannya bersama tim." />
       <ProductSection fullPage />
     </BrochureShell>
   );
