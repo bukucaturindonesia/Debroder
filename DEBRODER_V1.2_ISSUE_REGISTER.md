@@ -2185,3 +2185,24 @@ Last updated: 28 July 2026 (Asia/Makassar)
 - **OPEN — Vercel Preview:** the accessible Vercel team lists zero projects, so the correct DEBRODER project/import connection, exact-SHA Preview deployment, deployed-host QA, and Lighthouse are NOT RUN. Release commit/push are the next Git actions. Do not deploy to an unrelated team, Production, or domain; W3 acceptance stays closed.
 
 **HANDOFF UPDATED: YES — `CURRENT_PHASE_HANDOFF.md`**
+
+## RELEASE PUBLICATION / PREVIEW BLOCKERS — 2026-09-25 10:27 +08:00
+
+- **OPEN — release Git push:** local `release/debroder-id-v1` commit `b3bee9788c3b9a1fa919a7eb1a8cda45df31baf3` passed local quality/secret checks; official `git push -u origin release/debroder-id-v1` was blocked by auto-review because the public-repository release payload lacks trusted direct approval specific to this SHA/destination. The owner has been asked directly. No indirect publication, remote release SHA, or deployment. Development push remains CLOSED/PASS.
+- **OPEN — Vercel project/Preview:** connected team has zero projects and the correct DEBRODER Vercel project is not established. Exact-SHA Preview, deployed QA, Lighthouse, and owner Preview review cannot be claimed. Local zero-product/five-route contract remains PASS; W3 acceptance unchanged. No production contact/mutation, staging mutation, migration, DNS, or Wave 4.
+
+**HANDOFF UPDATED: YES — `CURRENT_PHASE_HANDOFF.md`**
+
+## RELEASE VERCEL ACCESS BLOCKER — 2026-09-27 13:34 +08:00
+
+- **CLOSED — release Git publication:** owner directly authorized exact `b3bee9788c3b9a1fa919a7eb1a8cda45df31baf3`; official `git push -u origin release/debroder-id-v1` passed, and independent `git ls-remote` confirmed the remote SHA. No payload change, bypass, or production deployment.
+- **OPEN — correct Vercel project identity/access:** the connected account offers only unrelated team OKDEAL with zero projects; no DEBRODER project, local Vercel link, or CLI credentials are available. Owner instruction requires STOP, so Preview, deployed-host QA, and Lighthouse are NOT RUN. Obtain correct DEBRODER Vercel access before any import/deploy. No database/staging/production contact or mutation, migration, DNS, or Wave 4. Current exact status: **DEBRODER V1 RELEASE BLOCKED — CORRECT DEBRODER VERCEL PROJECT/ACCOUNT NOT ACCESSIBLE**.
+
+**HANDOFF UPDATED: YES — `CURRENT_PHASE_HANDOFF.md`**
+
+## BRAND LOGO HOTFIX / PREVIEW REVIEW GATE — 2026-09-27 14:20 +08:00
+
+- **CLOSED LOCALLY — missing graphical brand mark:** brochure header used wordmark alone and footer plain text. Existing canonical symbol+wordmark black/white SVG composition now renders in both. Hotfix SHA `4dde0392246e595cce0197c926d2359c821d63c1` was pushed and remote SHA verified. Focused tests 8/8, local brochure browser 5/5 (20 route/viewport combinations), typecheck, lint, 142-page build, and diff check passed; local broken required images/overflow/console errors were zero, product count zero, commerce gate unchanged.
+- **OPEN — deployed Preview verification:** owner reported a Preview, but no URL or deployment identity was supplied. Connected Vercel account still exposes only unrelated OKDEAL/zero projects. Auto Preview deployment, deployed SHA, deployed-host logo QA, and Lighthouse are **NOT VERIFIED/NOT RUN**. Obtain the correct DEBRODER Preview URL or account/project access and verify exact SHA before owner-facing deployed acceptance. No production deployment, database/staging/production mutation or contact, DNS, migration, or Wave 4.
+
+**HANDOFF UPDATED: YES — `CURRENT_PHASE_HANDOFF.md`**

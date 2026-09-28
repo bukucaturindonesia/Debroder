@@ -2026,3 +2026,25 @@ Resume only with a supported authenticated staging session or separately approve
 - Release local gates **PASS**: focused 44/44, full Vitest 153 files/1063 tests, typecheck, lint 0 errors/36 existing warnings, Next build 142 pages, isolated production-browser brochure 4/4, and diff check. No migration/database/staging/production change. `.env.local` restored; runtime stopped. Release commit/push and Vercel Preview are pending; the connected Vercel team exposes no project. **NOT PREVIEW READY** until correct project access, exact-SHA Preview, deployed QA, and Lighthouse are completed. See the latest `CURRENT_PHASE_HANDOFF.md` for the safe resume point.
 
 **HANDOFF UPDATED: YES — `CURRENT_PHASE_HANDOFF.md`**
+
+## RELEASE STATE — LOCAL COMMIT, REMOTE PREVIEW BLOCKED — 2026-09-25 10:27 +08:00
+
+- Development `UI-MIGRATION` was pushed at `c1c829ce93c6b28a1100235201a4302ed48f9929`. Release branch local commit is `b3bee9788c3b9a1fa919a7eb1a8cda45df31baf3`; 12 release/test/governance files passed staged secret/diff audit. Final local typecheck, lint (0 errors/36 warnings), Vitest 1063/1063, build 142 pages, and brochure Playwright 4/4 pass. Zero-product/five-route release behavior is locally verified.
+- Official release-branch push was attempted but auto-review rejected publication to the public GitHub repository pending direct owner approval for this exact SHA/destination. No bypass. Correct DEBRODER Vercel project is not exposed by the connected account (zero projects); Preview, deployed QA, and Lighthouse are NOT RUN. No database/migration, staging/production mutation/contact, production deployment, domain change, or Wave 4. **RELEASE BLOCKED**, W3 acceptance unchanged. See latest handoff for safe resume.
+
+**HANDOFF UPDATED: YES — `CURRENT_PHASE_HANDOFF.md`**
+
+## RELEASE STATE — GITHUB RELEASE PUSHED, VERCEL ACCESS BLOCKED — 2026-09-27 13:34 +08:00
+
+- Owner directly authorized exact existing release commit `b3bee9788c3b9a1fa919a7eb1a8cda45df31baf3`; `release/debroder-id-v1` was pushed to public `bukucaturindonesia/Debroder`, and independent remote verification returned that exact SHA. The payload was not changed. Historical local release tests remain PASS; they were not rerun in this push-only task.
+- Connected Vercel access exposes only unrelated OKDEAL team with zero projects; the correct DEBRODER account/project is unavailable. No import, Preview, deployed QA, Lighthouse, production deployment, staging/production contact or mutation, migration, DNS, or Wave 4. **DEBRODER V1 RELEASE BLOCKED — CORRECT DEBRODER VERCEL PROJECT/ACCOUNT NOT ACCESSIBLE.** Three governance notes remain local/uncommitted; see authoritative handoff for exact resume.
+
+**HANDOFF UPDATED: YES — `CURRENT_PHASE_HANDOFF.md`**
+
+## RELEASE BRAND HOTFIX — REMOTE SHA UPDATED, PREVIEW UNVERIFIED — 2026-09-27 14:20 +08:00
+
+- Owner-provided logo symbol and wordmark were restored in the brochure header and dark footer using the existing `Logo` component and canonical black/white SVG assets. The four-file hotfix commit `4dde0392246e595cce0197c926d2359c821d63c1` is pushed to and independently verified on `origin/release/debroder-id-v1`; prior release SHA `b3bee9788c3b9a1fa919a7eb1a8cda45df31baf3` is superseded. No other release/source contract changed.
+- Local focused Vitest 8/8, typecheck, lint (0 errors/36 existing warnings), Next build (142 pages), browser brochure 5/5 across five routes and four viewports, and diff/secret checks passed. Local public product count remains zero. No migration, staging/production contact or mutation, DNS, manual deployment, or Wave 4.
+- Correct DEBRODER Vercel project remains inaccessible through the connected account (only unrelated OKDEAL team, zero projects). Owner-reported Preview URL/deployed SHA, deployed-host QA, and Lighthouse are unverified/not run. Code hotfix is ready for deployed Preview review, but deployed acceptance remains NO-GO until correct access/URL and exact-SHA validation. See latest `CURRENT_PHASE_HANDOFF.md` for details and resume.
+
+**HANDOFF UPDATED: YES — `CURRENT_PHASE_HANDOFF.md`**
