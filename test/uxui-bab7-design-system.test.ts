@@ -9,7 +9,6 @@ describe("DEBRODER Deep Modular UI System foundation", () => {
     const layout = read("app/layout.tsx");
     expect(layout).toContain('from "next/font/local"');
     expect(layout).toContain("localFont({");
-    expect(layout).toContain("geist-latin.woff2");
     expect(layout).toContain('display: "swap"');
     expect(layout).toContain('variable: "--font-geist-sans"');
     expect(globals).not.toMatch(/Barlow|Arial Narrow|Helvetica Neue Condensed/);

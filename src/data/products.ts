@@ -5,10 +5,12 @@ export type BrochureProduct = {
   detail: string;
   image: string;
   imageAlt: string;
+  imageCaption: string;
+  priceFrom?: number;
 };
 
-// Owner-approved first-launch state: no editorial products are public yet.
-// The canonical PIM-backed /produk/[slug] route remains unchanged.
+// Owner's zero-product release contract. Product presentation stays empty
+// until a separately approved publication decision is made.
 export const brochureProducts: readonly BrochureProduct[] = [];
 
 export function getBrochureProduct(slug: string) {

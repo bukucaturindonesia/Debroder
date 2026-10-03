@@ -22,9 +22,8 @@ describe("Final Integration public shell consistency", () => {
     expect(header).not.toContain("fallbackPromo");
   });
 
-  it("keeps the commerce footer canonical while the approved brochure homepage has its own shell", () => {
-    expect(homePage).toContain("<BrochureShell>");
-    expect(readFileSync("components/brochure/BrochureShell.tsx", "utf8")).toContain("<footer");
+  it("uses the canonical footer for the homepage and every shared public shell theme", () => {
+    expect(homePage).toContain('<PublicFooter model={shellModel.data.footer} tone="light" />');
     expect(publicPage).toContain('<PublicFooter model={shellModel.data.footer} />');
     expect(publicPage).not.toContain("variant=");
     expect(readFileSync("components/PublicFooter.tsx", "utf8")).toContain('tone = "dark"');
