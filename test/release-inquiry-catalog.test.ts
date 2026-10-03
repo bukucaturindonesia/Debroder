@@ -8,16 +8,15 @@ import { brochureProducts } from "@/src/data/products";
 import { NextRequest } from "next/server";
 import { middleware } from "@/middleware";
 
-describe("website V1 owner-approved inquiry catalogue", () => {
-  it("publishes five brochure pages plus only the two approved product details", () => {
+describe("website V1 owner-approved zero-product release", () => {
+  it("publishes exactly five brochure pages", () => {
     expect(PUBLIC_SITEMAP_ROUTES).toEqual(["/", "/produk", "/layanan", "/kontak", "/tentang"]);
-    expect([...RELEASE_PUBLIC_PATHS]).toEqual(["/", "/produk", "/layanan", "/tentang", "/kontak", "/produk/nsa-premium", "/produk/cotton-combed-24s"]);
-    expect(sitemap().map((entry) => new URL(entry.url).pathname)).toEqual([...PUBLIC_SITEMAP_ROUTES, "/produk/nsa-premium", "/produk/cotton-combed-24s"]);
+    expect([...RELEASE_PUBLIC_PATHS]).toEqual(["/", "/produk", "/layanan", "/tentang", "/kontak"]);
+    expect(sitemap().map((entry) => new URL(entry.url).pathname)).toEqual(PUBLIC_SITEMAP_ROUTES);
   });
 
-  it("keeps PIM commerce gated without invented catalogue prices or stock", () => {
-    expect(brochureProducts).toHaveLength(2);
-    expect(brochureProducts.every((product) => product.priceFrom === undefined && !("stock" in product) && !("sku" in product))).toBe(true);
+  it("keeps the public product catalogue empty and PIM commerce gated", () => {
+    expect(brochureProducts).toHaveLength(0);
     expect(PUBLIC_PRODUCT_DETAILS_ENABLED).toBe(false);
     const page = readFileSync("app/produk/[slug]/page.tsx", "utf8");
     expect(page).toContain("if (!PUBLIC_PRODUCT_DETAILS_ENABLED) notFound()");
@@ -26,15 +25,29 @@ describe("website V1 owner-approved inquiry catalogue", () => {
     expect(middleware).toContain("RELEASE_PUBLIC_PATHS.has(pathname)");
   });
 
-  it("allows the real inquiry paths and rejects unknown products and transaction pages", async () => {
+  it("allows five brochure paths and rejects all product details and transaction pages", async () => {
     for (const path of RELEASE_PUBLIC_PATHS) {
       const response = await middleware(new NextRequest(`http://localhost${path}`));
       expect(response.headers.get("x-middleware-next"), path).toBe("1");
     }
-    for (const path of ["/produk/w3-test", "/produk/unknown", "/checkout", "/cart", "/account/orders", "/jersey/configurator"]) {
+    for (const path of ["/produk/nsa-premium", "/produk/cotton-combed-24s", "/produk/w3-test", "/produk/unknown", "/checkout", "/cart", "/account/orders", "/jersey/configurator"]) {
       const response = await middleware(new NextRequest(`http://localhost${path}`));
       expect(response.status, path).toBe(404);
       expect(response.headers.get("x-robots-tag")).toBe("noindex, nofollow");
+    }
+  });
+
+  it("renders no public WhatsApp CTA in the brochure release", () => {
+    for (const file of [
+      "app/page.tsx",
+      "app/kontak/page.tsx",
+      "components/brochure/BrochureContent.tsx",
+      "components/brochure/BrochureNav.tsx",
+      "components/brochure/BrochureShell.tsx"
+    ]) {
+      const source = readFileSync(file, "utf8");
+      expect(source, file).not.toContain("brochureWhatsappHref");
+      expect(source, file).not.toContain("wa.me");
     }
   });
 

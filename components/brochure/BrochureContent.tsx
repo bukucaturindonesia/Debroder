@@ -1,7 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import type { ReactNode } from "react";
-import { brochureSite, brochureWhatsappHref } from "@/src/config/site";
+import { brochureSite } from "@/src/config/site";
 import { brochureProducts } from "@/src/data/products";
 import { brochureServices } from "@/src/data/services";
 import { formatRupiah } from "@/lib/url";
@@ -38,7 +38,14 @@ export function ProductSection({ fullPage = false }: { fullPage?: boolean }) {
               <span className="brochure-product-detail-link">Lihat detail</span>
             </Link>
           </article>)}
-        </div> : <p className="brochure-lead">Produk sedang disiapkan. Hubungi kami untuk kebutuhan apparel Anda.</p>}
+        </div> : <div role="status" className="brochure-empty-panel">
+          <span className="brochure-empty-index">KATALOG / 00</span>
+          <div>
+            <h3 className="brochure-display brochure-empty-title">Produk segera hadir</h3>
+            <p className="brochure-lead brochure-empty-copy">Katalog publik sedang disiapkan. Hubungi tim DEBRODER melalui email untuk informasi lebih lanjut.</p>
+            <Link href="/kontak" className="brochure-text-link">Hubungi tim <span aria-hidden="true">↗</span></Link>
+          </div>
+        </div>}
       </div>
     </section>
   );
@@ -59,7 +66,7 @@ export function ServiceSection({ fullPage = false }: { fullPage?: boolean }) {
             </div>
             <p className="brochure-image-caption">Visual referensi layanan</p>
             <h3>{service.name}</h3><p>{service.description}</p>
-            <a href={brochureWhatsappHref(service.name)} className="brochure-text-link">{service.id === "custom-jersey" ? "Pesan Custom Jersey" : `Diskusikan ${service.name}`} <span aria-hidden="true">↗</span></a>
+            <Link href="/kontak" className="brochure-text-link">Diskusikan {service.name} <span aria-hidden="true">↗</span></Link>
           </article>)}
         </div>
       </div>
@@ -71,7 +78,7 @@ export function ConsultationSection() {
   return <section aria-labelledby="brochure-contact-title" className="brochure-contact-band">
     <div className={`${container} brochure-contact-band-inner`}>
       <div><Eyebrow>Mulai dari satu pesan</Eyebrow><h2 id="brochure-contact-title" className="brochure-display brochure-section-title">Punya ide untuk apparel Anda?</h2><p className="brochure-lead">Kirim kebutuhan Anda. Kita bahas bahan, desain, dan jumlahnya bersama.</p></div>
-      <div className="brochure-contact-actions"><a href={brochureWhatsappHref()} className="brochure-button brochure-button-primary">Pesan Custom <span aria-hidden="true">↗</span></a><a href={`mailto:${brochureSite.email}`} className="brochure-email-alternative">Atau email {brochureSite.email}</a></div>
+      <div className="brochure-contact-actions"><a href={`mailto:${brochureSite.email}`} className="brochure-button brochure-button-primary">Hubungi DEBRODER <span aria-hidden="true">↗</span></a><span className="brochure-email-alternative">{brochureSite.email}</span></div>
     </div>
   </section>;
 }

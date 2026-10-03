@@ -3,7 +3,6 @@ import Image from "next/image";
 import Link from "next/link";
 import { BrochureShell } from "@/components/brochure/BrochureShell";
 import { ConsultationSection, Eyebrow, ProductSection, ServiceSection } from "@/components/brochure/BrochureContent";
-import { brochureWhatsappHref } from "@/src/config/site";
 
 export const metadata: Metadata = {
   title: "DEBRODER — Apparel & Custom Production",
@@ -21,7 +20,7 @@ export default function HomePage() {
           <p className="brochure-lead">Apparel, custom jersey, dan DTF / sablon untuk brand, tim, dan komunitas Anda.</p>
           <div className="brochure-actions">
             <Link href="/produk" className="brochure-button brochure-button-primary">Lihat Produk <span aria-hidden="true">↗</span></Link>
-            <a href={brochureWhatsappHref()} className="brochure-button brochure-button-secondary">Pesan Custom</a>
+            <Link href="/kontak" className="brochure-button brochure-button-secondary">Hubungi DEBRODER</Link>
           </div>
         </div>
         <figure className="brochure-hero-visual">

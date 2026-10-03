@@ -1754,6 +1754,15 @@ Last updated: 28 July 2026 (Asia/Makassar)
 
 **HANDOFF UPDATED: YES — `CURRENT_PHASE_HANDOFF.md`**
 
+## VISUAL RESTORATION EVIDENCE / OPEN VERIFICATION LIMITS — 2026-10-04 00:37:21 +08:00
+
+- **CLOSED LOCALLY — brochure visual regression:** the five public pages now retain the owner-selected `d9b1fa8893c2068a5fb7e6a4e757fc2c6bb9e5e5` presentation while keeping zero products, zero cards, zero public WhatsApp links, five sitemap URLs, product-detail 404s, the official graphical logo, and `hello@debroder.id`. Final Playwright is 7/7 across 390/768/1440/1920 with 20 full-page screenshots and no horizontal overflow.
+- **BLOCKED — exact donor/current SHA diff:** requested current SHA `4354f8efedb0f3db36102535c6de518c7719330f` is not present locally or on `origin`; direct fetch returned `not our ref`. The result is therefore verified against the available donor and explicit owner release contract, not an unavailable commit tree.
+- **OPEN — unrelated full regression failures:** full Vitest completed at 1066/1069 with three failures in existing migration/replay text contracts: `baseline-reconstruction`, `security-function-reachability`, and `payment-adjustments-archive-contract`. Visual/zero-product focused tests, browser suite, typecheck, lint, and production build passed. Resolve these failures only under the owning database/security audit; no SQL or migration change was made here.
+- No database/migration, Supabase, staging/production, Vercel environment/deployment, DNS, commit, or push action occurred. Detailed evidence and exact resume instructions are in `CURRENT_PHASE_HANDOFF.md`.
+
+**HANDOFF UPDATED: YES — `CURRENT_PHASE_HANDOFF.md`**
+
 ## W3-PIM-003 — Staging Product Media Storage Contract Blocker — 2026-08-24 22:47:26 +08:00
 
 - Severity: **BLOCKER**.
@@ -2204,5 +2213,11 @@ Last updated: 28 July 2026 (Asia/Makassar)
 
 - **CLOSED LOCALLY — missing graphical brand mark:** brochure header used wordmark alone and footer plain text. Existing canonical symbol+wordmark black/white SVG composition now renders in both. Hotfix SHA `4dde0392246e595cce0197c926d2359c821d63c1` was pushed and remote SHA verified. Focused tests 8/8, local brochure browser 5/5 (20 route/viewport combinations), typecheck, lint, 142-page build, and diff check passed; local broken required images/overflow/console errors were zero, product count zero, commerce gate unchanged.
 - **OPEN — deployed Preview verification:** owner reported a Preview, but no URL or deployment identity was supplied. Connected Vercel account still exposes only unrelated OKDEAL/zero projects. Auto Preview deployment, deployed SHA, deployed-host logo QA, and Lighthouse are **NOT VERIFIED/NOT RUN**. Obtain the correct DEBRODER Preview URL or account/project access and verify exact SHA before owner-facing deployed acceptance. No production deployment, database/staging/production mutation or contact, DNS, migration, or Wave 4.
+
+**HANDOFF UPDATED: YES — `CURRENT_PHASE_HANDOFF.md`**
+
+## LATEST ISSUE POINTER — VISUAL RESTORATION — 2026-10-04 00:37:21 +08:00
+
+See **VISUAL RESTORATION EVIDENCE / OPEN VERIFICATION LIMITS** above. Local visual/zero-product acceptance is closed for owner review. Two limits remain open: owner-supplied SHA `4354f8efedb0f3db36102535c6de518c7719330f` is unavailable for an exact commit-tree diff, and the full suite has three existing migration/replay text-contract failures outside this scope. No database, remote, or deployment mutation was made.
 
 **HANDOFF UPDATED: YES — `CURRENT_PHASE_HANDOFF.md`**

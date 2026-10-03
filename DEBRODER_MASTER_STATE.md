@@ -1668,6 +1668,15 @@ Existing legal, CMS route, Preview performance, remote transaction E2E, data-int
 
 **HANDOFF UPDATED: YES — `CURRENT_PHASE_HANDOFF.md`**
 
+## CURRENT PROJECT STATE — PRE-ZERO-PRODUCT VISUAL RESTORED LOCALLY — 2026-10-04 00:37:21 +08:00
+
+- Local branch `release/debroder-id-v1` is at donor HEAD `d9b1fa8893c2068a5fb7e6a4e757fc2c6bb9e5e5` with uncommitted selective release changes. The donor brochure presentation is retained across the five public pages; tablet hero overflow was corrected without redesign.
+- Zero-product release contract is locally verified: 0 public brochure products, 0 product cards, 0 public WhatsApp links, exact five-URL sitemap, intentional `Produk segera hadir` empty state, official graphical logo, `hello@debroder.id`, and both former demo product routes returning 404.
+- Typecheck, focused 8/8, Playwright 7/7 across five routes and four widths, lint with 0 errors/36 existing warnings, and direct 142-page Next build passed. Full Vitest is **NOT PASS**: 1066/1069 passed; three existing migration/replay text-contract assertions failed outside the visual scope.
+- The owner-provided comparison SHA `4354f8efedb0f3db36102535c6de518c7719330f` is unavailable locally and on `origin`, so exact SHA-to-SHA classification could not be produced. No database, migration, Supabase, staging, production, Vercel environment/deployment, DNS, commit, or push action occurred. Local visual result is owner-review ready; overall release remains uncommitted and not deployed.
+
+**HANDOFF UPDATED: YES — `CURRENT_PHASE_HANDOFF.md`**
+
 ## CURRENT PROJECT STATE — WAVE 3 PRODUCT OPERATOR UAT — 2026-08-24 22:47:26 +08:00
 
 - Branch/HEAD: `UI-MIGRATION` / `5775f1aedb8c1539f69044aa7e58cd0e704fe285`; current W3 implementation changes are uncommitted and unpushed.
@@ -2046,5 +2055,11 @@ Resume only with a supported authenticated staging session or separately approve
 - Owner-provided logo symbol and wordmark were restored in the brochure header and dark footer using the existing `Logo` component and canonical black/white SVG assets. The four-file hotfix commit `4dde0392246e595cce0197c926d2359c821d63c1` is pushed to and independently verified on `origin/release/debroder-id-v1`; prior release SHA `b3bee9788c3b9a1fa919a7eb1a8cda45df31baf3` is superseded. No other release/source contract changed.
 - Local focused Vitest 8/8, typecheck, lint (0 errors/36 existing warnings), Next build (142 pages), browser brochure 5/5 across five routes and four viewports, and diff/secret checks passed. Local public product count remains zero. No migration, staging/production contact or mutation, DNS, manual deployment, or Wave 4.
 - Correct DEBRODER Vercel project remains inaccessible through the connected account (only unrelated OKDEAL team, zero projects). Owner-reported Preview URL/deployed SHA, deployed-host QA, and Lighthouse are unverified/not run. Code hotfix is ready for deployed Preview review, but deployed acceptance remains NO-GO until correct access/URL and exact-SHA validation. See latest `CURRENT_PHASE_HANDOFF.md` for details and resume.
+
+**HANDOFF UPDATED: YES — `CURRENT_PHASE_HANDOFF.md`**
+
+## LATEST STATE POINTER — LOCAL VISUAL RESTORATION — 2026-10-04 00:37:21 +08:00
+
+The latest state is the **PRE-ZERO-PRODUCT VISUAL RESTORED LOCALLY** section above: donor HEAD `d9b1fa8893c2068a5fb7e6a4e757fc2c6bb9e5e5`, uncommitted selective zero-product changes, 20 captured route/viewport screenshots with representative images inspected at every width, local owner review ready, no external mutation. Exact comparison against `4354f8efedb0f3db36102535c6de518c7719330f` is blocked because that object is unavailable. Full regression remains 1066/1069 due three existing migration-contract failures; scoped visual and release gates pass.
 
 **HANDOFF UPDATED: YES — `CURRENT_PHASE_HANDOFF.md`**

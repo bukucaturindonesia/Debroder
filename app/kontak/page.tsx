@@ -2,11 +2,11 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { BrochureShell } from "@/components/brochure/BrochureShell";
 import { container, Eyebrow, PageIntro } from "@/components/brochure/BrochureContent";
-import { brochureSite, brochureWhatsappHref } from "@/src/config/site";
+import { brochureSite } from "@/src/config/site";
 
 export const metadata: Metadata = {
   title: "Kontak — DEBRODER",
-  description: "Pesan apparel atau diskusikan produksi custom melalui WhatsApp DEBRODER. Email alternatif: hello@debroder.id.",
+  description: "Hubungi DEBRODER melalui hello@debroder.id untuk membahas kebutuhan apparel dan produksi.",
   alternates: { canonical: "/kontak" }
 };
 
@@ -18,10 +18,10 @@ export default function ContactPage() {
         <div className={`${container} brochure-contact-page-grid`}>
           <div>
             <Eyebrow>Hubungi DEBRODER</Eyebrow>
-            <h2 className="brochure-display brochure-section-title">Mulai lewat WhatsApp.</h2>
-            <p className="brochure-lead">Sampaikan produk atau layanan, ukuran, warna, dan jumlah yang Anda butuhkan. Tim akan membantu membahas detail pemesanan.</p>
-            <div className="brochure-actions"><a href={brochureWhatsappHref()} className="brochure-button brochure-button-primary">Pesan via WhatsApp <span aria-hidden="true">↗</span></a></div>
-            <p className="brochure-lead">Atau hubungi kami melalui email:</p>
+            <h2 className="brochure-display brochure-section-title">Mulai lewat email.</h2>
+            <p className="brochure-lead">Sampaikan kebutuhan bahan, jenis apparel, layanan produksi, dan jumlah yang Anda perlukan. Tim akan membantu membahas detail berikutnya.</p>
+            <div className="brochure-actions"><a href={`mailto:${brochureSite.email}`} className="brochure-button brochure-button-primary">Kirim Email <span aria-hidden="true">↗</span></a></div>
+            <p className="brochure-lead">Email resmi DEBRODER:</p>
             <a href={`mailto:${brochureSite.email}`} className="brochure-contact-email">{brochureSite.email} <span aria-hidden="true">↗</span></a>
           </div>
           <aside className="brochure-contact-aside">

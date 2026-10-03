@@ -2,7 +2,6 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { brochureWhatsappHref } from "@/src/config/site";
 
 const navigation = [
   { label: "Produk", href: "/produk" },
@@ -24,7 +23,7 @@ export function BrochureNav() {
           </Link>
         ))}
       </nav>
-      <a href={brochureWhatsappHref()} className="brochure-button brochure-button-primary brochure-header-cta">Pesan Custom</a>
+      <Link href="/kontak" className="brochure-button brochure-button-primary brochure-header-cta">Hubungi Kami</Link>
       <details key={pathname} className="brochure-mobile-menu">
         <summary aria-label="Buka menu navigasi" className="brochure-menu-trigger">
           <span aria-hidden="true" className="brochure-menu-icon"><span /><span /><span /></span>

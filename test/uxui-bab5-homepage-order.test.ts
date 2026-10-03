@@ -21,9 +21,9 @@ describe("Owner-approved brochure homepage addendum", () => {
     expect(positions).toEqual([...positions].sort((a, b) => a - b));
   });
 
-  it("exposes only the owner's two inquiry products without changing commerce authority", () => {
-    expect(brochureProducts.map((product) => product.slug)).toEqual(["nsa-premium", "cotton-combed-24s"]);
-    expect(getBrochureProduct("nsa-premium")?.name).toBe("NSA Premium");
+  it("keeps the public product catalogue empty without changing commerce authority", () => {
+    expect(brochureProducts).toEqual([]);
+    expect(getBrochureProduct("nsa-premium")).toBeUndefined();
     expect(getBrochureProduct("other-product")).toBeUndefined();
     expect(home).not.toContain("getPublicContent");
     expect(home).not.toContain("<StorefrontCartBoundary>");

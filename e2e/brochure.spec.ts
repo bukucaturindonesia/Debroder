@@ -1,6 +1,6 @@
 import { expect, test } from "@playwright/test";
 
-const routes = ["/", "/produk", "/layanan", "/tentang", "/kontak", "/produk/nsa-premium", "/produk/cotton-combed-24s"];
+const routes = ["/", "/produk", "/layanan", "/tentang", "/kontak"];
 
 test("brochure routes render without client errors or Supabase requests", async ({ page }) => {
   const errors: string[] = [];
@@ -27,32 +27,14 @@ test("brochure routes render without client errors or Supabase requests", async 
   expect(supabaseRequests).toEqual([]);
 });
 
-test("products open a detail and prepare the exact WhatsApp inquiry without submitting an order", async ({ page }) => {
+test("product catalogue stays intentionally empty and contact remains email-only", async ({ page }) => {
   await page.goto("/produk", { waitUntil: "networkidle" });
-  await expect(page.locator(".brochure-product-card")).toHaveCount(2);
-  await expect(page.getByRole("link", { name: /keranjang|beli sekarang|checkout/i })).toHaveCount(0);
-  await page.getByRole("link", { name: "Lihat NSA Premium", exact: true }).click();
-  await expect(page).toHaveURL(/\/produk\/nsa-premium$/);
-  await expect(page.getByRole("heading", { level: 1, name: "NSA Premium" })).toBeVisible();
-  await page.getByLabel("Ukuran", { exact: true }).fill("M & L");
-  await page.getByLabel("Warna", { exact: true }).fill("Hitam");
-  await page.getByLabel("Jumlah", { exact: true }).fill("24");
-  await page.getByLabel("Catatan", { exact: true }).fill("Logo tim #1");
-  const action = page.getByRole("link", { name: "Pesan via WhatsApp" });
-  const url = new URL((await action.getAttribute("href"))!);
-  expect(`${url.origin}${url.pathname}`).toBe("https://wa.me/6285355333364");
-  expect(url.searchParams.get("text")).toBe("Halo DEBRODER,\nsaya ingin menanyakan/pesan:\n\nProduk/Layanan: NSA Premium\nUkuran: M & L\nWarna: Hitam\nJumlah: 24\nCatatan: Logo tim #1");
-  await page.getByLabel("Jumlah", { exact: true }).fill("0");
-  await expect(page.getByRole("alert")).toBeVisible();
-  await expect(page.getByRole("link", { name: "Pesan via WhatsApp" })).toHaveCount(0);
-  await expect(page.getByRole("button", { name: "Pesan via WhatsApp" })).toBeDisabled();
-  await page.getByLabel("Jumlah", { exact: true }).fill("1.5");
-  await expect(page.getByRole("button", { name: "Pesan via WhatsApp" })).toBeDisabled();
-  await page.getByLabel("Jumlah", { exact: true }).fill("24");
-  // Inspect the navigation handoff locally; never send a message or contact WhatsApp during QA.
-  await page.route("https://wa.me/**", (route) => route.fulfill({ status: 200, contentType: "text/plain", body: "WhatsApp handoff captured by test" }));
-  await action.click();
-  await expect(page).toHaveURL(url.toString());
+  await expect(page.locator(".brochure-product-card")).toHaveCount(0);
+  await expect(page.getByText("Produk segera hadir", { exact: true })).toBeVisible();
+  await expect(page.locator('a[href*="wa.me"]')).toHaveCount(0);
+  await page.goto("/kontak", { waitUntil: "networkidle" });
+  await expect(page.getByRole("link", { name: "Kirim Email" })).toHaveAttribute("href", "mailto:hello@debroder.id");
+  await expect(page.locator('a[href*="wa.me"]')).toHaveCount(0);
 });
 
 test("mobile brochure navigation is usable without horizontal overflow", async ({ page }) => {
@@ -68,8 +50,8 @@ test("mobile brochure navigation is usable without horizontal overflow", async (
   expect(overflow).toBe(false);
 });
 
-test("release denies unknown and trial product details while allowing the two inquiry products", async ({ request }) => {
-  for (const path of ["/produk/w3-test", "/produk/17159506-1b3f-45fd-8a12-8ec1a2531574", "/koleksi", "/jersey/shop", "/checkout", "/cart", "/account/orders"]) {
+test("release denies every product detail and keeps a five-URL sitemap", async ({ request }) => {
+  for (const path of ["/produk/nsa-premium", "/produk/cotton-combed-24s", "/produk/w3-test", "/produk/17159506-1b3f-45fd-8a12-8ec1a2531574", "/koleksi", "/jersey/shop", "/checkout", "/cart", "/account/orders"]) {
     const response = await request.get(path);
     expect(response.status(), path).toBe(404);
   }
@@ -79,9 +61,9 @@ test("release denies unknown and trial product details while allowing the two in
   for (const path of ["/produk", "/layanan", "/tentang", "/kontak"]) {
     expect(body).toContain(path);
   }
-  expect(body).toContain("/produk/nsa-premium");
-  expect(body).toContain("/produk/cotton-combed-24s");
-  expect((body.match(/<loc>/g) || []).length).toBe(7);
+  expect(body).not.toContain("/produk/nsa-premium");
+  expect(body).not.toContain("/produk/cotton-combed-24s");
+  expect((body.match(/<loc>/g) || []).length).toBe(5);
   expect(body).not.toContain("/koleksi");
 });
 
@@ -121,6 +103,12 @@ test("canonical graphical logo stays visible in header and dark footer across re
       ]);
       expect(await footer.evaluate((node) => getComputedStyle(node.closest(".brochure-footer")!).backgroundColor)).toBe("rgb(32, 35, 31)");
       expect(await page.evaluate(() => document.documentElement.scrollWidth > innerWidth), `${route} at ${viewport.width}px`).toBe(false);
+      await expect(page.locator('a[href*="wa.me"]')).toHaveCount(0);
+      const routeName = route === "/" ? "home" : route.slice(1).replaceAll("/", "-");
+      await page.screenshot({
+        path: testInfo.outputPath(`visual-restore-${routeName}-${viewport.width}.png`),
+        fullPage: true
+      });
 
       if (route === "/" && (viewport.width === 390 || viewport.width === 1440)) {
         await page.locator(".brochure-header").screenshot({ path: testInfo.outputPath(`brochure-header-${viewport.width}.png`) });
@@ -136,7 +124,7 @@ test("canonical graphical logo stays visible in header and dark footer across re
   expect(errors).toEqual([]);
 });
 
-test("mobile service links close the menu and reach the requested service", async ({ page }) => {
+test("mobile service links close the menu and service cards avoid WhatsApp", async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto("/layanan", { waitUntil: "networkidle" });
   await page.locator('summary[aria-label="Buka menu navigasi"]').click();
@@ -145,13 +133,14 @@ test("mobile service links close the menu and reach the requested service", asyn
   await expect(page.locator(".brochure-mobile-menu")).not.toHaveAttribute("open", "");
   await expect(page.locator("#dtf-sablon")).toBeInViewport();
   const href = await page.locator("#dtf-sablon a").getAttribute("href");
-  expect(new URL(href!).searchParams.get("text")).toContain("Produk/Layanan: DTF / Sablon");
+  expect(href).toBe("/kontak");
+  await expect(page.locator('a[href*="wa.me"]')).toHaveCount(0);
 });
 
-test("homepage and product detail are usable on small mobile and desktop", async ({ page }, testInfo) => {
+test("homepage and empty product page are usable on small mobile and desktop", async ({ page }, testInfo) => {
   for (const viewport of [{ width: 320, height: 780 }, { width: 390, height: 844 }, { width: 1440, height: 1000 }]) {
     await page.setViewportSize(viewport);
-    for (const path of ["/", "/produk/cotton-combed-24s"]) {
+    for (const path of ["/", "/produk"]) {
       await page.goto(path, { waitUntil: "networkidle" });
       expect(await page.evaluate(() => document.documentElement.scrollWidth > innerWidth), `${path} at ${viewport.width}`).toBe(false);
       await expect(page.locator(".brochure-header-cta")).toBeVisible();
@@ -160,7 +149,7 @@ test("homepage and product detail are usable on small mobile and desktop", async
         await expect.poll(() => image.evaluate((node: HTMLImageElement) => node.complete && node.naturalWidth > 0)).toBe(true);
       }
       await page.evaluate(() => scrollTo(0, 0));
-      await page.screenshot({ path: testInfo.outputPath(`${path === "/" ? "homepage" : "product"}-${viewport.width}.png`), fullPage: true });
+      await page.screenshot({ path: testInfo.outputPath(`${path === "/" ? "homepage" : "products"}-${viewport.width}.png`), fullPage: true });
     }
   }
 });
