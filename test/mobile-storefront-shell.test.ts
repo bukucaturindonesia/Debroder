@@ -34,15 +34,11 @@ describe("mobile storefront shell", () => {
     expect(styles).toContain("safe-area-inset-bottom");
   });
 
-  it("keeps the brochure homepage focused and provides a keyboard-accessible mobile menu", () => {
+  it("adds a real mobile search destination to the homepage without adding demo data", () => {
     const home = read("app/page.tsx");
-    const brochureShell = read("components/brochure/BrochureShell.tsx");
-    const brochureNav = read("components/brochure/BrochureNav.tsx");
-    expect(home).toContain("<BrochureShell>");
-    expect(brochureShell).toContain("<BrochureNav />");
-    expect(brochureNav).toContain("<details");
-    expect(brochureNav).toContain('aria-label="Navigasi mobile"');
-    expect(brochureNav).toContain('label: "Produk", href: "/produk"');
+    expect(home).toContain('className="mobile-home-search section-shell"');
+    expect(home).toContain('href="/search"');
+    expect(home).toContain("Cari produk, kategori, atau layanan");
     expect(home).not.toContain("ReadyCab");
     expect(home).not.toContain("grocery");
   });

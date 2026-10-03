@@ -2221,3 +2221,10 @@ Last updated: 28 July 2026 (Asia/Makassar)
 See **VISUAL RESTORATION EVIDENCE / OPEN VERIFICATION LIMITS** above. Local visual/zero-product acceptance is closed for owner review. Two limits remain open: owner-supplied SHA `4354f8efedb0f3db36102535c6de518c7719330f` is unavailable for an exact commit-tree diff, and the full suite has three existing migration/replay text-contract failures outside this scope. No database, remote, or deployment mutation was made.
 
 **HANDOFF UPDATED: YES — `CURRENT_PHASE_HANDOFF.md`**
+
+## STOREFRONT RESTORATION REVIEW LIMITS — 2026-10-04
+
+- CLOSED LOCALLY: brochure takeover of homepage/catalog/PDP and public commerce gating removed under explicit owner decision. Wave 2 donor architecture restored; shared navigation/mobile/cart/account shell and 20 route/viewport checks pass.
+- OPEN: populated PIM product cards/PDP, real CMS media and authenticated account/checkout require configured local/staging data. No fixtures invented and no Supabase data mutation. Screenshots use canonical empty states and brand fallback imagery.
+- OPEN: three existing migration/replay newline assertion failures. Full run had five failures; two font-source assertions corrected and 11-test targeted rerun passed. Do not label full regression PASS.
+- Owner visual approval pending; push/deploy prohibited until approved. See current handoff and restoration audit for exact evidence and safe resume.
