@@ -2228,3 +2228,9 @@ See **VISUAL RESTORATION EVIDENCE / OPEN VERIFICATION LIMITS** above. Local visu
 - OPEN: populated PIM product cards/PDP, real CMS media and authenticated account/checkout require configured local/staging data. No fixtures invented and no Supabase data mutation. Screenshots use canonical empty states and brand fallback imagery.
 - OPEN: three existing migration/replay newline assertion failures. Full run had five failures; two font-source assertions corrected and 11-test targeted rerun passed. Do not label full regression PASS.
 - Owner visual approval pending; push/deploy prohibited until approved. See current handoff and restoration audit for exact evidence and safe resume.
+
+## VERCEL TYPECHECK BLOCKER — CLOSED LOCALLY — 2026-10-04
+
+- Owner log at SHA 3abb46d identifies TS2339 in e2e/brochure.spec.ts:18. HTMLImageElement type guard resolves it without disabling checks. Final local production build exit 0/142 pages, typecheck and lint passed.
+- Five local stale-stash conflicts resolved; no unmerged index entries. Original snapshots retained. Three previous migration/replay failures were CRLF literal mismatches; test-reader normalization plus targeted 33/33 pass closes the local newline blocker without SQL/database edits.
+- OPEN: corrected payload not committed/pushed/deployed; deployed build success unverified. Existing staged work requires deliberate payload selection. 36 existing lint warnings remain. Populated PIM/auth/transaction verification remains outside this build fix.

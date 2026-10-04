@@ -15,7 +15,7 @@ test("complete storefront restores navigation and responsive public surfaces", a
       await expect(page.locator(".brochure-shell")).toHaveCount(0);
       await page.waitForTimeout(350);
       expect(await page.evaluate(() => document.documentElement.scrollWidth > innerWidth)).toBe(false);
-      const broken = await page.locator("img").evaluateAll(images => images.filter(image => image.complete && image.naturalWidth === 0).map(image => image.src));
+      const broken = await page.locator("img").evaluateAll(images => images.filter((image): image is HTMLImageElement => image instanceof HTMLImageElement && image.complete && image.naturalWidth === 0).map(image => image.src));
       expect(broken).toEqual([]);
       await page.screenshot({ path: testInfo.outputPath((route === "/" ? "home" : route.slice(1)) + "-" + width + ".png"), fullPage: true });
     }

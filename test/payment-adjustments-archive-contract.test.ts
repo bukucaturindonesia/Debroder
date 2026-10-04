@@ -19,7 +19,7 @@ const manifestPath = path.join(root, "DEBRODER_FRESH_DATABASE_REPLAY_MANIFEST.md
 describe("payment_adjustments archive contract", () => {
   const phase5b = fs.readFileSync(phase5bPath, "utf8");
   const summary = fs.readFileSync(summaryPath, "utf8");
-  const correction = fs.readFileSync(correctionPath, "utf8");
+  const correction = fs.readFileSync(correctionPath, "utf8").replace(/\r\n/g, "\n");
   const manifest = fs.readFileSync(manifestPath, "utf8");
 
   it("proves the runtime failure contract and its owner", () => {

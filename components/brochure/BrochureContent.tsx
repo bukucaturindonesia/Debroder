@@ -2,9 +2,9 @@ import Image from "next/image";
 import Link from "next/link";
 import type { ReactNode } from "react";
 import { brochureSite } from "@/src/config/site";
-import { brochureProducts } from "@/src/data/products";
 import { brochureServices } from "@/src/data/services";
 import { formatRupiah } from "@/lib/url";
+import { readBrochureProducts } from "@/lib/brochure-product-data";
 
 export const container = "brochure-container";
 
@@ -20,21 +20,22 @@ export function PageIntro({ eyebrow, title, description }: { eyebrow: string; ti
   </div></section>;
 }
 
-export function ProductSection({ fullPage = false }: { fullPage?: boolean }) {
+export async function ProductSection({ fullPage = false }: { fullPage?: boolean }) {
+  const products = await readBrochureProducts();
   return (
     <section aria-labelledby="brochure-products-title" className="brochure-products-section">
       <div className={container}>
         <div className="brochure-section-heading">
-          <div><Eyebrow>Pilihan apparel</Eyebrow><h2 id="brochure-products-title" className="brochure-display brochure-section-title">Mulai dari yang Anda pakai.</h2></div>
-          {!fullPage && <Link href="/produk" className="brochure-text-link">Semua produk <span aria-hidden="true">↗</span></Link>}
+          <div><Eyebrow>Apparel DEBRODER</Eyebrow><h2 id="brochure-products-title" className="brochure-display brochure-section-title">Produk</h2></div>
+          {!fullPage && <Link href="/produk" className="brochure-text-link">Lihat produk <span aria-hidden="true">↗</span></Link>}
         </div>
-        {brochureProducts.length ? <div className="brochure-product-grid">
-          {brochureProducts.map((product) => <article key={product.slug} className="brochure-product-card">
+        {products.length ? <div className="brochure-product-grid">
+          {products.map((product) => <article key={product.slug} className="brochure-product-card">
             <Link href={`/produk/${product.slug}`} aria-label={`Lihat ${product.name}`}>
               <div className="brochure-product-image"><Image src={product.image} alt={product.imageAlt} fill sizes="(max-width: 767px) 50vw, 45vw" className="object-contain" /></div>
               <p className="brochure-image-caption">{product.imageCaption}</p>
               <div className="brochure-product-title"><h3>{product.name}</h3><span aria-hidden="true">↗</span></div>
-              {product.priceFrom !== undefined && product.priceFrom > 0 && <p>Mulai dari {formatRupiah(product.priceFrom)}</p>}
+              <ProductCardDetails product={product} />
               <span className="brochure-product-detail-link">Lihat detail</span>
             </Link>
           </article>)}
@@ -51,12 +52,27 @@ export function ProductSection({ fullPage = false }: { fullPage?: boolean }) {
   );
 }
 
+function ProductCardDetails({ product }: { product: Awaited<ReturnType<typeof readBrochureProducts>>[number] }) {
+  const sizes = [...new Set(product.variants.flatMap((variant) => variant.sizes))];
+  const attributes = [
+    product.variants.length ? `${product.variants.length} warna` : null,
+    sizes.length ? sizes.join(" · ") : null,
+    product.gsm ? `${product.gsm} GSM` : null,
+    product.materialTags.length ? product.materialTags.join(" · ") : null
+  ].filter((value): value is string => Boolean(value));
+
+  return <>
+    {attributes.length ? <p className="brochure-product-specs">{attributes.join(" · ")}</p> : null}
+    <p className="brochure-product-price">{product.basePrice ? formatRupiah(product.basePrice) : "Harga belum tersedia"}</p>
+  </>;
+}
+
 export function ServiceSection({ fullPage = false }: { fullPage?: boolean }) {
   return (
     <section aria-labelledby="brochure-services-title" className={`brochure-services-section${fullPage ? " brochure-services-full" : ""}`}>
       <div className={`${container} brochure-services-layout`}>
         <div className="brochure-section-heading">
-          <div><Eyebrow>Dibuat untuk Anda</Eyebrow><h2 id="brochure-services-title" className="brochure-display brochure-section-title">Ide Anda. Kami wujudkan.</h2></div>
+          <div><Eyebrow>Dibuat untuk Anda</Eyebrow><h2 id="brochure-services-title" className="brochure-display brochure-section-title">Layanan Produksi</h2></div>
           {!fullPage && <Link href="/layanan" className="brochure-text-link">Semua layanan <span aria-hidden="true">↗</span></Link>}
         </div>
         <div className="brochure-service-grid">
