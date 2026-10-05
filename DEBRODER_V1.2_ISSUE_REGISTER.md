@@ -2248,3 +2248,12 @@ See **VISUAL RESTORATION EVIDENCE / OPEN VERIFICATION LIMITS** above. Local visu
 - Current full Vitest run **EXECUTED AND PASSED: 155 files / 1069 tests**. This supersedes the historical open note above about 1066/1069 migration/replay text-contract failures for the current HEAD; no database or migration change was made to achieve this result.
 - Current browser check: all seven requested routes returned 200 at each of 1600/1440/1280/1024/768/430/390/360; no horizontal overflow, broken image, console error, or page error. Local PIM product-card count was 0 and the Custom category source returned an empty state, so populated catalog/campaign/filter behavior remains **NOT VERIFIED**, not classified as a product defect.
 - No database/migration, staging, production, remote push, or deployment mutation. Continue the v1.2 audit using the latest `CURRENT_PHASE_HANDOFF.md`; do not claim COMPLETE or GO based on this presentation task.
+
+
+## UNIFIED CATEGORY HERO / CONTENT ACCEPTANCE — 2026-10-05 15:35:07 +08:00
+
+- CLOSED LOCALLY: inconsistent split heroes/pre-hero Jersey nav, divergent primary navigation order, and inherited category padding shrinking Jaket/Headwear hero images. Shared container and actual image geometry verified over 56 combinations; Kaos eight-width pixel baseline unchanged.
+- CLOSED LOCALLY: Custom hero implementation initially violated focused-read architecture. Replaced full-content read with published/active CMS-only reader; architecture file 9/9 and new reader tests 4/4 pass. No test rule was weakened to accept the full-content read.
+- OPEN CONTENT ACCEPTANCE: local fallback square logo is cropped by unchanged master cover behavior; real owner desktop/mobile artwork is not served. The master mobile container is not 4:5. Actual portrait safe areas/readability require owner artwork and review; changing Kaos geometry/fit requires owner decision. No fake products or AI imagery added.
+- OPEN ENVIRONMENT/QA: PIM and Custom category data empty; populated filter/configurator/transaction flows not verified. pnpm wrappers fail at OneDrive realpath; installed CLIs work. 35 existing lint warnings remain.
+- Current source HEAD 9da177b1459ac33c077c614e54d453e63fe4fabf, local only; no database/migration/staging/production/push/deployment changes. Overall NO-GO/NOT COMPLETE until remaining v1.2 gates and owner approval. Resume from CURRENT_PHASE_HANDOFF.md.
