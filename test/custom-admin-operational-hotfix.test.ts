@@ -10,7 +10,8 @@ describe("Custom Hub and general cart boundary", () => {
   it("renders CMS category media at 4:5 with the visible canonical CTA", () => {
     const source = read("components/custom/CustomHub.tsx");
     expect(source).toContain("aspect-[4/5]");
-    expect(source).toContain("Mulai Custom");
+    expect(source).toContain("Lanjut ke kebutuhan T-Shirt");
+    expect(source).toContain("Buka Jersey Configurator");
     expect(source).toContain('category.entryType === "jersey_configurator"');
   });
 

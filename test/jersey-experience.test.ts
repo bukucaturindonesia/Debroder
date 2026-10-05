@@ -43,12 +43,12 @@ describe("Jersey commerce experience", () => {
   it("separates inspiration, catalog, product detail, and configurator routes", () => {
     const landing = readFileSync("app/jersey/page.tsx", "utf8");
     const shop = readFileSync("app/jersey/shop/page.tsx", "utf8");
-    const catalog = readFileSync("components/jersey/JerseyShopCatalog.tsx", "utf8");
     const card = readFileSync("components/PublicProductCard.tsx", "utf8");
     const configurator = readFileSync("app/jersey/configurator/page.tsx", "utf8");
     expect(landing).not.toContain("ProductCatalog");
-    expect(shop).toContain("JerseyShopCatalog");
-    expect(catalog).toContain("PublicProductCard");
+    expect(shop).toContain("ProductCatalog");
+    expect(shop).toContain('catalogProfile="jersey"');
+    expect(shop).toContain('href="/jersey/configurator"');
     expect(card).toContain("return `/produk/${product.slug");
     expect(configurator).toContain("JerseyConfigurator");
   });
@@ -66,49 +66,43 @@ describe("Jersey commerce experience", () => {
     expect(adminNav).toContain("/admin/commerce/jersey");
   });
 
-  it("keeps the owner-approved black Jersey theme scoped to the route", () => {
+  it("keeps the Jersey hub compact with fixed shop and configurator routes", () => {
     const landing = readFileSync("app/jersey/page.tsx", "utf8");
     const experience = readFileSync("components/jersey/JerseyExperience.tsx", "utf8");
     const chrome = readFileSync("components/jersey/JerseyChrome.tsx", "utf8");
     const styles = readFileSync("app/globals.css", "utf8");
     expect(landing).toContain('theme="jersey"');
-    expect(experience).toContain("jersey-carousel-01");
-    expect(experience).toContain("jersey-carousel-02");
+    expect(experience).toContain('href="/jersey/shop"');
+    expect(experience).toContain('href="/jersey/configurator"');
+    expect(experience).toContain("resolvedJerseySections");
+    expect(experience).toContain("poster_carousel");
     expect(chrome).toContain("jersey-context-header");
     expect(styles).toContain("--jersey-section-gap");
     expect(styles).toContain("#39ff88");
   });
 
-  it("keeps every image-led editorial card limited to title and Jelajahi", () => {
+  it("keeps Jersey CMS campaign content presentation-only and routes to approved commerce", () => {
     const carousel = readFileSync("components/jersey/JerseyCarousel.tsx", "utf8");
     const experience = readFileSync("components/jersey/JerseyExperience.tsx", "utf8");
-    const split = experience.slice(experience.indexOf("function SplitCampaign"), experience.indexOf("function WideEditorial"));
-    const wide = experience.slice(experience.indexOf("function WideEditorial"), experience.indexOf("function EditorialCampaign"));
 
-    expect(carousel).toContain(">Jelajahi</span>");
-    expect(carousel).not.toContain("item.subtitle");
-    expect(carousel).not.toContain("item.eyebrow");
-    expect(split).toContain(">Jelajahi</span>");
-    expect(split).not.toContain("item.subtitle");
-    expect(split).not.toContain("item.eyebrow");
-    expect(wide).toContain(">Jelajahi</ActionLink>");
-    expect(wide).not.toContain("item.subtitle");
-    expect(wide).not.toContain("item.eyebrow");
+    expect(carousel).toContain("validJerseyHref(item.cta_url)");
+    expect(experience).toContain("item.subtitle");
+    expect(experience).toContain("item.eyebrow");
+    expect(experience).toContain('href="/jersey/configurator"');
+    expect(experience).not.toContain("wa.me");
   });
 
-  it("removes legacy Paket Tim and every Jersey section divider from public composition", () => {
+  it("removes the legacy Paket Tim block and keeps compact CMS ordering information", () => {
     const experience = readFileSync("components/jersey/JerseyExperience.tsx", "utf8");
     const chrome = readFileSync("components/jersey/JerseyChrome.tsx", "utf8");
     const footer = readFileSync("components/PublicFooter.tsx", "utf8");
-    const order = experience.slice(experience.indexOf("function OrderSteps"), experience.indexOf("function ClosingCampaign"));
-    const closing = experience.slice(experience.indexOf("function ClosingCampaign"), experience.indexOf("function firstByType"));
+    const order = experience.slice(experience.indexOf("function OrderSteps"), experience.indexOf("function firstByType"));
 
     expect(experience).not.toContain("packageCampaign");
     expect(experience).not.toContain('id="paket-tim"');
-    expect(experience).not.toContain("border-y border-white/10");
-    expect(order).not.toContain("border-");
+    expect(experience).toContain("Cara order");
+    expect(order).toContain("steps.slice(0, 4)");
     expect(order).not.toContain("item.subtitle");
-    expect(closing).not.toContain("border-");
     expect(chrome).not.toContain("border-b border-white/12");
     expect(chrome).not.toContain("border-t border-white/10");
     expect(chrome).toContain("group-hover:scale-x-100");

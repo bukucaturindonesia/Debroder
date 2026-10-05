@@ -18,35 +18,34 @@ describe("public page experience V2", () => {
     expect(mega).not.toContain("margin");
   });
 
-  it("keeps category discovery and catalog quantities aligned to the locked specification", () => {
+  it("puts the product-backed quick navigation and catalog before CMS campaign content", () => {
     const discovery = read("components/CategoryCommerceCatalog.tsx");
+    const page = read("components/CategoryCommercePage.tsx");
     const catalog = read("components/ProductCatalog.tsx");
     const batches = read("lib/product-catalog.ts");
-    const hero = read("components/PublicPage.tsx");
 
-    expect(discovery).toContain(".slice(0, 7)");
-    expect(discovery).toContain(".slice(0, 4)");
-    expect(discovery).toContain("candidates.length >= 3");
+    expect(discovery).toContain('aria-label={shortcutLabel}');
+    expect(discovery).toContain("products.some((product) => matchesProductType");
+    expect(discovery).toContain("backedProductTypeOptions.map");
+    expect(discovery.indexOf('id="catalog"')).toBeLessThan(discovery.indexOf('aria-label="Cerita dan campaign"'));
+    expect(page).toContain("CommercePageIntro");
     expect(catalog).toContain("md:grid-cols-3");
     expect(catalog).toContain("lg:grid-cols-4");
     expect(batches).toContain("return 12");
-    expect(hero).toContain('variant?: "default" | "category"');
-    expect(hero).toContain("h-[280px]");
-    expect(hero).toContain("sm:h-[340px]");
-    expect(hero).toContain("lg:h-[420px]");
   });
 
-  it("builds Koleksi as discovery, curated, latest, and complete catalog without a new database category", () => {
+  it("places Koleksi route navigation directly before the shared complete catalog", () => {
     const page = read("app/koleksi/page.tsx");
     const experience = read("components/CollectionCommerceExperience.tsx");
 
     expect(page).toContain("<CollectionCommerceExperience");
-    expect(experience).toContain("Belanja berdasarkan kategori");
-    expect(experience).toContain("Koleksi pilihan");
-    expect(experience).toContain("Produk terbaru");
+    expect(experience).toContain('href: "/kaos-polos"');
+    expect(experience).toContain('href: "/jersey"');
     expect(experience).toContain("Semua produk");
     expect(experience).toContain("<ProductCatalog");
+    expect(experience).not.toContain("Koleksi pilihan");
     expect(experience).not.toContain("supabase");
+    expect(experience.indexOf("<ProductCatalog")).toBeLessThan(experience.indexOf('aria-label="Campaign koleksi"'));
   });
 
   it("separates Custom T-Shirt and Jersey Custom while preserving official transaction paths", () => {
@@ -57,20 +56,25 @@ describe("public page experience V2", () => {
     expect(hub).toContain("Custom T-Shirt");
     expect(hub).toContain("Jersey Custom");
     expect(hub).toContain("/jersey/configurator");
-    expect(hub).toContain("Order sebelum pembayaran");
-    expect(hub).toContain("customSteps.map");
+    expect(hub).toContain("Order dibuat sebelum pembayaran");
+    expect(hub).toContain("categoryHref(category)");
     expect(hub).not.toContain("wa.me");
   });
 
-  it("keeps the Custom capability copy on its intended dark surface with readable contrast", () => {
+  it("keeps the Custom gateway compact and on the shared storefront surface", () => {
     const hub = read("components/custom/CustomHub.tsx");
-    const capabilityStart = hub.indexOf('<section className="keep-section-bg bg-black');
-    const capability = hub.slice(capabilityStart, hub.indexOf("</section>", capabilityStart) + "</section>".length);
+    expect(hub).toContain("Pilih jalur pesanan custom");
+    expect(hub).toContain("Jersey Configurator");
+    expect(hub).not.toContain("bg-black py-12 text-white");
+  });
 
-    expect(capabilityStart).toBeGreaterThan(-1);
-    expect(capability).toContain('text-white/75">Satu alur transaksi');
-    expect(capability).toContain('className="mt-3 max-w-4xl text-white text-[clamp(2.3rem,5vw,5rem)]');
-    expect(capability).toContain("Dari kebutuhan sampai produksi, setiap keputusan tetap tercatat.");
+  it("keeps DTF service details as the primary path and WhatsApp as consultation", () => {
+    const cards = read("components/ServiceCatalog.tsx");
+    const detail = read("app/sablon-dtf/[slug]/page.tsx");
+    expect(cards).toContain("Lihat detail");
+    expect(cards).toContain("Konsultasi");
+    expect(cards).not.toContain(">Pesan</a>");
+    expect(detail).toContain('ctaText="Konsultasi via WhatsApp"');
   });
 
   it("publishes accessible legal drafts at existing canonical routes without claiming legal approval", () => {

@@ -1,69 +1,21 @@
 "use client";
 
 import Link from "next/link";
-import { useMemo } from "react";
 import { ProductCatalog } from "@/components/ProductCatalog";
-import { ProductImageSwap } from "@/components/ProductImageSwap";
-import { PublicProductCard } from "@/components/PublicProductCard";
-import { fallbackImages } from "@/lib/fallback-data";
-import { getProductCardImages } from "@/lib/product-gallery";
+import { SafeImage } from "@/components/SafeImage";
+import type { CatalogPageCampaignViewModel } from "@/lib/catalog-page/model";
 import type { Product } from "@/lib/types";
 
-const categoryDefinitions = [
-  { label: "Kaos Polos", href: "/kaos-polos", pattern: /kaos|shirt|cotton|combed/i },
-  { label: "Jaket & Hoodie", href: "/jaket-hoodie", pattern: /jaket|jacket|hoodie|crewneck|bomber|windbreaker/i },
-  { label: "Headwear", href: "/headwear", pattern: /headwear|topi|cap|hat/i },
-  { label: "Jersey", href: "/jersey", pattern: /jersey/i },
-  { label: "Sablon DTF", href: "/sablon-dtf", pattern: /sablon|dtf/i }
+const collectionRoutes = [
+  { label: "Kaos Polos", href: "/kaos-polos" },
+  { label: "Jaket & Hoodie", href: "/jaket-hoodie" },
+  { label: "Headwear", href: "/headwear" },
+  { label: "Jersey", href: "/jersey" }
 ] as const;
-
-function productSearchText(product: Product) {
-  return [
-    product.nama,
-    product.kategori,
-    product.subcategory,
-    product.product_type,
-    ...(product.collection_tags || []),
-    ...(product.intent_tags || [])
-  ].filter(Boolean).join(" ");
-}
-
-function CollectionCategoryCard({
-  label,
-  href,
-  product
-}: {
-  label: string;
-  href: string;
-  product: Product;
-}) {
-  const images = getProductCardImages(product);
-  const focal = product.focal_points?.catalog;
-  return (
-    <Link href={href} className="category-type-card group block shrink-0 snap-start">
-      <div className="category-type-media relative bg-[#efefef]">
-        <ProductImageSwap
-          primarySrc={images.primary}
-          hoverSrc={images.hover}
-          fallbackSrc={fallbackImages.product}
-          alt={product.image_alt || `${label} DEBRODER`}
-          imageClassName={(product.object_fit || "cover") === "contain" ? "object-contain p-3" : "object-cover"}
-          objectFit={product.object_fit || "cover"}
-          objectPosition={product.object_position || "center center"}
-          focalX={focal?.focal_x ?? product.focal_x}
-          focalY={focal?.focal_y ?? product.focal_y}
-          zoom={focal?.zoom ?? product.focal_zoom}
-          sizes="(min-width: 1200px) 25vw, (min-width: 768px) 38vw, 78vw"
-        />
-      </div>
-      <h3 className="mt-4 text-lg font-semibold text-[#111] sm:text-xl">{label}</h3>
-      <span className="mt-2 inline-flex text-sm font-medium underline underline-offset-4">Jelajahi kategori</span>
-    </Link>
-  );
-}
 
 export function CollectionCommerceExperience({
   products,
+  campaigns = [],
   initialQuery,
   initialColor,
   initialLabel,
@@ -71,127 +23,45 @@ export function CollectionCommerceExperience({
   initialStatus
 }: {
   products: Product[];
+  campaigns?: CatalogPageCampaignViewModel[];
   initialQuery: string;
   initialColor: string;
   initialLabel: "all" | "new" | "promo" | "best";
-  initialSort: "order" | "newest" | "best-selling";
+  initialSort: "order" | "newest" | "best-selling" | "price-low" | "price-high";
   initialStatus: string;
 }) {
-  const categoryCards = useMemo(
-    () => categoryDefinitions
-      .map((definition) => ({
-        ...definition,
-        product: products.find((product) => definition.pattern.test(productSearchText(product)))
-      }))
-      .filter((item): item is typeof categoryDefinitions[number] & { product: Product } => Boolean(item.product)),
-    [products]
-  );
-
-  const curated = useMemo(() => {
-    const ranked = [...products].sort((left, right) =>
-      Number(Boolean(right.label_best_seller)) - Number(Boolean(left.label_best_seller))
-      || Number(Boolean(right.label_promo)) - Number(Boolean(left.label_promo))
-      || Number(right.sales_count || 0) - Number(left.sales_count || 0)
-      || left.urutan - right.urutan
-    ).slice(0, 8);
-    return ranked.length >= 4 ? ranked : [];
-  }, [products]);
-
-  const newest = useMemo(() => {
-    const ranked = [...products].sort((left, right) =>
-      new Date(right.created_at || 0).getTime() - new Date(left.created_at || 0).getTime()
-      || right.urutan - left.urutan
-    ).slice(0, 4);
-    return ranked.length >= 3 ? ranked : [];
-  }, [products]);
-
   return (
-    <div className="category-commerce-v1 collection-commerce-v2">
-      {categoryCards.length ? (
-        <section className="category-discovery-section bg-white py-10 sm:py-12 lg:py-20" aria-labelledby="collection-category-heading">
-          <div className="section-shell">
-            <h2 id="collection-category-heading" className="public-section-title">Belanja berdasarkan kategori</h2>
-            <p className="public-secondary-copy mt-3 max-w-2xl text-base leading-7">
-              Masuk langsung ke kategori resmi DEBRODER tanpa membuat taxonomy baru.
-            </p>
-            <div className="category-type-rail no-scrollbar mt-6 flex snap-x snap-mandatory gap-3 overflow-x-auto pb-2 sm:gap-4 lg:mt-8">
-              {categoryCards.map((item) => (
-                <CollectionCategoryCard key={item.href} label={item.label} href={item.href} product={item.product} />
-              ))}
-            </div>
-          </div>
-        </section>
-      ) : null}
-
-      {curated.length ? (
-        <section className="bg-[#f5f5f5] py-10 sm:py-12 lg:py-20" aria-labelledby="collection-curated-heading">
-          <div className="section-shell">
-            <div className="flex items-end justify-between gap-5">
-              <div>
-                <p className="public-eyebrow">Pilihan DEBRODER</p>
-                <h2 id="collection-curated-heading" className="public-section-title mt-3">Koleksi pilihan</h2>
-              </div>
-              <Link href="#all-products" className="hidden text-sm font-semibold underline underline-offset-4 sm:inline-flex">Lihat semua produk</Link>
-            </div>
-            <div data-ui-grid="product-rail" className="category-product-rail no-scrollbar mt-6 flex snap-x snap-mandatory gap-3 overflow-x-auto pb-2 sm:gap-4 lg:mt-8">
-              {curated.map((product) => (
-                <PublicProductCard
-                  key={product.id || product.slug || product.nama}
-                  product={product}
-                  variant="rail"
-                  className="category-product-rail-card shrink-0 snap-start"
-                  imageSizes="(min-width: 1200px) 25vw, (min-width: 768px) 38vw, 78vw"
-                />
-              ))}
-            </div>
-          </div>
-        </section>
-      ) : null}
-
-      {newest.length ? (
-        <section className="bg-white py-10 sm:py-12 lg:py-20" aria-labelledby="collection-new-heading">
-          <div className="section-shell">
-            <div className="flex items-end justify-between gap-5">
-              <h2 id="collection-new-heading" className="public-section-title">Produk terbaru</h2>
-              <Link href="/koleksi?sort=newest#all-products" className="hidden text-sm font-semibold underline underline-offset-4 sm:inline-flex">Lihat semua</Link>
-            </div>
-            <div data-ui-grid="product-rail" className="category-product-rail no-scrollbar mt-6 flex snap-x snap-mandatory gap-3 overflow-x-auto pb-2 sm:gap-4 lg:mt-8">
-              {newest.map((product) => (
-                <PublicProductCard
-                  key={product.id || product.slug || product.nama}
-                  product={product}
-                  variant="rail"
-                  className="category-product-rail-card shrink-0 snap-start"
-                  imageSizes="(min-width: 1200px) 25vw, (min-width: 768px) 38vw, 78vw"
-                />
-              ))}
-            </div>
-          </div>
-        </section>
-      ) : null}
-
-      <section id="all-products" className="scroll-mt-24 bg-white py-10 sm:py-12 lg:py-20">
+    <div className="bg-white text-[#111]">
+      <nav aria-label="Kategori koleksi" className="border-b border-black/10">
+        <div className="section-shell no-scrollbar flex min-h-12 items-center gap-6 overflow-x-auto py-2">
+          {collectionRoutes.map((route) => (
+            <Link key={route.href} href={route.href} className="shrink-0 text-sm font-medium text-black/70 underline-offset-4 hover:text-black hover:underline">{route.label}</Link>
+          ))}
+          <Link href="/sablon-dtf" className="shrink-0 text-sm font-medium text-black/70 underline-offset-4 hover:text-black hover:underline">Sablon DTF</Link>
+          <Link href="/custom" className="shrink-0 text-sm font-medium text-black/70 underline-offset-4 hover:text-black hover:underline">Custom</Link>
+        </div>
+      </nav>
+      <section id="catalog" className="scroll-mt-24 py-7 sm:py-9 lg:py-12">
         <div className="section-shell">
-          <h2 className="public-section-title">Semua produk</h2>
-          <p className="public-secondary-copy mt-3 max-w-2xl text-base leading-7">
-            Jelajahi produk aktif dari PIM DEBRODER. Harga, ketersediaan, dan tujuan pembelian tetap mengikuti kontrak produk canonical.
-          </p>
-          <div className="mt-6 lg:mt-8">
-            <ProductCatalog
-              products={products}
-              showCategoryFilter
-              initialQuery={initialQuery}
-              initialColor={initialColor}
-              initialLabel={initialLabel}
-              initialSort={initialSort}
-              initialStatus={initialStatus}
-              showStatusFilter
-              catalogStyle="category"
-              syncUrlState
-            />
+          <div className="mb-5">
+            <h1 className="text-2xl font-semibold tracking-tight sm:text-3xl">Semua produk</h1>
+            <p className="mt-2 max-w-2xl text-sm leading-6 text-black/60">Jelajahi produk aktif dari PIM DEBRODER. Harga, varian, ketersediaan, dan tujuan pembelian mengikuti data produk resmi.</p>
           </div>
+          <ProductCatalog
+            products={products}
+            showCategoryFilter
+            initialQuery={initialQuery}
+            initialColor={initialColor}
+            initialLabel={initialLabel}
+            initialSort={initialSort}
+            initialStatus={initialStatus}
+            showStatusFilter
+            catalogStyle="category"
+            syncUrlState
+          />
         </div>
       </section>
+      {campaigns.length ? <section aria-label="Campaign koleksi" className="border-t border-black/10 bg-[#f7f7f5] py-7 sm:py-9"><div className="section-shell grid gap-3 md:grid-cols-2">{campaigns.slice(0, 2).map((campaign) => <Link key={campaign.id} href={campaign.ctaHref || "/koleksi"} className="group relative aspect-[4/5] overflow-hidden bg-[#e9e9e6] sm:aspect-[16/8]"><picture>{campaign.mobileImageUrl ? <source media="(max-width:767px)" srcSet={campaign.mobileImageUrl} /> : null}<SafeImage src={campaign.imageUrl} alt={campaign.imageAlt || campaign.title || campaign.name} className="absolute inset-0 h-full w-full object-cover transition duration-500 group-hover:scale-[1.02]" sizes="(min-width:768px) 50vw, 100vw" objectPosition={campaign.objectPosition} /></picture><span aria-hidden="true" className="absolute inset-0 bg-gradient-to-t from-black/65 via-transparent to-transparent" /><span className="absolute inset-x-0 bottom-0 p-4 text-white sm:p-6"><span className="block text-xs font-semibold uppercase tracking-[0.12em] text-white/75">{campaign.eyebrow}</span><span className="mt-1 block text-xl font-semibold sm:text-2xl">{campaign.title || campaign.name}</span>{campaign.description ? <span className="mt-1 block max-w-xl text-sm text-white/80">{campaign.description}</span> : null}</span></Link>)}</div></section> : null}
     </div>
   );
 }

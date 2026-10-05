@@ -14,6 +14,7 @@ import {
 } from "@/lib/product-catalog";
 import { productCardColors, productCardSizes } from "@/lib/product-card";
 import { productMatchesNavigationStatus } from "@/lib/public-navigation";
+import { jerseyHasCustomAvailability, jerseyHasReadyStock, jerseyProductColors, jerseyProductSizes, jerseyProductPrice } from "@/lib/jersey-commerce";
 import {
   matchesProductType,
   matchesProductTypeFromDetails,
@@ -22,7 +23,7 @@ import {
 } from "@/lib/product-taxonomy";
 import type { Product } from "@/lib/types";
 
-type SortValue = "order" | "newest" | "best-selling" | "price-low" | "price-high";
+type SortValue = "order" | "featured" | "newest" | "best-selling" | "price-low" | "price-high";
 type ProductGroup = "all" | "jaket-hoodie" | "headwear";
 type LabelValue = "all" | "new" | "promo" | "best";
 const EMPTY_PRODUCT_TYPE_OPTIONS: ProductTypeOption[] = [];
@@ -40,6 +41,7 @@ function searchText(product: Product) {
     product.kategori,
     product.subcategory,
     product.brand,
+    product.sku,
     ...(product.material_tags || []),
     ...(product.color_tags || []),
     ...(product.size_tags || []),
@@ -125,6 +127,7 @@ export function ProductCatalog({
   syncUrlState = false,
   catalogStyle = "default",
   catalogLayout = "default",
+  catalogProfile = "standard",
   editorialCampaign = null
 }: {
   products: Product[];
@@ -148,6 +151,7 @@ export function ProductCatalog({
   syncUrlState?: boolean;
   catalogStyle?: "default" | "category";
   catalogLayout?: "default" | "kaos-editorial";
+  catalogProfile?: "standard" | "jersey";
   editorialCampaign?: CatalogPageCampaignViewModel | null;
 }) {
   const urlSearchParams = useSearchParams();
@@ -173,34 +177,35 @@ export function ProductCatalog({
   const urlSyncMountedRef = useRef(false);
   const isCategoryCatalog = catalogStyle === "category";
   const isKaosEditorial = catalogLayout === "kaos-editorial";
+  const isJerseyCatalog = catalogProfile === "jersey";
 
   const categories = useMemo(
-    () => Array.from(new Set(products.map((product) => product.kategori).filter(Boolean))).sort(),
-    [products]
+    () => Array.from(new Set(products.map((product) => isJerseyCatalog ? product.subcategory : product.kategori).filter((value): value is string => Boolean(value)))).sort(),
+    [isJerseyCatalog, products]
   );
   const colors = useMemo(
     () =>
       Array.from(
         new Map(
           products
-            .flatMap((product) => productCardColors(product))
+            .flatMap((product) => isJerseyCatalog ? jerseyProductColors(product).map((item) => item.label) : productCardColors(product))
             .filter(Boolean)
             .map((item) => [normalizeFilterValue(item), item])
         ).entries()
       ).sort((a, b) => a[1].localeCompare(b[1], "id")),
-    [products]
+    [isJerseyCatalog, products]
   );
   const sizes = useMemo(
     () =>
       Array.from(
         new Map(
           products
-            .flatMap((product) => productCardSizes(product))
+            .flatMap((product) => isJerseyCatalog ? jerseyProductSizes(product).map((item) => item.label) : productCardSizes(product))
             .filter(Boolean)
             .map((item) => [normalizeFilterValue(item), item])
         ).entries()
       ).sort((a, b) => a[1].localeCompare(b[1], "id")),
-    [products]
+    [isJerseyCatalog, products]
   );
   const activeProductType = productTypeValue(productType, productTypeOptions) || "all";
   const availableProductTypeOptions = useMemo(
@@ -216,7 +221,7 @@ export function ProductCatalog({
     [activeProductType, isKaosEditorial, productTypeOptions, products]
   );
   const hasTypeFilter = availableProductTypeOptions.length > 0;
-  const activeStatus = ["all", "ready-stock", "custom", "hybrid"].includes(status)
+  const activeStatus = (isJerseyCatalog ? ["all", "ready", "custom"] : ["all", "ready-stock", "custom", "hybrid"]).includes(status)
     ? status
     : "all";
 
@@ -229,23 +234,30 @@ export function ProductCatalog({
     return sourceProducts
       .filter((product) => !needle || searchText(product).includes(needle))
       .filter((product) => matchesGroup(product, group))
-      .filter((product) => category === "all" || product.kategori === category)
+      .filter((product) => category === "all" || (isJerseyCatalog ? normalizeFilterValue(product.subcategory || "") === category : product.kategori === category))
       .filter((product) =>
         isKaosEditorial
           ? matchesProductTypeFromDetails(product, activeProductType, productTypeOptions)
           : matchesProductType(product, activeProductType, productTypeOptions)
       )
-      .filter((product) => matchesColor(product, color))
+      .filter((product) => isJerseyCatalog
+        ? color === "all" || jerseyProductColors(product).some((option) => option.value === color)
+        : matchesColor(product, color))
       .filter(
         (product) =>
           size === "all"
-          || productCardSizes(product).some(
-            (item) => normalizeFilterValue(item) === size
-          )
+          || (isJerseyCatalog
+            ? jerseyProductSizes(product).some((item) => item.value === size)
+            : productCardSizes(product).some((item) => normalizeFilterValue(item) === size))
       )
-      .filter((product) => productMatchesNavigationStatus(product, activeStatus))
+      .filter((product) => isJerseyCatalog
+        ? activeStatus === "all" || (activeStatus === "ready" ? jerseyHasReadyStock(product) : jerseyHasCustomAvailability(product))
+        : productMatchesNavigationStatus(product, activeStatus))
       .filter((product) => {
-        const amount = priceOf(product);
+        const amount = isJerseyCatalog ? jerseyProductPrice(product) : priceOf(product);
+        if (isJerseyCatalog && price === "under-100") return amount > 0 && amount < 100000;
+        if (isJerseyCatalog && price === "100-200") return amount >= 100000 && amount <= 200000;
+        if (isJerseyCatalog && price === "over-200") return amount > 200000;
         if (price === "under-50") return amount < 50000;
         if (price === "50-100") return amount >= 50000 && amount <= 100000;
         if (price === "over-100") return amount > 100000;
@@ -265,11 +277,11 @@ export function ProductCatalog({
         if (sort === "best-selling") {
           return Number(b.sales_count || 0) - Number(a.sales_count || 0);
         }
-        if (sort === "price-low") return priceOf(a) - priceOf(b);
-        if (sort === "price-high") return priceOf(b) - priceOf(a);
+        if (sort === "price-low") return (isJerseyCatalog ? jerseyProductPrice(a) : priceOf(a)) - (isJerseyCatalog ? jerseyProductPrice(b) : priceOf(b));
+        if (sort === "price-high") return (isJerseyCatalog ? jerseyProductPrice(b) : priceOf(b)) - (isJerseyCatalog ? jerseyProductPrice(a) : priceOf(a));
         return a.urutan - b.urutan;
       });
-  }, [activeProductType, activeStatus, category, color, group, isCategoryCatalog, isKaosEditorial, label, price, productTypeOptions, products, query, size, sort]);
+  }, [activeProductType, activeStatus, category, color, group, isCategoryCatalog, isJerseyCatalog, isKaosEditorial, label, price, productTypeOptions, products, query, size, sort]);
 
   useEffect(() => {
     setQuery(initialQuery);
@@ -315,13 +327,14 @@ export function ProductCatalog({
       color,
       size,
       price,
-      status: activeStatus,
+      ...(isJerseyCatalog ? { category } : {}),
+      [isJerseyCatalog ? "availability" : "status"]: activeStatus,
       label,
-      sort
+      sort: isJerseyCatalog && sort === "order" ? "featured" : sort
     };
 
     Object.entries(values).forEach(([key, value]) => {
-      const defaultValue = key === "sort" ? "order" : key === "q" ? "" : "all";
+      const defaultValue = key === "sort" ? (isJerseyCatalog ? "featured" : "order") : key === "q" ? "" : "all";
       if (!value || value === defaultValue) url.searchParams.delete(key);
       else url.searchParams.set(key, value);
     });
@@ -335,7 +348,7 @@ export function ProductCatalog({
     if (nextUrl === currentUrl) return;
 
     window.history.pushState(window.history.state, "", nextUrl);
-  }, [activeProductType, activeStatus, color, label, price, query, size, sort, syncUrlState]);
+  }, [activeProductType, activeStatus, category, color, isJerseyCatalog, label, price, query, size, sort, syncUrlState]);
 
   useEffect(() => {
     if (!syncUrlState) return;
@@ -343,6 +356,7 @@ export function ProductCatalog({
     const nextLabel = params.get("label");
     const nextSort = params.get("sort");
     const nextStatus = params.get("status");
+    const nextAvailability = params.get("availability");
     const nextPrice = params.get("price");
 
     setQuery((params.get("q") || "").trim().slice(0, 120));
@@ -350,12 +364,14 @@ export function ProductCatalog({
       productTypeValue(params.get("type") || undefined, productTypeOptions) || "all"
     );
     setColor(normalizeFilterValue(params.get("color") || "all") || "all");
+    if (isJerseyCatalog) setCategory(normalizeFilterValue(params.get("category") || "all") || "all");
     setSize(normalizeFilterValue(params.get("size") || "all") || "all");
     setPrice(
       nextPrice === "under-50"
       || nextPrice === "50-100"
       || nextPrice === "over-100"
-        ? nextPrice
+      || (isJerseyCatalog && ["under-100", "100-200", "over-200"].includes(nextPrice || ""))
+        ? nextPrice || "all"
         : "all"
     );
     setLabel(
@@ -364,7 +380,8 @@ export function ProductCatalog({
         : "all"
     );
     setSort(
-      nextSort === "newest"
+      nextSort === "featured"
+      || nextSort === "newest"
       || nextSort === "best-selling"
       || nextSort === "price-low"
       || nextSort === "price-high"
@@ -372,13 +389,15 @@ export function ProductCatalog({
         : "order"
     );
     setStatus(
-      nextStatus === "ready-stock"
+      (isJerseyCatalog && (nextAvailability === "ready" || nextAvailability === "custom"))
+        ? nextAvailability as string
+        : nextStatus === "ready-stock"
       || nextStatus === "custom"
       || nextStatus === "hybrid"
         ? nextStatus
         : "all"
     );
-  }, [productTypeOptions, syncUrlState, urlSearchParamsKey]);
+  }, [isJerseyCatalog, productTypeOptions, syncUrlState, urlSearchParamsKey]);
 
   useEffect(
     () => () => {
@@ -503,7 +522,7 @@ export function ProductCatalog({
         >
           <option value="all">Semua kategori</option>
           {categories.map((item) => (
-            <option key={item}>{item}</option>
+            <option key={item} value={isJerseyCatalog ? normalizeFilterValue(item) : item}>{item}</option>
           ))}
         </select>
       ) : null}
@@ -517,7 +536,7 @@ export function ProductCatalog({
           <option value="all">{typeFilterLabel}</option>
           {availableProductTypeOptions.map((item) => (
             <option key={item.value} value={item.value}>
-              {item.label}
+            {item.label}
             </option>
           ))}
         </select>
@@ -550,7 +569,14 @@ export function ProductCatalog({
           ))}
         </select>
       ) : null}
-      {isKaosEditorial ? (
+      {isJerseyCatalog ? (
+        <select aria-label="Filter harga" value={price} onChange={(event) => setPrice(event.target.value)} className={`${controlClass} w-full`}>
+          <option value="all">Semua rentang harga</option>
+          <option value="under-100">Di bawah Rp100 ribu</option>
+          <option value="100-200">Rp100–200 ribu</option>
+          <option value="over-200">Di atas Rp200 ribu</option>
+        </select>
+      ) : isKaosEditorial ? (
         <select
           aria-label="Filter harga"
           value={price}
@@ -590,9 +616,9 @@ export function ProductCatalog({
           className={`${controlClass} w-full`}
         >
           <option value="all">Semua ketersediaan</option>
-          <option value="ready-stock">Ready Stock</option>
-          <option value="custom">Pesanan Custom</option>
-          <option value="hybrid">Ready Stock & Custom</option>
+          {isJerseyCatalog ? <option value="ready">Ready Stock</option> : <option value="ready-stock">Ready Stock</option>}
+          <option value="custom">Custom Available</option>
+          {!isJerseyCatalog ? <option value="hybrid">Ready Stock & Custom</option> : null}
         </select>
       ) : null}
     </>
@@ -603,7 +629,7 @@ export function ProductCatalog({
     : "public-catalog-filters";
   const sortOptions = (
     <>
-      <option value="order">{isKaosEditorial ? "Rekomendasi" : "Urutan pilihan"}</option>
+      <option value={isJerseyCatalog ? "featured" : "order"}>{isKaosEditorial || isJerseyCatalog ? "Rekomendasi" : "Urutan pilihan"}</option>
       <option value="newest">Terbaru</option>
       {!isKaosEditorial ? <option value="best-selling">Best selling</option> : null}
       <option value="price-low">Harga terendah</option>
@@ -658,7 +684,7 @@ export function ProductCatalog({
               <span className="sr-only">Urutkan produk</span>
               <select
                 aria-label="Urutkan produk"
-                value={sort}
+                value={isJerseyCatalog && sort === "order" ? "featured" : sort}
                 onChange={(event) => setSort(event.target.value as SortValue)}
                 className={`${controlClass} min-w-44`}
               >
@@ -696,7 +722,7 @@ export function ProductCatalog({
               <span className="sr-only">Urutkan produk</span>
               <select
                 aria-label="Urutkan produk"
-                value={sort}
+                value={isJerseyCatalog && sort === "order" ? "featured" : sort}
                 onChange={(event) => setSort(event.target.value as SortValue)}
                 className={`${controlClass} h-full w-full`}
               >
