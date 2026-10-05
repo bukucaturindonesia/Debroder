@@ -22,7 +22,7 @@ export default async function SablonDtfDetailPage({ params }: { params: Promise<
         objectPosition={service.object_position}
         objectFit={service.object_fit}
         imageZoom={service.focal_zoom}
-        ctaText="Pesan via WhatsApp"
+        ctaText="Konsultasi via WhatsApp"
         ctaHref={orderUrl}
         secondaryCtaText="Kembali ke Katalog"
         secondaryCtaHref="/sablon-dtf"

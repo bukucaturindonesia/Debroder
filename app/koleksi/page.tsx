@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
+import { CommercePageIntro } from "@/components/CommercePageIntro";
 import { CollectionCommerceExperience } from "@/components/CollectionCommerceExperience";
-import { PageHero, PublicShell } from "@/components/PublicPage";
+import { PublicShell } from "@/components/PublicPage";
 import { getCatalogPageModel } from "@/lib/catalog-page/runtime";
 
 export const metadata: Metadata = {
@@ -20,6 +21,8 @@ type KoleksiPageProps = {
     status?: string | string[];
     label?: string | string[];
     sort?: string | string[];
+    price?: string | string[];
+    size?: string | string[];
   }>;
 };
 
@@ -33,26 +36,14 @@ export default async function KoleksiPage({ searchParams }: KoleksiPageProps) {
 
   return (
     <PublicShell>
-      <PageHero
-        label={hero.label}
-        title={hero.title}
-        description={hero.description}
-        imageUrl={hero.imageUrl}
-        mobileImageUrl={hero.mobileImageUrl}
-        objectPosition={hero.objectPosition}
-        mobileObjectPosition={hero.mobileObjectPosition}
-        objectFit={hero.objectFit}
-        imageZoom={hero.imageZoom}
-        mobileImageZoom={hero.mobileImageZoom}
-        variant="category"
-        breadcrumbs={[{ label: "Beranda", href: "/" }, { label: "Koleksi" }]}
-      />
+      <CommercePageIntro breadcrumbLabel="Koleksi" label={hero.label} title={hero.title} description={hero.description} imageUrl={hero.imageUrl} mobileImageUrl={hero.mobileImageUrl} objectPosition={hero.objectPosition} mobileObjectPosition={hero.mobileObjectPosition} objectFit={hero.objectFit} imageZoom={hero.imageZoom} mobileImageZoom={hero.mobileImageZoom} />
       <CollectionCommerceExperience
         products={products}
+        campaigns={model.data.campaigns}
         initialQuery={filters.query}
         initialColor={filters.color}
         initialLabel={filters.label}
-        initialSort={filters.sort === "price-low" || filters.sort === "price-high" ? "order" : filters.sort}
+        initialSort={filters.sort}
         initialStatus={filters.status}
       />
     </PublicShell>

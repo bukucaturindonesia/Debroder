@@ -37,11 +37,11 @@ describe("DEBRODER public UI foundation normalization V1", () => {
     expect(styles).toContain(".debroder-storefront .public-footer-system-v1 > .section-shell");
   });
 
-  it("uses canonical product, editorial, campaign, and product-rail grid hooks", () => {
+  it("uses canonical product, editorial, and campaign grid hooks", () => {
     expect(read("components/ProductCatalog.tsx")).toContain("data-ui-grid={isKaosEditorial ? \"editorial-product\" : \"product\"}");
-    expect(read("components/CategoryCommerceCatalog.tsx")).toContain('data-ui-grid="product-rail"');
-    expect(read("components/CollectionCommerceExperience.tsx")).toContain('data-ui-grid="product-rail"');
-    expect(read("components/jersey/JerseyShopCatalog.tsx")).toContain('data-ui-grid="product"');
+    expect(read("components/CategoryCommerceCatalog.tsx")).toContain("<ProductCatalog");
+    expect(read("components/CollectionCommerceExperience.tsx")).toContain("<ProductCatalog");
+    expect(read("app/jersey/shop/page.tsx")).toContain('catalogProfile="jersey"');
     expect(read("app/page.tsx")).toContain('data-ui-grid="campaign"');
     expect(read("app/page.tsx")).toContain('data-ui-grid="editorial"');
     expect(read("app/page.tsx")).toContain('data-ui-grid="product-rail"');

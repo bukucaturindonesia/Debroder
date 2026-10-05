@@ -1,11 +1,11 @@
 import type { Metadata } from "next";
-import { PageHero, PublicShell } from "@/components/PublicPage";
+import { CommercePageIntro } from "@/components/CommercePageIntro";
+import { PublicShell } from "@/components/PublicPage";
 import { ProductCatalog } from "@/components/ProductCatalog";
 import { ServiceCatalog } from "@/components/ServiceCatalog";
-import { fallbackServices, getPageHeroImage } from "@/lib/fallback-data";
+import { fallbackServices } from "@/lib/fallback-data";
 import { productsForCategoryRoute } from "@/lib/product-route-matching";
 import { getPublicContent } from "@/lib/public-data";
-import { whatsappHref } from "@/lib/url";
 
 export const metadata: Metadata = {
   title: "Sablon DTF | DE BRODER",
@@ -33,23 +33,7 @@ export default async function SablonDtfPage({ searchParams }: SablonDtfPageProps
 
   return (
     <PublicShell>
-      <PageHero
-        label={pageHero?.label}
-        title={pageHero?.title}
-        description={pageHero?.subtitle}
-        imageUrl={getPageHeroImage(pageHero)}
-        mobileImageUrl={pageHero?.mobile_image_url}
-        objectPosition={pageHero?.object_position}
-        mobileObjectPosition={pageHero?.mobile_object_position}
-        objectFit={pageHero?.object_fit}
-        imageZoom={pageHero?.focal_zoom}
-        mobileImageZoom={pageHero?.mobile_focal_zoom}
-        ctaText={undefined}
-        ctaHref={undefined}
-        secondaryCtaText={undefined}
-        secondaryCtaHref={undefined}
-        breadcrumbs={[{ label: "Beranda", href: "/" }, { label: "Sablon DTF" }]}
-      />
+      <CommercePageIntro breadcrumbLabel="Sablon DTF" label={pageHero?.label} title={pageHero?.title || "Sablon DTF"} description={pageHero?.subtitle} imageUrl={pageHero?.image_url} mobileImageUrl={pageHero?.mobile_image_url} objectPosition={pageHero?.object_position} mobileObjectPosition={pageHero?.mobile_object_position} objectFit={pageHero?.object_fit} imageZoom={pageHero?.focal_zoom} mobileImageZoom={pageHero?.mobile_focal_zoom} />
       <ServiceCatalog services={services} whatsapp={content.contact.whatsapp_link || content.contact.whatsapp_apparel} />
       {products.length ? (
         <section data-reveal className="bg-brand-offWhite py-12 md:py-16 lg:py-20">
