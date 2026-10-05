@@ -1,3 +1,4 @@
+import { publicPrimaryNavigation } from "@/lib/public-primary-navigation";
 import { contactLinks, storeContacts } from "@/lib/contact";
 import { CONTRACT_VERSIONS } from "@/lib/contracts/version";
 import { buildPublicNavigationFacets } from "@/lib/public-navigation";
@@ -16,16 +17,10 @@ import type {
   PublicShellStoreRow
 } from "./source";
 
-const shopLinks = [
-  { label: "Kaos Polos", href: "/kaos-polos" },
-  { label: "Jaket & Hoodie", href: "/jaket-hoodie" },
-  { label: "Jersey", href: "/jersey" },
-  { label: "Headwear", href: "/headwear" },
-  { label: "Sablon DTF", href: "/sablon-dtf" },
-  { label: "Cetak Sublim", href: "/cetak-sublim" }
-] as const;
+const shopLinks = publicPrimaryNavigation;
 
 const helpLinks = [
+  { label: "Cetak Sublim", href: "/cetak-sublim" },
   { label: "Pusat Bantuan", href: "/help" },
   { label: "Cara Pemesanan", href: "/cara-order" },
   { label: "Lacak Pesanan", href: "/track-order" },
@@ -167,7 +162,7 @@ function footerModel(source: PublicShellSource): PublicShellFooterViewModel {
 
   return {
     shopLinks,
-    publicShopLinks: [...shopLinks, { label: "Custom", href: "/custom" }],
+    publicShopLinks: shopLinks,
     helpLinks,
     companyLinks: [
       { label: "Tentang DEBRODER", href: PUBLIC_ROUTES.about },

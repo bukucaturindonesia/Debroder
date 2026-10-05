@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { publicPrimaryNavigation } from "@/lib/public-primary-navigation";
 import dynamic from "next/dynamic";
 import { usePathname } from "next/navigation";
 import { useEffect, useMemo, useRef, useState } from "react";
@@ -24,20 +25,7 @@ const topbarItems = [
   { label: "Lacak Pesanan", href: PUBLIC_ROUTES.tracking }
 ];
 
-const navItems = [
-  { label: "Koleksi", href: PUBLIC_ROUTES.collection },
-  { label: "Kaos Polos", href: PUBLIC_ROUTES.plainShirts },
-  { label: "Jaket & Hoodie", href: PUBLIC_ROUTES.jackets },
-  { label: "Headwear", href: PUBLIC_ROUTES.headwear },
-  { label: "Sablon DTF", href: PUBLIC_ROUTES.dtf },
-  { label: "Jersey", href: PUBLIC_ROUTES.jersey }
-];
-
-const publicNavItems = [
-  ...navItems.slice(0, -1),
-  { label: "Custom", href: PUBLIC_ROUTES.custom },
-  navItems[navItems.length - 1]
-];
+const publicNavItems = publicPrimaryNavigation;
 
 type MegaMenuLink = {
   label: string;
@@ -345,7 +333,7 @@ export function SiteHeaderClient({
 
         <div className="hidden h-full items-center justify-center gap-3 lg:flex xl:gap-5">
           {currentNavItems.map((item) => {
-            const active = pathname === item.href || (item.href === "/custom" && pathname.startsWith("/custom/"));
+            const active = pathname === item.href || pathname.startsWith(`${item.href}/`);
             const megaMenu = currentMegaMenus[item.label as keyof typeof currentMegaMenus];
             if (item.label === "Koleksi") {
               return (
@@ -423,19 +411,24 @@ export function SiteHeaderClient({
         <div ref={mobileMenuRef} className="section-shell flex h-full flex-col overflow-y-auto pb-[calc(5rem+env(safe-area-inset-bottom))] pt-6">
           <p className="mb-2 text-xs font-semibold uppercase tracking-[0.12em] text-black/45">Belanja</p>
           {currentNavItems.map((item) => {
-            const active = pathname === item.href || (item.href === "/custom" && pathname.startsWith("/custom/"));
+            const active = pathname === item.href || pathname.startsWith(`${item.href}/`);
             if (item.label === "Koleksi") {
               return <div key={item.href} className="border-b border-black/10">
+                <div className="flex items-center justify-between">
+                <Link href={item.href} aria-current={active ? "page" : undefined} onClick={() => setIsOpen(false)} className={`flex min-h-14 flex-1 items-center text-2xl font-semibold ${active ? "underline underline-offset-8" : ""}`}>
+                  {item.label}
+                </Link>
                 <button
                   type="button"
+                  aria-label="Kategori Koleksi"
                   aria-expanded={mobileCollectionOpen}
                   aria-controls="mobile-collection-menu"
                   onClick={() => setMobileCollectionOpen((current) => !current)}
-                  className={`flex min-h-14 w-full items-center justify-between text-left text-2xl font-semibold leading-tight text-[#111] transition active:bg-black active:text-white ${active ? "underline underline-offset-8" : ""}`}
+                  className="grid min-h-14 w-14 place-items-center text-[#111] transition active:bg-black active:text-white"
                 >
-                  <span>{item.label}</span>
                   <span className={`transition-transform duration-200 ${mobileCollectionOpen ? "rotate-180" : ""}`}><ChevronDownIcon /></span>
                 </button>
+                </div>
                 <div id="mobile-collection-menu" className={`${mobileCollectionOpen ? "grid" : "hidden"} gap-5 bg-[#f5f5f5] px-4 py-5`}>
                   {collectionMenu.map((column) => <div key={column.title}>
                     <p className="text-xs font-semibold uppercase tracking-[0.1em] text-black/45">{column.title}</p>
