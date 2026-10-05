@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { CommercePageIntro } from "@/components/CommercePageIntro";
+import { CategoryHero } from "@/components/public/CategoryHero";
 import { PublicShell } from "@/components/PublicPage";
 import { ProductCatalog } from "@/components/ProductCatalog";
 import { ServiceCatalog } from "@/components/ServiceCatalog";
@@ -33,7 +33,7 @@ export default async function SablonDtfPage({ searchParams }: SablonDtfPageProps
 
   return (
     <PublicShell>
-      <CommercePageIntro breadcrumbLabel="Sablon DTF" label={pageHero?.label} title={pageHero?.title || "Sablon DTF"} description={pageHero?.subtitle} imageUrl={pageHero?.image_url} mobileImageUrl={pageHero?.mobile_image_url} objectPosition={pageHero?.object_position} mobileObjectPosition={pageHero?.mobile_object_position} objectFit={pageHero?.object_fit} imageZoom={pageHero?.focal_zoom} mobileImageZoom={pageHero?.mobile_focal_zoom} />
+      <CategoryHero seoTitle={"Sablon DTF"} alt={"Sablon DTF"} desktopImage={pageHero?.image_url} mobileImage={pageHero?.mobile_image_url} objectPosition={pageHero?.object_position} mobileObjectPosition={pageHero?.mobile_object_position} objectFit={pageHero?.object_fit} imageZoom={pageHero?.focal_zoom} mobileImageZoom={pageHero?.mobile_focal_zoom} />
       <ServiceCatalog services={services} whatsapp={content.contact.whatsapp_link || content.contact.whatsapp_apparel} />
       {products.length ? (
         <section data-reveal className="bg-brand-offWhite py-12 md:py-16 lg:py-20">

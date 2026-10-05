@@ -54,8 +54,8 @@ export function CategoryCommerceCatalog({
 
   return (
     <>
-      <nav aria-label={shortcutLabel} className="border-b border-black/10 bg-white">
-        <div className="section-shell no-scrollbar flex min-h-12 items-center gap-6 overflow-x-auto py-2">
+      <nav aria-label={shortcutLabel} className="category-hero-following border-b border-black/10 bg-white">
+        <div className="section-shell no-scrollbar flex min-h-12 items-center gap-6 overflow-x-auto pb-2">
           <Link href={`${pagePath}#catalog`} className="shrink-0 text-sm font-semibold underline underline-offset-4">Semua produk</Link>
           {backedProductTypeOptions.map((option) => (
             <Link

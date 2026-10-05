@@ -1,5 +1,5 @@
 import { CategoryCommerceCatalog } from "@/components/CategoryCommerceCatalog";
-import { CommercePageIntro } from "@/components/CommercePageIntro";
+import { CategoryHero } from "@/components/public/CategoryHero";
 import { PublicShell } from "@/components/PublicPage";
 import type { CatalogPageModel } from "@/lib/catalog-page/model";
 import type { ProductTypeOption } from "@/lib/product-taxonomy";
@@ -38,7 +38,7 @@ export function CategoryCommercePage({
   return (
     <PublicShell>
       <div className={`category-commerce-v1 category-commerce-${config.pageKey}`}>
-        <CommercePageIntro breadcrumbLabel={config.breadcrumbLabel} label={hero.label} title={hero.title} description={hero.description} imageUrl={hero.imageUrl} mobileImageUrl={hero.mobileImageUrl} objectPosition={hero.objectPosition} mobileObjectPosition={hero.mobileObjectPosition} objectFit={hero.objectFit} imageZoom={hero.imageZoom} mobileImageZoom={hero.mobileImageZoom} />
+        <CategoryHero seoTitle={config.breadcrumbLabel} alt={config.breadcrumbLabel} desktopImage={hero.imageUrl} mobileImage={hero.mobileImageUrl} objectPosition={hero.objectPosition} mobileObjectPosition={hero.mobileObjectPosition} objectFit={hero.objectFit} imageZoom={hero.imageZoom} mobileImageZoom={hero.mobileImageZoom} />
         <CategoryCommerceCatalog
           products={products}
           campaigns={model.data.campaigns}

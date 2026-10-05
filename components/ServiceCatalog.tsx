@@ -6,7 +6,7 @@ import { whatsappLinkWithMessage } from "@/lib/url";
 
 export function ServiceCatalog({ services, whatsapp }: { services: Service[]; whatsapp: string }) {
   return (
-    <section data-reveal className="bg-brand-offWhite pb-12 pt-8 sm:pb-16 sm:pt-10">
+    <section data-reveal className="bg-brand-offWhite category-hero-following pb-12 sm:pb-16">
       <div className="section-shell">
         <div className="max-w-2xl">
           <p className="text-xs font-medium tracking-[0.08em] text-brand-charcoal/55">Pilihan Layanan</p>

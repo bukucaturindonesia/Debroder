@@ -257,6 +257,7 @@ async function readOptionalActiveSingle<T extends { id?: string }>(
 
 const blockedPublicPattern = /\b(express|ekspedisi|pengiriman|distribusi)\b/i;
 const finalPageHeroKeys = [
+  "custom",
   "koleksi",
   "kaos-polos",
   "jaket-hoodie",

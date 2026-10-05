@@ -2154,6 +2154,7 @@ button,
   padding-bottom: 0;
 }
 
+.category-hero-following,
 .kaos-blueprint-intro-section {
   padding-top: clamp(24px, 2.5vw, 40px);
 }
@@ -2907,7 +2908,7 @@ button,
 }
 
 /* Existing route-specific section declarations use !important; this final shared rule is the deliberate consumer override. */
-.debroder-storefront .category-commerce-v1 > section,
+.debroder-storefront .category-commerce-v1 > section:not([data-category-hero]),
 .debroder-storefront .collection-commerce-v2 > section {
   padding-block: var(--storefront-section-space) !important;
 }

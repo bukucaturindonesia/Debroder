@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { CategoryHero } from "@/components/public/CategoryHero";
 import { ProductCatalog } from "@/components/ProductCatalog";
 import { ResponsivePicture } from "@/components/ResponsivePicture";
 import type {
@@ -203,26 +204,17 @@ export function KaosPolosEditorialExperience({
 
   return (
     <div className="kaos-editorial-page bg-white text-[#111]">
-      {hero.imageUrl ? (
-        <section
-          data-kaos-blueprint-section="hero"
-          aria-label="Hero Kaos Polos"
-          className="kaos-blueprint-hero relative overflow-hidden bg-[#f0f0ed]"
-        >
-          <ResponsivePicture
-            desktopSrc={hero.imageUrl}
-            mobileSrc={hero.mobileImageUrl || hero.imageUrl}
-            alt={hero.title || "Kaos Polos DEBRODER"}
-            className="absolute inset-0 h-full w-full object-cover"
-            priority
-            objectFit={hero.objectFit || "cover"}
-            desktopObjectPosition={hero.objectPosition}
-            mobileObjectPosition={hero.mobileObjectPosition}
-            desktopZoom={hero.imageZoom}
-            mobileZoom={hero.mobileImageZoom}
-          />
-        </section>
-      ) : null}
+      <CategoryHero
+        desktopImage={hero.imageUrl}
+        mobileImage={hero.mobileImageUrl}
+        alt={hero.title || "Kaos Polos DEBRODER"}
+        objectFit={hero.objectFit || "cover"}
+        objectPosition={hero.objectPosition}
+        mobileObjectPosition={hero.mobileObjectPosition}
+        imageZoom={hero.imageZoom}
+        mobileImageZoom={hero.mobileImageZoom}
+        kaosBenchmark
+      />
 
       <section
         data-kaos-blueprint-section="quick-category"

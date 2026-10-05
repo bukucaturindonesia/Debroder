@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import { JerseyChrome } from "@/components/jersey/JerseyChrome";
 import { JerseyExperience } from "@/components/jersey/JerseyExperience";
 import { PublicShell } from "@/components/PublicPage";
 import { fallbackCategories } from "@/lib/fallback-data";
@@ -21,7 +20,6 @@ export default async function JerseyPage() {
 
   return (
     <PublicShell theme="jersey">
-      <JerseyChrome />
       <JerseyExperience content={content} hero={pageHero} categories={categories} />
     </PublicShell>
   );

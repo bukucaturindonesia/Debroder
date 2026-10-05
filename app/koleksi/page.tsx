@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { CommercePageIntro } from "@/components/CommercePageIntro";
+import { CategoryHero } from "@/components/public/CategoryHero";
 import { CollectionCommerceExperience } from "@/components/CollectionCommerceExperience";
 import { PublicShell } from "@/components/PublicPage";
 import { getCatalogPageModel } from "@/lib/catalog-page/runtime";
@@ -36,7 +36,7 @@ export default async function KoleksiPage({ searchParams }: KoleksiPageProps) {
 
   return (
     <PublicShell>
-      <CommercePageIntro breadcrumbLabel="Koleksi" label={hero.label} title={hero.title} description={hero.description} imageUrl={hero.imageUrl} mobileImageUrl={hero.mobileImageUrl} objectPosition={hero.objectPosition} mobileObjectPosition={hero.mobileObjectPosition} objectFit={hero.objectFit} imageZoom={hero.imageZoom} mobileImageZoom={hero.mobileImageZoom} />
+      <CategoryHero seoTitle={"Koleksi"} alt={"Koleksi"} desktopImage={hero.imageUrl} mobileImage={hero.mobileImageUrl} objectPosition={hero.objectPosition} mobileObjectPosition={hero.mobileObjectPosition} objectFit={hero.objectFit} imageZoom={hero.imageZoom} mobileImageZoom={hero.mobileImageZoom} />
       <CollectionCommerceExperience
         products={products}
         campaigns={model.data.campaigns}

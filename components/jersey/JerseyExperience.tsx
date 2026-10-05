@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { CategoryHero } from "@/components/public/CategoryHero";
 import { ResponsivePicture } from "@/components/ResponsivePicture";
 import { jerseyRowsByGroup, jerseySectionItems, resolvedJerseySections, validJerseyHref } from "@/lib/jersey-experience";
 import type { CmsBanner, PageHeroContent, PublicContent, ServiceCategory } from "@/lib/types";
@@ -32,14 +33,19 @@ export function JerseyExperience({ content, hero, categories }: { content: Publi
 
   return (
     <div className="bg-white text-[#111]">
-      <header className="border-b border-black/10">
-        <div className="section-shell grid items-center gap-5 py-5 md:grid-cols-[minmax(0,1fr)_minmax(280px,0.9fr)] md:gap-9 md:py-7">
-          <div><p className="text-xs font-semibold uppercase tracking-[0.12em] text-black/50">{hero?.label || "DEBRODER JERSEY"}</p><h1 className="mt-2 text-3xl font-semibold tracking-tight sm:text-4xl">{hero?.title || "Jersey untuk tim dan komunitas"}</h1><p className="mt-3 max-w-xl text-sm leading-6 text-black/65 sm:text-base">{hero?.subtitle || "Pilih jersey siap beli untuk tim Anda, atau susun kebutuhan custom melalui konfigurator khusus."}</p></div>
-          {hero?.image_url ? <div className="relative aspect-[16/8] overflow-hidden bg-[#f1f1ee] md:aspect-[16/9]"><ResponsivePicture desktopSrc={hero.image_url} mobileSrc={hero.mobile_image_url || hero.image_url} alt={hero.image_alt || ""} className="h-full w-full" desktopObjectPosition={hero.object_position} mobileObjectPosition={hero.mobile_object_position || hero.object_position} objectFit={hero.object_fit || "cover"} desktopZoom={hero.focal_zoom} mobileZoom={hero.mobile_focal_zoom} /></div> : null}
-        </div>
-      </header>
+      <CategoryHero
+        desktopImage={hero?.image_url}
+        mobileImage={hero?.mobile_image_url}
+        alt={hero?.image_alt || "Jersey DEBRODER"}
+        seoTitle="Jersey DEBRODER"
+        objectPosition={hero?.object_position}
+        mobileObjectPosition={hero?.mobile_object_position}
+        objectFit={hero?.object_fit}
+        imageZoom={hero?.focal_zoom}
+        mobileImageZoom={hero?.mobile_focal_zoom}
+      />
 
-      <section className="section-shell py-7 sm:py-9" aria-label="Jelajahi Jersey">
+      <section className="section-shell category-hero-following pb-7 sm:pb-9" aria-label="Jelajahi Jersey">
         <div className="grid gap-3 sm:grid-cols-2">
           <Link href="/jersey/shop" className="flex min-h-24 items-center justify-between gap-4 border border-black/15 px-5 py-4 transition hover:border-black"><span><span className="block text-xs text-black/50">Ready Stock</span><span className="mt-1 block text-lg font-semibold">Belanja Jersey</span></span><span aria-hidden="true" className="text-xl">→</span></Link>
           <Link href="/jersey/configurator" className="flex min-h-24 items-center justify-between gap-4 border border-black/15 px-5 py-4 transition hover:border-black"><span><span className="block text-xs text-black/50">Konfigurasi untuk tim</span><span className="mt-1 block text-lg font-semibold">Custom Jersey</span></span><span aria-hidden="true" className="text-xl">→</span></Link>
