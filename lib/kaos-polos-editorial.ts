@@ -5,6 +5,7 @@ import {
 } from "@/lib/product-gallery";
 import {
   matchesProductType,
+  matchesProductTypeFromDetails,
   type ProductTypeOption
 } from "@/lib/product-taxonomy";
 import type {
@@ -12,6 +13,7 @@ import type {
   ProductVariant,
   ProductVariantImage
 } from "@/lib/types";
+import type { CatalogPageFiltersViewModel } from "@/lib/catalog-page/model";
 
 export type KaosEditorialProductLink = {
   product: Product;
@@ -120,6 +122,42 @@ export function kaosFeaturedProducts(
       imageUrl: canonicalProductPrimaryImage(product),
       imageAlt: product.image_alt || product.nama
     }));
+}
+
+export function availableKaosTypeOptions(
+  products: Product[],
+  options: ProductTypeOption[]
+) {
+  return options.filter((option) =>
+    products.some((product) =>
+      isActiveProduct(product)
+      && matchesProductTypeFromDetails(product, option.value, options)
+    )
+  );
+}
+
+export function kaosTypeFilterHref(
+  selectedType: string,
+  filters: CatalogPageFiltersViewModel
+) {
+  const params = new URLSearchParams();
+  const values: Array<[string, string, string]> = [
+    ["q", filters.query, ""],
+    ["color", filters.color, "all"],
+    ["size", filters.size, "all"],
+    ["price", filters.price, "all"],
+    ["status", filters.status, "all"],
+    ["label", filters.label, "all"],
+    ["sort", filters.sort, "order"]
+  ];
+
+  if (selectedType !== "all") params.set("type", selectedType);
+  values.forEach(([key, value, defaultValue]) => {
+    if (value && value !== defaultValue) params.set(key, value);
+  });
+
+  const query = params.toString();
+  return `/kaos-polos${query ? `?${query}` : ""}#catalog`;
 }
 
 export function kaosNeedDiscovery(

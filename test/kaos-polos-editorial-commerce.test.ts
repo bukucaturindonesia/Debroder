@@ -1,10 +1,14 @@
 import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 import {
+  availableKaosTypeOptions,
   canonicalProductEditorialImage,
   kaosColorDiscovery,
-  kaosEditorialProducts
+  kaosEditorialProducts,
+  kaosTypeFilterHref
 } from "@/lib/kaos-polos-editorial";
+import { kaosTypeOptions } from "@/lib/product-taxonomy";
+import type { CatalogPageFiltersViewModel } from "@/lib/catalog-page/model";
 import type { Product } from "@/lib/types";
 
 const read = (path: string) => readFileSync(path, "utf8");
@@ -41,32 +45,38 @@ describe("Kaos Polos owner editorial revision", () => {
     expect(experience).toContain("<ProductCatalog");
   });
 
-  it("keeps the owner section order and removes product-derived Featured", () => {
+  it("puts product discovery before the existing CMS editorial sections", () => {
     const experience = read("components/KaosPolosEditorialExperience.tsx");
     const hero = experience.indexOf('data-kaos-blueprint-section="hero"');
+    const quickCategory = experience.indexOf('data-kaos-blueprint-section="quick-category"');
+    const catalog = experience.indexOf('data-kaos-blueprint-section="catalog"');
     const featured = experience.indexOf('data-kaos-blueprint-section="featured"');
     const campaign = experience.indexOf('data-kaos-blueprint-section="campaign"');
-    const categories = experience.indexOf('data-kaos-blueprint-section="categories"');
-    const catalog = experience.indexOf('data-kaos-blueprint-section="catalog"');
+    const custom = experience.indexOf('data-kaos-blueprint-section="custom-cta"');
 
     expect(hero).toBeGreaterThan(-1);
-    expect(featured).toBeGreaterThan(hero);
+    expect(quickCategory).toBeGreaterThan(hero);
+    expect(catalog).toBeGreaterThan(quickCategory);
+    expect(featured).toBeGreaterThan(catalog);
     expect(campaign).toBeGreaterThan(featured);
-    expect(categories).toBeGreaterThan(campaign);
-    expect(catalog).toBeGreaterThan(categories);
+    expect(custom).toBeGreaterThan(campaign);
     expect(experience).toContain('"featured_editorial"');
     expect(experience).not.toContain("kaosFeaturedProducts");
     expect(experience).not.toContain("productDetailHref");
+    expect(experience).toContain("Pilih bahan, cetak desain, dan produksi bersama DEBRODER.");
+    expect(experience).toContain("href={customHref}>Mulai Custom</Link>");
   });
 
-  it("reduces the hero height by forty percent and its primary typography by twenty percent", () => {
+  it("uses a compact responsive CMS artwork hero without overlay typography", () => {
+    const experience = read("components/KaosPolosEditorialExperience.tsx");
     const css = read("app/globals.css");
 
-    expect(css).toContain("height: clamp(312px, 30vw, 456px)");
-    expect(css).toContain("font-size: clamp(2.6rem, 6.8vw, 7rem)");
-    expect(css).toContain("font-size: clamp(1.2rem, 2.56vw, 2.4rem)");
-    expect(css).toContain("height: min(43.2svh, 372px)");
-    expect(css).toContain("min-height: 288px");
+    expect(css).toContain("height: clamp(350px, 30vw, 420px)");
+    expect(css).toContain("height: clamp(240px, 64vw, 320px)");
+    expect(experience).toContain("desktopObjectPosition={hero.objectPosition}");
+    expect(experience).toContain("mobileObjectPosition={hero.mobileObjectPosition}");
+    expect(experience).not.toContain("kaos-blueprint-hero-title");
+    expect(experience).toContain('<h1 className="kaos-category-title">Kaos Polos</h1>');
   });
 
   it("uses CMS Featured cards with zero gap and regular-weight Featured heading", () => {
@@ -98,26 +108,61 @@ describe("Kaos Polos owner editorial revision", () => {
     expect(css).toContain("height: clamp(190px, 52vw, 240px)");
   });
 
-  it("presents Pilih Kategori with the homepage-style native rail and visible scrollbar", () => {
+  it("shows only PIM-backed quick types and keeps combined filter state in chip links", () => {
     const experience = read("components/KaosPolosEditorialExperience.tsx");
+    const products = [
+      product({ nama: "NSA Premium Tee", slug: "nsa-premium" }),
+      product({ id: "cotton", slug: "cotton-24s", nama: "Cotton Combed 24s" })
+    ];
+    const filters: CatalogPageFiltersViewModel = {
+      query: "tee",
+      color: "black",
+      size: "m",
+      price: "under-50",
+      label: "all",
+      sort: "price-low",
+      productType: "all",
+      status: "ready-stock"
+    };
 
-    expect(experience).toContain("Pilih Kategori");
-    expect(experience).not.toContain("Berdasarkan Kategori");
-    expect(experience).toContain('ScrollButtons containerId="kaos-category-carousel"');
-    expect(experience).toContain("category-carousel premium-scrollbar");
-    expect(experience).toContain("snap-x snap-mandatory overflow-x-auto pb-6");
-    expect(experience).toContain("aspect-[4/5]");
+    expect(availableKaosTypeOptions(products, kaosTypeOptions).map((item) => item.value))
+      .toEqual(["premium-cotton", "cotton-combed"]);
+    expect(experience).toContain("availableKaosTypeOptions(products, productTypeOptions)");
+    expect(experience).toContain('aria-label="Pilih tipe kaos"');
+    expect(experience).toContain("kaos-category-type-link");
+    expect(experience).not.toContain("kaos-category-carousel");
+    expect(kaosTypeFilterHref("soft-tee", filters)).toBe(
+      "/kaos-polos?type=soft-tee&q=tee&color=black&size=m&price=under-50&status=ready-stock&sort=price-low#catalog"
+    );
+    expect(kaosTypeFilterHref("all", filters)).toBe(
+      "/kaos-polos?q=tee&color=black&size=m&price=under-50&status=ready-stock&sort=price-low#catalog"
+    );
+  });
+
+  it("keeps compact filter/sort controls, accessible drawer behavior, and product grid", () => {
+    const catalog = read("components/ProductCatalog.tsx");
+    const css = read("app/globals.css");
+
+    expect(catalog).toContain('aria-label="Urutkan produk"');
+    expect(catalog).toContain("min-h-11 rounded-none");
+    expect(catalog).toContain("lg:grid-cols-[17rem_minmax(0,1fr)]");
+    expect(catalog).toContain('role="dialog"');
+    expect(catalog).toContain("aria-modal=\"true\"");
+    expect(catalog).toContain("lg:grid-cols-3 lg:gap-x-4 lg:gap-y-8");
+    expect(catalog).toContain("syncUrlState");
+    expect(catalog).toContain("Lihat Lebih Banyak");
+    expect(css).toContain("aspect-ratio: 4 / 5");
   });
 
   it("keeps three desktop product columns while the filter sidebar is open", () => {
     const catalog = read("components/ProductCatalog.tsx");
     const css = read("app/globals.css");
 
-    expect(catalog).toContain("lg:grid-cols-3 lg:gap-x-4 lg:gap-y-12");
+    expect(catalog).toContain("lg:grid-cols-3 lg:gap-x-4 lg:gap-y-8");
     expect(catalog).toContain("lg:grid-cols-[17rem_minmax(0,1fr)]");
     expect(catalog).not.toContain('filtersOpen ? "lg:grid-cols-2" : "lg:grid-cols-3"');
     expect(catalog).toContain("isKaosEditorial");
-    expect(catalog).toContain("lg:grid-cols-3 lg:gap-x-4 lg:gap-y-12");
+    expect(catalog).toContain("lg:grid-cols-3 lg:gap-x-4 lg:gap-y-8");
     expect(catalog).toContain('{visible.length} Produk');
     expect(catalog).not.toContain('{title} ({visible.length})');
     expect(css).toContain("aspect-ratio: 4 / 5");
@@ -152,9 +197,11 @@ describe("Kaos Polos owner editorial revision", () => {
     const css = read("app/globals.css");
 
     expect(css).toContain("--kaos-section-gap: var(--section-space)");
-    expect(css).toContain("--kaos-end-space: var(--section-space-end)");
     expect(css).toContain("padding-top: var(--kaos-section-gap)");
-    expect(css).toContain("padding-bottom: var(--kaos-end-space)");
+    expect(css).toContain(".kaos-blueprint-intro-section {");
+    expect(css).toContain("padding-top: clamp(24px, 2.5vw, 40px)");
+    expect(css).toContain(".kaos-blueprint-catalog-section {");
+    expect(css).toContain("padding-top: 20px");
     expect(css).not.toContain(".kaos-blueprint-section {\n  padding-block:");
   });
 

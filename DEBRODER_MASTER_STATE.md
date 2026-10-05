@@ -2071,3 +2071,10 @@ Owner selected donor bee4bc4e7feb847394bd2e0c37816943d70e3185 and superseded the
 ## VERCEL BUILD FIX — LOCAL VERIFIED — 2026-10-04
 
 Current branch release/debroder-id-v1 / HEAD 3abb46d676703df5e3b4d0e323d3775f5e624560. Owner's Vercel log proves prebuild typecheck failed in the new image-check E2E callback. Explicit HTMLImageElement narrowing fixes it. Local stash conflicts resolved with backups while preserving full storefront. Typecheck, lint, targeted 33/33 failed-test rerun and 142-page production build passed. Full run had 1064 passed/3 CRLF-sensitive failures, subsequently corrected only in test readers and retested; no full rerun. No push/deploy/DB/env/DNS changes. Remote build remains unverified until a corrected commit is published with authorization. See current handoff.
+
+
+## OWNER REQUEST — KAOS POLOS COMMERCE-FIRST PRESENTATION — 2026-10-05
+
+- The owner's explicit /kaos-polos redesign request authorizes a presentation-order change on that route: hero, product-backed quick type links, catalog, CMS editorial/campaign content, then the existing custom destination. It does not alter frozen transaction, production, inventory, PIM, CMS ownership, or route rules.
+- Local implementation is on codex/cititex-kaos-polos-v1, based at HEAD 811d97099703b96e9fa22f5838fb7385e1e0755a. Typecheck, lint, full Vitest, and production build passed locally; lint retains 36 warnings. Runtime shows the real zero-product empty state because no local PIM products are configured.
+- Database/migration, staging, production, deployment, push, and commit changes: none. This checkpoint does not change overall release readiness or authorize v1.3. See the latest task section in CURRENT_PHASE_HANDOFF.md.

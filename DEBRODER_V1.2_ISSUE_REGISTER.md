@@ -2234,3 +2234,11 @@ See **VISUAL RESTORATION EVIDENCE / OPEN VERIFICATION LIMITS** above. Local visu
 - Owner log at SHA 3abb46d identifies TS2339 in e2e/brochure.spec.ts:18. HTMLImageElement type guard resolves it without disabling checks. Final local production build exit 0/142 pages, typecheck and lint passed.
 - Five local stale-stash conflicts resolved; no unmerged index entries. Original snapshots retained. Three previous migration/replay failures were CRLF literal mismatches; test-reader normalization plus targeted 33/33 pass closes the local newline blocker without SQL/database edits.
 - OPEN: corrected payload not committed/pushed/deployed; deployed build success unverified. Existing staged work requires deliberate payload selection. 36 existing lint warnings remain. Populated PIM/auth/transaction verification remains outside this build fix.
+
+
+## KAOS POLOS PRESENTATION CHECKPOINT — 2026-10-05
+
+- Owner-directed commerce-first presentation is implemented locally on branch codex/cititex-kaos-polos-v1; universal /produk/[slug], canonical PIM ownership, CMS content ownership, existing filter model, and custom route are retained. No new business or database issue was introduced.
+- Local typecheck, lint (0 errors/36 warnings), full Vitest (155 files/1068 tests), and production build (142 pages) passed. Browser confirmed price filter URL state and reset at the available 722×768 in-app viewport.
+- OPEN VERIFICATION LIMIT: local PIM is empty; populated cards and CMS campaign media were not runtime verified. The browser integration did not expose viewport override and the agent-browser CLI is unavailable, so the requested 1600/1440/1280/1024/768/430/390/360 screenshot matrix is NOT RUN. Desktop and remaining exact-size responsive screenshots are not evidenced. Do not mark this task or project COMPLETE based on implementation/build.
+- No DB/migration, remote, deployment, or environment mutation. Continue from the task checkpoint in CURRENT_PHASE_HANDOFF.md; finish exact viewport visual review when a viewport-capable browser is available.

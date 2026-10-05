@@ -1,4 +1,4 @@
-﻿# CURRENT PHASE HANDOFF
+# CURRENT PHASE HANDOFF
 
 Date: 27 July 2026 (Asia/Makassar)
 
@@ -6839,3 +6839,29 @@ HANDOFF UPDATED: YES — CURRENT_PHASE_HANDOFF.md
 - Exact state: Vercel-reported TS blocker fixed and build stages locally verified; worktree includes staged pre-existing/resolved brochure edits plus unstaged build/test/documentation fixes. GO for owner code review, NO claim of deployed success or overall COMPLETE. Exact next action/resume: review/select the commit payload (do not blindly include pre-existing staged work), then only with owner authorization commit/push and observe Vercel build on the new SHA. Do not repeat passed checks unless source changes; retain storefront and later W3/backend authority.
 
 HANDOFF UPDATED: YES — CURRENT_PHASE_HANDOFF.md
+
+
+## LATEST TASK CHECKPOINT — KAOS POLOS COMMERCE-FIRST REDESIGN — 2026-10-05 11:25 +08:00
+
+1. Date/time: 2026-10-05 11:25 Asia/Makassar.
+2. Branch: codex/cititex-kaos-polos-v1.
+3. HEAD: 811d97099703b96e9fa22f5838fb7385e1e0755a (no commit created; task changes remain uncommitted).
+4. Task/phase: Owner-requested /kaos-polos category presentation redesign, local v1.2 stabilization worktree.
+5. Objective: Make category shopping/product discovery the primary experience while honoring Landing/Commerce/Admin blueprint boundaries and existing route/data authority.
+6. Completed: Reordered /kaos-polos to hero → compact intro and PIM-backed type links → ProductCatalog → available CMS featured/editorial/campaign blocks → existing custom CTA. CMS artwork has no overlaid duplicate copy; retained mobile/desktop artwork properties. Type links retain other catalog URL filters. Kaos type detection uses product detail PIM fields rather than the shared category label. Filter controls/grid spacing are compacted. Existing PublicShell/header/mobile navigation and universal /produk/[slug] remain.
+7. Not completed: Real PIM-populated product cards, published CMS campaign combinations, desktop runtime screenshot, and the exact eight-size visual matrix (1600, 1440, 1280, 1024, 768, 430, 390, 360) remain unverified. Browser console log inspection was not available. Current in-app browser emitted screenshots inline at 722×768; no screenshot image files were saved.
+8. Files changed: app/globals.css; components/KaosPolosEditorialExperience.tsx; components/ProductCatalog.tsx; lib/kaos-polos-editorial.ts; lib/product-taxonomy.ts; test/kaos-polos-editorial-commerce.test.ts; this handoff; DEBRODER_MASTER_STATE.md; DEBRODER_V1.2_ISSUE_REGISTER.md.
+9. Database/migrations: none changed or attempted; migration status not queried. No schema, SQL, RLS, seed, or data changes.
+10. Remote/staging/production: no contact or mutation; no commit, push, Vercel deploy, DNS, or production action. Local production build server is running at http://localhost:3102/kaos-polos for review; this is not a deployment.
+11. Tests executed: focused Kaos suite (2 files / 16 tests); full Vitest suite; TypeScript tsc --noEmit; ESLint across repository; Next production build; git diff --check; read-only local browser review and filter/reset interaction.
+12. Results: focused 16/16 passed; full Vitest 155 files / 1068 tests passed; typecheck passed; lint passed with 0 errors and 36 existing warnings; build passed and generated 142/142 pages. Runtime showed the expected 0 Produk empty state, mobile navigation, /custom CTA, filter drawer controls, working ?price=under-50 state, and reset back to /kaos-polos. In-app viewport was 722×768 only.
+13. Build/typecheck/lint: all executed and passed using installed local Node CLIs. pnpm could not complete its own bootstrap: ordinary execution hit OneDrive path EPERM; escalated typecheck invocation aborted before scripts because pnpm tried to remove/reinstall modules without a TTY. No dependency or lockfile changes were made. The direct equivalent installed local CLIs above passed.
+14. Security/data integrity: no new security or data-integrity finding; PIM remains the only product source; no fixture/fake product added; no secret, auth, payment, database, or role code changed.
+15. Known warnings/limits: ESLint reports 36 warnings. Local runtime has no PIM product records, so product-backed type chips/card interactions and CMS campaign content are absent. Browser integration exposes no viewport control; agent-browser CLI was not installed. Desktop and exact-width visual matrix NOT RUN; no browser console logs were captured. Screenshot captures are visible in the task conversation only, not saved to files.
+16. Remaining blockers: complete exact desktop/tablet/mobile viewport matrix and visual review in a browser with a controllable viewport; use an explicitly chosen read-only environment if populated PIM/CMS review is required. No release/deployment gate was run.
+17. Owner decisions: the user's explicit redesign request approves superseding /kaos-polos presentation hierarchy only. It does not revise frozen commerce, internal operations, transaction, inventory, PIM/CMS ownership, or canonical route rules.
+18. Exact current state: branch codex/cititex-kaos-polos-v1, HEAD 811d97099703b96e9fa22f5838fb7385e1e0755a, six app/test files modified and three governance records appended, no staging. Local implementation and code/build gates pass; responsive screenshot evidence is partial. No database/remote mutation. Not deployed and not COMPLETE.
+19. Exact next action: owner reviews local /kaos-polos preview and inline mobile capture. When viewport emulation is available, capture and inspect 1600/1440/1280/1024/768/430/390/360, checking overflow, hero/category navigation, catalog controls/grid, empty/loading/error states, and browser console. Verify populated PIM/CMS only against an explicitly selected non-production read-only environment; do not fabricate records or deploy as part of this checkpoint.
+20. Resume instruction: resume on codex/cititex-kaos-polos-v1 at the HEAD above; preserve the six-file diff and current local preview at port 3102. First check git status and this handoff. Finish the responsive visual evidence without repeating the passed unit/type/lint/build gates unless source changes. Then update this handoff to the resulting state. Do not claim project COMPLETE or change release/v1.3 status.
+
+DATABASE / RELEASE DETAILS: target is the local checkout only; project/environment identity is no Supabase/staging/production project selected. Migrations attempted/applied: NO/NO; first failing migration: NONE; database mutation: NO; staging mutation: NO; production mutation: NO; rollback: NOT APPLICABLE; safe resume point: local branch and uncommitted source diff above.

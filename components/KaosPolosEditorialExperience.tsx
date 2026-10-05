@@ -1,15 +1,14 @@
 import Link from "next/link";
 import { ProductCatalog } from "@/components/ProductCatalog";
 import { ResponsivePicture } from "@/components/ResponsivePicture";
-import { SafeImage } from "@/components/SafeImage";
-import { ScrollButtons } from "@/components/ScrollButtons";
 import type {
   CatalogPageCampaignViewModel,
   CatalogPageModel
 } from "@/lib/catalog-page/model";
-import { kaosNeedDiscovery } from "@/lib/kaos-polos-editorial";
-
-const PAGE_PATH = "/kaos-polos";
+import {
+  availableKaosTypeOptions,
+  kaosTypeFilterHref
+} from "@/lib/kaos-polos-editorial";
 
 function campaignOfType(
   campaigns: CatalogPageCampaignViewModel[],
@@ -180,7 +179,7 @@ export function KaosPolosEditorialExperience({
     "featured",
     "poster_carousel"
   ).slice(0, 2);
-  const categoryCards = kaosNeedDiscovery(products, productTypeOptions, 8);
+  const quickTypes = availableKaosTypeOptions(products, productTypeOptions);
   const bannerLeft = campaignOfType(
     campaigns,
     "banner_editorial_left",
@@ -201,15 +200,15 @@ export function KaosPolosEditorialExperience({
       )
     : bannerRightCandidate;
   const customHref = customDestination || "/custom";
-  const heroHasImage = Boolean(hero.imageUrl);
 
   return (
     <div className="kaos-editorial-page bg-white text-[#111]">
-      <section
-        data-kaos-blueprint-section="hero"
-        className="kaos-blueprint-hero relative overflow-hidden bg-[#deded9]"
-      >
-        {hero.imageUrl ? (
+      {hero.imageUrl ? (
+        <section
+          data-kaos-blueprint-section="hero"
+          aria-label="Hero Kaos Polos"
+          className="kaos-blueprint-hero relative overflow-hidden bg-[#f0f0ed]"
+        >
           <ResponsivePicture
             desktopSrc={hero.imageUrl}
             mobileSrc={hero.mobileImageUrl || hero.imageUrl}
@@ -222,46 +221,84 @@ export function KaosPolosEditorialExperience({
             desktopZoom={hero.imageZoom}
             mobileZoom={hero.mobileImageZoom}
           />
-        ) : null}
-        {heroHasImage ? (
-          <span
-            aria-hidden="true"
-            className="absolute inset-0 bg-gradient-to-t from-black/55 via-black/10 to-transparent"
-          />
-        ) : null}
+        </section>
+      ) : null}
 
-        <div
-          className={`section-shell relative z-10 flex h-full items-end justify-center pb-8 text-center sm:pb-10 lg:pb-12 ${
-            heroHasImage ? "text-white" : "text-black"
-          }`}
-        >
-          <div className="max-w-5xl">
-            <p className={`kaos-blueprint-hero-label font-semibold uppercase tracking-[0.18em] ${heroHasImage ? "text-white/75" : "text-black/55"}`}>
-              {hero.label || "Everyday essentials"}
-            </p>
-            <h1 className="kaos-blueprint-hero-title mt-2 font-semibold leading-[0.86] tracking-[-0.06em]">
-              Kaos Polos
-            </h1>
-            {hero.title && hero.title.toLowerCase() !== "kaos polos" ? (
-              <p className="kaos-blueprint-hero-subtitle mx-auto mt-4 max-w-4xl font-semibold leading-[1.02] tracking-[-0.035em]">
-                {hero.title}
-              </p>
+      <section
+        data-kaos-blueprint-section="quick-category"
+        className="kaos-blueprint-intro-section"
+      >
+        <div className="section-shell">
+          <div className="kaos-category-intro-content">
+            <div className="min-w-0">
+              {hero.label ? <p className="kaos-blueprint-eyebrow">{hero.label}</p> : null}
+              <h1 className="kaos-category-title">Kaos Polos</h1>
+              {hero.description || (hero.title && hero.title.toLowerCase() !== "kaos polos") ? (
+                <p className="kaos-category-subcopy">
+                  {hero.description || hero.title}
+                </p>
+              ) : null}
+            </div>
+            {hero.ctaText && hero.ctaHref ? (
+              <Link href={hero.ctaHref} className="kaos-category-cms-cta">
+                {hero.ctaText}
+              </Link>
             ) : null}
-            {hero.description ? (
-              <p className={`kaos-blueprint-hero-description mx-auto mt-3 max-w-2xl ${heroHasImage ? "text-white/80" : "text-black/65"}`}>
-                {hero.description}
-              </p>
-            ) : null}
+          </div>
+
+          <nav className="kaos-category-type-nav" aria-label="Pilih tipe kaos">
             <Link
-              href={hero.ctaHref || `${PAGE_PATH}#catalog`}
-              className={`kaos-blueprint-hero-cta mt-5 inline-flex items-center justify-center font-semibold transition ${
-                heroHasImage
-                  ? "bg-white text-black hover:bg-white/85"
-                  : "bg-black text-white hover:bg-black/80"
-              }`}
+              href={kaosTypeFilterHref("all", filters)}
+              aria-current={filters.productType === "all" ? "page" : undefined}
+              className="kaos-category-type-link"
             >
-              {hero.ctaText || "Jelajahi"}
+              Semua
             </Link>
+            {quickTypes.map((option) => (
+              <Link
+                key={option.value}
+                href={kaosTypeFilterHref(option.value, filters)}
+                aria-current={filters.productType === option.value ? "page" : undefined}
+                className="kaos-category-type-link"
+              >
+                {option.label}
+              </Link>
+            ))}
+          </nav>
+        </div>
+      </section>
+
+      <section
+        id="catalog"
+        data-kaos-blueprint-section="catalog"
+        className="kaos-blueprint-catalog-section scroll-mt-24"
+        aria-labelledby="kaos-catalog-heading"
+      >
+        <div className="section-shell">
+          <h2 id="kaos-catalog-heading" className="sr-only">
+            Produk kaos polos
+          </h2>
+          <div>
+            <ProductCatalog
+              key={`${filters.productType}|${filters.color}|${filters.size}|${filters.price}|${filters.status}|${filters.label}|${filters.sort}`}
+              products={products}
+              title="Kaos Polos"
+              showCategoryFilter={false}
+              initialColor={filters.color}
+              initialSize={filters.size}
+              initialPrice={filters.price}
+              initialLabel={filters.label}
+              initialSort={filters.sort}
+              initialProductType={filters.productType}
+              initialStatus={filters.status}
+              productTypeOptions={productTypeOptions}
+              typeFilterLabel="Semua tipe kaos"
+              showStatusFilter
+              showSizeFilter
+              catalogStyle="category"
+              catalogLayout="kaos-editorial"
+              syncUrlState
+            />
           </div>
         </div>
       </section>
@@ -303,93 +340,17 @@ export function KaosPolosEditorialExperience({
         </section>
       ) : null}
 
-      {categoryCards.length ? (
-        <section
-          data-kaos-blueprint-section="categories"
-          className="kaos-blueprint-section"
-          aria-labelledby="kaos-category-heading"
-        >
-          <div className="section-shell kaos-blueprint-category-shell">
-            <div className="flex items-center justify-between gap-4">
-              <h2 id="kaos-category-heading" className="kaos-blueprint-section-label">
-                Pilih Kategori
-              </h2>
-              <ScrollButtons containerId="kaos-category-carousel" largeTargets />
-            </div>
-            <div
-              id="kaos-category-carousel"
-              tabIndex={0}
-              aria-label="Pilih kategori Kaos Polos"
-              className={`kaos-blueprint-category-rail category-carousel premium-scrollbar mt-6 flex snap-x snap-mandatory overflow-x-auto pb-6 ${
-                categoryCards.length <= 2 ? "kaos-blueprint-category-rail--compact" : ""
-              }`}
-            >
-              {categoryCards.map(({ imageUrl, option, product }) => (
-                <article
-                  key={option.value}
-                  className="kaos-blueprint-category-card min-w-0 shrink-0 snap-start"
-                >
-                  <Link
-                    href={`${PAGE_PATH}?type=${encodeURIComponent(option.value)}#catalog`}
-                    className="group block"
-                    aria-label={`Lihat kategori ${option.label}`}
-                  >
-                    <div className="kaos-blueprint-category-media relative aspect-[4/5] overflow-hidden bg-[#ecece8]">
-                      <SafeImage
-                        src={imageUrl}
-                        alt={`${option.label} — ${product.nama}`}
-                        className="absolute inset-0 h-full w-full object-cover transition duration-500 group-hover:scale-[1.015]"
-                        sizes="(min-width: 1024px) 31vw, (min-width: 640px) 44vw, 78vw"
-                        objectFit={product.object_fit}
-                        objectPosition={product.object_position}
-                      />
-                    </div>
-                    <h3 className="mt-3 text-base font-medium tracking-[-0.01em] text-[#111] sm:text-lg">
-                      {option.label}
-                    </h3>
-                  </Link>
-                </article>
-              ))}
-            </div>
-          </div>
-        </section>
-      ) : null}
-
       <section
-        id="catalog"
-        data-kaos-blueprint-section="catalog"
-        className="kaos-blueprint-catalog-section scroll-mt-24"
-        aria-labelledby="kaos-catalog-heading"
+        data-kaos-blueprint-section="custom-cta"
+        className="kaos-blueprint-custom-section"
+        aria-labelledby="kaos-custom-heading"
       >
-        <div className="section-shell">
-          <h2
-            id="kaos-catalog-heading"
-            className="kaos-blueprint-section-label kaos-blueprint-heading-normal"
-          >
-            Kaos Polos
-          </h2>
-          <div className="mt-5 lg:mt-7">
-            <ProductCatalog
-              key={`${filters.productType}|${filters.color}|${filters.size}|${filters.price}|${filters.status}|${filters.label}|${filters.sort}`}
-              products={products}
-              title="Kaos Polos"
-              showCategoryFilter={false}
-              initialColor={filters.color}
-              initialSize={filters.size}
-              initialPrice={filters.price}
-              initialLabel={filters.label}
-              initialSort={filters.sort}
-              initialProductType={filters.productType}
-              initialStatus={filters.status}
-              productTypeOptions={productTypeOptions}
-              typeFilterLabel="Semua tipe kaos"
-              showStatusFilter
-              showSizeFilter
-              catalogStyle="category"
-              catalogLayout="kaos-editorial"
-              syncUrlState
-            />
+        <div className="section-shell kaos-custom-cta-content">
+          <div>
+            <h2 id="kaos-custom-heading">BUTUH KAOS CUSTOM?</h2>
+            <p>Pilih bahan, cetak desain, dan produksi bersama DEBRODER.</p>
           </div>
+          <Link href={customHref}>Mulai Custom</Link>
         </div>
       </section>
     </div>
