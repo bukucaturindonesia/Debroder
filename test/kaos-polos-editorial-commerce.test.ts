@@ -47,7 +47,7 @@ describe("Kaos Polos owner editorial revision", () => {
 
   it("puts product discovery before the existing CMS editorial sections", () => {
     const experience = read("components/KaosPolosEditorialExperience.tsx");
-    const hero = experience.indexOf('data-kaos-blueprint-section="hero"');
+    const hero = experience.indexOf('<CategoryHero');
     const quickCategory = experience.indexOf('data-kaos-blueprint-section="quick-category"');
     const catalog = experience.indexOf('data-kaos-blueprint-section="catalog"');
     const featured = experience.indexOf('data-kaos-blueprint-section="featured"');
@@ -73,7 +73,7 @@ describe("Kaos Polos owner editorial revision", () => {
 
     expect(css).toContain("height: clamp(350px, 30vw, 420px)");
     expect(css).toContain("height: clamp(240px, 64vw, 320px)");
-    expect(experience).toContain("desktopObjectPosition={hero.objectPosition}");
+    expect(experience).toContain("objectPosition={hero.objectPosition}");
     expect(experience).toContain("mobileObjectPosition={hero.mobileObjectPosition}");
     expect(experience).not.toContain("kaos-blueprint-hero-title");
     expect(experience).toContain('<h1 className="kaos-category-title">Kaos Polos</h1>');

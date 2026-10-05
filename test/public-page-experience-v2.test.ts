@@ -28,7 +28,7 @@ describe("public page experience V2", () => {
     expect(discovery).toContain("products.some((product) => matchesProductType");
     expect(discovery).toContain("backedProductTypeOptions.map");
     expect(discovery.indexOf('id="catalog"')).toBeLessThan(discovery.indexOf('aria-label="Cerita dan campaign"'));
-    expect(page).toContain("CommercePageIntro");
+    expect(page).toContain("CategoryHero");
     expect(catalog).toContain("md:grid-cols-3");
     expect(catalog).toContain("lg:grid-cols-4");
     expect(batches).toContain("return 12");
