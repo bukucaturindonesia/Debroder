@@ -1754,6 +1754,15 @@ Last updated: 28 July 2026 (Asia/Makassar)
 
 **HANDOFF UPDATED: YES — `CURRENT_PHASE_HANDOFF.md`**
 
+## VISUAL RESTORATION EVIDENCE / OPEN VERIFICATION LIMITS — 2026-10-04 00:37:21 +08:00
+
+- **CLOSED LOCALLY — brochure visual regression:** the five public pages now retain the owner-selected `d9b1fa8893c2068a5fb7e6a4e757fc2c6bb9e5e5` presentation while keeping zero products, zero cards, zero public WhatsApp links, five sitemap URLs, product-detail 404s, the official graphical logo, and `hello@debroder.id`. Final Playwright is 7/7 across 390/768/1440/1920 with 20 full-page screenshots and no horizontal overflow.
+- **BLOCKED — exact donor/current SHA diff:** requested current SHA `4354f8efedb0f3db36102535c6de518c7719330f` is not present locally or on `origin`; direct fetch returned `not our ref`. The result is therefore verified against the available donor and explicit owner release contract, not an unavailable commit tree.
+- **OPEN — unrelated full regression failures:** full Vitest completed at 1066/1069 with three failures in existing migration/replay text contracts: `baseline-reconstruction`, `security-function-reachability`, and `payment-adjustments-archive-contract`. Visual/zero-product focused tests, browser suite, typecheck, lint, and production build passed. Resolve these failures only under the owning database/security audit; no SQL or migration change was made here.
+- No database/migration, Supabase, staging/production, Vercel environment/deployment, DNS, commit, or push action occurred. Detailed evidence and exact resume instructions are in `CURRENT_PHASE_HANDOFF.md`.
+
+**HANDOFF UPDATED: YES — `CURRENT_PHASE_HANDOFF.md`**
+
 ## W3-PIM-003 — Staging Product Media Storage Contract Blocker — 2026-08-24 22:47:26 +08:00
 
 - Severity: **BLOCKER**.
@@ -2206,3 +2215,30 @@ Last updated: 28 July 2026 (Asia/Makassar)
 - **OPEN — deployed Preview verification:** owner reported a Preview, but no URL or deployment identity was supplied. Connected Vercel account still exposes only unrelated OKDEAL/zero projects. Auto Preview deployment, deployed SHA, deployed-host logo QA, and Lighthouse are **NOT VERIFIED/NOT RUN**. Obtain the correct DEBRODER Preview URL or account/project access and verify exact SHA before owner-facing deployed acceptance. No production deployment, database/staging/production mutation or contact, DNS, migration, or Wave 4.
 
 **HANDOFF UPDATED: YES — `CURRENT_PHASE_HANDOFF.md`**
+
+## LATEST ISSUE POINTER — VISUAL RESTORATION — 2026-10-04 00:37:21 +08:00
+
+See **VISUAL RESTORATION EVIDENCE / OPEN VERIFICATION LIMITS** above. Local visual/zero-product acceptance is closed for owner review. Two limits remain open: owner-supplied SHA `4354f8efedb0f3db36102535c6de518c7719330f` is unavailable for an exact commit-tree diff, and the full suite has three existing migration/replay text-contract failures outside this scope. No database, remote, or deployment mutation was made.
+
+**HANDOFF UPDATED: YES — `CURRENT_PHASE_HANDOFF.md`**
+
+## STOREFRONT RESTORATION REVIEW LIMITS — 2026-10-04
+
+- CLOSED LOCALLY: brochure takeover of homepage/catalog/PDP and public commerce gating removed under explicit owner decision. Wave 2 donor architecture restored; shared navigation/mobile/cart/account shell and 20 route/viewport checks pass.
+- OPEN: populated PIM product cards/PDP, real CMS media and authenticated account/checkout require configured local/staging data. No fixtures invented and no Supabase data mutation. Screenshots use canonical empty states and brand fallback imagery.
+- OPEN: three existing migration/replay newline assertion failures. Full run had five failures; two font-source assertions corrected and 11-test targeted rerun passed. Do not label full regression PASS.
+- Owner visual approval pending; push/deploy prohibited until approved. See current handoff and restoration audit for exact evidence and safe resume.
+
+## VERCEL TYPECHECK BLOCKER — CLOSED LOCALLY — 2026-10-04
+
+- Owner log at SHA 3abb46d identifies TS2339 in e2e/brochure.spec.ts:18. HTMLImageElement type guard resolves it without disabling checks. Final local production build exit 0/142 pages, typecheck and lint passed.
+- Five local stale-stash conflicts resolved; no unmerged index entries. Original snapshots retained. Three previous migration/replay failures were CRLF literal mismatches; test-reader normalization plus targeted 33/33 pass closes the local newline blocker without SQL/database edits.
+- OPEN: corrected payload not committed/pushed/deployed; deployed build success unverified. Existing staged work requires deliberate payload selection. 36 existing lint warnings remain. Populated PIM/auth/transaction verification remains outside this build fix.
+
+
+## KAOS POLOS PRESENTATION CHECKPOINT — 2026-10-05
+
+- Owner-directed commerce-first presentation is implemented locally on branch codex/cititex-kaos-polos-v1; universal /produk/[slug], canonical PIM ownership, CMS content ownership, existing filter model, and custom route are retained. No new business or database issue was introduced.
+- Local typecheck, lint (0 errors/36 warnings), full Vitest (155 files/1068 tests), and production build (142 pages) passed. Browser confirmed price filter URL state and reset at the available 722×768 in-app viewport.
+- OPEN VERIFICATION LIMIT: local PIM is empty; populated cards and CMS campaign media were not runtime verified. The browser integration did not expose viewport override and the agent-browser CLI is unavailable, so the requested 1600/1440/1280/1024/768/430/390/360 screenshot matrix is NOT RUN. Desktop and remaining exact-size responsive screenshots are not evidenced. Do not mark this task or project COMPLETE based on implementation/build.
+- No DB/migration, remote, deployment, or environment mutation. Continue from the task checkpoint in CURRENT_PHASE_HANDOFF.md; finish exact viewport visual review when a viewport-capable browser is available.

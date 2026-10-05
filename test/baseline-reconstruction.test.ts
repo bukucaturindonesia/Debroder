@@ -8,7 +8,7 @@ const manifestPath = "DEBRODER_FRESH_DATABASE_REPLAY_MANIFEST.md";
 const ledgerPath = "DEBRODER_BASELINE_COVERAGE_LEDGER.md";
 
 const baseline = readFileSync(baselinePath, "utf8");
-const manifest = readFileSync(manifestPath, "utf8");
+const manifest = readFileSync(manifestPath, "utf8").replace(/\r\n/g, "\n");
 const ledger = readFileSync(ledgerPath, "utf8");
 const preExistingMigrationFiles = readdirSync(migrationsPath)
   .filter((name) => name.endsWith(".sql") && name !== baselineName)

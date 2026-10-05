@@ -5,7 +5,7 @@ import { describe, expect, it } from "vitest";
 const migrationName =
   "20260727160000_security_function_reachability_acl_v1.sql";
 const migrationPath = join("supabase", "migrations", migrationName);
-const migration = readFileSync(migrationPath, "utf8");
+const migration = readFileSync(migrationPath, "utf8").replace(/\r\n/g, "\n");
 const compactMigration = migration.replace(/\s+/g, " ").toLowerCase();
 
 const numberingWrappers = [

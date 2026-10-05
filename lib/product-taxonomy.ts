@@ -62,3 +62,43 @@ export function matchesProductType(product: Product, selectedType: string, optio
   const value = productTypeText(product);
   return option.keywords.some((keyword) => value.includes(keyword.toLowerCase()));
 }
+
+export function matchesProductTypeFromDetails(
+  product: Product,
+  selectedType: string,
+  options: ProductTypeOption[]
+) {
+  if (selectedType === "all") return true;
+  const option = options.find((item) => item.value === selectedType);
+  if (!option) return true;
+
+  const value = [
+    product.nama,
+    product.subcategory,
+    product.brand,
+    product.slug,
+    product.link_url,
+    ...(product.collection_tags || []),
+    ...(product.material_tags || []),
+    ...(product.color_tags || []),
+    ...(product.size_tags || [])
+  ]
+    .filter(Boolean)
+    .join(" ")
+    .toLowerCase()
+    .normalize("NFKD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[^a-z0-9]+/g, " ")
+    .trim();
+
+  return option.keywords.some((keyword) => {
+    const normalizedKeyword = keyword
+      .toLowerCase()
+      .normalize("NFKD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .replace(/[^a-z0-9]+/g, " ")
+      .trim();
+    return normalizedKeyword.length > 0
+      && ` ${value} `.includes(` ${normalizedKeyword} `);
+  });
+}

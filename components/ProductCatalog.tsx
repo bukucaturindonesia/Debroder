@@ -16,6 +16,7 @@ import { productCardColors, productCardSizes } from "@/lib/product-card";
 import { productMatchesNavigationStatus } from "@/lib/public-navigation";
 import {
   matchesProductType,
+  matchesProductTypeFromDetails,
   productTypeValue,
   type ProductTypeOption
 } from "@/lib/product-taxonomy";
@@ -207,10 +208,12 @@ export function ProductCatalog({
       productTypeOptions.filter((option) =>
         option.value === activeProductType
         || products.some((product) =>
-          matchesProductType(product, option.value, productTypeOptions)
+          isKaosEditorial
+            ? matchesProductTypeFromDetails(product, option.value, productTypeOptions)
+            : matchesProductType(product, option.value, productTypeOptions)
         )
       ),
-    [activeProductType, productTypeOptions, products]
+    [activeProductType, isKaosEditorial, productTypeOptions, products]
   );
   const hasTypeFilter = availableProductTypeOptions.length > 0;
   const activeStatus = ["all", "ready-stock", "custom", "hybrid"].includes(status)
@@ -228,7 +231,9 @@ export function ProductCatalog({
       .filter((product) => matchesGroup(product, group))
       .filter((product) => category === "all" || product.kategori === category)
       .filter((product) =>
-        matchesProductType(product, activeProductType, productTypeOptions)
+        isKaosEditorial
+          ? matchesProductTypeFromDetails(product, activeProductType, productTypeOptions)
+          : matchesProductType(product, activeProductType, productTypeOptions)
       )
       .filter((product) => matchesColor(product, color))
       .filter(
@@ -264,7 +269,7 @@ export function ProductCatalog({
         if (sort === "price-high") return priceOf(b) - priceOf(a);
         return a.urutan - b.urutan;
       });
-  }, [activeProductType, activeStatus, category, color, group, isCategoryCatalog, label, price, productTypeOptions, products, query, size, sort]);
+  }, [activeProductType, activeStatus, category, color, group, isCategoryCatalog, isKaosEditorial, label, price, productTypeOptions, products, query, size, sort]);
 
   useEffect(() => {
     setQuery(initialQuery);
@@ -474,7 +479,7 @@ export function ProductCatalog({
   }
 
   const controlClass =
-    "public-control min-h-12 min-w-0 rounded-full border px-4 text-sm font-medium outline-none";
+    `public-control ${isKaosEditorial ? "min-h-11 rounded-none" : "min-h-12 rounded-full"} min-w-0 border px-4 text-sm font-medium outline-none`;
   const filterControls = () => (
     <>
       {showGroupFilter ? (
@@ -606,7 +611,7 @@ export function ProductCatalog({
     </>
   );
   const catalogGridClass = isKaosEditorial
-    ? "kaos-editorial-catalog-grid grid grid-cols-2 gap-x-3 gap-y-8 sm:gap-x-4 md:grid-cols-3 lg:grid-cols-3 lg:gap-x-4 lg:gap-y-12"
+    ? "kaos-editorial-catalog-grid grid grid-cols-2 gap-x-3 gap-y-8 sm:gap-x-4 md:grid-cols-3 lg:grid-cols-3 lg:gap-x-4 lg:gap-y-8"
     : `grid grid-cols-2 gap-x-3 gap-y-8 sm:gap-x-4 md:grid-cols-3 ${
         isCategoryCatalog
           ? "lg:grid-cols-4 lg:gap-x-4 lg:gap-y-12"
@@ -636,7 +641,7 @@ export function ProductCatalog({
               aria-expanded={filtersOpen}
               aria-controls={filterControlsId}
               onClick={(event) => openFilters(event.currentTarget)}
-              className="public-secondary-action inline-flex min-h-12 items-center justify-center rounded-full border px-5 text-sm font-medium"
+              className={`public-secondary-action inline-flex items-center justify-center border px-4 text-sm font-medium ${isKaosEditorial ? "min-h-11 rounded-none" : "min-h-12 rounded-full px-5"}`}
             >
               {filtersOpen && isKaosEditorial ? "Tutup Filter" : "Filter"}
               {activeFilterCount ? ` (${activeFilterCount})` : ""}
@@ -683,7 +688,7 @@ export function ProductCatalog({
               aria-expanded={filtersOpen}
               aria-controls={filterControlsId}
               onClick={(event) => openFilters(event.currentTarget)}
-              className="public-secondary-action inline-flex min-h-12 items-center justify-center rounded-full border px-5 text-sm font-medium"
+              className={`public-secondary-action inline-flex items-center justify-center border px-4 text-sm font-medium ${isKaosEditorial ? "min-h-11 rounded-none" : "min-h-12 rounded-full px-5"}`}
             >
               Filter{activeFilterCount ? ` (${activeFilterCount})` : ""}
             </button>
@@ -719,7 +724,7 @@ export function ProductCatalog({
         </div>
       </div>
 
-      <div className={`${isKaosEditorial && filtersOpen ? "lg:grid lg:grid-cols-[17rem_minmax(0,1fr)] lg:gap-8" : ""} mt-6 lg:mt-8`}>
+      <div className={`${isKaosEditorial && filtersOpen ? "lg:grid lg:grid-cols-[17rem_minmax(0,1fr)] lg:gap-8" : ""} ${isKaosEditorial ? "mt-5 lg:mt-6" : "mt-6 lg:mt-8"}`}>
         {isKaosEditorial && filtersOpen ? (
           <aside
             id="public-catalog-filter-sidebar"

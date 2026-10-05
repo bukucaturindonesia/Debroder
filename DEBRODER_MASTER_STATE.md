@@ -1668,6 +1668,15 @@ Existing legal, CMS route, Preview performance, remote transaction E2E, data-int
 
 **HANDOFF UPDATED: YES — `CURRENT_PHASE_HANDOFF.md`**
 
+## CURRENT PROJECT STATE — PRE-ZERO-PRODUCT VISUAL RESTORED LOCALLY — 2026-10-04 00:37:21 +08:00
+
+- Local branch `release/debroder-id-v1` is at donor HEAD `d9b1fa8893c2068a5fb7e6a4e757fc2c6bb9e5e5` with uncommitted selective release changes. The donor brochure presentation is retained across the five public pages; tablet hero overflow was corrected without redesign.
+- Zero-product release contract is locally verified: 0 public brochure products, 0 product cards, 0 public WhatsApp links, exact five-URL sitemap, intentional `Produk segera hadir` empty state, official graphical logo, `hello@debroder.id`, and both former demo product routes returning 404.
+- Typecheck, focused 8/8, Playwright 7/7 across five routes and four widths, lint with 0 errors/36 existing warnings, and direct 142-page Next build passed. Full Vitest is **NOT PASS**: 1066/1069 passed; three existing migration/replay text-contract assertions failed outside the visual scope.
+- The owner-provided comparison SHA `4354f8efedb0f3db36102535c6de518c7719330f` is unavailable locally and on `origin`, so exact SHA-to-SHA classification could not be produced. No database, migration, Supabase, staging, production, Vercel environment/deployment, DNS, commit, or push action occurred. Local visual result is owner-review ready; overall release remains uncommitted and not deployed.
+
+**HANDOFF UPDATED: YES — `CURRENT_PHASE_HANDOFF.md`**
+
 ## CURRENT PROJECT STATE — WAVE 3 PRODUCT OPERATOR UAT — 2026-08-24 22:47:26 +08:00
 
 - Branch/HEAD: `UI-MIGRATION` / `5775f1aedb8c1539f69044aa7e58cd0e704fe285`; current W3 implementation changes are uncommitted and unpushed.
@@ -2048,3 +2057,24 @@ Resume only with a supported authenticated staging session or separately approve
 - Correct DEBRODER Vercel project remains inaccessible through the connected account (only unrelated OKDEAL team, zero projects). Owner-reported Preview URL/deployed SHA, deployed-host QA, and Lighthouse are unverified/not run. Code hotfix is ready for deployed Preview review, but deployed acceptance remains NO-GO until correct access/URL and exact-SHA validation. See latest `CURRENT_PHASE_HANDOFF.md` for details and resume.
 
 **HANDOFF UPDATED: YES — `CURRENT_PHASE_HANDOFF.md`**
+
+## LATEST STATE POINTER — LOCAL VISUAL RESTORATION — 2026-10-04 00:37:21 +08:00
+
+The latest state is the **PRE-ZERO-PRODUCT VISUAL RESTORED LOCALLY** section above: donor HEAD `d9b1fa8893c2068a5fb7e6a4e757fc2c6bb9e5e5`, uncommitted selective zero-product changes, 20 captured route/viewport screenshots with representative images inspected at every width, local owner review ready, no external mutation. Exact comparison against `4354f8efedb0f3db36102535c6de518c7719330f` is blocked because that object is unavailable. Full regression remains 1066/1069 due three existing migration-contract failures; scoped visual and release gates pass.
+
+**HANDOFF UPDATED: YES — `CURRENT_PHASE_HANDOFF.md`**
+
+## CURRENT STATE — WAVE 2 PUBLIC STOREFRONT RESTORED LOCALLY — 2026-10-04
+
+Owner selected donor bee4bc4e7feb847394bd2e0c37816943d70e3185 and superseded the simplified brochure release architecture. Branch release/debroder-id-v1 remains at b4b258d62240aab06717d1e8da439a5d6cece996 with uncommitted selective public changes; local safety branch created. Homepage/shared storefront/PIM PDP/public commerce access restored while later Admin/W3/backend remains unchanged. Typecheck, lint, 142-page build and five-route/four-width browser matrix passed. PIM-populated cards/PDP and authenticated transactions are unverified because local data/auth is not configured; existing brand fallback media is shown. Three prior migration/replay tests remain failed after two font assertion failures were corrected and retested. No push, deployment, DB mutation, Vercel env or DNS changes. Owner visual review pending. Details and exact resume: CURRENT_PHASE_HANDOFF.md and docs/STOREFRONT_RESTORATION_2026-10-04.md.
+
+## VERCEL BUILD FIX — LOCAL VERIFIED — 2026-10-04
+
+Current branch release/debroder-id-v1 / HEAD 3abb46d676703df5e3b4d0e323d3775f5e624560. Owner's Vercel log proves prebuild typecheck failed in the new image-check E2E callback. Explicit HTMLImageElement narrowing fixes it. Local stash conflicts resolved with backups while preserving full storefront. Typecheck, lint, targeted 33/33 failed-test rerun and 142-page production build passed. Full run had 1064 passed/3 CRLF-sensitive failures, subsequently corrected only in test readers and retested; no full rerun. No push/deploy/DB/env/DNS changes. Remote build remains unverified until a corrected commit is published with authorization. See current handoff.
+
+
+## OWNER REQUEST — KAOS POLOS COMMERCE-FIRST PRESENTATION — 2026-10-05
+
+- The owner's explicit /kaos-polos redesign request authorizes a presentation-order change on that route: hero, product-backed quick type links, catalog, CMS editorial/campaign content, then the existing custom destination. It does not alter frozen transaction, production, inventory, PIM, CMS ownership, or route rules.
+- Local implementation is on codex/cititex-kaos-polos-v1, based at HEAD 811d97099703b96e9fa22f5838fb7385e1e0755a. Typecheck, lint, full Vitest, and production build passed locally; lint retains 36 warnings. Runtime shows the real zero-product empty state because no local PIM products are configured.
+- Database/migration, staging, production, deployment, push, and commit changes: none. This checkpoint does not change overall release readiness or authorize v1.3. See the latest task section in CURRENT_PHASE_HANDOFF.md.

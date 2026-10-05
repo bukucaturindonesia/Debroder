@@ -1,17 +1,29 @@
 export const brochureServices = [
   {
+    id: "cetak-dtf",
     name: "Cetak DTF",
-    description: "Hasil cetak tajam dengan warna kuat untuk berbagai kebutuhan apparel.",
+    description: "Cetak desain ke apparel untuk kebutuhan brand, tim, dan komunitas.",
+    image: "/products/jersey-sepak-bola-custom/primary.jpeg",
+    imageAlt: "Visual referensi apparel untuk Cetak DTF",
+    imagePosition: "center",
     index: "01"
   },
   {
-    name: "Produksi Jersey",
-    description: "Produksi jersey custom sesuai desain, kebutuhan komunitas, tim, dan brand.",
+    id: "produk-jersey",
+    name: "Produk Jersey",
+    description: "Jersey custom untuk kebutuhan tim, komunitas, dan brand.",
+    image: "/products/jersey-sepak-bola-custom/primary.jpeg",
+    imageAlt: "Visual referensi produk jersey",
+    imagePosition: "top",
     index: "02"
   },
   {
+    id: "maklon-sublim",
     name: "Maklon Sublim",
-    description: "Layanan produksi sublim untuk brand yang membutuhkan hasil custom dalam skala produksi.",
+    description: "Produksi sublim untuk kebutuhan brand atau apparel Anda.",
+    image: "/products/jersey-futsal-custom/primary.jpeg",
+    imageAlt: "Referensi visual apparel sublim",
+    imagePosition: "top",
     index: "03"
   }
 ] as const;
