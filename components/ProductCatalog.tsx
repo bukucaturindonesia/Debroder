@@ -41,7 +41,6 @@ function searchText(product: Product) {
     product.kategori,
     product.subcategory,
     product.brand,
-    product.sku,
     ...(product.material_tags || []),
     ...(product.color_tags || []),
     ...(product.size_tags || []),
@@ -232,7 +231,11 @@ export function ProductCatalog({
       : products;
 
     return sourceProducts
-      .filter((product) => !needle || searchText(product).includes(needle))
+      .filter((product) =>
+        !needle
+        || searchText(product).includes(needle)
+        || (isJerseyCatalog && (product.sku || "").toLowerCase().includes(needle))
+      )
       .filter((product) => matchesGroup(product, group))
       .filter((product) => category === "all" || (isJerseyCatalog ? normalizeFilterValue(product.subcategory || "") === category : product.kategori === category))
       .filter((product) =>
