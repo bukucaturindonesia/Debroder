@@ -71,8 +71,8 @@ describe("Kaos Polos owner editorial revision", () => {
     const experience = read("components/KaosPolosEditorialExperience.tsx");
     const css = read("app/globals.css");
 
-    expect(css).toContain("height: clamp(350px, 30vw, 420px)");
-    expect(css).toContain("height: clamp(240px, 64vw, 320px)");
+    expect(css).toContain("height: 46.875vw");
+    expect(css).toContain("height: 125vw");
     expect(experience).toContain("objectPosition={hero.objectPosition}");
     expect(experience).toContain("mobileObjectPosition={hero.mobileObjectPosition}");
     expect(experience).not.toContain("kaos-blueprint-hero-title");

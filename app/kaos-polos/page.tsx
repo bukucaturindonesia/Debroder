@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import "./kaos-polos.css";
 import { KaosPolosEditorialExperience } from "@/components/KaosPolosEditorialExperience";
 import { PublicShell } from "@/components/PublicPage";
 import { getCatalogPageModel } from "@/lib/catalog-page/runtime";
@@ -31,7 +32,7 @@ export default async function KaosPolosPage({ searchParams }: KaosPolosPageProps
   });
 
   return (
-    <PublicShell>
+    <PublicShell footerTone="light">
       <KaosPolosEditorialExperience model={model} />
     </PublicShell>
   );

@@ -227,7 +227,7 @@ export function SiteHeaderClient({
     "Kaos Polos": buildCategoryMenu("Kaos Polos", "/kaos-polos", navigationFacets),
     "Jaket & Hoodie": buildCategoryMenu("Jaket & Hoodie", "/jaket-hoodie", navigationFacets)
   }), [navigationFacets]);
-  const currentNavItems = publicNavItems;
+  const currentNavItems: ReadonlyArray<{ label: string; href: string }> = publicNavItems;
   const accountHref = customerAuth.profile ? PUBLIC_ROUTES.account : PUBLIC_ROUTES.login;
   const accountLabel = customerAuth.profile ? "Akun Saya" : "Masuk";
 

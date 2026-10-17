@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { CategoryHero } from "@/components/public/CategoryHero";
 import { ProductCatalog } from "@/components/ProductCatalog";
+import { PublicProductCard } from "@/components/PublicProductCard";
 import { ResponsivePicture } from "@/components/ResponsivePicture";
 import type {
   CatalogPageCampaignViewModel,
@@ -8,6 +9,7 @@ import type {
 } from "@/lib/catalog-page/model";
 import {
   availableKaosTypeOptions,
+  kaosEditorialProducts,
   kaosTypeFilterHref
 } from "@/lib/kaos-polos-editorial";
 
@@ -181,6 +183,17 @@ export function KaosPolosEditorialExperience({
     "poster_carousel"
   ).slice(0, 2);
   const quickTypes = availableKaosTypeOptions(products, productTypeOptions);
+  // Presentation-only selection from the existing published PIM catalog.
+  const editorialProducts = kaosEditorialProducts(products);
+  const featuredProducts = [
+    editorialProducts.find((product) =>
+      [product.nama, ...(product.material_tags || [])].join(" ").replace(/[^a-z0-9]/gi, "").toLowerCase().includes("cottoncombed24s")
+    ),
+    editorialProducts.find((product) => {
+      const label = `${product.brand || ""} ${product.nama}`.toLowerCase();
+      return label.includes("nsa") && label.includes("premium");
+    })
+  ].filter((product, index, selection): product is NonNullable<typeof product> => Boolean(product) && selection.indexOf(product) === index);
   const bannerLeft = campaignOfType(
     campaigns,
     "banner_editorial_left",
@@ -203,7 +216,7 @@ export function KaosPolosEditorialExperience({
   const customHref = customDestination || "/custom";
 
   return (
-    <div className="kaos-editorial-page bg-white text-[#111]">
+    <div data-kaos-page="final" className="kaos-editorial-page bg-white text-[#111]">
       <CategoryHero
         desktopImage={hero.imageUrl}
         mobileImage={hero.mobileImageUrl}
@@ -221,6 +234,7 @@ export function KaosPolosEditorialExperience({
         className="kaos-blueprint-intro-section"
       >
         <div className="section-shell">
+          <nav className="public-breadcrumbs" aria-label="Breadcrumb"><Link href="/">Beranda</Link><span aria-hidden="true">/</span><span aria-current="page">Kaos Polos</span></nav>
           <div className="kaos-category-intro-content">
             <div className="min-w-0">
               {hero.label ? <p className="kaos-blueprint-eyebrow">{hero.label}</p> : null}
@@ -274,6 +288,7 @@ export function KaosPolosEditorialExperience({
             <ProductCatalog
               key={`${filters.productType}|${filters.color}|${filters.size}|${filters.price}|${filters.status}|${filters.label}|${filters.sort}`}
               products={products}
+              initialQuery={filters.query}
               title="Kaos Polos"
               showCategoryFilter={false}
               initialColor={filters.color}
@@ -293,6 +308,19 @@ export function KaosPolosEditorialExperience({
             />
           </div>
         </div>
+      </section>
+
+      <section className="kaos-featured-products section-shell" aria-labelledby="kaos-featured-products-title">
+        <div className="kaos-featured-products-heading">
+          <div>
+            <p className="kaos-blueprint-eyebrow">Pilihan Kaos Polos</p>
+            <h2 id="kaos-featured-products-title" className="kaos-blueprint-section-label">Cotton Combed 24s & NSA Premium</h2>
+          </div>
+          <Link href="#catalog" className="public-secondary-action">Lihat Katalog <span aria-hidden="true">↗</span></Link>
+        </div>
+        {featuredProducts.length ? <div className="kaos-featured-products-grid">
+          {featuredProducts.map((product) => <PublicProductCard key={product.id || product.slug || product.nama} product={product} imageSizes="(min-width: 1024px) 40vw, 50vw" />)}
+        </div> : <p className="kaos-featured-products-empty">Produk unggulan belum tersedia untuk ditampilkan. Jelajahi katalog untuk melihat pilihan yang tersedia.</p>}
       </section>
 
       {featured.length ? (

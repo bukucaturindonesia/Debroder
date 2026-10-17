@@ -36,7 +36,7 @@ export function CategoryCommercePage({
   const shortcutLabel = config.shortcutLabel || `Navigasi ${config.breadcrumbLabel}`;
 
   return (
-    <PublicShell>
+    <PublicShell footerTone="light">
       <div className={`category-commerce-v1 category-commerce-${config.pageKey}`}>
         <CategoryHero seoTitle={config.breadcrumbLabel} alt={config.breadcrumbLabel} desktopImage={hero.imageUrl} mobileImage={hero.mobileImageUrl} objectPosition={hero.objectPosition} mobileObjectPosition={hero.mobileObjectPosition} objectFit={hero.objectFit} imageZoom={hero.imageZoom} mobileImageZoom={hero.mobileImageZoom} />
         <CategoryCommerceCatalog
@@ -45,6 +45,7 @@ export function CategoryCommercePage({
           pagePath={pagePath}
           shortcutLabel={shortcutLabel}
           title={config.catalogTitle}
+          breadcrumbLabel={config.breadcrumbLabel}
           description={config.catalogDescription}
           closingHeadline={config.closingHeadline}
           closingCtaLabel={config.closingCtaLabel}
@@ -57,6 +58,9 @@ export function CategoryCommercePage({
           initialLabel={filters.label}
           initialSort={filters.sort}
           initialProductType={filters.productType}
+          initialSize={filters.size}
+          initialPrice={filters.price}
+          initialStatus={filters.status}
         />
       </div>
     </PublicShell>

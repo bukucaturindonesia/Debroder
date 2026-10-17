@@ -490,16 +490,18 @@ export function CategoryDetailPage({
 
 export async function PublicShell({
   children,
-  theme = "default"
+  theme = "default",
+  footerTone = "dark"
 }: {
   children: ReactNode;
   theme?: "default" | "jersey" | "jersey-commerce";
+  footerTone?: "dark" | "light";
 }) {
   const [shellModel, activeTheme] = await Promise.all([
     getPublicShellPageModel(),
     getActivePublicTheme()
   ]);
-  return <PublicShellFrame shellModel={shellModel} publicThemeId={activeTheme.id} theme={theme}>{children}</PublicShellFrame>;
+  return <PublicShellFrame shellModel={shellModel} publicThemeId={activeTheme.id} theme={theme} footerTone={footerTone}>{children}</PublicShellFrame>;
 }
 
 type PublicShellModel = Awaited<ReturnType<typeof getPublicShellPageModel>>;

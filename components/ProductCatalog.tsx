@@ -648,7 +648,7 @@ export function ProductCatalog({
       }`;
 
   return (
-    <div className={`${isCategoryCatalog ? "category-product-catalog" : ""} ${isKaosEditorial ? "kaos-editorial-product-catalog" : ""}`.trim()}>
+    <div data-ui-catalog className={`${isCategoryCatalog ? "category-product-catalog" : ""} ${isKaosEditorial ? "kaos-editorial-product-catalog" : ""}`.trim()}>
       {showHeading ? <h2 className="public-section-title">{title}</h2> : null}
 
       <div className={`${showHeading ? "mt-6 " : ""}public-divider bg-white ${isKaosEditorial ? "border-b py-3" : "border-y py-4"}`}>
@@ -673,7 +673,7 @@ export function ProductCatalog({
               className={`public-secondary-action inline-flex items-center justify-center border px-4 text-sm font-medium ${isKaosEditorial ? "min-h-11 rounded-none" : "min-h-12 rounded-full px-5"}`}
             >
               {filtersOpen && isKaosEditorial ? "Tutup Filter" : "Filter"}
-              {activeFilterCount ? ` (${activeFilterCount})` : ""}
+              {activeFilterCount ? <span className="public-badge">{activeFilterCount}</span> : null}
             </button>
           </div>
           <div className="flex shrink-0 items-center gap-4">
@@ -719,7 +719,7 @@ export function ProductCatalog({
               onClick={(event) => openFilters(event.currentTarget)}
               className={`public-secondary-action inline-flex items-center justify-center border px-4 text-sm font-medium ${isKaosEditorial ? "min-h-11 rounded-none" : "min-h-12 rounded-full px-5"}`}
             >
-              Filter{activeFilterCount ? ` (${activeFilterCount})` : ""}
+              Filter{activeFilterCount ? <span className="public-badge">{activeFilterCount}</span> : null}
             </button>
             <label className="relative">
               <span className="sr-only">Urutkan produk</span>

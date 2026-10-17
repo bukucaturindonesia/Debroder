@@ -53,7 +53,7 @@ export function ScrollButtons({
     container.scrollBy({ left: direction === "next" ? amount : -amount, behavior: "smooth" });
   }
 
-  const buttonClass = `grid ${largeTargets ? "h-12 w-12" : "h-10 w-10"} place-items-center rounded-full bg-[#f2f2ef] text-[#111] transition duration-200 hover:bg-[#111] hover:text-white disabled:cursor-not-allowed disabled:opacity-35 disabled:hover:bg-[#f2f2ef] disabled:hover:text-[#111]`;
+  const buttonClass = `public-carousel-button ${largeTargets ? "public-carousel-button--large" : ""}`.trim();
 
   return (
     <div className="flex items-center gap-2" aria-label="Kontrol carousel">
