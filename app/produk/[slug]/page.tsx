@@ -109,6 +109,7 @@ export default async function ProductDetailPage({ params }: PageProps) {
             <p className="mt-3 text-sm text-black/60">
               Silakan muat ulang halaman atau coba kembali beberapa saat lagi.
             </p>
+            <Link href="/koleksi" className="public-button public-button--primary mt-6">Lihat Koleksi</Link>
           </div>
         </section>
       </PublicShell>
@@ -217,7 +218,7 @@ export default async function ProductDetailPage({ params }: PageProps) {
                         </p>
                         <Link
                           href={jerseyConfiguratorHref}
-                          className="mt-5 inline-flex min-h-12 items-center justify-center rounded-full bg-black px-6 text-sm font-semibold text-white outline-none transition hover:bg-black/75 focus-visible:ring-2 focus-visible:ring-black focus-visible:ring-offset-2"
+                          className="public-button public-button--primary mt-5"
                         >
                           Mulai Desain Jersey
                         </Link>
@@ -230,7 +231,7 @@ export default async function ProductDetailPage({ params }: PageProps) {
                         </p>
                         <Link
                           href={customDestination}
-                          className="mt-5 inline-flex min-h-12 items-center justify-center rounded-full bg-black px-6 text-sm font-semibold text-white outline-none transition hover:bg-black/75 focus-visible:ring-2 focus-visible:ring-black focus-visible:ring-offset-2"
+                          className="public-button public-button--primary mt-5"
                         >
                           Mulai Custom
                         </Link>

@@ -338,10 +338,10 @@ function CartIcon() {
 
 function QuantityControl({ value, onChange, ariaLabel }: { value: number; onChange: (value: number) => void; ariaLabel: string }) {
   return (
-    <div className="inline-flex min-h-10 items-center overflow-hidden rounded-full border border-black/10 bg-white">
-      <button type="button" className="grid h-10 w-10 place-items-center text-lg transition hover:bg-black/5" aria-label={`Kurangi ${ariaLabel}`} onClick={() => onChange(Math.max(1, value - 1))}>−</button>
-      <input value={value} onChange={(event) => onChange(normalizeNumber(Number(event.target.value || 1)))} className="h-10 w-12 border-x border-black/10 text-center text-sm font-semibold outline-none" aria-label={ariaLabel} inputMode="numeric" />
-      <button type="button" className="grid h-10 w-10 place-items-center text-lg transition hover:bg-black/5" aria-label={`Tambah ${ariaLabel}`} onClick={() => onChange(value + 1)}>+</button>
+    <div className="inline-flex min-h-11 items-center overflow-hidden rounded-functional border border-black/15 bg-white">
+      <button type="button" disabled={value <= 1} className="public-carousel-button shrink-0 text-lg hover:bg-black/5 disabled:opacity-35" aria-label={`Kurangi ${ariaLabel}`} onClick={() => onChange(Math.max(1, value - 1))}>−</button>
+      <input value={value} onChange={(event) => onChange(normalizeNumber(Number(event.target.value || 1)))} className="h-11 w-12 border-x border-black/10 text-center text-base font-semibold outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-experience-focus" aria-label={ariaLabel} inputMode="numeric" />
+      <button type="button" className="public-carousel-button shrink-0 text-lg hover:bg-black/5" aria-label={`Tambah ${ariaLabel}`} onClick={() => onChange(value + 1)}>+</button>
     </div>
   );
 }
@@ -365,7 +365,7 @@ function CartProductHeader({ item, compact = false }: { item: CartItem; compact?
         <div className="flex items-start justify-between gap-4">
           <div className="min-w-0">
             {item.role === "primary" ? <span className="mb-2 inline-flex rounded-full bg-[#e9f4ee] px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.12em] text-[#063d24]">Pesanan Utama</span> : null}
-            <h3 className="text-base font-semibold leading-tight sm:text-lg">{item.name}</h3>
+            <h3 className="break-words text-base font-semibold leading-tight sm:text-lg">{item.name}</h3>
             {labelForItem(item) ? <p className="mt-1 text-sm leading-6 text-black/55">{labelForItem(item)}</p> : null}
             {(item.color || item.size || displaySku) ? (
               <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-black/55">
@@ -383,7 +383,7 @@ function CartProductHeader({ item, compact = false }: { item: CartItem; compact?
               </div>
             ) : null}
           </div>
-          <button type="button" className="text-xs font-semibold text-red-700 underline-offset-4 hover:underline" onClick={() => cart.removeItem(item.lineId)}>Hapus</button>
+          <button type="button" aria-label={`Hapus ${item.name}`} className="min-h-11 shrink-0 text-xs font-semibold text-red-700 underline-offset-4 hover:underline focus-visible:outline focus-visible:outline-2" onClick={() => cart.removeItem(item.lineId)}>Hapus</button>
         </div>
         <div className="mt-4 flex flex-wrap items-center justify-between gap-3">
           {isCustomProjectCartItem(item) ? <p className="rounded-full bg-[#f5f5ef] px-3 py-2 text-xs font-semibold">{item.customProject.pricing.totalQuantity} pcs terkonfigurasi</p> : item.lineType === "legacy_unsupported" ? <p className="rounded-full bg-amber-50 px-3 py-2 text-xs font-semibold text-amber-900">Perlu ditinjau</p> : <QuantityControl value={item.quantity} ariaLabel={`jumlah ${item.name}`} onChange={(quantity) => cart.updateItem(item.lineId, { quantity })} />}
@@ -460,7 +460,7 @@ function FullCartItem({ item }: { item: CartItem }) {
   const isJersey = isJerseyConfiguredItem(item);
   const isCustomProject = isCustomProjectCartItem(item);
   return (
-    <article data-ui-card="cart-item" className="rounded-[28px] bg-white/50 p-4 sm:p-6">
+    <article data-ui-card="cart-item" className="min-w-0 rounded-functional border border-black/10 bg-white p-4 sm:p-6">
       <CartProductHeader item={item} />
       {item.lineType === "legacy_unsupported" ? (
         <div className="mt-5 rounded-[18px] border border-amber-300 bg-amber-50 p-4 text-sm leading-6 text-amber-950">
@@ -484,7 +484,7 @@ function CartSummary({ compact = false }: { compact?: boolean }) {
   );
 
   return (
-    <aside data-ui-surface="cart-summary" className={`public-panel public-cart-summary rounded-[28px] bg-white/50 ${compact ? "p-4" : "p-5 sm:p-6"}`}>
+    <aside data-ui-surface="cart-summary" className={`public-panel public-cart-summary min-w-0 rounded-functional border border-black/10 bg-white ${compact ? "p-4" : "p-5 sm:p-6"}`}>
       <h2 className="text-2xl font-semibold tracking-tight">Ringkasan</h2>
       <div className="mt-6 grid gap-4 text-sm">
         <div className="flex items-center justify-between gap-4">
@@ -503,11 +503,11 @@ function CartSummary({ compact = false }: { compact?: boolean }) {
       </div>
       {!checkoutAllowed ? <p className="mt-4 text-xs leading-5 text-amber-800">{cart.checkoutDecision.message}</p> : null}
       {checkoutAllowed ? (
-        <Link href="/checkout" className={`mt-5 inline-flex min-h-12 w-full items-center justify-center rounded-full px-5 text-center text-sm font-semibold ${cart.preserveJerseyInteractions ? "bg-[#063d24] text-white" : "bg-black text-white hover:bg-black/75"}`}>
+        <Link href="/checkout" className="public-button public-button--primary mt-5 min-h-12 w-full text-center">
           Lanjut ke Checkout
         </Link>
       ) : (
-        <span aria-disabled="true" className="mt-5 inline-flex min-h-12 w-full items-center justify-center rounded-full bg-black/10 px-5 text-center text-sm font-semibold text-black/35">
+        <span aria-disabled="true" className="public-button mt-5 min-h-12 w-full bg-black/10 text-center text-black/60">
           Lanjut ke Checkout
         </span>
       )}
@@ -519,12 +519,12 @@ function CartSummary({ compact = false }: { compact?: boolean }) {
 function EmptyCart({ fullPage = false }: { fullPage?: boolean }) {
   const cart = useCart();
   return (
-    <div data-ui-state="empty" className={`public-empty-state grid place-items-center rounded-[28px] bg-white/50 p-8 text-center ${fullPage ? "min-h-[420px]" : "min-h-[280px]"}`}>
+    <div data-ui-state="empty" className={`public-empty-state grid place-items-center rounded-functional bg-white p-6 text-center sm:p-8 ${fullPage ? "min-h-[340px]" : "min-h-[280px]"}`}>
       <div>
         <div className="mx-auto grid h-14 w-14 place-items-center rounded-full bg-[#f5f5ef]"><CartIcon /></div>
         <p className="mt-5 text-lg font-semibold">Keranjang masih kosong</p>
-        <p className="mx-auto mt-2 max-w-sm text-sm leading-6 text-black/55">Tambahkan produk dulu. Produk pertama akan menjadi Pesanan Utama.</p>
-        <Link href="/koleksi" className={`mt-5 inline-flex min-h-11 items-center justify-center rounded-full px-6 text-sm font-semibold text-white ${cart.preserveJerseyInteractions ? "bg-[#063d24]" : "bg-black hover:bg-black/75"}`}>Lihat Koleksi</Link>
+        <p className="mx-auto mt-2 max-w-sm text-sm leading-6 text-black/60">Pilih produk, warna, ukuran, dan jumlah dari koleksi untuk mulai membuat pesanan.</p>
+        <Link href="/koleksi" onClick={cart.closeCart} className="public-button public-button--primary mt-5">Lihat Koleksi</Link>
       </div>
     </div>
   );
@@ -559,6 +559,10 @@ function FullCartLayout() {
   const primaryItems = cart.items.filter((item) => item.role === "primary");
   const additionalItems = cart.items.filter((item) => item.role === "additional");
 
+  if (!cart.isLoaded) {
+    return <p role="status" aria-live="polite" className="min-h-64 py-12 text-center text-sm text-black/60">Memuat keranjang Anda…</p>;
+  }
+
   if (!cart.items.length) {
     return (
       <>
@@ -572,7 +576,7 @@ function FullCartLayout() {
     <>
       <CartValidationNotice />
       <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_360px] xl:grid-cols-[minmax(0,1fr)_400px]">
-        <div>
+        <div className="min-w-0">
           <h2 className="mb-5 text-2xl font-semibold tracking-tight">Isi Keranjang</h2>
           <div className="grid gap-5">
             {primaryItems.map((item) => <FullCartItem key={item.lineId} item={item} />)}
@@ -605,6 +609,7 @@ function MiniCartContent() {
     isCustomProjectCartItem(item) && !isFinalExactCustomPricing(item.customProject.pricing)
   );
 
+  if (!cart.isLoaded) return <p role="status" className="py-12 text-center text-sm text-black/60">Memuat keranjang Anda…</p>;
   if (!primary) return <EmptyCart />;
 
   return (
@@ -625,9 +630,9 @@ function MiniCartContent() {
             <span className="text-lg font-bold text-[#063d24]">{hasPendingCustomPricing ? "Belum ditetapkan" : safeCurrency(totals.normalTotal)}</span>
           </div>
         </div>
-        <Link href="/keranjang" onClick={cart.closeCart} className="mt-5 inline-flex min-h-11 w-full items-center justify-center rounded-full border border-black/10 px-5 text-sm font-semibold transition hover:border-black">Lihat Keranjang</Link>
+        <Link href="/keranjang" onClick={cart.closeCart} className="public-secondary-action mt-5 w-full border border-black/20 hover:border-black">Lihat Keranjang</Link>
         {cart.checkoutDecision.allowed ? (
-          <Link href="/checkout" onClick={cart.closeCart} className={`mt-3 inline-flex min-h-11 w-full items-center justify-center rounded-full px-5 text-center text-sm font-semibold text-white ${cart.preserveJerseyInteractions ? "bg-[#063d24]" : "bg-black hover:bg-black/75"}`}>
+          <Link href="/checkout" onClick={cart.closeCart} className="public-button public-button--primary mt-3 w-full text-center">
             Checkout
           </Link>
         ) : (
@@ -646,11 +651,11 @@ function CartValidationNotice({ compact = false }: { compact?: boolean }) {
   const visibleIssues = cart.issues.slice(0, compact ? 2 : 5);
   if (!cart.isRevalidating && visibleIssues.length === 0) return null;
   return (
-    <section className="mb-5 rounded-[20px] border border-amber-300 bg-amber-50 p-4 text-sm text-amber-950" aria-live="polite">
+    <section className="mb-5 rounded-functional border border-amber-300 bg-amber-50 p-4 text-sm text-amber-950" aria-live="polite" aria-busy={cart.isRevalidating}>
       <p className="font-semibold">{cart.isRevalidating ? "Memvalidasi harga dan stok terbaru..." : "Keranjang perlu ditinjau"}</p>
       {visibleIssues.map((issue, index) => <p key={`${issue.code}:${issue.lineId ?? index}`} className="mt-1 leading-6">{issue.message}</p>)}
       {!cart.isRevalidating ? (
-        <button type="button" className="mt-3 font-semibold underline underline-offset-4" onClick={() => void cart.revalidate()}>
+        <button type="button" className="public-secondary-action mt-3 font-semibold underline underline-offset-4" onClick={() => void cart.revalidate()}>
           Coba validasi lagi
         </button>
       ) : null}
@@ -711,10 +716,10 @@ function CartDrawer() {
 
   return (
     <>
-      <div className={`fixed inset-0 z-[var(--z-legacy-backdrop)] bg-black/35 transition ${isOpen ? "visible opacity-100" : "invisible opacity-0"}`} onMouseDown={(event) => event.target === event.currentTarget && closeCart()} />
+      <div className={`fixed inset-0 z-[var(--z-modal)] bg-black/35 transition ${isOpen ? "visible opacity-100" : "invisible opacity-0"}`} onMouseDown={(event) => event.target === event.currentTarget && closeCart()} />
       <aside
         ref={drawerRef}
-        className={`public-cart-drawer fixed right-0 top-0 z-[var(--z-legacy-drawer-surface)] flex h-dvh w-full max-w-md flex-col bg-brand-offWhite shadow-[var(--shadow-overlay)] transition-transform duration-[var(--duration-overlay)] ${isOpen ? "translate-x-0" : "translate-x-full"}`}
+        className={`public-cart-drawer fixed right-0 top-0 z-[calc(var(--z-modal)+1)] flex h-dvh w-full max-w-md flex-col bg-brand-offWhite shadow-[var(--shadow-overlay)] transition-transform duration-[var(--duration-overlay)] ${isOpen ? "translate-x-0" : "translate-x-full"}`}
         role="dialog"
         aria-modal="true"
         aria-label="Keranjang belanja"
@@ -726,9 +731,9 @@ function CartDrawer() {
             <p className="text-xs font-semibold uppercase tracking-[0.18em] text-black/45">Keranjang</p>
             <h2 className="mt-1 text-2xl font-semibold">Pesanan DEBRODER</h2>
           </div>
-          <button ref={closeButtonRef} type="button" className="grid h-12 w-12 place-items-center rounded-full border border-black/10 text-xl leading-none transition hover:bg-[#f5f5ef]" aria-label="Tutup keranjang" onClick={closeCart}>×</button>
+          <button ref={closeButtonRef} type="button" className="public-carousel-button shrink-0 border border-black/10 text-xl leading-none hover:bg-[#f5f5ef]" aria-label="Tutup keranjang" onClick={closeCart}>×</button>
         </div>
-        <div className="flex-1 overflow-y-auto p-4 sm:p-5">
+        <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain p-4 pb-[max(1rem,env(safe-area-inset-bottom))] sm:p-5">
           <MiniCartContent />
         </div>
       </aside>

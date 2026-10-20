@@ -460,7 +460,7 @@ export function TieredProductPurchasePanel({
   }
 
   return (
-    <div className="min-w-0 pb-[max(0px,env(safe-area-inset-bottom))]">
+    <div data-ui-ordering="product" className="min-w-0 pb-[max(0px,env(safe-area-inset-bottom))]">
       <header>
         <p className="text-xs font-semibold uppercase tracking-[0.16em] text-brand-charcoal/50">
           {[product.category, subcategory].filter(Boolean).join(" · ")}
@@ -622,14 +622,14 @@ export function TieredProductPurchasePanel({
         </fieldset>
 
         <section aria-labelledby="pdp-quantity-title">
-          <div className="flex items-center justify-between gap-4">
+          <div className="flex flex-wrap items-center justify-between gap-4">
             <div>
               <h2 id="pdp-quantity-title" className="text-sm font-semibold">Jumlah</h2>
               <p className="mt-1 text-xs text-brand-charcoal/55">
                 Minimum {effectiveMinimumQuantity} pcs · Maksimum pilihan {selectedStockLimit} pcs
               </p>
             </div>
-            <div className="inline-flex min-h-12 items-center overflow-hidden rounded-full border border-black/15 bg-white">
+            <div className="inline-flex min-h-12 items-center overflow-hidden rounded-functional border border-black/15 bg-white">
               <button
                 type="button"
                 disabled={quantityIsInteger && quantity <= 1}
@@ -659,7 +659,7 @@ export function TieredProductPurchasePanel({
                 aria-label="Jumlah produk"
                 aria-invalid={!quantityWithinStock}
                 aria-describedby="pdp-purchase-feedback"
-                className="h-12 w-16 bg-transparent text-center text-sm font-semibold outline-none"
+                className="h-12 w-16 bg-transparent text-center text-base font-semibold outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-experience-focus"
               />
               <button
                 type="button"
@@ -718,7 +718,7 @@ export function TieredProductPurchasePanel({
           aria-labelledby="pdp-subtotal-title"
           aria-live="polite"
         >
-          <div className="flex items-end justify-between gap-4">
+          <div className="flex flex-wrap items-end justify-between gap-4">
             <div>
               <h2 id="pdp-subtotal-title" className="text-sm font-semibold">Subtotal</h2>
               <p className="mt-1 text-xs text-brand-charcoal/55">
@@ -733,7 +733,7 @@ export function TieredProductPurchasePanel({
           </div>
         </section>
 
-        <div>
+        <div data-pdp-actions>
           {showBuyNow || customActionHref ? (
             <div className={`mb-3 grid gap-3 ${showBuyNow && customActionHref ? "grid-cols-2" : ""}`}>
               {showBuyNow ? (
@@ -743,7 +743,8 @@ export function TieredProductPurchasePanel({
                   aria-describedby="pdp-purchase-feedback"
                   disabled={submitting}
                   onClick={buySelectedNow}
-                  className="inline-flex min-h-14 items-center justify-center rounded-full bg-black px-5 text-sm font-semibold text-white outline-none transition hover:bg-black/75 focus-visible:ring-2 focus-visible:ring-experience-focus focus-visible:ring-offset-2 disabled:cursor-wait disabled:bg-black/45"
+                  aria-busy={submitting}
+                  className="public-button public-button--primary min-h-14 text-center disabled:cursor-wait"
                 >
                   Beli Sekarang
                 </button>
@@ -751,7 +752,7 @@ export function TieredProductPurchasePanel({
               {customActionHref ? (
                 <Link
                   href={customActionHref}
-                  className="inline-flex min-h-14 items-center justify-center rounded-full border border-black/35 bg-white px-5 text-sm font-semibold text-black outline-none transition hover:border-black hover:bg-black/5 focus-visible:ring-2 focus-visible:ring-experience-focus focus-visible:ring-offset-2"
+                  className="public-secondary-action min-h-14 border border-black/35 bg-white text-center hover:bg-black/5"
                 >
                   Custom
                 </Link>
@@ -765,7 +766,8 @@ export function TieredProductPurchasePanel({
               aria-describedby="pdp-purchase-feedback"
               disabled={submitting}
               onClick={addSelectedToCart}
-              className="inline-flex min-h-14 w-full items-center justify-center rounded-full border border-black bg-white px-6 text-base font-semibold text-black outline-none transition hover:bg-black hover:text-white focus-visible:ring-2 focus-visible:ring-experience-focus focus-visible:ring-offset-2 disabled:cursor-wait disabled:border-black/20 disabled:text-black/40"
+              aria-busy={submitting}
+              className="public-secondary-action min-h-14 w-full border border-black bg-white text-center hover:bg-black hover:text-white disabled:cursor-wait"
             >
               {submitting ? "Menambahkan…" : "Tambah ke Keranjang"}
             </button>

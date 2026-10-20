@@ -1,4 +1,5 @@
 import { notFound } from "next/navigation";
+import Link from "next/link";
 import { PageHero, PublicShell } from "@/components/PublicPage";
 import { fallbackServices } from "@/lib/fallback-data";
 import { getPublicContent } from "@/lib/public-data";
@@ -14,6 +15,7 @@ export default async function SablonDtfDetailPage({ params }: { params: Promise<
 
   return (
     <PublicShell>
+      <div className="dtf-order-detail-hero">
       <PageHero
         label="SABLON DTF"
         title={service.nama}
@@ -22,26 +24,51 @@ export default async function SablonDtfDetailPage({ params }: { params: Promise<
         objectPosition={service.object_position}
         objectFit={service.object_fit}
         imageZoom={service.focal_zoom}
-        ctaText="Konsultasi via WhatsApp"
-        ctaHref={orderUrl}
+        ctaText="Siapkan Pesanan Custom"
+        ctaHref="#dtf-order-entry"
         secondaryCtaText="Kembali ke Katalog"
         secondaryCtaHref="/sablon-dtf"
         breadcrumbs={[{ label: "Beranda", href: "/" }, { label: "Sablon DTF", href: "/sablon-dtf" }, { label: service.nama }]}
       />
+      </div>
       <section data-reveal className="bg-brand-offWhite py-10 sm:py-12">
-        <div className="section-shell grid gap-6 lg:grid-cols-[1.2fr_0.8fr]">
-          <div className="p-0 sm:p-0">
+        <div className="section-shell grid gap-8 lg:grid-cols-[minmax(0,1.2fr)_minmax(0,0.8fr)]">
+          <div className="min-w-0">
             <h2 className="text-2xl font-semibold">Detail layanan</h2>
             <p className="mt-4 whitespace-pre-line text-sm leading-7 text-brand-charcoal/70">{service.detail_body || service.deskripsi}</p>
-            {service.available_sizes?.length ? <div className="mt-8"><h3 className="font-semibold">Pilihan ukuran</h3><div className="mt-3 flex flex-wrap gap-2">{service.available_sizes.map((size) => <span key={size} className="rounded-full border border-brand-softGray px-4 py-2 text-sm font-medium">{size}</span>)}</div></div> : null}
+            {service.available_sizes?.length ? <div className="mt-8"><h3 className="font-semibold">Pilihan ukuran</h3><div className="mt-3 flex flex-wrap gap-2">{service.available_sizes.map((size) => <span key={size} className="public-badge border border-brand-softGray">{size}</span>)}</div></div> : null}
           </div>
           <aside className="bg-brand-charcoal p-6 text-white sm:p-8">
             <p className="text-xs font-semibold uppercase tracking-[0.2em] text-white/60">Informasi Produksi</p>
             <p className="mt-4 text-xl font-semibold leading-8">Harga pasti ditetapkan setelah ukuran, jumlah, dan kebutuhan produksi dikonfirmasi.</p>
             {service.production_estimate ? <p className="mt-4 text-sm leading-6 text-white/70">{service.production_estimate}</p> : null}
-            <a href={orderUrl} target="_blank" rel="noopener noreferrer" className="mt-6 inline-flex min-h-11 w-full items-center justify-center rounded-full bg-white px-5 text-sm font-semibold text-brand-charcoal">Konsultasi Sekarang</a>
+            <a href={orderUrl} target="_blank" rel="noopener noreferrer" className="public-secondary-action mt-6 w-full bg-white text-center text-brand-charcoal">Konsultasi via WhatsApp</a>
           </aside>
         </div>
+        <section id="dtf-order-entry" aria-labelledby="dtf-order-title" className="section-shell mt-10 scroll-mt-28 border-y border-black/10 py-8">
+          <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,0.8fr)] lg:gap-12">
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-[0.16em] text-black/50">Pesanan Sablon DTF</p>
+              <h2 id="dtf-order-title" className="mt-2 text-2xl font-semibold">Siapkan spesifikasi dan desain</h2>
+              <p className="mt-3 max-w-xl text-sm leading-7 text-black/65">Gunakan builder Custom untuk memilih produk dan layanan DTF yang tersedia. Ketersediaan layanan dan upload mengikuti pilihan produk Anda.</p>
+              <Link href="/custom" className="public-button public-button--primary mt-5 w-full sm:w-auto">Buka Builder Custom</Link>
+              <p className="mt-3 text-xs leading-6 text-black/55">Jika produk atau layanan belum tersedia di builder, konsultasikan kebutuhan Anda terlebih dahulu. Pesanan belum dibuat dari halaman ini.</p>
+            </div>
+            <ol className="grid gap-4 text-sm" aria-label="Persiapan pesanan DTF">
+              {[
+                ["Produk dan jumlah", "Pilih produk, warna, ukuran, dan jumlah yang dibutuhkan."],
+                ["Spesifikasi cetak", "Pilih layanan DTF, posisi, dan ukuran cetak yang tersedia."],
+                ["Desain", "Unggah file pada bagian Desain & Layanan sesuai format yang didukung."],
+                ["Review pesanan", "Periksa alokasi desain dan ringkasan, lalu validasi sebelum melanjutkan ke keranjang atau penawaran."]
+              ].map(([title, description], index) => (
+                <li key={title} className="flex gap-3">
+                  <span aria-hidden="true" className="grid h-8 w-8 shrink-0 place-items-center rounded-full bg-white font-semibold">{index + 1}</span>
+                  <div><h3 className="font-semibold">{title}</h3><p className="mt-1 leading-6 text-black/60">{description}</p></div>
+                </li>
+              ))}
+            </ol>
+          </div>
+        </section>
         <div className="section-shell mt-8">
           <h2 className="text-2xl font-semibold">Cara order</h2>
           <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
