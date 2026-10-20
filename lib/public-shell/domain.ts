@@ -166,7 +166,6 @@ function footerModel(source: PublicShellSource): PublicShellFooterViewModel {
     helpLinks,
     companyLinks: [
       { label: "Tentang DEBRODER", href: PUBLIC_ROUTES.about },
-      { label: "Fresh Drop", href: "/fresh-drop" },
       ...stores
         .filter((store) => store.status_aktif)
         .sort((a, b) => a.urutan - b.urutan)

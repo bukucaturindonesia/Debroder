@@ -66,13 +66,13 @@ export function CampaignBanners({ banners, fallbackDesktopSrc, fallbackMobileSrc
     : [
         {
           id: "built-for-identity-fallback",
-          name: "Built for Identity",
+          name: "Ekspresikan Identitasmu",
           media_type: "image",
           desktop_media_url: fallbackDesktopSrc,
           mobile_media_url: fallbackMobileSrc || fallbackDesktopSrc,
           poster_url: null,
           eyebrow: "",
-          title: "BUILT FOR IDENTITY",
+          title: "Ekspresikan Identitasmu",
           subtitle: "Apparel custom untuk tim, komunitas, dan perusahaan yang ingin tampil beda.",
           cta_label: "Jelajahi Koleksi",
           cta_url: "/koleksi",
@@ -86,7 +86,10 @@ export function CampaignBanners({ banners, fallbackDesktopSrc, fallbackMobileSrc
     <section aria-label="Campaign DEBRODER" className="home-section home-campaign campaign-section landing-campaign section-space bg-white">
       <div className="campaign-shell">
         {visibleBanners.map((banner) => {
-          const title = cleanText(banner.title) || "BUILT FOR IDENTITY";
+          const configuredTitle = cleanText(banner.title);
+          const title = !configuredTitle || /^built\s+for\s+identity$/i.test(configuredTitle)
+            ? "Ekspresikan Identitasmu"
+            : configuredTitle;
           const subtitle = cleanText(banner.subtitle) || "Apparel custom untuk tim, komunitas, dan perusahaan yang ingin tampil beda.";
           const ctaLabel = cleanText(banner.cta_label) || "Jelajahi Koleksi";
           const ctaUrl = banner.cta_url || "/koleksi";

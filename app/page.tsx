@@ -22,8 +22,8 @@ import { whatsappLinkWithMessage } from "@/lib/url";
 const benefits = [
   { icon: "one", title: "Pilihan Apparel", detail: "Kaos, jaket & headwear" },
   { icon: "spark", title: "Custom Jersey", detail: "Konfigurasi kebutuhan tim" },
-  { icon: "clock", title: "Layanan Cetak", detail: "DTF dan sublimasi" },
-  { icon: "truck", title: "Toko DEBRODER", detail: "Lihat lokasi dan kontak" }
+  { icon: "clock", title: "Layanan Cetak DTF", detail: "DTF dan sublimasi" },
+  { icon: "truck", title: "Toko Debroder", detail: "Lihat lokasi dan kontak" }
 ];
 
 // Owner-requested homepage destinations; product details remain owned by PIM.
@@ -298,7 +298,7 @@ function ManagedHomepageSection({ section, setting, fallbackProducts = [] }: { s
         <section id={section.slug} className="home-section home-featured section-space bg-white">
           <PublicSectionFrame variant="near-wide" className="featured-shell">
             <SectionHeading
-              title={section.title}
+              title="Produk Pilihan"
               description={setting?.subtitle}
               textPosition={setting?.text_position}
               action={configuredCta}
@@ -321,7 +321,7 @@ function ManagedHomepageSection({ section, setting, fallbackProducts = [] }: { s
       <section id={section.slug} className="home-section home-trending section-space bg-white">
         <PublicSectionFrame variant="near-wide" className="trending-shell">
           <SectionHeading
-            title={section.title}
+            title="Sedang Tren"
             description={setting?.subtitle}
             textPosition={setting?.text_position}
             action={configuredCta}
@@ -391,7 +391,7 @@ export default async function Home() {
   const stores = content.stores.filter((item) => item.status_aktif !== false).sort((a, b) => a.urutan - b.urutan).slice(0, 4);
   const whatsappHref = whatsappLinkWithMessage(
     content.contact.whatsapp_link || content.contact.whatsapp_utama,
-    "Halo DEBRODER, saya ingin konsultasi kebutuhan apparel."
+    "Halo Debroder, saya ingin konsultasi kebutuhan kaos, sablon, atau jersey custom."
   );
   const landingSectionMap = new Map(
     content.landingSections.map((section) => [section.section_key, section])
@@ -466,9 +466,6 @@ export default async function Home() {
       <LandingSectionSlot setting={landingSection("hero")}>
         <div className={brandHeroFallback ? "home-hero-brand-fallback" : undefined}>
           <HeroSlider heroes={homepageHeroes} />
-          <nav className="home-quick-categories section-shell" aria-label="Lima kategori utama">
-            {homeCategoryRoutes.map((category) => <Link key={category.href} href={category.href}>{category.title}<span aria-hidden="true">↗</span></Link>)}
-          </nav>
         </div>
       </LandingSectionSlot>
 
@@ -558,7 +555,7 @@ export default async function Home() {
           <section id="store" className="home-section home-store landing-store section-space bg-white">
             <PublicSectionFrame variant="near-wide" className="landing-store-shell">
               <SectionHeading
-                title={landingSection("stores")?.title || "Toko DEBRODER"}
+                title="Kunjungi Toko Debroder"
                 description={landingSection("stores")?.subtitle || "Konsultasikan bahan, teknik cetak, dan estimasi produksi langsung bersama tim kami."}
                 textPosition={landingSection("stores")?.text_position}
                 action={<Link href={landingSection("stores")?.cta_url || "/store"} className="hidden text-sm font-semibold hover:underline sm:block">{landingSection("stores")?.cta_label || "Lihat Semua Toko"}</Link>}
@@ -569,16 +566,15 @@ export default async function Home() {
             </PublicSectionFrame>
           </section>
 
-          <section className="home-section home-order landing-order section-space bg-white" aria-labelledby="cara-order-heading">
+          <section className="home-section home-consultation section-space bg-white" aria-labelledby="consultation-heading">
             <PublicSectionFrame variant="near-wide">
               <div className="landing-order-panel flex flex-col gap-7 bg-[#f5f5f5] px-5 py-8 sm:px-8 sm:py-10 lg:flex-row lg:items-end lg:justify-between lg:px-12 lg:py-12">
                 <div className="max-w-3xl">
-                  <p className="landing-order-eyebrow text-sm font-medium text-black/55">Belum yakin harus mulai dari mana?</p>
-                  <h3 id="cara-order-heading" className="landing-order-title mt-2 text-3xl font-medium tracking-[-0.035em] sm:text-4xl">Pesan apparel custom dengan alur yang jelas.</h3>
+                  <h2 id="consultation-heading" className="landing-order-title text-3xl font-medium tracking-[-0.035em] sm:text-4xl">Bingung Mau Mulai dari Mana?</h2>
+                  <p className="mt-3 text-sm leading-7 text-black/65 sm:text-base">Ceritakan kebutuhan kaos, sablon, atau jersey custom kamu. Tim Debroder siap membantu lewat WhatsApp.</p>
                 </div>
                 <div className="landing-order-actions flex flex-wrap gap-2">
-                  <Link href="/cara-order" className="inline-flex min-h-12 items-center justify-center rounded-full bg-[#111] px-6 text-sm font-semibold text-white transition hover:bg-black/70">Cara Pemesanan</Link>
-                  <a href={whatsappHref} target="_blank" rel="noopener noreferrer" className="inline-flex min-h-12 items-center justify-center rounded-full border border-black/30 bg-white px-6 text-sm font-semibold text-[#111] transition hover:border-black">Konsultasi WhatsApp</a>
+                  <a href={whatsappHref} target="_blank" rel="noopener noreferrer" className="inline-flex min-h-12 items-center justify-center rounded-full bg-[#111] px-6 text-sm font-semibold text-white transition hover:bg-black/70">Konsultasi via WhatsApp</a>
                 </div>
               </div>
             </PublicSectionFrame>

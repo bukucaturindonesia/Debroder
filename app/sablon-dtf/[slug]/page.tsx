@@ -11,7 +11,8 @@ export default async function SablonDtfDetailPage({ params }: { params: Promise<
     || fallbackServices.find((item) => item.slug === slug && item.category_key === "sablon-dtf");
   if (!service) notFound();
 
-  const orderUrl = whatsappHref(content.contact.whatsapp_apparel, `Halo DE BRODER, saya ingin bertanya tentang ${service.nama}.`);
+  const orderMessage = `Halo DEBRODER, saya ingin konsultasi layanan ${service.nama}.`;
+  const orderUrl = whatsappHref(content.contact.whatsapp_apparel, orderMessage);
   const serviceImage = service.image_url?.trim();
   const hasCampaignImage = Boolean(serviceImage
     && serviceImage !== fallbackImages.pageHero
@@ -30,6 +31,7 @@ export default async function SablonDtfDetailPage({ params }: { params: Promise<
         imageZoom={service.focal_zoom}
         ctaText="Konsultasi via WhatsApp"
         ctaHref={orderUrl}
+        ctaMessage={orderMessage}
         secondaryCtaText="Kembali ke Katalog"
         secondaryCtaHref="/sablon-dtf"
         breadcrumbs={[{ label: "Beranda", href: "/" }, { label: "Sablon DTF", href: "/sablon-dtf" }, { label: service.nama }]}
@@ -52,10 +54,10 @@ export default async function SablonDtfDetailPage({ params }: { params: Promise<
         <section id="dtf-order-entry" aria-labelledby="dtf-order-title" className="section-shell mt-10 scroll-mt-28 border-y border-black/10 py-8">
           <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,0.8fr)] lg:gap-12">
             <div>
-              <p className="text-xs font-semibold uppercase tracking-[0.16em] text-black/50">Persiapan di Builder Custom</p>
+              <p className="text-xs font-semibold uppercase tracking-[0.16em] text-black/50">Persiapan opsional di Builder Custom</p>
               <h2 id="dtf-order-title" className="mt-2 text-2xl font-semibold">Siapkan spesifikasi dan desain</h2>
-              <p className="mt-3 max-w-xl text-sm leading-7 text-black/65">Gunakan builder Custom untuk memilih produk dan layanan DTF yang tersedia. Ketersediaan layanan dan upload mengikuti pilihan produk Anda.</p>
-              <Link href="/custom" className="public-button public-button--primary mt-5 w-full sm:w-auto">Buka Builder Custom</Link>
+              <p className="mt-3 max-w-xl text-sm leading-7 text-black/65">Jika diperlukan, siapkan spesifikasi di builder Custom. Ketersediaan layanan dan upload mengikuti pilihan produk Anda.</p>
+              <Link href="/custom" className="public-secondary-action mt-5 w-full sm:w-auto">Buka Builder Custom</Link>
               <p className="mt-3 text-xs leading-6 text-black/55">Jika produk atau layanan belum tersedia di builder, konsultasikan kebutuhan Anda terlebih dahulu. Pesanan belum dibuat dari halaman ini.</p>
             </div>
             <ul className="grid gap-4 text-sm sm:grid-cols-2 lg:grid-cols-1" aria-label="Persiapan pesanan DTF">

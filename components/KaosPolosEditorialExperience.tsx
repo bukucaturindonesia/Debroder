@@ -237,11 +237,11 @@ export function KaosPolosEditorialExperience({
           <nav className="public-breadcrumbs" aria-label="Breadcrumb"><Link href="/">Beranda</Link><span aria-hidden="true">/</span><span aria-current="page">Kaos Polos</span></nav>
           <div className="kaos-category-intro-content">
             <div className="min-w-0">
-              {hero.label ? <p className="kaos-blueprint-eyebrow">{hero.label}</p> : null}
-              <h1 className="kaos-category-title">Kaos Polos</h1>
-              {hero.description || (hero.title && hero.title.toLowerCase() !== "kaos polos") ? (
+              <p className="kaos-blueprint-eyebrow">Built for Every Moment</p>
+              <h1 className="kaos-category-title">Tampil Simpel, Tetap Berkarakter dengan Pilihan Kaos Polos yang Nyaman untuk Gaya Sehari-hari.</h1>
+              {hero.description ? (
                 <p className="kaos-category-subcopy">
-                  {hero.description || hero.title}
+                  {hero.description}
                 </p>
               ) : null}
             </div>
@@ -313,8 +313,8 @@ export function KaosPolosEditorialExperience({
       <section className="kaos-featured-products section-shell" aria-labelledby="kaos-featured-products-title">
         <div className="kaos-featured-products-heading">
           <div>
-            <p className="kaos-blueprint-eyebrow">Pilihan Kaos Polos</p>
-            <h2 id="kaos-featured-products-title" className="kaos-blueprint-section-label">Cotton Combed 24s & NSA Premium</h2>
+            <p className="kaos-blueprint-eyebrow">Cotton Combed 24s & NSA Premium</p>
+            <h2 id="kaos-featured-products-title" className="kaos-blueprint-section-label">Pilihan Favorit</h2>
           </div>
           <Link href="#catalog" className="public-secondary-action">Lihat Katalog <span aria-hidden="true">↗</span></Link>
         </div>
@@ -334,7 +334,7 @@ export function KaosPolosEditorialExperience({
               id="kaos-featured-heading"
               className="kaos-blueprint-section-label kaos-blueprint-heading-normal"
             >
-              Featured
+              Produk Pilihan
             </h2>
             <div className="kaos-blueprint-feature-grid mt-6 grid sm:grid-cols-2 lg:mt-8">
               {featured.map((campaign) => (

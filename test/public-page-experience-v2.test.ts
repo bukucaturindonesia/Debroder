@@ -77,6 +77,9 @@ describe("public page experience V2", () => {
     expect(detail).toContain('ctaText="Konsultasi via WhatsApp"');
     expect(detail).toContain('ctaHref={orderUrl}');
     expect(detail).toContain('const orderUrl = whatsappHref(content.contact.whatsapp_apparel,');
+    expect(detail).toContain('ctaMessage={orderMessage}');
+    expect(detail).toContain('saya ingin konsultasi layanan ${service.nama}');
+    expect(read("components/PublicPage.tsx")).toContain('actionHref(ctaHref, ctaMessage)');
     expect(detail).toContain('secondaryCtaHref="/sablon-dtf"');
     expect(detail).toContain('href="/custom"');
   });

@@ -76,16 +76,19 @@ describe("Kaos Polos owner editorial revision", () => {
     expect(experience).toContain("objectPosition={hero.objectPosition}");
     expect(experience).toContain("mobileObjectPosition={hero.mobileObjectPosition}");
     expect(experience).not.toContain("kaos-blueprint-hero-title");
-    expect(experience).toContain('<h1 className="kaos-category-title">Kaos Polos</h1>');
+    expect(experience).toContain('<h1 className="kaos-category-title">Tampil Simpel, Tetap Berkarakter dengan Pilihan Kaos Polos yang Nyaman untuk Gaya Sehari-hari.</h1>');
+    expect(experience).toContain("Built for Every Moment");
+    expect(experience).toContain('className="kaos-blueprint-section-label">Pilihan Favorit</h2>');
   });
 
-  it("uses CMS Featured cards with zero gap and regular-weight Featured heading", () => {
+  it("keeps CMS cards with zero gap and a regular-weight Produk Pilihan heading", () => {
     const experience = read("components/KaosPolosEditorialExperience.tsx");
     const css = read("app/globals.css");
 
     expect(experience).toContain("campaignsOfType(");
     expect(experience).toContain('className="kaos-blueprint-section-label kaos-blueprint-heading-normal"');
     expect(experience).toContain("<FeaturedEditorialCard");
+    expect(experience).toContain("Produk Pilihan");
     expect(css).toContain(".kaos-blueprint-feature-grid");
     expect(css).toContain("gap: 0");
     expect(css).toContain(".kaos-blueprint-heading-normal");

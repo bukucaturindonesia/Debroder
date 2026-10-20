@@ -75,6 +75,7 @@ describe("Jersey commerce experience", () => {
     expect(experience).toContain('href="/jersey/shop"');
     expect(experience).toContain('href="/jersey/configurator"');
     expect(experience).toContain("resolvedJerseySections");
+    expect(experience).toContain('className="public-section-title mb-6">Play with Identity</h2>');
     expect(experience).toContain("poster_carousel");
     expect(chrome).toContain("jersey-context-header");
     expect(styles).toContain("--jersey-section-gap");

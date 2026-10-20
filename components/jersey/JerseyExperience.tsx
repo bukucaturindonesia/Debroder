@@ -50,7 +50,7 @@ export function JerseyExperience({ content, hero, categories }: { content: Publi
 
       <section className="section-shell category-hero-following pb-7 sm:pb-9" aria-label="Jelajahi Jersey">
         <nav className="public-breadcrumbs" aria-label="Breadcrumb"><Link href="/">Beranda</Link><span aria-hidden="true">/</span><span aria-current="page">Jersey</span></nav>
-        <h2 className="public-section-title mb-6">Jersey untuk tim Anda.</h2>
+        <h2 className="public-section-title mb-6">Play with Identity</h2>
         <div className="grid gap-3 sm:grid-cols-2">
           <Link href="/jersey/shop" className="flex min-h-24 items-center justify-between gap-4 border border-black/15 px-5 py-4 transition hover:border-black"><span><span className="block text-xs text-black/50">Ready Stock</span><span className="mt-1 block text-lg font-semibold">Belanja Jersey</span></span><span aria-hidden="true" className="text-xl">→</span></Link>
           <Link href="/jersey/configurator" className="flex min-h-24 items-center justify-between gap-4 border border-black/15 px-5 py-4 transition hover:border-black"><span><span className="block text-xs text-black/50">Konfigurasi untuk tim</span><span className="mt-1 block text-lg font-semibold">Custom Jersey</span></span><span aria-hidden="true" className="text-xl">→</span></Link>
