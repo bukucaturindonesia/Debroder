@@ -87,6 +87,7 @@ EMPTY SUPABASE
  -> 20260820065821_wave_1_admin_shell_read_grants.sql [RUN]
  -> 20260824152251_wave_3_product_media_storage.sql [RUN]
  -> 20260923172557_wave_3_superadmin_product_publish_grant.sql [RUN]
+ -> 20261020163915_p0_regular_checkout_recovery_v1.sql [RUN]
  -> CURRENT HEAD
 ```
 
@@ -313,6 +314,7 @@ retired API or legacy upload surface to the fresh-install baseline.
 | `20260820065821_wave_1_admin_shell_read_grants.sql` | RUN | Restore authenticated reads for the RLS-protected notification and repeat-order support panels. |
 | `20260824152251_wave_3_product_media_storage.sql` | RUN | Restore the canonical `website-images` bucket and public-read/superadmin-write media policies after the baseline has established `is_superadmin()`; no Product or media object rows are seeded. |
 | `20260923172557_wave_3_superadmin_product_publish_grant.sql` | RUN | Grant the canonical `superadmin`/`product.publish` permission after the role-permission schema and permission catalog exist; no Auth user or Product row is seeded. |
+| `20261020163915_p0_regular_checkout_recovery_v1.sql` | RUN | Reconcile registered Ready Stock RPC signatures, serialize same-key retries, and initialize pickup shipping cost at zero; preserve canonical pricing/stock and service-role ACLs without changing historical orders. |
 | `mockup_approval_foundation_phase_3a_applied.sql` | HISTORICAL ONLY |
 | `mockup_public_approval_phase_3b_applied.sql` | HISTORICAL ONLY |
 | `order_conversion_phase_4_applied.sql` | HISTORICAL ONLY |

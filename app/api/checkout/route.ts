@@ -1,5 +1,5 @@
 import { createHash } from "node:crypto";
-import { parsePublicCheckoutRequest } from "@/lib/commerce-checkout";
+import { isCheckoutDomainException, parsePublicCheckoutRequest } from "@/lib/commerce-checkout";
 import {
   CheckoutBodyError,
   createCheckoutAbuseHashes,
@@ -361,9 +361,10 @@ export async function POST(request: Request) {
 
     if (error) {
       logServerEvent("warn", observability, "checkout.domain_rejected", {
-        sourceCode: error.code
+        sourceCode: error.code,
+        rpcName
       });
-      return checkoutDomainError(error.message, respond);
+      return checkoutDomainError(error, respond);
     }
 
     const result = data as { order_id?: string; order_number?: string; status?: string } | null;
@@ -436,9 +437,19 @@ export async function POST(request: Request) {
 }
 
 function checkoutDomainError(
-  message: string,
+  error: { code?: string; message: string },
   respond: (body: unknown, status: number, headers?: HeadersInit) => Response
 ) {
+  // PostgREST errors include RPC parameter names such as "snapshot". They
+  // describe server/schema failures, never an invalid customer configuration.
+  if (!isCheckoutDomainException(error)) {
+    return respond(
+      { code: "CHECKOUT_UNAVAILABLE", error: "Checkout belum tersedia. Keranjang Anda tetap tersimpan. Coba lagi atau hubungi bantuan dengan kode referensi." },
+      503,
+      { "retry-after": "15" }
+    );
+  }
+  const { message } = error;
   if (/Ready Stock dan Custom Project/i.test(message)) {
     return respond({
       code: "CHECKOUT_MIXED_CART",
@@ -454,7 +465,7 @@ function checkoutDomainError(
   if (/tidak lagi aktif|quotation|configurator/i.test(message)) {
     return respond({ code: "CHECKOUT_ITEM_UNAVAILABLE", error: "Salah satu item tidak tersedia untuk checkout langsung." }, 409);
   }
-  if (/layanan|referensi upload|input angka|snapshot/i.test(message)) {
+  if (/layanan|referensi upload|input angka/i.test(message)) {
     return respond({ code: "CHECKOUT_SERVICE_INVALID", error: "Konfigurasi layanan berubah atau belum lengkap. Muat ulang produk dan coba lagi." }, 409);
   }
   if (/quantity|keranjang|pelanggan|whatsapp|email|fulfillment|pickup|pembayaran|alamat|token|kunci checkout|hierarki|kode pos/i.test(message)) {
