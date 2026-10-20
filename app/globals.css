@@ -4242,6 +4242,106 @@ button,
   }
 }
 
+/* Account and tracking share the established storefront tokens. */
+.debroder-storefront [data-ui-customer] {
+  color: var(--color-ink);
+}
+
+.debroder-storefront .customer-area {
+  padding-bottom: calc(var(--space-12) + 80px + env(safe-area-inset-bottom));
+}
+
+.debroder-storefront [data-ui-customer] :is(div, section, article, label, details, header, nav, main, aside) {
+  min-width: 0;
+}
+
+.debroder-storefront [data-ui-customer] :is(h1, h2, h3, p, strong, dt, dd, a, button) {
+  overflow-wrap: anywhere;
+}
+
+.debroder-storefront [data-ui-customer] :is(.customer-panel, .rounded-2xl, .rounded-xl, section, details),
+.debroder-storefront [data-ui-customer] :is(button, a.rounded-full, nav a) {
+  border-radius: var(--public-radius-control-canonical);
+}
+
+.debroder-storefront [data-ui-customer] :is(button, summary, a.rounded-full, nav a) {
+  min-height: var(--control-md);
+}
+
+.debroder-storefront [data-ui-customer] :is(input:not([type="checkbox"]):not([type="radio"]):not([type="hidden"]), select, textarea) {
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
+  min-height: var(--control-md);
+  border: var(--divider-width) solid var(--color-border);
+  border-radius: var(--public-radius-control-canonical);
+  padding: var(--space-3);
+  font-size: var(--text-body);
+  line-height: var(--leading-body);
+  scroll-margin-block: var(--space-24);
+}
+
+.debroder-storefront [data-ui-customer] :is(a, button, input, select, textarea, summary):focus-visible {
+  outline: var(--focus-ring-width) solid var(--color-info-focus);
+  outline-offset: var(--focus-ring-offset);
+}
+
+.debroder-storefront [data-ui-customer] :is(input, select, textarea):user-invalid {
+  border-color: var(--color-sale-error);
+}
+
+.debroder-storefront [data-ui-customer] :is(button, input, select, textarea):disabled {
+  cursor: not-allowed;
+  opacity: var(--public-disabled-opacity);
+}
+
+.debroder-storefront [data-ui-customer] .customer-status {
+  border-radius: var(--public-radius-control-canonical);
+  background-color: var(--color-surface-soft);
+  padding: var(--space-2) var(--space-3);
+  line-height: var(--leading-caption);
+}
+
+.debroder-storefront [data-ui-customer] :is(.customer-summary-row, .customer-item-row) {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: var(--space-3);
+}
+
+.debroder-storefront [data-ui-customer] .customer-item-row {
+  grid-template-columns: minmax(0, 1fr) minmax(0, .65fr);
+}
+
+.debroder-storefront [data-ui-customer] .customer-item-row > :last-child {
+  text-align: right;
+}
+
+.debroder-storefront [data-ui-customer] .customer-empty {
+  display: grid;
+  min-height: 160px;
+  align-content: center;
+}
+
+.debroder-storefront [data-ui-customer] section[role="alert"] {
+  background: var(--danger-soft);
+}
+
+.debroder-storefront [data-ui-customer] section[role="status"] {
+  background: var(--warning-soft);
+}
+
+@media (min-width: 640px) {
+  .debroder-storefront [data-ui-customer] ol[aria-label="Tahap utama pesanan"] {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 1024px) {
+  .debroder-storefront .customer-area {
+    padding-bottom: var(--space-12);
+  }
+}
+
 /* Checkout, payment and confirmation consume the existing public tokens. */
 .debroder-storefront [data-ui-transaction] :is(input:not([type="checkbox"]):not([type="radio"]):not([type="hidden"]), select, textarea) {
   width: 100%;
