@@ -68,13 +68,17 @@ describe("public page experience V2", () => {
     expect(hub).not.toContain("bg-black py-12 text-white");
   });
 
-  it("keeps DTF service details as the primary path and WhatsApp as consultation", () => {
+  it("routes the DTF custom primary CTA to WhatsApp while preserving catalog and builder navigation", () => {
     const cards = read("components/ServiceCatalog.tsx");
     const detail = read("app/sablon-dtf/[slug]/page.tsx");
     expect(cards).toContain("Lihat detail");
     expect(cards).toContain("Konsultasi");
     expect(cards).not.toContain(">Pesan</a>");
     expect(detail).toContain('ctaText="Konsultasi via WhatsApp"');
+    expect(detail).toContain('ctaHref={orderUrl}');
+    expect(detail).toContain('const orderUrl = whatsappHref(content.contact.whatsapp_apparel,');
+    expect(detail).toContain('secondaryCtaHref="/sablon-dtf"');
+    expect(detail).toContain('href="/custom"');
   });
 
   it("publishes accessible legal drafts at existing canonical routes without claiming legal approval", () => {
