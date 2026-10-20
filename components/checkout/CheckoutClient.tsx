@@ -311,14 +311,15 @@ export function CheckoutClient({ stores }: { stores: StoreOption[] }) {
     }
   }
 
-  if (!cart.isLoaded || recovering) return <CheckoutMessage title={recovering ? "Memulihkan checkout..." : "Memuat keranjang..."} />;
-  if (!cart.items.length) return <CheckoutMessage title="Keranjang masih kosong." action="/koleksi" actionLabel="Lihat Koleksi" />;
+  if (!cart.isLoaded || recovering) return <CheckoutMessage busy title={recovering ? "Memulihkan checkout..." : "Memuat keranjang..."} description="Tunggu sebentar saat kami memeriksa checkout Anda." />;
+  if (!cart.items.length) return <CheckoutMessage title="Keranjang masih kosong." description="Pilih produk dan lengkapi jumlahnya sebelum melanjutkan ke checkout." action="/koleksi" actionLabel="Lihat Koleksi" />;
 
   return (
-    <section data-ui-surface="checkout" className="debroder-checkout-surface bg-[#f6f5f0] px-4 py-10 sm:py-16">
+    <section data-ui-surface="checkout" data-ui-transaction="checkout" className="debroder-checkout-surface bg-[var(--color-canvas)] py-8 sm:py-12">
       <div className="section-shell">
+        <nav aria-label="Breadcrumb" className="mb-6 flex flex-wrap gap-2 text-sm text-black/60"><Link href="/keranjang" className="underline-offset-4 hover:underline">Keranjang</Link><span aria-hidden="true">/</span><span aria-current="page" className="font-semibold text-black">Checkout</span></nav>
         <p className="text-xs font-semibold uppercase tracking-[0.18em] text-black/45">Checkout</p>
-        <h1 className="mt-3 text-3xl font-semibold sm:text-5xl">Selesaikan pesanan dengan cepat</h1>
+        <h1 className="mt-3 text-3xl font-semibold tracking-tight sm:text-[40px]">Selesaikan pesanan Anda</h1>
         <p className="mt-3 max-w-2xl text-sm leading-7 text-black/60">Anda dapat melanjutkan sebagai tamu atau memakai akun pelanggan. Ketersediaan produk, konfigurasi, jumlah, dan harga diperiksa kembali saat pesanan dibuat.</p>
 
         {!cart.checkoutDecision.allowed && cart.checkoutDecision.code === "CART_MIXED_CHECKOUT_MODE" ? (
@@ -337,8 +338,8 @@ export function CheckoutClient({ stores }: { stores: StoreOption[] }) {
           </div>
         ) : null}
 
-        <form onSubmit={submit} className="mt-8 grid gap-6 lg:grid-cols-[1.15fr_0.85fr]">
-          <div className="grid gap-6">
+        <form onSubmit={submit} aria-busy={submitting} className="mt-8 grid items-start gap-6 lg:grid-cols-[minmax(0,1.15fr)_minmax(0,0.85fr)]">
+          <div className="grid min-w-0 gap-6">
             <Panel title="Data pelanggan">
               <div className="grid gap-4 sm:grid-cols-2">
                 <Field label="Nama lengkap"><input name="name" value={customerName} onChange={(event) => setCustomerName(event.target.value)} autoComplete="name" minLength={2} maxLength={150} required /></Field>
@@ -352,7 +353,7 @@ export function CheckoutClient({ stores }: { stores: StoreOption[] }) {
             </Panel>
 
             <Panel title="Metode Pengiriman">
-              <div className="grid gap-3 sm:grid-cols-2">
+              <div role="group" aria-label="Pilihan pengiriman" className="grid gap-3 sm:grid-cols-2">
                 <Choice checked={fulfillment === "pickup"} disabled={!stores.length} onChange={() => setFulfillment("pickup")} title="Ambil di Toko" detail="Tanpa ongkir; stok disimpan otomatis selama 12 jam setelah pesanan dibuat." />
                 <Choice checked={fulfillment === "shipping"} onChange={() => setFulfillment("shipping")} title="Kurir Eksternal" detail="Admin mengecek ongkir; stok direservasi 24 jam setelah total disetujui." />
               </div>
@@ -372,10 +373,10 @@ export function CheckoutClient({ stores }: { stores: StoreOption[] }) {
             </Panel>
           </div>
 
-          <aside data-ui-surface="checkout-summary" className="public-panel public-checkout-summary h-fit rounded-2xl bg-white p-5 sm:p-6 lg:sticky lg:top-24">
+          <aside data-ui-surface="checkout-summary" aria-label="Ringkasan pesanan" className="public-panel public-checkout-summary min-w-0 h-fit rounded-functional border border-black/10 bg-white p-5 sm:p-6 lg:sticky lg:top-24">
             <h2 className="text-xl font-semibold">Ringkasan pesanan</h2>
             <div className="mt-5 grid gap-4">{readyItems.map((item) => (
-              <div key={item.lineId} className="grid grid-cols-[minmax(0,1fr)_auto] items-start gap-3 border-b border-black/10 pb-4 text-sm">
+              <div key={item.lineId} className="grid min-w-0 items-start gap-3 border-b border-black/10 pb-4 text-sm sm:grid-cols-[minmax(0,1fr)_auto]">
                 <div className="flex min-w-0 gap-3">
                   <CheckoutLineImage item={item} />
                   <div className="min-w-0"><p className="font-semibold">{item.name}</p><p className="mt-1 text-black/55">{item.variantName || item.color} · {item.size} · {item.sku} × {item.quantity}</p>{item.instantCustom?.pricing.map((service) => <p key={service.serviceId} className="mt-1 text-xs text-amber-800">{service.serviceName} · {formatRupiah(service.total)}</p>)}</div>
@@ -383,7 +384,7 @@ export function CheckoutClient({ stores }: { stores: StoreOption[] }) {
                 <p className="shrink-0 font-semibold">{formatRupiah(cartItemSubtotal(item))}</p>
               </div>
             ))}{configuredItems.map((item) => (
-              <div key={item.lineId} className="grid grid-cols-[minmax(0,1fr)_auto] items-start gap-3 border-b border-black/10 pb-4 text-sm">
+              <div key={item.lineId} className="grid min-w-0 items-start gap-3 border-b border-black/10 pb-4 text-sm sm:grid-cols-[minmax(0,1fr)_auto]">
                 <div className="flex min-w-0 gap-3">
                   <CheckoutLineImage item={item} />
                   <div className="min-w-0">
@@ -395,13 +396,18 @@ export function CheckoutClient({ stores }: { stores: StoreOption[] }) {
               </div>
             ))}{customItems.map((item) => {
               const exact = isFinalExactCustomPricing(item.customProject.pricing);
-              return <div key={item.lineId} className="grid grid-cols-[minmax(0,1fr)_auto] items-start gap-3 border-b border-black/10 pb-4 text-sm"><div className="flex min-w-0 gap-3"><CheckoutLineImage item={item} /><div className="min-w-0"><p className="font-semibold">{item.name}</p><p className="mt-1 text-black/55">{item.customProject.items.length} grup produk · {item.customProject.pricing.totalQuantity} pcs · {exact ? "Harga pasti" : "Order tanpa nominal"}</p><CustomCheckoutPairSummary project={item.customProject} /></div></div><p className="shrink-0 font-semibold">{exact ? formatRupiah(item.customProject.pricing.finalTotal) : "Belum ditetapkan"}</p></div>;
+              return <div key={item.lineId} className="grid min-w-0 items-start gap-3 border-b border-black/10 pb-4 text-sm sm:grid-cols-[minmax(0,1fr)_auto]"><div className="flex min-w-0 gap-3"><CheckoutLineImage item={item} /><div className="min-w-0"><p className="font-semibold">{item.name}</p><p className="mt-1 text-black/55">{item.customProject.items.length} grup produk · {item.customProject.pricing.totalQuantity} pcs · {exact ? "Harga pasti" : "Order tanpa nominal"}</p><CustomCheckoutPairSummary project={item.customProject} /></div></div><p className="shrink-0 font-semibold">{exact ? formatRupiah(item.customProject.pricing.finalTotal) : "Belum ditetapkan"}</p></div>;
             })}</div>
-            <div className="mt-5 flex items-center justify-between"><span>Subtotal</span><strong>{hasPendingCustomPricing ? "Belum ditetapkan" : formatRupiah(subtotal)}</strong></div>
+            <dl className="mt-5 grid gap-3 text-sm">
+              <div className="transaction-summary-row"><dt>Subtotal</dt><dd className="text-right font-semibold">{hasPendingCustomPricing ? "Belum ditetapkan" : formatRupiah(subtotal)}</dd></div>
+              <div className="transaction-summary-row"><dt>Ongkir</dt><dd className="text-right">{fulfillment === "shipping" ? "Menunggu konfirmasi Admin" : "Tanpa ongkir"}</dd></div>
+              <div className="transaction-summary-row border-t border-black/10 pt-4 text-base font-semibold"><dt>Total pesanan</dt><dd className="text-right">{hasPendingCustomPricing ? "Menunggu penawaran" : fulfillment === "shipping" ? "Menunggu ongkir" : formatRupiah(subtotal)}</dd></div>
+            </dl>
             <p className="mt-3 text-xs leading-5 text-black/50">{hasPendingCustomPricing ? "Order dibuat terlebih dahulu. Tidak ada pembayaran sampai penawaran resmi disetujui." : fulfillment === "shipping" ? "Admin akan menambahkan ongkir pada pesanan ini, lalu Anda dapat menyetujui total akhirnya." : "Pengambilan di toko tidak dikenakan ongkir."}</p>
-            {error ? <p className="mt-4 border border-red-200 bg-red-50 p-3 text-sm text-red-700">{error}</p> : null}
-            <button type="submit" disabled={submitting || retryAfter > 0 || checkoutBlocked || (fulfillment === "shipping" && !addressConfirmed)} className="mt-5 min-h-12 w-full rounded-full bg-black px-5 font-semibold text-white hover:bg-black/75 disabled:cursor-not-allowed disabled:opacity-45">{submitting ? "Membuat pesanan..." : retryAfter > 0 ? `Coba lagi ${retryAfter} dtk` : hasPendingCustomPricing ? "Buat Order & Minta Penawaran" : "Buat Pesanan"}</button>
-            <p className="mt-3 text-center text-[11px] leading-5 text-black/45">Pesanan menggunakan kunci pemulihan yang sama selama hasil sebelumnya belum diketahui. Jangan membuka checkout baru ketika jaringan terputus.</p>
+            {error ? <p role="alert" className="mt-4 rounded-functional border border-red-200 bg-red-50 p-3 text-sm text-red-700">{error}</p> : null}
+            <p id="checkout-submit-feedback" role="status" aria-live="polite" className="mt-4 text-sm leading-6 text-black/65">{submitting ? "Pesanan sedang dibuat. Tunggu hingga proses selesai." : checkoutBlocked ? "Tinjau keranjang dan peringatan sebelum melanjutkan." : fulfillment === "shipping" && !addressConfirmed ? "Lengkapi dan konfirmasi alamat untuk melanjutkan." : "Periksa kembali ringkasan sebelum membuat pesanan."}</p>
+            <button type="submit" disabled={submitting || retryAfter > 0 || checkoutBlocked || (fulfillment === "shipping" && !addressConfirmed)} aria-busy={submitting} aria-describedby="checkout-submit-feedback" className="public-button public-button--primary mt-5 min-h-12 w-full text-center disabled:cursor-not-allowed">{submitting ? "Membuat pesanan..." : retryAfter > 0 ? `Coba lagi ${retryAfter} dtk` : hasPendingCustomPricing ? "Buat Order & Minta Penawaran" : "Buat Pesanan"}</button>
+            <p className="mt-3 text-center text-xs leading-5 text-black/55">Jika jaringan terputus, tunggu pemulihan checkout ini. Hindari membuka checkout baru sebelum hasilnya dipastikan.</p>
           </aside>
         </form>
       </div>
@@ -505,10 +511,10 @@ function readStoredDraft(): CheckoutDraft | null {
   }
 }
 
-function CheckoutMessage({ title, action, actionLabel }: { title: string; action?: string; actionLabel?: string }) {
-  return <section data-ui-state="checkout-message" className="debroder-checkout-surface bg-[#f6f5f0] px-4 py-24"><div className="public-panel mx-auto max-w-xl rounded-2xl bg-white p-8 text-center"><h1 className="text-2xl font-semibold">{title}</h1>{action ? <Link href={action} className="mt-5 inline-flex rounded-full bg-black px-5 py-3 font-semibold text-white hover:bg-black/75">{actionLabel}</Link> : null}</div></section>;
+function CheckoutMessage({ title, description, action, actionLabel, busy = false }: { title: string; description?: string; action?: string; actionLabel?: string; busy?: boolean }) {
+  return <section data-ui-state="checkout-message" data-ui-transaction="checkout" className="debroder-checkout-surface px-4 py-12 sm:py-16"><div className="public-panel transaction-state mx-auto max-w-xl border border-black/10 bg-white p-6 text-center sm:p-8" aria-busy={busy} role={busy ? "status" : undefined}><p className="mb-3 text-xs font-semibold uppercase tracking-[0.16em] text-black/50">Checkout DEBRODER</p><h1 className="text-2xl font-semibold">{title}</h1>{description ? <p className="mt-3 text-sm leading-6 text-black/65">{description}</p> : null}{action ? <Link href={action} className="public-button public-button--primary mt-6">{actionLabel}</Link> : null}</div></section>;
 }
 
-function Panel({ title, children }: { title: string; children: React.ReactNode }) { return <section data-ui-surface="checkout-panel" className="public-panel rounded-2xl bg-white p-5 sm:p-6"><h2 className="text-xl font-semibold">{title}</h2><div className="mt-5">{children}</div></section>; }
+function Panel({ title, children }: { title: string; children: React.ReactNode }) { return <section data-ui-surface="checkout-panel" className="public-panel min-w-0 rounded-functional border border-black/10 bg-white p-5 sm:p-6"><h2 className="text-xl font-semibold">{title}</h2><div className="mt-5">{children}</div></section>; }
 function Field({ label, children }: { label: string; children: React.ReactNode }) { return <label className="grid gap-2 text-sm font-semibold [&_input]:min-h-11 [&_input]:rounded-xl [&_input]:border [&_input]:border-black/15 [&_input]:px-3 [&_select]:min-h-11 [&_select]:rounded-xl [&_select]:border [&_select]:border-black/15 [&_select]:px-3 [&_textarea]:rounded-xl [&_textarea]:border [&_textarea]:border-black/15 [&_textarea]:p-3">{label}{children}</label>; }
-function Choice({ checked, disabled, onChange, title, detail }: { checked: boolean; disabled?: boolean; onChange: () => void; title: string; detail: string }) { return <button type="button" disabled={disabled} onClick={onChange} className={`rounded-2xl border p-4 text-left disabled:opacity-40 ${checked ? "border-[#063d24] bg-emerald-50" : "border-black/10"}`}><span className="font-semibold">{title}</span><span className="mt-1 block text-xs leading-5 text-black/55">{detail}</span></button>; }
+function Choice({ checked, disabled, onChange, title, detail }: { checked: boolean; disabled?: boolean; onChange: () => void; title: string; detail: string }) { return <button type="button" disabled={disabled} aria-pressed={checked} onClick={onChange} className={`min-w-0 rounded-functional border p-4 text-left disabled:opacity-40 ${checked ? "border-[#063d24] bg-emerald-50" : "border-black/10"}`}><span className="font-semibold">{title}</span><span className="mt-1 block text-xs leading-5 text-black/55">{detail}</span></button>; }

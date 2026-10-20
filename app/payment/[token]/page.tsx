@@ -7,8 +7,10 @@ export default async function PaymentPage({ params }: { params: Promise<{ token:
   const { token } = await params;
   return (
     <PublicShell>
-      <section className="min-h-screen bg-brand-offWhite px-4 py-10 text-brand-charcoal sm:py-14">
+      <section data-ui-transaction="payment" className="min-h-[60vh] bg-brand-offWhite py-8 text-brand-charcoal sm:py-12">
+        <div className="section-shell">
         <PublicPaymentForm token={token} />
+        </div>
       </section>
     </PublicShell>
   );

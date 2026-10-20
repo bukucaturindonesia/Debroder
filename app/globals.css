@@ -4241,3 +4241,105 @@ button,
     object-fit: contain !important;
   }
 }
+
+/* Checkout, payment and confirmation consume the existing public tokens. */
+.debroder-storefront [data-ui-transaction] :is(input:not([type="checkbox"]):not([type="radio"]):not([type="hidden"]), select, textarea) {
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
+  min-height: var(--control-md);
+  border: var(--divider-width) solid var(--color-border);
+  border-radius: var(--public-radius-control-canonical);
+  background: var(--color-canvas);
+  padding: var(--space-3);
+  color: var(--color-ink);
+  font-size: var(--text-body);
+  font-weight: var(--font-weight-regular);
+  line-height: var(--leading-body);
+  scroll-margin-block: var(--space-24);
+}
+
+.debroder-storefront [data-ui-transaction] input[readonly] {
+  background: var(--color-surface-soft);
+}
+
+.debroder-storefront [data-ui-transaction] :is(input[type="checkbox"], input[type="radio"]) {
+  width: var(--space-5);
+  min-width: var(--space-5);
+  height: var(--space-5);
+  min-height: var(--space-5);
+  flex-shrink: 0;
+  accent-color: var(--color-brand-primary);
+}
+
+.debroder-storefront [data-ui-transaction] input[type="file"]::file-selector-button {
+  min-height: var(--control-sm);
+  margin-right: var(--space-3);
+  border: 0;
+  border-radius: var(--public-radius-control-canonical);
+  background: var(--color-surface-soft);
+  padding-inline: var(--space-3);
+  font: inherit;
+}
+
+.debroder-storefront [data-ui-transaction] :is(button, summary, a.rounded-full) {
+  min-height: var(--control-md);
+  border-radius: var(--public-radius-control-canonical);
+}
+
+.debroder-storefront [data-ui-transaction] :is(a, button, input, select, textarea, summary):focus-visible {
+  outline: var(--focus-ring-width) solid var(--color-info-focus);
+  outline-offset: var(--focus-ring-offset);
+}
+
+.debroder-storefront [data-ui-transaction] :is(input, select, textarea):is(:user-invalid, [aria-invalid="true"]) {
+  border-color: var(--color-sale-error);
+}
+
+.debroder-storefront [data-ui-transaction] :is(input, select, textarea, button):disabled {
+  opacity: var(--public-disabled-opacity);
+  cursor: not-allowed;
+}
+
+.debroder-storefront [data-ui-transaction] :is(div, section, article, fieldset, label, details, header) {
+  min-width: 0;
+}
+
+.debroder-storefront [data-ui-transaction] :is(h1, h2, p, strong, dt, dd, a, button) {
+  overflow-wrap: anywhere;
+}
+
+.debroder-storefront [data-ui-transaction] .transaction-summary-row {
+  display: grid;
+  grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
+  gap: var(--space-3);
+}
+
+.debroder-storefront [data-ui-transaction] .transaction-summary-row > * {
+  min-width: 0;
+}
+
+.debroder-storefront [data-ui-transaction] .transaction-state {
+  min-height: 220px;
+  border-radius: var(--public-radius-control-canonical);
+}
+
+.debroder-storefront [data-ui-transaction] section[role="alert"] {
+  background: var(--danger-soft);
+  border-radius: var(--public-radius-control-canonical);
+}
+
+.debroder-storefront [data-ui-transaction] section[role="status"] {
+  background: var(--warning-soft);
+  border-radius: var(--public-radius-control-canonical);
+}
+
+@media (max-width: 639px) {
+  .debroder-storefront [data-ui-transaction] header > div {
+    max-width: 100%;
+  }
+
+  .debroder-storefront [data-ui-transaction] .transaction-state :is(.public-button, .public-secondary-action) {
+    width: 100%;
+  }
+}

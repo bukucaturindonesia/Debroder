@@ -91,7 +91,7 @@ export function OrderConfirmationClient({ token }: { token: string }) {
     }
   }
 
-  if (loading && !data) return <Shell><p>Memuat pesanan...</p></Shell>;
+  if (loading && !data) return <Shell><div role="status" aria-busy="true"><h1 className="text-2xl font-semibold">Konfirmasi pesanan</h1><p className="mt-3 text-sm leading-6 text-black/65">Memuat pesanan...</p></div></Shell>;
   if (error && !data) {
     return (
       <Shell>
@@ -148,20 +148,23 @@ export function OrderConfirmationClient({ token }: { token: string }) {
   });
 
   return (
-    <div className="mx-auto max-w-4xl pb-24 sm:pb-0">
+    <div className="mx-auto min-w-0 max-w-4xl pb-8">
       <header className="flex flex-wrap items-start justify-between gap-4">
         <div>
-          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-black/45">Pesanan DEBRODER</p>
-          <h1 className="mt-2 text-3xl font-semibold sm:text-4xl">{order.orderNumber}</h1>
+          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-black/45">Konfirmasi Pesanan DEBRODER</p>
+          <h1 className="mt-2 break-words text-3xl font-semibold tracking-tight sm:text-4xl">{order.orderNumber}</h1>
           <p className="mt-2 text-sm text-black/55">
             {order.customerName} · {order.maskedPhone} · {getOrderStatusLabel(order.status, "customer")}
           </p>
         </div>
-        <PersistentTrackingButton href={trackingPath} />
+        <PersistentTrackingButton href={trackingPath} mobilePlacement="inline" />
       </header>
+
+      <p className="mt-5 rounded-functional border border-black/10 bg-[var(--color-surface-soft)] p-4 text-sm leading-6 text-black/65">Pesanan Anda sudah tercatat. Periksa status pembayaran dan langkah berikutnya di bawah. Pesanan tercatat tidak berarti pembayaran sudah terverifikasi.</p>
 
       <div className="mt-7">
         <CustomerOrderStatusCard
+          className="keep-section-bg min-w-0 rounded-functional"
           presentation={presentation}
           primaryAction={primaryAction}
         >
@@ -196,8 +199,9 @@ export function OrderConfirmationClient({ token }: { token: string }) {
               <button
                 type="button"
                 disabled={approving || !acknowledged}
+                aria-busy={approving}
                 onClick={() => void decideCustomQuote("approve_custom_quote")}
-                className="mt-4 min-h-11 rounded-full bg-black px-5 font-semibold text-white hover:bg-black/75 disabled:opacity-45"
+                className="public-button public-button--primary mt-4 text-center disabled:opacity-45"
               >
                 {approving ? "Menyimpan keputusan..." : "Setujui Penawaran"}
               </button>
@@ -216,8 +220,9 @@ export function OrderConfirmationClient({ token }: { token: string }) {
                 <button
                   type="button"
                   disabled={approving || revisionReason.trim().length < 5}
+                  aria-busy={approving}
                   onClick={() => void decideCustomQuote("request_custom_revision")}
-                  className="mt-3 min-h-11 rounded-full border border-black/30 bg-white px-5 font-semibold disabled:opacity-45"
+                  className="public-secondary-action mt-3 border border-black/30 bg-white text-center font-semibold disabled:opacity-45"
                 >
                   Minta Revisi
                 </button>
@@ -236,8 +241,9 @@ export function OrderConfirmationClient({ token }: { token: string }) {
               <button
                 type="button"
                 disabled={approving}
+                aria-busy={approving}
                 onClick={() => void approveTotal()}
-                className="mt-4 min-h-11 rounded-full bg-black px-5 font-semibold text-white disabled:opacity-45"
+                className="public-button public-button--primary mt-4 text-center disabled:opacity-45"
               >
                 {approving ? "Memvalidasi stok..." : "Setujui Total"}
               </button>
@@ -257,7 +263,7 @@ export function OrderConfirmationClient({ token }: { token: string }) {
       />
 
       {isPickup && presentation.action !== "pickup" && !data.terminal ? (
-        <section className="mt-5 rounded-[24px] border border-amber-300 bg-amber-50 p-5 text-sm text-amber-950">
+        <section className="keep-section-bg mt-5 rounded-functional border border-amber-300 bg-amber-50 p-5 text-sm text-amber-950">
           <p className="font-semibold">Penting sebelum datang ke toko</p>
           <p className="mt-2 leading-6">Jangan datang sebelum menerima konfirmasi dari Admin. Barang Ready Stock mungkin masih berada di lokasi penyimpanan lain, sedang disiapkan, atau perlu dipindahkan ke toko.</p>
           <a href={pickupWhatsappHref} target="_blank" rel="noopener noreferrer" className="mt-4 inline-flex min-h-11 items-center rounded-full border border-amber-900/30 bg-white px-5 font-semibold hover:border-amber-900">
@@ -266,14 +272,14 @@ export function OrderConfirmationClient({ token }: { token: string }) {
         </section>
       ) : null}
 
-      {actionError ? <p className="mt-5 rounded-2xl border border-red-200 bg-red-50 p-4 text-sm text-red-700">{actionError}</p> : null}
+      {actionError ? <p role="alert" className="mt-5 rounded-functional border border-red-200 bg-red-50 p-4 text-sm text-red-700">{actionError}</p> : null}
 
       <div className="mt-6 grid gap-3">
-        <Disclosure title="Ringkasan pesanan" summary={`${data.items.length} item · ${pricingIsFinal ? formatRupiah(order.total) : "Harga sedang ditetapkan"}`}>
+        <Disclosure title="Ringkasan pesanan" summary={`${data.items.length} item · ${pricingIsFinal ? formatRupiah(order.total) : "Harga sedang ditetapkan"}`} defaultOpen>
           <div className="divide-y divide-black/10 border-y border-black/10">
             {data.items.map((item) => (
-              <article key={item.id} className="flex justify-between gap-4 py-4 text-sm">
-                <div>
+              <article key={item.id} className="transaction-summary-row gap-4 py-4 text-sm">
+                <div className="min-w-0">
                   <p className="font-semibold">{item.productName}</p>
                   <p className="mt-1 text-black/55">{[item.variantName || item.color, item.size, item.sku, `${item.quantity} pcs`].filter(Boolean).join(" · ")}</p>
                 </div>
@@ -313,13 +319,14 @@ export function OrderConfirmationClient({ token }: { token: string }) {
           <p className="text-sm leading-6 text-black/60">Jangan bagikan tautan ini kepada orang lain.</p>
           {order.trackingTokenExpiresAt ? <p className="mt-2 text-xs text-black/50">Berlaku sampai {formatDate(order.trackingTokenExpiresAt)}.</p> : null}
           <div className="mt-4 flex flex-wrap gap-3">
-            <Link href={trackingPath} className="inline-flex min-h-11 items-center rounded-full bg-black px-5 text-sm font-semibold text-white">Lacak Pesanan</Link>
-            <button type="button" onClick={() => void copyTrackingLink()} className="min-h-11 rounded-full border border-black/20 px-5 text-sm font-semibold">
+            <Link href={trackingPath} className="public-button public-button--primary text-center">Lacak Pesanan</Link>
+            <button type="button" onClick={() => void copyTrackingLink()} className="public-secondary-action border border-black/20 text-center font-semibold">
               {trackingCopied ? "Link Tersalin" : "Salin Link"}
             </button>
           </div>
         </Disclosure>
       </div>
+      <div className="mt-6 border-t border-black/10 pt-6"><Link href="/koleksi" className="public-secondary-action w-full border border-black/20 bg-white text-center sm:w-auto">Kembali Berbelanja</Link></div>
     </div>
   );
 }
@@ -339,7 +346,7 @@ function renderPrimaryAction({
   orderTotal: number;
   paymentStatus: string;
 }) {
-  const primaryClass = "inline-flex min-h-12 items-center justify-center rounded-full bg-black px-6 text-sm font-semibold text-white hover:bg-black/75";
+  const primaryClass = "public-button public-button--primary min-h-12 text-center";
   if ((presentationAction === "pay" || presentationAction === "resubmit_payment") && paymentUrl) {
     return (
       <Link href={paymentUrl} className={primaryClass}>
@@ -356,10 +363,10 @@ function renderPrimaryAction({
   return undefined;
 }
 
-function Disclosure({ title, summary, children }: { title: string; summary: string; children: ReactNode }) {
+function Disclosure({ title, summary, children, defaultOpen = false }: { title: string; summary: string; children: ReactNode; defaultOpen?: boolean }) {
   return (
-    <details className="group rounded-[24px] border border-black/10 bg-white p-5">
-      <summary className="flex cursor-pointer list-none items-center justify-between gap-4">
+    <details open={defaultOpen || undefined} className="group min-w-0 rounded-functional border border-black/10 bg-white p-5">
+      <summary className="flex min-h-11 cursor-pointer list-none items-center justify-between gap-4 [&::-webkit-details-marker]:hidden">
         <div>
           <p className="font-semibold">{title}</p>
           <p className="mt-1 text-xs text-black/50">{summary}</p>
@@ -372,11 +379,11 @@ function Disclosure({ title, summary, children }: { title: string; summary: stri
 }
 
 function Shell({ children }: { children: ReactNode }) {
-  return <div className="mx-auto max-w-xl rounded-[28px] bg-white p-8">{children}</div>;
+  return <div className="transaction-state mx-auto max-w-2xl rounded-functional border border-black/10 bg-white p-5 sm:p-8">{children}</div>;
 }
 
 function Summary({ label, value, strong = false }: { label: string; value: string; strong?: boolean }) {
-  return <div className={`flex justify-between gap-4 ${strong ? "border-t border-black/10 pt-3 text-base font-semibold" : ""}`}><dt className="text-black/55">{label}</dt><dd className="text-right font-semibold">{value}</dd></div>;
+  return <div className={`transaction-summary-row ${strong ? "border-t border-black/10 pt-3 text-base font-semibold" : ""}`}><dt className="text-black/55">{label}</dt><dd className="min-w-0 text-right font-semibold">{value}</dd></div>;
 }
 
 function paymentMethodLabel(value: string) {
