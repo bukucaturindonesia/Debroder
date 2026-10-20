@@ -2098,3 +2098,11 @@ Local branch `codex/unified-category-hero-v1`, HEAD `8a500c8ff805916a74dcd205b77
 ## OWNER UI FASE 05 — 2026-10-20
 
 Branch `codex/unified-category-hero-v1`, HEAD `b7f585f7cbeb3902b05fac567b31c4e068ddb030`; clean starting tree, Phase 05 changes now local/unstaged. Shared PDP, DTF builder entry/upload feedback, dedicated Jersey UI and cart presentation improved without business/data/route changes. Typecheck, targeted lint (one existing warning), 92 relevant tests, final production build and 20 viewport checks passed; final production-build CTA/DTF contrast checks passed. Real populated-product/upload/configuration/transaction QA remains unverified due local data availability. No database/migration/remote/deploy; v1.2 NO-GO/NOT COMPLETE. Exact source files, evidence and safe resume: latest CURRENT_PHASE_HANDOFF.md.
+
+## FASE 05 FINAL REVIEW — 2026-10-20
+
+Phase 01–05E source is preserved on `codex/unified-category-hero-v1` at committed HEAD `bc970e46699ad0d43e580477579e9d8319132250`; review began clean and changed governance records only. Local existing-build screenshots cover four requested views at 1440/390px. Three MINOR presentation recommendations are recorded in CURRENT_PHASE_HANDOFF.md and ISSUE REGISTER; no code fix performed. Populated CMS/PIM/configurator/cart/upload acceptance remains open; prior PASS tests/build not rerun. No DB/migration/remote/deployment or Phase 06 work. Overall v1.2 NO-GO/NOT COMPLETE.
+
+## OWNER UI FASE 05F — 2026-10-20
+
+Three final-review visual findings are IMPLEMENTED AND LOCALLY VERIFIED on unchanged branch/HEAD `codex/unified-category-hero-v1` / `bc970e46699ad0d43e580477579e9d8319132250`: compact mobile DTF logo fallback, separate preparation/CMS production presentation, compact Cart discovery fallback. Source changes limited to DTF detail, CartProvider discovery renderer and scoped CSS; previous phases preserved. Ten browser checks, 51 targeted tests, typecheck, targeted lint and final 142-page build passed. Real CMS/PIM/media acceptance remains open; no database/remote/deploy/Phase 06 work. Overall v1.2 NO-GO/NOT COMPLETE. Continue only from latest CURRENT_PHASE_HANDOFF.md.

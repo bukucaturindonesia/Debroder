@@ -2269,3 +2269,15 @@ See **VISUAL RESTORATION EVIDENCE / OPEN VERIFICATION LIMITS** above. Local visu
 - CLOSED LOCALLY: configurator hero hidden by global backgrounds, drawer token controls outside storefront scope, DTF copy contrast and mobile cart modal layering. Final build, relevant tests, 20 responsive checks and production-build navigation checks passed; see handoff for exact limits.
 - OPEN VERIFICATION: real PIM PDP/price/stock/variants and populated cart, Custom DTF upload/review, Jersey submission and transaction E2E remain unverified because local feeds are empty/unavailable. No simulated success or fictitious data added. Existing lint warnings remain; production fallback image optimizer request passed after dev image-idle timeouts.
 - No database/migration/remote/staging/production/deployment mutation. HEAD `b7f585f7cbeb3902b05fac567b31c4e068ddb030`; UI diff local/unstaged. Release NO-GO/NOT COMPLETE; stop after 05E and resume only from CURRENT_PHASE_HANDOFF.md with owner-authorized scope.
+
+## FASE 05 FINAL VISUAL REVIEW — 2026-10-20
+
+- OPEN MINOR UI: DTF hero primary CTA bottom ~18px covered by fixed nav on initial 390×900 load; oversized brand fallback pushes it down. DTF repeats preparation and Cara order step blocks. Cart repeats large identical brand fallback tiles. Recommendations/evidence recorded in latest CURRENT_PHASE_HANDOFF.md; no code correction authorized or performed during review.
+- DATA LIMIT, NOT UI DEFECT: populated PIM PDP/cart, Jersey configuration and Custom upload/review remain unavailable locally; real campaign media not verified. Three findings above concern presentation, not a request to fabricate data or change business rules.
+- Current HEAD `bc970e46699ad0d43e580477579e9d8319132250`, source unchanged; review updates governance only. Existing PASS gates intentionally not rerun. No DB/migration/remote/deploy or Phase 06 work.
+
+## FASE 05F VISUAL FINDINGS — CLOSED LOCALLY — 2026-10-20
+
+- The three MINOR findings from final review are locally closed: mobile DTF fallback CTA is fully above bottom navigation at 360/390px including 640px height; builder checklist and CMS production disclosure are distinct; Cart uses compact category links instead of repeating brand fallback tiles. Six hrefs retained, CMS step content untouched, no transaction changes.
+- Evidence: 10 final browser checks, 51 targeted tests, typecheck/targeted lint/final production build passed. Official/nonfallback media geometry matches baseline in a DOM style probe; actual published media/populated PIM flows remain NOT VERIFIED. Exact screenshot directory and intermediate corrections are in latest CURRENT_PHASE_HANDOFF.md.
+- HEAD `bc970e46699ad0d43e580477579e9d8319132250`; three UI files plus preserved/updated governance records remain unstaged. No DB/migration/remote/deploy; no Phase 06. Existing warning/content limitations remain open; release NO-GO/NOT COMPLETE.

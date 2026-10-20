@@ -4231,4 +4231,13 @@ button,
   .debroder-storefront:not(.jersey-theme):not(.jersey-commerce-theme) .dtf-order-detail-hero .hero-subtitle {
     color: var(--color-text-secondary);
   }
+
+  .dtf-order-detail-hero--fallback > section > div > div:first-child {
+    height: clamp(112px, 32vw, 144px);
+    aspect-ratio: auto;
+  }
+
+  .dtf-order-detail-hero--fallback picture img {
+    object-fit: contain !important;
+  }
 }

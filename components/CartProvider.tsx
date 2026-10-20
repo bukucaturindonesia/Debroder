@@ -531,24 +531,35 @@ function EmptyCart({ fullPage = false }: { fullPage?: boolean }) {
 }
 
 function SearchSuggestionsRow() {
+  const hasCategoryImages = searchSuggestions.some((item) => item.imageUrl && item.imageUrl !== fallbackImages.product);
+
   return (
-    <section className="mt-10">
+    <section className="mt-10" aria-label="Jelajahi kategori">
       <div className="mb-4 flex items-center justify-between gap-4">
         <h2 className="text-2xl font-semibold tracking-tight">Kamu mungkin mencari</h2>
-        <p className="hidden text-sm text-black/50 sm:block">Geser kiri kanan untuk melihat lainnya.</p>
+        {hasCategoryImages ? <p className="hidden text-sm text-black/50 sm:block">Geser kiri kanan untuk melihat lainnya.</p> : null}
       </div>
-      <div className="flex snap-x gap-3 overflow-x-auto pb-4 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-        {searchSuggestions.map((item) => (
-          <Link key={item.id} href={item.href} className="group min-w-[240px] snap-start sm:min-w-[320px]">
-            <div className="relative aspect-[4/5] overflow-hidden bg-[#f1f1ec]">
-              <SafeImage src={item.imageUrl} fallbackSrc={fallbackImages.product} alt={item.name} fill className="object-cover transition duration-500 group-hover:scale-[1.03]" objectPosition="center center" sizes="320px" />
-            </div>
-            <div className="mt-3">
-              <p className="text-base font-semibold">{item.name}</p>
-              <p className="mt-1 text-sm leading-6 text-black/55">{item.label}</p>
-            </div>
-          </Link>
-        ))}
+      <div className={hasCategoryImages ? "flex snap-x items-start gap-3 overflow-x-auto pb-4 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden" : "grid grid-cols-2 gap-3 pb-4 lg:grid-cols-3"}>
+        {searchSuggestions.map((item) => {
+          const hasImage = Boolean(item.imageUrl && item.imageUrl !== fallbackImages.product);
+          return (
+            <Link key={item.id} href={item.href} className={hasImage
+              ? "group min-w-[240px] snap-start sm:min-w-[320px]"
+              : `group flex min-h-16 min-w-0 items-center justify-between gap-3 rounded-functional border border-black/15 bg-white px-4 py-3 transition hover:border-black focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-experience-focus ${hasCategoryImages ? "w-[240px] shrink-0 snap-start sm:w-[320px]" : ""}`
+            }>
+              {hasImage ? (
+                <div className="relative aspect-[4/5] overflow-hidden bg-[#f1f1ec]">
+                  <SafeImage src={item.imageUrl} unavailableLabel="Gambar kategori belum tersedia" alt={item.name} fill className="object-cover transition duration-500 group-hover:scale-[1.03]" objectPosition="center center" sizes="320px" />
+                </div>
+              ) : null}
+              <div className={hasImage ? "mt-3" : "min-w-0"}>
+                <p className="break-words text-sm font-semibold sm:text-base">{item.name}</p>
+                <p className={`mt-1 text-sm leading-6 text-black/55 ${hasImage ? "" : "hidden sm:block"}`}>{item.label}</p>
+              </div>
+              {!hasImage ? <span aria-hidden="true" className="shrink-0 text-lg transition-transform group-hover:translate-x-0.5">→</span> : null}
+            </Link>
+          );
+        })}
       </div>
     </section>
   );
