@@ -16,6 +16,8 @@ import {
   type PdpPricingTier
 } from "@/lib/pdp-purchase";
 import type { ProductVariant } from "@/lib/types";
+import { MasterKaosSizeGuide } from "@/components/product/MasterKaosSizeGuide";
+import { isKaosSizeGuideApplicable } from "@/lib/master-kaos-size-guide";
 
 const APPAREL_SIZE_GRID = ["XS", "S", "M", "L", "XL", "2XL", "3XL", "4XL", "5XL"] as const;
 const COLLAPSED_COLOR_LIMIT = 10;
@@ -618,6 +620,15 @@ export function TieredProductPurchasePanel({
                 .filter(Boolean)
                 .join(" · ")}
             </p>
+          ) : null}
+          {isKaosSizeGuideApplicable(product.name, product.category, subcategory) ? (
+            <div className="mt-3">
+              <MasterKaosSizeGuide
+                productName={product.name}
+                category={product.category}
+                subcategory={subcategory}
+              />
+            </div>
           ) : null}
         </fieldset>
 

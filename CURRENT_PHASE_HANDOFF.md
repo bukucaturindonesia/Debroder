@@ -7299,3 +7299,11 @@ HANDOFF UPDATED: YES — CURRENT_PHASE_HANDOFF.md
 15. Current status: migration IMPLEMENTED LOCALLY, static/model tests VERIFIED; SQL runtime/application NOT VERIFIED. GO for local candidate review only; NO-GO for Staging execution under this authorization and NO-GO for Production release/recovery claim. Blockers: separately approved new staging runtime validation, actual target preflight, backup/PITR, runtime environment binding, production trigger evidence, legacy-key disposition and coordinated old/new client cutover. Exact RESUME: read this checkpoint, verify same branch/HEAD/eleven paths and preserve all work; seek separate approval for the narrowly defined staging apply/runtime plan. Do not apply either migration, create remote fixtures or deploy under this task's local-only authorization.
 
 HANDOFF UPDATED: YES — CURRENT_PHASE_HANDOFF.md
+
+
+## DEBRODER MASTER PANDUAN UKURAN V1 — UI ONLY
+- Owner-approved references: short/long-sleeve master screenshots (21 October 2026).
+- Scope: PDP size selector UI, dialog/table and original cropped WebP diagrams only.
+- Status: local installer applied; repository tests, typecheck, lint and build NOT RUN by this script.
+- Remote/staging/production/SQL/deploy/data changes: NONE from this installer.
+- Next: run focused test, pnpm typecheck, targeted lint, pnpm build, browser QA, then review and release separately.
