@@ -2,6 +2,7 @@ import { createHash } from "node:crypto";
 import { isCheckoutDomainException, parsePublicCheckoutRequest } from "@/lib/commerce-checkout";
 import {
   CheckoutBodyError,
+  canonicalCheckoutServices,
   createCheckoutAbuseHashes,
   readCheckoutJsonBody,
   type CheckoutAbuseDecision
@@ -212,7 +213,11 @@ export async function POST(request: Request) {
     const guard = guardData as CheckoutAbuseDecision;
     if (!guard.allowed) {
       if (guard.code === "idempotency_payload_conflict") {
-        return respond({ code: "CHECKOUT_IDEMPOTENCY_CONFLICT", error: "Kunci checkout sudah digunakan untuk data berbeda." }, 409);
+        return respond({
+          code: "CHECKOUT_IDEMPOTENCY_CONFLICT",
+          error: "Kunci checkout sudah digunakan untuk data berbeda atau versi checkout sebelumnya. Pulihkan pesanan sebelum mencoba kembali.",
+          preserveIdempotencyKey: body.items.length > 0
+        }, 409);
       }
       const retryAfter = Math.max(1, Number(guard.retry_after_seconds ?? 600));
       return respond(
@@ -350,7 +355,7 @@ export async function POST(request: Request) {
         variant_size_id: item.variantSizeId,
         quantity: item.quantity,
         note: item.note ?? "",
-        services: item.services ?? []
+        services: canonicalCheckoutServices(item.services)
       })),
       p_shipping_address_snapshot: body.fulfillment.addressSnapshot ?? null,
       ...(customerAccount ? { p_customer_user_id: customerAccount.user.id } : {}),

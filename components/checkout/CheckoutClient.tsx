@@ -24,6 +24,7 @@ type CheckoutDraft = {
   createdAt: string;
   payloadHash?: string;
   lastKnownOutcome?: "rejected";
+  integrityConflict?: boolean;
 };
 type CheckoutApiPayload = {
   code?: string;
@@ -34,6 +35,7 @@ type CheckoutApiPayload = {
   trackingUrl?: string;
   trackingToken?: string;
   orderNumber?: string;
+  preserveIdempotencyKey?: boolean;
 };
 type RecoveryResult =
   | { kind: "found"; payload: CheckoutApiPayload }
@@ -144,7 +146,9 @@ export function CheckoutClient({ stores }: { stores: StoreOption[] }) {
         router.replace(result.payload.confirmationUrl!);
         return;
       }
-      if (result.kind === "expired" || (
+      if (stored.integrityConflict && (result.kind === "missing" || result.kind === "expired")) {
+        setError("Checkout sebelumnya belum dapat dipastikan. Kunci pemulihan tetap disimpan; hubungi bantuan sebelum membuat pesanan baru.");
+      } else if (result.kind === "expired" || (
         result.kind === "missing"
         && Date.now() - new Date(stored.createdAt).getTime() > RECOVERY_TTL_MS
       )) {
@@ -228,6 +232,21 @@ export function CheckoutClient({ stores }: { stores: StoreOption[] }) {
     const payloadHash = await hashBusinessPayload(businessPayload);
     let currentDraft = draft.current ?? readStoredDraft() ?? createDraft();
 
+    // An unresolved hash-version/payload conflict is not proof that creation
+    // failed. Keep its key, including after reload or a browser payload change.
+    if (currentDraft.integrityConflict) {
+      const recovery = await recoverStoredCheckout(currentDraft);
+      if (recovery.kind === "found") {
+        storeOrderSession(currentDraft, recovery.payload);
+        sessionStorage.removeItem(RECOVERY_KEY);
+        router.replace(recovery.payload.confirmationUrl!);
+      } else {
+        setError("Checkout sebelumnya belum dapat dipastikan. Kunci pemulihan tetap disimpan; hubungi bantuan sebelum membuat pesanan baru.");
+      }
+      setSubmitting(false);
+      return;
+    }
+
     if (currentDraft.payloadHash && currentDraft.payloadHash !== payloadHash) {
       if (currentDraft.lastKnownOutcome === "rejected") {
         currentDraft = createDraft();
@@ -267,6 +286,11 @@ export function CheckoutClient({ stores }: { stores: StoreOption[] }) {
       const payload = await readCheckoutPayload(response);
       if (!response.ok || !payload.confirmationUrl) {
         if (payload.code === "CHECKOUT_IDEMPOTENCY_CONFLICT") {
+          if (payload.preserveIdempotencyKey) {
+            currentDraft = { ...currentDraft, integrityConflict: true };
+            draft.current = currentDraft;
+            sessionStorage.setItem(RECOVERY_KEY, JSON.stringify(currentDraft));
+          }
           const recovery = await recoverStoredCheckout(currentDraft);
           if (recovery.kind === "found") {
             storeOrderSession(currentDraft, recovery.payload);
@@ -275,6 +299,10 @@ export function CheckoutClient({ stores }: { stores: StoreOption[] }) {
             return;
           }
           if (recovery.kind === "missing" || recovery.kind === "expired") {
+            if (currentDraft.integrityConflict) {
+              setError("Checkout sebelumnya belum dapat dipastikan. Kunci pemulihan tetap disimpan; hubungi bantuan sebelum membuat pesanan baru.");
+              return;
+            }
             const nextDraft = createDraft();
             draft.current = nextDraft;
             sessionStorage.setItem(RECOVERY_KEY, JSON.stringify(nextDraft));
