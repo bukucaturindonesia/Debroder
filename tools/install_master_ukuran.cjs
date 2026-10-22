@@ -1,6 +1,8 @@
 #!/usr/bin/env node
 'use strict';
+// eslint-disable-next-line @typescript-eslint/no-require-imports
 const fs=require('node:fs');
+// eslint-disable-next-line @typescript-eslint/no-require-imports
 const path=require('node:path');
 const args=process.argv.slice(2);
 const apply=args.includes('--apply');

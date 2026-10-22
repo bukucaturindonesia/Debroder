@@ -7307,3 +7307,12 @@ HANDOFF UPDATED: YES — CURRENT_PHASE_HANDOFF.md
 - Status: local installer applied; repository tests, typecheck, lint and build NOT RUN by this script.
 - Remote/staging/production/SQL/deploy/data changes: NONE from this installer.
 - Next: run focused test, pnpm typecheck, targeted lint, pnpm build, browser QA, then review and release separately.
+
+## P0 VERCEL BUILD HOTFIX — MASTER PANDUAN UKURAN — 2026-10-21 17:55 +08:00
+- Branch `codex/unified-category-hero-v1`; starting/current HEAD `a33c9860caeeb516e001a4630e283377b50df0a0`.
+- Objective: resolve the reported two `@typescript-eslint/no-require-imports` errors in `tools/install_master_ukuran.cjs` with file-local exceptions only. Added `eslint-disable-next-line` directly above the existing `node:fs` and `node:path` CommonJS imports; installer logic and Master Ukuran data/assets/UI were not changed.
+- Executed sequentially and PASSED: `pnpm exec eslint tools/install_master_ukuran.cjs`; `pnpm typecheck`; `pnpm lint` (0 errors, 36 warnings); `pnpm test` (161 files, 1,125 tests); `pnpm build` (exit 0; prebuild repeated typecheck/lint/test and Next build generated 142/142 static pages). Existing warnings remain, including a React ref cleanup warning in MasterKaosSizeGuide; no mass warning cleanup performed.
+- Diff review: only `tools/install_master_ukuran.cjs` changed in source; two intended comments, no other source/data changes. `git diff --check` PASSED. Working tree contains this source modification and the required updates to CURRENT_PHASE_HANDOFF.md, DEBRODER_MASTER_STATE.md, and DEBRODER_V1.2_ISSUE_REGISTER.md.
+- Database/migration/remote/staging/production/deployment/commit/push changes: NONE. Feature remains locally implemented; this task does not claim visual/browser verification or production deployment.
+- Status: hotfix IMPLEMENTED and local build quality gates PASSED; not committed or deployed. No unrelated source edits or feature changes.
+- Resume: inspect this checkpoint and current diff; preserve the one-file change. Any commit or deployment requires a separate explicit instruction. HANDOFF UPDATED for current HEAD.

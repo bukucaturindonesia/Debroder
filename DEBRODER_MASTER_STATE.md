@@ -2144,3 +2144,7 @@ At unchanged HEAD6bb5c5759b31ff588ab015d89f6fd433b54d6999, only unresolved gates
 - EXECUTED AND PASSED:4focused files/51tests; new14 tests repeated after cleanup; final typecheck and targeted lint PASS; diff/check PASS. Static SQL and concurrency model only; no SQL application/runtime or database E2E. Fingerprint V2/recovery files byte-identical to task start.
 - SHA256 candidate4fe639496888d0a0c99703b26ad0da5b5b5665e35bf83771f82fafc542a0c15a. Pending ALL environments. Database/staging/production mutation NO; no orders/fixtures/credential/env/release action. HEAD6bb5c5759b31ff588ab015d89f6fd433b54d6999, eleven local paths including preserved prior work.
 - Release/compensation sequence prepared in latest CURRENT_PHASE_HANDOFF.md, not approved/executed. Staging two-session runtime, fresh target preflight, backup/PITR, runtime binding, trigger coverage and legacy/client cutover remain gates. GO local review only; Production NO-GO / not recovered / not COMPLETE.
+
+## P0 VERCEL BUILD HOTFIX — MASTER PANDUAN UKURAN — 2026-10-21
+- At HEAD `a33c9860caeeb516e001a4630e283377b50df0a0`, added only line-local ESLint exceptions for the installer's existing `node:fs` and `node:path` CommonJS imports. Master Ukuran implementation/data/assets unchanged.
+- Sequential local validation EXECUTED AND PASSED: targeted ESLint, typecheck, lint (0 errors / 36 warnings), full tests (161 files / 1,125 tests), build (exit 0). No remote, database, migration, deployment, commit, or push action. Full details in CURRENT_PHASE_HANDOFF.md.
