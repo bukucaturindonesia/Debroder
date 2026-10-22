@@ -1,5 +1,5 @@
 import { CategoryCommerceCatalog } from "@/components/CategoryCommerceCatalog";
-import { CommercePageIntro } from "@/components/CommercePageIntro";
+import { CategoryHero } from "@/components/public/CategoryHero";
 import { PublicShell } from "@/components/PublicPage";
 import type { CatalogPageModel } from "@/lib/catalog-page/model";
 import type { ProductTypeOption } from "@/lib/product-taxonomy";
@@ -36,15 +36,16 @@ export function CategoryCommercePage({
   const shortcutLabel = config.shortcutLabel || `Navigasi ${config.breadcrumbLabel}`;
 
   return (
-    <PublicShell>
+    <PublicShell footerTone="light">
       <div className={`category-commerce-v1 category-commerce-${config.pageKey}`}>
-        <CommercePageIntro breadcrumbLabel={config.breadcrumbLabel} label={hero.label} title={hero.title} description={hero.description} imageUrl={hero.imageUrl} mobileImageUrl={hero.mobileImageUrl} objectPosition={hero.objectPosition} mobileObjectPosition={hero.mobileObjectPosition} objectFit={hero.objectFit} imageZoom={hero.imageZoom} mobileImageZoom={hero.mobileImageZoom} />
+        <CategoryHero seoTitle={config.breadcrumbLabel} alt={config.breadcrumbLabel} desktopImage={hero.imageUrl} mobileImage={hero.mobileImageUrl} objectPosition={hero.objectPosition} mobileObjectPosition={hero.mobileObjectPosition} objectFit={hero.objectFit} imageZoom={hero.imageZoom} mobileImageZoom={hero.mobileImageZoom} />
         <CategoryCommerceCatalog
           products={products}
           campaigns={model.data.campaigns}
           pagePath={pagePath}
           shortcutLabel={shortcutLabel}
           title={config.catalogTitle}
+          breadcrumbLabel={config.breadcrumbLabel}
           description={config.catalogDescription}
           closingHeadline={config.closingHeadline}
           closingCtaLabel={config.closingCtaLabel}
@@ -57,6 +58,9 @@ export function CategoryCommercePage({
           initialLabel={filters.label}
           initialSort={filters.sort}
           initialProductType={filters.productType}
+          initialSize={filters.size}
+          initialPrice={filters.price}
+          initialStatus={filters.status}
         />
       </div>
     </PublicShell>

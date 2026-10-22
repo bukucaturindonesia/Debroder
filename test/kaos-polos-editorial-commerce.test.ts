@@ -47,7 +47,7 @@ describe("Kaos Polos owner editorial revision", () => {
 
   it("puts product discovery before the existing CMS editorial sections", () => {
     const experience = read("components/KaosPolosEditorialExperience.tsx");
-    const hero = experience.indexOf('data-kaos-blueprint-section="hero"');
+    const hero = experience.indexOf('<CategoryHero');
     const quickCategory = experience.indexOf('data-kaos-blueprint-section="quick-category"');
     const catalog = experience.indexOf('data-kaos-blueprint-section="catalog"');
     const featured = experience.indexOf('data-kaos-blueprint-section="featured"');
@@ -71,21 +71,24 @@ describe("Kaos Polos owner editorial revision", () => {
     const experience = read("components/KaosPolosEditorialExperience.tsx");
     const css = read("app/globals.css");
 
-    expect(css).toContain("height: clamp(350px, 30vw, 420px)");
-    expect(css).toContain("height: clamp(240px, 64vw, 320px)");
-    expect(experience).toContain("desktopObjectPosition={hero.objectPosition}");
+    expect(css).toContain("height: 46.875vw");
+    expect(css).toContain("height: 125vw");
+    expect(experience).toContain("objectPosition={hero.objectPosition}");
     expect(experience).toContain("mobileObjectPosition={hero.mobileObjectPosition}");
     expect(experience).not.toContain("kaos-blueprint-hero-title");
-    expect(experience).toContain('<h1 className="kaos-category-title">Kaos Polos</h1>');
+    expect(experience).toContain('<h1 className="kaos-category-title">Tampil Simpel, Tetap Berkarakter dengan Pilihan Kaos Polos yang Nyaman untuk Gaya Sehari-hari.</h1>');
+    expect(experience).toContain("Built for Every Moment");
+    expect(experience).toContain('className="kaos-blueprint-section-label">Pilihan Favorit</h2>');
   });
 
-  it("uses CMS Featured cards with zero gap and regular-weight Featured heading", () => {
+  it("keeps CMS cards with zero gap and a regular-weight Produk Pilihan heading", () => {
     const experience = read("components/KaosPolosEditorialExperience.tsx");
     const css = read("app/globals.css");
 
     expect(experience).toContain("campaignsOfType(");
     expect(experience).toContain('className="kaos-blueprint-section-label kaos-blueprint-heading-normal"');
     expect(experience).toContain("<FeaturedEditorialCard");
+    expect(experience).toContain("Produk Pilihan");
     expect(css).toContain(".kaos-blueprint-feature-grid");
     expect(css).toContain("gap: 0");
     expect(css).toContain(".kaos-blueprint-heading-normal");

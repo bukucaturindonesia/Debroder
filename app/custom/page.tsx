@@ -1,4 +1,6 @@
 import type { Metadata } from "next";
+import { CategoryHero } from "@/components/public/CategoryHero";
+import { getPublicCategoryHero } from "@/lib/public-category-hero";
 import { CustomHub } from "@/components/custom/CustomHub";
 import { PublicShell } from "@/components/PublicPage";
 import { getCatalogPageModel } from "@/lib/catalog-page/runtime";
@@ -11,9 +13,25 @@ export const metadata: Metadata = {
 };
 
 export default async function CustomPage() {
-  const [categories, catalog] = await Promise.all([
+  const [categories, catalog, hero] = await Promise.all([
     listCustomCategories(),
-    getCatalogPageModel({ routeKey: "koleksi", scope: "all", searchParams: {} })
+    getCatalogPageModel({ routeKey: "koleksi", scope: "all", searchParams: {} }),
+    getPublicCategoryHero("custom")
   ]);
-  return <PublicShell><CustomHub categories={categories} products={catalog.data.products} /></PublicShell>;
+  return (
+    <PublicShell>
+      <CategoryHero
+        desktopImage={hero?.image_url || undefined}
+        mobileImage={hero?.mobile_image_url || undefined}
+        alt="Custom DEBRODER"
+        seoTitle="Pesanan Custom DEBRODER"
+        objectPosition={hero?.object_position || undefined}
+        mobileObjectPosition={hero?.mobile_object_position || undefined}
+        objectFit={hero?.object_fit || undefined}
+        imageZoom={hero?.focal_zoom}
+        mobileImageZoom={hero?.mobile_focal_zoom}
+      />
+      <CustomHub categories={categories} products={catalog.data.products} />
+    </PublicShell>
+  );
 }

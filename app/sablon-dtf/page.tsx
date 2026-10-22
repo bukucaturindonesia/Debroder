@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
-import { CommercePageIntro } from "@/components/CommercePageIntro";
+import Link from "next/link";
+import { ResponsivePicture } from "@/components/ResponsivePicture";
+import { CategoryHero } from "@/components/public/CategoryHero";
 import { PublicShell } from "@/components/PublicPage";
 import { ProductCatalog } from "@/components/ProductCatalog";
 import { ServiceCatalog } from "@/components/ServiceCatalog";
@@ -30,13 +32,28 @@ export default async function SablonDtfPage({ searchParams }: SablonDtfPageProps
     ? databaseServices
     : fallbackServices.filter((service) => service.category_key === "sablon-dtf");
   const products = productsForCategoryRoute(content.products, content.productCategories, "sablon-dtf");
+  const portfolio = content.campaignBanners.filter((banner) => banner.is_active !== false && banner.media_type === "image" && (banner.section_group === "sablon-dtf" || banner.cta_url?.startsWith("/sablon-dtf"))).slice(0, 6);
 
   return (
-    <PublicShell>
-      <CommercePageIntro breadcrumbLabel="Sablon DTF" label={pageHero?.label} title={pageHero?.title || "Sablon DTF"} description={pageHero?.subtitle} imageUrl={pageHero?.image_url} mobileImageUrl={pageHero?.mobile_image_url} objectPosition={pageHero?.object_position} mobileObjectPosition={pageHero?.mobile_object_position} objectFit={pageHero?.object_fit} imageZoom={pageHero?.focal_zoom} mobileImageZoom={pageHero?.mobile_focal_zoom} />
-      <ServiceCatalog services={services} whatsapp={content.contact.whatsapp_link || content.contact.whatsapp_apparel} />
+    <PublicShell footerTone="light">
+      <div className="dtf-experience public-category-experience">
+      <CategoryHero seoTitle={"Sablon DTF"} alt={"Sablon DTF"} desktopImage={pageHero?.image_url} mobileImage={pageHero?.mobile_image_url} objectPosition={pageHero?.object_position} mobileObjectPosition={pageHero?.mobile_object_position} objectFit={pageHero?.object_fit} imageZoom={pageHero?.focal_zoom} mobileImageZoom={pageHero?.mobile_focal_zoom} />
+      <section className="section-shell public-category-intro">
+        <nav className="public-breadcrumbs" aria-label="Breadcrumb"><Link href="/">Beranda</Link><span aria-hidden="true">/</span><span aria-current="page">Sablon DTF</span></nav>
+        <p className="public-eyebrow">Apparel & Cetak</p><h2 className="public-section-title">Sablon DTF</h2>
+        <p className="public-secondary-copy mt-3 max-w-2xl">Pilih layanan cetak, siapkan desain, dan tentukan kebutuhan pengerjaan Anda.</p>
+        <div className="public-category-actions"><Link href="#dtf-services" className="public-button public-button--primary">Pilihan Layanan</Link><Link href="#custom-dtf" className="public-secondary-action border">Custom DTF</Link></div>
+      </section>
+      <div id="dtf-services" className="scroll-mt-24"><ServiceCatalog services={services} whatsapp={content.contact.whatsapp_link || content.contact.whatsapp_apparel} /></div>
+      <section id="custom-dtf" className="section-shell public-category-section scroll-mt-24" aria-labelledby="dtf-custom-title">
+        <div className="public-category-panel">
+          <div><p className="public-eyebrow">Custom Design</p><h2 id="dtf-custom-title" className="public-section-title">Siapkan kebutuhan cetak Anda.</h2><p className="public-secondary-copy mt-3">Catat jumlah produk, posisi cetak, ukuran desain, sisi pengerjaan, dan catatan khusus sebelum membuka layanan custom.</p><Link href="/custom" className="public-button public-button--primary mt-5">Buka Pilihan Custom</Link></div>
+          <div className="public-upload-unavailable"><label htmlFor="dtf-artwork" className="block font-semibold">Artwork / desain cetak</label><input id="dtf-artwork" type="file" disabled aria-describedby="dtf-upload-note" className="mt-4 block max-w-full text-sm disabled:opacity-50" /><p id="dtf-upload-note" className="public-secondary-copy mt-4 text-sm">Upload belum tersedia pada halaman ini. Gunakan builder pada layanan custom yang aktif untuk mengunggah desain; tidak ada file yang dikirim dari panel ini.</p><Link href="/help" className="mt-4 inline-flex min-h-11 items-center text-sm underline underline-offset-4">Panduan dan bantuan</Link></div>
+        </div>
+      </section>
+      <section className="section-shell public-category-section" aria-labelledby="dtf-showcase-title"><h2 id="dtf-showcase-title" className="public-section-title">Showcase Sablon DTF</h2>{portfolio.length ? <div className="public-portfolio-grid mt-6">{portfolio.map((item) => <figure key={item.id} className="min-w-0"><div className="aspect-[4/5] overflow-hidden"><ResponsivePicture desktopSrc={item.desktop_media_url} mobileSrc={item.mobile_media_url || item.desktop_media_url} alt={item.image_alt || item.title || item.name} className="h-full w-full object-cover" /></div><figcaption className="mt-3 text-sm">{item.title || item.name}</figcaption></figure>)}</div> : <p className="public-category-empty mt-5">Dokumentasi produksi belum tersedia untuk ditampilkan.</p>}</section>
       {products.length ? (
-        <section data-reveal className="bg-brand-offWhite py-12 md:py-16 lg:py-20">
+        <section className="bg-brand-offWhite py-12 md:py-16 lg:py-20">
           <div className="section-shell">
             <div className="max-w-2xl">
               <p className="text-xs font-medium tracking-[0.08em] text-brand-charcoal/55">Produk Pendukung</p>
@@ -49,6 +66,7 @@ export default async function SablonDtfPage({ searchParams }: SablonDtfPageProps
           </div>
         </section>
       ) : null}
+      </div>
     </PublicShell>
   );
 }

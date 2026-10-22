@@ -6,14 +6,14 @@ import { whatsappLinkWithMessage } from "@/lib/url";
 
 export function ServiceCatalog({ services, whatsapp }: { services: Service[]; whatsapp: string }) {
   return (
-    <section data-reveal className="bg-brand-offWhite pb-12 pt-8 sm:pb-16 sm:pt-10">
+    <section className="bg-brand-offWhite category-hero-following pb-12 sm:pb-16">
       <div className="section-shell">
         <div className="max-w-2xl">
           <p className="text-xs font-medium tracking-[0.08em] text-brand-charcoal/55">Pilihan Layanan</p>
           <h2 className="landing-section-title mt-2">Katalog Sablon DTF</h2>
           <p className="premium-section-copy mt-3 text-sm leading-6">Pilih ukuran cetak, kebutuhan produksi, dan jenis pengerjaan DTF yang paling sesuai.</p>
         </div>
-        {services.length ? <div className="mt-6 grid grid-cols-2 gap-x-3 gap-y-7 sm:gap-x-4 lg:grid-cols-3">
+        {services.length ? <div className="mt-6 grid grid-cols-1 gap-x-3 gap-y-7 sm:grid-cols-2 sm:gap-x-4 lg:grid-cols-3">
           {services.map((service) => (
             <article key={service.id || service.slug} className="flex flex-col bg-transparent">
               <SafeImage
@@ -32,8 +32,8 @@ export function ServiceCatalog({ services, whatsapp }: { services: Service[]; wh
                 <h3 className="line-clamp-2 text-sm font-semibold sm:text-base">{service.nama}</h3>
                 <p className="mt-2 line-clamp-2 flex-1 text-xs leading-5 text-brand-charcoal/60 sm:text-sm">{service.deskripsi}</p>
                 <div className="mt-5 grid grid-cols-2 gap-2">
-                  <Link href={`/sablon-dtf/${service.slug}`} className="inline-flex min-h-9 items-center justify-center bg-black px-3 text-xs font-semibold text-white transition hover:bg-black/80 sm:text-sm">Lihat detail</Link>
-                  <a href={whatsappLinkWithMessage(whatsapp, `Halo DE BRODER, saya ingin bertanya tentang ${service.nama}.`)} target="_blank" rel="noopener noreferrer" className="inline-flex min-h-9 items-center justify-center border border-black/20 px-2 text-xs font-semibold transition hover:border-black sm:px-3 sm:text-sm">Konsultasi</a>
+                  <Link href={`/sablon-dtf/${service.slug}`} className="public-button public-button--primary">Lihat detail</Link>
+                  <a href={whatsappLinkWithMessage(whatsapp, `Halo DE BRODER, saya ingin bertanya tentang ${service.nama}.`)} target="_blank" rel="noopener noreferrer" className="public-secondary-action border">Konsultasi</a>
                 </div>
               </div>
             </article>

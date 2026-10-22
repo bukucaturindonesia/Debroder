@@ -1,5 +1,7 @@
 import Link from "next/link";
+import { CategoryHero } from "@/components/public/CategoryHero";
 import { ProductCatalog } from "@/components/ProductCatalog";
+import { PublicProductCard } from "@/components/PublicProductCard";
 import { ResponsivePicture } from "@/components/ResponsivePicture";
 import type {
   CatalogPageCampaignViewModel,
@@ -7,6 +9,7 @@ import type {
 } from "@/lib/catalog-page/model";
 import {
   availableKaosTypeOptions,
+  kaosEditorialProducts,
   kaosTypeFilterHref
 } from "@/lib/kaos-polos-editorial";
 
@@ -180,6 +183,17 @@ export function KaosPolosEditorialExperience({
     "poster_carousel"
   ).slice(0, 2);
   const quickTypes = availableKaosTypeOptions(products, productTypeOptions);
+  // Presentation-only selection from the existing published PIM catalog.
+  const editorialProducts = kaosEditorialProducts(products);
+  const featuredProducts = [
+    editorialProducts.find((product) =>
+      [product.nama, ...(product.material_tags || [])].join(" ").replace(/[^a-z0-9]/gi, "").toLowerCase().includes("cottoncombed24s")
+    ),
+    editorialProducts.find((product) => {
+      const label = `${product.brand || ""} ${product.nama}`.toLowerCase();
+      return label.includes("nsa") && label.includes("premium");
+    })
+  ].filter((product, index, selection): product is NonNullable<typeof product> => Boolean(product) && selection.indexOf(product) === index);
   const bannerLeft = campaignOfType(
     campaigns,
     "banner_editorial_left",
@@ -202,40 +216,32 @@ export function KaosPolosEditorialExperience({
   const customHref = customDestination || "/custom";
 
   return (
-    <div className="kaos-editorial-page bg-white text-[#111]">
-      {hero.imageUrl ? (
-        <section
-          data-kaos-blueprint-section="hero"
-          aria-label="Hero Kaos Polos"
-          className="kaos-blueprint-hero relative overflow-hidden bg-[#f0f0ed]"
-        >
-          <ResponsivePicture
-            desktopSrc={hero.imageUrl}
-            mobileSrc={hero.mobileImageUrl || hero.imageUrl}
-            alt={hero.title || "Kaos Polos DEBRODER"}
-            className="absolute inset-0 h-full w-full object-cover"
-            priority
-            objectFit={hero.objectFit || "cover"}
-            desktopObjectPosition={hero.objectPosition}
-            mobileObjectPosition={hero.mobileObjectPosition}
-            desktopZoom={hero.imageZoom}
-            mobileZoom={hero.mobileImageZoom}
-          />
-        </section>
-      ) : null}
+    <div data-kaos-page="final" className="kaos-editorial-page bg-white text-[#111]">
+      <CategoryHero
+        desktopImage={hero.imageUrl}
+        mobileImage={hero.mobileImageUrl}
+        alt={hero.title || "Kaos Polos DEBRODER"}
+        objectFit={hero.objectFit || "cover"}
+        objectPosition={hero.objectPosition}
+        mobileObjectPosition={hero.mobileObjectPosition}
+        imageZoom={hero.imageZoom}
+        mobileImageZoom={hero.mobileImageZoom}
+        kaosBenchmark
+      />
 
       <section
         data-kaos-blueprint-section="quick-category"
         className="kaos-blueprint-intro-section"
       >
         <div className="section-shell">
+          <nav className="public-breadcrumbs" aria-label="Breadcrumb"><Link href="/">Beranda</Link><span aria-hidden="true">/</span><span aria-current="page">Kaos Polos</span></nav>
           <div className="kaos-category-intro-content">
             <div className="min-w-0">
-              {hero.label ? <p className="kaos-blueprint-eyebrow">{hero.label}</p> : null}
-              <h1 className="kaos-category-title">Kaos Polos</h1>
-              {hero.description || (hero.title && hero.title.toLowerCase() !== "kaos polos") ? (
+              <p className="kaos-blueprint-eyebrow">Built for Every Moment</p>
+              <h1 className="kaos-category-title">Tampil Simpel, Tetap Berkarakter dengan Pilihan Kaos Polos yang Nyaman untuk Gaya Sehari-hari.</h1>
+              {hero.description ? (
                 <p className="kaos-category-subcopy">
-                  {hero.description || hero.title}
+                  {hero.description}
                 </p>
               ) : null}
             </div>
@@ -282,6 +288,7 @@ export function KaosPolosEditorialExperience({
             <ProductCatalog
               key={`${filters.productType}|${filters.color}|${filters.size}|${filters.price}|${filters.status}|${filters.label}|${filters.sort}`}
               products={products}
+              initialQuery={filters.query}
               title="Kaos Polos"
               showCategoryFilter={false}
               initialColor={filters.color}
@@ -303,6 +310,19 @@ export function KaosPolosEditorialExperience({
         </div>
       </section>
 
+      <section className="kaos-featured-products section-shell" aria-labelledby="kaos-featured-products-title">
+        <div className="kaos-featured-products-heading">
+          <div>
+            <p className="kaos-blueprint-eyebrow">Cotton Combed 24s & NSA Premium</p>
+            <h2 id="kaos-featured-products-title" className="kaos-blueprint-section-label">Pilihan Favorit</h2>
+          </div>
+          <Link href="#catalog" className="public-secondary-action">Lihat Katalog <span aria-hidden="true">↗</span></Link>
+        </div>
+        {featuredProducts.length ? <div className="kaos-featured-products-grid">
+          {featuredProducts.map((product) => <PublicProductCard key={product.id || product.slug || product.nama} product={product} imageSizes="(min-width: 1024px) 40vw, 50vw" />)}
+        </div> : <p className="kaos-featured-products-empty">Produk unggulan belum tersedia untuk ditampilkan. Jelajahi katalog untuk melihat pilihan yang tersedia.</p>}
+      </section>
+
       {featured.length ? (
         <section
           data-kaos-blueprint-section="featured"
@@ -314,7 +334,7 @@ export function KaosPolosEditorialExperience({
               id="kaos-featured-heading"
               className="kaos-blueprint-section-label kaos-blueprint-heading-normal"
             >
-              Featured
+              Produk Pilihan
             </h2>
             <div className="kaos-blueprint-feature-grid mt-6 grid sm:grid-cols-2 lg:mt-8">
               {featured.map((campaign) => (

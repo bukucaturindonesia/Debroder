@@ -109,6 +109,7 @@ export function PageHero({
   mobileImageZoom,
   ctaText,
   ctaHref,
+  ctaMessage,
   secondaryCtaText,
   secondaryCtaHref,
   breadcrumbs,
@@ -127,6 +128,7 @@ export function PageHero({
   mobileImageZoom?: number | null;
   ctaText?: string;
   ctaHref?: string;
+  ctaMessage?: string;
   secondaryCtaText?: string;
   secondaryCtaHref?: string;
   breadcrumbs?: { label: string; href?: string }[];
@@ -138,7 +140,7 @@ export function PageHero({
   const cleanDescription = cleanDisplayText(description);
   const cleanCtaText = cleanDisplayText(ctaText);
   const cleanSecondaryCtaText = cleanDisplayText(secondaryCtaText);
-  const primaryHref = cleanCtaText ? actionHref(ctaHref) : undefined;
+  const primaryHref = cleanCtaText ? actionHref(ctaHref, ctaMessage) : undefined;
   const hasCopy = Boolean(cleanLabel || cleanTitle || cleanDescription || primaryHref || (cleanSecondaryCtaText && secondaryCtaHref));
   const desktopImage = imageUrl || fallbackImages.pageHero;
   const mobileImage = mobileImageUrl || desktopImage;
@@ -490,16 +492,18 @@ export function CategoryDetailPage({
 
 export async function PublicShell({
   children,
-  theme = "default"
+  theme = "default",
+  footerTone = "dark"
 }: {
   children: ReactNode;
   theme?: "default" | "jersey" | "jersey-commerce";
+  footerTone?: "dark" | "light";
 }) {
   const [shellModel, activeTheme] = await Promise.all([
     getPublicShellPageModel(),
     getActivePublicTheme()
   ]);
-  return <PublicShellFrame shellModel={shellModel} publicThemeId={activeTheme.id} theme={theme}>{children}</PublicShellFrame>;
+  return <PublicShellFrame shellModel={shellModel} publicThemeId={activeTheme.id} theme={theme} footerTone={footerTone}>{children}</PublicShellFrame>;
 }
 
 type PublicShellModel = Awaited<ReturnType<typeof getPublicShellPageModel>>;

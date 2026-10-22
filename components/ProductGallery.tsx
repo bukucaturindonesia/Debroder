@@ -13,6 +13,7 @@ export function ProductGallery({ images, alt, focal }: { images: string[]; alt: 
   const resolvedImages = gallery;
   const mobileTrackRef = useRef<HTMLDivElement>(null);
   const closeButtonRef = useRef<HTMLButtonElement>(null);
+  const lightboxRef = useRef<HTMLDivElement>(null);
   const lightboxTriggerRef = useRef<HTMLElement | null>(null);
   const [activeIndex, setActiveIndex] = useState(0);
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
@@ -28,8 +29,22 @@ export function ProductGallery({ images, alt, focal }: { images: string[]; alt: 
 
   useEffect(() => {
     if (!lightboxOpen) return;
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
     const focusFrame = window.requestAnimationFrame(() => closeButtonRef.current?.focus());
     function handleKeyDown(event: KeyboardEvent) {
+      if (event.key === "Tab") {
+        const controls = Array.from(lightboxRef.current?.querySelectorAll<HTMLButtonElement>("button:not([disabled])") || []);
+        const first = controls[0];
+        const last = controls[controls.length - 1];
+        if (event.shiftKey && document.activeElement === first) {
+          event.preventDefault();
+          last?.focus();
+        } else if (!event.shiftKey && document.activeElement === last) {
+          event.preventDefault();
+          first?.focus();
+        }
+      }
       if (event.key === "Escape") {
         setLightboxIndex(null);
         return;
@@ -46,6 +61,7 @@ export function ProductGallery({ images, alt, focal }: { images: string[]; alt: 
     window.addEventListener("keydown", handleKeyDown);
     return () => {
       window.cancelAnimationFrame(focusFrame);
+      document.body.style.overflow = previousOverflow;
       window.removeEventListener("keydown", handleKeyDown);
       lightboxTriggerRef.current?.focus();
     };
@@ -82,7 +98,7 @@ export function ProductGallery({ images, alt, focal }: { images: string[]; alt: 
         <div>
           <p className="text-sm font-semibold text-brand-charcoal">Gambar belum tersedia</p>
           <p className="mt-2 text-xs leading-5 text-brand-charcoal/55">
-            Pilih warna dengan foto canonical bila tersedia.
+            Foto produk akan ditampilkan saat tersedia.
           </p>
         </div>
       </div>
@@ -214,10 +230,11 @@ export function ProductGallery({ images, alt, focal }: { images: string[]; alt: 
 
       {lightboxIndex !== null ? (
         <div
+          ref={lightboxRef}
           role="dialog"
           aria-modal="true"
           aria-label="Pratinjau foto produk"
-          className="fixed inset-0 z-[100] grid place-items-center bg-black/88 p-3 sm:p-8"
+          className="fixed inset-0 z-[var(--z-toast)] grid place-items-center bg-black/90 p-3 sm:p-8"
           onClick={() => setLightboxIndex(null)}
         >
           <button
@@ -257,7 +274,7 @@ export function ProductGallery({ images, alt, focal }: { images: string[]; alt: 
               </button>
             </>
           ) : null}
-          <div className="relative h-[88vh] w-full max-w-5xl" onClick={(event) => event.stopPropagation()}>
+          <div className="relative h-[80dvh] w-full max-w-5xl" onClick={(event) => event.stopPropagation()}>
             <SafeImage
               src={resolvedImages[lightboxIndex]}
               alt={`${alt} diperbesar`}

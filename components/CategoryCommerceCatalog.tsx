@@ -16,6 +16,7 @@ export function CategoryCommerceCatalog({
   pagePath,
   shortcutLabel,
   title,
+  breadcrumbLabel = title,
   description,
   closingHeadline,
   closingCtaLabel,
@@ -27,13 +28,17 @@ export function CategoryCommerceCatalog({
   initialColor = "all",
   initialLabel = "all",
   initialSort = "order",
-  initialProductType = "all"
+  initialProductType = "all",
+  initialSize = "all",
+  initialPrice = "all",
+  initialStatus = "all"
 }: {
   products: Product[];
   campaigns?: CatalogPageCampaignViewModel[];
   pagePath: string;
   shortcutLabel: string;
   title: string;
+  breadcrumbLabel?: string;
   description: string;
   closingHeadline: string;
   closingCtaLabel: string;
@@ -46,6 +51,9 @@ export function CategoryCommerceCatalog({
   initialLabel?: LabelValue;
   initialSort?: SortValue;
   initialProductType?: string;
+  initialSize?: string;
+  initialPrice?: string;
+  initialStatus?: string;
 }) {
   const activeType = initialProductType !== "all" ? initialProductType : "";
   const backedProductTypeOptions = productTypeOptions.filter((option) =>
@@ -54,8 +62,8 @@ export function CategoryCommerceCatalog({
 
   return (
     <>
-      <nav aria-label={shortcutLabel} className="border-b border-black/10 bg-white">
-        <div className="section-shell no-scrollbar flex min-h-12 items-center gap-6 overflow-x-auto py-2">
+      <nav aria-label={shortcutLabel} className="category-hero-following border-b border-black/10 bg-white">
+        <div className="section-shell no-scrollbar flex min-h-12 items-center gap-6 overflow-x-auto pb-2">
           <Link href={`${pagePath}#catalog`} className="shrink-0 text-sm font-semibold underline underline-offset-4">Semua produk</Link>
           {backedProductTypeOptions.map((option) => (
             <Link
@@ -72,6 +80,7 @@ export function CategoryCommerceCatalog({
 
       <section id="catalog" className="scroll-mt-24 bg-white py-7 sm:py-9 lg:py-12">
         <div className="section-shell">
+          <nav className="public-breadcrumbs" aria-label="Breadcrumb"><Link href="/">Beranda</Link><span aria-hidden="true">/</span><span aria-current="page">{breadcrumbLabel}</span></nav>
           <div className="mb-5 flex flex-wrap items-end justify-between gap-3">
             <div>
               <h2 className="text-2xl font-semibold tracking-tight sm:text-3xl">{title}</h2>
@@ -86,6 +95,11 @@ export function CategoryCommerceCatalog({
             initialLabel={initialLabel}
             initialSort={initialSort}
             initialProductType={initialProductType}
+            initialSize={initialSize}
+            initialPrice={initialPrice}
+            initialStatus={initialStatus}
+            showSizeFilter
+            showStatusFilter
             productTypeOptions={productTypeOptions}
             typeFilterLabel={typeFilterLabel}
             catalogStyle="category"
@@ -121,7 +135,7 @@ export function CategoryCommerceCatalog({
       <section className="border-t border-black/10 bg-[#f7f7f5] py-8 sm:py-10">
         <div className="section-shell flex flex-col items-start justify-between gap-4 sm:flex-row sm:items-center">
           <h2 className="max-w-3xl text-xl font-medium tracking-tight sm:text-2xl">{closingHeadline}</h2>
-          <Link href={closingCtaHref} className="inline-flex min-h-11 shrink-0 items-center justify-center border border-black px-5 text-sm font-semibold transition hover:bg-black hover:text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-black">{closingCtaLabel}</Link>
+          <Link href={closingCtaHref} className="public-button public-button--primary shrink-0">{closingCtaLabel}</Link>
         </div>
       </section>
     </>

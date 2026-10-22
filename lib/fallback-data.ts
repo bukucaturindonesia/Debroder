@@ -658,6 +658,17 @@ export const fallbackInstagramBanner: InstagramBanner = {
 
 export const fallbackPageHeroes: PageHeroContent[] = [
   {
+    page_key: "custom",
+    label: "",
+    title: "",
+    subtitle: "",
+    image_url: fallbackImages.pageHero,
+    mobile_image_url: fallbackImages.pageHeroMobile,
+    object_position: "center center",
+    mobile_object_position: "center center",
+    status_aktif: true
+  },
+  {
     page_key: "koleksi",
     label: "KOLEKSI",
     title: "Layanan & Produk DE BRODER",

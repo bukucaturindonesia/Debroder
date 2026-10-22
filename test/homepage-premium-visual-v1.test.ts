@@ -40,6 +40,8 @@ describe("DEBRODER Homepage premium visual V1 contract", () => {
     expect(hero).toContain("videoRefs.current.forEach");
     expect(hero).toContain("paused || reducedMotion");
     expect(hero).not.toContain("backdrop-blur-md");
+    expect(hero).not.toContain("landing-hero-overlay");
+    expect(globals).not.toContain(".landing-hero-overlay");
   });
 
   it("uses CMS alt and focal metadata while preserving internal Next links", () => {
@@ -47,6 +49,8 @@ describe("DEBRODER Homepage premium visual V1 contract", () => {
     expect(campaign).toContain("desktopObjectPosition={banner.object_position}");
     expect(campaign).toContain("mobileZoom={banner.mobile_focal_zoom}");
     expect(campaign).toContain("return <Link href={href}");
+    expect(campaign).toContain('title: "Ekspresikan Identitasmu"');
+    expect(campaign).toContain(": configuredTitle;");
   });
 
   it("provides reduced-motion-aware, viewport-aware video controls", () => {

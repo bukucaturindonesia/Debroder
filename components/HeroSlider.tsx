@@ -180,7 +180,6 @@ export function HeroSlider({ heroes }: { heroes: HeroBanner[] }) {
               )}
             </div>
 
-            <div className="landing-hero-overlay absolute inset-0" />
             {hasCopy ? (
               <div className="landing-hero-copy absolute inset-0 z-10 flex items-center">
                 <div className="section-shell">

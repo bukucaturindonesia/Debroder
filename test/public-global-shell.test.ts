@@ -48,6 +48,8 @@ describe("canonical public global shell", () => {
     expect(styles).toContain(".public-footer-light .public-footer-secondary");
     expect(footer).not.toMatch(/#050505|publicDark/);
     expect(read("lib/public-shell/domain.ts")).toContain('{ label: "WhatsApp"');
+    expect(read("lib/public-shell/domain.ts")).not.toContain('{ label: "Fresh Drop", href: "/fresh-drop" }');
+    expect(read("lib/public-shell/domain.ts")).toContain('{ label: "Tentang DEBRODER", href: PUBLIC_ROUTES.about }');
   });
 
   it("keeps homepage and shared routes on the same canonical components", () => {

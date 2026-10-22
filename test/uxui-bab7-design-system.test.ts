@@ -55,12 +55,13 @@ describe("DEBRODER Deep Modular UI System foundation", () => {
     }
   });
 
-  it("uses canonical shell layers and bounded compatibility aliases for legacy drawer composition", () => {
+  it("uses canonical modal layers for cart and bounded compatibility aliases for the catalog drawer", () => {
     expect(read("components/header/SiteHeaderClient.tsx")).toContain("z-[var(--z-nav)]");
     expect(read("components/header/HeaderSearchModal.tsx")).toContain("z-[var(--z-modal)]");
     expect(read("components/ProductCatalog.tsx")).toContain("z-[var(--z-legacy-backdrop)]");
     expect(read("components/ProductCatalog.tsx")).toContain("z-[var(--z-legacy-drawer-surface)]");
-    expect(read("components/CartProvider.tsx")).toContain("z-[var(--z-legacy-backdrop)]");
-    expect(read("components/CartProvider.tsx")).toContain("z-[var(--z-legacy-drawer-surface)]");
+    const cart = read("components/CartProvider.tsx");
+    expect(cart).toContain("fixed inset-0 z-[var(--z-modal)]");
+    expect(cart).toContain("public-cart-drawer fixed right-0 top-0 z-[calc(var(--z-modal)+1)]");
   });
 });

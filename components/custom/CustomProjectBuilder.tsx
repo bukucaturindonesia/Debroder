@@ -267,11 +267,11 @@ export function CustomProjectBuilder({ catalogs, initialCategoryId, preselectedP
   const activeCatalog = selectedCatalog ?? initialCatalog;
 
   return (
-    <section className="section-shell pb-20">
-      <div className="rounded-[30px] bg-white p-4 sm:p-6 lg:p-8">
+    <section data-ui-ordering="custom" className="section-shell min-w-0 pb-20">
+      <div className="min-w-0 rounded-functional border border-black/10 bg-white p-4 sm:p-6 lg:p-8">
         <div className="flex flex-wrap items-start justify-between gap-5">
           <div><p className="text-xs font-semibold uppercase tracking-[0.18em] text-black/45">Custom Project</p><h2 className="mt-2 text-3xl font-semibold tracking-tight">Rakit pesananmu</h2><p className="mt-2 max-w-2xl text-sm leading-7 text-black/60">Satu proyek dapat memuat banyak produk, ukuran, paket desain, layanan, dan personalisasi.</p></div>
-          <button type="button" onClick={() => void discardDraft()} className="text-sm font-semibold text-red-700 underline underline-offset-4">Hapus draft</button>
+          <button type="button" onClick={() => void discardDraft()} className="public-secondary-action text-sm font-semibold text-red-700 underline underline-offset-4">Hapus draft</button>
         </div>
 
         <div className="mt-7 grid gap-3 sm:grid-cols-2">
@@ -289,7 +289,7 @@ export function CustomProjectBuilder({ catalogs, initialCategoryId, preselectedP
           {steps.map((label, index) => <li key={label}><button type="button" onClick={() => goToStep(index)} aria-current={step === index ? "step" : undefined} className={`min-h-11 w-full rounded-full px-3 text-xs font-semibold ${step === index ? "bg-black text-white" : "bg-[#f5f5ef] text-black/60"}`}>{index + 1}. {label}</button></li>)}
         </ol>
 
-        <div className="mt-8">
+        <div className="mt-8 min-w-0" aria-busy={pricingState === "loading" || addingToCart}>
           {step === 0 ? <ProductsStep catalogs={catalogs} project={project} addProductValue={addProductValue} setAddProductValue={setAddProductValue} addSelectedProduct={addSelectedProduct} mutate={mutate} /> : null}
           {step === 1 ? <AllocationsStep catalogs={catalogs} project={project} mutate={mutate} /> : null}
           {step === 2 ? <DesignStep catalogs={catalogs} project={project} mutate={mutate} /> : null}
@@ -299,8 +299,8 @@ export function CustomProjectBuilder({ catalogs, initialCategoryId, preselectedP
 
         {message ? <p role="status" className={`mt-6 rounded-2xl p-4 text-sm ${pricingState === "error" ? "bg-red-50 text-red-800" : "bg-[#e9f4ee] text-[#063d24]"}`}>{message}</p> : null}
         <div className="mt-8 flex items-center justify-between gap-4 border-t border-black/10 pt-6">
-          <button type="button" disabled={step === 0} onClick={() => goToStep(Math.max(0, step - 1))} className="min-h-11 rounded-full border border-black/15 px-5 text-sm font-semibold disabled:opacity-35">Kembali</button>
-          <button type="button" disabled={step === steps.length - 1} onClick={() => goToStep(Math.min(steps.length - 1, step + 1))} className="min-h-11 rounded-full bg-black px-5 text-sm font-semibold text-white disabled:opacity-35">Lanjut</button>
+          <button type="button" disabled={step === 0} onClick={() => goToStep(Math.max(0, step - 1))} className="public-secondary-action border border-black/15 disabled:opacity-35">Kembali</button>
+          <button type="button" disabled={step === steps.length - 1} onClick={() => goToStep(Math.min(steps.length - 1, step + 1))} className="public-button public-button--primary disabled:opacity-35">Lanjut</button>
         </div>
       </div>
     </section>
@@ -573,8 +573,8 @@ function ServiceEditor({ catalog, item, selection, sessionToken, attachUpload, o
       <Field label={`File desain${service.requiresUpload ? " *" : ""}`}><input type="file" disabled={uploading} accept={service.allowedFileTypes.map((extension) => `.${extension}`).join(",")} onChange={(event) => upload(event.target.files?.[0])} /></Field>
     </div>
     {pairError ? <p id={errorId} role="alert" className="mt-3 text-xs font-semibold text-red-700">{pairError}</p> : null}
-    {selection.uploadIds.length ? <p className="mt-3 text-xs text-[#063d24]">{selection.uploadIds.length} file terhubung ke pasangan ini.</p> : null}
-    {uploadError ? <p className="mt-3 text-xs text-red-700">{uploadError}</p> : null}
+    <div role="status" aria-live="polite" className="mt-3 text-xs text-[#063d24]">{uploading ? "Mengunggah desain…" : selection.uploadIds.length ? `${selection.uploadIds.length} file terhubung ke pasangan ini.` : null}</div>
+    {uploadError ? <p role="alert" className="mt-3 text-xs text-red-700">{uploadError}</p> : null}
   </div>;
 }
 
@@ -604,7 +604,7 @@ function PersonalizationEditor({ item, catalog, mutate }: { item: CustomProjectI
 function ReviewStep({ catalogs, project, pricing, totalQuantity, pricingState, addingToCart, onReprice, onAddToCart }: { catalogs: CustomCategoryCatalog[]; project: CustomProject; pricing: CustomProjectPricing | null; totalQuantity: number; pricingState: "idle" | "loading" | "error"; addingToCart: boolean; onReprice: () => void; onAddToCart: () => void }) {
   return <div>
     <StepHeading title="Ringkasan" detail="Sistem memeriksa ulang produk, varian, jumlah minimum, setiap Posisi Desain + Size Desain, file, personalisasi, dan harga." />
-    <div className="mt-5 grid gap-5 lg:grid-cols-[1fr_360px]">
+    <div className="mt-5 grid min-w-0 gap-5 lg:grid-cols-[minmax(0,1fr)_320px] xl:grid-cols-[minmax(0,1fr)_360px]">
       <div className="grid gap-4">{project.items.map((item) => {
         const catalog = catalogs.find((candidate) => candidate.category.id === item.categoryId);
         return <article key={item.id} className="rounded-[24px] bg-[#f5f5ef] p-5">

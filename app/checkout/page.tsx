@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { CheckoutClient } from "@/components/checkout/CheckoutClient";
 import { PublicShell } from "@/components/PublicPage";
-import { getPublicContent } from "@/lib/public-data";
+import { createSupabaseServerClient } from "@/lib/supabase";
 
 export const metadata: Metadata = {
   title: "Checkout | DEBRODER",
@@ -9,15 +9,20 @@ export const metadata: Metadata = {
   robots: { index: false, follow: false }
 };
 
-// Keep the transactional boundary request-dynamic even though its store
-// options come from a public, short-lived cache.
+// Fulfillment options must reflect the current public store directory,
+// independently of the cached marketing/CMS aggregate.
 export const dynamic = "force-dynamic";
 
 export default async function CheckoutPage() {
-  const content = await getPublicContent();
-  const stores = content.stores
-    .filter((store) => store.id && store.status_aktif)
-    .map((store) => ({ id: store.id as string, name: store.nama_store, address: store.alamat, hours: store.jam_operasional ?? "" }));
+  const client = createSupabaseServerClient();
+  const result = client ? await client
+    .from("stores")
+    .select("id,nama_store,alamat")
+    .eq("status_aktif", true)
+    .or("status.is.null,status.in.(published,active)")
+    .order("urutan", { ascending: true }) : null;
+  const stores = (result?.error ? [] : result?.data ?? [])
+    .map((store) => ({ id: store.id, name: store.nama_store, address: store.alamat, hours: "" }));
 
   return (
     <PublicShell theme="jersey-commerce">

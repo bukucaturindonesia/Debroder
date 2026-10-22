@@ -54,8 +54,8 @@ export function GuestOrderTracking({
   }
 
   return (
-    <section className="bg-[#f6f5f0] px-4 py-10 sm:py-16">
-      <div className="mx-auto max-w-4xl">
+    <section data-ui-customer className="keep-section-bg customer-area bg-brand-offWhite py-6 sm:py-12">
+      <div className="section-shell mx-auto max-w-5xl">
         {!data ? (
           <>
             <p className="text-xs font-semibold uppercase tracking-[0.18em] text-black/45">Pelacakan Pesanan</p>
@@ -67,7 +67,7 @@ export function GuestOrderTracking({
         ) : null}
 
         {(!token || error) && !data ? (
-          <form onSubmit={submit} className="mt-8 grid gap-4 rounded-[28px] bg-white p-5 sm:grid-cols-[1fr_1fr_auto] sm:p-7">
+          <form onSubmit={submit} aria-busy={loading || refreshing} className="customer-panel mt-8 grid gap-4 border border-black/10 bg-white p-4 md:grid-cols-2 sm:p-7">
             <Field label="Nomor pesanan">
               <input
                 value={orderNumber}
@@ -76,6 +76,8 @@ export function GuestOrderTracking({
                 minLength={5}
                 maxLength={64}
                 autoComplete="off"
+                autoCapitalize="characters"
+                spellCheck={false}
                 required
               />
             </Field>
@@ -85,15 +87,19 @@ export function GuestOrderTracking({
                 onChange={(event) => setWhatsapp(event.target.value)}
                 placeholder="08xxxxxxxxxx"
                 inputMode="tel"
+                type="tel"
                 autoComplete="tel"
                 required
               />
             </Field>
-            <button type="submit" disabled={loading || refreshing} className="min-h-12 self-end rounded-full bg-black px-7 text-sm font-semibold text-white hover:bg-black/75 disabled:opacity-50">
+            <button type="submit" disabled={loading || refreshing} className="public-button public-button--primary md:col-span-2">
               {loading || refreshing ? "Memeriksa..." : "Lacak Pesanan"}
             </button>
+            <p className="text-xs leading-6 text-black/60 md:col-span-2">Nomor WhatsApp harus sesuai dengan pesanan. Informasi pesanan ditampilkan setelah verifikasi.</p>
           </form>
         ) : null}
+
+        {!data ? <div className="mt-5 flex flex-wrap items-center gap-3 text-sm"><Link href="/account/orders" className="public-secondary-action">Lihat pesanan di akun</Link><Link href="/help" className="inline-flex min-h-11 items-center font-semibold underline underline-offset-4">Bantuan pelacakan</Link></div> : null}
 
         {error && !data ? (
           <div className="mt-5">
@@ -168,6 +174,7 @@ function TrackingDetail({ data, credentials, refreshing, onRefresh }: { data: Cu
 
       <div className="mt-7">
         <CustomerOrderStatusCard
+          className="keep-section-bg rounded-functional"
           presentation={presentation}
           primaryAction={primaryAction}
         >
@@ -193,7 +200,7 @@ function TrackingDetail({ data, credentials, refreshing, onRefresh }: { data: Cu
       />
 
       {pickupNotReady ? (
-        <section className="mt-5 rounded-[24px] border border-amber-300 bg-amber-50 p-5 text-sm text-amber-950">
+        <section className="keep-section-bg mt-5 rounded-functional border border-amber-300 bg-amber-50 p-5 text-sm text-amber-950">
           <p className="font-semibold">Jangan datang ke toko sebelum ada konfirmasi</p>
           <p className="mt-2 leading-6">Meskipun barang berstatus Ready Stock, Admin tetap perlu memastikan barang tersedia dan sudah disiapkan di lokasi pengambilan.</p>
           <a href={contactHref} target="_blank" rel="noopener noreferrer" className="mt-4 inline-flex min-h-11 items-center rounded-full border border-amber-900/30 bg-white px-5 font-semibold">Hubungi Admin</a>
@@ -201,16 +208,16 @@ function TrackingDetail({ data, credentials, refreshing, onRefresh }: { data: Cu
       ) : null}
 
       <div className="mt-6 grid gap-3">
-        <Disclosure title="Ringkasan pesanan" summary={`${data.items.length} item · ${pricingIsFinal ? formatRupiah(order.total) : "Harga sedang ditetapkan"}`}>
+        <Disclosure title="Ringkasan pesanan" summary={`${data.items.length} item · ${pricingIsFinal ? formatRupiah(order.total) : "Harga sedang ditetapkan"}`} open>
           <div className="divide-y divide-black/10 border-y border-black/10">
             {data.items.map((item) => (
-              <article key={item.id} className="flex justify-between gap-5 py-4 text-sm">
+              <article key={item.id} className="customer-item-row py-4 text-sm">
                 <div>
                   <h3 className="font-semibold">{item.productName}</h3>
                   <p className="mt-1 text-black/55">{[item.variantName || item.color, item.size, item.sku, `${item.quantity} pcs`].filter(Boolean).join(" · ")}</p>
                   {item.customProjectId ? <p className="mt-1 text-xs font-semibold text-[#063d24]">Pesanan Custom · {item.pricingStatus === "final" ? "Harga final" : "Harga sedang diperiksa"}</p> : null}
                 </div>
-                <strong className="shrink-0">{formatRupiah(Number(item.subtotal))}</strong>
+                <strong className="tabular-nums">{formatRupiah(Number(item.subtotal))}</strong>
               </article>
             ))}
           </div>
@@ -368,14 +375,14 @@ function CustomerOperationsPanel({
           </button>
         </div>
       ) : null}
-      {notice ? <p className="mt-3 rounded-xl bg-[#f6f5f0] p-3">{notice}</p> : null}
+      {notice ? <p role="status" className="mt-3 rounded-xl bg-[#f6f5f0] p-3">{notice}</p> : null}
     </section>
   );
 }
 
-function Disclosure({ title, summary, children }: { title: string; summary: string; children: ReactNode }) {
+function Disclosure({ title, summary, children, open = false }: { title: string; summary: string; children: ReactNode; open?: boolean }) {
   return (
-    <details className="group rounded-[24px] border border-black/10 bg-white p-5">
+    <details open={open} className="group rounded-functional border border-black/10 bg-white p-4 sm:p-5">
       <summary className="flex cursor-pointer list-none items-center justify-between gap-4">
         <div><p className="font-semibold">{title}</p><p className="mt-1 text-xs text-black/50">{summary}</p></div>
         <span className="text-xl leading-none transition group-open:rotate-45" aria-hidden="true">+</span>
@@ -386,7 +393,7 @@ function Disclosure({ title, summary, children }: { title: string; summary: stri
 }
 
 function TrackingSkeleton() {
-  return <div aria-label="Memuat status pesanan" className="mt-8 h-80 animate-pulse rounded-[28px] bg-white" />;
+  return <div role="status" className="customer-panel mt-8 grid h-80 place-items-center border border-black/10 bg-white p-5"><p className="text-sm text-black/60">Memuat status pesanan...</p></div>;
 }
 
 function Field({ label, children }: { label: string; children: ReactNode }) {
@@ -394,11 +401,11 @@ function Field({ label, children }: { label: string; children: ReactNode }) {
 }
 
 function Info({ label, value }: { label: string; value: string }) {
-  return <div className="flex justify-between gap-4"><dt className="text-black/50">{label}</dt><dd className="text-right font-semibold">{value}</dd></div>;
+  return <div className="customer-summary-row"><dt className="text-black/50">{label}</dt><dd className="text-right font-semibold">{value}</dd></div>;
 }
 
 function Money({ label, value, empty, strong = false }: { label: string; value: number | null; empty?: string; strong?: boolean }) {
-  return <div className={`flex justify-between gap-4 ${strong ? "border-t border-black/10 pt-3 text-base font-semibold" : ""}`}><dt className="text-black/55">{label}</dt><dd>{value === null ? empty : formatRupiah(value)}</dd></div>;
+  return <div className={`customer-summary-row ${strong ? "border-t border-black/10 pt-3 text-base font-semibold" : ""}`}><dt className="text-black/55">{label}</dt><dd className="text-right tabular-nums">{value === null ? empty : formatRupiah(value)}</dd></div>;
 }
 
 function readable(value: string) {
