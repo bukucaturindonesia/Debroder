@@ -1,0 +1,12 @@
+[
+  {
+    "file": "qa-artifacts\\auto-order-20261026\\build-output.txt",
+    "rawSHA256": "65160D17B444AD14EA138F3F96128BC7AEB09DA1D7AFBC1B46B236E6B0BDA467",
+    "normalization": "Published copy strips trailing whitespace/empty EOF only; raw retained in QA worktree"
+  },
+  {
+    "file": "qa-artifacts\\auto-order-20261026\\typecheck-output.txt",
+    "rawSHA256": "729D145A774C89221B652A504B0D7C16C55A9763ABDE75390C686C48B7FFD91C",
+    "normalization": "Published copy strips trailing whitespace/empty EOF only; raw retained in QA worktree"
+  }
+]

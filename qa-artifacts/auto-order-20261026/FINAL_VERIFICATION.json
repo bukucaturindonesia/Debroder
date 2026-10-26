@@ -1,0 +1,48 @@
+{
+  "recordedAt": "2026-10-26T23:34:44.8969071+08:00",
+  "head": "8ccb7fefc91d70226ae3f82331761155b34326d0",
+  "branch": "codex/auto-order-qa-v1-20261026",
+  "hashes": [
+    {
+      "file": "lib/fast-checkout/server.ts",
+      "sha256": "84D9F935660E0D2A8E7C3A3A4FFC249341D39BAB1DA73BDC80054AE21FFC800D"
+    },
+    {
+      "file": "components/admin/GlobalAdminDashboard.tsx",
+      "sha256": "D3C32A6D6C280D8BD4F21ED546779B41F6B99A7C21239F194035EEB7BCC3FDAA"
+    },
+    {
+      "file": "components/admin/OperationalPriorityQueues.tsx",
+      "sha256": "C8930551F5613895CA43974B7BE051A7F2723C27354A4CE42C53ABAFEB793B04"
+    },
+    {
+      "file": "lib/global-admin-dashboard/priority-queues.ts",
+      "sha256": "0554102E9460C86ECC7C573C3F5748C4495AC6B53D4670BDC412E0F192C4B7C0"
+    },
+    {
+      "file": "test/fast-checkout-notification.test.ts",
+      "sha256": "8A2C4BA51F5AD2E19B863BDF05576F4021F547CD8455927219A96B2410ED2F6B"
+    },
+    {
+      "file": "test/auto-order-priority-queues.test.ts",
+      "sha256": "0B4BEED1A58B989F5BE443F1D5B0038FBA9AD19C1F78E09E9D969C759591D95F"
+    },
+    {
+      "file": "test/auto-order-dashboard-fixture.test.ts",
+      "sha256": "15742562408BFA22598448AC99C63679A55D570E0189798D457D8D99716F39CA"
+    },
+    {
+      "file": "qa-artifacts/auto-order-20261026/dashboard-tailwind.css",
+      "sha256": "CC8CC82F012593F738A1CC50982857CBD1656FE3174DA18A94BADAF2271A19D0"
+    }
+  ],
+  "tests": 56,
+  "testFiles": 6,
+  "browserFixtureCases": 6,
+  "typecheckExit": 0,
+  "scopedLintExit": 0,
+  "fixtureLintExit": 0,
+  "buildExit": 0,
+  "actualSandbox": "BLOCKED",
+  "remoteMutation": false
+}

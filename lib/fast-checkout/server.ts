@@ -356,12 +356,14 @@ export async function snap(request: Request) {
     throw new FastCheckoutError("PAYMENT_CREATION_UNCERTAIN");
   return { ...session, clientKey: config.clientKey };
 }
-export async function applyStatus(body: Record<string, unknown>) {
+export async function applyStatus(body: Record<string, unknown>, expectedProviderOrderId: string) {
   const config = midtransConfig();
   if (
     body.merchant_id !== config.merchantId ||
     body.currency !== "IDR" ||
     typeof body.order_id !== "string" ||
+    !expectedProviderOrderId ||
+    body.order_id !== expectedProviderOrderId ||
     typeof body.transaction_id !== "string" ||
     !/^\d+(?:\.00)?$/.test(String(body.gross_amount))
   )
@@ -396,7 +398,7 @@ export async function notification(request: Request) {
   const current = await new MidtransClient(config).status(
     (body as { order_id: string }).order_id,
   );
-  return applyStatus(current);
+  return applyStatus(current, (body as { order_id: string }).order_id);
 }
 export async function status(request: Request) {
   await limit(request, "status", 30);
@@ -419,6 +421,7 @@ export async function status(request: Request) {
         await new MidtransClient(midtransConfig()).status(
           a.data.provider_order_id,
         ),
+        a.data.provider_order_id,
       );
     } catch {
       /* A Snap session without a selected method can return provider 404.
