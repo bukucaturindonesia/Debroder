@@ -294,13 +294,15 @@ export async function POST(request: Request, context: Context) {
     }
 
     const extension = ALLOWED_TYPES.get(proof.type)!;
-    uploadedPath = `public/${resolved.link.order_id}/${idempotencyKey}.${extension}`;
-    const { error: uploadError } = await resolved.client.storage.from("payment-proofs").upload(uploadedPath, proof, {
+    const proofPath = `public/${resolved.link.order_id}/${idempotencyKey}.${extension}`;
+    const { error: uploadError } = await resolved.client.storage.from("payment-proofs").upload(proofPath, proof, {
       upsert: false,
       contentType: proof.type,
       cacheControl: "3600"
     });
     if (uploadError) throw new Error(`Bukti gagal diunggah: ${uploadError.message}`);
+    // Only this request's successful upload may be cleaned up after an RPC failure.
+    uploadedPath = proofPath;
 
     const { data, error } = await resolved.client.rpc("submit_customer_order_payment_v2", {
       p_token_hash: hashPaymentToken(token),

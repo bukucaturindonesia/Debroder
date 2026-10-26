@@ -1064,7 +1064,7 @@ export function ProductDetailClient({
             >
               Kirim WhatsApp
             </a>
-            <Link className="secondary-button" href="/keranjang">
+            <Link className="secondary-button" href="/cart">
               Lihat Keranjang ({getCartQuantity(configuredItems)})
             </Link>
           </div>

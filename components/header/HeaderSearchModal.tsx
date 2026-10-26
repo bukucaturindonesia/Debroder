@@ -17,7 +17,7 @@ const searchItems = [
   { title: "Toko DEBRODER", href: "/store", description: "Pettarani, Tello, Landak, dan Parepare.", keywords: ["lokasi", "alamat", "toko", "store"] },
   { title: "Cara Pemesanan", href: "/cara-order", description: "Panduan pemesanan DEBRODER.", keywords: ["cara", "order", "pesan"] },
   { title: "Lacak Pesanan", href: "/track-order", description: "Periksa status pesanan tanpa perlu login.", keywords: ["lacak", "pelacakan", "tracking", "status", "order", "pesanan"] },
-  { title: "Keranjang Belanja", href: "/keranjang", description: "Periksa produk, jumlah, dan rincian harga sebelum checkout.", keywords: ["keranjang", "cart", "pesanan", "checkout"] }
+  { title: "Keranjang Belanja", href: "/cart", description: "Periksa produk, jumlah, dan rincian harga sebelum checkout.", keywords: ["keranjang", "cart", "pesanan", "checkout"] }
 ];
 
 export function HeaderSearchModal({ onClose }: { onClose: () => void }) {

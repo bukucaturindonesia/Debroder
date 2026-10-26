@@ -1,0 +1,53 @@
+{
+  "checkedAt": "2026-10-26T05:23:10.141Z",
+  "results": [
+    {
+      "width": 390,
+      "path": "/cart",
+      "status": 200,
+      "finalPath": "/cart",
+      "emptyState": true,
+      "pageErrors": []
+    },
+    {
+      "width": 390,
+      "path": "/keranjang",
+      "status": 200,
+      "finalPath": "/cart",
+      "emptyState": true,
+      "pageErrors": []
+    },
+    {
+      "width": 390,
+      "path": "/order",
+      "status": 200,
+      "finalPath": "/cart",
+      "emptyState": true,
+      "pageErrors": []
+    },
+    {
+      "width": 1440,
+      "path": "/cart",
+      "status": 200,
+      "finalPath": "/cart",
+      "emptyState": true,
+      "pageErrors": []
+    },
+    {
+      "width": 1440,
+      "path": "/keranjang",
+      "status": 200,
+      "finalPath": "/cart",
+      "emptyState": true,
+      "pageErrors": []
+    },
+    {
+      "width": 1440,
+      "path": "/order",
+      "status": 200,
+      "finalPath": "/cart",
+      "emptyState": true,
+      "pageErrors": []
+    }
+  ]
+}

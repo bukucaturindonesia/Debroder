@@ -61,7 +61,7 @@ describe("canonical public global shell", () => {
       "app/custom/page.tsx",
       "app/jersey/page.tsx",
       "app/jersey/shop/page.tsx",
-      "app/keranjang/page.tsx",
+      "app/cart/page.tsx",
       "app/checkout/page.tsx",
       "app/order-confirmation/[token]/page.tsx",
       "app/track-order/page.tsx",

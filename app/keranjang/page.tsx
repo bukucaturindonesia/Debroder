@@ -1,28 +1,5 @@
-import type { Metadata } from "next";
-import { CartPageContent } from "@/components/CartProvider";
-import { PublicShell } from "@/components/PublicPage";
+import { redirect } from "next/navigation";
 
-export const metadata: Metadata = {
-  title: "Keranjang Pesanan | DEBRODER",
-  description: "Cek produk, varian, jumlah, dan lanjutkan ke guest checkout DEBRODER.",
-  alternates: { canonical: "/keranjang" }
-};
-
-export default async function KeranjangPage() {
-  return (
-    <PublicShell>
-      <section className="bg-[var(--color-canvas)] py-8 sm:py-12">
-        <div className="section-shell">
-          <div className="mb-8">
-            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-brand-charcoal/45">Keranjang Pesanan</p>
-            <h1 className="mt-3 text-[30px] font-semibold leading-tight tracking-tight sm:text-[48px]">Keranjang & Ringkasan</h1>
-            <p className="mt-3 max-w-2xl text-sm leading-7 text-brand-charcoal/60 sm:text-base">
-              Tinjau produk, varian, ukuran, dan jumlah. Harga serta stok diperiksa kembali sebelum Anda melanjutkan pemesanan.
-            </p>
-          </div>
-          <CartPageContent />
-        </div>
-      </section>
-    </PublicShell>
-  );
+export default function KeranjangAliasPage() {
+  redirect("/cart");
 }

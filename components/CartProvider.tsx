@@ -641,7 +641,7 @@ function MiniCartContent() {
             <span className="text-lg font-bold text-[#063d24]">{hasPendingCustomPricing ? "Belum ditetapkan" : safeCurrency(totals.normalTotal)}</span>
           </div>
         </div>
-        <Link href="/keranjang" onClick={cart.closeCart} className="public-secondary-action mt-5 w-full border border-black/20 hover:border-black">Lihat Keranjang</Link>
+        <Link href="/cart" onClick={cart.closeCart} className="public-secondary-action mt-5 w-full border border-black/20 hover:border-black">Lihat Keranjang</Link>
         {cart.checkoutDecision.allowed ? (
           <Link href="/checkout" onClick={cart.closeCart} className="public-button public-button--primary mt-3 w-full text-center">
             Checkout
@@ -1008,7 +1008,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     if (!isLoaded) return;
-    const activeCartSurface = isOpen || pathname === "/keranjang" || pathname === "/checkout";
+    const activeCartSurface = isOpen || pathname === "/cart" || pathname === "/checkout";
     if (!activeCartSurface) return;
     const signature = readyStockRevalidationSignature(items);
     if (!signature || signature === lastAutomaticRevalidation.current) return;
