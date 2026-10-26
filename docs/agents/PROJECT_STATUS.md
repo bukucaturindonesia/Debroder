@@ -1,3 +1,17 @@
+# D1.2 — REVIEWED PACKAGE READY TO PUSH — 2026-10-26
+
+Release **NO-GO / NOT COMPLETE**; D1.2 **IN PROGRESS**. This supersedes older checkpoints below.
+
+- Cart navigation/canonical route and payment cleanup correction: reviewed ten-file packet. QA63/63 tests PASS; typecheck PASS; lint PASS with5warnings. Production-build direct cart/legacy redirect browser smoke6/6 PASS at390/1440; older catalog-dependent Wave2 still unresolved.
+- Build route table and BUILD_ID available; original build exit not retained. Produced build starts successfully. No fresh full-suite/build rerun claimed.
+- Database contract delivered; Agent02 mutual agreement and live target/Auth/RLS/concurrency remain BLOCKED. Raw sensitive contract/report excluded from public push.
+- Asset classification complete101/101; all require OWNER-PIM rights confirmation. No new images or mapping activation.
+- Owner confirms Vercel target https://vercel.com/okdeal/debroder; exact connector lookup404. GateE remains BLOCKED on access/artifact evidence.
+- Reviewed package uses isolated codex/agent-04-qa; baseline726c69267a400730e894881d8ae8a44b32921b76 plus manifest-bound source. Main intervening d6a458a commit and220unknown E2E/artifact paths preserved and excluded from this push. No migration, merge or deployment.
+
+Full matrix: [D1.2 report](../../D1_2_CONTROLLED_DEVELOPMENT_REPORT.md). Push/PR URLs are recorded in the final handoff once verified.
+
+---
 # D1.2 — CONTROLLED DEVELOPMENT CONTINUATION — 2026-10-25
 
 **Current: D1.2 IN PROGRESS; release NO-GO / NOT COMPLETE.** This section supersedes historical status below; old checkpoints remain preserved.
@@ -245,3 +259,6 @@ Draft scopes: AGENT_TASK_DRAFTS.md. Standard reporting: REPORT_TEMPLATE.md.
 - Stopped GitHub actions as instructed. Repository access, live Issue/PR list, duplicate check, write permission and creation: NOT RUN in this recovery. No Issue number/URL obtained; earlier empty search is historical, not current proof that no Issues exist. Five agent Issues remain NOT CREATED BY DIRECTOR / current existence UNVERIFIED.
 - Dashboard updated locally. Existing task drafts and reporting template preserved. Agent activation/report round-trip remains BLOCKED; no messages dispatched. Worktree safety not checked or assumed; prior access blockers remain.
 - Next owner action: run `gh auth login -h github.com` locally and verify `gh auth status` succeeds in the environment used by this chat. Do not send tokens. Then resume with repository permission and all-state Issue checks before creation. Release remains NO-GO / NOT COMPLETE.
+
+## D1.2 PUBLICATION VERIFIED — 2026-10-26
+Draft PR60 https://github.com/bukucaturindonesia/Debroder/pull/60 latestHEAD23923aeafc5e1464bb768e9f4b68749f16c095b1 (sourcef116829bbff5d10cff2b607a3f13863ded0e2831), draft PR61 https://github.com/bukucaturindonesia/Debroder/pull/61 HEADc410d1a89987117c4cdc7563762cf9acfac1570f, both pushed and remote refs verified; target candidate branch, no merge/deploy.63targeted tests and6direct-cart browser cases PASS; typecheck/scoped lint PASS/5warnings. Full release gates still blocked; NO-GO. Five safe Issues55–59 comments published. Owner confirms Vercel targetokdeal/debroder but connectorlookup404. Root intervening d6a458a and UNKNOWN artifacts preserved, excluded from review push. Full checkpoint in CURRENT_PHASE_HANDOFF.md; no database/migration/staging/production change. Do not rerun unaffected PASS.
