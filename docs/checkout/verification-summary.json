@@ -1,0 +1,54 @@
+{
+  "date": "2026-10-26",
+  "timezone": "Asia/Makassar",
+  "branch": "codex/fast-checkout-v1-20261026",
+  "baseSha": "eab5f3e460e1c3fd298f015c0c43a277bb0db6fa",
+  "sourceState": "IMPLEMENTED IN PART / LOCALLY VERIFIED WITH MOCKS",
+  "releaseDecision": "NO-GO",
+  "featureDefault": "OFF",
+  "unitTests": {
+    "status": "EXECUTED AND PASSED",
+    "files": 159,
+    "passed": 1117,
+    "failed": 0
+  },
+  "lint": {
+    "status": "EXECUTED AND PASSED",
+    "errors": 0,
+    "warnings": 35
+  },
+  "typecheck": "EXECUTED AND PASSED",
+  "npmBuild": {
+    "status": "EXECUTED AND PASSED",
+    "pages": 145
+  },
+  "browser": {
+    "status": "MOCK / LOCAL RUNTIME PASS",
+    "passed": 15,
+    "failed": 0,
+    "widths": [
+      320,
+      360,
+      390,
+      430,
+      768,
+      1024,
+      1440
+    ],
+    "fastTests": 9,
+    "legacyRegressionTests": 6
+  },
+  "midtransSandbox": "BLOCKED - keys and callback environment unavailable",
+  "rajaOngkirLiveRates": "BLOCKED - account key/origin unavailable",
+  "migration": "20261026045918_fast_checkout_midtrans_rajaongkir_v1.sql",
+  "migrationReplayClassification": "DO NOT RUN - reconcile and test full schema first",
+  "localIsolatedPostgresMutation": true,
+  "supabaseDatabaseMutation": false,
+  "stagingMutation": false,
+  "productionMutation": false,
+  "credentialsChanged": false,
+  "productionDeployment": false,
+  "customFinalOrDpSnap": "NOT IMPLEMENTED - existing flow preserved",
+  "fullSchemaInventoryFulfillmentPaymentAcceptance": "BLOCKED",
+  "humanCheckoutTimingExperiment": "NOT RUN"
+}

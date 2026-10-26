@@ -1,0 +1,721 @@
+{
+  "config": {
+    "argv": [
+      "C:\\Program Files\\nodejs\\node.exe",
+      "C:\\Users\\OMEN\\Documents\\FAHMI SALAM\\Debroder-main\\Debroder-main\\node_modules\\@playwright\\test\\cli.js",
+      "test",
+      "e2e/fast-checkout.spec.ts",
+      "e2e/solo-stabilization.spec.ts",
+      "e2e/public-readonly.spec.ts",
+      "--output=test-results/fast-checkout-final-combined-20261026",
+      "--reporter=json"
+    ],
+    "configFile": "C:\\Users\\OMEN\\Documents\\FAHMI SALAM\\Debroder-main\\Debroder-main\\playwright.config.ts",
+    "rootDir": "C:/Users/OMEN/Documents/FAHMI SALAM/Debroder-main/Debroder-main/e2e",
+    "failOnFlakyTests": false,
+    "forbidOnly": false,
+    "fullyParallel": false,
+    "globalSetup": null,
+    "globalTeardown": null,
+    "globalTimeout": 0,
+    "grep": {},
+    "grepInvert": null,
+    "maxFailures": 0,
+    "metadata": {
+      "actualWorkers": 1
+    },
+    "preserveOutput": "always",
+    "projects": [
+      {
+        "outputDir": "C:/Users/OMEN/Documents/FAHMI SALAM/Debroder-main/Debroder-main/test-results/fast-checkout-final-combined-20261026",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "",
+        "name": "",
+        "testDir": "C:/Users/OMEN/Documents/FAHMI SALAM/Debroder-main/Debroder-main/e2e",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 120000
+      }
+    ],
+    "quiet": false,
+    "reporter": [
+      [
+        "json"
+      ]
+    ],
+    "reportSlowTests": {
+      "max": 5,
+      "threshold": 300000
+    },
+    "shard": null,
+    "tags": [],
+    "updateSnapshots": "missing",
+    "updateSourceMethod": "patch",
+    "version": "1.62.1",
+    "workers": 1,
+    "webServer": null
+  },
+  "suites": [
+    {
+      "title": "fast-checkout.spec.ts",
+      "file": "fast-checkout.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "fast checkout guest UX MOCK at 320px",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 120000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 3059,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-26T05:42:09.151Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "4849b8357302f340c847-44a141ed4c0bca97c224",
+          "file": "fast-checkout.spec.ts",
+          "line": 157,
+          "column": 7
+        },
+        {
+          "title": "fast checkout guest UX MOCK at 360px",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 120000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 2962,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-26T05:42:12.282Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "4849b8357302f340c847-4b5c92a8183b8cf8cb5e",
+          "file": "fast-checkout.spec.ts",
+          "line": 157,
+          "column": 7
+        },
+        {
+          "title": "fast checkout guest UX MOCK at 390px",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 120000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 2930,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-26T05:42:15.257Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "4849b8357302f340c847-7abaa020a0800359d156",
+          "file": "fast-checkout.spec.ts",
+          "line": 157,
+          "column": 7
+        },
+        {
+          "title": "fast checkout guest UX MOCK at 430px",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 120000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 3074,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-26T05:42:18.200Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "4849b8357302f340c847-d23e2426b26fa55fbe7e",
+          "file": "fast-checkout.spec.ts",
+          "line": 157,
+          "column": 7
+        },
+        {
+          "title": "fast checkout guest UX MOCK at 768px",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 120000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 3494,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-26T05:42:21.286Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "4849b8357302f340c847-5145c1174c377d792661",
+          "file": "fast-checkout.spec.ts",
+          "line": 157,
+          "column": 7
+        },
+        {
+          "title": "fast checkout guest UX MOCK at 1024px",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 120000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 3245,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-26T05:42:24.794Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "4849b8357302f340c847-632860ebd6cc52cb3446",
+          "file": "fast-checkout.spec.ts",
+          "line": 157,
+          "column": 7
+        },
+        {
+          "title": "fast checkout guest UX MOCK at 1440px",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 120000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 3207,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-26T05:42:28.048Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "4849b8357302f340c847-f5c264a9982db3fe91ea",
+          "file": "fast-checkout.spec.ts",
+          "line": 157,
+          "column": 7
+        },
+        {
+          "title": "shipping failure preserves address/cart and never enables a free-shipping payment",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 120000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 2739,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-26T05:42:31.265Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "4849b8357302f340c847-a6ad8e0ddf773905733f",
+          "file": "fast-checkout.spec.ts",
+          "line": 218,
+          "column": 5
+        },
+        {
+          "title": "anonymous settings mutation is denied at the real API boundary",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 120000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 40,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-26T05:42:34.014Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "4849b8357302f340c847-b6e494db0c6bd78e4330",
+          "file": "fast-checkout.spec.ts",
+          "line": 260,
+          "column": 5
+        }
+      ]
+    },
+    {
+      "title": "public-readonly.spec.ts",
+      "file": "public-readonly.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "public shell and canonical read-only routes respond without mutation",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 120000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 812,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-26T05:42:34.067Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "7cad3ce0af38ef3635f8-4e07f0f62eaa047f2705",
+          "file": "public-readonly.spec.ts",
+          "line": 3,
+          "column": 5
+        }
+      ]
+    },
+    {
+      "title": "solo-stabilization.spec.ts",
+      "file": "solo-stabilization.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "public commerce route matrix at 390px",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 120000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 8604,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-26T05:42:34.899Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "/-390",
+                      "contentType": "image/png",
+                      "path": "C:\\Users\\OMEN\\Documents\\FAHMI SALAM\\Debroder-main\\Debroder-main\\test-results\\fast-checkout-final-combined-20261026\\solo-stabilization-public-commerce-route-matrix-at-390px\\attachments\\--390-cd52be5199929f7f6791305c013a1bbbfd0ac0b3.png"
+                    },
+                    {
+                      "name": "/koleksi-390",
+                      "contentType": "image/png",
+                      "path": "C:\\Users\\OMEN\\Documents\\FAHMI SALAM\\Debroder-main\\Debroder-main\\test-results\\fast-checkout-final-combined-20261026\\solo-stabilization-public-commerce-route-matrix-at-390px\\attachments\\-koleksi-390-0dc9a4d894b0da71e4b7bf79497aecf4c62c6078.png"
+                    },
+                    {
+                      "name": "/jersey-390",
+                      "contentType": "image/png",
+                      "path": "C:\\Users\\OMEN\\Documents\\FAHMI SALAM\\Debroder-main\\Debroder-main\\test-results\\fast-checkout-final-combined-20261026\\solo-stabilization-public-commerce-route-matrix-at-390px\\attachments\\-jersey-390-d83eb7c562b59f772b2de47683659752a950d4a6.png"
+                    },
+                    {
+                      "name": "/jersey/shop-390",
+                      "contentType": "image/png",
+                      "path": "C:\\Users\\OMEN\\Documents\\FAHMI SALAM\\Debroder-main\\Debroder-main\\test-results\\fast-checkout-final-combined-20261026\\solo-stabilization-public-commerce-route-matrix-at-390px\\attachments\\-jersey-shop-390-7782159cb9f24f005efbdd8c2d023e47ca34d8e8.png"
+                    },
+                    {
+                      "name": "/kaos-polos-390",
+                      "contentType": "image/png",
+                      "path": "C:\\Users\\OMEN\\Documents\\FAHMI SALAM\\Debroder-main\\Debroder-main\\test-results\\fast-checkout-final-combined-20261026\\solo-stabilization-public-commerce-route-matrix-at-390px\\attachments\\-kaos-polos-390-09ba4a8440da187d4da126f5daabd602170a3ace.png"
+                    },
+                    {
+                      "name": "/jaket-hoodie-390",
+                      "contentType": "image/png",
+                      "path": "C:\\Users\\OMEN\\Documents\\FAHMI SALAM\\Debroder-main\\Debroder-main\\test-results\\fast-checkout-final-combined-20261026\\solo-stabilization-public-commerce-route-matrix-at-390px\\attachments\\-jaket-hoodie-390-8a971741dd8f8a64214d6fbd3c354670254b75ac.png"
+                    },
+                    {
+                      "name": "/headwear-390",
+                      "contentType": "image/png",
+                      "path": "C:\\Users\\OMEN\\Documents\\FAHMI SALAM\\Debroder-main\\Debroder-main\\test-results\\fast-checkout-final-combined-20261026\\solo-stabilization-public-commerce-route-matrix-at-390px\\attachments\\-headwear-390-d2e7a811055916b8b423d1a9215a98618adf0d27.png"
+                    },
+                    {
+                      "name": "/sablon-dtf-390",
+                      "contentType": "image/png",
+                      "path": "C:\\Users\\OMEN\\Documents\\FAHMI SALAM\\Debroder-main\\Debroder-main\\test-results\\fast-checkout-final-combined-20261026\\solo-stabilization-public-commerce-route-matrix-at-390px\\attachments\\-sablon-dtf-390-3dcf0ea0ce77a11e5366f450791005b91c785d3f.png"
+                    },
+                    {
+                      "name": "/cetak-sublim-390",
+                      "contentType": "image/png",
+                      "path": "C:\\Users\\OMEN\\Documents\\FAHMI SALAM\\Debroder-main\\Debroder-main\\test-results\\fast-checkout-final-combined-20261026\\solo-stabilization-public-commerce-route-matrix-at-390px\\attachments\\-cetak-sublim-390-0b18ed239263a18e28961efa82ac286a5519b47f.png"
+                    },
+                    {
+                      "name": "/cart-390",
+                      "contentType": "image/png",
+                      "path": "C:\\Users\\OMEN\\Documents\\FAHMI SALAM\\Debroder-main\\Debroder-main\\test-results\\fast-checkout-final-combined-20261026\\solo-stabilization-public-commerce-route-matrix-at-390px\\attachments\\-cart-390-fbbb2176d40b20720b8de85cfdbc2d8bd85165ca.png"
+                    },
+                    {
+                      "name": "/checkout-390",
+                      "contentType": "image/png",
+                      "path": "C:\\Users\\OMEN\\Documents\\FAHMI SALAM\\Debroder-main\\Debroder-main\\test-results\\fast-checkout-final-combined-20261026\\solo-stabilization-public-commerce-route-matrix-at-390px\\attachments\\-checkout-390-2a0771df6277f6ec48e4bed31f42d7228ca7566b.png"
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "2b33f87e2bde303ffdb6-94ef313e7c82b7e51932",
+          "file": "solo-stabilization.spec.ts",
+          "line": 5,
+          "column": 7
+        },
+        {
+          "title": "public commerce route matrix at 1440px",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 120000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 9830,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-26T05:42:43.512Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "/-1440",
+                      "contentType": "image/png",
+                      "path": "C:\\Users\\OMEN\\Documents\\FAHMI SALAM\\Debroder-main\\Debroder-main\\test-results\\fast-checkout-final-combined-20261026\\solo-stabilization-public-commerce-route-matrix-at-1440px\\attachments\\--1440-5a0e5760dbc75b0db682e42e88e0275020471c2a.png"
+                    },
+                    {
+                      "name": "/koleksi-1440",
+                      "contentType": "image/png",
+                      "path": "C:\\Users\\OMEN\\Documents\\FAHMI SALAM\\Debroder-main\\Debroder-main\\test-results\\fast-checkout-final-combined-20261026\\solo-stabilization-public-commerce-route-matrix-at-1440px\\attachments\\-koleksi-1440-ba6d90b6823bf3f5ec1d030f898097c31021654f.png"
+                    },
+                    {
+                      "name": "/jersey-1440",
+                      "contentType": "image/png",
+                      "path": "C:\\Users\\OMEN\\Documents\\FAHMI SALAM\\Debroder-main\\Debroder-main\\test-results\\fast-checkout-final-combined-20261026\\solo-stabilization-public-commerce-route-matrix-at-1440px\\attachments\\-jersey-1440-cdebf40f83bdbb47bf576e980a472a6f82ca143a.png"
+                    },
+                    {
+                      "name": "/jersey/shop-1440",
+                      "contentType": "image/png",
+                      "path": "C:\\Users\\OMEN\\Documents\\FAHMI SALAM\\Debroder-main\\Debroder-main\\test-results\\fast-checkout-final-combined-20261026\\solo-stabilization-public-commerce-route-matrix-at-1440px\\attachments\\-jersey-shop-1440-ee03ecd11e90e35e027b013044e00aaae0aacf33.png"
+                    },
+                    {
+                      "name": "/kaos-polos-1440",
+                      "contentType": "image/png",
+                      "path": "C:\\Users\\OMEN\\Documents\\FAHMI SALAM\\Debroder-main\\Debroder-main\\test-results\\fast-checkout-final-combined-20261026\\solo-stabilization-public-commerce-route-matrix-at-1440px\\attachments\\-kaos-polos-1440-94173d5c2465e447e524f7229a7bc57d200efe0b.png"
+                    },
+                    {
+                      "name": "/jaket-hoodie-1440",
+                      "contentType": "image/png",
+                      "path": "C:\\Users\\OMEN\\Documents\\FAHMI SALAM\\Debroder-main\\Debroder-main\\test-results\\fast-checkout-final-combined-20261026\\solo-stabilization-public-commerce-route-matrix-at-1440px\\attachments\\-jaket-hoodie-1440-53eeb9c9bec4702bd9d36b5833635974c5b1c5ef.png"
+                    },
+                    {
+                      "name": "/headwear-1440",
+                      "contentType": "image/png",
+                      "path": "C:\\Users\\OMEN\\Documents\\FAHMI SALAM\\Debroder-main\\Debroder-main\\test-results\\fast-checkout-final-combined-20261026\\solo-stabilization-public-commerce-route-matrix-at-1440px\\attachments\\-headwear-1440-0e4fe7d1ef870cee8bfb3668124f937b9a03ff06.png"
+                    },
+                    {
+                      "name": "/sablon-dtf-1440",
+                      "contentType": "image/png",
+                      "path": "C:\\Users\\OMEN\\Documents\\FAHMI SALAM\\Debroder-main\\Debroder-main\\test-results\\fast-checkout-final-combined-20261026\\solo-stabilization-public-commerce-route-matrix-at-1440px\\attachments\\-sablon-dtf-1440-eef09a470ccbc0231b129eea53534a0be0622486.png"
+                    },
+                    {
+                      "name": "/cetak-sublim-1440",
+                      "contentType": "image/png",
+                      "path": "C:\\Users\\OMEN\\Documents\\FAHMI SALAM\\Debroder-main\\Debroder-main\\test-results\\fast-checkout-final-combined-20261026\\solo-stabilization-public-commerce-route-matrix-at-1440px\\attachments\\-cetak-sublim-1440-c4f11cb86de0613d4c2f9f07f7cb0f3ff3522c75.png"
+                    },
+                    {
+                      "name": "/cart-1440",
+                      "contentType": "image/png",
+                      "path": "C:\\Users\\OMEN\\Documents\\FAHMI SALAM\\Debroder-main\\Debroder-main\\test-results\\fast-checkout-final-combined-20261026\\solo-stabilization-public-commerce-route-matrix-at-1440px\\attachments\\-cart-1440-acc302d11ee8a9c7c68a704acdfd19ab0544ebb9.png"
+                    },
+                    {
+                      "name": "/checkout-1440",
+                      "contentType": "image/png",
+                      "path": "C:\\Users\\OMEN\\Documents\\FAHMI SALAM\\Debroder-main\\Debroder-main\\test-results\\fast-checkout-final-combined-20261026\\solo-stabilization-public-commerce-route-matrix-at-1440px\\attachments\\-checkout-1440-f9f255e234b7dcd12a7ab50dffd97c6d347576ba.png"
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "2b33f87e2bde303ffdb6-7b0147c18edb2bc261e8",
+          "file": "solo-stabilization.spec.ts",
+          "line": 5,
+          "column": 7
+        },
+        {
+          "title": "gateway 404 retains an old unknown-outcome checkout key",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 120000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 942,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-26T05:42:53.353Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "2b33f87e2bde303ffdb6-0a2a17d3b2eb501ebef0",
+          "file": "solo-stabilization.spec.ts",
+          "line": 32,
+          "column": 5
+        },
+        {
+          "title": "anonymous admin access redirects to login",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 120000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 905,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-26T05:42:54.308Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "2b33f87e2bde303ffdb6-40ca9a4aa7fc6d123a91",
+          "file": "solo-stabilization.spec.ts",
+          "line": 53,
+          "column": 5
+        },
+        {
+          "title": "checkout rejects malformed requests before any order creation",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 120000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 42,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-26T05:42:55.227Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "2b33f87e2bde303ffdb6-50ed10ab453aa868a992",
+          "file": "solo-stabilization.spec.ts",
+          "line": 59,
+          "column": 5
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "stats": {
+    "startTime": "2026-10-26T05:42:08.740Z",
+    "duration": 46766.744000000006,
+    "expected": 15,
+    "skipped": 0,
+    "unexpected": 0,
+    "flaky": 0
+  }
+}

@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { CheckoutClient } from "@/components/checkout/CheckoutClient";
 import { PublicShell } from "@/components/PublicPage";
 import { getPublicContent } from "@/lib/public-data";
+import { CheckoutEntry } from "@/components/checkout/FastCheckoutClient";
 
 export const metadata: Metadata = {
   title: "Checkout | DEBRODER",
@@ -21,7 +22,7 @@ export default async function CheckoutPage() {
 
   return (
     <PublicShell theme="jersey-commerce">
-      <CheckoutClient stores={stores} />
+      {process.env.DEBRODER_FAST_CHECKOUT_ENABLED === "1" ? <CheckoutEntry stores={stores} /> : <CheckoutClient stores={stores} />}
     </PublicShell>
   );
 }

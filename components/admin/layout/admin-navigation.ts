@@ -108,6 +108,7 @@ export const adminNavigationGroups: readonly AdminNavigationGroup[] = [
     label: "SISTEM",
     items: [
       { label: "Pengaturan", href: "/admin/website-settings", permission: "settings.read" },
+      { label: "Pengiriman & Pembayaran", href: "/admin/checkout-settings", permission: "settings.read" },
       { label: "Tema", href: "/admin/theme", permission: "settings.read" },
       { label: "Penomoran Dokumen", href: "/admin/document-numbering", permission: "settings.read" },
       { label: "Akun Admin", href: "/admin/access-control", permission: "access_control.read" },

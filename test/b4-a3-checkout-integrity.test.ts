@@ -73,7 +73,7 @@ describe("B4-A3 Ready Stock checkout integrity", () => {
     expect(client).toContain("payloadHash");
     expect(client).toContain("recoverStoredCheckout(currentDraft)");
     expect(client).toContain('recovery.kind === "missing" || recovery.kind === "expired"');
-    expect(client).toContain("Jaringan belum dapat memastikan checkout sebelumnya");
+    expect(read("lib/checkout-recovery.ts")).toContain("Jaringan belum dapat memastikan checkout sebelumnya");
     expect(client).not.toContain("createdAt: new Date().toISOString() } satisfies");
   });
 

@@ -1,0 +1,613 @@
+npm warn Unknown env config "verify-deps-before-run". This will stop working in the next major version of npm. See `npm help npmrc` for supported config options.
+
+> debroder-official@1.0.0 prebuild
+> pnpm verify
+
+
+> debroder-official@1.0.0 verify C:\Users\OMEN\Documents\FAHMI SALAM\Debroder-main\Debroder-main
+> pnpm typecheck && pnpm lint && pnpm test
+
+
+> debroder-official@1.0.0 typecheck C:\Users\OMEN\Documents\FAHMI SALAM\Debroder-main\Debroder-main
+> tsc --noEmit
+
+
+> debroder-official@1.0.0 lint C:\Users\OMEN\Documents\FAHMI SALAM\Debroder-main\Debroder-main
+> eslint .
+
+
+C:\Users\OMEN\Documents\FAHMI SALAM\Debroder-main\Debroder-main\app\api\admin\products\route.ts
+  547:16  warning  'rollbackImageSave' is defined but never used    @typescript-eslint/no-unused-vars
+  752:16  warning  'loadPublishSnapshot' is defined but never used  @typescript-eslint/no-unused-vars
+
+C:\Users\OMEN\Documents\FAHMI SALAM\Debroder-main\Debroder-main\app\cara-order\page.tsx
+  42:9  warning  'apparelLink' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+C:\Users\OMEN\Documents\FAHMI SALAM\Debroder-main\Debroder-main\components\BrandIcon.tsx
+  12:5  warning  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+
+C:\Users\OMEN\Documents\FAHMI SALAM\Debroder-main\Debroder-main\components\ProductRecommendationDrawer.tsx
+  63:18  warning  The ref value 'triggerRef.current' will likely have changed by the time this effect cleanup function runs. If this ref points to a node rendered by React, copy 'triggerRef.current' to a variable inside the effect, and use that variable in the cleanup function  react-hooks/exhaustive-deps
+
+C:\Users\OMEN\Documents\FAHMI SALAM\Debroder-main\Debroder-main\components\admin\BulkCustomManager.tsx
+  232:6  warning  React Hook useEffect has a missing dependency: 'loadData'. Either include it or remove the dependency array                                                                                                                              react-hooks/exhaustive-deps
+  244:6  warning  React Hook useEffect has missing dependencies: 'minimumRules' and 'products'. Either include them or remove the dependency array                                                                                                         react-hooks/exhaustive-deps
+  249:6  warning  React Hook useEffect has a missing dependency: 'services'. Either include it or remove the dependency array. You can also replace multiple useState variables with useReducer if 'setServiceForm' needs the current value of 'services'  react-hooks/exhaustive-deps
+
+C:\Users\OMEN\Documents\FAHMI SALAM\Debroder-main\Debroder-main\components\admin\ExportReconciliationAdmin.tsx
+  126:133  warning  Expected an assignment or function call and instead saw an expression  @typescript-eslint/no-unused-expressions
+  127:104  warning  Expected an assignment or function call and instead saw an expression  @typescript-eslint/no-unused-expressions
+  211:14   warning  'error' is defined but never used                                      @typescript-eslint/no-unused-vars
+
+C:\Users\OMEN\Documents\FAHMI SALAM\Debroder-main\Debroder-main\components\admin\HomepageSectionsAdmin.tsx
+  73:7  warning  'objectPositionOptions' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+C:\Users\OMEN\Documents\FAHMI SALAM\Debroder-main\Debroder-main\components\admin\PaymentInboxAdmin.tsx
+  72:91  warning  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+
+C:\Users\OMEN\Documents\FAHMI SALAM\Debroder-main\Debroder-main\components\admin\PimAuditHistoryAdmin.tsx
+  22:8  warning  'PimAuditEntity' is defined but never used                             @typescript-eslint/no-unused-vars
+  96:5  warning  Expected an assignment or function call and instead saw an expression  @typescript-eslint/no-unused-expressions
+
+C:\Users\OMEN\Documents\FAHMI SALAM\Debroder-main\Debroder-main\components\admin\ProductAdmin.tsx
+  133:65  warning  React Hook useEffect has a missing dependency: 'refresh'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+C:\Users\OMEN\Documents\FAHMI SALAM\Debroder-main\Debroder-main\components\admin\QuotationDetailAdmin.tsx
+  237:6  warning  React Hook useEffect has a missing dependency: 'loadQuotation'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+C:\Users\OMEN\Documents\FAHMI SALAM\Debroder-main\Debroder-main\components\admin\SiteMediaSettingsAdmin.tsx
+  79:11  warning  Unused eslint-disable directive (no problems were reported from 'react-hooks/exhaustive-deps')
+
+C:\Users\OMEN\Documents\FAHMI SALAM\Debroder-main\Debroder-main\components\admin\VariantDeleteManager.tsx
+  140:6  warning  React Hook useEffect has a missing dependency: 'loadData'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+C:\Users\OMEN\Documents\FAHMI SALAM\Debroder-main\Debroder-main\components\cart\cart-panel.tsx
+  119:15  warning  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+
+C:\Users\OMEN\Documents\FAHMI SALAM\Debroder-main\Debroder-main\components\custom\CustomProjectBuilder.tsx
+  225:14  warning  'error' is defined but never used  @typescript-eslint/no-unused-vars
+
+C:\Users\OMEN\Documents\FAHMI SALAM\Debroder-main\Debroder-main\components\payments\PublicPaymentForm.tsx
+  248:50  warning  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+
+C:\Users\OMEN\Documents\FAHMI SALAM\Debroder-main\Debroder-main\components\product\product-detail-client.tsx
+  180:5   warning  React Hook useMemo has an unnecessary dependency: 'generalNote'. Either exclude it or remove the dependency array                                                                                                                                                                        react-hooks/exhaustive-deps
+  495:13  warning  'payload' is assigned a value but never used                                                                                                                                                                                                                                             @typescript-eslint/no-unused-vars
+  592:13  warning  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+  601:13  warning  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+
+C:\Users\OMEN\Documents\FAHMI SALAM\Debroder-main\Debroder-main\e2e\wave-1.spec.ts
+  2:38  warning  'jsonResponse' is defined but never used  @typescript-eslint/no-unused-vars
+
+C:\Users\OMEN\Documents\FAHMI SALAM\Debroder-main\Debroder-main\lib\admin-auth.ts
+  8:32  warning  '_request' is defined but never used  @typescript-eslint/no-unused-vars
+
+C:\Users\OMEN\Documents\FAHMI SALAM\Debroder-main\Debroder-main\lib\custom-commerce\builder-runtime.ts
+  33:22  warning  '_createdAt' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  33:45  warning  '_updatedAt' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  43:21  warning  '_pricedAt' is assigned a value but never used   @typescript-eslint/no-unused-vars
+
+C:\Users\OMEN\Documents\FAHMI SALAM\Debroder-main\Debroder-main\lib\order.ts
+  3:34  warning  '_product' is defined but never used  @typescript-eslint/no-unused-vars
+
+C:\Users\OMEN\Documents\FAHMI SALAM\Debroder-main\Debroder-main\lib\pim-reconciliation.ts
+  101:52  warning  '_evaluate' is defined but never used  @typescript-eslint/no-unused-vars
+
+C:\Users\OMEN\Documents\FAHMI SALAM\Debroder-main\Debroder-main\lib\product-detail-page\domain.ts
+  27:3  warning  'isJersey' is defined but never used  @typescript-eslint/no-unused-vars
+
+C:\Users\OMEN\Documents\FAHMI SALAM\Debroder-main\Debroder-main\verify-contract.mjs
+  51:7  warning  'a3' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+✖ 35 problems (0 errors, 35 warnings)
+  0 errors and 1 warning potentially fixable with the `--fix` option.
+
+
+> debroder-official@1.0.0 test C:\Users\OMEN\Documents\FAHMI SALAM\Debroder-main\Debroder-main
+> vitest run
+
+
+ RUN  v3.2.4 C:/Users/OMEN/Documents/FAHMI SALAM/Debroder-main/Debroder-main
+
+ ✓ test/order-operations-phase4-13.test.ts (15 tests) 22ms
+ ✓ test/baseline-reconstruction.test.ts (17 tests) 94ms
+ ✓ test/product-workspace-wp07-review.test.ts (18 tests) 19ms
+ ✓ test/custom-checkout-structured-address-hotfix.test.ts (5 tests) 144ms
+ ✓ test/customer-account-email-verification-v1.test.ts (10 tests) 133ms
+ ✓ test/product-image-assets.test.ts (4 tests) 143ms
+ ✓ test/p5-client-boundary-isolation.test.ts (4 tests) 166ms
+ ✓ test/p8a-size-adjustment-policy-preview.test.ts (17 tests) 20ms
+ ✓ test/global-admin-dashboard.test.ts (9 tests) 29ms
+ ✓ test/icon-assets.test.ts (4 tests) 169ms
+ ✓ test/pim-phase7-audit-history.test.ts (14 tests) 25ms
+ ✓ test/bulk-ordering.test.ts (5 tests) 25ms
+ ✓ test/fast-checkout-providers.test.ts (25 tests) 44ms
+ ✓ test/payment-verification-workspace.test.ts (9 tests) 115ms
+ ✓ test/document-numbering-phase6.test.ts (5 tests) 28ms
+ ✓ test/p14-error-observability.test.ts (6 tests) 22ms
+ ✓ test/pim-phase6-export-reconciliation.test.ts (14 tests) 192ms
+ ✓ test/pim-phase4-bulk-import.test.ts (14 tests) 236ms
+ ✓ test/cart-v5.test.ts (12 tests) 36ms
+ ✓ test/checkout-recovery-behavior.test.ts (9 tests) 17ms
+ ✓ test/security-function-reachability.test.ts (13 tests) 19ms
+ ✓ test/p9-generic-configured-product.test.ts (9 tests) 34ms
+ ✓ test/security-containment-batch1.test.ts (8 tests) 30ms
+ ✓ test/admin-order-pricing-workspace.test.ts (15 tests) 13ms
+ ✓ test/global-ready-stock-instant-custom.test.ts (6 tests) 36ms
+ ✓ test/custom-commerce.test.ts (27 tests) 32ms
+ ✓ test/admin-account-access-management.test.ts (35 tests) 18ms
+ ✓ test/admin-order-detail-react130.test.ts (6 tests) 28ms
+ ✓ test/indonesia-region-seed.test.ts (4 tests) 11ms
+ ✓ test/p0-security-checkout-abuse-protection.test.ts (4 tests) 21ms
+ ✓ test/fast-checkout-notification.test.ts (4 tests) 30ms
+ ✓ test/p10-jersey-configured-product.test.ts (5 tests) 37ms
+stderr | test/global-dashboard-permission.test.ts > Global Dashboard canonical permission > keeps permission service failures distinct from a 403
+{"timestamp":"2026-10-26T05:40:36.796Z","level":"error","service":"debroder-web","operation":"admin role and audit","route":null,"requestId":"1a0c9d79-d4fc-4f46-aadf-a118e2d424ef","correlationId":"1a0c9d79-d4fc-4f46-aadf-a118e2d424ef","durationMs":1,"event":"request.failed","errorCode":"ADMIN_SERVICE_UNAVAILABLE","status":503,"reference":"ERR-4920469DDF16","error":{"name":"Error","sourceCode":"ADMIN_SERVICE_UNAVAILABLE"}}
+
+ ✓ test/global-dashboard-permission.test.ts (8 tests) 19ms
+ ✓ test/p7a-pricing-parity.test.ts (24 tests) 329ms
+   ✓ P7A executable TypeScript pricing parity > keeps sample products out of server revalidation when Supabase is unavailable  315ms
+ ✓ test/public-navigation.test.ts (7 tests) 836ms
+   ✓ public navigation facets > bounds collection and category colors at the resolver before they reach the header  815ms
+ ✓ test/admin-three-roles.test.ts (9 tests) 17ms
+ ✓ test/ui-language-standardization.test.ts (5 tests) 13ms
+ ✓ test/payment-foundation-baseline.test.ts (6 tests) 15ms
+ ✓ test/kaos-polos-editorial-commerce.test.ts (12 tests) 17ms
+ ✓ test/p13-customer-order-read-model-polling.test.ts (6 tests) 16ms
+ ✓ test/human-centered-order-experience-p0.test.ts (12 tests) 14ms
+ ✓ test/checkout-activation-integrity-v2.test.ts (7 tests) 25ms
+ ✓ test/pdp-final-experience.test.ts (9 tests) 13ms
+ ✓ test/pim-phase3-variant-matrix.test.ts (18 tests) 14ms
+ ✓ test/p12-admin-orders-ownership.test.ts (4 tests) 13ms
+ ✓ test/order-integrity-handoff-phase0-3.test.ts (9 tests) 13ms
+ ✓ test/b4-o1-order-command-center.test.ts (8 tests) 15ms
+ ✓ test/jersey-experience.test.ts (8 tests) 13ms
+ ✓ test/pay-at-store-pickup-canonical-workflow.test.ts (9 tests) 12ms
+ ✓ test/fast-checkout-database.test.ts (10 tests) 1567ms
+ ✓ test/canonical-trial-pricing.test.ts (5 tests) 11ms
+ ✓ test/jersey-commerce.test.ts (9 tests) 9ms
+ ✓ test/public-theme-system.test.ts (4 tests) 10ms
+ ✓ test/product-workspace-wp06-media.test.ts (13 tests) 10ms
+ ✓ test/bab9-no-go-closure.test.ts (5 tests) 11ms
+ ✓ test/uxui-bab6-screen-state-responsive.test.ts (4 tests) 11ms
+ ✓ test/page-owned-public-shell-read-model.test.ts (9 tests) 13ms
+ ✓ test/public-global-shell.test.ts (7 tests) 10ms
+ ✓ test/page-owned-category-pdp-isolation.test.ts (6 tests) 13ms
+ ✓ test/customer-order-hub.test.ts (5 tests) 9ms
+ ✓ test/product-workspace-wp02-shell.test.ts (15 tests) 9ms
+ ✓ test/pim-phase5-bulk-edit.test.ts (10 tests) 11ms
+ ✓ test/order-tracking.test.ts (12 tests) 11ms
+ ✓ test/fulfillment-phase11.test.ts (10 tests) 11ms
+ ✓ test/b4-a3-checkout-integrity.test.ts (6 tests) 10ms
+ ✓ test/role-audit-phase13.test.ts (10 tests) 9ms
+ ✓ test/legacy-payment-containment.test.ts (5 tests) 9ms
+ ✓ test/public-experience-design-tokens.test.ts (7 tests) 10ms
+ ✓ test/p15-inventory-authority.test.ts (6 tests) 11ms
+ ✓ test/product-workspace-wp04-variants.test.ts (12 tests) 10ms
+ ✓ test/public-ui-foundation-normalization-v1.test.ts (5 tests) 9ms
+ ✓ test/public-performance-hardening.test.ts (5 tests) 8ms
+ ✓ test/page-owned-compatibility-adapters.test.ts (8 tests) 10ms
+ ✓ test/cart-tier-pricing.test.ts (12 tests) 9ms
+ ✓ test/product-workspace-wp03-information.test.ts (11 tests) 9ms
+ ✓ test/public-page-experience-v2.test.ts (8 tests) 10ms
+ ✓ test/pim-phase1-consolidation.test.ts (8 tests) 8ms
+ ✓ test/notification-phase12.test.ts (8 tests) 7ms
+ ✓ test/public-catalog-empty-fallback.test.ts (5 tests) 10ms
+ ✓ test/commerce-foundation-p0.test.ts (5 tests) 8ms
+ ✓ test/pim-phase2-unified-product-manager.test.ts (5 tests) 8ms
+ ✓ test/custom-admin-operational-hotfix.test.ts (6 tests) 8ms
+ ✓ test/uxui-bab4-canonical-routes.test.ts (3 tests) 6ms
+ ✓ test/product-workspace-wp05-inventory.test.ts (10 tests) 10ms
+ ✓ test/p11-workspace-optimization.test.ts (4 tests) 8ms
+ ✓ test/product-card.test.ts (7 tests) 10ms
+ ✓ test/product-workspace-wp01-product-library.test.ts (18 tests) 9ms
+ ✓ test/product-pdp-clickability.test.ts (4 tests) 6ms
+ ✓ test/checkout-unified-structured-address.test.ts (5 tests) 7ms
+ ✓ test/exact-public-pricing-v1.test.ts (3 tests) 7ms
+ ✓ test/uxui-bab8-high-fidelity.test.ts (4 tests) 7ms
+ ✓ test/custom-order-end-to-end-revision.test.ts (4 tests) 8ms
+ ✓ test/p15-zero-balance-matrix.test.ts (6 tests) 7ms
+ ✓ test/audit-row-change-foundation.test.ts (5 tests) 7ms
+ ✓ test/wave-1-quotation-order-conversion.test.ts (7 tests) 7ms
+ ✓ test/admin-catalog-bulk-import-access.test.ts (22 tests) 7ms
+ ✓ test/b4-a2-cart-group-tier-pricing.test.ts (6 tests) 8ms
+ ✓ test/uxui-bab7-design-system.test.ts (4 tests) 7ms
+ ✓ test/payment-phase5b.test.ts (7 tests) 8ms
+ ✓ test/public-payment-proof-foundation.test.ts (4 tests) 9ms
+ ✓ test/checkout-runtime-recovery.test.ts (4 tests) 6ms
+ ✓ test/mobile-storefront-shell.test.ts (3 tests) 6ms
+ ✓ test/homepage-premium-visual-v1.test.ts (6 tests) 6ms
+ ✓ test/work-item-phase8-foundation.test.ts (8 tests) 6ms
+ ✓ test/cart.test.ts (4 tests) 7ms
+ ✓ test/repeat-order-phase14.test.ts (9 tests) 6ms
+ ✓ test/page-owned-contract-foundation.test.ts (4 tests) 5ms
+ ✓ test/order-confirmation-payment-link.test.ts (4 tests) 6ms
+ ✓ test/canonical-product-experience.test.ts (4 tests) 6ms
+ ✓ test/p7b-policy-database-alignment.test.ts (6 tests) 6ms
+ ✓ test/wave-0c-migration-history.test.ts (3 tests) 10ms
+ ✓ test/brochure-brand-logo.test.ts (2 tests) 7ms
+ ✓ test/wave-0c-security.test.ts (8 tests) 6ms
+ ✓ test/admin-handcrafted-ui.test.ts (4 tests) 6ms
+ ✓ test/product-validation.test.ts (3 tests) 6ms
+ ✓ test/product-workspace-wp08-legacy-parity.test.ts (6 tests) 5ms
+ ✓ test/fulfillment-pickup-transition-guard.test.ts (5 tests) 4ms
+ ✓ test/p0-pim-ops-01.test.ts (7 tests) 6ms
+ ✓ test/quality-control-phase10.test.ts (6 tests) 5ms
+ ✓ test/b4-a1-public-quick-add.test.ts (4 tests) 5ms
+ ✓ test/production-phase9.test.ts (5 tests) 5ms
+ ✓ test/inventory-pickup-order-handoff.test.ts (6 tests) 7ms
+ ✓ test/p0-hotfix-02-public-media-pickup.test.ts (9 tests) 7ms
+ ✓ test/fulfillment_final_check_human_centered.test.ts (4 tests) 4ms
+ ✓ test/uxui-bab5-homepage-order.test.ts (3 tests) 5ms
+ ✓ test/public-store-read-contract.test.ts (3 tests) 5ms
+ ✓ test/product-catalog.test.ts (4 tests) 5ms
+ ✓ test/job-order-phase7-foundation.test.ts (6 tests) 6ms
+ ✓ test/post-payment-fulfillment-routing.test.ts (5 tests) 6ms
+ ✓ test/public-product-inventory-parity.test.ts (3 tests) 5ms
+ ✓ test/order-currency-foundation.test.ts (2 tests) 5ms
+ ✓ test/p8b-size-adjustment-data-mutation.test.ts (5 tests) 5ms
+ ✓ test/product-compatibility-enum-safety.test.ts (3 tests) 4ms
+ ✓ test/payment-adjustments-archive-contract.test.ts (3 tests) 4ms
+ ✓ test/order-task-sla-security.test.ts (2 tests) 5ms
+ ✓ test/p0-security-acl-actor-directory.test.ts (3 tests) 5ms
+ ✓ test/brochure-whatsapp.test.ts (2 tests) 5ms
+ ✓ test/pdp-ready-stock-visual-scroll.test.ts (4 tests) 5ms
+ ✓ test/payment-phase5b-migration.test.ts (4 tests) 4ms
+ ✓ test/wave-1-quotation-commerce-contract.test.ts (4 tests) 4ms
+ ✓ test/final-integration-public-shell-consistency.test.ts (3 tests) 4ms
+ ✓ test/order-handoff-trigger-record-safety.test.ts (3 tests) 4ms
+ ✓ test/image-delivery-optimization.test.ts (2 tests) 4ms
+ ✓ test/payment-review-route-contract.test.ts (2 tests) 4ms
+ ✓ test/service-role-qc-read-contract.test.ts (2 tests) 4ms
+ ✓ test/transaction-notification-admin-recovery.test.ts (4 tests) 5ms
+ ✓ test/customer-order-source-snapshot-foundation.test.ts (2 tests) 5ms
+ ✓ test/trigger-function-acl-containment.test.ts (2 tests) 4ms
+ ✓ test/p0-security-canonical-cancellation.test.ts (4 tests) 4ms
+ ✓ test/customer-profile-provisioning-race.test.ts (3 tests) 4ms
+ ✓ test/admin-order-read-grants.test.ts (2 tests) 4ms
+ ✓ test/product-read-schema-contract.test.ts (3 tests) 5ms
+ ✓ test/customer-auth-server-acl.test.ts (2 tests) 4ms
+ ✓ test/release-inquiry-catalog.test.ts (3 tests) 7ms
+ ✓ test/customer-account-logout-navigation.test.ts (1 test) 4ms
+ ✓ test/checkout-idempotency-http-status.test.ts (1 test) 3ms
+ ✓ test/store-scope-customer-rls.test.ts (2 tests) 4ms
+ ✓ test/public-product-read-contract.test.ts (2 tests) 4ms
+ ✓ test/ready-stock-pricing-status.test.ts (2 tests) 5ms
+
+ Test Files  159 passed (159)
+      Tests  1117 passed (1117)
+   Start at  13:40:34
+   Duration  5.14s (transform 21.38s, setup 0ms, collect 43.79s, tests 5.71s, environment 35ms, prepare 27.03s)
+
+
+> debroder-official@1.0.0 build
+> next build
+
+   ▲ Next.js 15.5.19
+   - Experiments (use with caution):
+     · cpus: 1
+     ⨯ webpackBuildWorker
+
+   Creating an optimized production build ...
+ ✓ Compiled successfully in 7.7s
+   Linting and checking validity of types ...
+
+./app/api/admin/products/route.ts
+547:16  Warning: 'rollbackImageSave' is defined but never used.  @typescript-eslint/no-unused-vars
+752:16  Warning: 'loadPublishSnapshot' is defined but never used.  @typescript-eslint/no-unused-vars
+
+./app/cara-order/page.tsx
+42:9  Warning: 'apparelLink' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+
+./components/admin/BulkCustomManager.tsx
+232:6  Warning: React Hook useEffect has a missing dependency: 'loadData'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps
+244:6  Warning: React Hook useEffect has missing dependencies: 'minimumRules' and 'products'. Either include them or remove the dependency array.  react-hooks/exhaustive-deps
+249:6  Warning: React Hook useEffect has a missing dependency: 'services'. Either include it or remove the dependency array. You can also replace multiple useState variables with useReducer if 'setServiceForm' needs the current value of 'services'.  react-hooks/exhaustive-deps
+
+./components/admin/ExportReconciliationAdmin.tsx
+126:133  Warning: Expected an assignment or function call and instead saw an expression.  @typescript-eslint/no-unused-expressions
+127:104  Warning: Expected an assignment or function call and instead saw an expression.  @typescript-eslint/no-unused-expressions
+211:14  Warning: 'error' is defined but never used.  @typescript-eslint/no-unused-vars
+
+./components/admin/HomepageSectionsAdmin.tsx
+73:7  Warning: 'objectPositionOptions' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+
+./components/admin/PaymentInboxAdmin.tsx
+72:91  Warning: Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+
+./components/admin/PimAuditHistoryAdmin.tsx
+22:8  Warning: 'PimAuditEntity' is defined but never used.  @typescript-eslint/no-unused-vars
+96:5  Warning: Expected an assignment or function call and instead saw an expression.  @typescript-eslint/no-unused-expressions
+
+./components/admin/ProductAdmin.tsx
+133:65  Warning: React Hook useEffect has a missing dependency: 'refresh'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps
+
+./components/admin/QuotationDetailAdmin.tsx
+237:6  Warning: React Hook useEffect has a missing dependency: 'loadQuotation'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps
+
+./components/admin/SiteMediaSettingsAdmin.tsx
+79:11  Warning: Unused eslint-disable directive (no problems were reported from 'react-hooks/exhaustive-deps').
+
+./components/admin/VariantDeleteManager.tsx
+140:6  Warning: React Hook useEffect has a missing dependency: 'loadData'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps
+
+./components/BrandIcon.tsx
+12:5  Warning: Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+
+./components/cart/cart-panel.tsx
+119:15  Warning: Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+
+./components/custom/CustomProjectBuilder.tsx
+225:14  Warning: 'error' is defined but never used.  @typescript-eslint/no-unused-vars
+
+./components/payments/PublicPaymentForm.tsx
+248:50  Warning: Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+
+./components/product/product-detail-client.tsx
+180:5  Warning: React Hook useMemo has an unnecessary dependency: 'generalNote'. Either exclude it or remove the dependency array.  react-hooks/exhaustive-deps
+495:13  Warning: 'payload' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+592:13  Warning: Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+601:13  Warning: Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+
+./components/ProductRecommendationDrawer.tsx
+63:18  Warning: The ref value 'triggerRef.current' will likely have changed by the time this effect cleanup function runs. If this ref points to a node rendered by React, copy 'triggerRef.current' to a variable inside the effect, and use that variable in the cleanup function.  react-hooks/exhaustive-deps
+
+./lib/admin-auth.ts
+8:32  Warning: '_request' is defined but never used.  @typescript-eslint/no-unused-vars
+
+./lib/custom-commerce/builder-runtime.ts
+33:22  Warning: '_createdAt' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+33:45  Warning: '_updatedAt' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+43:21  Warning: '_pricedAt' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+
+./lib/order.ts
+3:34  Warning: '_product' is defined but never used.  @typescript-eslint/no-unused-vars
+
+./lib/pim-reconciliation.ts
+101:52  Warning: '_evaluate' is defined but never used.  @typescript-eslint/no-unused-vars
+
+./lib/product-detail-page/domain.ts
+27:3  Warning: 'isJersey' is defined but never used.  @typescript-eslint/no-unused-vars
+
+info  - Need to disable some ESLint rules? Learn more here: https://nextjs.org/docs/app/api-reference/config/eslint#disabling-rules
+   Collecting page data ...
+   Generating static pages (0/145) ...
+   Generating static pages (36/145)
+   Generating static pages (72/145)
+   Generating static pages (108/145)
+ ✓ Generating static pages (145/145)
+   Finalizing page optimization ...
+   Collecting build traces ...
+
+Route (app)                                                        Size  First Load JS  Revalidate  Expire
+┌ ○ /                                                           5.79 kB         233 kB          1m      1y
+├ ○ /_not-found                                                   384 B         103 kB
+├ ○ /account                                                    3.42 kB         170 kB          1m      1y
+├ ○ /account/addresses                                          5.88 kB         172 kB          1m      1y
+├ ○ /account/orders                                             5.03 kB         171 kB          1m      1y
+├ ƒ /account/orders/[id]                                        4.09 kB         170 kB
+├ ○ /account/profile                                            4.18 kB         183 kB          1m      1y
+├ ○ /admin                                                        138 B         179 kB
+├ ○ /admin/access-control                                       5.93 kB         172 kB
+├ ƒ /admin/access-control/[id]                                  4.75 kB         171 kB
+├ ○ /admin/audit-log                                             4.1 kB         167 kB
+├ ○ /admin/banner                                                 354 B         181 kB
+├ ○ /admin/campaign-banners                                       354 B         181 kB
+├ ○ /admin/categories                                             354 B         181 kB
+├ ○ /admin/change-password                                      3.39 kB         166 kB
+├ ○ /admin/checkout-settings                                    2.84 kB         166 kB
+├ ○ /admin/commerce/jersey                                      7.18 kB         174 kB
+├ ○ /admin/commerce/kaos-polos                                  7.58 kB         174 kB
+├ ○ /admin/contact-footer                                         354 B         181 kB
+├ ○ /admin/custom-commerce                                      9.18 kB         172 kB
+├ ○ /admin/customer-outbox                                       3.4 kB         166 kB
+├ ○ /admin/dashboard                                              138 B         179 kB
+├ ○ /admin/document-numbering                                   6.85 kB         170 kB
+├ ○ /admin/featured-products                                      354 B         181 kB
+├ ○ /admin/fresh-drop                                             354 B         181 kB
+├ ○ /admin/fulfillments                                         7.63 kB         174 kB
+├ ƒ /admin/fulfillments/[id]                                    13.5 kB         180 kB
+├ ○ /admin/hero                                                   354 B         181 kB
+├ ○ /admin/homepage-sections                                      354 B         181 kB
+├ ƒ /admin/inventory-operations                                 4.75 kB         171 kB
+├ ○ /admin/job-orders                                           5.95 kB         172 kB
+├ ƒ /admin/job-orders/[id]                                      6.11 kB         173 kB
+├ ○ /admin/login                                                5.66 kB         169 kB
+├ ○ /admin/media                                                  354 B         181 kB
+├ ƒ /admin/notifications                                        6.29 kB         173 kB
+├ ƒ /admin/notifications/[id]                                   4.89 kB         176 kB
+├ ○ /admin/notifications/history                                5.69 kB         172 kB
+├ ○ /admin/notifications/templates                              5.66 kB         172 kB
+├ ○ /admin/operations-health                                    3.13 kB         170 kB
+├ ○ /admin/order                                                  354 B         181 kB
+├ ○ /admin/order-tasks                                          5.03 kB         171 kB
+├ ○ /admin/orders                                               4.09 kB         170 kB
+├ ƒ /admin/orders/[id]                                          40.3 kB         212 kB
+├ ○ /admin/orders/archive                                       2.96 kB         169 kB
+├ ○ /admin/orders/quotations                                    5.28 kB         176 kB
+├ ƒ /admin/orders/quotations/[id]                               24.4 kB         195 kB
+├ ○ /admin/orders/quotations/archive                            2.86 kB         174 kB
+├ ○ /admin/orders/quotations/new                                3.29 kB         174 kB
+├ ○ /admin/page-hero                                              354 B         181 kB
+├ ○ /admin/payments                                             6.56 kB         173 kB
+├ ○ /admin/pim-manager                                            305 B         185 kB
+├ ○ /admin/pim-v2                                               5.25 kB         202 kB
+├ ○ /admin/plain-category                                         354 B         181 kB
+├ ○ /admin/product-filters                                        354 B         181 kB
+├ ○ /admin/production                                            4.6 kB         171 kB
+├ ƒ /admin/products                                             5.68 kB         172 kB
+├ ƒ /admin/products/[id]                                          384 B         103 kB
+├ ƒ /admin/products/[id]/information                            4.78 kB         175 kB
+├ ƒ /admin/products/[id]/inventory                              7.37 kB         177 kB
+├ ƒ /admin/products/[id]/media                                  7.98 kB         178 kB
+├ ƒ /admin/products/[id]/review                                  4.1 kB         174 kB
+├ ƒ /admin/products/[id]/variants                               6.81 kB         177 kB
+├ ○ /admin/products/audit-history                               8.79 kB         175 kB
+├ ○ /admin/products/bulk-edit                                   7.94 kB         174 kB
+├ ○ /admin/products/bulk-import                                 5.43 kB         172 kB
+├ ○ /admin/products/export-reconciliation                       7.89 kB         174 kB
+├ ƒ /admin/products/legacy                                      4.05 kB         170 kB
+├ ○ /admin/quality-control                                      6.59 kB         173 kB
+├ ƒ /admin/quality-control/[id]                                 8.49 kB         175 kB
+├ ○ /admin/quotations                                             384 B         103 kB
+├ ○ /admin/refunds                                               3.5 kB         166 kB
+├ ○ /admin/repeat-orders                                         2.2 kB         174 kB
+├ ○ /admin/reports                                                384 B         103 kB
+├ ○ /admin/services                                               354 B         181 kB
+├ ○ /admin/shop-category                                          354 B         181 kB
+├ ○ /admin/site-media                                             354 B         181 kB
+├ ○ /admin/store                                                  354 B         181 kB
+├ ○ /admin/theme                                                  354 B         181 kB
+├ ○ /admin/trending                                               354 B         181 kB
+├ ○ /admin/trust-about                                            354 B         181 kB
+├ ○ /admin/website-settings                                       354 B         181 kB
+├ ○ /admin/work-items                                           6.69 kB         173 kB
+├ ƒ /admin/work-items/[id]                                      8.06 kB         174 kB
+├ ○ /aksesori-lainnya                                             384 B         103 kB
+├ ƒ /api/admin/access-control                                     384 B         103 kB
+├ ƒ /api/admin/access-control/session                             384 B         103 kB
+├ ƒ /api/admin/access-control/users/[id]                          384 B         103 kB
+├ ƒ /api/admin/access-control/users/[id]/actions                  384 B         103 kB
+├ ƒ /api/admin/audit-log                                          384 B         103 kB
+├ ƒ /api/admin/change-password/complete                           384 B         103 kB
+├ ƒ /api/admin/checkout-settings                                  384 B         103 kB
+├ ƒ /api/admin/customer-outbox                                    384 B         103 kB
+├ ƒ /api/admin/customer-outbox/[id]                               384 B         103 kB
+├ ƒ /api/admin/full-viewer                                        384 B         103 kB
+├ ƒ /api/admin/global-dashboard                                   384 B         103 kB
+├ ƒ /api/admin/inventory-operations                               384 B         103 kB
+├ ƒ /api/admin/notification-history                               384 B         103 kB
+├ ƒ /api/admin/notification-templates                             384 B         103 kB
+├ ƒ /api/admin/notification-templates/[id]                        384 B         103 kB
+├ ƒ /api/admin/notifications                                      384 B         103 kB
+├ ƒ /api/admin/notifications/[id]                                 384 B         103 kB
+├ ƒ /api/admin/operations-health                                  384 B         103 kB
+├ ƒ /api/admin/order-tasks                                        384 B         103 kB
+├ ƒ /api/admin/order-tasks/[id]                                   384 B         103 kB
+├ ƒ /api/admin/orders                                             384 B         103 kB
+├ ƒ /api/admin/orders/[id]                                        384 B         103 kB
+├ ƒ /api/admin/orders/[id]/payment-links                          384 B         103 kB
+├ ƒ /api/admin/orders/[id]/payment-requirement                    384 B         103 kB
+├ ƒ /api/admin/orders/[id]/tracking-link                          384 B         103 kB
+├ ƒ /api/admin/payment-settings                                   384 B         103 kB
+├ ƒ /api/admin/payments/[id]/verification                         384 B         103 kB
+├ ƒ /api/admin/payments/adjustments                               384 B         103 kB
+├ ƒ /api/admin/pim-v2/custom-services                             384 B         103 kB
+├ ƒ /api/admin/pim-v2/products                                    384 B         103 kB
+├ ƒ /api/admin/pim-v2/validate-publish                            384 B         103 kB
+├ ƒ /api/admin/products                                           384 B         103 kB
+├ ƒ /api/admin/products/[id]/duplicate                            384 B         103 kB
+├ ƒ /api/admin/products/[id]/information                          384 B         103 kB
+├ ƒ /api/admin/products/[id]/inventory                            384 B         103 kB
+├ ƒ /api/admin/products/[id]/lifecycle                            384 B         103 kB
+├ ƒ /api/admin/products/[id]/media                                384 B         103 kB
+├ ƒ /api/admin/products/[id]/media/upload                         384 B         103 kB
+├ ƒ /api/admin/products/[id]/review                               384 B         103 kB
+├ ƒ /api/admin/products/[id]/variants                             384 B         103 kB
+├ ƒ /api/admin/products/[id]/workspace                            384 B         103 kB
+├ ƒ /api/admin/products/audit-history                             384 B         103 kB
+├ ƒ /api/admin/products/bulk-edit                                 384 B         103 kB
+├ ƒ /api/admin/products/bulk-import                               384 B         103 kB
+├ ƒ /api/admin/products/export-reconciliation                     384 B         103 kB
+├ ƒ /api/admin/products/export-reconciliation/download/[jobId]    384 B         103 kB
+├ ƒ /api/admin/products/library                                   384 B         103 kB
+├ ƒ /api/admin/refunds                                            384 B         103 kB
+├ ƒ /api/admin/refunds/[id]/evidence                              384 B         103 kB
+├ ƒ /api/admin/repeat-orders                                      384 B         103 kB
+├ ƒ /api/admin/repeat-orders/[id]                                 384 B         103 kB
+├ ƒ /api/admin/repeat-orders/customer-history                     384 B         103 kB
+├ ƒ /api/admin/session                                            384 B         103 kB
+├ ƒ /api/admin/theme                                              384 B         103 kB
+├ ƒ /api/cart/revalidate                                          384 B         103 kB
+├ ƒ /api/checkout                                                 384 B         103 kB
+├ ƒ /api/checkout/fast                                            384 B         103 kB
+├ ƒ /api/checkout/fast/config                                     384 B         103 kB
+├ ƒ /api/checkout/fast/recover                                    384 B         103 kB
+├ ƒ /api/custom/reprice                                           384 B         103 kB
+├ ƒ /api/customer-uploads                                         384 B         103 kB
+├ ƒ /api/customer/addresses                                       384 B         103 kB
+├ ƒ /api/customer/addresses/[id]                                  384 B         103 kB
+├ ƒ /api/customer/auth/recovery                                   384 B         103 kB
+├ ƒ /api/customer/auth/register                                   384 B         103 kB
+├ ƒ /api/customer/auth/resend                                     384 B         103 kB
+├ ƒ /api/customer/orders                                          384 B         103 kB
+├ ƒ /api/customer/orders/[id]                                     384 B         103 kB
+├ ƒ /api/customer/session                                         384 B         103 kB
+├ ƒ /api/payments/midtrans/notification                           384 B         103 kB
+├ ƒ /api/payments/midtrans/snap                                   384 B         103 kB
+├ ƒ /api/payments/midtrans/status                                 384 B         103 kB
+├ ƒ /api/pricing/ready-stock                                      384 B         103 kB
+├ ƒ /api/public/indonesia-regions                                 384 B         103 kB
+├ ƒ /api/public/mockup-file/[token]/[fileId]                      384 B         103 kB
+├ ƒ /api/public/order-actions                                     384 B         103 kB
+├ ƒ /api/public/order-tracking                                    384 B         103 kB
+├ ƒ /api/public/orders/[token]                                    384 B         103 kB
+├ ƒ /api/public/payments/[token]                                  384 B         103 kB
+├ ƒ /api/quotation-drafts                                         384 B         103 kB
+├ ƒ /api/recaptcha                                                384 B         103 kB
+├ ƒ /api/shipping/destinations                                    384 B         103 kB
+├ ƒ /api/shipping/quotes                                          384 B         103 kB
+├ ○ /auth/callback                                                242 B         236 kB          1m      1y
+├ ○ /cara-order                                                 1.74 kB         229 kB          1m      1y
+├ ○ /cart                                                         384 B         103 kB
+├ ○ /cetak-sublim                                               1.74 kB         229 kB          1m      1y
+├ ƒ /checkout                                                   13.9 kB         242 kB
+├ ○ /custom                                                     1.74 kB         229 kB          1m      1y
+├ ƒ /custom/[category-slug]                                     11.5 kB         239 kB
+├ ○ /express                                                      384 B         103 kB
+├ ○ /forgot-password                                              241 B         236 kB          1m      1y
+├ ○ /fresh-drop                                                 1.74 kB         229 kB          1m      1y
+├ ƒ /fresh-drop/[slug]                                            384 B         103 kB
+├ ƒ /headwear                                                     151 B         231 kB
+├ ○ /headwear/shop                                                384 B         103 kB
+├ ○ /help                                                       1.74 kB         229 kB          1m      1y
+├ ƒ /jaket-hoodie                                                 151 B         231 kB
+├ ○ /jaket-hoodie/shop                                            384 B         103 kB
+├ ○ /jersey                                                       239 B         231 kB          1m      1y
+├ ƒ /jersey/[slug]                                              1.74 kB         229 kB
+├ ƒ /jersey/configurator                                        4.65 kB         235 kB
+├ ○ /jersey/shop                                                  238 B         231 kB          1m      1y
+├ ƒ /kaos-polos                                                 1.71 kB         229 kB
+├ ○ /kaos-polos/shop                                              384 B         103 kB
+├ ○ /kemeja                                                      1.7 kB         229 kB          1m      1y
+├ ○ /keranjang                                                  1.71 kB         229 kB          1m      1y
+├ ƒ /koleksi                                                    2.91 kB         231 kB
+├ ○ /kontak                                                       881 B         112 kB
+├ ○ /layanan                                                      881 B         112 kB
+├ ○ /legal/privacy                                              1.74 kB         229 kB          1m      1y
+├ ○ /legal/terms                                                1.74 kB         229 kB          1m      1y
+├ ○ /login                                                        240 B         236 kB          1m      1y
+├ ○ /maklon-dtf                                                 1.74 kB         229 kB          1m      1y
+├ ○ /manifest.webmanifest                                         384 B         103 kB
+├ ○ /order                                                        384 B         103 kB
+├ ○ /order-confirmation                                           384 B         103 kB
+├ ƒ /order-confirmation/[token]                                 7.68 kB         246 kB
+├ ƒ /payment/[token]                                            5.43 kB         244 kB
+├ ƒ /persetujuan/mockup/[token]                                 4.62 kB         232 kB
+├ ○ /polo-shirt                                                   384 B         103 kB
+├ ○ /produk                                                       384 B         103 kB
+├ ƒ /produk/[slug]                                              11.1 kB         239 kB
+├ ○ /register                                                     242 B         236 kB          1m      1y
+├ ○ /reset-password                                               242 B         236 kB          1m      1y
+├ ○ /robots.txt                                                   384 B         103 kB
+├ ƒ /sablon-dtf                                                 1.71 kB         229 kB
+├ ƒ /sablon-dtf/[slug]                                          1.74 kB         229 kB
+├ ƒ /search                                                     1.74 kB         229 kB
+├ ○ /sitemap.xml                                                  384 B         103 kB          1m      1y
+├ ○ /store                                                      2.67 kB         230 kB          1m      1y
+├ ○ /tas-aksesori                                                 384 B         103 kB
+├ ○ /tentang                                                    1.71 kB         229 kB          1m      1y
+├ ○ /track-order                                                  153 B         246 kB          1m      1y
+├ ƒ /track-order/[order-number]                                   153 B         246 kB
+├ ○ /verify-email                                                 242 B         236 kB          1m      1y
+└ ○ /wishlist                                                   1.74 kB         229 kB          1m      1y
++ First Load JS shared by all                                    103 kB
+  ├ chunks/1255-b8cf77ab14370e57.js                               46 kB
+  ├ chunks/4bd1b696-100b9d70ed4e49c1.js                         54.2 kB
+  └ other shared chunks (total)                                 2.34 kB
+
+
+ƒ Middleware                                                    36.1 kB
+
+○  (Static)   prerendered as static content
+ƒ  (Dynamic)  server-rendered on demand

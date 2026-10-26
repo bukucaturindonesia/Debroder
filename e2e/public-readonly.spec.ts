@@ -7,14 +7,15 @@ test("public shell and canonical read-only routes respond without mutation", asy
   });
 
   const home = await page.goto("/", { waitUntil: "domcontentloaded" });
-  expect(home?.status() ?? 0).toBeLessThan(500);
+  expect(home?.status()).toBe(200);
   await expect(page.locator("main").first()).toBeVisible();
 
   const collection = await page.goto("/koleksi", { waitUntil: "domcontentloaded" });
-  expect(collection?.status() ?? 0).toBeLessThan(500);
+  expect(collection?.status()).toBe(200);
   await expect(page.locator("main").first()).toBeVisible();
 
-  await page.goto("/cart", { waitUntil: "domcontentloaded" });
+  const cart = await page.goto("/cart", { waitUntil: "domcontentloaded" });
+  expect(cart?.status()).toBe(200);
   await expect(page).toHaveURL(/\/keranjang\/?$/);
   await expect(page.locator("main").first()).toBeVisible();
 
