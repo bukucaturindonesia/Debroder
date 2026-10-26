@@ -103,7 +103,6 @@ describe("Jersey commerce catalog", () => {
     const page = readFileSync("app/jersey/shop/page.tsx", "utf8");
     const catalog = readFileSync("components/ProductCatalog.tsx", "utf8");
     const card = readFileSync("components/PublicProductCard.tsx", "utf8");
-    const nav = readFileSync("components/jersey/JerseyCommerceNav.tsx", "utf8");
 
     expect(page).toContain('theme="jersey-commerce"');
     expect(page).not.toContain("showHeader");
@@ -115,8 +114,7 @@ describe("Jersey commerce catalog", () => {
     expect(catalog).toContain("PublicProductCard");
     expect(card).toContain("ProductImageSwap");
     expect(card.match(/<Link\b/g)).toHaveLength(1);
-    expect(nav).not.toContain("#39FF88");
-    expect(nav).not.toContain("JerseyChrome");
+    expect(page).not.toContain("JerseyChrome");
   });
 
   it("keeps Jersey product detail on the universal product route", () => {
@@ -128,7 +126,7 @@ describe("Jersey commerce catalog", () => {
     expect(domain).toContain('productMatchesRoute(product, "jersey")');
     expect(domain).toContain("productAllowsReadyStock(product)");
     expect(domain).toContain("productAllowsCustomOrder(product)");
-    expect(detail).toContain("JerseyCommerceNav");
+    expect(detail).not.toContain("JerseyCommerceNav");
     expect(detail).toContain("jerseyConfiguratorHref");
     expect(detail).toContain("?product=");
     expect(detail).toContain("purchaseCapabilities");

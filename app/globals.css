@@ -3124,19 +3124,6 @@ button,
   border-radius: 8px;
 }
 
-/* Context tabs are allowed page-local navigation; they never replace or
-   restyle the canonical global header. */
-.debroder-storefront [data-ui-context-tabs] {
-  position: relative;
-  z-index: 1;
-  background: var(--storefront-surface, #fff);
-  color: var(--storefront-ink, #111);
-}
-
-.debroder-storefront [data-ui-context-tabs] [data-tab-indicator][data-active="true"] {
-  transform: scaleX(1);
-}
-
 .debroder-storefront [data-ui-surface="commerce-catalog"] :is(button, [role="button"]) {
   min-height: 44px;
   border-radius: var(--public-radius-control, 8px);
@@ -4444,5 +4431,63 @@ button,
 
   .debroder-storefront [data-ui-transaction] .transaction-state :is(.public-button, .public-secondary-action) {
     width: 100%;
+  }
+}
+
+/* DEBRODER DTF EXPERIENCE — RESPONSIVE OWNER SPEC V1 */
+.dtf-experience .dtf-section { padding-block: clamp(36px, 5vw, 68px); }
+.dtf-benefit-rail, .dtf-service-rail {
+  display: flex;
+  gap: 16px;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  overscroll-behavior-x: contain;
+  -webkit-overflow-scrolling: touch;
+  padding-bottom: 8px;
+  scrollbar-width: thin;
+}
+.dtf-benefit-card { box-sizing: border-box; min-width: 0; flex: 0 0 100%; padding: 24px; background: white; border: 1px solid rgba(0,0,0,.1); }
+.dtf-benefit-icon { display: inline-flex; align-items: center; justify-content: center; width: 52px; height: 52px; background: #f4f4f1; }
+.dtf-service-card { display: flex; flex-direction: column; min-width: 0; flex: 0 0 100%; }
+.dtf-gallery-grid {
+  box-sizing: border-box;
+  width: 100%; max-width: 1280px;
+  margin: 8px auto 0; padding: 16px;
+  display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap:16px;
+}
+.dtf-gallery-photo {
+  position: relative; aspect-ratio: 4 / 5; overflow: hidden;
+  margin: 0; background: #f1f1ee;
+  pointer-events: none; user-select: none;
+  content-visibility: auto; contain-intrinsic-size: auto 240px;
+}
+.dtf-gallery-photo picture, .dtf-gallery-photo img { display: block; width:100%; height:100%; object-fit:cover; }
+.dtf-faq-item summary:focus-visible, .dtf-benefit-rail:focus-visible, .dtf-service-rail:focus-visible { outline:2px solid currentColor; outline-offset:3px; }
+.dtf-faq-item summary::marker { content:""; }
+.dtf-closing { text-align:center; padding-bottom: clamp(56px,7vw,96px) !important; }
+@media (min-width:640px) { .dtf-service-card { flex-basis:calc((100% - 16px)/2); } }
+@media (min-width:768px) {
+ .dtf-benefit-rail {display:grid; grid-template-columns:repeat(3,minmax(0,1fr));overflow:visible;scroll-snap-type:none;}
+ .dtf-gallery-grid {grid-template-columns:repeat(3,minmax(0,1fr));}
+}
+@media (min-width:1024px) {
+ .dtf-service-card {flex-basis:calc((100% - 48px)/4);}
+ .dtf-gallery-grid {grid-template-columns:repeat(4,minmax(0,1fr));}
+}
+
+/* DEBRODER benefits: exactly one complete swipeable benefit at a time on mobile/tablet.
+   Keep the established four-column desktop presentation unchanged. */
+@media (max-width: 1023px) {
+  .debroder-storefront.debroder-landing[data-public-theme] .benefit-grid {
+    display: flex;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+  }
+  .debroder-landing .benefit-grid > .benefit-slide {
+    box-sizing: border-box;
+    flex: 0 0 100%;
+    width: 100%;
+    min-width: 100%;
+    max-width: 100%;
   }
 }

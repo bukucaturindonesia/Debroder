@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { JerseyConfigurator } from "@/components/JerseyConfigurator";
-import { JerseyChrome } from "@/components/jersey/JerseyChrome";
 import { PublicShell } from "@/components/PublicPage";
 import { readJerseyConfiguredProduct } from "@/lib/jersey-configured-product/data-access";
 
@@ -19,7 +18,6 @@ export default async function JerseyConfiguratorPage({ searchParams }: { searchP
 
   return (
     <PublicShell>
-      <JerseyChrome />
       <section aria-labelledby="jersey-configurator-title" className="keep-section-bg bg-[#111] py-12 text-white sm:py-16">
         <div className="section-shell max-w-5xl">
           <p className="text-xs font-semibold uppercase tracking-[0.18em] text-white/55">Jersey Custom</p>

@@ -2,7 +2,6 @@ import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 import {
   JERSEY_ORDER_STEPS,
-  JERSEY_NAV_ITEMS,
   JERSEY_SECTION_TYPES,
   jerseyFallbackSections,
   safeJerseyHref,
@@ -26,7 +25,6 @@ describe("Jersey commerce experience", () => {
     expect(fallback.filter((item) => item.section_type === "poster_carousel")).toHaveLength(14);
     expect(fallback.filter((item) => item.section_type === "centered_editorial_copy")).toHaveLength(1);
     expect(fallback.some((item) => item.section_type === "team_package_campaign")).toBe(false);
-    expect(JERSEY_NAV_ITEMS.map((item) => String(item.label))).not.toContain("Paket Tim");
   });
 
   it("allows only official Jersey commerce targets", () => {
@@ -69,7 +67,6 @@ describe("Jersey commerce experience", () => {
   it("keeps the Jersey hub compact with fixed shop and configurator routes", () => {
     const landing = readFileSync("app/jersey/page.tsx", "utf8");
     const experience = readFileSync("components/jersey/JerseyExperience.tsx", "utf8");
-    const chrome = readFileSync("components/jersey/JerseyChrome.tsx", "utf8");
     const styles = readFileSync("app/globals.css", "utf8");
     expect(landing).toContain('theme="jersey"');
     expect(experience).toContain('href="/jersey/shop"');
@@ -77,7 +74,7 @@ describe("Jersey commerce experience", () => {
     expect(experience).toContain("resolvedJerseySections");
     expect(experience).toContain('className="public-section-title mb-6">Play with Identity</h2>');
     expect(experience).toContain("poster_carousel");
-    expect(chrome).toContain("jersey-context-header");
+    expect(landing).not.toContain("JerseyChrome");
     expect(styles).toContain("--jersey-section-gap");
     expect(styles).toContain("#39ff88");
   });
@@ -95,7 +92,6 @@ describe("Jersey commerce experience", () => {
 
   it("removes the legacy Paket Tim block and keeps compact CMS ordering information", () => {
     const experience = readFileSync("components/jersey/JerseyExperience.tsx", "utf8");
-    const chrome = readFileSync("components/jersey/JerseyChrome.tsx", "utf8");
     const footer = readFileSync("components/PublicFooter.tsx", "utf8");
     const order = experience.slice(experience.indexOf("function OrderSteps"), experience.indexOf("function firstByType"));
 
@@ -104,11 +100,7 @@ describe("Jersey commerce experience", () => {
     expect(experience).toContain("Cara order");
     expect(order).toContain("steps.slice(0, 4)");
     expect(order).not.toContain("item.subtitle");
-    expect(chrome).not.toContain("border-b border-white/12");
-    expect(chrome).not.toContain("border-t border-white/10");
-    expect(chrome).toContain("group-hover:scale-x-100");
-    expect(chrome).toContain("group-focus-visible:scale-x-100");
-    expect(chrome).not.toContain('active ? "scale-x-100"');
+    expect(experience).not.toContain("JerseyChrome");
     expect(footer).toContain("data-public-footer");
     expect(footer).toContain("bg-black text-white");
   });

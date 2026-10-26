@@ -1154,11 +1154,19 @@ async function readPublicContent(): Promise<PublicContent> {
     mobile_media_url: resolveMediaUrl(banner.mobile_media_url, siteMedia.bannerMobile),
     poster_url: banner.poster_url ? resolveMediaUrl(banner.poster_url, siteMedia.bannerDesktop) : banner.poster_url
   }));
+  // Keep original URLs: substituting site artwork would mislabel it as a real result.
+  const dtfSections = campaignBanners.filter(
+    (banner) => banner.section_group === "sablon-dtf" &&
+      banner.media_type === "image" && banner.metadata?.debroder_original === true &&
+      Boolean(banner.desktop_media_url?.trim()) &&
+      !banner.desktop_media_url.startsWith("/images/debroder/")
+  );
   const landingCampaignBanners = resolvedCampaignBanners.filter(
-    (banner) => !banner.experience_key || banner.experience_key === "landing"
+    (banner) => banner.section_group !== "sablon-dtf" &&
+      (!banner.experience_key || banner.experience_key === "landing")
   );
   const jerseySections = resolvedCampaignBanners.filter(
-    (banner) => banner.experience_key === "jersey"
+    (banner) => banner.experience_key === "jersey" && banner.section_group !== "sablon-dtf"
   );
 
   return {
@@ -1180,12 +1188,14 @@ async function readPublicContent(): Promise<PublicContent> {
     categories: resolvedCategories,
     productCategories,
     services: resolvedServices,
+    dtfServices: createSupabaseServerClient() ? resolvedServices : [],
     products: resolvedProducts,
     productFilters,
     homepageSections: resolvedHomepageSections,
     landingSettings,
     landingSections,
     campaignBanners: landingCampaignBanners,
+    dtfSections,
     jerseySections,
     stores: resolvedStores,
     orderSteps: publicOrderSteps(orderSteps),

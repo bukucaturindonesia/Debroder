@@ -32,15 +32,6 @@ export const EMPTY_JERSEY_FILTERS: JerseyProductFilters = {
   sort: "featured"
 };
 
-export const JERSEY_COMMERCE_NAV_ITEMS = [
-  { label: "Jersey", href: "/jersey" },
-  { label: "Football", href: "/jersey/shop?category=football" },
-  { label: "Futsal", href: "/jersey/shop?category=futsal" },
-  { label: "Esports", href: "/jersey/shop?category=esports" },
-  { label: "Custom", href: "/jersey/configurator" },
-  { label: "Shop All", href: "/jersey/shop" }
-] as const;
-
 export function normalizeJerseyFilter(value: string) {
   return value
     .toLowerCase()

@@ -20,15 +20,6 @@ export const JERSEY_ORDER_STEPS = [
   "Pengiriman atau pickup."
 ];
 
-export const JERSEY_NAV_ITEMS = [
-  { label: "Home", href: "/jersey" },
-  { label: "Football", href: "/jersey#jersey-carousel-01" },
-  { label: "Futsal", href: "/jersey#jersey-carousel-01" },
-  { label: "Esports", href: "/jersey#jersey-carousel-01" },
-  { label: "Custom", href: "/jersey/configurator" },
-  { label: "Shop All", href: "/jersey/shop" }
-] as const;
-
 const supportedExternalTarget = /^https:\/\/(?:wa\.me|api\.whatsapp\.com)\//i;
 const supportedAnchors = new Set([
   "jersey-carousel-01",

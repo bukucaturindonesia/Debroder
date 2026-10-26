@@ -1,0 +1,1283 @@
+{
+  "config": {
+    "argv": [
+      "C:\\Program Files\\nodejs\\node.exe",
+      "C:\\Users\\OMEN\\.codex\\visualizations\\2026\\10\\26\\01a17676-9129-71e2-8bb4-c7f56ff193da\\debroder-dtf-review\\node_modules\\@playwright\\test\\cli.js",
+      "test",
+      "e2e/dtf-owner-patches.spec.ts",
+      "e2e/benefits-one-card-mobile.spec.ts",
+      "e2e/jersey-no-alternative-navbar.spec.ts",
+      "--reporter=json",
+      "--output=docs/dtf-owner-patches/browser-artifacts"
+    ],
+    "configFile": "C:\\Users\\OMEN\\.codex\\visualizations\\2026\\10\\26\\01a17676-9129-71e2-8bb4-c7f56ff193da\\debroder-dtf-review\\playwright.config.ts",
+    "rootDir": "C:/Users/OMEN/.codex/visualizations/2026/10/26/01a17676-9129-71e2-8bb4-c7f56ff193da/debroder-dtf-review/e2e",
+    "failOnFlakyTests": false,
+    "forbidOnly": false,
+    "fullyParallel": false,
+    "globalSetup": null,
+    "globalTeardown": null,
+    "globalTimeout": 0,
+    "grep": {},
+    "grepInvert": null,
+    "maxFailures": 0,
+    "metadata": {
+      "actualWorkers": 1
+    },
+    "preserveOutput": "always",
+    "projects": [
+      {
+        "outputDir": "C:/Users/OMEN/.codex/visualizations/2026/10/26/01a17676-9129-71e2-8bb4-c7f56ff193da/debroder-dtf-review/docs/dtf-owner-patches/browser-artifacts",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "",
+        "name": "",
+        "testDir": "C:/Users/OMEN/.codex/visualizations/2026/10/26/01a17676-9129-71e2-8bb4-c7f56ff193da/debroder-dtf-review/e2e",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 120000
+      }
+    ],
+    "quiet": false,
+    "reporter": [
+      [
+        "json"
+      ]
+    ],
+    "reportSlowTests": {
+      "max": 5,
+      "threshold": 300000
+    },
+    "shard": null,
+    "tags": [],
+    "updateSnapshots": "missing",
+    "updateSourceMethod": "patch",
+    "version": "1.62.1",
+    "workers": 1,
+    "webServer": null
+  },
+  "suites": [
+    {
+      "title": "benefits-one-card-mobile.spec.ts",
+      "file": "benefits-one-card-mobile.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "one complete benefit is visible and horizontally swipable at 320px",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 120000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "failed",
+                  "duration": 692,
+                  "error": {
+                    "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32mtrue\u001b[39m\nReceived: \u001b[31mfalse\u001b[39m",
+                    "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32mtrue\u001b[39m\nReceived: \u001b[31mfalse\u001b[39m\n    at C:\\Users\\OMEN\\.codex\\visualizations\\2026\\10\\26\\01a17676-9129-71e2-8bb4-c7f56ff193da\\debroder-dtf-review\\e2e\\benefits-one-card-mobile.spec.ts:24:32",
+                    "location": {
+                      "file": "C:\\Users\\OMEN\\.codex\\visualizations\\2026\\10\\26\\01a17676-9129-71e2-8bb4-c7f56ff193da\\debroder-dtf-review\\e2e\\benefits-one-card-mobile.spec.ts",
+                      "column": 32,
+                      "line": 24
+                    },
+                    "snippet": "  22 |       };\n  23 |     });\n> 24 |     expect(metrics.scrollable).toBe(true);\n     |                                ^\n  25 |     expect(metrics.snapType).toContain(\"x\");\n  26 |     for (const itemWidth of metrics.itemWidths) {\n  27 |       expect(Math.abs(itemWidth - metrics.innerWidth)).toBeLessThanOrEqual(3);"
+                  },
+                  "errors": [
+                    {
+                      "location": {
+                        "file": "C:\\Users\\OMEN\\.codex\\visualizations\\2026\\10\\26\\01a17676-9129-71e2-8bb4-c7f56ff193da\\debroder-dtf-review\\e2e\\benefits-one-card-mobile.spec.ts",
+                        "column": 32,
+                        "line": 24
+                      },
+                      "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32mtrue\u001b[39m\nReceived: \u001b[31mfalse\u001b[39m\n\n  22 |       };\n  23 |     });\n> 24 |     expect(metrics.scrollable).toBe(true);\n     |                                ^\n  25 |     expect(metrics.snapType).toContain(\"x\");\n  26 |     for (const itemWidth of metrics.itemWidths) {\n  27 |       expect(Math.abs(itemWidth - metrics.innerWidth)).toBeLessThanOrEqual(3);\n    at C:\\Users\\OMEN\\.codex\\visualizations\\2026\\10\\26\\01a17676-9129-71e2-8bb4-c7f56ff193da\\debroder-dtf-review\\e2e\\benefits-one-card-mobile.spec.ts:24:32"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-26T15:26:36.270Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "screenshot",
+                      "contentType": "image/png",
+                      "path": "C:\\Users\\OMEN\\.codex\\visualizations\\2026\\10\\26\\01a17676-9129-71e2-8bb4-c7f56ff193da\\debroder-dtf-review\\docs\\dtf-owner-patches\\browser-artifacts\\benefits-one-card-mobile-o-b16aa-izontally-swipable-at-320px\\test-failed-1.png"
+                    },
+                    {
+                      "name": "video",
+                      "contentType": "video/webm",
+                      "path": "C:\\Users\\OMEN\\.codex\\visualizations\\2026\\10\\26\\01a17676-9129-71e2-8bb4-c7f56ff193da\\debroder-dtf-review\\docs\\dtf-owner-patches\\browser-artifacts\\benefits-one-card-mobile-o-b16aa-izontally-swipable-at-320px\\video.webm"
+                    },
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "C:\\Users\\OMEN\\.codex\\visualizations\\2026\\10\\26\\01a17676-9129-71e2-8bb4-c7f56ff193da\\debroder-dtf-review\\docs\\dtf-owner-patches\\browser-artifacts\\benefits-one-card-mobile-o-b16aa-izontally-swipable-at-320px\\error-context.md"
+                    },
+                    {
+                      "name": "trace",
+                      "contentType": "application/zip",
+                      "path": "C:\\Users\\OMEN\\.codex\\visualizations\\2026\\10\\26\\01a17676-9129-71e2-8bb4-c7f56ff193da\\debroder-dtf-review\\docs\\dtf-owner-patches\\browser-artifacts\\benefits-one-card-mobile-o-b16aa-izontally-swipable-at-320px\\trace.zip"
+                    }
+                  ],
+                  "errorLocation": {
+                    "file": "C:\\Users\\OMEN\\.codex\\visualizations\\2026\\10\\26\\01a17676-9129-71e2-8bb4-c7f56ff193da\\debroder-dtf-review\\e2e\\benefits-one-card-mobile.spec.ts",
+                    "column": 32,
+                    "line": 24
+                  }
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "3ad9aa4a6dbe59e2feb0-540982d6c738a64d05f2",
+          "file": "benefits-one-card-mobile.spec.ts",
+          "line": 6,
+          "column": 7
+        },
+        {
+          "title": "one complete benefit is visible and horizontally swipable at 360px",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 120000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "failed",
+                  "duration": 462,
+                  "error": {
+                    "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: locator('.debroder-landing .benefit-grid')\nExpected: visible\nError: strict mode violation: locator('.debroder-landing .benefit-grid') resolved to 2 elements:\n    1) <div tabindex=\"0\" aria-label=\"Geser untuk melihat keunggulan DEBRODER\" class=\"benefit-grid section-shell no-scrollbar flex snap-x snap-mandatory overscroll-x-contain overflow-x-auto focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-[-2px] lg:grid lg:grid-cols-4 lg:overflow-visible\">…</div> aka getByLabel('Geser untuk melihat').first()\n    2) <div tabindex=\"0\" aria-label=\"Geser untuk melihat keunggulan DEBRODER\" class=\"benefit-grid section-shell no-scrollbar flex snap-x snap-mandatory overscroll-x-contain overflow-x-auto focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-[-2px] lg:grid lg:grid-cols-4 lg:overflow-visible\">…</div> aka getByRole('region', { name: 'Keunggulan DEBRODER' }).getByLabel('Geser untuk melihat')\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 15000ms\u001b[22m\n\u001b[2m  - waiting for locator('.debroder-landing .benefit-grid')\u001b[22m\n",
+                    "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: locator('.debroder-landing .benefit-grid')\nExpected: visible\nError: strict mode violation: locator('.debroder-landing .benefit-grid') resolved to 2 elements:\n    1) <div tabindex=\"0\" aria-label=\"Geser untuk melihat keunggulan DEBRODER\" class=\"benefit-grid section-shell no-scrollbar flex snap-x snap-mandatory overscroll-x-contain overflow-x-auto focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-[-2px] lg:grid lg:grid-cols-4 lg:overflow-visible\">…</div> aka getByLabel('Geser untuk melihat').first()\n    2) <div tabindex=\"0\" aria-label=\"Geser untuk melihat keunggulan DEBRODER\" class=\"benefit-grid section-shell no-scrollbar flex snap-x snap-mandatory overscroll-x-contain overflow-x-auto focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-[-2px] lg:grid lg:grid-cols-4 lg:overflow-visible\">…</div> aka getByRole('region', { name: 'Keunggulan DEBRODER' }).getByLabel('Geser untuk melihat')\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 15000ms\u001b[22m\n\u001b[2m  - waiting for locator('.debroder-landing .benefit-grid')\u001b[22m\n\n    at C:\\Users\\OMEN\\.codex\\visualizations\\2026\\10\\26\\01a17676-9129-71e2-8bb4-c7f56ff193da\\debroder-dtf-review\\e2e\\benefits-one-card-mobile.spec.ts:10:28",
+                    "location": {
+                      "file": "C:\\Users\\OMEN\\.codex\\visualizations\\2026\\10\\26\\01a17676-9129-71e2-8bb4-c7f56ff193da\\debroder-dtf-review\\e2e\\benefits-one-card-mobile.spec.ts",
+                      "column": 28,
+                      "line": 10
+                    },
+                    "snippet": "   8 |     await page.goto(\"/\");\n   9 |     const carousel = page.locator(\".debroder-landing .benefit-grid\");\n> 10 |     await expect(carousel).toBeVisible();\n     |                            ^\n  11 |     const items = carousel.locator(\".benefit-slide\");\n  12 |     await expect(items).toHaveCount(4);\n  13 |"
+                  },
+                  "errors": [
+                    {
+                      "location": {
+                        "file": "C:\\Users\\OMEN\\.codex\\visualizations\\2026\\10\\26\\01a17676-9129-71e2-8bb4-c7f56ff193da\\debroder-dtf-review\\e2e\\benefits-one-card-mobile.spec.ts",
+                        "column": 28,
+                        "line": 10
+                      },
+                      "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: locator('.debroder-landing .benefit-grid')\nExpected: visible\nError: strict mode violation: locator('.debroder-landing .benefit-grid') resolved to 2 elements:\n    1) <div tabindex=\"0\" aria-label=\"Geser untuk melihat keunggulan DEBRODER\" class=\"benefit-grid section-shell no-scrollbar flex snap-x snap-mandatory overscroll-x-contain overflow-x-auto focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-[-2px] lg:grid lg:grid-cols-4 lg:overflow-visible\">…</div> aka getByLabel('Geser untuk melihat').first()\n    2) <div tabindex=\"0\" aria-label=\"Geser untuk melihat keunggulan DEBRODER\" class=\"benefit-grid section-shell no-scrollbar flex snap-x snap-mandatory overscroll-x-contain overflow-x-auto focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-[-2px] lg:grid lg:grid-cols-4 lg:overflow-visible\">…</div> aka getByRole('region', { name: 'Keunggulan DEBRODER' }).getByLabel('Geser untuk melihat')\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 15000ms\u001b[22m\n\u001b[2m  - waiting for locator('.debroder-landing .benefit-grid')\u001b[22m\n\n\n   8 |     await page.goto(\"/\");\n   9 |     const carousel = page.locator(\".debroder-landing .benefit-grid\");\n> 10 |     await expect(carousel).toBeVisible();\n     |                            ^\n  11 |     const items = carousel.locator(\".benefit-slide\");\n  12 |     await expect(items).toHaveCount(4);\n  13 |\n    at C:\\Users\\OMEN\\.codex\\visualizations\\2026\\10\\26\\01a17676-9129-71e2-8bb4-c7f56ff193da\\debroder-dtf-review\\e2e\\benefits-one-card-mobile.spec.ts:10:28"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-26T15:26:37.840Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "screenshot",
+                      "contentType": "image/png",
+                      "path": "C:\\Users\\OMEN\\.codex\\visualizations\\2026\\10\\26\\01a17676-9129-71e2-8bb4-c7f56ff193da\\debroder-dtf-review\\docs\\dtf-owner-patches\\browser-artifacts\\benefits-one-card-mobile-o-3eb1e-izontally-swipable-at-360px\\test-failed-1.png"
+                    },
+                    {
+                      "name": "video",
+                      "contentType": "video/webm",
+                      "path": "C:\\Users\\OMEN\\.codex\\visualizations\\2026\\10\\26\\01a17676-9129-71e2-8bb4-c7f56ff193da\\debroder-dtf-review\\docs\\dtf-owner-patches\\browser-artifacts\\benefits-one-card-mobile-o-3eb1e-izontally-swipable-at-360px\\video.webm"
+                    },
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "C:\\Users\\OMEN\\.codex\\visualizations\\2026\\10\\26\\01a17676-9129-71e2-8bb4-c7f56ff193da\\debroder-dtf-review\\docs\\dtf-owner-patches\\browser-artifacts\\benefits-one-card-mobile-o-3eb1e-izontally-swipable-at-360px\\error-context.md"
+                    },
+                    {
+                      "name": "trace",
+                      "contentType": "application/zip",
+                      "path": "C:\\Users\\OMEN\\.codex\\visualizations\\2026\\10\\26\\01a17676-9129-71e2-8bb4-c7f56ff193da\\debroder-dtf-review\\docs\\dtf-owner-patches\\browser-artifacts\\benefits-one-card-mobile-o-3eb1e-izontally-swipable-at-360px\\trace.zip"
+                    }
+                  ],
+                  "errorLocation": {
+                    "file": "C:\\Users\\OMEN\\.codex\\visualizations\\2026\\10\\26\\01a17676-9129-71e2-8bb4-c7f56ff193da\\debroder-dtf-review\\e2e\\benefits-one-card-mobile.spec.ts",
+                    "column": 28,
+                    "line": 10
+                  }
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "3ad9aa4a6dbe59e2feb0-d2454f1007a901e31f0c",
+          "file": "benefits-one-card-mobile.spec.ts",
+          "line": 6,
+          "column": 7
+        },
+        {
+          "title": "one complete benefit is visible and horizontally swipable at 390px",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 120000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 2,
+                  "parallelIndex": 0,
+                  "status": "failed",
+                  "duration": 476,
+                  "error": {
+                    "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: locator('.debroder-landing .benefit-grid')\nExpected: visible\nError: strict mode violation: locator('.debroder-landing .benefit-grid') resolved to 2 elements:\n    1) <div tabindex=\"0\" aria-label=\"Geser untuk melihat keunggulan DEBRODER\" class=\"benefit-grid section-shell no-scrollbar flex snap-x snap-mandatory overscroll-x-contain overflow-x-auto focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-[-2px] lg:grid lg:grid-cols-4 lg:overflow-visible\">…</div> aka getByLabel('Geser untuk melihat').first()\n    2) <div tabindex=\"0\" aria-label=\"Geser untuk melihat keunggulan DEBRODER\" class=\"benefit-grid section-shell no-scrollbar flex snap-x snap-mandatory overscroll-x-contain overflow-x-auto focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-[-2px] lg:grid lg:grid-cols-4 lg:overflow-visible\">…</div> aka getByRole('region', { name: 'Keunggulan DEBRODER' }).getByLabel('Geser untuk melihat')\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 15000ms\u001b[22m\n\u001b[2m  - waiting for locator('.debroder-landing .benefit-grid')\u001b[22m\n",
+                    "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: locator('.debroder-landing .benefit-grid')\nExpected: visible\nError: strict mode violation: locator('.debroder-landing .benefit-grid') resolved to 2 elements:\n    1) <div tabindex=\"0\" aria-label=\"Geser untuk melihat keunggulan DEBRODER\" class=\"benefit-grid section-shell no-scrollbar flex snap-x snap-mandatory overscroll-x-contain overflow-x-auto focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-[-2px] lg:grid lg:grid-cols-4 lg:overflow-visible\">…</div> aka getByLabel('Geser untuk melihat').first()\n    2) <div tabindex=\"0\" aria-label=\"Geser untuk melihat keunggulan DEBRODER\" class=\"benefit-grid section-shell no-scrollbar flex snap-x snap-mandatory overscroll-x-contain overflow-x-auto focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-[-2px] lg:grid lg:grid-cols-4 lg:overflow-visible\">…</div> aka getByRole('region', { name: 'Keunggulan DEBRODER' }).getByLabel('Geser untuk melihat')\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 15000ms\u001b[22m\n\u001b[2m  - waiting for locator('.debroder-landing .benefit-grid')\u001b[22m\n\n    at C:\\Users\\OMEN\\.codex\\visualizations\\2026\\10\\26\\01a17676-9129-71e2-8bb4-c7f56ff193da\\debroder-dtf-review\\e2e\\benefits-one-card-mobile.spec.ts:10:28",
+                    "location": {
+                      "file": "C:\\Users\\OMEN\\.codex\\visualizations\\2026\\10\\26\\01a17676-9129-71e2-8bb4-c7f56ff193da\\debroder-dtf-review\\e2e\\benefits-one-card-mobile.spec.ts",
+                      "column": 28,
+                      "line": 10
+                    },
+                    "snippet": "   8 |     await page.goto(\"/\");\n   9 |     const carousel = page.locator(\".debroder-landing .benefit-grid\");\n> 10 |     await expect(carousel).toBeVisible();\n     |                            ^\n  11 |     const items = carousel.locator(\".benefit-slide\");\n  12 |     await expect(items).toHaveCount(4);\n  13 |"
+                  },
+                  "errors": [
+                    {
+                      "location": {
+                        "file": "C:\\Users\\OMEN\\.codex\\visualizations\\2026\\10\\26\\01a17676-9129-71e2-8bb4-c7f56ff193da\\debroder-dtf-review\\e2e\\benefits-one-card-mobile.spec.ts",
+                        "column": 28,
+                        "line": 10
+                      },
+                      "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: locator('.debroder-landing .benefit-grid')\nExpected: visible\nError: strict mode violation: locator('.debroder-landing .benefit-grid') resolved to 2 elements:\n    1) <div tabindex=\"0\" aria-label=\"Geser untuk melihat keunggulan DEBRODER\" class=\"benefit-grid section-shell no-scrollbar flex snap-x snap-mandatory overscroll-x-contain overflow-x-auto focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-[-2px] lg:grid lg:grid-cols-4 lg:overflow-visible\">…</div> aka getByLabel('Geser untuk melihat').first()\n    2) <div tabindex=\"0\" aria-label=\"Geser untuk melihat keunggulan DEBRODER\" class=\"benefit-grid section-shell no-scrollbar flex snap-x snap-mandatory overscroll-x-contain overflow-x-auto focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-[-2px] lg:grid lg:grid-cols-4 lg:overflow-visible\">…</div> aka getByRole('region', { name: 'Keunggulan DEBRODER' }).getByLabel('Geser untuk melihat')\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 15000ms\u001b[22m\n\u001b[2m  - waiting for locator('.debroder-landing .benefit-grid')\u001b[22m\n\n\n   8 |     await page.goto(\"/\");\n   9 |     const carousel = page.locator(\".debroder-landing .benefit-grid\");\n> 10 |     await expect(carousel).toBeVisible();\n     |                            ^\n  11 |     const items = carousel.locator(\".benefit-slide\");\n  12 |     await expect(items).toHaveCount(4);\n  13 |\n    at C:\\Users\\OMEN\\.codex\\visualizations\\2026\\10\\26\\01a17676-9129-71e2-8bb4-c7f56ff193da\\debroder-dtf-review\\e2e\\benefits-one-card-mobile.spec.ts:10:28"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-26T15:26:38.841Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "screenshot",
+                      "contentType": "image/png",
+                      "path": "C:\\Users\\OMEN\\.codex\\visualizations\\2026\\10\\26\\01a17676-9129-71e2-8bb4-c7f56ff193da\\debroder-dtf-review\\docs\\dtf-owner-patches\\browser-artifacts\\benefits-one-card-mobile-o-f4b85-izontally-swipable-at-390px\\test-failed-1.png"
+                    },
+                    {
+                      "name": "video",
+                      "contentType": "video/webm",
+                      "path": "C:\\Users\\OMEN\\.codex\\visualizations\\2026\\10\\26\\01a17676-9129-71e2-8bb4-c7f56ff193da\\debroder-dtf-review\\docs\\dtf-owner-patches\\browser-artifacts\\benefits-one-card-mobile-o-f4b85-izontally-swipable-at-390px\\video.webm"
+                    },
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "C:\\Users\\OMEN\\.codex\\visualizations\\2026\\10\\26\\01a17676-9129-71e2-8bb4-c7f56ff193da\\debroder-dtf-review\\docs\\dtf-owner-patches\\browser-artifacts\\benefits-one-card-mobile-o-f4b85-izontally-swipable-at-390px\\error-context.md"
+                    },
+                    {
+                      "name": "trace",
+                      "contentType": "application/zip",
+                      "path": "C:\\Users\\OMEN\\.codex\\visualizations\\2026\\10\\26\\01a17676-9129-71e2-8bb4-c7f56ff193da\\debroder-dtf-review\\docs\\dtf-owner-patches\\browser-artifacts\\benefits-one-card-mobile-o-f4b85-izontally-swipable-at-390px\\trace.zip"
+                    }
+                  ],
+                  "errorLocation": {
+                    "file": "C:\\Users\\OMEN\\.codex\\visualizations\\2026\\10\\26\\01a17676-9129-71e2-8bb4-c7f56ff193da\\debroder-dtf-review\\e2e\\benefits-one-card-mobile.spec.ts",
+                    "column": 28,
+                    "line": 10
+                  }
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "3ad9aa4a6dbe59e2feb0-28c3daeeeb0177a4890f",
+          "file": "benefits-one-card-mobile.spec.ts",
+          "line": 6,
+          "column": 7
+        },
+        {
+          "title": "one complete benefit is visible and horizontally swipable at 430px",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 120000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 3,
+                  "parallelIndex": 0,
+                  "status": "failed",
+                  "duration": 502,
+                  "error": {
+                    "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32mtrue\u001b[39m\nReceived: \u001b[31mfalse\u001b[39m",
+                    "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32mtrue\u001b[39m\nReceived: \u001b[31mfalse\u001b[39m\n    at C:\\Users\\OMEN\\.codex\\visualizations\\2026\\10\\26\\01a17676-9129-71e2-8bb4-c7f56ff193da\\debroder-dtf-review\\e2e\\benefits-one-card-mobile.spec.ts:24:32",
+                    "location": {
+                      "file": "C:\\Users\\OMEN\\.codex\\visualizations\\2026\\10\\26\\01a17676-9129-71e2-8bb4-c7f56ff193da\\debroder-dtf-review\\e2e\\benefits-one-card-mobile.spec.ts",
+                      "column": 32,
+                      "line": 24
+                    },
+                    "snippet": "  22 |       };\n  23 |     });\n> 24 |     expect(metrics.scrollable).toBe(true);\n     |                                ^\n  25 |     expect(metrics.snapType).toContain(\"x\");\n  26 |     for (const itemWidth of metrics.itemWidths) {\n  27 |       expect(Math.abs(itemWidth - metrics.innerWidth)).toBeLessThanOrEqual(3);"
+                  },
+                  "errors": [
+                    {
+                      "location": {
+                        "file": "C:\\Users\\OMEN\\.codex\\visualizations\\2026\\10\\26\\01a17676-9129-71e2-8bb4-c7f56ff193da\\debroder-dtf-review\\e2e\\benefits-one-card-mobile.spec.ts",
+                        "column": 32,
+                        "line": 24
+                      },
+                      "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32mtrue\u001b[39m\nReceived: \u001b[31mfalse\u001b[39m\n\n  22 |       };\n  23 |     });\n> 24 |     expect(metrics.scrollable).toBe(true);\n     |                                ^\n  25 |     expect(metrics.snapType).toContain(\"x\");\n  26 |     for (const itemWidth of metrics.itemWidths) {\n  27 |       expect(Math.abs(itemWidth - metrics.innerWidth)).toBeLessThanOrEqual(3);\n    at C:\\Users\\OMEN\\.codex\\visualizations\\2026\\10\\26\\01a17676-9129-71e2-8bb4-c7f56ff193da\\debroder-dtf-review\\e2e\\benefits-one-card-mobile.spec.ts:24:32"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-26T15:26:39.747Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "screenshot",
+                      "contentType": "image/png",
+                      "path": "C:\\Users\\OMEN\\.codex\\visualizations\\2026\\10\\26\\01a17676-9129-71e2-8bb4-c7f56ff193da\\debroder-dtf-review\\docs\\dtf-owner-patches\\browser-artifacts\\benefits-one-card-mobile-o-422a2-izontally-swipable-at-430px\\test-failed-1.png"
+                    },
+                    {
+                      "name": "video",
+                      "contentType": "video/webm",
+                      "path": "C:\\Users\\OMEN\\.codex\\visualizations\\2026\\10\\26\\01a17676-9129-71e2-8bb4-c7f56ff193da\\debroder-dtf-review\\docs\\dtf-owner-patches\\browser-artifacts\\benefits-one-card-mobile-o-422a2-izontally-swipable-at-430px\\video.webm"
+                    },
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "C:\\Users\\OMEN\\.codex\\visualizations\\2026\\10\\26\\01a17676-9129-71e2-8bb4-c7f56ff193da\\debroder-dtf-review\\docs\\dtf-owner-patches\\browser-artifacts\\benefits-one-card-mobile-o-422a2-izontally-swipable-at-430px\\error-context.md"
+                    },
+                    {
+                      "name": "trace",
+                      "contentType": "application/zip",
+                      "path": "C:\\Users\\OMEN\\.codex\\visualizations\\2026\\10\\26\\01a17676-9129-71e2-8bb4-c7f56ff193da\\debroder-dtf-review\\docs\\dtf-owner-patches\\browser-artifacts\\benefits-one-card-mobile-o-422a2-izontally-swipable-at-430px\\trace.zip"
+                    }
+                  ],
+                  "errorLocation": {
+                    "file": "C:\\Users\\OMEN\\.codex\\visualizations\\2026\\10\\26\\01a17676-9129-71e2-8bb4-c7f56ff193da\\debroder-dtf-review\\e2e\\benefits-one-card-mobile.spec.ts",
+                    "column": 32,
+                    "line": 24
+                  }
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "3ad9aa4a6dbe59e2feb0-5ec3555259fd556f86f6",
+          "file": "benefits-one-card-mobile.spec.ts",
+          "line": 6,
+          "column": 7
+        },
+        {
+          "title": "one complete benefit is visible and horizontally swipable at 768px",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 120000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 4,
+                  "parallelIndex": 0,
+                  "status": "failed",
+                  "duration": 459,
+                  "error": {
+                    "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32mtrue\u001b[39m\nReceived: \u001b[31mfalse\u001b[39m",
+                    "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32mtrue\u001b[39m\nReceived: \u001b[31mfalse\u001b[39m\n    at C:\\Users\\OMEN\\.codex\\visualizations\\2026\\10\\26\\01a17676-9129-71e2-8bb4-c7f56ff193da\\debroder-dtf-review\\e2e\\benefits-one-card-mobile.spec.ts:24:32",
+                    "location": {
+                      "file": "C:\\Users\\OMEN\\.codex\\visualizations\\2026\\10\\26\\01a17676-9129-71e2-8bb4-c7f56ff193da\\debroder-dtf-review\\e2e\\benefits-one-card-mobile.spec.ts",
+                      "column": 32,
+                      "line": 24
+                    },
+                    "snippet": "  22 |       };\n  23 |     });\n> 24 |     expect(metrics.scrollable).toBe(true);\n     |                                ^\n  25 |     expect(metrics.snapType).toContain(\"x\");\n  26 |     for (const itemWidth of metrics.itemWidths) {\n  27 |       expect(Math.abs(itemWidth - metrics.innerWidth)).toBeLessThanOrEqual(3);"
+                  },
+                  "errors": [
+                    {
+                      "location": {
+                        "file": "C:\\Users\\OMEN\\.codex\\visualizations\\2026\\10\\26\\01a17676-9129-71e2-8bb4-c7f56ff193da\\debroder-dtf-review\\e2e\\benefits-one-card-mobile.spec.ts",
+                        "column": 32,
+                        "line": 24
+                      },
+                      "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32mtrue\u001b[39m\nReceived: \u001b[31mfalse\u001b[39m\n\n  22 |       };\n  23 |     });\n> 24 |     expect(metrics.scrollable).toBe(true);\n     |                                ^\n  25 |     expect(metrics.snapType).toContain(\"x\");\n  26 |     for (const itemWidth of metrics.itemWidths) {\n  27 |       expect(Math.abs(itemWidth - metrics.innerWidth)).toBeLessThanOrEqual(3);\n    at C:\\Users\\OMEN\\.codex\\visualizations\\2026\\10\\26\\01a17676-9129-71e2-8bb4-c7f56ff193da\\debroder-dtf-review\\e2e\\benefits-one-card-mobile.spec.ts:24:32"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-26T15:26:40.668Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "screenshot",
+                      "contentType": "image/png",
+                      "path": "C:\\Users\\OMEN\\.codex\\visualizations\\2026\\10\\26\\01a17676-9129-71e2-8bb4-c7f56ff193da\\debroder-dtf-review\\docs\\dtf-owner-patches\\browser-artifacts\\benefits-one-card-mobile-o-a692b-izontally-swipable-at-768px\\test-failed-1.png"
+                    },
+                    {
+                      "name": "video",
+                      "contentType": "video/webm",
+                      "path": "C:\\Users\\OMEN\\.codex\\visualizations\\2026\\10\\26\\01a17676-9129-71e2-8bb4-c7f56ff193da\\debroder-dtf-review\\docs\\dtf-owner-patches\\browser-artifacts\\benefits-one-card-mobile-o-a692b-izontally-swipable-at-768px\\video.webm"
+                    },
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "C:\\Users\\OMEN\\.codex\\visualizations\\2026\\10\\26\\01a17676-9129-71e2-8bb4-c7f56ff193da\\debroder-dtf-review\\docs\\dtf-owner-patches\\browser-artifacts\\benefits-one-card-mobile-o-a692b-izontally-swipable-at-768px\\error-context.md"
+                    },
+                    {
+                      "name": "trace",
+                      "contentType": "application/zip",
+                      "path": "C:\\Users\\OMEN\\.codex\\visualizations\\2026\\10\\26\\01a17676-9129-71e2-8bb4-c7f56ff193da\\debroder-dtf-review\\docs\\dtf-owner-patches\\browser-artifacts\\benefits-one-card-mobile-o-a692b-izontally-swipable-at-768px\\trace.zip"
+                    }
+                  ],
+                  "errorLocation": {
+                    "file": "C:\\Users\\OMEN\\.codex\\visualizations\\2026\\10\\26\\01a17676-9129-71e2-8bb4-c7f56ff193da\\debroder-dtf-review\\e2e\\benefits-one-card-mobile.spec.ts",
+                    "column": 32,
+                    "line": 24
+                  }
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "3ad9aa4a6dbe59e2feb0-bae8dd7c0e5675e7989f",
+          "file": "benefits-one-card-mobile.spec.ts",
+          "line": 6,
+          "column": 7
+        },
+        {
+          "title": "one complete benefit is visible and horizontally swipable at 1023px",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 120000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 5,
+                  "parallelIndex": 0,
+                  "status": "failed",
+                  "duration": 467,
+                  "error": {
+                    "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32mtrue\u001b[39m\nReceived: \u001b[31mfalse\u001b[39m",
+                    "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32mtrue\u001b[39m\nReceived: \u001b[31mfalse\u001b[39m\n    at C:\\Users\\OMEN\\.codex\\visualizations\\2026\\10\\26\\01a17676-9129-71e2-8bb4-c7f56ff193da\\debroder-dtf-review\\e2e\\benefits-one-card-mobile.spec.ts:24:32",
+                    "location": {
+                      "file": "C:\\Users\\OMEN\\.codex\\visualizations\\2026\\10\\26\\01a17676-9129-71e2-8bb4-c7f56ff193da\\debroder-dtf-review\\e2e\\benefits-one-card-mobile.spec.ts",
+                      "column": 32,
+                      "line": 24
+                    },
+                    "snippet": "  22 |       };\n  23 |     });\n> 24 |     expect(metrics.scrollable).toBe(true);\n     |                                ^\n  25 |     expect(metrics.snapType).toContain(\"x\");\n  26 |     for (const itemWidth of metrics.itemWidths) {\n  27 |       expect(Math.abs(itemWidth - metrics.innerWidth)).toBeLessThanOrEqual(3);"
+                  },
+                  "errors": [
+                    {
+                      "location": {
+                        "file": "C:\\Users\\OMEN\\.codex\\visualizations\\2026\\10\\26\\01a17676-9129-71e2-8bb4-c7f56ff193da\\debroder-dtf-review\\e2e\\benefits-one-card-mobile.spec.ts",
+                        "column": 32,
+                        "line": 24
+                      },
+                      "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32mtrue\u001b[39m\nReceived: \u001b[31mfalse\u001b[39m\n\n  22 |       };\n  23 |     });\n> 24 |     expect(metrics.scrollable).toBe(true);\n     |                                ^\n  25 |     expect(metrics.snapType).toContain(\"x\");\n  26 |     for (const itemWidth of metrics.itemWidths) {\n  27 |       expect(Math.abs(itemWidth - metrics.innerWidth)).toBeLessThanOrEqual(3);\n    at C:\\Users\\OMEN\\.codex\\visualizations\\2026\\10\\26\\01a17676-9129-71e2-8bb4-c7f56ff193da\\debroder-dtf-review\\e2e\\benefits-one-card-mobile.spec.ts:24:32"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-26T15:26:41.567Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "screenshot",
+                      "contentType": "image/png",
+                      "path": "C:\\Users\\OMEN\\.codex\\visualizations\\2026\\10\\26\\01a17676-9129-71e2-8bb4-c7f56ff193da\\debroder-dtf-review\\docs\\dtf-owner-patches\\browser-artifacts\\benefits-one-card-mobile-o-7c883-zontally-swipable-at-1023px\\test-failed-1.png"
+                    },
+                    {
+                      "name": "video",
+                      "contentType": "video/webm",
+                      "path": "C:\\Users\\OMEN\\.codex\\visualizations\\2026\\10\\26\\01a17676-9129-71e2-8bb4-c7f56ff193da\\debroder-dtf-review\\docs\\dtf-owner-patches\\browser-artifacts\\benefits-one-card-mobile-o-7c883-zontally-swipable-at-1023px\\video.webm"
+                    },
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "C:\\Users\\OMEN\\.codex\\visualizations\\2026\\10\\26\\01a17676-9129-71e2-8bb4-c7f56ff193da\\debroder-dtf-review\\docs\\dtf-owner-patches\\browser-artifacts\\benefits-one-card-mobile-o-7c883-zontally-swipable-at-1023px\\error-context.md"
+                    },
+                    {
+                      "name": "trace",
+                      "contentType": "application/zip",
+                      "path": "C:\\Users\\OMEN\\.codex\\visualizations\\2026\\10\\26\\01a17676-9129-71e2-8bb4-c7f56ff193da\\debroder-dtf-review\\docs\\dtf-owner-patches\\browser-artifacts\\benefits-one-card-mobile-o-7c883-zontally-swipable-at-1023px\\trace.zip"
+                    }
+                  ],
+                  "errorLocation": {
+                    "file": "C:\\Users\\OMEN\\.codex\\visualizations\\2026\\10\\26\\01a17676-9129-71e2-8bb4-c7f56ff193da\\debroder-dtf-review\\e2e\\benefits-one-card-mobile.spec.ts",
+                    "column": 32,
+                    "line": 24
+                  }
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "3ad9aa4a6dbe59e2feb0-1c1e360e281673a57427",
+          "file": "benefits-one-card-mobile.spec.ts",
+          "line": 6,
+          "column": 7
+        },
+        {
+          "title": "desktop retains four benefit columns without a horizontal carousel",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 120000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 6,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 415,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-26T15:26:42.463Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "3ad9aa4a6dbe59e2feb0-b5c830efa0b885be3b30",
+          "file": "benefits-one-card-mobile.spec.ts",
+          "line": 35,
+          "column": 5
+        }
+      ]
+    },
+    {
+      "title": "dtf-owner-patches.spec.ts",
+      "file": "dtf-owner-patches.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "DTF public runtime, empty CMS and keyboard at 360",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 120000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 6,
+                  "parallelIndex": 0,
+                  "status": "failed",
+                  "duration": 375,
+                  "error": {
+                    "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeLessThanOrEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: <= \u001b[32m1\u001b[39m\nReceived:    \u001b[31m229.34375\u001b[39m",
+                    "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeLessThanOrEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: <= \u001b[32m1\u001b[39m\nReceived:    \u001b[31m229.34375\u001b[39m\n    at C:\\Users\\OMEN\\.codex\\visualizations\\2026\\10\\26\\01a17676-9129-71e2-8bb4-c7f56ff193da\\debroder-dtf-review\\e2e\\dtf-owner-patches.spec.ts:17:60",
+                    "location": {
+                      "file": "C:\\Users\\OMEN\\.codex\\visualizations\\2026\\10\\26\\01a17676-9129-71e2-8bb4-c7f56ff193da\\debroder-dtf-review\\e2e\\dtf-owner-patches.spec.ts",
+                      "column": 60,
+                      "line": 17
+                    },
+                    "snippet": "  15 |     const dimensions = await rail.evaluate(el => ({ width: el.clientWidth, card: el.children[0].getBoundingClientRect().width }));\n  16 |     if (width < 768) {\n> 17 |       expect(Math.abs(dimensions.width - dimensions.card)).toBeLessThanOrEqual(1);\n     |                                                            ^\n  18 |       await rail.focus(); await page.keyboard.press(\"ArrowRight\");\n  19 |       await expect.poll(() => rail.evaluate(el => el.scrollLeft)).toBeGreaterThan(0);\n  20 |     }"
+                  },
+                  "errors": [
+                    {
+                      "location": {
+                        "file": "C:\\Users\\OMEN\\.codex\\visualizations\\2026\\10\\26\\01a17676-9129-71e2-8bb4-c7f56ff193da\\debroder-dtf-review\\e2e\\dtf-owner-patches.spec.ts",
+                        "column": 60,
+                        "line": 17
+                      },
+                      "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeLessThanOrEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: <= \u001b[32m1\u001b[39m\nReceived:    \u001b[31m229.34375\u001b[39m\n\n  15 |     const dimensions = await rail.evaluate(el => ({ width: el.clientWidth, card: el.children[0].getBoundingClientRect().width }));\n  16 |     if (width < 768) {\n> 17 |       expect(Math.abs(dimensions.width - dimensions.card)).toBeLessThanOrEqual(1);\n     |                                                            ^\n  18 |       await rail.focus(); await page.keyboard.press(\"ArrowRight\");\n  19 |       await expect.poll(() => rail.evaluate(el => el.scrollLeft)).toBeGreaterThan(0);\n  20 |     }\n    at C:\\Users\\OMEN\\.codex\\visualizations\\2026\\10\\26\\01a17676-9129-71e2-8bb4-c7f56ff193da\\debroder-dtf-review\\e2e\\dtf-owner-patches.spec.ts:17:60"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-26T15:26:42.961Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "screenshot",
+                      "contentType": "image/png",
+                      "path": "C:\\Users\\OMEN\\.codex\\visualizations\\2026\\10\\26\\01a17676-9129-71e2-8bb4-c7f56ff193da\\debroder-dtf-review\\docs\\dtf-owner-patches\\browser-artifacts\\dtf-owner-patches-DTF-publ-b8246-pty-CMS-and-keyboard-at-360\\test-failed-1.png"
+                    },
+                    {
+                      "name": "video",
+                      "contentType": "video/webm",
+                      "path": "C:\\Users\\OMEN\\.codex\\visualizations\\2026\\10\\26\\01a17676-9129-71e2-8bb4-c7f56ff193da\\debroder-dtf-review\\docs\\dtf-owner-patches\\browser-artifacts\\dtf-owner-patches-DTF-publ-b8246-pty-CMS-and-keyboard-at-360\\video.webm"
+                    },
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "C:\\Users\\OMEN\\.codex\\visualizations\\2026\\10\\26\\01a17676-9129-71e2-8bb4-c7f56ff193da\\debroder-dtf-review\\docs\\dtf-owner-patches\\browser-artifacts\\dtf-owner-patches-DTF-publ-b8246-pty-CMS-and-keyboard-at-360\\error-context.md"
+                    },
+                    {
+                      "name": "trace",
+                      "contentType": "application/zip",
+                      "path": "C:\\Users\\OMEN\\.codex\\visualizations\\2026\\10\\26\\01a17676-9129-71e2-8bb4-c7f56ff193da\\debroder-dtf-review\\docs\\dtf-owner-patches\\browser-artifacts\\dtf-owner-patches-DTF-publ-b8246-pty-CMS-and-keyboard-at-360\\trace.zip"
+                    }
+                  ],
+                  "errorLocation": {
+                    "file": "C:\\Users\\OMEN\\.codex\\visualizations\\2026\\10\\26\\01a17676-9129-71e2-8bb4-c7f56ff193da\\debroder-dtf-review\\e2e\\dtf-owner-patches.spec.ts",
+                    "column": 60,
+                    "line": 17
+                  }
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "f69d918b682d4884a200-916366d64cf1a1f11da9",
+          "file": "dtf-owner-patches.spec.ts",
+          "line": 5,
+          "column": 7
+        },
+        {
+          "title": "DTF populated gallery CSS fixture (not CMS acceptance) at 360",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 120000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 7,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 350,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-26T15:26:43.682Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "f69d918b682d4884a200-710e8c92958c7b3de176",
+          "file": "dtf-owner-patches.spec.ts",
+          "line": 42,
+          "column": 7
+        },
+        {
+          "title": "DTF public runtime, empty CMS and keyboard at 390",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 120000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 7,
+                  "parallelIndex": 0,
+                  "status": "failed",
+                  "duration": 369,
+                  "error": {
+                    "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeLessThanOrEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: <= \u001b[32m1\u001b[39m\nReceived:    \u001b[31m249.34375\u001b[39m",
+                    "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeLessThanOrEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: <= \u001b[32m1\u001b[39m\nReceived:    \u001b[31m249.34375\u001b[39m\n    at C:\\Users\\OMEN\\.codex\\visualizations\\2026\\10\\26\\01a17676-9129-71e2-8bb4-c7f56ff193da\\debroder-dtf-review\\e2e\\dtf-owner-patches.spec.ts:17:60",
+                    "location": {
+                      "file": "C:\\Users\\OMEN\\.codex\\visualizations\\2026\\10\\26\\01a17676-9129-71e2-8bb4-c7f56ff193da\\debroder-dtf-review\\e2e\\dtf-owner-patches.spec.ts",
+                      "column": 60,
+                      "line": 17
+                    },
+                    "snippet": "  15 |     const dimensions = await rail.evaluate(el => ({ width: el.clientWidth, card: el.children[0].getBoundingClientRect().width }));\n  16 |     if (width < 768) {\n> 17 |       expect(Math.abs(dimensions.width - dimensions.card)).toBeLessThanOrEqual(1);\n     |                                                            ^\n  18 |       await rail.focus(); await page.keyboard.press(\"ArrowRight\");\n  19 |       await expect.poll(() => rail.evaluate(el => el.scrollLeft)).toBeGreaterThan(0);\n  20 |     }"
+                  },
+                  "errors": [
+                    {
+                      "location": {
+                        "file": "C:\\Users\\OMEN\\.codex\\visualizations\\2026\\10\\26\\01a17676-9129-71e2-8bb4-c7f56ff193da\\debroder-dtf-review\\e2e\\dtf-owner-patches.spec.ts",
+                        "column": 60,
+                        "line": 17
+                      },
+                      "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeLessThanOrEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: <= \u001b[32m1\u001b[39m\nReceived:    \u001b[31m249.34375\u001b[39m\n\n  15 |     const dimensions = await rail.evaluate(el => ({ width: el.clientWidth, card: el.children[0].getBoundingClientRect().width }));\n  16 |     if (width < 768) {\n> 17 |       expect(Math.abs(dimensions.width - dimensions.card)).toBeLessThanOrEqual(1);\n     |                                                            ^\n  18 |       await rail.focus(); await page.keyboard.press(\"ArrowRight\");\n  19 |       await expect.poll(() => rail.evaluate(el => el.scrollLeft)).toBeGreaterThan(0);\n  20 |     }\n    at C:\\Users\\OMEN\\.codex\\visualizations\\2026\\10\\26\\01a17676-9129-71e2-8bb4-c7f56ff193da\\debroder-dtf-review\\e2e\\dtf-owner-patches.spec.ts:17:60"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-26T15:26:44.112Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "screenshot",
+                      "contentType": "image/png",
+                      "path": "C:\\Users\\OMEN\\.codex\\visualizations\\2026\\10\\26\\01a17676-9129-71e2-8bb4-c7f56ff193da\\debroder-dtf-review\\docs\\dtf-owner-patches\\browser-artifacts\\dtf-owner-patches-DTF-publ-68201-pty-CMS-and-keyboard-at-390\\test-failed-1.png"
+                    },
+                    {
+                      "name": "video",
+                      "contentType": "video/webm",
+                      "path": "C:\\Users\\OMEN\\.codex\\visualizations\\2026\\10\\26\\01a17676-9129-71e2-8bb4-c7f56ff193da\\debroder-dtf-review\\docs\\dtf-owner-patches\\browser-artifacts\\dtf-owner-patches-DTF-publ-68201-pty-CMS-and-keyboard-at-390\\video.webm"
+                    },
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "C:\\Users\\OMEN\\.codex\\visualizations\\2026\\10\\26\\01a17676-9129-71e2-8bb4-c7f56ff193da\\debroder-dtf-review\\docs\\dtf-owner-patches\\browser-artifacts\\dtf-owner-patches-DTF-publ-68201-pty-CMS-and-keyboard-at-390\\error-context.md"
+                    },
+                    {
+                      "name": "trace",
+                      "contentType": "application/zip",
+                      "path": "C:\\Users\\OMEN\\.codex\\visualizations\\2026\\10\\26\\01a17676-9129-71e2-8bb4-c7f56ff193da\\debroder-dtf-review\\docs\\dtf-owner-patches\\browser-artifacts\\dtf-owner-patches-DTF-publ-68201-pty-CMS-and-keyboard-at-390\\trace.zip"
+                    }
+                  ],
+                  "errorLocation": {
+                    "file": "C:\\Users\\OMEN\\.codex\\visualizations\\2026\\10\\26\\01a17676-9129-71e2-8bb4-c7f56ff193da\\debroder-dtf-review\\e2e\\dtf-owner-patches.spec.ts",
+                    "column": 60,
+                    "line": 17
+                  }
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "f69d918b682d4884a200-f0d38fa155782ebfa469",
+          "file": "dtf-owner-patches.spec.ts",
+          "line": 5,
+          "column": 7
+        },
+        {
+          "title": "DTF populated gallery CSS fixture (not CMS acceptance) at 390",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 120000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 8,
+                  "parallelIndex": 0,
+                  "status": "failed",
+                  "duration": 437,
+                  "error": {
+                    "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // deep equality\u001b[22m\n\n\u001b[32m- Expected  - 1\u001b[39m\n\u001b[31m+ Received  + 1\u001b[39m\n\n\u001b[2m  Object {\u001b[22m\n\u001b[32m-   \"columns\": 2,\u001b[39m\n\u001b[31m+   \"columns\": 3,\u001b[39m\n\u001b[2m    \"count\": 17,\u001b[22m\n\u001b[2m    \"gap\": \"16px\",\u001b[22m\n\u001b[2m    \"padding\": \"16px\",\u001b[22m\n\u001b[2m  }\u001b[22m",
+                    "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // deep equality\u001b[22m\n\n\u001b[32m- Expected  - 1\u001b[39m\n\u001b[31m+ Received  + 1\u001b[39m\n\n\u001b[2m  Object {\u001b[22m\n\u001b[32m-   \"columns\": 2,\u001b[39m\n\u001b[31m+   \"columns\": 3,\u001b[39m\n\u001b[2m    \"count\": 17,\u001b[22m\n\u001b[2m    \"gap\": \"16px\",\u001b[22m\n\u001b[2m    \"padding\": \"16px\",\u001b[22m\n\u001b[2m  }\u001b[22m\n    at C:\\Users\\OMEN\\.codex\\visualizations\\2026\\10\\26\\01a17676-9129-71e2-8bb4-c7f56ff193da\\debroder-dtf-review\\e2e\\dtf-owner-patches.spec.ts:55:21",
+                    "location": {
+                      "file": "C:\\Users\\OMEN\\.codex\\visualizations\\2026\\10\\26\\01a17676-9129-71e2-8bb4-c7f56ff193da\\debroder-dtf-review\\e2e\\dtf-owner-patches.spec.ts",
+                      "column": 21,
+                      "line": 55
+                    },
+                    "snippet": "  53 |     const grid = page.locator(\".dtf-gallery-grid\");\n  54 |     const metrics = await grid.evaluate(el => { const s = getComputedStyle(el); return { columns: s.gridTemplateColumns.split(\" \").length, gap: s.gap, padding: s.padding, count: el.children.length }; });\n> 55 |     expect(metrics).toEqual({ columns: width < 768 ? 2 : width < 1024 ? 3 : 4, gap: \"16px\", padding: \"16px\", count: 17 });\n     |                     ^\n  56 |     await expect(grid.locator(\"a,button,figcaption\")).toHaveCount(0);\n  57 |     expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1)).toBe(true);\n  58 |   });"
+                  },
+                  "errors": [
+                    {
+                      "location": {
+                        "file": "C:\\Users\\OMEN\\.codex\\visualizations\\2026\\10\\26\\01a17676-9129-71e2-8bb4-c7f56ff193da\\debroder-dtf-review\\e2e\\dtf-owner-patches.spec.ts",
+                        "column": 21,
+                        "line": 55
+                      },
+                      "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // deep equality\u001b[22m\n\n\u001b[32m- Expected  - 1\u001b[39m\n\u001b[31m+ Received  + 1\u001b[39m\n\n\u001b[2m  Object {\u001b[22m\n\u001b[32m-   \"columns\": 2,\u001b[39m\n\u001b[31m+   \"columns\": 3,\u001b[39m\n\u001b[2m    \"count\": 17,\u001b[22m\n\u001b[2m    \"gap\": \"16px\",\u001b[22m\n\u001b[2m    \"padding\": \"16px\",\u001b[22m\n\u001b[2m  }\u001b[22m\n\n  53 |     const grid = page.locator(\".dtf-gallery-grid\");\n  54 |     const metrics = await grid.evaluate(el => { const s = getComputedStyle(el); return { columns: s.gridTemplateColumns.split(\" \").length, gap: s.gap, padding: s.padding, count: el.children.length }; });\n> 55 |     expect(metrics).toEqual({ columns: width < 768 ? 2 : width < 1024 ? 3 : 4, gap: \"16px\", padding: \"16px\", count: 17 });\n     |                     ^\n  56 |     await expect(grid.locator(\"a,button,figcaption\")).toHaveCount(0);\n  57 |     expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1)).toBe(true);\n  58 |   });\n    at C:\\Users\\OMEN\\.codex\\visualizations\\2026\\10\\26\\01a17676-9129-71e2-8bb4-c7f56ff193da\\debroder-dtf-review\\e2e\\dtf-owner-patches.spec.ts:55:21"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-26T15:26:44.888Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "screenshot",
+                      "contentType": "image/png",
+                      "path": "C:\\Users\\OMEN\\.codex\\visualizations\\2026\\10\\26\\01a17676-9129-71e2-8bb4-c7f56ff193da\\debroder-dtf-review\\docs\\dtf-owner-patches\\browser-artifacts\\dtf-owner-patches-DTF-popu-f4b8d-e-not-CMS-acceptance-at-390\\test-failed-1.png"
+                    },
+                    {
+                      "name": "video",
+                      "contentType": "video/webm",
+                      "path": "C:\\Users\\OMEN\\.codex\\visualizations\\2026\\10\\26\\01a17676-9129-71e2-8bb4-c7f56ff193da\\debroder-dtf-review\\docs\\dtf-owner-patches\\browser-artifacts\\dtf-owner-patches-DTF-popu-f4b8d-e-not-CMS-acceptance-at-390\\video.webm"
+                    },
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "C:\\Users\\OMEN\\.codex\\visualizations\\2026\\10\\26\\01a17676-9129-71e2-8bb4-c7f56ff193da\\debroder-dtf-review\\docs\\dtf-owner-patches\\browser-artifacts\\dtf-owner-patches-DTF-popu-f4b8d-e-not-CMS-acceptance-at-390\\error-context.md"
+                    },
+                    {
+                      "name": "trace",
+                      "contentType": "application/zip",
+                      "path": "C:\\Users\\OMEN\\.codex\\visualizations\\2026\\10\\26\\01a17676-9129-71e2-8bb4-c7f56ff193da\\debroder-dtf-review\\docs\\dtf-owner-patches\\browser-artifacts\\dtf-owner-patches-DTF-popu-f4b8d-e-not-CMS-acceptance-at-390\\trace.zip"
+                    }
+                  ],
+                  "errorLocation": {
+                    "file": "C:\\Users\\OMEN\\.codex\\visualizations\\2026\\10\\26\\01a17676-9129-71e2-8bb4-c7f56ff193da\\debroder-dtf-review\\e2e\\dtf-owner-patches.spec.ts",
+                    "column": 21,
+                    "line": 55
+                  }
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "f69d918b682d4884a200-d304ee488e05c78a09dc",
+          "file": "dtf-owner-patches.spec.ts",
+          "line": 42,
+          "column": 7
+        },
+        {
+          "title": "DTF public runtime, empty CMS and keyboard at 430",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 120000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 9,
+                  "parallelIndex": 0,
+                  "status": "failed",
+                  "duration": 427,
+                  "error": {
+                    "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeLessThanOrEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: <= \u001b[32m1\u001b[39m\nReceived:    \u001b[31m276\u001b[39m",
+                    "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeLessThanOrEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: <= \u001b[32m1\u001b[39m\nReceived:    \u001b[31m276\u001b[39m\n    at C:\\Users\\OMEN\\.codex\\visualizations\\2026\\10\\26\\01a17676-9129-71e2-8bb4-c7f56ff193da\\debroder-dtf-review\\e2e\\dtf-owner-patches.spec.ts:17:60",
+                    "location": {
+                      "file": "C:\\Users\\OMEN\\.codex\\visualizations\\2026\\10\\26\\01a17676-9129-71e2-8bb4-c7f56ff193da\\debroder-dtf-review\\e2e\\dtf-owner-patches.spec.ts",
+                      "column": 60,
+                      "line": 17
+                    },
+                    "snippet": "  15 |     const dimensions = await rail.evaluate(el => ({ width: el.clientWidth, card: el.children[0].getBoundingClientRect().width }));\n  16 |     if (width < 768) {\n> 17 |       expect(Math.abs(dimensions.width - dimensions.card)).toBeLessThanOrEqual(1);\n     |                                                            ^\n  18 |       await rail.focus(); await page.keyboard.press(\"ArrowRight\");\n  19 |       await expect.poll(() => rail.evaluate(el => el.scrollLeft)).toBeGreaterThan(0);\n  20 |     }"
+                  },
+                  "errors": [
+                    {
+                      "location": {
+                        "file": "C:\\Users\\OMEN\\.codex\\visualizations\\2026\\10\\26\\01a17676-9129-71e2-8bb4-c7f56ff193da\\debroder-dtf-review\\e2e\\dtf-owner-patches.spec.ts",
+                        "column": 60,
+                        "line": 17
+                      },
+                      "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeLessThanOrEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: <= \u001b[32m1\u001b[39m\nReceived:    \u001b[31m276\u001b[39m\n\n  15 |     const dimensions = await rail.evaluate(el => ({ width: el.clientWidth, card: el.children[0].getBoundingClientRect().width }));\n  16 |     if (width < 768) {\n> 17 |       expect(Math.abs(dimensions.width - dimensions.card)).toBeLessThanOrEqual(1);\n     |                                                            ^\n  18 |       await rail.focus(); await page.keyboard.press(\"ArrowRight\");\n  19 |       await expect.poll(() => rail.evaluate(el => el.scrollLeft)).toBeGreaterThan(0);\n  20 |     }\n    at C:\\Users\\OMEN\\.codex\\visualizations\\2026\\10\\26\\01a17676-9129-71e2-8bb4-c7f56ff193da\\debroder-dtf-review\\e2e\\dtf-owner-patches.spec.ts:17:60"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-26T15:26:45.753Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "screenshot",
+                      "contentType": "image/png",
+                      "path": "C:\\Users\\OMEN\\.codex\\visualizations\\2026\\10\\26\\01a17676-9129-71e2-8bb4-c7f56ff193da\\debroder-dtf-review\\docs\\dtf-owner-patches\\browser-artifacts\\dtf-owner-patches-DTF-publ-62be0-pty-CMS-and-keyboard-at-430\\test-failed-1.png"
+                    },
+                    {
+                      "name": "video",
+                      "contentType": "video/webm",
+                      "path": "C:\\Users\\OMEN\\.codex\\visualizations\\2026\\10\\26\\01a17676-9129-71e2-8bb4-c7f56ff193da\\debroder-dtf-review\\docs\\dtf-owner-patches\\browser-artifacts\\dtf-owner-patches-DTF-publ-62be0-pty-CMS-and-keyboard-at-430\\video.webm"
+                    },
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "C:\\Users\\OMEN\\.codex\\visualizations\\2026\\10\\26\\01a17676-9129-71e2-8bb4-c7f56ff193da\\debroder-dtf-review\\docs\\dtf-owner-patches\\browser-artifacts\\dtf-owner-patches-DTF-publ-62be0-pty-CMS-and-keyboard-at-430\\error-context.md"
+                    },
+                    {
+                      "name": "trace",
+                      "contentType": "application/zip",
+                      "path": "C:\\Users\\OMEN\\.codex\\visualizations\\2026\\10\\26\\01a17676-9129-71e2-8bb4-c7f56ff193da\\debroder-dtf-review\\docs\\dtf-owner-patches\\browser-artifacts\\dtf-owner-patches-DTF-publ-62be0-pty-CMS-and-keyboard-at-430\\trace.zip"
+                    }
+                  ],
+                  "errorLocation": {
+                    "file": "C:\\Users\\OMEN\\.codex\\visualizations\\2026\\10\\26\\01a17676-9129-71e2-8bb4-c7f56ff193da\\debroder-dtf-review\\e2e\\dtf-owner-patches.spec.ts",
+                    "column": 60,
+                    "line": 17
+                  }
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "f69d918b682d4884a200-ff5ce810ecb3ce435fd7",
+          "file": "dtf-owner-patches.spec.ts",
+          "line": 5,
+          "column": 7
+        },
+        {
+          "title": "DTF populated gallery CSS fixture (not CMS acceptance) at 430",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 120000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 10,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 335,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-26T15:26:46.608Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "f69d918b682d4884a200-7a0bed6c1bd0bd2fd4b6",
+          "file": "dtf-owner-patches.spec.ts",
+          "line": 42,
+          "column": 7
+        },
+        {
+          "title": "DTF public runtime, empty CMS and keyboard at 1024",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 120000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 10,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 693,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-26T15:26:47.020Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "f69d918b682d4884a200-ba2eace0617dc1e83d23",
+          "file": "dtf-owner-patches.spec.ts",
+          "line": 5,
+          "column": 7
+        },
+        {
+          "title": "DTF populated gallery CSS fixture (not CMS acceptance) at 1024",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 120000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 10,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 333,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-26T15:26:47.722Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "f69d918b682d4884a200-2e2b8a4f623e5470e45f",
+          "file": "dtf-owner-patches.spec.ts",
+          "line": 42,
+          "column": 7
+        },
+        {
+          "title": "DTF public runtime, empty CMS and keyboard at 1440",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 120000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 10,
+                  "parallelIndex": 0,
+                  "status": "failed",
+                  "duration": 402,
+                  "error": {
+                    "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: locator('[data-category-hero]')\nExpected: visible\nError: strict mode violation: locator('[data-category-hero]') resolved to 2 elements:\n    1) <section data-category-hero=\"true\" aria-label=\"Sablon DTF Debroder\" class=\"kaos-blueprint-hero relative overflow-hidden bg-[#f0f0ed]\">…</section> aka getByLabel('Sablon DTF Debroder').first()\n    2) <section data-category-hero=\"true\" aria-label=\"Sablon DTF Debroder\" class=\"kaos-blueprint-hero relative overflow-hidden bg-[#f0f0ed]\">…</section> aka getByRole('region', { name: 'Sablon DTF Debroder' })\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 15000ms\u001b[22m\n\u001b[2m  - waiting for locator('[data-category-hero]')\u001b[22m\n",
+                    "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: locator('[data-category-hero]')\nExpected: visible\nError: strict mode violation: locator('[data-category-hero]') resolved to 2 elements:\n    1) <section data-category-hero=\"true\" aria-label=\"Sablon DTF Debroder\" class=\"kaos-blueprint-hero relative overflow-hidden bg-[#f0f0ed]\">…</section> aka getByLabel('Sablon DTF Debroder').first()\n    2) <section data-category-hero=\"true\" aria-label=\"Sablon DTF Debroder\" class=\"kaos-blueprint-hero relative overflow-hidden bg-[#f0f0ed]\">…</section> aka getByRole('region', { name: 'Sablon DTF Debroder' })\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 15000ms\u001b[22m\n\u001b[2m  - waiting for locator('[data-category-hero]')\u001b[22m\n\n    at C:\\Users\\OMEN\\.codex\\visualizations\\2026\\10\\26\\01a17676-9129-71e2-8bb4-c7f56ff193da\\debroder-dtf-review\\e2e\\dtf-owner-patches.spec.ts:11:56",
+                    "location": {
+                      "file": "C:\\Users\\OMEN\\.codex\\visualizations\\2026\\10\\26\\01a17676-9129-71e2-8bb4-c7f56ff193da\\debroder-dtf-review\\e2e\\dtf-owner-patches.spec.ts",
+                      "column": 56,
+                      "line": 11
+                    },
+                    "snippet": "   9 |     const response = await page.goto(\"/sablon-dtf\");\n  10 |     expect(response?.status()).toBe(200);\n> 11 |     await expect(page.locator(\"[data-category-hero]\")).toBeVisible();\n     |                                                        ^\n  12 |     await expect(page.locator(\"h1\")).toHaveCount(1);\n  13 |     await expect(page.locator(\".dtf-benefit-card\")).toHaveCount(3);\n  14 |     const rail = page.locator(\".dtf-benefit-rail\");"
+                  },
+                  "errors": [
+                    {
+                      "location": {
+                        "file": "C:\\Users\\OMEN\\.codex\\visualizations\\2026\\10\\26\\01a17676-9129-71e2-8bb4-c7f56ff193da\\debroder-dtf-review\\e2e\\dtf-owner-patches.spec.ts",
+                        "column": 56,
+                        "line": 11
+                      },
+                      "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: locator('[data-category-hero]')\nExpected: visible\nError: strict mode violation: locator('[data-category-hero]') resolved to 2 elements:\n    1) <section data-category-hero=\"true\" aria-label=\"Sablon DTF Debroder\" class=\"kaos-blueprint-hero relative overflow-hidden bg-[#f0f0ed]\">…</section> aka getByLabel('Sablon DTF Debroder').first()\n    2) <section data-category-hero=\"true\" aria-label=\"Sablon DTF Debroder\" class=\"kaos-blueprint-hero relative overflow-hidden bg-[#f0f0ed]\">…</section> aka getByRole('region', { name: 'Sablon DTF Debroder' })\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 15000ms\u001b[22m\n\u001b[2m  - waiting for locator('[data-category-hero]')\u001b[22m\n\n\n   9 |     const response = await page.goto(\"/sablon-dtf\");\n  10 |     expect(response?.status()).toBe(200);\n> 11 |     await expect(page.locator(\"[data-category-hero]\")).toBeVisible();\n     |                                                        ^\n  12 |     await expect(page.locator(\"h1\")).toHaveCount(1);\n  13 |     await expect(page.locator(\".dtf-benefit-card\")).toHaveCount(3);\n  14 |     const rail = page.locator(\".dtf-benefit-rail\");\n    at C:\\Users\\OMEN\\.codex\\visualizations\\2026\\10\\26\\01a17676-9129-71e2-8bb4-c7f56ff193da\\debroder-dtf-review\\e2e\\dtf-owner-patches.spec.ts:11:56"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-26T15:26:48.061Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "screenshot",
+                      "contentType": "image/png",
+                      "path": "C:\\Users\\OMEN\\.codex\\visualizations\\2026\\10\\26\\01a17676-9129-71e2-8bb4-c7f56ff193da\\debroder-dtf-review\\docs\\dtf-owner-patches\\browser-artifacts\\dtf-owner-patches-DTF-publ-c2564-ty-CMS-and-keyboard-at-1440\\test-failed-1.png"
+                    },
+                    {
+                      "name": "video",
+                      "contentType": "video/webm",
+                      "path": "C:\\Users\\OMEN\\.codex\\visualizations\\2026\\10\\26\\01a17676-9129-71e2-8bb4-c7f56ff193da\\debroder-dtf-review\\docs\\dtf-owner-patches\\browser-artifacts\\dtf-owner-patches-DTF-publ-c2564-ty-CMS-and-keyboard-at-1440\\video.webm"
+                    },
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "C:\\Users\\OMEN\\.codex\\visualizations\\2026\\10\\26\\01a17676-9129-71e2-8bb4-c7f56ff193da\\debroder-dtf-review\\docs\\dtf-owner-patches\\browser-artifacts\\dtf-owner-patches-DTF-publ-c2564-ty-CMS-and-keyboard-at-1440\\error-context.md"
+                    },
+                    {
+                      "name": "trace",
+                      "contentType": "application/zip",
+                      "path": "C:\\Users\\OMEN\\.codex\\visualizations\\2026\\10\\26\\01a17676-9129-71e2-8bb4-c7f56ff193da\\debroder-dtf-review\\docs\\dtf-owner-patches\\browser-artifacts\\dtf-owner-patches-DTF-publ-c2564-ty-CMS-and-keyboard-at-1440\\trace.zip"
+                    }
+                  ],
+                  "errorLocation": {
+                    "file": "C:\\Users\\OMEN\\.codex\\visualizations\\2026\\10\\26\\01a17676-9129-71e2-8bb4-c7f56ff193da\\debroder-dtf-review\\e2e\\dtf-owner-patches.spec.ts",
+                    "column": 56,
+                    "line": 11
+                  }
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "f69d918b682d4884a200-a19fdb3e2f2b3f77fb70",
+          "file": "dtf-owner-patches.spec.ts",
+          "line": 5,
+          "column": 7
+        },
+        {
+          "title": "DTF populated gallery CSS fixture (not CMS acceptance) at 1440",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 120000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 11,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 382,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-26T15:26:48.830Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "f69d918b682d4884a200-1572e14d929e3a829519",
+          "file": "dtf-owner-patches.spec.ts",
+          "line": 42,
+          "column": 7
+        }
+      ]
+    },
+    {
+      "title": "jersey-no-alternative-navbar.spec.ts",
+      "file": "jersey-no-alternative-navbar.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "Jersey: main navbar only",
+          "file": "jersey-no-alternative-navbar.spec.ts",
+          "line": 5,
+          "column": 6,
+          "specs": [
+            {
+              "title": "no Jersey secondary navigation on /jersey",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 120000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 11,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 535,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-26T15:26:49.294Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "7a3b514b963617b62ff7-034c4fa3b883d5d14bed",
+              "file": "jersey-no-alternative-navbar.spec.ts",
+              "line": 7,
+              "column": 9
+            },
+            {
+              "title": "no Jersey secondary navigation on /jersey/shop",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 120000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 11,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 387,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-26T15:26:49.836Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "7a3b514b963617b62ff7-e1ef42c4dda088da196e",
+              "file": "jersey-no-alternative-navbar.spec.ts",
+              "line": 7,
+              "column": 9
+            },
+            {
+              "title": "no Jersey secondary navigation on /jersey/configurator",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 120000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 11,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 376,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-26T15:26:50.229Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "7a3b514b963617b62ff7-873c1497c3474dac97bc",
+              "file": "jersey-no-alternative-navbar.spec.ts",
+              "line": 7,
+              "column": 9
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "stats": {
+    "startTime": "2026-10-26T15:26:35.928Z",
+    "duration": 14741.994999999999,
+    "expected": 9,
+    "skipped": 0,
+    "unexpected": 11,
+    "flaky": 0
+  }
+}

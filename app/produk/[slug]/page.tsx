@@ -1,8 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { Suspense } from "react";
-import { JerseyCommerceNav } from "@/components/jersey/JerseyCommerceNav";
 import { ProductGallery } from "@/components/ProductGallery";
 import { TieredProductPurchasePanel } from "@/components/TieredProductPurchasePanel";
 import { ProductVariantGalleryProvider } from "@/components/ProductVariantGalleryContext";
@@ -137,12 +135,6 @@ export default async function ProductDetailPage({ params }: PageProps) {
 
   return (
     <PublicShell theme={isJersey ? "jersey-commerce" : "default"}>
-      {isJersey ? (
-        <Suspense fallback={<div className="h-14 border-b border-black/10 bg-white" />}>
-          <JerseyCommerceNav />
-        </Suspense>
-      ) : null}
-
       <section data-pdp-primary className="overflow-x-clip bg-white pb-12 pt-6 sm:pb-16 sm:pt-8 lg:pb-20 lg:pt-10">
         <div className="section-shell">
           <nav

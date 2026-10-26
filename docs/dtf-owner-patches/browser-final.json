@@ -1,0 +1,788 @@
+{
+  "config": {
+    "argv": [
+      "C:\\Program Files\\nodejs\\node.exe",
+      "C:\\Users\\OMEN\\.codex\\visualizations\\2026\\10\\26\\01a17676-9129-71e2-8bb4-c7f56ff193da\\debroder-dtf-review\\node_modules\\@playwright\\test\\cli.js",
+      "test",
+      "e2e/dtf-owner-patches.spec.ts",
+      "e2e/benefits-one-card-mobile.spec.ts",
+      "e2e/jersey-no-alternative-navbar.spec.ts",
+      "--reporter=json",
+      "--output=docs/dtf-owner-patches/browser-final-artifacts"
+    ],
+    "configFile": "C:\\Users\\OMEN\\.codex\\visualizations\\2026\\10\\26\\01a17676-9129-71e2-8bb4-c7f56ff193da\\debroder-dtf-review\\playwright.config.ts",
+    "rootDir": "C:/Users/OMEN/.codex/visualizations/2026/10/26/01a17676-9129-71e2-8bb4-c7f56ff193da/debroder-dtf-review/e2e",
+    "failOnFlakyTests": false,
+    "forbidOnly": false,
+    "fullyParallel": false,
+    "globalSetup": null,
+    "globalTeardown": null,
+    "globalTimeout": 0,
+    "grep": {},
+    "grepInvert": null,
+    "maxFailures": 0,
+    "metadata": {
+      "actualWorkers": 1
+    },
+    "preserveOutput": "always",
+    "projects": [
+      {
+        "outputDir": "C:/Users/OMEN/.codex/visualizations/2026/10/26/01a17676-9129-71e2-8bb4-c7f56ff193da/debroder-dtf-review/docs/dtf-owner-patches/browser-final-artifacts",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "",
+        "name": "",
+        "testDir": "C:/Users/OMEN/.codex/visualizations/2026/10/26/01a17676-9129-71e2-8bb4-c7f56ff193da/debroder-dtf-review/e2e",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 120000
+      }
+    ],
+    "quiet": false,
+    "reporter": [
+      [
+        "json"
+      ]
+    ],
+    "reportSlowTests": {
+      "max": 5,
+      "threshold": 300000
+    },
+    "shard": null,
+    "tags": [],
+    "updateSnapshots": "missing",
+    "updateSourceMethod": "patch",
+    "version": "1.62.1",
+    "workers": 1,
+    "webServer": null
+  },
+  "suites": [
+    {
+      "title": "benefits-one-card-mobile.spec.ts",
+      "file": "benefits-one-card-mobile.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "one complete benefit is visible and horizontally swipable at 320px",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 120000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 1012,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-26T15:33:11.809Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "3ad9aa4a6dbe59e2feb0-540982d6c738a64d05f2",
+          "file": "benefits-one-card-mobile.spec.ts",
+          "line": 6,
+          "column": 7
+        },
+        {
+          "title": "one complete benefit is visible and horizontally swipable at 360px",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 120000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 949,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-26T15:33:12.899Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "3ad9aa4a6dbe59e2feb0-d2454f1007a901e31f0c",
+          "file": "benefits-one-card-mobile.spec.ts",
+          "line": 6,
+          "column": 7
+        },
+        {
+          "title": "one complete benefit is visible and horizontally swipable at 390px",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 120000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 902,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-26T15:33:13.854Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "3ad9aa4a6dbe59e2feb0-28c3daeeeb0177a4890f",
+          "file": "benefits-one-card-mobile.spec.ts",
+          "line": 6,
+          "column": 7
+        },
+        {
+          "title": "one complete benefit is visible and horizontally swipable at 430px",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 120000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 939,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-26T15:33:14.763Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "3ad9aa4a6dbe59e2feb0-5ec3555259fd556f86f6",
+          "file": "benefits-one-card-mobile.spec.ts",
+          "line": 6,
+          "column": 7
+        },
+        {
+          "title": "one complete benefit is visible and horizontally swipable at 768px",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 120000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 920,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-26T15:33:15.708Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "3ad9aa4a6dbe59e2feb0-bae8dd7c0e5675e7989f",
+          "file": "benefits-one-card-mobile.spec.ts",
+          "line": 6,
+          "column": 7
+        },
+        {
+          "title": "one complete benefit is visible and horizontally swipable at 1023px",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 120000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 875,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-26T15:33:16.634Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "3ad9aa4a6dbe59e2feb0-1c1e360e281673a57427",
+          "file": "benefits-one-card-mobile.spec.ts",
+          "line": 6,
+          "column": 7
+        },
+        {
+          "title": "desktop retains four benefit columns without a horizontal carousel",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 120000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 857,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-26T15:33:17.514Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "3ad9aa4a6dbe59e2feb0-b5c830efa0b885be3b30",
+          "file": "benefits-one-card-mobile.spec.ts",
+          "line": 35,
+          "column": 5
+        }
+      ]
+    },
+    {
+      "title": "dtf-owner-patches.spec.ts",
+      "file": "dtf-owner-patches.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "DTF public runtime, empty CMS and keyboard at 360",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 120000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 1192,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-26T15:33:18.381Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "f69d918b682d4884a200-916366d64cf1a1f11da9",
+          "file": "dtf-owner-patches.spec.ts",
+          "line": 5,
+          "column": 7
+        },
+        {
+          "title": "DTF populated gallery CSS fixture (not CMS acceptance) at 360",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 120000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 871,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-26T15:33:19.578Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "f69d918b682d4884a200-710e8c92958c7b3de176",
+          "file": "dtf-owner-patches.spec.ts",
+          "line": 42,
+          "column": 7
+        },
+        {
+          "title": "DTF public runtime, empty CMS and keyboard at 390",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 120000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 1213,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-26T15:33:20.454Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "f69d918b682d4884a200-f0d38fa155782ebfa469",
+          "file": "dtf-owner-patches.spec.ts",
+          "line": 5,
+          "column": 7
+        },
+        {
+          "title": "DTF populated gallery CSS fixture (not CMS acceptance) at 390",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 120000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 846,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-26T15:33:21.673Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "f69d918b682d4884a200-d304ee488e05c78a09dc",
+          "file": "dtf-owner-patches.spec.ts",
+          "line": 42,
+          "column": 7
+        },
+        {
+          "title": "DTF public runtime, empty CMS and keyboard at 430",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 120000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 1207,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-26T15:33:22.524Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "f69d918b682d4884a200-ff5ce810ecb3ce435fd7",
+          "file": "dtf-owner-patches.spec.ts",
+          "line": 5,
+          "column": 7
+        },
+        {
+          "title": "DTF populated gallery CSS fixture (not CMS acceptance) at 430",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 120000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 828,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-26T15:33:23.737Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "f69d918b682d4884a200-7a0bed6c1bd0bd2fd4b6",
+          "file": "dtf-owner-patches.spec.ts",
+          "line": 42,
+          "column": 7
+        },
+        {
+          "title": "DTF public runtime, empty CMS and keyboard at 1024",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 120000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 1138,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-26T15:33:24.570Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "f69d918b682d4884a200-ba2eace0617dc1e83d23",
+          "file": "dtf-owner-patches.spec.ts",
+          "line": 5,
+          "column": 7
+        },
+        {
+          "title": "DTF populated gallery CSS fixture (not CMS acceptance) at 1024",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 120000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 854,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-26T15:33:25.713Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "f69d918b682d4884a200-2e2b8a4f623e5470e45f",
+          "file": "dtf-owner-patches.spec.ts",
+          "line": 42,
+          "column": 7
+        },
+        {
+          "title": "DTF public runtime, empty CMS and keyboard at 1440",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 120000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 1139,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-26T15:33:26.572Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "f69d918b682d4884a200-a19fdb3e2f2b3f77fb70",
+          "file": "dtf-owner-patches.spec.ts",
+          "line": 5,
+          "column": 7
+        },
+        {
+          "title": "DTF populated gallery CSS fixture (not CMS acceptance) at 1440",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 120000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 871,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-26T15:33:27.716Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "f69d918b682d4884a200-1572e14d929e3a829519",
+          "file": "dtf-owner-patches.spec.ts",
+          "line": 42,
+          "column": 7
+        }
+      ]
+    },
+    {
+      "title": "jersey-no-alternative-navbar.spec.ts",
+      "file": "jersey-no-alternative-navbar.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "Jersey: main navbar only",
+          "file": "jersey-no-alternative-navbar.spec.ts",
+          "line": 5,
+          "column": 6,
+          "specs": [
+            {
+              "title": "no Jersey secondary navigation on /jersey",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 120000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 368,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-26T15:33:28.596Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "7a3b514b963617b62ff7-034c4fa3b883d5d14bed",
+              "file": "jersey-no-alternative-navbar.spec.ts",
+              "line": 7,
+              "column": 9
+            },
+            {
+              "title": "no Jersey secondary navigation on /jersey/shop",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 120000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 323,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-26T15:33:28.970Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "7a3b514b963617b62ff7-e1ef42c4dda088da196e",
+              "file": "jersey-no-alternative-navbar.spec.ts",
+              "line": 7,
+              "column": 9
+            },
+            {
+              "title": "no Jersey secondary navigation on /jersey/configurator",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 120000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "",
+                  "projectName": "",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 361,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-26T15:33:29.298Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "7a3b514b963617b62ff7-873c1497c3474dac97bc",
+              "file": "jersey-no-alternative-navbar.spec.ts",
+              "line": 7,
+              "column": 9
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "stats": {
+    "startTime": "2026-10-26T15:33:11.474Z",
+    "duration": 18288.106,
+    "expected": 20,
+    "skipped": 0,
+    "unexpected": 0,
+    "flaky": 0
+  }
+}

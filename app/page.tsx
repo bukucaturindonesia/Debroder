@@ -471,9 +471,9 @@ export default async function Home() {
 
       <LandingSectionSlot setting={landingSection("benefits")}>
         <section aria-label="Keunggulan DEBRODER" className="trust-strip border-y border-black/10 bg-white">
-          <div className="benefit-grid section-shell no-scrollbar flex snap-x snap-mandatory overflow-x-auto lg:grid lg:grid-cols-4 lg:overflow-visible">
+          <div aria-label="Geser untuk melihat keunggulan DEBRODER" tabIndex={0} className="benefit-grid section-shell no-scrollbar flex snap-x snap-mandatory overscroll-x-contain overflow-x-auto focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-[-2px] lg:grid lg:grid-cols-4 lg:overflow-visible">
             {benefits.map((benefit) => (
-              <div key={benefit.title} className="flex min-w-[72vw] snap-start items-center gap-3 border-r border-black/10 px-1 py-4 last:border-r-0 sm:min-w-[42vw] lg:min-w-0 lg:justify-center lg:px-3">
+              <div key={benefit.title} className="benefit-slide flex min-w-0 flex-[0_0_100%] snap-start items-center justify-center gap-3 border-r border-black/10 px-4 py-4 last:border-r-0 lg:min-w-0 lg:flex-initial lg:justify-center lg:px-3">
                 <BenefitIcon name={benefit.icon} />
                 <div>
                   <h2 className="text-sm font-semibold leading-5">{benefit.title}</h2>

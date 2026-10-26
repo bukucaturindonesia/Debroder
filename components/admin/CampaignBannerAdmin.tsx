@@ -104,6 +104,12 @@ export function CampaignBannerAdmin() {
       return;
     }
 
+    if (mode === "published" && form.section_group === "sablon-dtf" &&
+        (form.media_type !== "image" || form.metadata?.debroder_original !== true)) {
+      setStatus("Galeri Hasil DTF hanya menerima foto dokumentasi asli Debroder yang sudah dikonfirmasi.");
+      return;
+    }
+
     if (
       mode === "draft" &&
       !form.name.trim() &&
@@ -130,7 +136,9 @@ export function CampaignBannerAdmin() {
       cta_url: form.cta_url.trim(),
       text_position: form.text_position || "left",
       is_active: form.is_active,
-      sort_order: Number(form.sort_order)
+      sort_order: Number(form.sort_order),
+      section_group: form.section_group?.trim() || "",
+      metadata: form.metadata || {}
     };
 
     let contentId = editingId;
@@ -207,6 +215,26 @@ export function CampaignBannerAdmin() {
           <Field label="URL gambar/video mobile (opsional)"><input value={form.mobile_media_url || ""} onChange={(event) => update("mobile_media_url", event.target.value)} placeholder="Kosongkan untuk memakai media desktop" /></Field>
           {form.media_type === "video" ? <Field label="Poster image"><select value={form.poster_url || ""} onChange={(event) => update("poster_url", event.target.value)}><option value="">Tanpa poster</option>{imageMedia.map((asset) => <option key={asset.id} value={asset.public_url}>{asset.name}</option>)}</select></Field> : null}
           <div className="grid gap-4 sm:grid-cols-2"><Field label="Eyebrow"><input value={form.eyebrow} onChange={(event) => update("eyebrow", event.target.value)} /></Field><Field label="Urutan"><input type="number" min="0" value={form.sort_order} onChange={(event) => update("sort_order", Number(event.target.value))} /></Field></div>
+          <Field label="Penempatan konten">
+            <select value={form.section_group || ""} onChange={(event) => update("section_group", event.target.value)}>
+              <option value="">Kampanye umum / landing</option>
+              {form.section_group && form.section_group !== "sablon-dtf" ? (
+                <option value={form.section_group}>Pertahankan pengaturan lama: {form.section_group}</option>
+              ) : null}
+              <option value="sablon-dtf">Sablon DTF — Galeri Hasil Sablon</option>
+            </select>
+          </Field>
+          {form.section_group === "sablon-dtf" ? (
+            <label className="flex items-start gap-3 border border-brand-softGray p-3 text-sm">
+              <input
+                type="checkbox"
+                className="mt-1 h-4 w-4"
+                checked={form.metadata?.debroder_original === true}
+                onChange={(event) => update("metadata", { ...(form.metadata || {}), debroder_original: event.target.checked })}
+              />
+              <span>Konfirmasi bahwa foto ini hasil pengerjaan asli Debroder, bukan gambar referensi/inspirasi. Hanya foto terverifikasi yang boleh tampil sebagai hasil sablon.</span>
+            </label>
+          ) : null}
           <Field label="Title"><input required value={form.title} onChange={(event) => update("title", event.target.value)} /></Field>
           <Field label="Subtitle"><textarea rows={3} value={form.subtitle} onChange={(event) => update("subtitle", event.target.value)} /></Field>
           <div className="grid gap-4 sm:grid-cols-2"><Field label="CTA label"><input value={form.cta_label} onChange={(event) => update("cta_label", event.target.value)} /></Field><Field label="CTA URL"><input value={form.cta_url} onChange={(event) => update("cta_url", event.target.value)} /></Field></div>

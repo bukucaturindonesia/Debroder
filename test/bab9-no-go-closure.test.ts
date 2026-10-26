@@ -126,7 +126,7 @@ describe("Bab 9 configured Jersey checkout closure", () => {
     );
     expect(payment).toContain("result_payment.order_id<>link_row.order_id");
     expect(payment).toContain(
-      "update public.orders\n  set payment_status='pending_verification'"
+      "update public.orders\n  set payment_status='pending_verification'".replace(/\n/g, payment.includes("\r\n") ? "\r\n" : "\n")
     );
   });
 

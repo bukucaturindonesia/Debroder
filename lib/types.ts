@@ -634,6 +634,8 @@ export type PublicContent = {
   landingSettings: LandingPageSettings;
   landingSections: LandingSection[];
   campaignBanners: CmsBanner[];
+  dtfSections?: CmsBanner[];
+  dtfServices?: Service[];
   jerseySections: CmsBanner[];
   stores: Store[];
   orderSteps: OrderStep[];

@@ -1,0 +1,69 @@
+{
+  "baseline": "1d220154c604c26d9476c7af1027a984131797ce",
+  "branch": "codex/dtf-owner-patches-20261026",
+  "typecheck": "EXECUTED AND PASSED",
+  "lint": {
+    "errors": 0,
+    "warnings": 36
+  },
+  "vitest": {
+    "files": 164,
+    "tests": 1136,
+    "status": "EXECUTED AND PASSED"
+  },
+  "build": {
+    "pages": 142,
+    "status": "EXECUTED AND PASSED"
+  },
+  "browser": {
+    "startTime": "2026-10-26T15:34:39.377Z",
+    "duration": 23064.042999999998,
+    "expected": 23,
+    "skipped": 0,
+    "unexpected": 0,
+    "flaky": 0
+  },
+  "files": [
+    "CURRENT_PHASE_HANDOFF.md",
+    "DEBRODER_MASTER_STATE.md",
+    "DEBRODER_V1.2_ISSUE_REGISTER.md",
+    "app/globals.css",
+    "app/jersey/configurator/page.tsx",
+    "app/jersey/shop/page.tsx",
+    "app/page.tsx",
+    "app/produk/[slug]/page.tsx",
+    "app/sablon-dtf/page.tsx",
+    "components/DtfGalleryPhoto.tsx",
+    "components/admin/CampaignBannerAdmin.tsx",
+    "components/jersey/JerseyChrome.tsx",
+    "components/jersey/JerseyCommerceNav.tsx",
+    "docs/dtf-owner-patches/REPORT.md",
+    "docs/dtf-owner-patches/browser-acceptance.json",
+    "docs/dtf-owner-patches/browser-final.json",
+    "docs/dtf-owner-patches/browser.json",
+    "docs/dtf-owner-patches/screenshots/dtf-1024.png",
+    "docs/dtf-owner-patches/screenshots/dtf-1440.png",
+    "docs/dtf-owner-patches/screenshots/dtf-360.png",
+    "docs/dtf-owner-patches/screenshots/dtf-390.png",
+    "docs/dtf-owner-patches/screenshots/dtf-430.png",
+    "docs/dtf-owner-patches/staging-readonly-audit.json",
+    "e2e/benefits-one-card-mobile.spec.ts",
+    "e2e/dtf-owner-patches.spec.ts",
+    "e2e/jersey-no-alternative-navbar.spec.ts",
+    "lib/jersey-commerce.ts",
+    "lib/jersey-experience.ts",
+    "lib/public-data.ts",
+    "lib/types.ts",
+    "test/bab9-no-go-closure.test.ts",
+    "test/dtf-cms-data.test.ts",
+    "test/dtf-experience-contract.test.ts",
+    "test/jersey-commerce.test.ts",
+    "test/jersey-experience.test.ts",
+    "test/jersey-no-alternative-navbar.test.ts"
+  ],
+  "cmsRemote": "BLOCKED: services and workflow RPCs absent; role/storage audit outstanding",
+  "databaseMutation": false,
+  "migrationMutation": false,
+  "productionMutation": false,
+  "deploy": "NOT RUN"
+}
