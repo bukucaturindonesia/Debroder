@@ -111,7 +111,7 @@ export function PublicProductCard({
       {inquiryHref ? (
         <a
           href={inquiryHref}
-          className="public-product-card-inquiry mt-4 inline-flex min-h-10 w-full items-center justify-center bg-brand-charcoal px-3 py-2 text-xs font-semibold text-white transition hover:bg-black/75 sm:px-5 sm:text-sm"
+          className="public-product-card-inquiry public-button public-button--primary mt-4 w-full py-2"
           target="_blank"
           rel="noopener noreferrer"
         >

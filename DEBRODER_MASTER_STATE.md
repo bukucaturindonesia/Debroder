@@ -1,4 +1,4 @@
-﻿# DEBRODER MASTER STATE
+# DEBRODER MASTER STATE
 
 Last updated: 1 August 2026 (Asia/Makassar)
 
@@ -2085,3 +2085,135 @@ Current branch release/debroder-id-v1 / HEAD 3abb46d676703df5e3b4d0e323d3775f5e6
 - Typecheck, full Vitest (155 files / 1069 tests), lint (0 errors / 35 warnings), build (142 pages), and local browser checks across all eight requested widths passed. Seven routes returned 200 with no horizontal overflow, broken image, console error, or page error. Fourteen 1440px/390px screenshots and a viewport report are in the Codex visualization folder recorded in CURRENT_PHASE_HANDOFF.md.
 - Open verification: the local preview has no PIM product cards and the Custom CMS category list is empty; populated product filters/campaigns and real transaction flows remain unverified. The implementation is local only and is not deployed.
 - No database/migration, staging, production, push, or deployment changes. DEBRODER v1.2 remains IN PROGRESS; this task does not grant GO or COMPLETE. Resume from the latest authoritative CURRENT_PHASE_HANDOFF.md entry.
+
+
+## UNIFIED CATEGORY HERO — 2026-10-05 15:35:07 +08:00
+
+Owner-locked seven-route hero/navigation update is locally committed on codex/unified-category-hero-v1 at 9da177b1459ac33c077c614e54d453e63fe4fabf. One image-only CategoryHero uses the approved Kaos geometry; nav is Koleksi → Kaos Polos → Sablon DTF → Jersey → Custom → Jaket & Hoodie → Headwear. 56 viewport/route geometry and actual-image checks pass; Kaos hero pixels match baseline at eight widths. Final build 142 pages, typecheck and lint pass (35 warnings). Initial full suite 1068/1069; the one architecture failure was corrected and its 9-test file passed; new hero tests 4/4 and focused 19/19 passed. Full suite was not redundantly rerun. Actual owner artwork and populated PIM/Custom/transaction checks remain open. No DB/migration/push/deploy. Overall v1.2 is IN PROGRESS, no COMPLETE/GO. Current exact checkpoint and all limits: CURRENT_PHASE_HANDOFF.md; screenshots/files: docs/UNIFIED_CATEGORY_HERO_V1_REPORT.md.
+
+## OWNER UI PHASES 04B–04F — 2026-10-17
+
+Local branch `codex/unified-category-hero-v1`, HEAD `8a500c8ff805916a74dcd205b770798858ec2733`, uncommitted. DTF/Jersey/Jaket/Head Wear UI and shared category consistency implemented; five-item primary navigation explicitly approved by the latest owner brief supersedes the historical seven-item record above. Hero geometry now follows Phase 03/04A masters, with reusable loading/cards/controls and light target-page footers. Full tests 1073/1073, typecheck, lint (35 existing warnings), final build and 30 viewport checks plus fresh DTF rerun passed; initial build manifest failures recovered on standard retry. Actual PIM/CMS content, production photos and transaction/upload acceptance remain open. No DB/migration/remote/deploy. Overall v1.2 NO-GO/NOT COMPLETE; authoritative continuation is CURRENT_PHASE_HANDOFF.md.
+
+## OWNER UI FASE 05 — 2026-10-20
+
+Branch `codex/unified-category-hero-v1`, HEAD `b7f585f7cbeb3902b05fac567b31c4e068ddb030`; clean starting tree, Phase 05 changes now local/unstaged. Shared PDP, DTF builder entry/upload feedback, dedicated Jersey UI and cart presentation improved without business/data/route changes. Typecheck, targeted lint (one existing warning), 92 relevant tests, final production build and 20 viewport checks passed; final production-build CTA/DTF contrast checks passed. Real populated-product/upload/configuration/transaction QA remains unverified due local data availability. No database/migration/remote/deploy; v1.2 NO-GO/NOT COMPLETE. Exact source files, evidence and safe resume: latest CURRENT_PHASE_HANDOFF.md.
+
+## FASE 05 FINAL REVIEW — 2026-10-20
+
+Phase 01–05E source is preserved on `codex/unified-category-hero-v1` at committed HEAD `bc970e46699ad0d43e580477579e9d8319132250`; review began clean and changed governance records only. Local existing-build screenshots cover four requested views at 1440/390px. Three MINOR presentation recommendations are recorded in CURRENT_PHASE_HANDOFF.md and ISSUE REGISTER; no code fix performed. Populated CMS/PIM/configurator/cart/upload acceptance remains open; prior PASS tests/build not rerun. No DB/migration/remote/deployment or Phase 06 work. Overall v1.2 NO-GO/NOT COMPLETE.
+
+## OWNER UI FASE 05F — 2026-10-20
+
+Three final-review visual findings are IMPLEMENTED AND LOCALLY VERIFIED on unchanged branch/HEAD `codex/unified-category-hero-v1` / `bc970e46699ad0d43e580477579e9d8319132250`: compact mobile DTF logo fallback, separate preparation/CMS production presentation, compact Cart discovery fallback. Source changes limited to DTF detail, CartProvider discovery renderer and scoped CSS; previous phases preserved. Ten browser checks, 51 targeted tests, typecheck, targeted lint and final 142-page build passed. Real CMS/PIM/media acceptance remains open; no database/remote/deploy/Phase 06 work. Overall v1.2 NO-GO/NOT COMPLETE. Continue only from latest CURRENT_PHASE_HANDOFF.md.
+
+## OWNER UI FASE 06 — 2026-10-20
+
+Branch `codex/unified-category-hero-v1`, HEAD `1720379b7a0e772c0152f9915c25b47a9911b8f2`; task began clean with Phase 05F committed. Checkout/payment/confirmation UI improved locally using existing data/handlers and scoped tokens; nine UI files plus governance modified, no commit. Typecheck, targeted lint, 41 relevant tests and single final 142-page build passed; available empty/error UI reviewed at 360/390/768/1440, with final production-preview captures. Full transaction acceptance remains PARTIALLY VERIFIED: cart/order/token data absent and invalid-token Payment GET returns 500 (not root-caused). No transaction, database/migration, backend/API, remote or deployment mutation. Overall v1.2 NO-GO/NOT COMPLETE; stop after 06E and resume only from latest CURRENT_PHASE_HANDOFF.md.
+
+## OWNER UI FASE 07 — 2026-10-20
+
+On `codex/unified-category-hero-v1` at unchanged HEAD `6b69594e97e5f3efd646d8c65ac240c758f5607c`, account dashboard/history/detail and tracking UI implemented using existing responses, handlers, status components and scoped tokens. Eight UI files plus three governance records modified locally; Phase 01–06 preserved. 25 targeted tests, typecheck, targeted lint and final 142-page build passed. Four final available-state viewport checks include initially visible CTA at 360/390×640; guest redirects/navigation verified. Authenticated/populated order E2E, live tracking and access-control acceptance NOT VERIFIED; recovery screenshots deliberately block existing POST reads. No backend/DB/migration/remote/transaction/commit/deploy. 07E PARTIALLY VERIFIED; v1.2 NO-GO/NOT COMPLETE. Stop after 07E; exact evidence/resume in latest CURRENT_PHASE_HANDOFF.md.
+
+## HOTFIX FASE 07 BUILD — 2026-10-20
+
+HEAD `00d11f5d44f94df6d9fd173da0e16dc77add486d` on codex/unified-category-hero-v1, clean start, minimal local DTF CTA + two test updates. Explicit owner decision makes DTF custom primary CTA WhatsApp; catalog/builder links remain. Cart implementation unchanged; tests now verify canonical modal layers. Exact pnpm typecheck/lint/test/build passed: 1073 tests, 35 existing lint warnings, 142 static pages; prebuild verify also passed. Production-preview 390/1440 CTA/layers/keyboard/backdrop checks passed. No account/tracking/DB/remote/commit/push/deploy changes. Hotfix locally verified; project NO-GO/NOT COMPLETE and remote Vercel acceptance unverified. Exact files/results/resume: latest CURRENT_PHASE_HANDOFF.md.
+
+## FINAL UI POLISH & CONTENT STANDARDIZATION — 2026-10-20
+
+Branch codex/unified-category-hero-v1, unchanged HEAD f70dc6b6a7b51f227d284a03a401012818f287ef; clean start, 9 UI/6 test/3 governance files now local. Owner-approved final copy, undimmed hero, removal of immediate duplicate category row/order-guide card/footer Fresh Drop, existing consultation card and service-specific WhatsApp DTF implemented; Kaos/Jersey hero geometry preserved. Required pnpm typecheck→lint→test→build all passed (1073 tests, 35 existing warnings, 142 pages); built-in prebuild verify also passed. Sixteen final viewport/media comparisons plus navigation/guest account/tracking checks passed. No image/product/CMS data/Auth/API/DB/schema/checkout/payment/remote/deploy changes; no messages/transactions sent. Actual published artwork/populated PIM/authenticated/transaction E2E remain unverified; overall v1.2 NO-GO/NOT COMPLETE. Stop and wait for explicit checkout/E2E instructions. Exact files/evidence/resume: latest CURRENT_PHASE_HANDOFF.md.
+
+## P0 CHECKOUT FINAL RECOVERY — 2026-10-21
+At unchanged HEAD `ec66d34f1701482bf572a622b82593d2e4e1a4d6`, regular checkout error classification and focused live pickup-store loading are implemented locally. Forward migration `20261020163915_p0_regular_checkout_recovery_v1` APPLIED ONLY to `debroder-staging` (`ykfjgnrigcsapblbxnxb`): registered Ready Stock RPC compatibility, same-key locking and pickup cost 0. Actual guest pickup 0012 / logged-in shipping 0013 persist once, render confirmation, admin dashboard/list/detail, account history and matching tracking API200; additional API matrix verifies both guest/login methods, price/stock rejection and retry. Nine isolated staging orders retained; temporary test logins banned/passwords rotated. All mandatory pnpm gates pass, 157 files/1086 tests, 35 existing lint warnings, 142-page build. Production read-only audit proves missing logged-in RPC14/helpers; no production writes/deploy, original incident logs inaccessible. Status STAGING VERIFIED / PRODUCTION PENDING APPROVAL / overall NO-GO, NOT COMPLETE. Read latest CURRENT_PHASE_HANDOFF.md for exact evidence, limitations and safe resume.
+
+## P0 PRODUCTION READINESS REVIEW — 2026-10-21 08:07 +08:00
+Current branch codex/unified-category-hero-v1 / HEAD6bb5c5759b31ff588ab015d89f6fd433b54d6999; nine P0 files are already committed, clean start. Read-only review confirms staging correction20261020163915 applied, production absent; current production lacks regular/instant14 and registered helpers while current13/dependencies/ACLs support the proposed narrow patch. Existing Vercel production deployment dpl_9aCorSfsvDn1PnALkbrQ3KjGyeZx is READY at this exact HEAD (outside this review), superseding deployment-pending status; source DEPLOYED does not prove production recovery. Both environments unchanged; no tests repeated/source edits/credential change/release. Metadata/data protection, dependency differences, rollout/rollback and remaining gates documented in latest CURRENT_PHASE_HANDOFF.md. Status READINESS REVIEWED / PRODUCTION NO-GO pending explicit owner approval, recovery/env checks and scoped coverage/postmigration validation; NOT COMPLETE. Only three governance files updated by review.
+
+## P0 FINAL PRE-RELEASE SAFETY GATES — 2026-10-21 09:40 +08:00
+At unchanged HEAD6bb5c5759b31ff588ab015d89f6fd433b54d6999, only unresolved gates inspected read-only; no tests/transactions/source/DB/env/credential/release changes. Migration SHA256 matches readiness review. Backup/PITR remains BLOCKED (connector lacks backup metadata; dashboard needs login), full runtime project/role binding remains BLOCKED (shared region data is not discriminating evidence), production-specific trigger runtime remains BLOCKED despite static dependency checks. NEW MAJOR add-on finding: server canonical payload hash omits item.services; instant retry outer lookup precedes base advisory lock. Immutable guard fails only on changed fields, not every identical retry; no duplicate/live failure claim. Overall NO-GO; exact checklist/evidence/resume in latest CURRENT_PHASE_HANDOFF.md. Three existing local governance diffs appended, prior P0 source unchanged; no execution authorization.
+
+## P0 ADD-ON CHECKOUT INTEGRITY RECOVERY — 2026-10-21 09:59 +08:00
+- LOCAL IMPLEMENTED / MOCK-VERIFIED: Ready Stock HMAC payload v2 includes canonical service IDs/inputs/upload IDs/session references/notes, including empty-service downgrade protection. RPC receives matching canonical service ordering; price/stock authority unchanged. HEAD remains6bb5c5759b31ff588ab015d89f6fd433b54d6999, eight local paths including preserved governance edits.
+- RETRY CONTRACT: old hashes are not auto-upgraded or used as fallback. Existing saved orders with derived tokens recover through existing GET; unresolved/expired/non-derived-token attempts keep the original key and remain blocked, not automatically recreated. All Ready Stock hashes change, so coordinated cutover is a release gate.
+- EXECUTED AND PASSED: focused7files/48tests, pnpm typecheck, eslint on five changed source/test files, git diff --check; original migration SHA256 unchanged. No full build/E2E/remote query/test or remote mutation this task.
+- OPEN: instant lookup-before-base-lock permits repeat pricing after a simultaneous miss; local fingerprint fix does not fix SQL locking. Forward migration proposal (instant takes exact base lock before lookup and returns existing without updates) recorded in latest handoff; NOT CREATED/APPLIED, requires separate approval and new isolated staging validation. No historical rows/ledger/fixtures changed.
+- Production NO-GO persists: RPC concurrency, ambiguous legacy attempt disposition/coordinated rollout, backup/PITR, full runtime environment binding and production trigger evidence unresolved. No release action/Phase08; resume only from CURRENT_PHASE_HANDOFF.md.
+
+## P0 ADD-ON RPC CONCURRENCY FIX — 2026-10-21 11:50 +08:00
+- LOCAL CANDIDATE: CLI-created20261021034105_p0_instant_checkout_lock_v1.sql inserts the exact base12 transaction lock before instant13 lookup, preserving the rest of the audited body and12/13/14 contracts/ACLs. Hard dependency20261020163915; unknown security/body drift aborts. No application source or old migration changed.
+- EXECUTED AND PASSED:4focused files/51tests; new14 tests repeated after cleanup; final typecheck and targeted lint PASS; diff/check PASS. Static SQL and concurrency model only; no SQL application/runtime or database E2E. Fingerprint V2/recovery files byte-identical to task start.
+- SHA256 candidate4fe639496888d0a0c99703b26ad0da5b5b5665e35bf83771f82fafc542a0c15a. Pending ALL environments. Database/staging/production mutation NO; no orders/fixtures/credential/env/release action. HEAD6bb5c5759b31ff588ab015d89f6fd433b54d6999, eleven local paths including preserved prior work.
+- Release/compensation sequence prepared in latest CURRENT_PHASE_HANDOFF.md, not approved/executed. Staging two-session runtime, fresh target preflight, backup/PITR, runtime binding, trigger coverage and legacy/client cutover remain gates. GO local review only; Production NO-GO / not recovered / not COMPLETE.
+
+## P0 VERCEL BUILD HOTFIX — MASTER PANDUAN UKURAN — 2026-10-21
+- At HEAD `a33c9860caeeb516e001a4630e283377b50df0a0`, added only line-local ESLint exceptions for the installer's existing `node:fs` and `node:path` CommonJS imports. Master Ukuran implementation/data/assets unchanged.
+- Sequential local validation EXECUTED AND PASSED: targeted ESLint, typecheck, lint (0 errors / 36 warnings), full tests (161 files / 1,125 tests), build (exit 0). No remote, database, migration, deployment, commit, or push action. Full details in CURRENT_PHASE_HANDOFF.md.
+
+## DIRECTOR INTAKE BASELINE — 2026-10-22
+
+- Current inspected branch/HEAD: `codex/unified-category-hero-v1` / `726c69267a400730e894881d8ae8a44b32921b76`; initial worktree clean.
+- Current release recommendation: **NO-GO**. Local checkout concurrency migration `20261021034105_p0_instant_checkout_lock_v1` has no PostgreSQL runtime proof or staging apply in the latest handoff. No checkout/auth runtime, current-SHA build, live RLS/migration reconciliation, or deployment was rerun for this intake.
+- Local metadata links `debroder-staging` / `ykfjgnrigcsapblbxnxb`, but this identity and applied migration history were not freshly verified. No database, staging, production, deployment, commit, or push mutation occurred.
+- Detailed evidence, risk, acceptance matrix and safe agent assignments: `DEBRODER_DIRECTOR.md`.
+- Resume from current handoff, lock branch/HEAD, collect separate read-only agent reports, and obtain explicit approval before any remote staging mutation or production/deployment action.
+
+## AGENT 03 DATABASE & SECURITY AUDIT — 2026-10-22
+
+- Live read-only Supabase mapping confirmed Production `DEBRODER APPAREL` / `lzennundwqqtyvvcnzbg` and Staging `debroder-staging` / `ykfjgnrigcsapblbxnxb`.
+- Migration history/schema drift is OPEN: production list ends `20260808131000` (173 entries); staging ends `20261021041852` (138 entries). `orders` and `products` column counts differ. Do not bulk replay migrations.
+- Security advisor reports Leaked Password Protection disabled in both environments. Customer signup has a partial-provisioning retry risk; `customer-designs` limits and staging bucket parity need review with Agent 02 before changes.
+- RLS catalog supports owner-bounded order reads, but User A/B runtime tests are not executed. Admin/customer Auth settings and real journey remain NOT VERIFIED.
+- `DEBRODER_DATABASE_SECURITY.md` contains evidence and risk/next-action details. Overall security/runtime release state: **BLOCKED / NO-GO / NOT COMPLETE**. No database, staging, production, Auth, Storage, or deployment mutation.
+
+## SIX-AGENT DIRECTOR UPDATE — 2026-10-22
+
+- Official team now has Agents 01–06. Agent 02 commerce and Agent 03 database/security submitted read-only reports; 32 and 18 focused tests respectively are recorded as passed in their reports. Agent 03 also performed live Supabase catalog/advisor/migration-list reads without mutations and confirmed material production/staging drift and open Auth/upload security risks.
+- Agent 06 submitted a static inventory report (`DEBRODER_VISUAL_ASSET_REPORT.md`, `ASSET_INVENTORY.md`, `docs/visual-assets/ASSET_MANIFEST.md`) covering 242 assets; no images were created/optimized and browser/CMS/provenance/performance gates remain NOT TESTED. Separate branch/commit is not verified.
+- Agent 04 E2E/test artifact changes in the shared worktree still need attribution/report. Agent 05 current CI/Preview/SHA evidence is not yet available.
+- Project remains NO-GO / NOT COMPLETE. Priority: checkout/order, Auth, DB security, E2E/regression, build/deployment readiness, then nonblocking visual work. See `DEBRODER_DIRECTOR.md` for ownership, file boundaries, conflict rules, and acceptance sequence.
+
+- Agent 06 status update: static inventory report received in shared worktree; no asset files changed. Responsive, CMS/live, provenance and performance gates remain NOT TESTED. See `DEBRODER_DIRECTOR.md`.
+
+- Agent 06 status: static inventory received; no asset files changed. Visual runtime, CMS, provenance, and responsive/performance acceptance remain open.
+
+## DIRECTOR PHASE 02 — 2026-10-22 23.32.19 +08:00
+Central reporting PARTIALLY IMPLEMENTED / BLOCKED: connector reads succeed, Issue writes fail 403, CLI not logged in; Agent 02 worktree created but filesystem inspection denied, Agents 03–06 not allocated. Local dashboard: docs/agents/PROJECT_STATUS.md. No application/database/deployment changes. Existing dirty work preserved. NO-GO / NOT COMPLETE.
+
+## DIRECTOR CLI RECOVERY SUCCEEDED — 2026-10-22 23.49.21 +08:00
+
+GitHub CLI auth outside sandbox passed as bukucaturindonesia; sandbox token-invalid result is context-specific. Live repo ADMIN/main/Issues enabled verified. All-state precreation Issue list empty; created and read back Agent 02 #55, 03 #56, 04 #57, 05 #58, 06 #59 at https://github.com/bukucaturindonesia/Debroder/issues/NUMBER. Each OPEN body contains scope, acceptance, dependencies, baseline SHA and reporting protocol. No duplicate found. Two initial body-file attempts failed locally before creation (sandbox TEMP visibility); workspace body files resolved it.
+
+CLI PR list returned 54 historical/current PRs; OPEN #54 has head 726c69267a400730e894881d8ae8a44b32921b76, codex/unified-category-hero-v1 -> main. Corrects historical connector empty PR result. No PR created/edited/merged. Dashboard now points to actual Issues. Agent acknowledgement and full reporting round-trip not tested. Worktree safety remains BLOCKED/unverified. Release NO-GO / NOT COMPLETE.
+
+## DIRECTOR AGENT RESTORATION VERIFICATION — 2026-10-23 00.54.29 +08:00
+Issue #55–#58 have no comments; #59 has Agent 06 checkpoint. Local Agent 03/04 restoration reports received. Outside-sandbox read-only status proves distinct worktree Git dirs; Agent 04/06 on named branches with document-only changes; Agent 02 has two clean detached candidates, Agent 03/05 also detached. Access and checkout separation verified within root/immediate-source link checks; overall coding-readiness still BLOCKED, no code started. QA attribution UNKNOWN; historical single-test artifact not current PASS. Agent 03 public-report review rejection/connector 403 preserved; do not republish sensitive findings. Agent 06 reports 14 logical mappings of prior89, rights/byte identity unverified, CMS metadata needs review. See docs/agents/PROJECT_STATUS.md for paths/evidence/next actions. No independent remote DB verification, tests, merge or deployment. NO-GO / NOT COMPLETE.
+
+## PHASE 03 WORKSPACE RECOVERY — 2026-10-23 00.59.57 +08:00
+
+Verified all registered worktrees with authenticated read-only Git checks. Agent 02 selected agent-02-commerce (clean, distinct path) among two clean detached baseline candidates; other candidate preserved. Agent 03 branch codex/agent-03-database-security created from detached baseline with its two documentation changes intact. Agent 05 branch codex/agent-05-devops created from clean detached baseline. Branch names confirmed unused first; each post-switch HEAD/status rechecked. Agent 04 branch codex/agent-04-qa retained, Agent 06 codex/agent-06-asset-provenance retained. All five working HEADs 726c69267a400730e894881d8ae8a44b32921b76. No code edits. Worktree status table and evidence limitations in docs/agents/PROJECT_STATUS.md.
+
+Issue comments posted: #55 selected workspace; #56 redacted branch and preserved-doc state; #57 QA report summary with UNKNOWN E2E attribution; #58 CI result (no workflow for current source branch; historical main failure unrelated). #59 Agent 06 report remains consistent with local evidence. Agent acknowledgements still pending. CI did not verify current SHA. No merge/deploy/migration.
+
+## DIRECTOR EXECUTION MONITOR — 2026-10-23 01.06.15 +08:00
+
+Re-read Issues #55–59 and rechecked selected worktrees. Agent 02 acknowledgement received: selected clean commerce worktree; proceeding with bounded read-only reconciliation, no source change. Agent 02 requested redacted DB contract status from Agent03 on #56. Agent 06 acknowledgement received; continuing read-only provenance work. Agents 03/04/05 have no acknowledgement/report after Phase 03 instructions at this checkpoint. Director authorization comments are not agent acknowledgements.
+
+Worktrees reverified: Agent02 branch codex/agent-02-commerce clean; Agent03 codex/agent-03-database-security with exactly two prior docs preserved; Agent04 codex/agent-04-qa with report/handoff only; Agent05 codex/agent-05-devops clean; Agent06 codex/agent-06-asset-provenance with reports/manifest only. All baseline SHA 726c69267a400730e894881d8ae8a44b32921b76. Alternate Agent02 worktree preserved. Details in docs/agents/PROJECT_STATUS.md.
+
+Agent05 evidence: GitHub Actions returned no runs for source branch; no .vercel/project.json; Vercel list_projects repo filter returned empty. Project/deployment identity remains BLOCKED; do not guess. Agent04 author attribution for shared E2E remains UNKNOWN. No source/test/database/deployment change or current test run. Read-only work within ownership authorized; remote mutation, merge and deployment remain unapproved. NO-GO / NOT COMPLETE.
+
+## DIRECTOR D1 STATUS — 2026-10-24
+
+Current release decision remains **NO-GO / NOT COMPLETE**. Main branch candidate `codex/unified-category-hero-v1` is at `726c69267a400730e894881d8ae8a44b32921b76` with pre-existing dirty changes preserved. GitHub connector read confirms active repository, default `main`, Issues #55–#59, and open PR #54 at the candidate SHA. CLI token is invalid in this shell; connector comment writes returned HTTP 403. Agent worktree paths and task branches are registered, but fresh Git status from dedicated worktrees is blocked, so new edits are not authorized as safe. Agent 04 reports one local public-readonly E2E pass and one Wave 2 failure; Agent 05 Vercel status is not sufficient to prove approved project/deployment SHA; Agent 02/03 findings are static and DB evidence is not refreshed; Agent 06 rights and most mappings remain unresolved. No code/database/migration/staging/production/merge/deployment change. See `docs/agents/PROJECT_STATUS.md` and final D1 handoff section.
+
+## DIRECTOR D1.1 — 2026-10-24 01:31 +08:00
+
+D1.1 VERIFIED / READY FOR CONTROLLED DEVELOPMENT is a bounded safety recommendation only; v1.2 remains NO-GO / NOT COMPLETE. Approved read-only Git checks now verify all five actual worktrees, unique branches/admin directories, full HEAD and dirty files at726c69267a400730e894881d8ae8a44b32921b76. No Git repair was needed. D1 access failures were context-specific; CLI keyring auth succeeds in approved context. Connector write403 remains latest evidence, not retried. Local reporting remains active.
+Main unknown E2E and QA artifacts are excluded from future edit/integration scope: ATTRIBUTION UNKNOWN — PRESERVE. Final hash/existence comparison of220 protected paths found zero changes. Gate A passes; Gate B passes only for bounded isolated work with this exclusion. Gate C remains blocked by fresh catalog compatibility/drift evidence; QA baseline only partially verified; Preview identity blocked. No application/test execution or source/DB/migration/production/deployment mutation.
+Report: docs/agents/D1_1_EVIDENCE_WORKTREE_SAFETY_REPORT.md; command/error inventories and protected-file evidence are adjacent JSON files. Agent04 proves timeout before cart loop, upstream cause unresolved; Agent05 requires owner-confirmed current team/project URL; Agent06 has0/101 verified usage rights and specific batch questions. No v1.3, merge or release authorization.
+
+## D1.2 REVIEWED PUSH PREPARATION — 2026-10-26
+Owner authorizes pushing completed reviewed work; no merge/deployment authorized. Main currentHEAD d6a458aee985913950ecd5bfcf6d2c221a20ad7b differs from baseline; intervening commit preserved and excluded from reviewed package. QA branch contains manifest-matching cart/payment source and tests.63/63 targeted tests and6/6 direct cart browser cases pass; typecheck/lint pass (5warnings). Original build log complete/start succeeds, original exit not retained. Contract concurrence/runtime and Vercel access (owner confirmed okdeal/debroder but exact lookup404), full E2E/Auth/RLS/rights remain open.101asset manifest complete; rights0verified. No database/migration/staging/production mutation, no merge/deploy. D1.2 IN PROGRESS; release NO-GO. Next: commit only reviewed explicit paths on isolated QA branch, push new branch nonforce and create review PR; record actual SHA/URLs. Do not repeat passed checks or publish restricted DB report.
+
+## D1.2 PUBLICATION VERIFIED — 2026-10-26
+Draft PR60 https://github.com/bukucaturindonesia/Debroder/pull/60 latestHEAD23923aeafc5e1464bb768e9f4b68749f16c095b1 (sourcef116829bbff5d10cff2b607a3f13863ded0e2831), draft PR61 https://github.com/bukucaturindonesia/Debroder/pull/61 HEADc410d1a89987117c4cdc7563762cf9acfac1570f, both pushed and remote refs verified; target candidate branch, no merge/deploy.63targeted tests and6direct-cart browser cases PASS; typecheck/scoped lint PASS/5warnings. Full release gates still blocked; NO-GO. Five safe Issues55–59 comments published. Owner confirms Vercel targetokdeal/debroder but connectorlookup404. Root intervening d6a458a and UNKNOWN artifacts preserved, excluded from review push. Full checkpoint in CURRENT_PHASE_HANDOFF.md; no database/migration/staging/production change. Do not rerun unaffected PASS.

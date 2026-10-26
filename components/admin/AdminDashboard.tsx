@@ -624,6 +624,7 @@ const tableConfigs: TableConfig[] = [
         type: "select",
         options: [
           "koleksi",
+          "custom",
           "kaos-polos",
           "jersey",
           "jaket-hoodie",

@@ -12,8 +12,10 @@ export default async function OrderConfirmationPage({ params }: { params: Promis
   const { token } = await params;
   return (
     <PublicShell theme="jersey-commerce">
-      <section className="min-h-screen bg-[#f6f5f0] px-4 py-10 text-[#111]">
+      <section data-ui-transaction="confirmation" className="min-h-[60vh] bg-[var(--color-canvas)] py-8 text-[#111] sm:py-12">
+        <div className="section-shell">
         <OrderConfirmationClient token={token} />
+        </div>
       </section>
     </PublicShell>
   );

@@ -1,5 +1,6 @@
 import { createHmac } from "node:crypto";
 import type { PublicCheckoutRequest } from "@/lib/commerce-checkout";
+import type { InstantServiceSelection } from "@/lib/instant-custom";
 
 export const MAX_CHECKOUT_BODY_BYTES = 64 * 1024;
 
@@ -79,6 +80,11 @@ export function createCheckoutAbuseHashes(
 export function canonicalCheckoutPayload(body: PublicCheckoutRequest) {
   const snapshot = body.fulfillment.addressSnapshot;
   return JSON.stringify({
+    // Version ALL Ready Stock payloads, including empty services. Otherwise an
+    // old add-on ledger entry could still match a request that removed services.
+    // Legacy hashes must not be used as a fallback: recover the saved order via
+    // GET /api/checkout instead. Custom/configured contracts are unchanged here.
+    ...(body.items.length ? { readyStockPayloadVersion: 2 } : {}),
     customer: {
       name: body.customer.name,
       phone: body.customer.phone,
@@ -111,12 +117,29 @@ export function canonicalCheckoutPayload(body: PublicCheckoutRequest) {
       .map((item) => ({
         variantSizeId: item.variantSizeId,
         quantity: item.quantity,
-        note: item.note ?? null
+        note: item.note ?? null,
+        services: canonicalCheckoutServices(item.services)
       })),
     customProjects: [...body.customProjects]
       .sort((left, right) => left.project.id.localeCompare(right.project.id))
       .map((entry) => entry.project)
   });
+}
+
+// Use the same ordering for hashing AND the RPC. The RPC persists service and
+// upload arrays in immutable snapshots; hashing alone must not reorder them.
+export function canonicalCheckoutServices(services: readonly InstantServiceSelection[] = []) {
+  return services.map((service) => ({
+    serviceId: service.serviceId,
+    inputs: Object.fromEntries(Object.entries(service.inputs).sort(([left], [right]) => compareText(left, right))),
+    uploadIds: [...service.uploadIds].sort(compareText),
+    ...(service.uploadSessionToken ? { uploadSessionToken: service.uploadSessionToken } : {}),
+    ...(service.note ? { note: service.note } : {})
+  })).sort((left, right) => compareText(left.serviceId, right.serviceId));
+}
+
+function compareText(left: string, right: string) {
+  return left < right ? -1 : left > right ? 1 : 0;
 }
 
 function keyedHash(secret: string, domain: string, value: string) {

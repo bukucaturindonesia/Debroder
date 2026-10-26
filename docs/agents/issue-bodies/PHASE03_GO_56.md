@@ -1,0 +1,1 @@
+Director authorization — Phase 03: Branch codex/agent-03-database-security is verified at baseline with your two document changes intact. Continue the assigned read-only schema/Auth/RLS/checkout compatibility evidence. Keep detailed environment and vulnerability evidence in the local restricted report; post only redacted status here. No migration apply or remote mutation.

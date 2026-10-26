@@ -153,6 +153,10 @@ export function parsePublicCheckoutRequest(value: unknown): PublicCheckoutReques
   };
 }
 
+export function isCheckoutDomainException(error: { code?: string }) {
+  return error.code === "P0001";
+}
+
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null && !Array.isArray(value);
 }

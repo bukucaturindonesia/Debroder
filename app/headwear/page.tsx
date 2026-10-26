@@ -34,9 +34,9 @@ export default async function HeadwearPage({ searchParams }: HeadwearPageProps) 
     model={model}
     config={{
       pageKey: "headwear",
-      breadcrumbLabel: "Headwear",
+      breadcrumbLabel: "Head Wear",
       eyebrow: "Kategori Headwear",
-      catalogTitle: "Pilih headwear sesuai kebutuhan",
+      catalogTitle: "Pilih Head Wear sesuai kebutuhan",
       catalogDescription: "Temukan model, warna, ukuran, dan bahan dari katalog produk DEBRODER.",
       closingHeadline: "Butuh headwear custom untuk merchandise, komunitas, atau brand?",
       closingCtaLabel: "Buat Pesanan Custom",

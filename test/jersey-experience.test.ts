@@ -75,6 +75,7 @@ describe("Jersey commerce experience", () => {
     expect(experience).toContain('href="/jersey/shop"');
     expect(experience).toContain('href="/jersey/configurator"');
     expect(experience).toContain("resolvedJerseySections");
+    expect(experience).toContain('className="public-section-title mb-6">Play with Identity</h2>');
     expect(experience).toContain("poster_carousel");
     expect(chrome).toContain("jersey-context-header");
     expect(styles).toContain("--jersey-section-gap");
@@ -115,8 +116,11 @@ describe("Jersey commerce experience", () => {
   it("provides reserved-ratio loading and a recoverable Jersey error state", () => {
     const loading = readFileSync("app/jersey/loading.tsx", "utf8");
     const error = readFileSync("app/jersey/error.tsx", "utf8");
-    expect(loading).toContain("aspect-[4/5]");
-    expect(loading).toContain("motion-reduce:animate-none");
+    expect(loading).toContain("<CategoryCommerceLoading");
+    const sharedLoading = readFileSync("components/CategoryCommerceLoading.tsx", "utf8");
+    expect(sharedLoading).toContain("aspect-[4/5]");
+    expect(sharedLoading).toContain("category-hero-skeleton");
+    expect(sharedLoading).toContain("motion-reduce:animate-none");
     expect(error).toContain("reset");
     expect(error).toContain('href="/jersey/shop"');
   });

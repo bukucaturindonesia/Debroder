@@ -32,20 +32,18 @@ export function CollectionCommerceExperience({
 }) {
   return (
     <div className="bg-white text-[#111]">
-      <nav aria-label="Kategori koleksi" className="border-b border-black/10">
-        <div className="section-shell no-scrollbar flex min-h-12 items-center gap-6 overflow-x-auto py-2">
+      <nav aria-label="Kategori koleksi" className="category-hero-following border-b border-black/10">
+        <div className="section-shell no-scrollbar flex min-h-12 items-center gap-6 overflow-x-auto pb-2">
           {collectionRoutes.map((route) => (
             <Link key={route.href} href={route.href} className="shrink-0 text-sm font-medium text-black/70 underline-offset-4 hover:text-black hover:underline">{route.label}</Link>
           ))}
-          <Link href="/sablon-dtf" className="shrink-0 text-sm font-medium text-black/70 underline-offset-4 hover:text-black hover:underline">Sablon DTF</Link>
-          <Link href="/custom" className="shrink-0 text-sm font-medium text-black/70 underline-offset-4 hover:text-black hover:underline">Custom</Link>
         </div>
       </nav>
       <section id="catalog" className="scroll-mt-24 py-7 sm:py-9 lg:py-12">
         <div className="section-shell">
           <div className="mb-5">
-            <h1 className="text-2xl font-semibold tracking-tight sm:text-3xl">Semua produk</h1>
-            <p className="mt-2 max-w-2xl text-sm leading-6 text-black/60">Jelajahi produk aktif dari PIM DEBRODER. Harga, varian, ketersediaan, dan tujuan pembelian mengikuti data produk resmi.</p>
+            <h2 className="text-2xl font-semibold tracking-tight sm:text-3xl">Semua produk</h2>
+            <p className="mt-2 max-w-2xl text-sm leading-6 text-black/60">Temukan pilihan apparel sesuai kebutuhan Anda.</p>
           </div>
           <ProductCatalog
             products={products}

@@ -1,0 +1,56 @@
+{
+  "issues": [
+    {
+      "issue_number": 55,
+      "url": "https://github.com/bukucaturindonesia/Debroder/issues/55",
+      "state": "open",
+      "comments": 4,
+      "updated_at": "2026-10-23T11:25:02Z"
+    },
+    {
+      "issue_number": 56,
+      "url": "https://github.com/bukucaturindonesia/Debroder/issues/56",
+      "state": "open",
+      "comments": 3,
+      "updated_at": "2026-10-22T17:05:21Z"
+    },
+    {
+      "issue_number": 57,
+      "url": "https://github.com/bukucaturindonesia/Debroder/issues/57",
+      "state": "open",
+      "comments": 2,
+      "updated_at": "2026-10-22T17:05:14Z"
+    },
+    {
+      "issue_number": 58,
+      "url": "https://github.com/bukucaturindonesia/Debroder/issues/58",
+      "state": "open",
+      "comments": 4,
+      "updated_at": "2026-10-23T11:25:35Z"
+    },
+    {
+      "issue_number": 59,
+      "url": "https://github.com/bukucaturindonesia/Debroder/issues/59",
+      "state": "open",
+      "comments": 4,
+      "updated_at": "2026-10-23T11:24:00Z"
+    }
+  ],
+  "pr54": {
+    "state": "open",
+    "head": "726c69267a400730e894881d8ae8a44b32921b76",
+    "base": "main",
+    "merged": false
+  },
+  "cli": {
+    "approvedContext": "authenticated keyring; exit 0; account bukucaturindonesia",
+    "sandboxContext": "D1 invalid token diagnostic; not global authentication state"
+  },
+  "connectorWrite": {
+    "status": "BLOCKED",
+    "evidence": "D1 HTTP 403 Resource not accessible by integration",
+    "retested": false,
+    "repositoryPolicyCause": "UNPROVEN"
+  },
+  "remoteWritesInD11": false
+}

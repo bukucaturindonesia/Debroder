@@ -20,10 +20,10 @@ export function CustomHub({ categories, products }: { categories: CustomCategory
 
   return (
     <div className="bg-white text-[#111]">
-      <header className="border-b border-black/10 bg-[#f7f7f5] py-7 sm:py-9">
+      <header className="border-b border-black/10 bg-[#f7f7f5] category-hero-following pb-7 sm:pb-9">
         <div className="section-shell">
           <p className="text-xs font-semibold uppercase tracking-[0.12em] text-black/50">Custom DEBRODER</p>
-          <h1 className="mt-2 text-3xl font-semibold tracking-tight sm:text-4xl">Pilih jalur pesanan custom</h1>
+          <h2 className="mt-2 text-3xl font-semibold tracking-tight sm:text-4xl">Pilih jalur pesanan custom</h2>
           <p className="mt-3 max-w-2xl text-sm leading-6 text-black/65 sm:text-base">T-Shirt custom dan Jersey Custom menggunakan konfigurasi yang berbeda. Pilih jalur sesuai kebutuhan agar spesifikasi tercatat di alur yang tepat.</p>
         </div>
       </header>

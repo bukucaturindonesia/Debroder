@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { type FormEvent, type ReactNode, useCallback, useEffect, useState } from "react";
 import { CustomerOrderStatusCard } from "@/components/customer-order/CustomerOrderStatusCard";
 import { PersistentTrackingButton } from "@/components/customer-order/PersistentTrackingButton";
@@ -141,8 +142,8 @@ export function PublicPaymentForm({ token }: { token: string }) {
     }
   }
 
-  if (loading) return <div className="rounded-[28px] border border-black/10 bg-white p-6">Memuat instruksi pembayaran...</div>;
-  if (error && !order) return <div className="rounded-[28px] border border-red-200 bg-red-50 p-6 text-red-700">{error}</div>;
+  if (loading) return <div role="status" aria-busy="true" className="transaction-state mx-auto max-w-xl rounded-functional border border-black/10 bg-white p-6 sm:p-8"><h1 className="text-2xl font-semibold">Instruksi pembayaran</h1><p className="mt-3 text-sm leading-6 text-black/65">Memuat instruksi pembayaran...</p></div>;
+  if (error && !order) return <div className="transaction-state mx-auto max-w-xl rounded-functional border border-black/10 bg-white p-6 sm:p-8"><p className="text-xs font-semibold uppercase tracking-[0.16em] text-black/50">Pembayaran DEBRODER</p><h1 className="mt-3 text-2xl font-semibold">Tautan pembayaran belum dapat dibuka</h1><p role="alert" className="mt-4 rounded-functional border border-red-200 bg-red-50 p-4 text-sm leading-6 text-red-800">{error}</p><p className="mt-4 text-sm leading-6 text-black/65">Periksa status pesanan melalui pelacakan atau gunakan tautan pembayaran terbaru dari detail pesanan Anda.</p><div className="mt-6 flex flex-col gap-3 sm:flex-row"><Link href="/track-order" className="public-button public-button--primary text-center">Lacak Pesanan</Link><Link href="/help" className="public-secondary-action border border-black/20 text-center">Bantuan Pembayaran</Link></div></div>;
   if (!order) return null;
 
   const latestSubmission = order.submissions[0] ?? null;
@@ -177,19 +178,19 @@ export function PublicPaymentForm({ token }: { token: string }) {
   const trackingHref = `/track-order/${encodeURIComponent(order.orderNumber)}`;
 
   return (
-    <div className="mx-auto max-w-4xl pb-24 sm:pb-0">
+    <div className="mx-auto min-w-0 max-w-4xl pb-8">
       <header className="flex flex-wrap items-start justify-between gap-4">
         <div>
           <p className="text-xs font-semibold uppercase tracking-[0.18em] text-black/45">Pembayaran DEBRODER</p>
-          <h1 className="mt-2 text-3xl font-semibold sm:text-4xl">{order.orderNumber}</h1>
+          <h1 className="mt-2 break-words text-3xl font-semibold tracking-tight sm:text-4xl">{order.orderNumber}</h1>
           <p className="mt-2 text-sm text-black/55">{order.customerName} · Total {money(order.totalAmount)}</p>
         </div>
-        <PersistentTrackingButton href={trackingHref} />
+        <PersistentTrackingButton href={trackingHref} mobilePlacement="inline" />
       </header>
 
       <div className="mt-7">
-        <CustomerOrderStatusCard presentation={presentation}>
-          {success ? <p className="font-semibold text-emerald-900">{success}</p> : null}
+        <CustomerOrderStatusCard presentation={presentation} className="keep-section-bg min-w-0 rounded-functional">
+          {success ? <p role="status" aria-live="polite" className="font-semibold text-emerald-900">{success} Status verifikasi mengikuti hasil pemeriksaan Admin.</p> : null}
           {needsCorrection && latestSubmission?.reason ? (
             <div className="rounded-2xl border border-amber-300 bg-white/70 p-4 text-sm">
               <p className="font-semibold">Catatan Admin</p>
@@ -213,14 +214,14 @@ export function PublicPaymentForm({ token }: { token: string }) {
       </div>
 
       {order.fulfillmentMethod === "pickup" && !order.requirementMet ? (
-        <section className="mt-5 rounded-[24px] border border-amber-300 bg-amber-50 p-5 text-sm text-amber-950">
+        <section className="keep-section-bg mt-5 rounded-functional border border-amber-300 bg-amber-50 p-5 text-sm text-amber-950">
           <p className="font-semibold">Jangan datang ke toko sebelum barang dinyatakan siap</p>
           <p className="mt-2 leading-6">Pembayaran dan status barang adalah dua tahap berbeda. Tunggu konfirmasi Admin bahwa barang sudah disiapkan sebelum datang.</p>
         </section>
       ) : null}
 
       {showPaymentWorkspace ? (
-        <section className="mt-6 rounded-[28px] border border-black/10 bg-white p-5 sm:p-7">
+        <section className="mt-6 min-w-0 rounded-functional border border-black/10 bg-white p-5 sm:p-7">
           <div>
             <p className="text-xs font-semibold uppercase tracking-[0.14em] text-black/45">Tugas saat ini</p>
             <h2 className="mt-2 text-2xl font-semibold">Transfer dan kirim bukti</h2>
@@ -245,7 +246,7 @@ export function PublicPaymentForm({ token }: { token: string }) {
 
               {selectedMethod ? (
                 <div className="mt-4 rounded-2xl border border-black/10 bg-[#f6f5f0] p-5 text-sm">
-                  {selectedMethod.qrisImageUrl ? <img src={selectedMethod.qrisImageUrl} alt={`QRIS ${selectedMethod.displayName}`} className="mx-auto mb-4 max-h-72 max-w-full object-contain" /> : null}
+                  {selectedMethod.qrisImageUrl ? <img src={selectedMethod.qrisImageUrl} alt={`QRIS ${selectedMethod.displayName}`} className="mx-auto mb-4 aspect-square w-full max-w-72 object-contain" /> : null}
                   <dl className="grid gap-3">
                     {selectedMethod.bankName ? <Summary label="Bank / kanal" value={selectedMethod.bankName} /> : null}
                     {selectedMethod.accountNumber ? <Summary label="Nomor tujuan" value={selectedMethod.accountNumber} /> : null}
@@ -254,11 +255,11 @@ export function PublicPaymentForm({ token }: { token: string }) {
                   </dl>
                   <div className="mt-4 flex flex-wrap gap-3">
                     {selectedMethod.accountNumber ? (
-                      <button type="button" onClick={() => void copy(selectedMethod.accountNumber!, "rekening")} className="min-h-10 rounded-full border border-black px-4 font-semibold">
+                      <button type="button" onClick={() => void copy(selectedMethod.accountNumber!, "rekening")} className="public-secondary-action border border-black bg-white text-center font-semibold">
                         {copied === "rekening" ? "Nomor tersalin" : "Salin nomor rekening"}
                       </button>
                     ) : null}
-                    <button type="button" onClick={() => void copy(String(order.outstandingBalance || order.requiredAmount), "nominal")} className="min-h-10 rounded-full border border-black px-4 font-semibold">
+                    <button type="button" onClick={() => void copy(String(order.outstandingBalance || order.requiredAmount), "nominal")} className="public-secondary-action border border-black bg-white text-center font-semibold">
                       {copied === "nominal" ? "Nominal tersalin" : "Salin nominal"}
                     </button>
                   </div>
@@ -269,19 +270,19 @@ export function PublicPaymentForm({ token }: { token: string }) {
           )}
 
           {order.methods.length ? (
-            <form onSubmit={submit} className="mt-6 grid gap-4 border-t border-black/10 pt-6">
-              <Field label="Nominal yang ditransfer"><input name="amount" type="number" min="1" defaultValue={order.outstandingBalance || order.requiredAmount} required /></Field>
+            <form onSubmit={submit} aria-busy={sending} className="mt-6 grid min-w-0 gap-4 border-t border-black/10 pt-6">
+              <Field label="Nominal yang ditransfer"><input name="amount" type="number" inputMode="numeric" min="1" defaultValue={order.outstandingBalance || order.requiredAmount} required /></Field>
               <Field label="Tanggal dan waktu pembayaran"><input name="paidAt" type="datetime-local" required /></Field>
-              <Field label="Nama pengirim"><input name="senderName" maxLength={150} required /></Field>
+              <Field label="Nama pengirim"><input name="senderName" autoComplete="name" maxLength={150} required /></Field>
               <Field label="Bank / dompet digital pengirim"><input name="channelName" maxLength={120} required /></Field>
               <Field label="Nomor referensi (opsional)"><input name="referenceNumber" maxLength={150} /></Field>
               <Field label="Catatan (opsional)"><textarea name="customerNotes" rows={3} maxLength={1000} /></Field>
               <Field label="Bukti pembayaran (PNG, JPG, PDF; maks. 5 MB)"><input name="proof" type="file" accept="image/png,image/jpeg,application/pdf" required /></Field>
-              <div className="rounded-2xl border border-amber-300 bg-amber-50 p-4 text-xs leading-5 text-amber-950">
+              <div id="payment-proof-note" className="rounded-functional border border-amber-300 bg-amber-50 p-4 text-sm leading-6 text-amber-950">
                 Bukti transfer bukan konfirmasi pembayaran final. Pembayaran dinyatakan berhasil setelah Admin menemukan dana pada mutasi rekening DEBRODER.
               </div>
-              {error ? <p className="rounded-2xl border border-red-200 bg-red-50 p-3 text-sm text-red-700">{error}</p> : null}
-              <button disabled={sending || !selectedMethodId} className="min-h-12 rounded-full bg-black px-5 font-semibold text-white hover:bg-black/75 disabled:cursor-not-allowed disabled:opacity-45">
+              {error ? <p role="alert" className="rounded-functional border border-red-200 bg-red-50 p-3 text-sm text-red-700">{error}</p> : null}
+              <button type="submit" disabled={sending || !selectedMethodId} aria-busy={sending} aria-describedby="payment-proof-note" className="public-button public-button--primary min-h-12 w-full text-center disabled:cursor-not-allowed">
                 {sending ? "Mengirim..." : needsCorrection ? "Kirim Bukti Perbaikan" : "Kirim Bukti Pembayaran"}
               </button>
             </form>
@@ -289,14 +290,14 @@ export function PublicPaymentForm({ token }: { token: string }) {
         </section>
       ) : null}
 
-      {error && order && !showPaymentWorkspace ? <p className="mt-5 rounded-2xl border border-red-200 bg-red-50 p-4 text-sm text-red-700">{error}</p> : null}
+      {error && order && !showPaymentWorkspace ? <p role="alert" className="mt-5 rounded-functional border border-red-200 bg-red-50 p-4 text-sm text-red-700">{error}</p> : null}
 
       <div className="mt-6 grid gap-3">
-        <Disclosure title="Ringkasan tagihan" summary={`${money(order.outstandingBalance)} tersisa`}>
+        <Disclosure title="Ringkasan tagihan" summary={`${money(order.outstandingBalance)} tersisa`} defaultOpen>
           <div className="divide-y divide-black/10 border-y border-black/10">
             {order.items.map((item) => (
-              <div key={item.id} className="flex justify-between gap-4 py-4 text-sm">
-                <div><p className="font-semibold">{item.name}</p><p className="mt-1 text-xs text-black/55">{item.quantity} × {money(item.unitPrice)}</p></div>
+              <div key={item.id} className="transaction-summary-row gap-4 py-4 text-sm">
+                <div className="min-w-0"><p className="font-semibold">{item.name}</p><p className="mt-1 text-xs text-black/55">{item.quantity} × {money(item.unitPrice)}</p></div>
                 <p className="font-semibold">{money(item.subtotal)}</p>
               </div>
             ))}
@@ -327,10 +328,10 @@ export function PublicPaymentForm({ token }: { token: string }) {
   );
 }
 
-function Disclosure({ title, summary, children }: { title: string; summary: string; children: ReactNode }) {
+function Disclosure({ title, summary, children, defaultOpen = false }: { title: string; summary: string; children: ReactNode; defaultOpen?: boolean }) {
   return (
-    <details className="group rounded-[24px] border border-black/10 bg-white p-5">
-      <summary className="flex cursor-pointer list-none items-center justify-between gap-4">
+    <details open={defaultOpen || undefined} className="group min-w-0 rounded-functional border border-black/10 bg-white p-5">
+      <summary className="flex min-h-11 cursor-pointer list-none items-center justify-between gap-4 [&::-webkit-details-marker]:hidden">
         <div><p className="font-semibold">{title}</p><p className="mt-1 text-xs text-black/50">{summary}</p></div>
         <span className="text-xl leading-none transition group-open:rotate-45" aria-hidden="true">+</span>
       </summary>
@@ -340,7 +341,7 @@ function Disclosure({ title, summary, children }: { title: string; summary: stri
 }
 
 function Summary({ label, value, strong = false }: { label: string; value: string; strong?: boolean }) {
-  return <div className={`flex justify-between gap-4 ${strong ? "border-t border-black/10 pt-3 text-base font-semibold" : ""}`}><dt className="text-black/55">{label}</dt><dd className="text-right font-semibold">{value}</dd></div>;
+  return <div className={`transaction-summary-row ${strong ? "border-t border-black/10 pt-3 text-base font-semibold" : ""}`}><dt className="text-black/55">{label}</dt><dd className="min-w-0 text-right font-semibold">{value}</dd></div>;
 }
 
 function Field({ label, children }: { label: string; children: ReactNode }) {

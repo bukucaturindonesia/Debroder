@@ -70,7 +70,7 @@ function OptionButton({
       type="button"
       onClick={onClick}
       aria-pressed={selected}
-      className={`rounded-[18px] px-4 py-3 text-left transition ${
+      className={`min-h-12 min-w-0 rounded-functional px-4 py-3 text-left outline-none transition focus-visible:ring-2 focus-visible:ring-experience-focus focus-visible:ring-offset-2 ${
         selected
           ? "bg-[#e9f4ee] ring-1 ring-[#063d24]/30"
           : "bg-white/60 ring-1 ring-black/7 hover:ring-black/16"
@@ -218,7 +218,7 @@ export function JerseyConfigurator({ consumer }: JerseyConfiguratorProps) {
   }
 
   return (
-    <section id="configurator" data-reveal className="scroll-mt-14 bg-brand-offWhite py-10 sm:py-12">
+    <section id="configurator" data-ui-ordering="jersey" data-reveal className="scroll-mt-14 bg-brand-offWhite py-10 sm:py-12">
       <div className="section-shell">
         <div className="mb-7 max-w-3xl">
           <p className="text-xs font-semibold uppercase tracking-[0.18em] text-brand-charcoal/45">Jersey Custom</p>
@@ -229,7 +229,7 @@ export function JerseyConfigurator({ consumer }: JerseyConfiguratorProps) {
         </div>
 
         <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_360px] xl:grid-cols-[minmax(0,1fr)_400px]">
-          <div className="grid gap-5">
+          <div className="grid min-w-0 gap-5">
             <OptionSection number={1} title="Paket jersey" group={packageGroup} selectedIds={[packageId]} onSelect={setPackageId} />
             <OptionSection number={2} title="Bahan" group={materialGroup} selectedIds={[materialId]} onSelect={setMaterialId} />
             <CollarSection group={collarGroup} selectedId={collarId} onSelect={setCollarId} />
@@ -292,14 +292,14 @@ export function JerseyConfigurator({ consumer }: JerseyConfiguratorProps) {
             </article>
           </div>
 
-          <aside className="lg:sticky lg:top-28 lg:self-start">
+          <aside className="min-w-0 lg:sticky lg:top-28 lg:self-start" aria-label="Ringkasan Jersey Custom">
             <div className="rounded-[30px] bg-white/70 p-5 ring-1 ring-black/6 sm:p-6">
               <p className="text-xs font-semibold uppercase tracking-[0.18em] text-black/42">Status harga</p>
               <h3 className="mt-2 text-2xl font-semibold tracking-tight">
                 {definition.pricingMode === "server_priced" ? "Harga konfigurasi" : "Perlu konsultasi"}
               </h3>
               <p className="mt-3 text-sm leading-6 text-black/55">
-                Harga tidak ditentukan oleh browser. Server memeriksa pilihan dan jumlah sebelum kebutuhan dapat dilanjutkan.
+                Periksa pilihan dan jumlah Anda. Harga dikonfirmasi sebelum kebutuhan dilanjutkan ke keranjang.
               </p>
               <div className="mt-5 grid gap-3 text-sm">
                 <Summary label="Paket" value={selectedPackage?.label} />
@@ -319,11 +319,13 @@ export function JerseyConfigurator({ consumer }: JerseyConfiguratorProps) {
                 type="button"
                 disabled={!readyToSubmit || submitting}
                 onClick={addConfiguredJerseyToCart}
-                className="mt-5 inline-flex min-h-12 w-full items-center justify-center rounded-full bg-[#063d24] px-5 text-sm font-semibold text-white transition hover:bg-[#111111] disabled:cursor-not-allowed disabled:opacity-45"
+                aria-busy={submitting}
+                aria-describedby="jersey-submit-feedback"
+                className="public-button public-button--primary mt-5 min-h-12 w-full text-center disabled:cursor-not-allowed"
               >
                 {submitting ? "Memeriksa..." : "Masukkan ke Keranjang"}
               </button>
-              {notice ? <p role="status" className="mt-4 text-center text-xs leading-5 text-black/58">{notice}</p> : null}
+              <p id="jersey-submit-feedback" role="status" aria-live="polite" className="mt-4 text-center text-sm leading-6 text-black/65">{notice || (!readyToSubmit ? "Lengkapi pilihan, jumlah minimum, dan data tim untuk melanjutkan." : "Spesifikasi siap diperiksa.")}</p>
               <p className="mt-4 text-center text-[11px] leading-5 text-black/45">
                 Kebutuhan nonstandar akan diarahkan ke konsultasi tanpa menampilkan nominal yang belum pasti.
               </p>
@@ -351,7 +353,7 @@ function OptionSection({
   return (
     <article className="rounded-[28px] bg-white/40 p-4 ring-1 ring-black/5 sm:p-6">
       <StepLabel number={number} title={title} description="Pilihan berasal dari master data aktif." />
-      <div className="mt-5 grid gap-3 md:grid-cols-3">
+      <div className="mt-5 grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
         {(optionGroup?.options ?? []).map((item) => (
           <OptionButton key={item.id} item={item} selected={selectedIds.includes(item.id)} onClick={() => onSelect(item.id)} />
         ))}
@@ -444,9 +446,9 @@ function TextArea({
 
 function Summary({ label, value }: { label: string; value?: string }) {
   return (
-    <div className="flex justify-between gap-4">
+    <div className="grid grid-cols-[minmax(0,0.7fr)_minmax(0,1.3fr)] gap-4">
       <span className="text-black/55">{label}</span>
-      <span className="text-right font-semibold">{value || "Belum dipilih"}</span>
+      <span className="break-words text-right font-semibold">{value || "Belum dipilih"}</span>
     </div>
   );
 }

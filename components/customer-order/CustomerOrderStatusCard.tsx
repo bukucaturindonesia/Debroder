@@ -11,11 +11,13 @@ const TONE_STYLES = {
 
 export function CustomerOrderStatusCard({
   presentation,
+  className = "",
   primaryAction,
   secondaryAction,
   children
 }: {
   presentation: CustomerOrderPresentation;
+  className?: string;
   primaryAction?: ReactNode;
   secondaryAction?: ReactNode;
   children?: ReactNode;
@@ -28,7 +30,7 @@ export function CustomerOrderStatusCard({
   });
 
   return (
-    <section className={`border p-5 sm:p-7 ${styles.shell}`}>
+    <section className={`border p-5 sm:p-7 ${styles.shell} ${className}`}>
       <span className={`inline-flex rounded-full px-3 py-1.5 text-[11px] font-semibold tracking-[0.12em] ${styles.badge}`}>
         {presentation.responsibilityLabel}
       </span>

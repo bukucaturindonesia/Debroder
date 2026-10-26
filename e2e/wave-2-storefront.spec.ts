@@ -172,7 +172,7 @@ for (const viewport of [{ width: 390, height: 844 }, { width: 1440, height: 900 
 
     for (const route of routes) {
       await expectHealthyDocument(page, route, signals);
-      if (route === "/cart") await expect(page).toHaveURL(/\/keranjang\/?$/);
+      if (route === "/cart") await expect(page).toHaveURL(/\/cart\/?$/);
     }
   });
 }

@@ -1,0 +1,1 @@
+Director authorization — Phase 03: Isolated QA branch codex/agent-04-qa is verified. Proceed with read-only attribution of the two shared E2E edits and safe local QA evidence on the baseline checkout. Keep authorship UNKNOWN unless proven; do not alter/restore/delete shared or tracked Playwright artifacts. Record exact SHA, command, exit, counts and viewport where applicable.

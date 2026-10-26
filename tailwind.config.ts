@@ -32,7 +32,16 @@ const config: Config = {
         }
       },
       boxShadow: {
-        soft: "0 18px 60px rgba(17, 17, 17, 0.08)"
+        soft: "var(--shadow-soft)"
+      },
+      borderRadius: {
+        control: "var(--public-radius-control-canonical)",
+        product: "var(--public-radius-product)",
+        functional: "var(--public-radius-functional)"
+      },
+      fontSize: {
+        ui: ["var(--public-control-text)", { lineHeight: "var(--public-control-leading)" }],
+        caption: ["var(--text-caption)", { lineHeight: "var(--leading-caption)" }]
       },
       fontFamily: {
         heading: ["var(--font-sans)"],

@@ -1,4 +1,4 @@
-# DEBRODER PROJECT GOVERNANCE
+﻿# DEBRODER PROJECT GOVERNANCE
 
 Dokumen ini adalah instruksi utama untuk seluruh pekerjaan Codex pada
 repository DEBRODER.
@@ -699,3 +699,43 @@ tasks, the handoff must additionally record:
 
 A task is not considered complete until CURRENT_PHASE_HANDOFF.md has
 been updated to match the final verified state of the repository.
+
+## 15. Struktur Agen dan Batas Kepemilikan
+
+Struktur resmi DEBRODER PRO terdiri dari enam agen. Koordinasi antarpercakapan tidak diasumsikan otomatis; setiap agen menyerahkan laporan bertanggal dengan branch, HEAD, file, bukti pengujian, status database/deployment, blocker, dan instruksi resume.
+
+### Agent 01 — AI Director
+
+Memiliki arsitektur, prioritas, pembagian tugas, pengelolaan konflik, integrasi, evaluasi akhir, serta dokumen `AGENTS.md`, `DEBRODER_DIRECTOR.md`, `CURRENT_PHASE_HANDOFF.md`, `DEBRODER_MASTER_STATE.md`, dan `DEBRODER_V1.2_ISSUE_REGISTER.md`. Mengunci scope dan SHA integrasi. Mengeluarkan rekomendasi GO/NO-GO; hanya owner yang menyetujui perubahan FROZEN, mutasi remote, production deployment, atau merge.
+
+### Agent 02 — Commerce Engineer
+
+Memiliki katalog, cart, checkout, order, payment orchestration, konfigurasi produk custom/Jersey, dan integrasi UI commerce. Boleh mengubah route/component commerce pada branch tugas yang terisolasi. Tidak mengubah migration, policy/RLS, secrets, aset visual bersama, atau environment deployment tanpa tugas koordinasi yang tercatat. Untuk aset produk, mengintegrasikan file Agent 06 melalui referensi/metadata dan memvalidasi identitas PIM; tidak mengubah gambar sumber Agent 06.
+
+### Agent 03 — Database & Security Engineer
+
+Memiliki Supabase schema/migration, Auth, RLS, ACL, RPC, Storage policy, keamanan data, dan bukti environment. Audit live read-only memerlukan target/proyek yang jelas. Perubahan remote memerlukan persetujuan owner. Migration baru harus forward-only, kecil, disertai pre/postcheck dan recovery plan. Tidak mengubah UI, media, atau migration lama yang sudah diterapkan.
+
+### Agent 04 — QA Engineer
+
+Memiliki test plan, unit/integration/E2E test, regression evidence, responsive/accessibility/image QA, dan laporan hasil. Test/browser files harus diisolasi dari perubahan source agen lain. Jangan menggunakan `.env*.local`, fixture staging, atau kredensial untuk membuat transaksi remote tanpa otorisasi eksplisit. Simpan screenshot/trace sebagai artefak QA yang terpisah; jangan menghapus artefak tracked yang sudah ada tanpa persetujuan.
+
+### Agent 05 — DevOps Engineer
+
+Memiliki CI, konfigurasi GitHub/Vercel build dan environment mapping, log/deployment evidence, release, observability, dan rollback readiness. Tidak membaca/menulis secret secara terbuka, push/merge, mengubah environment, atau deploy tanpa otorisasi owner. Cocokkan artifact SHA dengan source dan acceptance evidence sebelum rilis.
+
+### Agent 06 — Visual Asset & Creative Design Engineer
+
+Owner secara eksplisit menambahkan peran ini dan mengizinkan Agent 06 menyiapkan/membuat aset pada scope tugas visual yang disetujui. Terdaftar sebagai spesialis visual asset. Memiliki pembuatan dan optimasi image/video/design assets serta manifest visual. Batas file default: aset baru dan turunannya di `public/images/**` (atau direktori aset yang disetujui Director) dan manifest/brief miliknya di `docs/visual-assets/**`. Tidak boleh mengubah route, komponen React/TSX, CSS/Tailwind, CMS/PIM records, product/price/stock/SKU data, database, test, deployment, atau mengaktifkan/mempublikasikan aset tanpa integrasi dan review terkait.
+
+Hasil Agent 06 harus diverifikasi dari laporan dan branch/worktree yang benar-benar diterima. Jangan menganggap percakapan terpisah otomatis terhubung. Status paling baru dicatat di `DEBRODER_DIRECTOR.md` dan `CURRENT_PHASE_HANDOFF.md`.
+
+### Aturan koordinasi visual
+
+- Agent 06 melaporkan brief sumber, tujuan penempatan, path, rasio/resolusi berdasarkan container aktual, format, ukuran file, lisensi/provenance, alt text, SHA-256, serta apakah aset asli atau turunan.
+- Agent 06 menyiapkan file tanpa mengubah pemanggilnya. Agent 02 mengintegrasikan commerce/PIM assets; pemilik kode pada bagian lain mengintegrasikan CMS/hero/banner. Agent 04 memeriksa crop, responsive, loading, aksesibilitas, dan performa. Agent 05 memeriksa build dan Preview setelah integrasi. Agent 01 menyetujui perpindahan antarbranch dan integrasi.
+- Ikuti Landing Page Blueprint dan Commerce/Product Blueprints: visual harus mempertahankan identitas DEBRODER dan keputusan layout FROZEN. Jangan menyalin branding pihak lain. Gunakan hanya master/container ratio yang terukur; pertahankan sumber asli dan hasil turunan dengan optimasi lossless/quality terverifikasi.
+- Aset produk sintetis harus diperlakukan sebagai konsep/dummy, tidak boleh menyiratkan warna, potongan, logo, spesifikasi, stok, atau produk PIM nyata. Tidak ada mapping atau publish ke CMS/PIM tanpa verifikasi owner. Jangan membuat aset kampanye/produk generatif untuk rilis hanya berdasarkan selera agent.
+- Tidak ada dua agen mengedit file yang sama bersamaan. Gunakan branch/worktree terpisah bila tersedia; bila tidak, lakukan serah-terima berurutan melalui commit/diff dan laporan. Jangan cherry-pick atau merge tanpa review Director dan persetujuan yang diperlukan.
+
+Prioritas tetap checkout/order, Auth admin/customer, keamanan/integritas database, E2E/regresi, build/Preview readiness, lalu pekerjaan visual yang tidak menghambat blocker inti.

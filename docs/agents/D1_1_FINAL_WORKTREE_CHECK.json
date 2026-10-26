@@ -1,0 +1,50 @@
+[
+  {
+    "path": "C:/Users/gknma/.codex/worktrees/agent-02-commerce/Debroder",
+    "statusExit": 0,
+    "headExit": 0,
+    "head": "726c69267a400730e894881d8ae8a44b32921b76",
+    "statusUnchanged": true,
+    "headUnchanged": true
+  },
+  {
+    "path": "C:/Users/gknma/.codex/worktrees/agent-02-restore/Debroder",
+    "statusExit": 0,
+    "headExit": 0,
+    "head": "726c69267a400730e894881d8ae8a44b32921b76",
+    "statusUnchanged": true,
+    "headUnchanged": true
+  },
+  {
+    "path": "C:/Users/gknma/.codex/worktrees/agent-04-qa/Debroder",
+    "statusExit": 0,
+    "headExit": 0,
+    "head": "726c69267a400730e894881d8ae8a44b32921b76",
+    "statusUnchanged": true,
+    "headUnchanged": true
+  },
+  {
+    "path": "C:/Users/gknma/.codex/worktrees/agent-05-devops/Debroder",
+    "statusExit": 0,
+    "headExit": 0,
+    "head": "726c69267a400730e894881d8ae8a44b32921b76",
+    "statusUnchanged": true,
+    "headUnchanged": true
+  },
+  {
+    "path": "C:/Users/gknma/.codex/worktrees/agent-06-asset-provenance/Debroder",
+    "statusExit": 0,
+    "headExit": 0,
+    "head": "726c69267a400730e894881d8ae8a44b32921b76",
+    "statusUnchanged": true,
+    "headUnchanged": true
+  },
+  {
+    "path": "C:/Users/gknma/.codex/worktrees/agent03-dbsec-20261022/Debroder",
+    "statusExit": 0,
+    "headExit": 0,
+    "head": "726c69267a400730e894881d8ae8a44b32921b76",
+    "statusUnchanged": true,
+    "headUnchanged": true
+  }
+]
