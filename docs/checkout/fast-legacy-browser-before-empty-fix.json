@@ -1,0 +1,494 @@
+{
+  "config": {
+    "argv": [
+      "C:\\Program Files\\nodejs\\node.exe",
+      "C:\\Users\\OMEN\\Documents\\FAHMI SALAM\\Debroder-main\\Debroder-main\\node_modules\\@playwright\\test\\cli.js",
+      "test",
+      "e2e/solo-stabilization.spec.ts",
+      "e2e/public-readonly.spec.ts",
+      "--output=test-results/fast-legacy-regression-20261026",
+      "--reporter=json"
+    ],
+    "configFile": "C:\\Users\\OMEN\\Documents\\FAHMI SALAM\\Debroder-main\\Debroder-main\\playwright.config.ts",
+    "rootDir": "C:/Users/OMEN/Documents/FAHMI SALAM/Debroder-main/Debroder-main/e2e",
+    "failOnFlakyTests": false,
+    "forbidOnly": false,
+    "fullyParallel": false,
+    "globalSetup": null,
+    "globalTeardown": null,
+    "globalTimeout": 0,
+    "grep": {},
+    "grepInvert": null,
+    "maxFailures": 0,
+    "metadata": {
+      "actualWorkers": 1
+    },
+    "preserveOutput": "always",
+    "projects": [
+      {
+        "outputDir": "C:/Users/OMEN/Documents/FAHMI SALAM/Debroder-main/Debroder-main/test-results/fast-legacy-regression-20261026",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "",
+        "name": "",
+        "testDir": "C:/Users/OMEN/Documents/FAHMI SALAM/Debroder-main/Debroder-main/e2e",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 120000
+      }
+    ],
+    "quiet": false,
+    "reporter": [
+      [
+        "json"
+      ]
+    ],
+    "reportSlowTests": {
+      "max": 5,
+      "threshold": 300000
+    },
+    "shard": null,
+    "tags": [],
+    "updateSnapshots": "missing",
+    "updateSourceMethod": "patch",
+    "version": "1.62.1",
+    "workers": 1,
+    "webServer": null
+  },
+  "suites": [
+    {
+      "title": "public-readonly.spec.ts",
+      "file": "public-readonly.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "public shell and canonical read-only routes respond without mutation",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 120000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 846,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-26T05:38:55.673Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "7cad3ce0af38ef3635f8-4e07f0f62eaa047f2705",
+          "file": "public-readonly.spec.ts",
+          "line": 3,
+          "column": 5
+        }
+      ]
+    },
+    {
+      "title": "solo-stabilization.spec.ts",
+      "file": "solo-stabilization.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "public commerce route matrix at 390px",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 120000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "failed",
+                  "duration": 7841,
+                  "error": {
+                    "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // deep equality\u001b[22m\n\n\u001b[32m- Expected  - 1\u001b[39m\n\u001b[31m+ Received  + 3\u001b[39m\n\n\u001b[32m- Array []\u001b[39m\n\u001b[31m+ Array [\u001b[39m\n\u001b[31m+   \"Failed to load resource: the server responded with a status of 503 (Service Unavailable)\",\u001b[39m\n\u001b[31m+ ]\u001b[39m",
+                    "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // deep equality\u001b[22m\n\n\u001b[32m- Expected  - 1\u001b[39m\n\u001b[31m+ Received  + 3\u001b[39m\n\n\u001b[32m- Array []\u001b[39m\n\u001b[31m+ Array [\u001b[39m\n\u001b[31m+   \"Failed to load resource: the server responded with a status of 503 (Service Unavailable)\",\u001b[39m\n\u001b[31m+ ]\u001b[39m\n    at C:\\Users\\OMEN\\Documents\\FAHMI SALAM\\Debroder-main\\Debroder-main\\e2e\\solo-stabilization.spec.ts:28:20",
+                    "location": {
+                      "file": "C:\\Users\\OMEN\\Documents\\FAHMI SALAM\\Debroder-main\\Debroder-main\\e2e\\solo-stabilization.spec.ts",
+                      "column": 20,
+                      "line": 28
+                    },
+                    "snippet": "  26 |       await testInfo.attach(`${route}-${width}`, { path, contentType: \"image/png\" });\n  27 |     }\n> 28 |     expect(errors).toEqual([]);\n     |                    ^\n  29 |   });\n  30 | }\n  31 |"
+                  },
+                  "errors": [
+                    {
+                      "location": {
+                        "file": "C:\\Users\\OMEN\\Documents\\FAHMI SALAM\\Debroder-main\\Debroder-main\\e2e\\solo-stabilization.spec.ts",
+                        "column": 20,
+                        "line": 28
+                      },
+                      "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // deep equality\u001b[22m\n\n\u001b[32m- Expected  - 1\u001b[39m\n\u001b[31m+ Received  + 3\u001b[39m\n\n\u001b[32m- Array []\u001b[39m\n\u001b[31m+ Array [\u001b[39m\n\u001b[31m+   \"Failed to load resource: the server responded with a status of 503 (Service Unavailable)\",\u001b[39m\n\u001b[31m+ ]\u001b[39m\n\n  26 |       await testInfo.attach(`${route}-${width}`, { path, contentType: \"image/png\" });\n  27 |     }\n> 28 |     expect(errors).toEqual([]);\n     |                    ^\n  29 |   });\n  30 | }\n  31 |\n    at C:\\Users\\OMEN\\Documents\\FAHMI SALAM\\Debroder-main\\Debroder-main\\e2e\\solo-stabilization.spec.ts:28:20"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-26T05:38:56.600Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "/-390",
+                      "contentType": "image/png",
+                      "path": "C:\\Users\\OMEN\\Documents\\FAHMI SALAM\\Debroder-main\\Debroder-main\\test-results\\fast-legacy-regression-20261026\\solo-stabilization-public-commerce-route-matrix-at-390px\\attachments\\--390-0c039ceebc55926ceebca74f4af1c2b614ce5856.png"
+                    },
+                    {
+                      "name": "/koleksi-390",
+                      "contentType": "image/png",
+                      "path": "C:\\Users\\OMEN\\Documents\\FAHMI SALAM\\Debroder-main\\Debroder-main\\test-results\\fast-legacy-regression-20261026\\solo-stabilization-public-commerce-route-matrix-at-390px\\attachments\\-koleksi-390-885fd988a8fd3f8aa230dbed3478296a98a47483.png"
+                    },
+                    {
+                      "name": "/jersey-390",
+                      "contentType": "image/png",
+                      "path": "C:\\Users\\OMEN\\Documents\\FAHMI SALAM\\Debroder-main\\Debroder-main\\test-results\\fast-legacy-regression-20261026\\solo-stabilization-public-commerce-route-matrix-at-390px\\attachments\\-jersey-390-c030082a023e20ac5dd83c7ef9494323a2dbab14.png"
+                    },
+                    {
+                      "name": "/jersey/shop-390",
+                      "contentType": "image/png",
+                      "path": "C:\\Users\\OMEN\\Documents\\FAHMI SALAM\\Debroder-main\\Debroder-main\\test-results\\fast-legacy-regression-20261026\\solo-stabilization-public-commerce-route-matrix-at-390px\\attachments\\-jersey-shop-390-9f17406621629ee32f9f9a41f2da1731580566db.png"
+                    },
+                    {
+                      "name": "/kaos-polos-390",
+                      "contentType": "image/png",
+                      "path": "C:\\Users\\OMEN\\Documents\\FAHMI SALAM\\Debroder-main\\Debroder-main\\test-results\\fast-legacy-regression-20261026\\solo-stabilization-public-commerce-route-matrix-at-390px\\attachments\\-kaos-polos-390-2716dd3b572d169fbb3279e10cfeb1ae8117c2de.png"
+                    },
+                    {
+                      "name": "/jaket-hoodie-390",
+                      "contentType": "image/png",
+                      "path": "C:\\Users\\OMEN\\Documents\\FAHMI SALAM\\Debroder-main\\Debroder-main\\test-results\\fast-legacy-regression-20261026\\solo-stabilization-public-commerce-route-matrix-at-390px\\attachments\\-jaket-hoodie-390-fd8ae6af3a663743e428cf3c5cef2862a1123f03.png"
+                    },
+                    {
+                      "name": "/headwear-390",
+                      "contentType": "image/png",
+                      "path": "C:\\Users\\OMEN\\Documents\\FAHMI SALAM\\Debroder-main\\Debroder-main\\test-results\\fast-legacy-regression-20261026\\solo-stabilization-public-commerce-route-matrix-at-390px\\attachments\\-headwear-390-0d61b865d6a0d0395dff4b3c7856576c92103310.png"
+                    },
+                    {
+                      "name": "/sablon-dtf-390",
+                      "contentType": "image/png",
+                      "path": "C:\\Users\\OMEN\\Documents\\FAHMI SALAM\\Debroder-main\\Debroder-main\\test-results\\fast-legacy-regression-20261026\\solo-stabilization-public-commerce-route-matrix-at-390px\\attachments\\-sablon-dtf-390-fdb136e0199b2e4bb2fdb31ba4f49ea9474126fa.png"
+                    },
+                    {
+                      "name": "/cetak-sublim-390",
+                      "contentType": "image/png",
+                      "path": "C:\\Users\\OMEN\\Documents\\FAHMI SALAM\\Debroder-main\\Debroder-main\\test-results\\fast-legacy-regression-20261026\\solo-stabilization-public-commerce-route-matrix-at-390px\\attachments\\-cetak-sublim-390-de08f09c7c92a3d52075204e531536c52e74bf0b.png"
+                    },
+                    {
+                      "name": "/cart-390",
+                      "contentType": "image/png",
+                      "path": "C:\\Users\\OMEN\\Documents\\FAHMI SALAM\\Debroder-main\\Debroder-main\\test-results\\fast-legacy-regression-20261026\\solo-stabilization-public-commerce-route-matrix-at-390px\\attachments\\-cart-390-0164fb8ee7cba0c2d3e28eb1892749c6f8c860f5.png"
+                    },
+                    {
+                      "name": "/checkout-390",
+                      "contentType": "image/png",
+                      "path": "C:\\Users\\OMEN\\Documents\\FAHMI SALAM\\Debroder-main\\Debroder-main\\test-results\\fast-legacy-regression-20261026\\solo-stabilization-public-commerce-route-matrix-at-390px\\attachments\\-checkout-390-4ba92440fe47bf94d586e10688dc1161b277f540.png"
+                    },
+                    {
+                      "name": "screenshot",
+                      "contentType": "image/png",
+                      "path": "C:\\Users\\OMEN\\Documents\\FAHMI SALAM\\Debroder-main\\Debroder-main\\test-results\\fast-legacy-regression-20261026\\solo-stabilization-public-commerce-route-matrix-at-390px\\test-failed-1.png"
+                    },
+                    {
+                      "name": "video",
+                      "contentType": "video/webm",
+                      "path": "C:\\Users\\OMEN\\Documents\\FAHMI SALAM\\Debroder-main\\Debroder-main\\test-results\\fast-legacy-regression-20261026\\solo-stabilization-public-commerce-route-matrix-at-390px\\video.webm"
+                    },
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "C:\\Users\\OMEN\\Documents\\FAHMI SALAM\\Debroder-main\\Debroder-main\\test-results\\fast-legacy-regression-20261026\\solo-stabilization-public-commerce-route-matrix-at-390px\\error-context.md"
+                    },
+                    {
+                      "name": "trace",
+                      "contentType": "application/zip",
+                      "path": "C:\\Users\\OMEN\\Documents\\FAHMI SALAM\\Debroder-main\\Debroder-main\\test-results\\fast-legacy-regression-20261026\\solo-stabilization-public-commerce-route-matrix-at-390px\\trace.zip"
+                    }
+                  ],
+                  "errorLocation": {
+                    "file": "C:\\Users\\OMEN\\Documents\\FAHMI SALAM\\Debroder-main\\Debroder-main\\e2e\\solo-stabilization.spec.ts",
+                    "column": 20,
+                    "line": 28
+                  }
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "2b33f87e2bde303ffdb6-94ef313e7c82b7e51932",
+          "file": "solo-stabilization.spec.ts",
+          "line": 5,
+          "column": 7
+        },
+        {
+          "title": "public commerce route matrix at 1440px",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 120000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "failed",
+                  "duration": 8519,
+                  "error": {
+                    "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // deep equality\u001b[22m\n\n\u001b[32m- Expected  - 1\u001b[39m\n\u001b[31m+ Received  + 3\u001b[39m\n\n\u001b[32m- Array []\u001b[39m\n\u001b[31m+ Array [\u001b[39m\n\u001b[31m+   \"Failed to load resource: the server responded with a status of 503 (Service Unavailable)\",\u001b[39m\n\u001b[31m+ ]\u001b[39m",
+                    "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // deep equality\u001b[22m\n\n\u001b[32m- Expected  - 1\u001b[39m\n\u001b[31m+ Received  + 3\u001b[39m\n\n\u001b[32m- Array []\u001b[39m\n\u001b[31m+ Array [\u001b[39m\n\u001b[31m+   \"Failed to load resource: the server responded with a status of 503 (Service Unavailable)\",\u001b[39m\n\u001b[31m+ ]\u001b[39m\n    at C:\\Users\\OMEN\\Documents\\FAHMI SALAM\\Debroder-main\\Debroder-main\\e2e\\solo-stabilization.spec.ts:28:20",
+                    "location": {
+                      "file": "C:\\Users\\OMEN\\Documents\\FAHMI SALAM\\Debroder-main\\Debroder-main\\e2e\\solo-stabilization.spec.ts",
+                      "column": 20,
+                      "line": 28
+                    },
+                    "snippet": "  26 |       await testInfo.attach(`${route}-${width}`, { path, contentType: \"image/png\" });\n  27 |     }\n> 28 |     expect(errors).toEqual([]);\n     |                    ^\n  29 |   });\n  30 | }\n  31 |"
+                  },
+                  "errors": [
+                    {
+                      "location": {
+                        "file": "C:\\Users\\OMEN\\Documents\\FAHMI SALAM\\Debroder-main\\Debroder-main\\e2e\\solo-stabilization.spec.ts",
+                        "column": 20,
+                        "line": 28
+                      },
+                      "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // deep equality\u001b[22m\n\n\u001b[32m- Expected  - 1\u001b[39m\n\u001b[31m+ Received  + 3\u001b[39m\n\n\u001b[32m- Array []\u001b[39m\n\u001b[31m+ Array [\u001b[39m\n\u001b[31m+   \"Failed to load resource: the server responded with a status of 503 (Service Unavailable)\",\u001b[39m\n\u001b[31m+ ]\u001b[39m\n\n  26 |       await testInfo.attach(`${route}-${width}`, { path, contentType: \"image/png\" });\n  27 |     }\n> 28 |     expect(errors).toEqual([]);\n     |                    ^\n  29 |   });\n  30 | }\n  31 |\n    at C:\\Users\\OMEN\\Documents\\FAHMI SALAM\\Debroder-main\\Debroder-main\\e2e\\solo-stabilization.spec.ts:28:20"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-26T05:39:04.945Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "/-1440",
+                      "contentType": "image/png",
+                      "path": "C:\\Users\\OMEN\\Documents\\FAHMI SALAM\\Debroder-main\\Debroder-main\\test-results\\fast-legacy-regression-20261026\\solo-stabilization-public-commerce-route-matrix-at-1440px\\attachments\\--1440-f84684af7d982849c0cfe53d58750b12f1e8905a.png"
+                    },
+                    {
+                      "name": "/koleksi-1440",
+                      "contentType": "image/png",
+                      "path": "C:\\Users\\OMEN\\Documents\\FAHMI SALAM\\Debroder-main\\Debroder-main\\test-results\\fast-legacy-regression-20261026\\solo-stabilization-public-commerce-route-matrix-at-1440px\\attachments\\-koleksi-1440-5bf4e6da9df720dad550a5e5f962d5fc55c1d5c7.png"
+                    },
+                    {
+                      "name": "/jersey-1440",
+                      "contentType": "image/png",
+                      "path": "C:\\Users\\OMEN\\Documents\\FAHMI SALAM\\Debroder-main\\Debroder-main\\test-results\\fast-legacy-regression-20261026\\solo-stabilization-public-commerce-route-matrix-at-1440px\\attachments\\-jersey-1440-0be58902cc11886b57746b060f0ea7719b66e269.png"
+                    },
+                    {
+                      "name": "/jersey/shop-1440",
+                      "contentType": "image/png",
+                      "path": "C:\\Users\\OMEN\\Documents\\FAHMI SALAM\\Debroder-main\\Debroder-main\\test-results\\fast-legacy-regression-20261026\\solo-stabilization-public-commerce-route-matrix-at-1440px\\attachments\\-jersey-shop-1440-0bfb48cf243064c5805a89e2be5587d5561348c2.png"
+                    },
+                    {
+                      "name": "/kaos-polos-1440",
+                      "contentType": "image/png",
+                      "path": "C:\\Users\\OMEN\\Documents\\FAHMI SALAM\\Debroder-main\\Debroder-main\\test-results\\fast-legacy-regression-20261026\\solo-stabilization-public-commerce-route-matrix-at-1440px\\attachments\\-kaos-polos-1440-196b93bec313a5bec3f55a555fc6d2658e7e71e4.png"
+                    },
+                    {
+                      "name": "/jaket-hoodie-1440",
+                      "contentType": "image/png",
+                      "path": "C:\\Users\\OMEN\\Documents\\FAHMI SALAM\\Debroder-main\\Debroder-main\\test-results\\fast-legacy-regression-20261026\\solo-stabilization-public-commerce-route-matrix-at-1440px\\attachments\\-jaket-hoodie-1440-62cae242b1679ab070adfd7a2f2874dbe63621bb.png"
+                    },
+                    {
+                      "name": "/headwear-1440",
+                      "contentType": "image/png",
+                      "path": "C:\\Users\\OMEN\\Documents\\FAHMI SALAM\\Debroder-main\\Debroder-main\\test-results\\fast-legacy-regression-20261026\\solo-stabilization-public-commerce-route-matrix-at-1440px\\attachments\\-headwear-1440-eae8233138fc6e5e96eeadbe9345b5401680020a.png"
+                    },
+                    {
+                      "name": "/sablon-dtf-1440",
+                      "contentType": "image/png",
+                      "path": "C:\\Users\\OMEN\\Documents\\FAHMI SALAM\\Debroder-main\\Debroder-main\\test-results\\fast-legacy-regression-20261026\\solo-stabilization-public-commerce-route-matrix-at-1440px\\attachments\\-sablon-dtf-1440-7301b924979ded18ebbd6e382b67233c9a69258c.png"
+                    },
+                    {
+                      "name": "/cetak-sublim-1440",
+                      "contentType": "image/png",
+                      "path": "C:\\Users\\OMEN\\Documents\\FAHMI SALAM\\Debroder-main\\Debroder-main\\test-results\\fast-legacy-regression-20261026\\solo-stabilization-public-commerce-route-matrix-at-1440px\\attachments\\-cetak-sublim-1440-204333dce2e4e4774162ba072999da7d6651a208.png"
+                    },
+                    {
+                      "name": "/cart-1440",
+                      "contentType": "image/png",
+                      "path": "C:\\Users\\OMEN\\Documents\\FAHMI SALAM\\Debroder-main\\Debroder-main\\test-results\\fast-legacy-regression-20261026\\solo-stabilization-public-commerce-route-matrix-at-1440px\\attachments\\-cart-1440-865694a0cdb44d93ff8360c97fd59fff7de42988.png"
+                    },
+                    {
+                      "name": "/checkout-1440",
+                      "contentType": "image/png",
+                      "path": "C:\\Users\\OMEN\\Documents\\FAHMI SALAM\\Debroder-main\\Debroder-main\\test-results\\fast-legacy-regression-20261026\\solo-stabilization-public-commerce-route-matrix-at-1440px\\attachments\\-checkout-1440-8c114500ed042e308fffdcdc43b00eb3396cb76e.png"
+                    },
+                    {
+                      "name": "screenshot",
+                      "contentType": "image/png",
+                      "path": "C:\\Users\\OMEN\\Documents\\FAHMI SALAM\\Debroder-main\\Debroder-main\\test-results\\fast-legacy-regression-20261026\\solo-stabilization-public-commerce-route-matrix-at-1440px\\test-failed-1.png"
+                    },
+                    {
+                      "name": "video",
+                      "contentType": "video/webm",
+                      "path": "C:\\Users\\OMEN\\Documents\\FAHMI SALAM\\Debroder-main\\Debroder-main\\test-results\\fast-legacy-regression-20261026\\solo-stabilization-public-commerce-route-matrix-at-1440px\\video.webm"
+                    },
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "C:\\Users\\OMEN\\Documents\\FAHMI SALAM\\Debroder-main\\Debroder-main\\test-results\\fast-legacy-regression-20261026\\solo-stabilization-public-commerce-route-matrix-at-1440px\\error-context.md"
+                    },
+                    {
+                      "name": "trace",
+                      "contentType": "application/zip",
+                      "path": "C:\\Users\\OMEN\\Documents\\FAHMI SALAM\\Debroder-main\\Debroder-main\\test-results\\fast-legacy-regression-20261026\\solo-stabilization-public-commerce-route-matrix-at-1440px\\trace.zip"
+                    }
+                  ],
+                  "errorLocation": {
+                    "file": "C:\\Users\\OMEN\\Documents\\FAHMI SALAM\\Debroder-main\\Debroder-main\\e2e\\solo-stabilization.spec.ts",
+                    "column": 20,
+                    "line": 28
+                  }
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "2b33f87e2bde303ffdb6-7b0147c18edb2bc261e8",
+          "file": "solo-stabilization.spec.ts",
+          "line": 5,
+          "column": 7
+        },
+        {
+          "title": "gateway 404 retains an old unknown-outcome checkout key",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 120000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 2,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 1059,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-26T05:39:14.163Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "2b33f87e2bde303ffdb6-0a2a17d3b2eb501ebef0",
+          "file": "solo-stabilization.spec.ts",
+          "line": 32,
+          "column": 5
+        },
+        {
+          "title": "anonymous admin access redirects to login",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 120000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 2,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 779,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-26T05:39:15.298Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "2b33f87e2bde303ffdb6-40ca9a4aa7fc6d123a91",
+          "file": "solo-stabilization.spec.ts",
+          "line": 53,
+          "column": 5
+        },
+        {
+          "title": "checkout rejects malformed requests before any order creation",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 120000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 2,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 22,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-26T05:39:16.082Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "2b33f87e2bde303ffdb6-50ed10ab453aa868a992",
+          "file": "solo-stabilization.spec.ts",
+          "line": 59,
+          "column": 5
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "stats": {
+    "startTime": "2026-10-26T05:38:55.405Z",
+    "duration": 20821.037,
+    "expected": 4,
+    "skipped": 0,
+    "unexpected": 2,
+    "flaky": 0
+  }
+}

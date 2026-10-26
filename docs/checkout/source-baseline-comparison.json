@@ -1,0 +1,12 @@
+{
+  "base": "eab5f3e460e1c3fd298f015c0c43a277bb0db6fa",
+  "comparison": "UTF-8 text, CRLF normalized to LF on BOTH sides",
+  "filesCompared": 803,
+  "changed": [
+    "app/checkout/page.tsx",
+    "components/admin/layout/admin-navigation.ts",
+    "components/checkout/CheckoutClient.tsx",
+    "test/b4-a3-checkout-integrity.test.ts",
+    "test/checkout-runtime-recovery.test.ts"
+  ]
+}

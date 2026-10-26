@@ -1,0 +1,65 @@
+{
+  "sha": "eab5f3e460e1c3fd298f015c0c43a277bb0db6fa",
+  "files": [
+    {
+      "path": ".env.example",
+      "sha": "c157ade0adc9fb152983ee567a7d5e9f2ad4b7e3",
+      "observedOriginalSha": "c157ade0adc9fb152983ee567a7d5e9f2ad4b7e3",
+      "matchesRemote": true
+    },
+    {
+      "path": "app/checkout/page.tsx",
+      "sha": "bbb6af83d80bd33e1b5855f59fe4a72e7c4b3172",
+      "observedOriginalSha": "bbb6af83d80bd33e1b5855f59fe4a72e7c4b3172",
+      "matchesRemote": true
+    },
+    {
+      "path": "components/admin/layout/admin-navigation.ts",
+      "sha": "72c15c9df4113e4e09f3e570a6e71de452bfcdca",
+      "observedOriginalSha": "72c15c9df4113e4e09f3e570a6e71de452bfcdca",
+      "matchesRemote": true
+    },
+    {
+      "path": "package.json",
+      "sha": "7c26aa41781d0d9e6dca9f8e42e6fa7520506db6",
+      "observedOriginalSha": "7c26aa41781d0d9e6dca9f8e42e6fa7520506db6",
+      "matchesRemote": true
+    },
+    {
+      "path": "pnpm-lock.yaml",
+      "sha": "78c5c0c224e6671d32f0cfd6c80b0e0ce84125a3",
+      "observedOriginalSha": "78c5c0c224e6671d32f0cfd6c80b0e0ce84125a3",
+      "matchesRemote": true
+    },
+    {
+      "path": "DEBRODER_FRESH_DATABASE_REPLAY_MANIFEST.md",
+      "sha": "6898738d4ee03d0b847bd6cf4b236aa6b8bde094",
+      "observedOriginalSha": "6898738d4ee03d0b847bd6cf4b236aa6b8bde094",
+      "matchesRemote": true
+    },
+    {
+      "path": "components/checkout/CheckoutClient.tsx",
+      "sha": "9ef40b0bc8b1395d4cd4f9f6269e86ad9bb091d2",
+      "observedOriginalSha": "9ef40b0bc8b1395d4cd4f9f6269e86ad9bb091d2",
+      "matchesRemote": true
+    },
+    {
+      "path": "test/b4-a3-checkout-integrity.test.ts",
+      "sha": "be6d096f447fa9b58024061160d788f54d7bd713",
+      "observedOriginalSha": "be6d096f447fa9b58024061160d788f54d7bd713",
+      "matchesRemote": true
+    },
+    {
+      "path": "test/checkout-runtime-recovery.test.ts",
+      "sha": "abe350bfcca13ef6bf56185e5f642767cd86f0b5",
+      "observedOriginalSha": "abe350bfcca13ef6bf56185e5f642767cd86f0b5",
+      "matchesRemote": true
+    },
+    {
+      "path": "e2e/public-readonly.spec.ts",
+      "sha": "b053c59b5dd256984aac4513dc4e53a8f2e99963",
+      "observedOriginalSha": "b053c59b5dd256984aac4513dc4e53a8f2e99963",
+      "matchesRemote": true
+    }
+  ]
+}

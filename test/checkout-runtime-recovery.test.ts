@@ -4,7 +4,7 @@ import { describe, expect, it } from "vitest";
 const read = (path: string) => readFileSync(path, "utf8");
 
 describe("checkout runtime recovery", () => {
-  const client = () => read("components/checkout/CheckoutClient.tsx");
+  const client = () => read("components/checkout/CheckoutClient.tsx") + read("lib/checkout-recovery.ts");
   const route = () => read("app/api/checkout/route.ts");
 
   it("returns an explicit negative recovery result instead of a handled 404", () => {

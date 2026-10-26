@@ -1,0 +1,432 @@
+{
+  "config": {
+    "argv": [
+      "C:\\Program Files\\nodejs\\node.exe",
+      "C:\\Users\\OMEN\\Documents\\FAHMI SALAM\\Debroder-main\\Debroder-main\\node_modules\\@playwright\\test\\cli.js",
+      "test",
+      "e2e/fast-checkout.spec.ts",
+      "--output=test-results/fast-checkout-accepted-20261026",
+      "--reporter=json"
+    ],
+    "configFile": "C:\\Users\\OMEN\\Documents\\FAHMI SALAM\\Debroder-main\\Debroder-main\\playwright.config.ts",
+    "rootDir": "C:/Users/OMEN/Documents/FAHMI SALAM/Debroder-main/Debroder-main/e2e",
+    "failOnFlakyTests": false,
+    "forbidOnly": false,
+    "fullyParallel": false,
+    "globalSetup": null,
+    "globalTeardown": null,
+    "globalTimeout": 0,
+    "grep": {},
+    "grepInvert": null,
+    "maxFailures": 0,
+    "metadata": {
+      "actualWorkers": 1
+    },
+    "preserveOutput": "always",
+    "projects": [
+      {
+        "outputDir": "C:/Users/OMEN/Documents/FAHMI SALAM/Debroder-main/Debroder-main/test-results/fast-checkout-accepted-20261026",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "",
+        "name": "",
+        "testDir": "C:/Users/OMEN/Documents/FAHMI SALAM/Debroder-main/Debroder-main/e2e",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 120000
+      }
+    ],
+    "quiet": false,
+    "reporter": [
+      [
+        "json"
+      ]
+    ],
+    "reportSlowTests": {
+      "max": 5,
+      "threshold": 300000
+    },
+    "shard": null,
+    "tags": [],
+    "updateSnapshots": "missing",
+    "updateSourceMethod": "patch",
+    "version": "1.62.1",
+    "workers": 1,
+    "webServer": null
+  },
+  "suites": [
+    {
+      "title": "fast-checkout.spec.ts",
+      "file": "fast-checkout.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "fast checkout guest UX MOCK at 320px",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 120000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 2934,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-26T05:24:56.367Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "4849b8357302f340c847-44a141ed4c0bca97c224",
+          "file": "fast-checkout.spec.ts",
+          "line": 157,
+          "column": 7
+        },
+        {
+          "title": "fast checkout guest UX MOCK at 360px",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 120000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 2978,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-26T05:24:59.374Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "4849b8357302f340c847-4b5c92a8183b8cf8cb5e",
+          "file": "fast-checkout.spec.ts",
+          "line": 157,
+          "column": 7
+        },
+        {
+          "title": "fast checkout guest UX MOCK at 390px",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 120000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 2914,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-26T05:25:02.371Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "4849b8357302f340c847-7abaa020a0800359d156",
+          "file": "fast-checkout.spec.ts",
+          "line": 157,
+          "column": 7
+        },
+        {
+          "title": "fast checkout guest UX MOCK at 430px",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 120000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 2978,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-26T05:25:05.310Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "4849b8357302f340c847-d23e2426b26fa55fbe7e",
+          "file": "fast-checkout.spec.ts",
+          "line": 157,
+          "column": 7
+        },
+        {
+          "title": "fast checkout guest UX MOCK at 768px",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 120000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 3256,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-26T05:25:08.300Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "4849b8357302f340c847-5145c1174c377d792661",
+          "file": "fast-checkout.spec.ts",
+          "line": 157,
+          "column": 7
+        },
+        {
+          "title": "fast checkout guest UX MOCK at 1024px",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 120000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 3074,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-26T05:25:11.564Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "4849b8357302f340c847-632860ebd6cc52cb3446",
+          "file": "fast-checkout.spec.ts",
+          "line": 157,
+          "column": 7
+        },
+        {
+          "title": "fast checkout guest UX MOCK at 1440px",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 120000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 3259,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-26T05:25:14.647Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "4849b8357302f340c847-f5c264a9982db3fe91ea",
+          "file": "fast-checkout.spec.ts",
+          "line": 157,
+          "column": 7
+        },
+        {
+          "title": "shipping failure preserves address/cart and never enables a free-shipping payment",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 120000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "failed",
+                  "duration": 17787,
+                  "error": {
+                    "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoHaveValue\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m failed\n\nLocator: getByLabel('Alamat lengkap, nomor rumah, dan patokan', { exact: true })\nExpected: \u001b[32m\"Jl Dago No 1\"\u001b[39m\nTimeout: 15000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toHaveValue\" with timeout 15000ms\u001b[22m\n\u001b[2m  - waiting for getByLabel('Alamat lengkap, nomor rumah, dan patokan', { exact: true })\u001b[22m\n",
+                    "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoHaveValue\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m failed\n\nLocator: getByLabel('Alamat lengkap, nomor rumah, dan patokan', { exact: true })\nExpected: \u001b[32m\"Jl Dago No 1\"\u001b[39m\nTimeout: 15000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toHaveValue\" with timeout 15000ms\u001b[22m\n\u001b[2m  - waiting for getByLabel('Alamat lengkap, nomor rumah, dan patokan', { exact: true })\u001b[22m\n\n    at C:\\Users\\OMEN\\Documents\\FAHMI SALAM\\Debroder-main\\Debroder-main\\e2e\\fast-checkout.spec.ts:247:25",
+                    "location": {
+                      "file": "C:\\Users\\OMEN\\Documents\\FAHMI SALAM\\Debroder-main\\Debroder-main\\e2e\\fast-checkout.spec.ts",
+                      "column": 25,
+                      "line": 247
+                    },
+                    "snippet": "  245 |     \"Ongkir belum dapat dihitung\",\n  246 |   );\n> 247 |   await expect(address).toHaveValue(\"Jl Dago No 1\");\n      |                         ^\n  248 |   await expect(\n  249 |     page.getByRole(\"button\", { name: \"BAYAR SEKARANG\", exact: true }),\n  250 |   ).toBeDisabled();"
+                  },
+                  "errors": [
+                    {
+                      "location": {
+                        "file": "C:\\Users\\OMEN\\Documents\\FAHMI SALAM\\Debroder-main\\Debroder-main\\e2e\\fast-checkout.spec.ts",
+                        "column": 25,
+                        "line": 247
+                      },
+                      "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoHaveValue\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m failed\n\nLocator: getByLabel('Alamat lengkap, nomor rumah, dan patokan', { exact: true })\nExpected: \u001b[32m\"Jl Dago No 1\"\u001b[39m\nTimeout: 15000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toHaveValue\" with timeout 15000ms\u001b[22m\n\u001b[2m  - waiting for getByLabel('Alamat lengkap, nomor rumah, dan patokan', { exact: true })\u001b[22m\n\n\n  245 |     \"Ongkir belum dapat dihitung\",\n  246 |   );\n> 247 |   await expect(address).toHaveValue(\"Jl Dago No 1\");\n      |                         ^\n  248 |   await expect(\n  249 |     page.getByRole(\"button\", { name: \"BAYAR SEKARANG\", exact: true }),\n  250 |   ).toBeDisabled();\n    at C:\\Users\\OMEN\\Documents\\FAHMI SALAM\\Debroder-main\\Debroder-main\\e2e\\fast-checkout.spec.ts:247:25"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-26T05:25:17.918Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "screenshot",
+                      "contentType": "image/png",
+                      "path": "C:\\Users\\OMEN\\Documents\\FAHMI SALAM\\Debroder-main\\Debroder-main\\test-results\\fast-checkout-accepted-20261026\\fast-checkout-shipping-fai-ec986-les-a-free-shipping-payment\\test-failed-1.png"
+                    },
+                    {
+                      "name": "video",
+                      "contentType": "video/webm",
+                      "path": "C:\\Users\\OMEN\\Documents\\FAHMI SALAM\\Debroder-main\\Debroder-main\\test-results\\fast-checkout-accepted-20261026\\fast-checkout-shipping-fai-ec986-les-a-free-shipping-payment\\video.webm"
+                    },
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "C:\\Users\\OMEN\\Documents\\FAHMI SALAM\\Debroder-main\\Debroder-main\\test-results\\fast-checkout-accepted-20261026\\fast-checkout-shipping-fai-ec986-les-a-free-shipping-payment\\error-context.md"
+                    },
+                    {
+                      "name": "trace",
+                      "contentType": "application/zip",
+                      "path": "C:\\Users\\OMEN\\Documents\\FAHMI SALAM\\Debroder-main\\Debroder-main\\test-results\\fast-checkout-accepted-20261026\\fast-checkout-shipping-fai-ec986-les-a-free-shipping-payment\\trace.zip"
+                    }
+                  ],
+                  "errorLocation": {
+                    "file": "C:\\Users\\OMEN\\Documents\\FAHMI SALAM\\Debroder-main\\Debroder-main\\e2e\\fast-checkout.spec.ts",
+                    "column": 25,
+                    "line": 247
+                  }
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "4849b8357302f340c847-a6ad8e0ddf773905733f",
+          "file": "fast-checkout.spec.ts",
+          "line": 213,
+          "column": 5
+        },
+        {
+          "title": "anonymous settings mutation is denied at the real API boundary",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 120000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 20,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-26T05:25:36.258Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "4849b8357302f340c847-b6e494db0c6bd78e4330",
+          "file": "fast-checkout.spec.ts",
+          "line": 254,
+          "column": 5
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "stats": {
+    "startTime": "2026-10-26T05:24:55.964Z",
+    "duration": 40350.412,
+    "expected": 8,
+    "skipped": 0,
+    "unexpected": 1,
+    "flaky": 0
+  }
+}

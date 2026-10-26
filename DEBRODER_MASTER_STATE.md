@@ -2085,3 +2085,20 @@ Current branch release/debroder-id-v1 / HEAD 3abb46d676703df5e3b4d0e323d3775f5e6
 - Typecheck, full Vitest (155 files / 1069 tests), lint (0 errors / 35 warnings), build (142 pages), and local browser checks across all eight requested widths passed. Seven routes returned 200 with no horizontal overflow, broken image, console error, or page error. Fourteen 1440px/390px screenshots and a viewport report are in the Codex visualization folder recorded in CURRENT_PHASE_HANDOFF.md.
 - Open verification: the local preview has no PIM product cards and the Custom CMS category list is empty; populated product filters/campaigns and real transaction flows remain unverified. The implementation is local only and is not deployed.
 - No database/migration, staging, production, push, or deployment changes. DEBRODER v1.2 remains IN PROGRESS; this task does not grant GO or COMPLETE. Resume from the latest authoritative CURRENT_PHASE_HANDOFF.md entry.
+
+## SOLO DIRECTOR — CURRENT SNAPSHOT CHECKPOINT — 2026-10-26
+
+- Current folder lacks .git: branch/HEAD and all-worktree attribution are BLOCKED. Historical October branch/SHA must not identify this snapshot. No Git initialization, commit, push, merge, or deployment.
+- Checkout recovery no longer treats arbitrary HTTP 404 as proof that an order is absent; original draft/key is preserved when outcome is uncertain. Nine behavioral regression cases and local browser fault injection added; route smoke now requires HTTP 200.
+- EXECUTED AND PASSED this session: final Vitest 156 files/1078 tests, typecheck, lint 0 errors/35 warnings, direct Next build 142/142 pages, browser 5/5 plus API-negative 1/1. Twenty-two local route/viewport screenshots; populated PIM/CMS and authenticated transactions NOT VERIFIED.
+- Staging read-only: 124 public tables all RLS-enabled; anon orders read denied; security-advisor backlog and local/remote migration drift remain. Remote versions 20261020163915 and 20261021041852 are absent locally. No SQL/Auth/business-data/staging/production mutation, no new migration, no production database/app contact.
+- D1.1 report not found locally/default-branch search. Real UAT lacks configured staging identities/runtime; Vercel deployment listing is denied 403. All 12 full release gates BLOCKED with partial evidence; no RC and NO-GO / NOT COMPLETE.
+- Reports, operations draft, logs, migration/advisor evidence: docs/solo-director-2026-10-26/. Authoritative resume: latest CURRENT_PHASE_HANDOFF.md checkpoint. Solo execution only; no v1.3.
+
+## FAST CHECKOUT V1 — SANDBOX-FIRST CANDIDATE — 2026-10-26
+
+Ready-stock fast lane, RajaOngkir/Snap adapters, signed quotes, server-authoritative transaction mapping, webhook/current-status reconciliation, Admin logistics/settings UI, candidate migration and regression evidence are implemented locally. Feature defaults OFF; production database identity and Midtrans Production are blocked. Real provider acceptance, full-schema migration/legacy-trigger integration, authenticated UAT, Custom/DP Snap and release remain BLOCKED / NO-GO.
+
+Current local gates: Vitest 159 files/1117 tests; typecheck; lint 0 errors/35 warnings; complete npm build 145 pages; mock/local browser 9/9 at seven widths. Candidate 20261026045918_fast_checkout_midtrans_rajaongkir_v1.sql is DO NOT RUN pending reconciliation, not remote applied. No Supabase/Auth/staging/production mutation. PGlite fixture SQL test is isolated and has legacy stubs.
+
+Git review branch codex/fast-checkout-v1-20261026 recovered separately from main eab5f3e after 803-file normalized source comparison and 10 original-blob matches. Original snapshot preserved; PR #54 untouched. Final publication SHA/PR pointer and continuation are in CURRENT_PHASE_HANDOFF.md. Details: docs/checkout/FINAL_RELEASE_READINESS.md and related integration/QA reports. Overall v1.2 NOT COMPLETE; no v1.3.

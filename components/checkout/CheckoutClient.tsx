@@ -15,6 +15,7 @@ import type { StructuredIndonesiaAddressInput } from "@/lib/indonesia-address";
 import { cartItemSubtotal } from "@/lib/cart-v5";
 import { isFinalExactCustomPricing } from "@/lib/custom-commerce/exact-pricing";
 import { findCustomDesignPairPricingLine } from "@/lib/custom-commerce/design-pairs";
+import { recoverStoredCheckout, readCheckoutPayload, retryAfterFromResponse, type CheckoutApiPayload } from "@/lib/checkout-recovery";
 import type { CustomProjectSnapshot } from "@/lib/custom-commerce/types";
 
 type StoreOption = { id: string; name: string; address: string; hours: string };
@@ -25,23 +26,6 @@ type CheckoutDraft = {
   payloadHash?: string;
   lastKnownOutcome?: "rejected";
 };
-type CheckoutApiPayload = {
-  code?: string;
-  error?: string;
-  reference?: string;
-  found?: boolean;
-  confirmationUrl?: string;
-  trackingUrl?: string;
-  trackingToken?: string;
-  orderNumber?: string;
-};
-type RecoveryResult =
-  | { kind: "found"; payload: CheckoutApiPayload }
-  | { kind: "missing" }
-  | { kind: "expired" }
-  | { kind: "unsafe"; message: string; retryAfter: number }
-  | { kind: "temporary"; message: string; retryAfter: number };
-
 const RECOVERY_KEY = "debroder-checkout-recovery-v1";
 const RECOVERY_TTL_MS = 2 * 60 * 60 * 1000;
 
@@ -437,46 +421,6 @@ function CustomCheckoutPairSummary({ project }: { project: CustomProjectSnapshot
       </div>;
     }))
   )}</div>;
-}
-
-async function recoverStoredCheckout(stored: CheckoutDraft): Promise<RecoveryResult> {
-  try {
-    const response = await fetch(`/api/checkout?idempotencyKey=${encodeURIComponent(stored.idempotencyKey)}`, { cache: "no-store" });
-    const payload = await readCheckoutPayload(response);
-    if (response.ok && payload.found && payload.confirmationUrl) return { kind: "found", payload };
-    if (response.ok && payload.found === false) return { kind: "missing" };
-    // Keep compatibility with a pre-fix server during a rolling deployment.
-    if (response.status === 404) return { kind: "missing" };
-    if (response.status === 410) return { kind: "expired" };
-    const retryAfter = retryAfterFromResponse(response);
-    if (response.status === 503 || response.status === 429) {
-      return {
-        kind: "temporary",
-        message: payload.error || "Status checkout sebelumnya belum dapat diperiksa. Jangan membuat checkout baru.",
-        retryAfter: retryAfter || 15
-      };
-    }
-    return {
-      kind: "unsafe",
-      message: payload.error || "Checkout sebelumnya tidak dapat dipastikan dengan aman. Hubungi Admin DEBRODER.",
-      retryAfter: 0
-    };
-  } catch {
-    return {
-      kind: "temporary",
-      message: "Jaringan belum dapat memastikan checkout sebelumnya. Kunci lama tetap disimpan untuk mencegah order ganda.",
-      retryAfter: 15
-    };
-  }
-}
-
-async function readCheckoutPayload(response: Response): Promise<CheckoutApiPayload> {
-  return response.json().catch(() => ({})) as Promise<CheckoutApiPayload>;
-}
-
-function retryAfterFromResponse(response: Response) {
-  const value = Number(response.headers.get("retry-after") || 0);
-  return Number.isFinite(value) && value > 0 ? Math.ceil(value) : 0;
 }
 
 async function hashBusinessPayload(value: unknown) {

@@ -424,3 +424,9 @@ coverage ledger and current incremental migrations.
   environment if Docker/CLI support is available.
 - Obtain owner approval for a clean staging reset and replay. This artifact
   has not touched the current staging project.
+
+## Fast Checkout candidate — reconciliation required (26 October 2026)
+
+| File | Classification | Reason |
+|---|---|---|
+| `20261026045918_fast_checkout_midtrans_rajaongkir_v1.sql` | DO NOT RUN | New sandbox-first candidate. Local isolated PostgreSQL tests use explicit legacy RPC stubs; actual staging checkout/payment/stock triggers and four remote-only migrations must be reconciled before owner-reviewed application. Not added to executable replay order. |
