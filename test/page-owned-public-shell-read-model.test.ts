@@ -213,7 +213,7 @@ describe("P3 public shell page-owned read model", () => {
     const shellOnlyPages = [
       "app/custom/page.tsx",
       "app/custom/[category-slug]/page.tsx",
-      "app/keranjang/page.tsx",
+      "app/cart/page.tsx",
       "app/track-order/page.tsx",
       "app/track-order/[order-number]/page.tsx"
     ];

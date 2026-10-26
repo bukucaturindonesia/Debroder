@@ -44,7 +44,7 @@ export function OrderForm({
           {selected ? "Pilih Varian Produk" : "Buka Koleksi"}
         </Link>
         <Link
-          href="/keranjang"
+          href="/cart"
           className="inline-flex min-h-11 items-center rounded-full border border-brand-charcoal px-6 text-sm font-semibold text-brand-charcoal"
         >
           Buka Keranjang

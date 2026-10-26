@@ -345,7 +345,7 @@ export function CheckoutClient({ stores }: { stores: StoreOption[] }) {
   return (
     <section data-ui-surface="checkout" data-ui-transaction="checkout" className="debroder-checkout-surface bg-[var(--color-canvas)] py-8 sm:py-12">
       <div className="section-shell">
-        <nav aria-label="Breadcrumb" className="mb-6 flex flex-wrap gap-2 text-sm text-black/60"><Link href="/keranjang" className="underline-offset-4 hover:underline">Keranjang</Link><span aria-hidden="true">/</span><span aria-current="page" className="font-semibold text-black">Checkout</span></nav>
+        <nav aria-label="Breadcrumb" className="mb-6 flex flex-wrap gap-2 text-sm text-black/60"><Link href="/cart" className="underline-offset-4 hover:underline">Keranjang</Link><span aria-hidden="true">/</span><span aria-current="page" className="font-semibold text-black">Checkout</span></nav>
         <p className="text-xs font-semibold uppercase tracking-[0.18em] text-black/45">Checkout</p>
         <h1 className="mt-3 text-3xl font-semibold tracking-tight sm:text-[40px]">Selesaikan pesanan Anda</h1>
         <p className="mt-3 max-w-2xl text-sm leading-7 text-black/60">Anda dapat melanjutkan sebagai tamu atau memakai akun pelanggan. Ketersediaan produk, konfigurasi, jumlah, dan harga diperiksa kembali saat pesanan dibuat.</p>
@@ -354,7 +354,7 @@ export function CheckoutClient({ stores }: { stores: StoreOption[] }) {
           <div className="mt-7 border border-amber-300 bg-amber-50 p-5 text-sm text-amber-950">
             <p className="font-semibold">Mode pesanan harus dipisahkan.</p>
             <p className="mt-1">Ready Stock, produk dengan pilihan khusus, dan Pesanan Custom harus dibuat secara terpisah.</p>
-            <Link className="mt-3 inline-flex font-semibold underline" href="/keranjang">Atur ulang keranjang</Link>
+            <Link className="mt-3 inline-flex font-semibold underline" href="/cart">Atur ulang keranjang</Link>
           </div>
         ) : null}
 
@@ -362,7 +362,7 @@ export function CheckoutClient({ stores }: { stores: StoreOption[] }) {
           <div className="mt-7 border border-amber-300 bg-amber-50 p-5 text-sm text-amber-950">
             <p className="font-semibold">Ada item lama yang tidak didukung checkout.</p>
             <p className="mt-1">Data asli tetap disimpan. Hapus item tersebut dan tambahkan kembali melalui produk atau builder canonical.</p>
-            <Link className="mt-3 inline-flex font-semibold underline" href="/keranjang">Ubah keranjang</Link>
+            <Link className="mt-3 inline-flex font-semibold underline" href="/cart">Ubah keranjang</Link>
           </div>
         ) : null}
 

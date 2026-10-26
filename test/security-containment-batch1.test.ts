@@ -81,7 +81,7 @@ describe("Batch 1 source-side security containment", () => {
 
   it("removes legacy anonymous order, payment, and order-upload calls from OrderForm", () => {
     expect(legacyOrderForm).toContain("Compatibility-only component");
-    expect(legacyOrderForm).toContain("/keranjang");
+    expect(legacyOrderForm).toContain("/cart");
     expect(legacyOrderForm).not.toContain("create_public_order");
     expect(legacyOrderForm).not.toContain("submit_public_payment_proof");
     expect(legacyOrderForm).not.toContain("ORDER_UPLOADS_BUCKET");
