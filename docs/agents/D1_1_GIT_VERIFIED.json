@@ -1,0 +1,642 @@
+[
+  {
+    "path": "C:/Users/gknma/OneDrive/文档/GitHub/debroder.next/Debroder",
+    "checks": [
+      {
+        "command": "git --no-optional-locks -C \"C:/Users/gknma/OneDrive/文档/GitHub/debroder.next/Debroder\" rev-parse --show-toplevel",
+        "exit": 0,
+        "output": [
+          "C:/Users/gknma/OneDrive/文档/GitHub/debroder.next/Debroder"
+        ]
+      },
+      {
+        "command": "git --no-optional-locks -C \"C:/Users/gknma/OneDrive/文档/GitHub/debroder.next/Debroder\" branch --show-current",
+        "exit": 0,
+        "output": [
+          "codex/unified-category-hero-v1"
+        ]
+      },
+      {
+        "command": "git --no-optional-locks -C \"C:/Users/gknma/OneDrive/文档/GitHub/debroder.next/Debroder\" rev-parse HEAD",
+        "exit": 0,
+        "output": [
+          "726c69267a400730e894881d8ae8a44b32921b76"
+        ]
+      },
+      {
+        "command": "git --no-optional-locks -C \"C:/Users/gknma/OneDrive/文档/GitHub/debroder.next/Debroder\" status --porcelain=v1 -b --untracked-files=all",
+        "exit": 0,
+        "output": [
+          "## codex/unified-category-hero-v1...origin/codex/unified-category-hero-v1",
+          " M AGENTS.md",
+          " M CURRENT_PHASE_HANDOFF.md",
+          " M DEBRODER_MASTER_STATE.md",
+          " M DEBRODER_V1.2_ISSUE_REGISTER.md",
+          " M e2e/public-readonly.spec.ts",
+          " M e2e/wave-2-storefront.spec.ts",
+          " M playwright-report/index.html",
+          " D test-results/.last-run.json",
+          " D test-results/brochure-canonical-graphic-e03ed-release-pages-and-viewports/brochure-footer-1440.png",
+          " D test-results/brochure-canonical-graphic-e03ed-release-pages-and-viewports/brochure-footer-390.png",
+          " D test-results/brochure-canonical-graphic-e03ed-release-pages-and-viewports/brochure-header-1440.png",
+          " D test-results/brochure-canonical-graphic-e03ed-release-pages-and-viewports/brochure-header-390.png",
+          " D test-results/brochure-canonical-graphic-e03ed-release-pages-and-viewports/visual-restore-home-1440.png",
+          " D test-results/brochure-canonical-graphic-e03ed-release-pages-and-viewports/visual-restore-home-1920.png",
+          " D test-results/brochure-canonical-graphic-e03ed-release-pages-and-viewports/visual-restore-home-390.png",
+          " D test-results/brochure-canonical-graphic-e03ed-release-pages-and-viewports/visual-restore-home-768.png",
+          " D test-results/brochure-canonical-graphic-e03ed-release-pages-and-viewports/visual-restore-kontak-1440.png",
+          " D test-results/brochure-canonical-graphic-e03ed-release-pages-and-viewports/visual-restore-kontak-1920.png",
+          " D test-results/brochure-canonical-graphic-e03ed-release-pages-and-viewports/visual-restore-kontak-390.png",
+          " D test-results/brochure-canonical-graphic-e03ed-release-pages-and-viewports/visual-restore-kontak-768.png",
+          " D test-results/brochure-canonical-graphic-e03ed-release-pages-and-viewports/visual-restore-layanan-1440.png",
+          " D test-results/brochure-canonical-graphic-e03ed-release-pages-and-viewports/visual-restore-layanan-1920.png",
+          " D test-results/brochure-canonical-graphic-e03ed-release-pages-and-viewports/visual-restore-layanan-390.png",
+          " D test-results/brochure-canonical-graphic-e03ed-release-pages-and-viewports/visual-restore-layanan-768.png",
+          " D test-results/brochure-canonical-graphic-e03ed-release-pages-and-viewports/visual-restore-produk-1440.png",
+          " D test-results/brochure-canonical-graphic-e03ed-release-pages-and-viewports/visual-restore-produk-1920.png",
+          " D test-results/brochure-canonical-graphic-e03ed-release-pages-and-viewports/visual-restore-produk-390.png",
+          " D test-results/brochure-canonical-graphic-e03ed-release-pages-and-viewports/visual-restore-produk-768.png",
+          " D test-results/brochure-canonical-graphic-e03ed-release-pages-and-viewports/visual-restore-tentang-1440.png",
+          " D test-results/brochure-canonical-graphic-e03ed-release-pages-and-viewports/visual-restore-tentang-1920.png",
+          " D test-results/brochure-canonical-graphic-e03ed-release-pages-and-viewports/visual-restore-tentang-390.png",
+          " D test-results/brochure-canonical-graphic-e03ed-release-pages-and-viewports/visual-restore-tentang-768.png",
+          " D test-results/brochure-complete-storefro-4e569--responsive-public-surfaces/account-1440.png",
+          " D test-results/brochure-complete-storefro-4e569--responsive-public-surfaces/account-1920.png",
+          " D test-results/brochure-complete-storefro-4e569--responsive-public-surfaces/account-390.png",
+          " D test-results/brochure-complete-storefro-4e569--responsive-public-surfaces/account-768.png",
+          " D test-results/brochure-complete-storefro-4e569--responsive-public-surfaces/cart-1440.png",
+          " D test-results/brochure-complete-storefro-4e569--responsive-public-surfaces/cart-1920.png",
+          " D test-results/brochure-complete-storefro-4e569--responsive-public-surfaces/cart-390.png",
+          " D test-results/brochure-complete-storefro-4e569--responsive-public-surfaces/cart-768.png",
+          " D test-results/brochure-complete-storefro-4e569--responsive-public-surfaces/home-1440.png",
+          " D test-results/brochure-complete-storefro-4e569--responsive-public-surfaces/home-1920.png",
+          " D test-results/brochure-complete-storefro-4e569--responsive-public-surfaces/home-390.png",
+          " D test-results/brochure-complete-storefro-4e569--responsive-public-surfaces/home-768.png",
+          " D test-results/brochure-complete-storefro-4e569--responsive-public-surfaces/kaos-polos-1440.png",
+          " D test-results/brochure-complete-storefro-4e569--responsive-public-surfaces/kaos-polos-1920.png",
+          " D test-results/brochure-complete-storefro-4e569--responsive-public-surfaces/kaos-polos-390.png",
+          " D test-results/brochure-complete-storefro-4e569--responsive-public-surfaces/kaos-polos-768.png",
+          " D test-results/brochure-complete-storefro-4e569--responsive-public-surfaces/koleksi-1440.png",
+          " D test-results/brochure-complete-storefro-4e569--responsive-public-surfaces/koleksi-1920.png",
+          " D test-results/brochure-complete-storefro-4e569--responsive-public-surfaces/koleksi-390.png",
+          " D test-results/brochure-complete-storefro-4e569--responsive-public-surfaces/koleksi-768.png",
+          " D test-results/brochure-homepage-and-empt-8f001-on-small-mobile-and-desktop/homepage-1440.png",
+          " D test-results/brochure-homepage-and-empt-8f001-on-small-mobile-and-desktop/homepage-320.png",
+          " D test-results/brochure-homepage-and-empt-8f001-on-small-mobile-and-desktop/homepage-390.png",
+          " D test-results/brochure-homepage-and-empt-8f001-on-small-mobile-and-desktop/products-1440.png",
+          " D test-results/brochure-homepage-and-empt-8f001-on-small-mobile-and-desktop/products-320.png",
+          " D test-results/brochure-homepage-and-empt-8f001-on-small-mobile-and-desktop/products-390.png",
+          "?? ASSET_INVENTORY.md",
+          "?? DEBRODER_COMMERCE.md",
+          "?? DEBRODER_DATABASE_SECURITY.md",
+          "?? DEBRODER_DIRECTOR.md",
+          "?? DEBRODER_VISUAL_ASSET_REPORT.md",
+          "?? docs/agents/AGENT_TASK_DRAFTS.md",
+          "?? docs/agents/D1_1_GIT_EVIDENCE.json",
+          "?? docs/agents/PROJECT_STATUS.md",
+          "?? docs/agents/REPORT_TEMPLATE.md",
+          "?? docs/agents/issue-bodies/AGENT_02.md",
+          "?? docs/agents/issue-bodies/AGENT_03.md",
+          "?? docs/agents/issue-bodies/AGENT_04.md",
+          "?? docs/agents/issue-bodies/AGENT_05.md",
+          "?? docs/agents/issue-bodies/AGENT_06.md",
+          "?? docs/agents/issue-bodies/CHECKPOINT_55.md",
+          "?? docs/agents/issue-bodies/CHECKPOINT_56.md",
+          "?? docs/agents/issue-bodies/CHECKPOINT_57.md",
+          "?? docs/agents/issue-bodies/CHECKPOINT_58.md",
+          "?? docs/agents/issue-bodies/PHASE03_GO_55.md",
+          "?? docs/agents/issue-bodies/PHASE03_GO_56.md",
+          "?? docs/agents/issue-bodies/PHASE03_GO_57.md",
+          "?? docs/agents/issue-bodies/PHASE03_GO_58.md",
+          "?? docs/agents/issue-bodies/PHASE03_GO_59.md",
+          "?? docs/visual-assets/ASSET_MANIFEST.md",
+          "?? test-results/.playwright-artifacts-0/0e734ce4dc425952a422b094f273b07f.png",
+          "?? test-results/.playwright-artifacts-0/3cec0612daa18aadcbcaa83e2f18072a.png",
+          "?? test-results/.playwright-artifacts-0/731abcffa7e5c9348de312d0d617229b.png",
+          "?? test-results/.playwright-artifacts-0/94482cb6024406a17d52d405187cfec4.png",
+          "?? test-results/.playwright-artifacts-0/ae44f979a6a55420880cf143ca3f2b68.png",
+          "?? test-results/.playwright-artifacts-0/c7a7cc3e8d3ddab1ff7a8472a75c92bd.png",
+          "?? test-results/.playwright-artifacts-0/cea562aa81ec7d4b52c1563bd169604a.png",
+          "?? test-results/.playwright-artifacts-0/fdab68b8a531d03ca0b17ee19e30a09d.png",
+          "?? test-results/.playwright-artifacts-0/page@06e6c0b59888e42f02f5d9855ed6fb8e.webm",
+          "?? test-results/.playwright-artifacts-0/page@0cde496539e929d689d29b6f51e1a250.webm",
+          "?? test-results/.playwright-artifacts-0/page@61920435115056f13e2c2bf7dbc7f678.webm",
+          "?? test-results/.playwright-artifacts-0/page@7aff45f5d7688101c584fd222627481a.webm",
+          "?? test-results/.playwright-artifacts-0/page@c2c36a8999f2934192de0d3fbdba31e7.webm",
+          "?? test-results/.playwright-artifacts-0/page@f0ccea4691c831e6da2df7e0f3784514.webm",
+          "?? test-results/.playwright-artifacts-0/page@f34a1ab025bf33446210d9d23e00d6ef.webm",
+          "?? test-results/.playwright-artifacts-0/page@fdf45ae843289aeb1895154f5eea0ae7.webm",
+          "?? test-results/.playwright-artifacts-0/page@fdf720f6d3ce3a5cf3295d1bd052d273.webm",
+          "?? test-results/.playwright-artifacts-0/traces/18bfc84df2c9c0d9ac4c-154f7afc74108d8e3d12-recording3.network",
+          "?? test-results/.playwright-artifacts-0/traces/18bfc84df2c9c0d9ac4c-154f7afc74108d8e3d12-recording3.trace",
+          "?? test-results/.playwright-artifacts-0/traces/18bfc84df2c9c0d9ac4c-1670c68b7f33626effdb-recording5.network",
+          "?? test-results/.playwright-artifacts-0/traces/18bfc84df2c9c0d9ac4c-1670c68b7f33626effdb-recording5.trace",
+          "?? test-results/.playwright-artifacts-0/traces/18bfc84df2c9c0d9ac4c-204cc2400052b2276cc2-recording2.network",
+          "?? test-results/.playwright-artifacts-0/traces/18bfc84df2c9c0d9ac4c-204cc2400052b2276cc2-recording2.trace",
+          "?? test-results/.playwright-artifacts-0/traces/18bfc84df2c9c0d9ac4c-3ea8cc09930939ce92db.network",
+          "?? test-results/.playwright-artifacts-0/traces/18bfc84df2c9c0d9ac4c-3ea8cc09930939ce92db.trace",
+          "?? test-results/.playwright-artifacts-0/traces/18bfc84df2c9c0d9ac4c-60959fd0708e22d8f4cb-recording8.network",
+          "?? test-results/.playwright-artifacts-0/traces/18bfc84df2c9c0d9ac4c-60959fd0708e22d8f4cb-recording8.trace",
+          "?? test-results/.playwright-artifacts-0/traces/18bfc84df2c9c0d9ac4c-8ccfd1ce8700fc1d0195-recording6.network",
+          "?? test-results/.playwright-artifacts-0/traces/18bfc84df2c9c0d9ac4c-8ccfd1ce8700fc1d0195-recording6.trace",
+          "?? test-results/.playwright-artifacts-0/traces/18bfc84df2c9c0d9ac4c-a9289eb394ce0db497dc-recording4.network",
+          "?? test-results/.playwright-artifacts-0/traces/18bfc84df2c9c0d9ac4c-a9289eb394ce0db497dc-recording4.trace",
+          "?? test-results/.playwright-artifacts-0/traces/18bfc84df2c9c0d9ac4c-a938d95aa1de153aa8b8-recording7.network",
+          "?? test-results/.playwright-artifacts-0/traces/18bfc84df2c9c0d9ac4c-a938d95aa1de153aa8b8-recording7.trace",
+          "?? test-results/.playwright-artifacts-0/traces/18bfc84df2c9c0d9ac4c-ce34ed6a223812527b4b-recording1.network",
+          "?? test-results/.playwright-artifacts-0/traces/18bfc84df2c9c0d9ac4c-ce34ed6a223812527b4b-recording1.trace",
+          "?? test-results/.playwright-artifacts-0/traces/resources/0557bb0b04c42236ad44cddf8553150870be0487.svg",
+          "?? test-results/.playwright-artifacts-0/traces/resources/06f304c9ba773d8b240e439921a049ecb153dcac.html",
+          "?? test-results/.playwright-artifacts-0/traces/resources/0c20e49955baedc793150b8ed4570cd1bfbfba43.webp",
+          "?? test-results/.playwright-artifacts-0/traces/resources/1c6d9f4d07136e411d7061a5859d48b93175d11e.svg",
+          "?? test-results/.playwright-artifacts-0/traces/resources/207e036dcc226f43518e08fe7f1b600bb1240004.webp",
+          "?? test-results/.playwright-artifacts-0/traces/resources/22064e37d48d93613c8486ebe5efea489f9a6a7c.html",
+          "?? test-results/.playwright-artifacts-0/traces/resources/22af3203d4eaa8a079eeb490cbeb3d225742b14f.svg",
+          "?? test-results/.playwright-artifacts-0/traces/resources/2403762621f693d4c745deb62bede34ebdd5f6e3.html",
+          "?? test-results/.playwright-artifacts-0/traces/resources/2a7c92de0c02ef0aefaffb2feff98c5c813af8a4.svg",
+          "?? test-results/.playwright-artifacts-0/traces/resources/31dfbb3814af9c3e5439ca8a5e48247c.jsonl",
+          "?? test-results/.playwright-artifacts-0/traces/resources/33391c45459affada02330dcf5ce724754067cf8.svg",
+          "?? test-results/.playwright-artifacts-0/traces/resources/3592cafd463a31ddc45879b542f12b23dd3dbf9c.html",
+          "?? test-results/.playwright-artifacts-0/traces/resources/37ee480c2f4028b3f7ea50251d6dbeddbcc6a88f.webp",
+          "?? test-results/.playwright-artifacts-0/traces/resources/3edde736ad135477e1990240e14ce7641a63b569.svg",
+          "?? test-results/.playwright-artifacts-0/traces/resources/437958d7ff4507ad6bd0e66799e3160d.jsonl",
+          "?? test-results/.playwright-artifacts-0/traces/resources/49141014edb4b43ed97753d838f85e00e1c77880.css",
+          "?? test-results/.playwright-artifacts-0/traces/resources/5b3ed2c6f0d61786577cb09684ced5c7324f12ab.svg",
+          "?? test-results/.playwright-artifacts-0/traces/resources/739a3702e4e2d75bff4ac6f7cc84dfaaa11852f8.html",
+          "?? test-results/.playwright-artifacts-0/traces/resources/747359be0bfe6a6b66be835e6898cb516fec2e03.svg",
+          "?? test-results/.playwright-artifacts-0/traces/resources/7fbe5c07208b38fc0082e285ae7fedc93ebcb0c7.svg",
+          "?? test-results/.playwright-artifacts-0/traces/resources/829b0dec984e44d622d64de48e30db06.jsonl",
+          "?? test-results/.playwright-artifacts-0/traces/resources/8321bad8c86377217ef74cf086b4200f10abd018.html",
+          "?? test-results/.playwright-artifacts-0/traces/resources/956790a3917690c84a45645dc96ebd64.jsonl",
+          "?? test-results/.playwright-artifacts-0/traces/resources/9cb66444e26c54b235b893707396a429.jsonl",
+          "?? test-results/.playwright-artifacts-0/traces/resources/a27aebf39a41ff1848ee3cfe93ac4f23c2698d3c.svg",
+          "?? test-results/.playwright-artifacts-0/traces/resources/a28e6c16f83323dd5e66b752b7e0fb65a541e973.webp",
+          "?? test-results/.playwright-artifacts-0/traces/resources/a854b0349117cc886845efa65e930995.jsonl",
+          "?? test-results/.playwright-artifacts-0/traces/resources/cfc70f823b7c67bb54a210879c3071637f4b8f04.woff2",
+          "?? test-results/.playwright-artifacts-0/traces/resources/d00557f00c60f403878bf02d3d7b53d6f4fc55ac.svg",
+          "?? test-results/.playwright-artifacts-0/traces/resources/d91c72c00b1e4d61de01907799e7f56975858ee6.html",
+          "?? test-results/.playwright-artifacts-0/traces/resources/ea4235fae10d32a7295e1f7ed7233007.jsonl",
+          "?? test-results/.playwright-artifacts-0/traces/resources/f26273b80dcd227291da038e10504bea3ec224ad.html",
+          "?? test-results/.playwright-artifacts-0/traces/resources/f827a6840d95fc7d108e5f295ecc3c4b1e8f1291.html",
+          "?? test-results/.playwright-artifacts-0/traces/resources/f9d1f6066d676026efc9182493330f5138145bf7.svg",
+          "?? test-results/.playwright-artifacts-0/traces/resources/fc57809d5d5c39291fd3fff17f8725dd.jsonl",
+          "?? test-results/.playwright-artifacts-0/traces/resources/fd58c58ec1e69001f111e3ad8984a0eb247772c4.svg",
+          "?? test-results/.playwright-artifacts-0/traces/resources/page@06e6c0b59888e42f02f5d9855ed6fb8e-1792681886006.jpeg",
+          "?? test-results/.playwright-artifacts-0/traces/resources/page@06e6c0b59888e42f02f5d9855ed6fb8e-1792681888026.jpeg",
+          "?? test-results/.playwright-artifacts-0/traces/resources/page@06e6c0b59888e42f02f5d9855ed6fb8e-1792681888234.jpeg",
+          "?? test-results/.playwright-artifacts-0/traces/resources/page@06e6c0b59888e42f02f5d9855ed6fb8e-1792681888453.jpeg",
+          "?? test-results/.playwright-artifacts-0/traces/resources/page@06e6c0b59888e42f02f5d9855ed6fb8e-1792681888669.jpeg",
+          "?? test-results/.playwright-artifacts-0/traces/resources/page@06e6c0b59888e42f02f5d9855ed6fb8e-1792681889038.jpeg",
+          "?? test-results/.playwright-artifacts-0/traces/resources/page@06e6c0b59888e42f02f5d9855ed6fb8e-1792681891699.jpeg",
+          "?? test-results/.playwright-artifacts-0/traces/resources/page@06e6c0b59888e42f02f5d9855ed6fb8e-1792681891888.jpeg",
+          "?? test-results/.playwright-artifacts-0/traces/resources/page@06e6c0b59888e42f02f5d9855ed6fb8e-1792681891954.jpeg",
+          "?? test-results/.playwright-artifacts-0/traces/resources/page@0cde496539e929d689d29b6f51e1a250-1792681921792.jpeg",
+          "?? test-results/.playwright-artifacts-0/traces/resources/page@0cde496539e929d689d29b6f51e1a250-1792681923510.jpeg",
+          "?? test-results/.playwright-artifacts-0/traces/resources/page@0cde496539e929d689d29b6f51e1a250-1792681923748.jpeg",
+          "?? test-results/.playwright-artifacts-0/traces/resources/page@0cde496539e929d689d29b6f51e1a250-1792681923963.jpeg",
+          "?? test-results/.playwright-artifacts-0/traces/resources/page@0cde496539e929d689d29b6f51e1a250-1792681927242.jpeg",
+          "?? test-results/.playwright-artifacts-0/traces/resources/page@0cde496539e929d689d29b6f51e1a250-1792681927507.jpeg",
+          "?? test-results/.playwright-artifacts-0/traces/resources/page@0cde496539e929d689d29b6f51e1a250-1792681927577.jpeg",
+          "?? test-results/.playwright-artifacts-0/traces/resources/page@61920435115056f13e2c2bf7dbc7f678-1792681876110.jpeg",
+          "?? test-results/.playwright-artifacts-0/traces/resources/page@61920435115056f13e2c2bf7dbc7f678-1792681876117.jpeg",
+          "?? test-results/.playwright-artifacts-0/traces/resources/page@61920435115056f13e2c2bf7dbc7f678-1792681878494.jpeg",
+          "?? test-results/.playwright-artifacts-0/traces/resources/page@61920435115056f13e2c2bf7dbc7f678-1792681878728.jpeg",
+          "?? test-results/.playwright-artifacts-0/traces/resources/page@61920435115056f13e2c2bf7dbc7f678-1792681879042.jpeg",
+          "?? test-results/.playwright-artifacts-0/traces/resources/page@61920435115056f13e2c2bf7dbc7f678-1792681879249.jpeg",
+          "?? test-results/.playwright-artifacts-0/traces/resources/page@61920435115056f13e2c2bf7dbc7f678-1792681883739.jpeg",
+          "?? test-results/.playwright-artifacts-0/traces/resources/page@61920435115056f13e2c2bf7dbc7f678-1792681883742.jpeg",
+          "?? test-results/.playwright-artifacts-0/traces/resources/page@61920435115056f13e2c2bf7dbc7f678-1792681883743.jpeg",
+          "?? test-results/.playwright-artifacts-0/traces/resources/page@7aff45f5d7688101c584fd222627481a-1792681900504.jpeg",
+          "?? test-results/.playwright-artifacts-0/traces/resources/page@7aff45f5d7688101c584fd222627481a-1792681900516.jpeg",
+          "?? test-results/.playwright-artifacts-0/traces/resources/page@7aff45f5d7688101c584fd222627481a-1792681902953.jpeg",
+          "?? test-results/.playwright-artifacts-0/traces/resources/page@7aff45f5d7688101c584fd222627481a-1792681903172.jpeg",
+          "?? test-results/.playwright-artifacts-0/traces/resources/page@7aff45f5d7688101c584fd222627481a-1792681903396.jpeg",
+          "?? test-results/.playwright-artifacts-0/traces/resources/page@7aff45f5d7688101c584fd222627481a-1792681903626.jpeg",
+          "?? test-results/.playwright-artifacts-0/traces/resources/page@7aff45f5d7688101c584fd222627481a-1792681904018.jpeg",
+          "?? test-results/.playwright-artifacts-0/traces/resources/page@7aff45f5d7688101c584fd222627481a-1792681904228.jpeg",
+          "?? test-results/.playwright-artifacts-0/traces/resources/page@7aff45f5d7688101c584fd222627481a-1792681904484.jpeg",
+          "?? test-results/.playwright-artifacts-0/traces/resources/page@7aff45f5d7688101c584fd222627481a-1792681908397.jpeg",
+          "?? test-results/.playwright-artifacts-0/traces/resources/page@7aff45f5d7688101c584fd222627481a-1792681908682.jpeg",
+          "?? test-results/.playwright-artifacts-0/traces/resources/page@7aff45f5d7688101c584fd222627481a-1792681908759.jpeg",
+          "?? test-results/.playwright-artifacts-0/traces/resources/page@c2c36a8999f2934192de0d3fbdba31e7-1792681893097.jpeg",
+          "?? test-results/.playwright-artifacts-0/traces/resources/page@c2c36a8999f2934192de0d3fbdba31e7-1792681894412.jpeg",
+          "?? test-results/.playwright-artifacts-0/traces/resources/page@c2c36a8999f2934192de0d3fbdba31e7-1792681894627.jpeg",
+          "?? test-results/.playwright-artifacts-0/traces/resources/page@c2c36a8999f2934192de0d3fbdba31e7-1792681894849.jpeg",
+          "?? test-results/.playwright-artifacts-0/traces/resources/page@c2c36a8999f2934192de0d3fbdba31e7-1792681895423.jpeg",
+          "?? test-results/.playwright-artifacts-0/traces/resources/page@c2c36a8999f2934192de0d3fbdba31e7-1792681898504.jpeg",
+          "?? test-results/.playwright-artifacts-0/traces/resources/page@c2c36a8999f2934192de0d3fbdba31e7-1792681898705.jpeg",
+          "?? test-results/.playwright-artifacts-0/traces/resources/page@c2c36a8999f2934192de0d3fbdba31e7-1792681898768.jpeg",
+          "?? test-results/.playwright-artifacts-0/traces/resources/page@f0ccea4691c831e6da2df7e0f3784514-1792681867856.jpeg",
+          "?? test-results/.playwright-artifacts-0/traces/resources/page@f0ccea4691c831e6da2df7e0f3784514-1792681867886.jpeg",
+          "?? test-results/.playwright-artifacts-0/traces/resources/page@f0ccea4691c831e6da2df7e0f3784514-1792681869733.jpeg",
+          "?? test-results/.playwright-artifacts-0/traces/resources/page@f0ccea4691c831e6da2df7e0f3784514-1792681869941.jpeg",
+          "?? test-results/.playwright-artifacts-0/traces/resources/page@f0ccea4691c831e6da2df7e0f3784514-1792681870159.jpeg",
+          "?? test-results/.playwright-artifacts-0/traces/resources/page@f0ccea4691c831e6da2df7e0f3784514-1792681870711.jpeg",
+          "?? test-results/.playwright-artifacts-0/traces/resources/page@f0ccea4691c831e6da2df7e0f3784514-1792681873507.jpeg",
+          "?? test-results/.playwright-artifacts-0/traces/resources/page@f0ccea4691c831e6da2df7e0f3784514-1792681873537.jpeg",
+          "?? test-results/.playwright-artifacts-0/traces/resources/page@f0ccea4691c831e6da2df7e0f3784514-1792681873588.jpeg",
+          "?? test-results/.playwright-artifacts-0/traces/resources/page@f34a1ab025bf33446210d9d23e00d6ef-1792681928897.jpeg",
+          "?? test-results/.playwright-artifacts-0/traces/resources/page@f34a1ab025bf33446210d9d23e00d6ef-1792681938567.jpeg",
+          "?? test-results/.playwright-artifacts-0/traces/resources/page@f34a1ab025bf33446210d9d23e00d6ef-1792681938776.jpeg",
+          "?? test-results/.playwright-artifacts-0/traces/resources/page@f34a1ab025bf33446210d9d23e00d6ef-1792681938993.jpeg",
+          "?? test-results/.playwright-artifacts-0/traces/resources/page@f34a1ab025bf33446210d9d23e00d6ef-1792681939207.jpeg",
+          "?? test-results/.playwright-artifacts-0/traces/resources/page@f34a1ab025bf33446210d9d23e00d6ef-1792681939413.jpeg",
+          "?? test-results/.playwright-artifacts-0/traces/resources/page@f34a1ab025bf33446210d9d23e00d6ef-1792681939635.jpeg",
+          "?? test-results/.playwright-artifacts-0/traces/resources/page@f34a1ab025bf33446210d9d23e00d6ef-1792681939845.jpeg",
+          "?? test-results/.playwright-artifacts-0/traces/resources/page@f34a1ab025bf33446210d9d23e00d6ef-1792681940060.jpeg",
+          "?? test-results/.playwright-artifacts-0/traces/resources/page@f34a1ab025bf33446210d9d23e00d6ef-1792681940289.jpeg",
+          "?? test-results/.playwright-artifacts-0/traces/resources/page@f34a1ab025bf33446210d9d23e00d6ef-1792681940502.jpeg",
+          "?? test-results/.playwright-artifacts-0/traces/resources/page@f34a1ab025bf33446210d9d23e00d6ef-1792681940717.jpeg",
+          "?? test-results/.playwright-artifacts-0/traces/resources/page@f34a1ab025bf33446210d9d23e00d6ef-1792681940945.jpeg",
+          "?? test-results/.playwright-artifacts-0/traces/resources/page@f34a1ab025bf33446210d9d23e00d6ef-1792681941148.jpeg",
+          "?? test-results/.playwright-artifacts-0/traces/resources/page@f34a1ab025bf33446210d9d23e00d6ef-1792681941356.jpeg",
+          "?? test-results/.playwright-artifacts-0/traces/resources/page@f34a1ab025bf33446210d9d23e00d6ef-1792681941564.jpeg",
+          "?? test-results/.playwright-artifacts-0/traces/resources/page@f34a1ab025bf33446210d9d23e00d6ef-1792681945103.jpeg",
+          "?? test-results/.playwright-artifacts-0/traces/resources/page@f34a1ab025bf33446210d9d23e00d6ef-1792681949616.jpeg",
+          "?? test-results/.playwright-artifacts-0/traces/resources/page@f34a1ab025bf33446210d9d23e00d6ef-1792681950067.jpeg",
+          "?? test-results/.playwright-artifacts-0/traces/resources/page@f34a1ab025bf33446210d9d23e00d6ef-1792681953733.jpeg",
+          "?? test-results/.playwright-artifacts-0/traces/resources/page@fdf45ae843289aeb1895154f5eea0ae7-1792681858932.jpeg",
+          "?? test-results/.playwright-artifacts-0/traces/resources/page@fdf45ae843289aeb1895154f5eea0ae7-1792681858933.jpeg",
+          "?? test-results/.playwright-artifacts-0/traces/resources/page@fdf45ae843289aeb1895154f5eea0ae7-1792681860311.jpeg",
+          "?? test-results/.playwright-artifacts-0/traces/resources/page@fdf45ae843289aeb1895154f5eea0ae7-1792681860522.jpeg",
+          "?? test-results/.playwright-artifacts-0/traces/resources/page@fdf45ae843289aeb1895154f5eea0ae7-1792681860730.jpeg",
+          "?? test-results/.playwright-artifacts-0/traces/resources/page@fdf45ae843289aeb1895154f5eea0ae7-1792681861572.jpeg",
+          "?? test-results/.playwright-artifacts-0/traces/resources/page@fdf45ae843289aeb1895154f5eea0ae7-1792681861838.jpeg",
+          "?? test-results/.playwright-artifacts-0/traces/resources/page@fdf45ae843289aeb1895154f5eea0ae7-1792681862046.jpeg",
+          "?? test-results/.playwright-artifacts-0/traces/resources/page@fdf45ae843289aeb1895154f5eea0ae7-1792681865380.jpeg",
+          "?? test-results/.playwright-artifacts-0/traces/resources/page@fdf45ae843289aeb1895154f5eea0ae7-1792681866100.jpeg",
+          "?? test-results/.playwright-artifacts-0/traces/resources/page@fdf720f6d3ce3a5cf3295d1bd052d273-1792681912567.jpeg",
+          "?? test-results/.playwright-artifacts-0/traces/resources/page@fdf720f6d3ce3a5cf3295d1bd052d273-1792681912584.jpeg",
+          "?? test-results/.playwright-artifacts-0/traces/resources/page@fdf720f6d3ce3a5cf3295d1bd052d273-1792681914208.jpeg",
+          "?? test-results/.playwright-artifacts-0/traces/resources/page@fdf720f6d3ce3a5cf3295d1bd052d273-1792681914443.jpeg",
+          "?? test-results/.playwright-artifacts-0/traces/resources/page@fdf720f6d3ce3a5cf3295d1bd052d273-1792681914663.jpeg",
+          "?? test-results/.playwright-artifacts-0/traces/resources/page@fdf720f6d3ce3a5cf3295d1bd052d273-1792681915799.jpeg",
+          "?? test-results/.playwright-artifacts-0/traces/resources/page@fdf720f6d3ce3a5cf3295d1bd052d273-1792681916032.jpeg",
+          "?? test-results/.playwright-artifacts-0/traces/resources/page@fdf720f6d3ce3a5cf3295d1bd052d273-1792681916342.jpeg",
+          "?? test-results/.playwright-artifacts-0/traces/resources/page@fdf720f6d3ce3a5cf3295d1bd052d273-1792681919749.jpeg",
+          "?? test-results/.playwright-artifacts-0/traces/resources/page@fdf720f6d3ce3a5cf3295d1bd052d273-1792681919951.jpeg",
+          "?? test-results/.playwright-artifacts-0/traces/resources/page@fdf720f6d3ce3a5cf3295d1bd052d273-1792681920012.jpeg"
+        ]
+      },
+      {
+        "command": "git --no-optional-locks -C \"C:/Users/gknma/OneDrive/文档/GitHub/debroder.next/Debroder\" rev-parse --git-common-dir",
+        "exit": 0,
+        "output": [
+          ".git"
+        ]
+      },
+      {
+        "command": "git --no-optional-locks -C \"C:/Users/gknma/OneDrive/文档/GitHub/debroder.next/Debroder\" rev-parse --absolute-git-dir",
+        "exit": 0,
+        "output": [
+          "C:/Users/gknma/OneDrive/文档/GitHub/debroder.next/Debroder/.git"
+        ]
+      }
+    ]
+  },
+  {
+    "path": "C:/Users/gknma/.codex/visualizations/2026/08/08/019fe1e6-f604-7291-8412-43f6cd9db840/baseline-auth-compare",
+    "checks": [
+      {
+        "command": "git --no-optional-locks -C \"C:/Users/gknma/.codex/visualizations/2026/08/08/019fe1e6-f604-7291-8412-43f6cd9db840/baseline-auth-compare\" rev-parse --show-toplevel",
+        "exit": 0,
+        "output": [
+          "C:/Users/gknma/.codex/visualizations/2026/08/08/019fe1e6-f604-7291-8412-43f6cd9db840/baseline-auth-compare"
+        ]
+      },
+      {
+        "command": "git --no-optional-locks -C \"C:/Users/gknma/.codex/visualizations/2026/08/08/019fe1e6-f604-7291-8412-43f6cd9db840/baseline-auth-compare\" branch --show-current",
+        "exit": 0,
+        "output": []
+      },
+      {
+        "command": "git --no-optional-locks -C \"C:/Users/gknma/.codex/visualizations/2026/08/08/019fe1e6-f604-7291-8412-43f6cd9db840/baseline-auth-compare\" rev-parse HEAD",
+        "exit": 0,
+        "output": [
+          "b6259a2a55f2dea2e61b344b2079fe18c64fce3e"
+        ]
+      },
+      {
+        "command": "git --no-optional-locks -C \"C:/Users/gknma/.codex/visualizations/2026/08/08/019fe1e6-f604-7291-8412-43f6cd9db840/baseline-auth-compare\" status --porcelain=v1 -b --untracked-files=all",
+        "exit": 0,
+        "output": [
+          "## HEAD (no branch)"
+        ]
+      },
+      {
+        "command": "git --no-optional-locks -C \"C:/Users/gknma/.codex/visualizations/2026/08/08/019fe1e6-f604-7291-8412-43f6cd9db840/baseline-auth-compare\" rev-parse --git-common-dir",
+        "exit": 0,
+        "output": [
+          "C:/Users/gknma/OneDrive/文档/GitHub/debroder.next/Debroder/.git"
+        ]
+      },
+      {
+        "command": "git --no-optional-locks -C \"C:/Users/gknma/.codex/visualizations/2026/08/08/019fe1e6-f604-7291-8412-43f6cd9db840/baseline-auth-compare\" rev-parse --absolute-git-dir",
+        "exit": 0,
+        "output": [
+          "C:/Users/gknma/OneDrive/文档/GitHub/debroder.next/Debroder/.git/worktrees/baseline-auth-compare"
+        ]
+      }
+    ]
+  },
+  {
+    "path": "C:/Users/gknma/.codex/worktrees/agent-02-commerce/Debroder",
+    "checks": [
+      {
+        "command": "git --no-optional-locks -C \"C:/Users/gknma/.codex/worktrees/agent-02-commerce/Debroder\" rev-parse --show-toplevel",
+        "exit": 0,
+        "output": [
+          "C:/Users/gknma/.codex/worktrees/agent-02-commerce/Debroder"
+        ]
+      },
+      {
+        "command": "git --no-optional-locks -C \"C:/Users/gknma/.codex/worktrees/agent-02-commerce/Debroder\" branch --show-current",
+        "exit": 0,
+        "output": [
+          "codex/agent-02-commerce"
+        ]
+      },
+      {
+        "command": "git --no-optional-locks -C \"C:/Users/gknma/.codex/worktrees/agent-02-commerce/Debroder\" rev-parse HEAD",
+        "exit": 0,
+        "output": [
+          "726c69267a400730e894881d8ae8a44b32921b76"
+        ]
+      },
+      {
+        "command": "git --no-optional-locks -C \"C:/Users/gknma/.codex/worktrees/agent-02-commerce/Debroder\" status --porcelain=v1 -b --untracked-files=all",
+        "exit": 0,
+        "output": [
+          "## codex/agent-02-commerce",
+          " M CURRENT_PHASE_HANDOFF.md"
+        ]
+      },
+      {
+        "command": "git --no-optional-locks -C \"C:/Users/gknma/.codex/worktrees/agent-02-commerce/Debroder\" rev-parse --git-common-dir",
+        "exit": 0,
+        "output": [
+          "C:/Users/gknma/OneDrive/文档/GitHub/debroder.next/Debroder/.git"
+        ]
+      },
+      {
+        "command": "git --no-optional-locks -C \"C:/Users/gknma/.codex/worktrees/agent-02-commerce/Debroder\" rev-parse --absolute-git-dir",
+        "exit": 0,
+        "output": [
+          "C:/Users/gknma/OneDrive/文档/GitHub/debroder.next/Debroder/.git/worktrees/Debroder"
+        ]
+      }
+    ]
+  },
+  {
+    "path": "C:/Users/gknma/.codex/worktrees/agent-02-restore/Debroder",
+    "checks": [
+      {
+        "command": "git --no-optional-locks -C \"C:/Users/gknma/.codex/worktrees/agent-02-restore/Debroder\" rev-parse --show-toplevel",
+        "exit": 0,
+        "output": [
+          "C:/Users/gknma/.codex/worktrees/agent-02-restore/Debroder"
+        ]
+      },
+      {
+        "command": "git --no-optional-locks -C \"C:/Users/gknma/.codex/worktrees/agent-02-restore/Debroder\" branch --show-current",
+        "exit": 0,
+        "output": []
+      },
+      {
+        "command": "git --no-optional-locks -C \"C:/Users/gknma/.codex/worktrees/agent-02-restore/Debroder\" rev-parse HEAD",
+        "exit": 0,
+        "output": [
+          "726c69267a400730e894881d8ae8a44b32921b76"
+        ]
+      },
+      {
+        "command": "git --no-optional-locks -C \"C:/Users/gknma/.codex/worktrees/agent-02-restore/Debroder\" status --porcelain=v1 -b --untracked-files=all",
+        "exit": 0,
+        "output": [
+          "## HEAD (no branch)"
+        ]
+      },
+      {
+        "command": "git --no-optional-locks -C \"C:/Users/gknma/.codex/worktrees/agent-02-restore/Debroder\" rev-parse --git-common-dir",
+        "exit": 0,
+        "output": [
+          "C:/Users/gknma/OneDrive/文档/GitHub/debroder.next/Debroder/.git"
+        ]
+      },
+      {
+        "command": "git --no-optional-locks -C \"C:/Users/gknma/.codex/worktrees/agent-02-restore/Debroder\" rev-parse --absolute-git-dir",
+        "exit": 0,
+        "output": [
+          "C:/Users/gknma/OneDrive/文档/GitHub/debroder.next/Debroder/.git/worktrees/Debroder2"
+        ]
+      }
+    ]
+  },
+  {
+    "path": "C:/Users/gknma/.codex/worktrees/agent-04-qa/Debroder",
+    "checks": [
+      {
+        "command": "git --no-optional-locks -C \"C:/Users/gknma/.codex/worktrees/agent-04-qa/Debroder\" rev-parse --show-toplevel",
+        "exit": 0,
+        "output": [
+          "C:/Users/gknma/.codex/worktrees/agent-04-qa/Debroder"
+        ]
+      },
+      {
+        "command": "git --no-optional-locks -C \"C:/Users/gknma/.codex/worktrees/agent-04-qa/Debroder\" branch --show-current",
+        "exit": 0,
+        "output": [
+          "codex/agent-04-qa"
+        ]
+      },
+      {
+        "command": "git --no-optional-locks -C \"C:/Users/gknma/.codex/worktrees/agent-04-qa/Debroder\" rev-parse HEAD",
+        "exit": 0,
+        "output": [
+          "726c69267a400730e894881d8ae8a44b32921b76"
+        ]
+      },
+      {
+        "command": "git --no-optional-locks -C \"C:/Users/gknma/.codex/worktrees/agent-04-qa/Debroder\" status --porcelain=v1 -b --untracked-files=all",
+        "exit": 0,
+        "output": [
+          "## codex/agent-04-qa",
+          " M CURRENT_PHASE_HANDOFF.md",
+          "?? docs/agents/AGENT_04_PHASE04_QA_REPORT.md",
+          "?? docs/agents/AGENT_04_RESTORATION_REPORT.md",
+          "?? qa-artifacts/agent04-public-readonly-20261023/.last-run.json",
+          "?? qa-artifacts/agent04-wave2-storefront-20261023/.last-run.json",
+          "?? qa-artifacts/agent04-wave2-storefront-20261023/wave-2-storefront-public-s-37b48--matrix-is-healthy-at-390px-retry1/error-context.md",
+          "?? qa-artifacts/agent04-wave2-storefront-20261023/wave-2-storefront-public-s-37b48--matrix-is-healthy-at-390px-retry1/test-failed-1.png",
+          "?? qa-artifacts/agent04-wave2-storefront-20261023/wave-2-storefront-public-s-37b48--matrix-is-healthy-at-390px-retry1/video.webm",
+          "?? qa-artifacts/agent04-wave2-storefront-20261023/wave-2-storefront-public-s-37b48--matrix-is-healthy-at-390px/error-context.md",
+          "?? qa-artifacts/agent04-wave2-storefront-20261023/wave-2-storefront-public-s-37b48--matrix-is-healthy-at-390px/test-failed-1.png",
+          "?? qa-artifacts/agent04-wave2-storefront-20261023/wave-2-storefront-public-s-37b48--matrix-is-healthy-at-390px/video.webm"
+        ]
+      },
+      {
+        "command": "git --no-optional-locks -C \"C:/Users/gknma/.codex/worktrees/agent-04-qa/Debroder\" rev-parse --git-common-dir",
+        "exit": 0,
+        "output": [
+          "C:/Users/gknma/OneDrive/文档/GitHub/debroder.next/Debroder/.git"
+        ]
+      },
+      {
+        "command": "git --no-optional-locks -C \"C:/Users/gknma/.codex/worktrees/agent-04-qa/Debroder\" rev-parse --absolute-git-dir",
+        "exit": 0,
+        "output": [
+          "C:/Users/gknma/OneDrive/文档/GitHub/debroder.next/Debroder/.git/worktrees/Debroder1"
+        ]
+      }
+    ]
+  },
+  {
+    "path": "C:/Users/gknma/.codex/worktrees/agent-05-devops/Debroder",
+    "checks": [
+      {
+        "command": "git --no-optional-locks -C \"C:/Users/gknma/.codex/worktrees/agent-05-devops/Debroder\" rev-parse --show-toplevel",
+        "exit": 0,
+        "output": [
+          "C:/Users/gknma/.codex/worktrees/agent-05-devops/Debroder"
+        ]
+      },
+      {
+        "command": "git --no-optional-locks -C \"C:/Users/gknma/.codex/worktrees/agent-05-devops/Debroder\" branch --show-current",
+        "exit": 0,
+        "output": [
+          "codex/agent-05-devops"
+        ]
+      },
+      {
+        "command": "git --no-optional-locks -C \"C:/Users/gknma/.codex/worktrees/agent-05-devops/Debroder\" rev-parse HEAD",
+        "exit": 0,
+        "output": [
+          "726c69267a400730e894881d8ae8a44b32921b76"
+        ]
+      },
+      {
+        "command": "git --no-optional-locks -C \"C:/Users/gknma/.codex/worktrees/agent-05-devops/Debroder\" status --porcelain=v1 -b --untracked-files=all",
+        "exit": 0,
+        "output": [
+          "## codex/agent-05-devops",
+          " M CURRENT_PHASE_HANDOFF.md"
+        ]
+      },
+      {
+        "command": "git --no-optional-locks -C \"C:/Users/gknma/.codex/worktrees/agent-05-devops/Debroder\" rev-parse --git-common-dir",
+        "exit": 0,
+        "output": [
+          "C:/Users/gknma/OneDrive/文档/GitHub/debroder.next/Debroder/.git"
+        ]
+      },
+      {
+        "command": "git --no-optional-locks -C \"C:/Users/gknma/.codex/worktrees/agent-05-devops/Debroder\" rev-parse --absolute-git-dir",
+        "exit": 0,
+        "output": [
+          "C:/Users/gknma/OneDrive/文档/GitHub/debroder.next/Debroder/.git/worktrees/Debroder5"
+        ]
+      }
+    ]
+  },
+  {
+    "path": "C:/Users/gknma/.codex/worktrees/agent-06-asset-provenance/Debroder",
+    "checks": [
+      {
+        "command": "git --no-optional-locks -C \"C:/Users/gknma/.codex/worktrees/agent-06-asset-provenance/Debroder\" rev-parse --show-toplevel",
+        "exit": 0,
+        "output": [
+          "C:/Users/gknma/.codex/worktrees/agent-06-asset-provenance/Debroder"
+        ]
+      },
+      {
+        "command": "git --no-optional-locks -C \"C:/Users/gknma/.codex/worktrees/agent-06-asset-provenance/Debroder\" branch --show-current",
+        "exit": 0,
+        "output": [
+          "codex/agent-06-asset-provenance"
+        ]
+      },
+      {
+        "command": "git --no-optional-locks -C \"C:/Users/gknma/.codex/worktrees/agent-06-asset-provenance/Debroder\" rev-parse HEAD",
+        "exit": 0,
+        "output": [
+          "726c69267a400730e894881d8ae8a44b32921b76"
+        ]
+      },
+      {
+        "command": "git --no-optional-locks -C \"C:/Users/gknma/.codex/worktrees/agent-06-asset-provenance/Debroder\" status --porcelain=v1 -b --untracked-files=all",
+        "exit": 0,
+        "output": [
+          "## codex/agent-06-asset-provenance",
+          " M CURRENT_PHASE_HANDOFF.md",
+          "?? ASSET_INVENTORY.md",
+          "?? DEBRODER_VISUAL_ASSET_REPORT.md",
+          "?? docs/visual-assets/AGENT_06_PROVENANCE_FOLLOWUP.md",
+          "?? docs/visual-assets/ASSET_MANIFEST.md"
+        ]
+      },
+      {
+        "command": "git --no-optional-locks -C \"C:/Users/gknma/.codex/worktrees/agent-06-asset-provenance/Debroder\" rev-parse --git-common-dir",
+        "exit": 0,
+        "output": [
+          "C:/Users/gknma/OneDrive/文档/GitHub/debroder.next/Debroder/.git"
+        ]
+      },
+      {
+        "command": "git --no-optional-locks -C \"C:/Users/gknma/.codex/worktrees/agent-06-asset-provenance/Debroder\" rev-parse --absolute-git-dir",
+        "exit": 0,
+        "output": [
+          "C:/Users/gknma/OneDrive/文档/GitHub/debroder.next/Debroder/.git/worktrees/Debroder4"
+        ]
+      }
+    ]
+  },
+  {
+    "path": "C:/Users/gknma/.codex/worktrees/agent03-dbsec-20261022/Debroder",
+    "checks": [
+      {
+        "command": "git --no-optional-locks -C \"C:/Users/gknma/.codex/worktrees/agent03-dbsec-20261022/Debroder\" rev-parse --show-toplevel",
+        "exit": 0,
+        "output": [
+          "C:/Users/gknma/.codex/worktrees/agent03-dbsec-20261022/Debroder"
+        ]
+      },
+      {
+        "command": "git --no-optional-locks -C \"C:/Users/gknma/.codex/worktrees/agent03-dbsec-20261022/Debroder\" branch --show-current",
+        "exit": 0,
+        "output": [
+          "codex/agent-03-database-security"
+        ]
+      },
+      {
+        "command": "git --no-optional-locks -C \"C:/Users/gknma/.codex/worktrees/agent03-dbsec-20261022/Debroder\" rev-parse HEAD",
+        "exit": 0,
+        "output": [
+          "726c69267a400730e894881d8ae8a44b32921b76"
+        ]
+      },
+      {
+        "command": "git --no-optional-locks -C \"C:/Users/gknma/.codex/worktrees/agent03-dbsec-20261022/Debroder\" status --porcelain=v1 -b --untracked-files=all",
+        "exit": 0,
+        "output": [
+          "## codex/agent-03-database-security",
+          " M CURRENT_PHASE_HANDOFF.md",
+          "?? DEBRODER_DATABASE_SECURITY.md"
+        ]
+      },
+      {
+        "command": "git --no-optional-locks -C \"C:/Users/gknma/.codex/worktrees/agent03-dbsec-20261022/Debroder\" rev-parse --git-common-dir",
+        "exit": 0,
+        "output": [
+          "C:/Users/gknma/OneDrive/文档/GitHub/debroder.next/Debroder/.git"
+        ]
+      },
+      {
+        "command": "git --no-optional-locks -C \"C:/Users/gknma/.codex/worktrees/agent03-dbsec-20261022/Debroder\" rev-parse --absolute-git-dir",
+        "exit": 0,
+        "output": [
+          "C:/Users/gknma/OneDrive/文档/GitHub/debroder.next/Debroder/.git/worktrees/Debroder3"
+        ]
+      }
+    ]
+  }
+]

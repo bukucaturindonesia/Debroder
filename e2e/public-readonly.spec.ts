@@ -15,7 +15,7 @@ test("public shell and canonical read-only routes respond without mutation", asy
   await expect(page.locator("main").first()).toBeVisible();
 
   await page.goto("/cart", { waitUntil: "domcontentloaded" });
-  await expect(page).toHaveURL(/\/keranjang\/?$/);
+  await expect(page).toHaveURL(/\/cart\/?$/);
   await expect(page.locator("main").first()).toBeVisible();
 
   expect(consoleErrors).toEqual([]);

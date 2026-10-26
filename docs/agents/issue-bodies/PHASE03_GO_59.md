@@ -1,0 +1,1 @@
+Director authorization — Phase 03: Continue bounded read-only storefront impact review and provenance follow-up in codex/agent-06-asset-provenance. The metadata findings can affect homepage/category imagery, but do not publish/correct PIM/CMS or create assets. Request owner/PIM rights and mapping evidence; keep NO-GO for asset release until supplied.

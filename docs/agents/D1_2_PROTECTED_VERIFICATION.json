@@ -1,0 +1,1107 @@
+{
+  "checkedAt": "2026-10-25T14:12:54.0241499+08:00",
+  "count": 220,
+  "changed": 0,
+  "files": [
+    {
+      "path": "e2e/public-readonly.spec.ts",
+      "exists": true,
+      "unchanged": true
+    },
+    {
+      "path": "e2e/wave-2-storefront.spec.ts",
+      "exists": true,
+      "unchanged": true
+    },
+    {
+      "path": "playwright-report/index.html",
+      "exists": true,
+      "unchanged": true
+    },
+    {
+      "path": "test-results/.last-run.json",
+      "exists": false,
+      "unchanged": true
+    },
+    {
+      "path": "test-results/brochure-canonical-graphic-e03ed-release-pages-and-viewports/brochure-footer-1440.png",
+      "exists": false,
+      "unchanged": true
+    },
+    {
+      "path": "test-results/brochure-canonical-graphic-e03ed-release-pages-and-viewports/brochure-footer-390.png",
+      "exists": false,
+      "unchanged": true
+    },
+    {
+      "path": "test-results/brochure-canonical-graphic-e03ed-release-pages-and-viewports/brochure-header-1440.png",
+      "exists": false,
+      "unchanged": true
+    },
+    {
+      "path": "test-results/brochure-canonical-graphic-e03ed-release-pages-and-viewports/brochure-header-390.png",
+      "exists": false,
+      "unchanged": true
+    },
+    {
+      "path": "test-results/brochure-canonical-graphic-e03ed-release-pages-and-viewports/visual-restore-home-1440.png",
+      "exists": false,
+      "unchanged": true
+    },
+    {
+      "path": "test-results/brochure-canonical-graphic-e03ed-release-pages-and-viewports/visual-restore-home-1920.png",
+      "exists": false,
+      "unchanged": true
+    },
+    {
+      "path": "test-results/brochure-canonical-graphic-e03ed-release-pages-and-viewports/visual-restore-home-390.png",
+      "exists": false,
+      "unchanged": true
+    },
+    {
+      "path": "test-results/brochure-canonical-graphic-e03ed-release-pages-and-viewports/visual-restore-home-768.png",
+      "exists": false,
+      "unchanged": true
+    },
+    {
+      "path": "test-results/brochure-canonical-graphic-e03ed-release-pages-and-viewports/visual-restore-kontak-1440.png",
+      "exists": false,
+      "unchanged": true
+    },
+    {
+      "path": "test-results/brochure-canonical-graphic-e03ed-release-pages-and-viewports/visual-restore-kontak-1920.png",
+      "exists": false,
+      "unchanged": true
+    },
+    {
+      "path": "test-results/brochure-canonical-graphic-e03ed-release-pages-and-viewports/visual-restore-kontak-390.png",
+      "exists": false,
+      "unchanged": true
+    },
+    {
+      "path": "test-results/brochure-canonical-graphic-e03ed-release-pages-and-viewports/visual-restore-kontak-768.png",
+      "exists": false,
+      "unchanged": true
+    },
+    {
+      "path": "test-results/brochure-canonical-graphic-e03ed-release-pages-and-viewports/visual-restore-layanan-1440.png",
+      "exists": false,
+      "unchanged": true
+    },
+    {
+      "path": "test-results/brochure-canonical-graphic-e03ed-release-pages-and-viewports/visual-restore-layanan-1920.png",
+      "exists": false,
+      "unchanged": true
+    },
+    {
+      "path": "test-results/brochure-canonical-graphic-e03ed-release-pages-and-viewports/visual-restore-layanan-390.png",
+      "exists": false,
+      "unchanged": true
+    },
+    {
+      "path": "test-results/brochure-canonical-graphic-e03ed-release-pages-and-viewports/visual-restore-layanan-768.png",
+      "exists": false,
+      "unchanged": true
+    },
+    {
+      "path": "test-results/brochure-canonical-graphic-e03ed-release-pages-and-viewports/visual-restore-produk-1440.png",
+      "exists": false,
+      "unchanged": true
+    },
+    {
+      "path": "test-results/brochure-canonical-graphic-e03ed-release-pages-and-viewports/visual-restore-produk-1920.png",
+      "exists": false,
+      "unchanged": true
+    },
+    {
+      "path": "test-results/brochure-canonical-graphic-e03ed-release-pages-and-viewports/visual-restore-produk-390.png",
+      "exists": false,
+      "unchanged": true
+    },
+    {
+      "path": "test-results/brochure-canonical-graphic-e03ed-release-pages-and-viewports/visual-restore-produk-768.png",
+      "exists": false,
+      "unchanged": true
+    },
+    {
+      "path": "test-results/brochure-canonical-graphic-e03ed-release-pages-and-viewports/visual-restore-tentang-1440.png",
+      "exists": false,
+      "unchanged": true
+    },
+    {
+      "path": "test-results/brochure-canonical-graphic-e03ed-release-pages-and-viewports/visual-restore-tentang-1920.png",
+      "exists": false,
+      "unchanged": true
+    },
+    {
+      "path": "test-results/brochure-canonical-graphic-e03ed-release-pages-and-viewports/visual-restore-tentang-390.png",
+      "exists": false,
+      "unchanged": true
+    },
+    {
+      "path": "test-results/brochure-canonical-graphic-e03ed-release-pages-and-viewports/visual-restore-tentang-768.png",
+      "exists": false,
+      "unchanged": true
+    },
+    {
+      "path": "test-results/brochure-complete-storefro-4e569--responsive-public-surfaces/account-1440.png",
+      "exists": false,
+      "unchanged": true
+    },
+    {
+      "path": "test-results/brochure-complete-storefro-4e569--responsive-public-surfaces/account-1920.png",
+      "exists": false,
+      "unchanged": true
+    },
+    {
+      "path": "test-results/brochure-complete-storefro-4e569--responsive-public-surfaces/account-390.png",
+      "exists": false,
+      "unchanged": true
+    },
+    {
+      "path": "test-results/brochure-complete-storefro-4e569--responsive-public-surfaces/account-768.png",
+      "exists": false,
+      "unchanged": true
+    },
+    {
+      "path": "test-results/brochure-complete-storefro-4e569--responsive-public-surfaces/cart-1440.png",
+      "exists": false,
+      "unchanged": true
+    },
+    {
+      "path": "test-results/brochure-complete-storefro-4e569--responsive-public-surfaces/cart-1920.png",
+      "exists": false,
+      "unchanged": true
+    },
+    {
+      "path": "test-results/brochure-complete-storefro-4e569--responsive-public-surfaces/cart-390.png",
+      "exists": false,
+      "unchanged": true
+    },
+    {
+      "path": "test-results/brochure-complete-storefro-4e569--responsive-public-surfaces/cart-768.png",
+      "exists": false,
+      "unchanged": true
+    },
+    {
+      "path": "test-results/brochure-complete-storefro-4e569--responsive-public-surfaces/home-1440.png",
+      "exists": false,
+      "unchanged": true
+    },
+    {
+      "path": "test-results/brochure-complete-storefro-4e569--responsive-public-surfaces/home-1920.png",
+      "exists": false,
+      "unchanged": true
+    },
+    {
+      "path": "test-results/brochure-complete-storefro-4e569--responsive-public-surfaces/home-390.png",
+      "exists": false,
+      "unchanged": true
+    },
+    {
+      "path": "test-results/brochure-complete-storefro-4e569--responsive-public-surfaces/home-768.png",
+      "exists": false,
+      "unchanged": true
+    },
+    {
+      "path": "test-results/brochure-complete-storefro-4e569--responsive-public-surfaces/kaos-polos-1440.png",
+      "exists": false,
+      "unchanged": true
+    },
+    {
+      "path": "test-results/brochure-complete-storefro-4e569--responsive-public-surfaces/kaos-polos-1920.png",
+      "exists": false,
+      "unchanged": true
+    },
+    {
+      "path": "test-results/brochure-complete-storefro-4e569--responsive-public-surfaces/kaos-polos-390.png",
+      "exists": false,
+      "unchanged": true
+    },
+    {
+      "path": "test-results/brochure-complete-storefro-4e569--responsive-public-surfaces/kaos-polos-768.png",
+      "exists": false,
+      "unchanged": true
+    },
+    {
+      "path": "test-results/brochure-complete-storefro-4e569--responsive-public-surfaces/koleksi-1440.png",
+      "exists": false,
+      "unchanged": true
+    },
+    {
+      "path": "test-results/brochure-complete-storefro-4e569--responsive-public-surfaces/koleksi-1920.png",
+      "exists": false,
+      "unchanged": true
+    },
+    {
+      "path": "test-results/brochure-complete-storefro-4e569--responsive-public-surfaces/koleksi-390.png",
+      "exists": false,
+      "unchanged": true
+    },
+    {
+      "path": "test-results/brochure-complete-storefro-4e569--responsive-public-surfaces/koleksi-768.png",
+      "exists": false,
+      "unchanged": true
+    },
+    {
+      "path": "test-results/brochure-homepage-and-empt-8f001-on-small-mobile-and-desktop/homepage-1440.png",
+      "exists": false,
+      "unchanged": true
+    },
+    {
+      "path": "test-results/brochure-homepage-and-empt-8f001-on-small-mobile-and-desktop/homepage-320.png",
+      "exists": false,
+      "unchanged": true
+    },
+    {
+      "path": "test-results/brochure-homepage-and-empt-8f001-on-small-mobile-and-desktop/homepage-390.png",
+      "exists": false,
+      "unchanged": true
+    },
+    {
+      "path": "test-results/brochure-homepage-and-empt-8f001-on-small-mobile-and-desktop/products-1440.png",
+      "exists": false,
+      "unchanged": true
+    },
+    {
+      "path": "test-results/brochure-homepage-and-empt-8f001-on-small-mobile-and-desktop/products-320.png",
+      "exists": false,
+      "unchanged": true
+    },
+    {
+      "path": "test-results/brochure-homepage-and-empt-8f001-on-small-mobile-and-desktop/products-390.png",
+      "exists": false,
+      "unchanged": true
+    },
+    {
+      "path": "test-results/.playwright-artifacts-0/0e734ce4dc425952a422b094f273b07f.png",
+      "exists": true,
+      "unchanged": true
+    },
+    {
+      "path": "test-results/.playwright-artifacts-0/3cec0612daa18aadcbcaa83e2f18072a.png",
+      "exists": true,
+      "unchanged": true
+    },
+    {
+      "path": "test-results/.playwright-artifacts-0/731abcffa7e5c9348de312d0d617229b.png",
+      "exists": true,
+      "unchanged": true
+    },
+    {
+      "path": "test-results/.playwright-artifacts-0/94482cb6024406a17d52d405187cfec4.png",
+      "exists": true,
+      "unchanged": true
+    },
+    {
+      "path": "test-results/.playwright-artifacts-0/ae44f979a6a55420880cf143ca3f2b68.png",
+      "exists": true,
+      "unchanged": true
+    },
+    {
+      "path": "test-results/.playwright-artifacts-0/c7a7cc3e8d3ddab1ff7a8472a75c92bd.png",
+      "exists": true,
+      "unchanged": true
+    },
+    {
+      "path": "test-results/.playwright-artifacts-0/cea562aa81ec7d4b52c1563bd169604a.png",
+      "exists": true,
+      "unchanged": true
+    },
+    {
+      "path": "test-results/.playwright-artifacts-0/fdab68b8a531d03ca0b17ee19e30a09d.png",
+      "exists": true,
+      "unchanged": true
+    },
+    {
+      "path": "test-results/.playwright-artifacts-0/page@06e6c0b59888e42f02f5d9855ed6fb8e.webm",
+      "exists": true,
+      "unchanged": true
+    },
+    {
+      "path": "test-results/.playwright-artifacts-0/page@0cde496539e929d689d29b6f51e1a250.webm",
+      "exists": true,
+      "unchanged": true
+    },
+    {
+      "path": "test-results/.playwright-artifacts-0/page@61920435115056f13e2c2bf7dbc7f678.webm",
+      "exists": true,
+      "unchanged": true
+    },
+    {
+      "path": "test-results/.playwright-artifacts-0/page@7aff45f5d7688101c584fd222627481a.webm",
+      "exists": true,
+      "unchanged": true
+    },
+    {
+      "path": "test-results/.playwright-artifacts-0/page@c2c36a8999f2934192de0d3fbdba31e7.webm",
+      "exists": true,
+      "unchanged": true
+    },
+    {
+      "path": "test-results/.playwright-artifacts-0/page@f0ccea4691c831e6da2df7e0f3784514.webm",
+      "exists": true,
+      "unchanged": true
+    },
+    {
+      "path": "test-results/.playwright-artifacts-0/page@f34a1ab025bf33446210d9d23e00d6ef.webm",
+      "exists": true,
+      "unchanged": true
+    },
+    {
+      "path": "test-results/.playwright-artifacts-0/page@fdf45ae843289aeb1895154f5eea0ae7.webm",
+      "exists": true,
+      "unchanged": true
+    },
+    {
+      "path": "test-results/.playwright-artifacts-0/page@fdf720f6d3ce3a5cf3295d1bd052d273.webm",
+      "exists": true,
+      "unchanged": true
+    },
+    {
+      "path": "test-results/.playwright-artifacts-0/traces/18bfc84df2c9c0d9ac4c-154f7afc74108d8e3d12-recording3.network",
+      "exists": true,
+      "unchanged": true
+    },
+    {
+      "path": "test-results/.playwright-artifacts-0/traces/18bfc84df2c9c0d9ac4c-154f7afc74108d8e3d12-recording3.trace",
+      "exists": true,
+      "unchanged": true
+    },
+    {
+      "path": "test-results/.playwright-artifacts-0/traces/18bfc84df2c9c0d9ac4c-1670c68b7f33626effdb-recording5.network",
+      "exists": true,
+      "unchanged": true
+    },
+    {
+      "path": "test-results/.playwright-artifacts-0/traces/18bfc84df2c9c0d9ac4c-1670c68b7f33626effdb-recording5.trace",
+      "exists": true,
+      "unchanged": true
+    },
+    {
+      "path": "test-results/.playwright-artifacts-0/traces/18bfc84df2c9c0d9ac4c-204cc2400052b2276cc2-recording2.network",
+      "exists": true,
+      "unchanged": true
+    },
+    {
+      "path": "test-results/.playwright-artifacts-0/traces/18bfc84df2c9c0d9ac4c-204cc2400052b2276cc2-recording2.trace",
+      "exists": true,
+      "unchanged": true
+    },
+    {
+      "path": "test-results/.playwright-artifacts-0/traces/18bfc84df2c9c0d9ac4c-3ea8cc09930939ce92db.network",
+      "exists": true,
+      "unchanged": true
+    },
+    {
+      "path": "test-results/.playwright-artifacts-0/traces/18bfc84df2c9c0d9ac4c-3ea8cc09930939ce92db.trace",
+      "exists": true,
+      "unchanged": true
+    },
+    {
+      "path": "test-results/.playwright-artifacts-0/traces/18bfc84df2c9c0d9ac4c-60959fd0708e22d8f4cb-recording8.network",
+      "exists": true,
+      "unchanged": true
+    },
+    {
+      "path": "test-results/.playwright-artifacts-0/traces/18bfc84df2c9c0d9ac4c-60959fd0708e22d8f4cb-recording8.trace",
+      "exists": true,
+      "unchanged": true
+    },
+    {
+      "path": "test-results/.playwright-artifacts-0/traces/18bfc84df2c9c0d9ac4c-8ccfd1ce8700fc1d0195-recording6.network",
+      "exists": true,
+      "unchanged": true
+    },
+    {
+      "path": "test-results/.playwright-artifacts-0/traces/18bfc84df2c9c0d9ac4c-8ccfd1ce8700fc1d0195-recording6.trace",
+      "exists": true,
+      "unchanged": true
+    },
+    {
+      "path": "test-results/.playwright-artifacts-0/traces/18bfc84df2c9c0d9ac4c-a9289eb394ce0db497dc-recording4.network",
+      "exists": true,
+      "unchanged": true
+    },
+    {
+      "path": "test-results/.playwright-artifacts-0/traces/18bfc84df2c9c0d9ac4c-a9289eb394ce0db497dc-recording4.trace",
+      "exists": true,
+      "unchanged": true
+    },
+    {
+      "path": "test-results/.playwright-artifacts-0/traces/18bfc84df2c9c0d9ac4c-a938d95aa1de153aa8b8-recording7.network",
+      "exists": true,
+      "unchanged": true
+    },
+    {
+      "path": "test-results/.playwright-artifacts-0/traces/18bfc84df2c9c0d9ac4c-a938d95aa1de153aa8b8-recording7.trace",
+      "exists": true,
+      "unchanged": true
+    },
+    {
+      "path": "test-results/.playwright-artifacts-0/traces/18bfc84df2c9c0d9ac4c-ce34ed6a223812527b4b-recording1.network",
+      "exists": true,
+      "unchanged": true
+    },
+    {
+      "path": "test-results/.playwright-artifacts-0/traces/18bfc84df2c9c0d9ac4c-ce34ed6a223812527b4b-recording1.trace",
+      "exists": true,
+      "unchanged": true
+    },
+    {
+      "path": "test-results/.playwright-artifacts-0/traces/resources/0557bb0b04c42236ad44cddf8553150870be0487.svg",
+      "exists": true,
+      "unchanged": true
+    },
+    {
+      "path": "test-results/.playwright-artifacts-0/traces/resources/06f304c9ba773d8b240e439921a049ecb153dcac.html",
+      "exists": true,
+      "unchanged": true
+    },
+    {
+      "path": "test-results/.playwright-artifacts-0/traces/resources/0c20e49955baedc793150b8ed4570cd1bfbfba43.webp",
+      "exists": true,
+      "unchanged": true
+    },
+    {
+      "path": "test-results/.playwright-artifacts-0/traces/resources/1c6d9f4d07136e411d7061a5859d48b93175d11e.svg",
+      "exists": true,
+      "unchanged": true
+    },
+    {
+      "path": "test-results/.playwright-artifacts-0/traces/resources/207e036dcc226f43518e08fe7f1b600bb1240004.webp",
+      "exists": true,
+      "unchanged": true
+    },
+    {
+      "path": "test-results/.playwright-artifacts-0/traces/resources/22064e37d48d93613c8486ebe5efea489f9a6a7c.html",
+      "exists": true,
+      "unchanged": true
+    },
+    {
+      "path": "test-results/.playwright-artifacts-0/traces/resources/22af3203d4eaa8a079eeb490cbeb3d225742b14f.svg",
+      "exists": true,
+      "unchanged": true
+    },
+    {
+      "path": "test-results/.playwright-artifacts-0/traces/resources/2403762621f693d4c745deb62bede34ebdd5f6e3.html",
+      "exists": true,
+      "unchanged": true
+    },
+    {
+      "path": "test-results/.playwright-artifacts-0/traces/resources/2a7c92de0c02ef0aefaffb2feff98c5c813af8a4.svg",
+      "exists": true,
+      "unchanged": true
+    },
+    {
+      "path": "test-results/.playwright-artifacts-0/traces/resources/31dfbb3814af9c3e5439ca8a5e48247c.jsonl",
+      "exists": true,
+      "unchanged": true
+    },
+    {
+      "path": "test-results/.playwright-artifacts-0/traces/resources/33391c45459affada02330dcf5ce724754067cf8.svg",
+      "exists": true,
+      "unchanged": true
+    },
+    {
+      "path": "test-results/.playwright-artifacts-0/traces/resources/3592cafd463a31ddc45879b542f12b23dd3dbf9c.html",
+      "exists": true,
+      "unchanged": true
+    },
+    {
+      "path": "test-results/.playwright-artifacts-0/traces/resources/37ee480c2f4028b3f7ea50251d6dbeddbcc6a88f.webp",
+      "exists": true,
+      "unchanged": true
+    },
+    {
+      "path": "test-results/.playwright-artifacts-0/traces/resources/3edde736ad135477e1990240e14ce7641a63b569.svg",
+      "exists": true,
+      "unchanged": true
+    },
+    {
+      "path": "test-results/.playwright-artifacts-0/traces/resources/437958d7ff4507ad6bd0e66799e3160d.jsonl",
+      "exists": true,
+      "unchanged": true
+    },
+    {
+      "path": "test-results/.playwright-artifacts-0/traces/resources/49141014edb4b43ed97753d838f85e00e1c77880.css",
+      "exists": true,
+      "unchanged": true
+    },
+    {
+      "path": "test-results/.playwright-artifacts-0/traces/resources/5b3ed2c6f0d61786577cb09684ced5c7324f12ab.svg",
+      "exists": true,
+      "unchanged": true
+    },
+    {
+      "path": "test-results/.playwright-artifacts-0/traces/resources/739a3702e4e2d75bff4ac6f7cc84dfaaa11852f8.html",
+      "exists": true,
+      "unchanged": true
+    },
+    {
+      "path": "test-results/.playwright-artifacts-0/traces/resources/747359be0bfe6a6b66be835e6898cb516fec2e03.svg",
+      "exists": true,
+      "unchanged": true
+    },
+    {
+      "path": "test-results/.playwright-artifacts-0/traces/resources/7fbe5c07208b38fc0082e285ae7fedc93ebcb0c7.svg",
+      "exists": true,
+      "unchanged": true
+    },
+    {
+      "path": "test-results/.playwright-artifacts-0/traces/resources/829b0dec984e44d622d64de48e30db06.jsonl",
+      "exists": true,
+      "unchanged": true
+    },
+    {
+      "path": "test-results/.playwright-artifacts-0/traces/resources/8321bad8c86377217ef74cf086b4200f10abd018.html",
+      "exists": true,
+      "unchanged": true
+    },
+    {
+      "path": "test-results/.playwright-artifacts-0/traces/resources/956790a3917690c84a45645dc96ebd64.jsonl",
+      "exists": true,
+      "unchanged": true
+    },
+    {
+      "path": "test-results/.playwright-artifacts-0/traces/resources/9cb66444e26c54b235b893707396a429.jsonl",
+      "exists": true,
+      "unchanged": true
+    },
+    {
+      "path": "test-results/.playwright-artifacts-0/traces/resources/a27aebf39a41ff1848ee3cfe93ac4f23c2698d3c.svg",
+      "exists": true,
+      "unchanged": true
+    },
+    {
+      "path": "test-results/.playwright-artifacts-0/traces/resources/a28e6c16f83323dd5e66b752b7e0fb65a541e973.webp",
+      "exists": true,
+      "unchanged": true
+    },
+    {
+      "path": "test-results/.playwright-artifacts-0/traces/resources/a854b0349117cc886845efa65e930995.jsonl",
+      "exists": true,
+      "unchanged": true
+    },
+    {
+      "path": "test-results/.playwright-artifacts-0/traces/resources/cfc70f823b7c67bb54a210879c3071637f4b8f04.woff2",
+      "exists": true,
+      "unchanged": true
+    },
+    {
+      "path": "test-results/.playwright-artifacts-0/traces/resources/d00557f00c60f403878bf02d3d7b53d6f4fc55ac.svg",
+      "exists": true,
+      "unchanged": true
+    },
+    {
+      "path": "test-results/.playwright-artifacts-0/traces/resources/d91c72c00b1e4d61de01907799e7f56975858ee6.html",
+      "exists": true,
+      "unchanged": true
+    },
+    {
+      "path": "test-results/.playwright-artifacts-0/traces/resources/ea4235fae10d32a7295e1f7ed7233007.jsonl",
+      "exists": true,
+      "unchanged": true
+    },
+    {
+      "path": "test-results/.playwright-artifacts-0/traces/resources/f26273b80dcd227291da038e10504bea3ec224ad.html",
+      "exists": true,
+      "unchanged": true
+    },
+    {
+      "path": "test-results/.playwright-artifacts-0/traces/resources/f827a6840d95fc7d108e5f295ecc3c4b1e8f1291.html",
+      "exists": true,
+      "unchanged": true
+    },
+    {
+      "path": "test-results/.playwright-artifacts-0/traces/resources/f9d1f6066d676026efc9182493330f5138145bf7.svg",
+      "exists": true,
+      "unchanged": true
+    },
+    {
+      "path": "test-results/.playwright-artifacts-0/traces/resources/fc57809d5d5c39291fd3fff17f8725dd.jsonl",
+      "exists": true,
+      "unchanged": true
+    },
+    {
+      "path": "test-results/.playwright-artifacts-0/traces/resources/fd58c58ec1e69001f111e3ad8984a0eb247772c4.svg",
+      "exists": true,
+      "unchanged": true
+    },
+    {
+      "path": "test-results/.playwright-artifacts-0/traces/resources/page@06e6c0b59888e42f02f5d9855ed6fb8e-1792681886006.jpeg",
+      "exists": true,
+      "unchanged": true
+    },
+    {
+      "path": "test-results/.playwright-artifacts-0/traces/resources/page@06e6c0b59888e42f02f5d9855ed6fb8e-1792681888026.jpeg",
+      "exists": true,
+      "unchanged": true
+    },
+    {
+      "path": "test-results/.playwright-artifacts-0/traces/resources/page@06e6c0b59888e42f02f5d9855ed6fb8e-1792681888234.jpeg",
+      "exists": true,
+      "unchanged": true
+    },
+    {
+      "path": "test-results/.playwright-artifacts-0/traces/resources/page@06e6c0b59888e42f02f5d9855ed6fb8e-1792681888453.jpeg",
+      "exists": true,
+      "unchanged": true
+    },
+    {
+      "path": "test-results/.playwright-artifacts-0/traces/resources/page@06e6c0b59888e42f02f5d9855ed6fb8e-1792681888669.jpeg",
+      "exists": true,
+      "unchanged": true
+    },
+    {
+      "path": "test-results/.playwright-artifacts-0/traces/resources/page@06e6c0b59888e42f02f5d9855ed6fb8e-1792681889038.jpeg",
+      "exists": true,
+      "unchanged": true
+    },
+    {
+      "path": "test-results/.playwright-artifacts-0/traces/resources/page@06e6c0b59888e42f02f5d9855ed6fb8e-1792681891699.jpeg",
+      "exists": true,
+      "unchanged": true
+    },
+    {
+      "path": "test-results/.playwright-artifacts-0/traces/resources/page@06e6c0b59888e42f02f5d9855ed6fb8e-1792681891888.jpeg",
+      "exists": true,
+      "unchanged": true
+    },
+    {
+      "path": "test-results/.playwright-artifacts-0/traces/resources/page@06e6c0b59888e42f02f5d9855ed6fb8e-1792681891954.jpeg",
+      "exists": true,
+      "unchanged": true
+    },
+    {
+      "path": "test-results/.playwright-artifacts-0/traces/resources/page@0cde496539e929d689d29b6f51e1a250-1792681921792.jpeg",
+      "exists": true,
+      "unchanged": true
+    },
+    {
+      "path": "test-results/.playwright-artifacts-0/traces/resources/page@0cde496539e929d689d29b6f51e1a250-1792681923510.jpeg",
+      "exists": true,
+      "unchanged": true
+    },
+    {
+      "path": "test-results/.playwright-artifacts-0/traces/resources/page@0cde496539e929d689d29b6f51e1a250-1792681923748.jpeg",
+      "exists": true,
+      "unchanged": true
+    },
+    {
+      "path": "test-results/.playwright-artifacts-0/traces/resources/page@0cde496539e929d689d29b6f51e1a250-1792681923963.jpeg",
+      "exists": true,
+      "unchanged": true
+    },
+    {
+      "path": "test-results/.playwright-artifacts-0/traces/resources/page@0cde496539e929d689d29b6f51e1a250-1792681927242.jpeg",
+      "exists": true,
+      "unchanged": true
+    },
+    {
+      "path": "test-results/.playwright-artifacts-0/traces/resources/page@0cde496539e929d689d29b6f51e1a250-1792681927507.jpeg",
+      "exists": true,
+      "unchanged": true
+    },
+    {
+      "path": "test-results/.playwright-artifacts-0/traces/resources/page@0cde496539e929d689d29b6f51e1a250-1792681927577.jpeg",
+      "exists": true,
+      "unchanged": true
+    },
+    {
+      "path": "test-results/.playwright-artifacts-0/traces/resources/page@61920435115056f13e2c2bf7dbc7f678-1792681876110.jpeg",
+      "exists": true,
+      "unchanged": true
+    },
+    {
+      "path": "test-results/.playwright-artifacts-0/traces/resources/page@61920435115056f13e2c2bf7dbc7f678-1792681876117.jpeg",
+      "exists": true,
+      "unchanged": true
+    },
+    {
+      "path": "test-results/.playwright-artifacts-0/traces/resources/page@61920435115056f13e2c2bf7dbc7f678-1792681878494.jpeg",
+      "exists": true,
+      "unchanged": true
+    },
+    {
+      "path": "test-results/.playwright-artifacts-0/traces/resources/page@61920435115056f13e2c2bf7dbc7f678-1792681878728.jpeg",
+      "exists": true,
+      "unchanged": true
+    },
+    {
+      "path": "test-results/.playwright-artifacts-0/traces/resources/page@61920435115056f13e2c2bf7dbc7f678-1792681879042.jpeg",
+      "exists": true,
+      "unchanged": true
+    },
+    {
+      "path": "test-results/.playwright-artifacts-0/traces/resources/page@61920435115056f13e2c2bf7dbc7f678-1792681879249.jpeg",
+      "exists": true,
+      "unchanged": true
+    },
+    {
+      "path": "test-results/.playwright-artifacts-0/traces/resources/page@61920435115056f13e2c2bf7dbc7f678-1792681883739.jpeg",
+      "exists": true,
+      "unchanged": true
+    },
+    {
+      "path": "test-results/.playwright-artifacts-0/traces/resources/page@61920435115056f13e2c2bf7dbc7f678-1792681883742.jpeg",
+      "exists": true,
+      "unchanged": true
+    },
+    {
+      "path": "test-results/.playwright-artifacts-0/traces/resources/page@61920435115056f13e2c2bf7dbc7f678-1792681883743.jpeg",
+      "exists": true,
+      "unchanged": true
+    },
+    {
+      "path": "test-results/.playwright-artifacts-0/traces/resources/page@7aff45f5d7688101c584fd222627481a-1792681900504.jpeg",
+      "exists": true,
+      "unchanged": true
+    },
+    {
+      "path": "test-results/.playwright-artifacts-0/traces/resources/page@7aff45f5d7688101c584fd222627481a-1792681900516.jpeg",
+      "exists": true,
+      "unchanged": true
+    },
+    {
+      "path": "test-results/.playwright-artifacts-0/traces/resources/page@7aff45f5d7688101c584fd222627481a-1792681902953.jpeg",
+      "exists": true,
+      "unchanged": true
+    },
+    {
+      "path": "test-results/.playwright-artifacts-0/traces/resources/page@7aff45f5d7688101c584fd222627481a-1792681903172.jpeg",
+      "exists": true,
+      "unchanged": true
+    },
+    {
+      "path": "test-results/.playwright-artifacts-0/traces/resources/page@7aff45f5d7688101c584fd222627481a-1792681903396.jpeg",
+      "exists": true,
+      "unchanged": true
+    },
+    {
+      "path": "test-results/.playwright-artifacts-0/traces/resources/page@7aff45f5d7688101c584fd222627481a-1792681903626.jpeg",
+      "exists": true,
+      "unchanged": true
+    },
+    {
+      "path": "test-results/.playwright-artifacts-0/traces/resources/page@7aff45f5d7688101c584fd222627481a-1792681904018.jpeg",
+      "exists": true,
+      "unchanged": true
+    },
+    {
+      "path": "test-results/.playwright-artifacts-0/traces/resources/page@7aff45f5d7688101c584fd222627481a-1792681904228.jpeg",
+      "exists": true,
+      "unchanged": true
+    },
+    {
+      "path": "test-results/.playwright-artifacts-0/traces/resources/page@7aff45f5d7688101c584fd222627481a-1792681904484.jpeg",
+      "exists": true,
+      "unchanged": true
+    },
+    {
+      "path": "test-results/.playwright-artifacts-0/traces/resources/page@7aff45f5d7688101c584fd222627481a-1792681908397.jpeg",
+      "exists": true,
+      "unchanged": true
+    },
+    {
+      "path": "test-results/.playwright-artifacts-0/traces/resources/page@7aff45f5d7688101c584fd222627481a-1792681908682.jpeg",
+      "exists": true,
+      "unchanged": true
+    },
+    {
+      "path": "test-results/.playwright-artifacts-0/traces/resources/page@7aff45f5d7688101c584fd222627481a-1792681908759.jpeg",
+      "exists": true,
+      "unchanged": true
+    },
+    {
+      "path": "test-results/.playwright-artifacts-0/traces/resources/page@c2c36a8999f2934192de0d3fbdba31e7-1792681893097.jpeg",
+      "exists": true,
+      "unchanged": true
+    },
+    {
+      "path": "test-results/.playwright-artifacts-0/traces/resources/page@c2c36a8999f2934192de0d3fbdba31e7-1792681894412.jpeg",
+      "exists": true,
+      "unchanged": true
+    },
+    {
+      "path": "test-results/.playwright-artifacts-0/traces/resources/page@c2c36a8999f2934192de0d3fbdba31e7-1792681894627.jpeg",
+      "exists": true,
+      "unchanged": true
+    },
+    {
+      "path": "test-results/.playwright-artifacts-0/traces/resources/page@c2c36a8999f2934192de0d3fbdba31e7-1792681894849.jpeg",
+      "exists": true,
+      "unchanged": true
+    },
+    {
+      "path": "test-results/.playwright-artifacts-0/traces/resources/page@c2c36a8999f2934192de0d3fbdba31e7-1792681895423.jpeg",
+      "exists": true,
+      "unchanged": true
+    },
+    {
+      "path": "test-results/.playwright-artifacts-0/traces/resources/page@c2c36a8999f2934192de0d3fbdba31e7-1792681898504.jpeg",
+      "exists": true,
+      "unchanged": true
+    },
+    {
+      "path": "test-results/.playwright-artifacts-0/traces/resources/page@c2c36a8999f2934192de0d3fbdba31e7-1792681898705.jpeg",
+      "exists": true,
+      "unchanged": true
+    },
+    {
+      "path": "test-results/.playwright-artifacts-0/traces/resources/page@c2c36a8999f2934192de0d3fbdba31e7-1792681898768.jpeg",
+      "exists": true,
+      "unchanged": true
+    },
+    {
+      "path": "test-results/.playwright-artifacts-0/traces/resources/page@f0ccea4691c831e6da2df7e0f3784514-1792681867856.jpeg",
+      "exists": true,
+      "unchanged": true
+    },
+    {
+      "path": "test-results/.playwright-artifacts-0/traces/resources/page@f0ccea4691c831e6da2df7e0f3784514-1792681867886.jpeg",
+      "exists": true,
+      "unchanged": true
+    },
+    {
+      "path": "test-results/.playwright-artifacts-0/traces/resources/page@f0ccea4691c831e6da2df7e0f3784514-1792681869733.jpeg",
+      "exists": true,
+      "unchanged": true
+    },
+    {
+      "path": "test-results/.playwright-artifacts-0/traces/resources/page@f0ccea4691c831e6da2df7e0f3784514-1792681869941.jpeg",
+      "exists": true,
+      "unchanged": true
+    },
+    {
+      "path": "test-results/.playwright-artifacts-0/traces/resources/page@f0ccea4691c831e6da2df7e0f3784514-1792681870159.jpeg",
+      "exists": true,
+      "unchanged": true
+    },
+    {
+      "path": "test-results/.playwright-artifacts-0/traces/resources/page@f0ccea4691c831e6da2df7e0f3784514-1792681870711.jpeg",
+      "exists": true,
+      "unchanged": true
+    },
+    {
+      "path": "test-results/.playwright-artifacts-0/traces/resources/page@f0ccea4691c831e6da2df7e0f3784514-1792681873507.jpeg",
+      "exists": true,
+      "unchanged": true
+    },
+    {
+      "path": "test-results/.playwright-artifacts-0/traces/resources/page@f0ccea4691c831e6da2df7e0f3784514-1792681873537.jpeg",
+      "exists": true,
+      "unchanged": true
+    },
+    {
+      "path": "test-results/.playwright-artifacts-0/traces/resources/page@f0ccea4691c831e6da2df7e0f3784514-1792681873588.jpeg",
+      "exists": true,
+      "unchanged": true
+    },
+    {
+      "path": "test-results/.playwright-artifacts-0/traces/resources/page@f34a1ab025bf33446210d9d23e00d6ef-1792681928897.jpeg",
+      "exists": true,
+      "unchanged": true
+    },
+    {
+      "path": "test-results/.playwright-artifacts-0/traces/resources/page@f34a1ab025bf33446210d9d23e00d6ef-1792681938567.jpeg",
+      "exists": true,
+      "unchanged": true
+    },
+    {
+      "path": "test-results/.playwright-artifacts-0/traces/resources/page@f34a1ab025bf33446210d9d23e00d6ef-1792681938776.jpeg",
+      "exists": true,
+      "unchanged": true
+    },
+    {
+      "path": "test-results/.playwright-artifacts-0/traces/resources/page@f34a1ab025bf33446210d9d23e00d6ef-1792681938993.jpeg",
+      "exists": true,
+      "unchanged": true
+    },
+    {
+      "path": "test-results/.playwright-artifacts-0/traces/resources/page@f34a1ab025bf33446210d9d23e00d6ef-1792681939207.jpeg",
+      "exists": true,
+      "unchanged": true
+    },
+    {
+      "path": "test-results/.playwright-artifacts-0/traces/resources/page@f34a1ab025bf33446210d9d23e00d6ef-1792681939413.jpeg",
+      "exists": true,
+      "unchanged": true
+    },
+    {
+      "path": "test-results/.playwright-artifacts-0/traces/resources/page@f34a1ab025bf33446210d9d23e00d6ef-1792681939635.jpeg",
+      "exists": true,
+      "unchanged": true
+    },
+    {
+      "path": "test-results/.playwright-artifacts-0/traces/resources/page@f34a1ab025bf33446210d9d23e00d6ef-1792681939845.jpeg",
+      "exists": true,
+      "unchanged": true
+    },
+    {
+      "path": "test-results/.playwright-artifacts-0/traces/resources/page@f34a1ab025bf33446210d9d23e00d6ef-1792681940060.jpeg",
+      "exists": true,
+      "unchanged": true
+    },
+    {
+      "path": "test-results/.playwright-artifacts-0/traces/resources/page@f34a1ab025bf33446210d9d23e00d6ef-1792681940289.jpeg",
+      "exists": true,
+      "unchanged": true
+    },
+    {
+      "path": "test-results/.playwright-artifacts-0/traces/resources/page@f34a1ab025bf33446210d9d23e00d6ef-1792681940502.jpeg",
+      "exists": true,
+      "unchanged": true
+    },
+    {
+      "path": "test-results/.playwright-artifacts-0/traces/resources/page@f34a1ab025bf33446210d9d23e00d6ef-1792681940717.jpeg",
+      "exists": true,
+      "unchanged": true
+    },
+    {
+      "path": "test-results/.playwright-artifacts-0/traces/resources/page@f34a1ab025bf33446210d9d23e00d6ef-1792681940945.jpeg",
+      "exists": true,
+      "unchanged": true
+    },
+    {
+      "path": "test-results/.playwright-artifacts-0/traces/resources/page@f34a1ab025bf33446210d9d23e00d6ef-1792681941148.jpeg",
+      "exists": true,
+      "unchanged": true
+    },
+    {
+      "path": "test-results/.playwright-artifacts-0/traces/resources/page@f34a1ab025bf33446210d9d23e00d6ef-1792681941356.jpeg",
+      "exists": true,
+      "unchanged": true
+    },
+    {
+      "path": "test-results/.playwright-artifacts-0/traces/resources/page@f34a1ab025bf33446210d9d23e00d6ef-1792681941564.jpeg",
+      "exists": true,
+      "unchanged": true
+    },
+    {
+      "path": "test-results/.playwright-artifacts-0/traces/resources/page@f34a1ab025bf33446210d9d23e00d6ef-1792681945103.jpeg",
+      "exists": true,
+      "unchanged": true
+    },
+    {
+      "path": "test-results/.playwright-artifacts-0/traces/resources/page@f34a1ab025bf33446210d9d23e00d6ef-1792681949616.jpeg",
+      "exists": true,
+      "unchanged": true
+    },
+    {
+      "path": "test-results/.playwright-artifacts-0/traces/resources/page@f34a1ab025bf33446210d9d23e00d6ef-1792681950067.jpeg",
+      "exists": true,
+      "unchanged": true
+    },
+    {
+      "path": "test-results/.playwright-artifacts-0/traces/resources/page@f34a1ab025bf33446210d9d23e00d6ef-1792681953733.jpeg",
+      "exists": true,
+      "unchanged": true
+    },
+    {
+      "path": "test-results/.playwright-artifacts-0/traces/resources/page@fdf45ae843289aeb1895154f5eea0ae7-1792681858932.jpeg",
+      "exists": true,
+      "unchanged": true
+    },
+    {
+      "path": "test-results/.playwright-artifacts-0/traces/resources/page@fdf45ae843289aeb1895154f5eea0ae7-1792681858933.jpeg",
+      "exists": true,
+      "unchanged": true
+    },
+    {
+      "path": "test-results/.playwright-artifacts-0/traces/resources/page@fdf45ae843289aeb1895154f5eea0ae7-1792681860311.jpeg",
+      "exists": true,
+      "unchanged": true
+    },
+    {
+      "path": "test-results/.playwright-artifacts-0/traces/resources/page@fdf45ae843289aeb1895154f5eea0ae7-1792681860522.jpeg",
+      "exists": true,
+      "unchanged": true
+    },
+    {
+      "path": "test-results/.playwright-artifacts-0/traces/resources/page@fdf45ae843289aeb1895154f5eea0ae7-1792681860730.jpeg",
+      "exists": true,
+      "unchanged": true
+    },
+    {
+      "path": "test-results/.playwright-artifacts-0/traces/resources/page@fdf45ae843289aeb1895154f5eea0ae7-1792681861572.jpeg",
+      "exists": true,
+      "unchanged": true
+    },
+    {
+      "path": "test-results/.playwright-artifacts-0/traces/resources/page@fdf45ae843289aeb1895154f5eea0ae7-1792681861838.jpeg",
+      "exists": true,
+      "unchanged": true
+    },
+    {
+      "path": "test-results/.playwright-artifacts-0/traces/resources/page@fdf45ae843289aeb1895154f5eea0ae7-1792681862046.jpeg",
+      "exists": true,
+      "unchanged": true
+    },
+    {
+      "path": "test-results/.playwright-artifacts-0/traces/resources/page@fdf45ae843289aeb1895154f5eea0ae7-1792681865380.jpeg",
+      "exists": true,
+      "unchanged": true
+    },
+    {
+      "path": "test-results/.playwright-artifacts-0/traces/resources/page@fdf45ae843289aeb1895154f5eea0ae7-1792681866100.jpeg",
+      "exists": true,
+      "unchanged": true
+    },
+    {
+      "path": "test-results/.playwright-artifacts-0/traces/resources/page@fdf720f6d3ce3a5cf3295d1bd052d273-1792681912567.jpeg",
+      "exists": true,
+      "unchanged": true
+    },
+    {
+      "path": "test-results/.playwright-artifacts-0/traces/resources/page@fdf720f6d3ce3a5cf3295d1bd052d273-1792681912584.jpeg",
+      "exists": true,
+      "unchanged": true
+    },
+    {
+      "path": "test-results/.playwright-artifacts-0/traces/resources/page@fdf720f6d3ce3a5cf3295d1bd052d273-1792681914208.jpeg",
+      "exists": true,
+      "unchanged": true
+    },
+    {
+      "path": "test-results/.playwright-artifacts-0/traces/resources/page@fdf720f6d3ce3a5cf3295d1bd052d273-1792681914443.jpeg",
+      "exists": true,
+      "unchanged": true
+    },
+    {
+      "path": "test-results/.playwright-artifacts-0/traces/resources/page@fdf720f6d3ce3a5cf3295d1bd052d273-1792681914663.jpeg",
+      "exists": true,
+      "unchanged": true
+    },
+    {
+      "path": "test-results/.playwright-artifacts-0/traces/resources/page@fdf720f6d3ce3a5cf3295d1bd052d273-1792681915799.jpeg",
+      "exists": true,
+      "unchanged": true
+    },
+    {
+      "path": "test-results/.playwright-artifacts-0/traces/resources/page@fdf720f6d3ce3a5cf3295d1bd052d273-1792681916032.jpeg",
+      "exists": true,
+      "unchanged": true
+    },
+    {
+      "path": "test-results/.playwright-artifacts-0/traces/resources/page@fdf720f6d3ce3a5cf3295d1bd052d273-1792681916342.jpeg",
+      "exists": true,
+      "unchanged": true
+    },
+    {
+      "path": "test-results/.playwright-artifacts-0/traces/resources/page@fdf720f6d3ce3a5cf3295d1bd052d273-1792681919749.jpeg",
+      "exists": true,
+      "unchanged": true
+    },
+    {
+      "path": "test-results/.playwright-artifacts-0/traces/resources/page@fdf720f6d3ce3a5cf3295d1bd052d273-1792681919951.jpeg",
+      "exists": true,
+      "unchanged": true
+    },
+    {
+      "path": "test-results/.playwright-artifacts-0/traces/resources/page@fdf720f6d3ce3a5cf3295d1bd052d273-1792681920012.jpeg",
+      "exists": true,
+      "unchanged": true
+    }
+  ]
+}

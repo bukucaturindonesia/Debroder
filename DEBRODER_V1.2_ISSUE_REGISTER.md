@@ -1,4 +1,4 @@
-﻿# DEBRODER V1.2 ACTIVE ISSUE REGISTER
+# DEBRODER V1.2 ACTIVE ISSUE REGISTER
 
 Last updated: 28 July 2026 (Asia/Makassar)
 
@@ -2343,3 +2343,95 @@ See **VISUAL RESTORATION EVIDENCE / OPEN VERIFICATION LIMITS** above. Local visu
 ## P0 BUILD LINT HOTFIX — MASTER PANDUAN UKURAN — 2026-10-21
 - Resolved the reported local ESLint errors in `tools/install_master_ukuran.cjs` using two narrowly scoped `no-require-imports` suppressions; CommonJS behavior unchanged.
 - Executed and passed targeted ESLint, typecheck, lint (0 errors; 36 warnings remain), all tests (1,125), and build. No known blocker for local build validation; warnings are not addressed in this hotfix. Not committed/deployed; no remote environment changed.
+
+## DIRECTOR INTAKE — 2026-10-22
+
+- Current branch/HEAD: `codex/unified-category-hero-v1` / `726c69267a400730e894881d8ae8a44b32921b76` (clean when inspected).
+- **BLOCKED / NO-GO:** P0 same-key checkout/add-on concurrency lacks PostgreSQL runtime proof; candidate lock migration remains unapplied per latest handoff. Remote state was not refreshed. Do not apply or deploy without separate owner authorization.
+- **NOT TESTED:** checkout runtime on current HEAD, admin login, customer registration, live RLS/ACL/migration state, current-HEAD build, deployment/Preview SHA.
+- Historical ancestor local build/test pass is not current-HEAD evidence. No code/database/environment/remote changes in this intake.
+- Agent 02–05 read-only tasks and acceptance gates are recorded in `DEBRODER_DIRECTOR.md`; continue from `CURRENT_PHASE_HANDOFF.md`.
+
+## DBSEC-001 — Production/Staging migration and schema drift
+
+- Severity: **BLOCKER / RELEASE COMPATIBILITY**.
+- Status: **OPEN — LIVE LISTS CONFIRM DIVERGENCE; NO MIGRATION APPLIED**.
+- Production `lzennundwqqtyvvcnzbg`: 173 migration records, latest `20260808131000`.
+- Staging `ykfjgnrigcsapblbxnxb`: 138 records, latest `20261021041852`, including the two recent checkout recovery migrations.
+- `orders` columns: 79 production / 80 staging. `products`: 67 / 41. These counts are evidence of drift, not a migration plan.
+- Stop before production release until exact schema, functions, grants, and migration history are reconciled. Never bulk replay the staging list.
+
+## DBSEC-002 — Auth hardening and registration recovery
+
+- Severity: **MAJOR**.
+- Status: **OPEN — AUTH SETTINGS/REAL JOURNEY NOT VERIFIED**.
+- Live Supabase security advisors report Leaked Password Protection disabled for both projects. Confirm Email, redirect allowlist, reCAPTCHA environment binding, and failed Admin login root cause were not readable/reproduced.
+- Customer registration creates the Auth identity before server `app_metadata` provisioning. Provisioning failure can leave an identity that the current duplicate-registration retry path does not provision again.
+- Require isolated staging identities and safe recovery design before claiming registration/login verified.
+
+## DBSEC-003 — Customer design upload limits and environment parity
+
+- Severity: **MAJOR SECURITY / STORAGE OPERABILITY**.
+- Status: **OPEN — SOURCE/CATALOG EVIDENCE; NO RUNTIME UPLOAD TEST**.
+- The server route has a 20 MiB/MIME/extension check, but anonymous uploads use a client session token and the `customer-designs` bucket also permits direct authenticated owner uploads without bucket-level MIME/size limits; the direct path can bypass route limits.
+- Production contains private `order-uploads` and `fulfillment-proofs`; staging lacks both. `website-images` is public on both as public media.
+- Review a narrow forward-only policy/config correction with AI Director and Agent 02 before preparation/application because the upload flow is part of Custom commerce. Preserve objects and keep private buckets private.
+
+## DBSEC-004 — Ownership runtime acceptance pending
+
+- Severity: **BLOCKED VERIFICATION**.
+- Status: **OPEN — CATALOG POLICY REVIEW ONLY**.
+- Live order policies are owner constrained under their actual PERMISSIVE/RESTRICTIVE modes; no cross-owner breach was proven. Existing static tests pass, but anonymous access and User A-vs-User B API/RLS tests have not run.
+- Continue using the protected server customer-order routes; do not report the required negative access test as PASS until isolated staging accounts exercise it.
+
+## SIX-AGENT COORDINATION UPDATE — 2026-10-22
+
+- Agent 06 submitted a read-only static inventory in `DEBRODER_VISUAL_ASSET_REPORT.md`, `ASSET_INVENTORY.md`, and `docs/visual-assets/ASSET_MANIFEST.md`; no image assets were created or modified. Browser/CMS/provenance/performance remain NOT TESTED. Separate branch/commit is unverified. Asset scope and ownership boundaries are in `AGENTS.md` and `DEBRODER_DIRECTOR.md`.
+- Agent 02 reports focused checkout contracts 32/32 passed; live/runtime checkout remains NO-GO. Agent 03 reports 18/18 focused tests passed plus read-only Supabase catalog/advisor/migration inspection; migration/schema, Auth provisioning, leaked-password protection, and upload-control findings remain open.
+- Agent 04's shared-worktree E2E/test output changes require attribution; Agent 05 deployment evidence is outstanding.
+- No source/database/asset/deployment changes in the Director coordination update. Project remains NO-GO / NOT COMPLETE.
+
+## COORD-002 — Central reporting/workspace activation blocked — 2026-10-22 23.32.19 +08:00
+Coordination blocker, not a new application defect: GitHub Issue writes fail 403 Resource not accessible by integration; CLI not authenticated. Agent 02 new worktree and existing comparison worktree inspection denied by filesystem. No Issue created or complete six-agent isolation verified. Resolve permissions, recheck duplicate Issues, verify workspace status before editing; see docs/agents/PROJECT_STATUS.md. No release GO.
+
+## DIRECTOR CLI RECOVERY SUCCEEDED — 2026-10-22 23.49.21 +08:00
+
+GitHub CLI auth outside sandbox passed as bukucaturindonesia; sandbox token-invalid result is context-specific. Live repo ADMIN/main/Issues enabled verified. All-state precreation Issue list empty; created and read back Agent 02 #55, 03 #56, 04 #57, 05 #58, 06 #59 at https://github.com/bukucaturindonesia/Debroder/issues/NUMBER. Each OPEN body contains scope, acceptance, dependencies, baseline SHA and reporting protocol. No duplicate found. Two initial body-file attempts failed locally before creation (sandbox TEMP visibility); workspace body files resolved it.
+
+CLI PR list returned 54 historical/current PRs; OPEN #54 has head 726c69267a400730e894881d8ae8a44b32921b76, codex/unified-category-hero-v1 -> main. Corrects historical connector empty PR result. No PR created/edited/merged. Dashboard now points to actual Issues. Agent acknowledgement and full reporting round-trip not tested. Worktree safety remains BLOCKED/unverified. Release NO-GO / NOT COMPLETE.
+
+## DIRECTOR AGENT RESTORATION VERIFICATION — 2026-10-23 00.54.29 +08:00
+Issue #55–#58 have no comments; #59 has Agent 06 checkpoint. Local Agent 03/04 restoration reports received. Outside-sandbox read-only status proves distinct worktree Git dirs; Agent 04/06 on named branches with document-only changes; Agent 02 has two clean detached candidates, Agent 03/05 also detached. Access and checkout separation verified within root/immediate-source link checks; overall coding-readiness still BLOCKED, no code started. QA attribution UNKNOWN; historical single-test artifact not current PASS. Agent 03 public-report review rejection/connector 403 preserved; do not republish sensitive findings. Agent 06 reports 14 logical mappings of prior89, rights/byte identity unverified, CMS metadata needs review. See docs/agents/PROJECT_STATUS.md for paths/evidence/next actions. No independent remote DB verification, tests, merge or deployment. NO-GO / NOT COMPLETE.
+
+## PHASE 03 WORKSPACE RECOVERY — 2026-10-23 00.59.57 +08:00
+
+Verified all registered worktrees with authenticated read-only Git checks. Agent 02 selected agent-02-commerce (clean, distinct path) among two clean detached baseline candidates; other candidate preserved. Agent 03 branch codex/agent-03-database-security created from detached baseline with its two documentation changes intact. Agent 05 branch codex/agent-05-devops created from clean detached baseline. Branch names confirmed unused first; each post-switch HEAD/status rechecked. Agent 04 branch codex/agent-04-qa retained, Agent 06 codex/agent-06-asset-provenance retained. All five working HEADs 726c69267a400730e894881d8ae8a44b32921b76. No code edits. Worktree status table and evidence limitations in docs/agents/PROJECT_STATUS.md.
+
+Issue comments posted: #55 selected workspace; #56 redacted branch and preserved-doc state; #57 QA report summary with UNKNOWN E2E attribution; #58 CI result (no workflow for current source branch; historical main failure unrelated). #59 Agent 06 report remains consistent with local evidence. Agent acknowledgements still pending. CI did not verify current SHA. No merge/deploy/migration.
+
+## DIRECTOR EXECUTION MONITOR — 2026-10-23 01.06.15 +08:00
+
+Re-read Issues #55–59 and rechecked selected worktrees. Agent 02 acknowledgement received: selected clean commerce worktree; proceeding with bounded read-only reconciliation, no source change. Agent 02 requested redacted DB contract status from Agent03 on #56. Agent 06 acknowledgement received; continuing read-only provenance work. Agents 03/04/05 have no acknowledgement/report after Phase 03 instructions at this checkpoint. Director authorization comments are not agent acknowledgements.
+
+Worktrees reverified: Agent02 branch codex/agent-02-commerce clean; Agent03 codex/agent-03-database-security with exactly two prior docs preserved; Agent04 codex/agent-04-qa with report/handoff only; Agent05 codex/agent-05-devops clean; Agent06 codex/agent-06-asset-provenance with reports/manifest only. All baseline SHA 726c69267a400730e894881d8ae8a44b32921b76. Alternate Agent02 worktree preserved. Details in docs/agents/PROJECT_STATUS.md.
+
+Agent05 evidence: GitHub Actions returned no runs for source branch; no .vercel/project.json; Vercel list_projects repo filter returned empty. Project/deployment identity remains BLOCKED; do not guess. Agent04 author attribution for shared E2E remains UNKNOWN. No source/test/database/deployment change or current test run. Read-only work within ownership authorized; remote mutation, merge and deployment remain unapproved. NO-GO / NOT COMPLETE.
+
+## DIRECTOR D1 TRIAGE — 2026-10-24
+
+These are current verification blockers or hypotheses, not newly reproduced production defects:
+
+- **QA / release gate — BLOCKED:** Agent 04 report at baseline SHA records public-readonly E2E 1/1 pass and Wave 2 8 pass / 1 failed / 5 not run; 390px catalog navigation timed out with zero locally available products. Shared E2E edits remain UNKNOWN attribution. Preserve tracked deletions and QA artifacts.
+- **CI/Preview — BLOCKED:** GitHub combined status for candidate SHA has Vercel success, but authorized project and deployment artifact SHA are not established; Actions connector PR-run query is empty and limited to PR-triggered runs.
+- **Checkout route — MINOR contract drift, static:** frozen `/cart` differs from redirect to `/keranjang`; no transaction failure proven. Await QA attribution before correction.
+- **Payment proof — UNREPRODUCED hypothesis:** source review identified a possible concurrent cleanup ownership issue. Restricted details remain in Agent 02's local evidence. Require a focused regression and Director review before any patch.
+- **Database/security — BLOCKED:** Agent 03 D1 was local-source review only; staging/production migration/Auth/RLS evidence not refreshed. No remote mutation authorized.
+- **Visual assets — BLOCKED:** rights for 101 source photos unresolved; 14 POLO/PIM matches are metadata-only, 75 previous ambiguous mappings remain, and CMS destination/hero assignments need owner confirmation.
+
+No release gate is closed by this checkpoint. Next: regain worktree status access; finish attributable QA and authorized Preview/SHA evidence; reconcile checkout with Agent 03's current redacted evidence; resolve asset rights and mapping with owner/PIM. Maintain v1.2 NO-GO and do not start v1.3.
+
+## DIRECTOR D1.1 — 2026-10-24 01:31 +08:00
+
+D1.1 VERIFIED / READY FOR CONTROLLED DEVELOPMENT is a bounded safety recommendation only; v1.2 remains NO-GO / NOT COMPLETE. Approved read-only Git checks now verify all five actual worktrees, unique branches/admin directories, full HEAD and dirty files at726c69267a400730e894881d8ae8a44b32921b76. No Git repair was needed. D1 access failures were context-specific; CLI keyring auth succeeds in approved context. Connector write403 remains latest evidence, not retried. Local reporting remains active.
+Main unknown E2E and QA artifacts are excluded from future edit/integration scope: ATTRIBUTION UNKNOWN — PRESERVE. Final hash/existence comparison of220 protected paths found zero changes. Gate A passes; Gate B passes only for bounded isolated work with this exclusion. Gate C remains blocked by fresh catalog compatibility/drift evidence; QA baseline only partially verified; Preview identity blocked. No application/test execution or source/DB/migration/production/deployment mutation.
+Report: docs/agents/D1_1_EVIDENCE_WORKTREE_SAFETY_REPORT.md; command/error inventories and protected-file evidence are adjacent JSON files. Agent04 proves timeout before cart loop, upstream cause unresolved; Agent05 requires owner-confirmed current team/project URL; Agent06 has0/101 verified usage rights and specific batch questions. No v1.3, merge or release authorization.
