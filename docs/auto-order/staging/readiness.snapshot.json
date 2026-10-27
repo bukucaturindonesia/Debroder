@@ -1,0 +1,40 @@
+{
+  "recordedDate": "2026-10-27",
+  "projectName": "debroder-staging",
+  "assessmentSource": "read_only_catalog_and_aggregate_audit",
+  "stagingIdentityVerified": true,
+  "prodSeparated": true,
+  "canonicalSchemaReady": false,
+  "migrationReconciled": false,
+  "dataClassifiedSyntheticOnly": null,
+  "rlsCatalogReady": true,
+  "roleRuntimeVerified": false,
+  "sandboxConfigured": null,
+  "webhookHttpsVerified": null,
+  "appBindingVerified": null,
+  "fullTriggerTested": false,
+  "fastPayAtStoreImplemented": false,
+  "pickupSingleUseImplemented": false,
+  "expiryRuntimeVerified": false,
+  "cashierScopeVerified": false,
+  "applicationOrigin": null,
+  "webhookUrl": null,
+  "midtransEnvironment": null,
+  "actualSourceSha": null,
+  "expectedSourceSha": "da03a690b6fa6b16c7b263af2e29dc4de9903357",
+  "observedDataCounts": {
+    "storageObjects": 9,
+    "staffProfiles": 4,
+    "orders": 15,
+    "payments": 1,
+    "authUsers": 7,
+    "customerProfiles": 3
+  },
+  "migrationSummary": {
+    "remoteApplied": 138,
+    "fastCandidateApplied": false,
+    "remoteLatest": "20261021041852",
+    "remoteOnly": 4,
+    "localOnly": 12
+  }
+}

@@ -1,0 +1,55 @@
+{
+  "date": "2026-10-27",
+  "branch": "codex/auto-order-admin-v1-20261026",
+  "startingHead": "da03a690b6fa6b16c7b263af2e29dc4de9903357",
+  "sourceHashes": [
+    {
+      "file": "tools/staging-readiness.mjs",
+      "sha256": "BAA8DF6ECFF2BA7C2CCD29FC5E3407B950D547605E0F1CDB2D6A9A1A7A262860"
+    },
+    {
+      "file": "test/staging-readiness.test.mjs",
+      "sha256": "623F596987D86366A976F7F960243930128CB9EE0B8A1EE0945FA2AC5DEAC0AB"
+    },
+    {
+      "file": "test/staging-read-only-preflight.test.mjs",
+      "sha256": "ED52DA601EBB82DF0CEE36DEB1A38FE85E0E3467B10C149365A4207812C32796"
+    },
+    {
+      "file": "docs/auto-order/staging/READ_ONLY_PREFLIGHT.sql",
+      "sha256": "71F82A1E8C78C3E2BB38882D088252EE86B2E072785A944009BD2CD204D87E47"
+    }
+  ],
+  "executed": [
+    {
+      "executedIn": "isolated QA worktree",
+      "scope": "offline evaluator and CLI behavior",
+      "tests": 20,
+      "exit": 0,
+      "command": "node --test test/staging-readiness.test.mjs"
+    },
+    {
+      "executedIn": "isolated QA worktree",
+      "scope": "PGlite local READ ONLY catalog fixture",
+      "tests": 1,
+      "exit": 0,
+      "command": "node --test test/staging-read-only-preflight.test.mjs"
+    },
+    {
+      "executedIn": "integration worktree",
+      "expectedStatus": "BLOCKED",
+      "runtimeVerified": false,
+      "exit": 1,
+      "command": "node tools/staging-readiness.mjs docs/auto-order/staging/readiness.snapshot.json"
+    }
+  ],
+  "scopedSyntaxAndLint": "EXECUTED AND PASSED",
+  "oldApplicationHashes": "UNCHANGED",
+  "fullApplicationTests": "NOT RERUN",
+  "fullBuild": "NOT RUN in this checkpoint; previous acceptance retained",
+  "remoteMutation": false,
+  "stagingMutation": false,
+  "productionMutation": false,
+  "migrationsApplied": [],
+  "deployment": "NOT RUN"
+}
