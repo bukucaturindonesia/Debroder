@@ -1,12 +1,13 @@
 import { createHash } from "node:crypto";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-const { rpc } = vi.hoisted(() => ({
+const { rpc, from } = vi.hoisted(() => ({
   rpc: vi.fn().mockResolvedValue({ data: { applied: true }, error: null }),
+  from: vi.fn(),
 }));
 vi.mock("@/lib/supabase/admin", () => ({
-  getAdminSupabaseClient: () => ({ rpc }),
+  getAdminSupabaseClient: () => ({ rpc, from }),
 }));
-import { notification, assertFastStaging } from "@/lib/fast-checkout/server";
+import { notification, status, assertFastStaging } from "@/lib/fast-checkout/server";
 const key = "test-only-notification-secret";
 function body() {
   const b = {
@@ -32,6 +33,7 @@ beforeEach(() => {
   );
   vi.stubEnv("FAST_CHECKOUT_SUPABASE_PROJECT_REF", "ykfjgnrigcsapblbxnxb");
   rpc.mockClear();
+  from.mockReset();
   vi.stubEnv("DEBRODER_FAST_CHECKOUT_ENABLED", "1");
   vi.stubEnv("FAST_CHECKOUT_SIGNING_SECRET", "test-only-".repeat(8));
   vi.stubEnv("MIDTRANS_ENV", "sandbox");
@@ -120,5 +122,32 @@ describe("Midtrans notification boundary — MOCK", () => {
       ),
     ).rejects.toThrow("PROVIDER_UNAVAILABLE");
     expect(rpc).not.toHaveBeenCalled();
+  });
+  it("rejects a current-status response belonging to another notification order", async () => {
+    vi.stubGlobal("fetch", vi.fn().mockResolvedValue(Response.json({ ...body(), order_id: "DBR-other" })));
+    await expect(notification(new Request("http://localhost/notification", {
+      method: "POST", body: JSON.stringify(body()),
+    }))).rejects.toThrow("PAYMENT_NOTIFICATION_INVALID");
+    expect(rpc).not.toHaveBeenCalled();
+  });
+  it("does not apply a different order returned while polling an authorized attempt", async () => {
+    const orderId = "11111111-1111-4111-8111-111111111111";
+    const token = "synthetic-local-token-".repeat(3);
+    const order = {
+      id: orderId, public_access_token_hash: createHash("sha256").update(token).digest("hex"),
+      public_access_token_expires_at: "2099-01-01", payment_status: "unpaid", status: "awaiting_payment",
+    };
+    from.mockImplementation((table: string) => {
+      const data = table === "orders" ? order : { provider_order_id: "DBR-test", status: "pending" };
+      const chain = { select: () => chain, eq: () => chain, is: () => chain,
+        order: () => chain, limit: () => chain, maybeSingle: async () => ({ data, error: null }) };
+      return chain;
+    });
+    vi.stubGlobal("fetch", vi.fn().mockResolvedValue(Response.json({ ...body(), order_id: "DBR-other" })));
+    const result = await status(new Request("http://localhost/status", {
+      method: "POST", body: JSON.stringify({ orderId, trackingToken: token }),
+    }));
+    expect(result.paymentStatus).toBe("unpaid");
+    expect(rpc.mock.calls.some(([name]) => name === "fast_payment_apply_v1")).toBe(false);
   });
 });

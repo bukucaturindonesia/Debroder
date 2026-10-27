@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { OperationalPriorityQueues } from "@/components/admin/OperationalPriorityQueues";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { createSupabaseClient } from "@/lib/supabase";
@@ -231,6 +232,8 @@ function DashboardContent({
         </section>
       ) : null}
 
+      <OperationalPriorityQueues queues={model.queues} />
+
       <section className="gad-kpi-grid" aria-label="KPI utama">
         <KpiCard label="Nilai Pesanan" metric={model.kpis.orderValue} icon="bag" currency tone="#7760df" />
         <KpiCard label="Pembayaran Diterima" metric={model.kpis.paymentReceived} icon="wallet" currency tone="#34a853" />
@@ -240,19 +243,7 @@ function DashboardContent({
         <KpiCard label="Produk Terjual" metric={model.kpis.itemsSold} icon="box" tone="#7351cf" />
       </section>
 
-      <section className="gad-overview-grid">
-        <article className="gad-panel gad-queue-panel">
-          <div className="gad-panel-heading"><h2>Antrian Tindakan</h2><Link href="/admin/order-tasks">Lihat Semua</Link></div>
-          <div className="gad-queue-grid">
-            {model.queues.map((queue) => (
-              <div key={queue.key} className={`gad-queue gad-queue-${queue.tone}`}>
-                <span className="gad-queue-icon">{queue.label.slice(0, 1)}</span>
-                <div><p>{queue.label}</p><strong>{formatNumber(queue.count)}</strong>{queue.href ? <Link href={queue.href}>Lihat →</Link> : <small>Belum tersedia</small>}</div>
-              </div>
-            ))}
-          </div>
-        </article>
-
+      <section className="mt-2 grid min-w-0 gap-2 min-[1440px]:grid-cols-2">
         <article className="gad-panel gad-trend-panel">
           <div className="gad-panel-heading">
             <div><h2>Tren Penjualan & Pembayaran</h2><div className="gad-legend"><span className="gad-legend-order">Nilai Pesanan</span><span className="gad-legend-payment">Pembayaran Diterima</span></div></div>
