@@ -62,3 +62,24 @@ Mock fixtures are injected into test-only clients, not runtime routes. No real m
 - Two August timestamp mismatches map to source files with normalized-equivalent SQL.
 - No pre-existing Supabase staging development branches were found. No new paid branch was created.
 - **Phase 3 remains partly blocked on disposable full-schema/trigger verification. Phase 4 remains blocked. Phase 5 evidence/report is up to date but release acceptance is NO-GO.**
+
+## Broader CI acceptance — 2026-11-09, run 42562294154
+
+**Verified from completed GitHub Actions job logs: SUCCESS.**
+
+| Check | Actual CI result | Boundary |
+| --- | --- | --- |
+| Isolated mock & candidate SQL fixture | **49/49 PASS** in 4 test files | Includes PGlite database **stubs**, not full staging schema |
+| TypeScript `pnpm typecheck` | **PASS** | Static only |
+| Full unit/integration regression `pnpm test` | **1131/1131 PASS** in 161 test files | No external providers |
+| Lint `pnpm lint` | **PASS**, zero errors and 35 existing warnings | Warnings remain |
+| Chromium UI mock E2E | **9/9 PASS** | Browser HTTP interception, local development server; **not** database-backed |
+| Applied migration on staging | **NOT RUN** | Await full-schema trigger validation |
+
+Workflow: https://github.com/bukucaturindonesia/Debroder/actions/runs/42562294154
+
+The Playwright webServer command was made OS-portable (`pnpm exec next dev -p 3100`); previous Windows-only `next.CMD` path would not work on Linux. CI now installs Chromium and runs the existing `e2e/fast-checkout.spec.ts` tests with `DEBRODER_FAST_CHECKOUT_ENABLED=1` for that **test step only** and `E2E_ALLOW_MUTATIONS=0`.
+
+A Supabase development branch was **attempted but not created**: connector explicitly required cost confirmation ID. **No paid branch, new database, migration, or staging write occurred**. A full-schema disposable environment still requires a cost-approved Supabase branch or a separate local reconstruction.
+
+**Current decision: code/UI isolated checks PASS; staging Fast Checkout E2E, real stock trigger compatibility, and integration with real payment/shipping providers remain BLOCKED. Do not merge/deploy production.**
