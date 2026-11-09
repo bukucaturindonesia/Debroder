@@ -1,0 +1,35 @@
+name: Mock provider isolated verification
+
+on:
+  pull_request:
+    paths:
+      - 'test/fast-checkout-mock-integration.test.ts'
+      - 'tests/fixtures/**'
+      - 'lib/fast-checkout/**'
+      - '.github/workflows/mock-provider-ci.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  mock-provider:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      CI: 'true'
+      DEBRODER_FAST_CHECKOUT_ENABLED: '0'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10.12.4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: Isolated provider tests (no external provider calls or DB credentials)
+        run: pnpm exec vitest run test/fast-checkout-mock-integration.test.ts tests/fixtures/mock-provider-fetch.test.ts
+      - name: Typecheck
+        run: pnpm typecheck
