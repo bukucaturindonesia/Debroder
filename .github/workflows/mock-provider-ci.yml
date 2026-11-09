@@ -20,7 +20,7 @@ permissions:
 jobs:
   mock-provider:
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 25
     env:
       CI: 'true'
       DEBRODER_FAST_CHECKOUT_ENABLED: '0'
@@ -38,3 +38,15 @@ jobs:
         run: pnpm exec vitest run test/fast-checkout-mock-integration.test.ts test/fast-checkout-mock-fetch.test.ts test/fast-checkout-providers.test.ts test/fast-checkout-database.test.ts
       - name: Typecheck
         run: pnpm typecheck
+      - name: Full unit and integration regression suite
+        run: pnpm test
+      - name: Lint
+        run: pnpm lint
+      - name: Install isolated Chromium for browser mock tests
+        run: pnpm exec playwright install --with-deps chromium
+      - name: Mock browser checkout (local server, no remote DB)
+        env:
+          DEBRODER_FAST_CHECKOUT_ENABLED: '1'
+          E2E_ALLOW_MUTATIONS: '0'
+        run: pnpm exec playwright test e2e/fast-checkout.spec.ts
+
