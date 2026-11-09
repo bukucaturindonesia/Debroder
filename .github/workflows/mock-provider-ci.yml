@@ -8,6 +8,7 @@ on:
       - 'lib/fast-checkout/**'
       - 'supabase/migrations/20261026045918_fast_checkout_midtrans_rajaongkir_v1.sql'
       - 'supabase/audit/**'
+      - 'test/fast-checkout-mock-fetch.test.ts'
       - 'test/fast-checkout-database.test.ts'
       - 'test/fast-checkout-providers.test.ts'
       - '.github/workflows/mock-provider-ci.yml'
@@ -34,6 +35,6 @@ jobs:
           cache: pnpm
       - run: pnpm install --frozen-lockfile
       - name: Isolated provider tests (no external provider calls or DB credentials)
-        run: pnpm exec vitest run test/fast-checkout-mock-integration.test.ts tests/fixtures/mock-provider-fetch.test.ts test/fast-checkout-providers.test.ts test/fast-checkout-database.test.ts
+        run: pnpm exec vitest run test/fast-checkout-mock-integration.test.ts test/fast-checkout-mock-fetch.test.ts test/fast-checkout-providers.test.ts test/fast-checkout-database.test.ts
       - name: Typecheck
         run: pnpm typecheck
