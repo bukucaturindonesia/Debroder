@@ -37,3 +37,10 @@ Mock fixtures are injected into test-only clients, not runtime routes. No real m
 - Public schema has 0 tables named `fast_%` and 0 functions named `fast_%`.
 - Existing `public.orders` and `public.order_items` were found.
 - **Decision:** do not run candidate migration or database-backed Fast Checkout E2E until remote/local drift and legacy trigger compatibility are reconciled. No SQL writes executed.
+
+## Migration reconciliation follow-up — 2026-11-09
+- Read-only query confirms the only October 2026 remote migrations are `20261020163915_p0_regular_checkout_recovery_v1` and `20261021041852_p0_instant_checkout_lock_v1`.
+- The candidate `20261026045918_fast_checkout_midtrans_rajaongkir_v1.sql` remains unapplied.
+- Repository `DEBRODER_FRESH_DATABASE_REPLAY_MANIFEST.md` is a **fresh-database proposal**, explicitly not authorization to replay against staging; it describes a historical 151-file classification and does not itself reconcile current staging.
+- A disposable full-schema clone with accurate legacy triggers is still needed. GitHub repository could not be cloned into the available execution container (DNS unavailable), so no local PostgreSQL replay was performed.
+- **No remote schema/data writes, no migration history repairs, no production operations.**
