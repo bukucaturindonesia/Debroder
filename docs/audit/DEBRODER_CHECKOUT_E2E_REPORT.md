@@ -44,3 +44,12 @@ Mock fixtures are injected into test-only clients, not runtime routes. No real m
 - Repository `DEBRODER_FRESH_DATABASE_REPLAY_MANIFEST.md` is a **fresh-database proposal**, explicitly not authorization to replay against staging; it describes a historical 151-file classification and does not itself reconcile current staging.
 - A disposable full-schema clone with accurate legacy triggers is still needed. GitHub repository could not be cloned into the available execution container (DNS unavailable), so no local PostgreSQL replay was performed.
 - **No remote schema/data writes, no migration history repairs, no production operations.**
+
+## Verified CI results — isolated execution, 2026-11-09
+- GitHub Actions run `42557826306` completed **SUCCESS** at commit `0c278ddd4e000f3aac3481fc12be2f3912bd1033`.
+- Logs show **3 test files / 42 tests passed**, including 10 PGlite candidate-migration tests with legacy **stubs**, 7 adapter-integration tests, and existing payment/provider tests.
+- TypeScript `pnpm typecheck` step completed successfully.
+- Audit detected `vitest.config.ts` only includes `test/**/*.test.ts`; a standalone fixture test originally under `tests/fixtures/` was silently not discovered. Test was moved to `test/fast-checkout-mock-fetch.test.ts` and CI command corrected. The **new run must be verified** before claiming those additional checks pass.
+- All test execution used disposable local process state in GitHub Actions, not staging data or actual provider endpoints. Passing local tests **does not unblock staging migration**.
+- Read-only preflight SQL committed to `supabase/audit/fast_checkout_staging_readonly_preflight.sql` and executed against staging. 138 applied versions, candidate absent, zero missing checked tables/columns/functions, 22 relevant triggers, manual payment guard MD5 `36d6d8ecf478b9b87d68f633c47b65f4`.
+- Detailed reconciliation: `docs/audit/STAGING_MIGRATION_RECONCILIATION_20261109.md`.
