@@ -23,7 +23,7 @@ export default defineConfig({
   webServer: externalServer
     ? undefined
     : {
-        command: "node_modules\\.bin\\next.CMD dev -p 3100",
+        command: "pnpm exec next dev -p 3100",
         url: baseURL,
         timeout: 120_000,
         reuseExistingServer: !process.env.CI,
