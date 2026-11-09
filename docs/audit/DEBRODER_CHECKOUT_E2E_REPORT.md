@@ -53,3 +53,12 @@ Mock fixtures are injected into test-only clients, not runtime routes. No real m
 - All test execution used disposable local process state in GitHub Actions, not staging data or actual provider endpoints. Passing local tests **does not unblock staging migration**.
 - Read-only preflight SQL committed to `supabase/audit/fast_checkout_staging_readonly_preflight.sql` and executed against staging. 138 applied versions, candidate absent, zero missing checked tables/columns/functions, 22 relevant triggers, manual payment guard MD5 `36d6d8ecf478b9b87d68f633c47b65f4`.
 - Detailed reconciliation: `docs/audit/STAGING_MIGRATION_RECONCILIATION_20261109.md`.
+
+## Final current-run evidence — 2026-11-09 (supersedes earlier 42-test observation)
+- Fixed test discovery by moving provider fixture suite into `test/fast-checkout-mock-fetch.test.ts`.
+- GitHub Actions run `42558047689`: **SUCCESS**, **4/4 test files**, **49/49 tests**, TypeScript typecheck **PASS**.
+- Of these, **10 PGlite candidate-migration tests** used explicit legacy function stubs; this is an isolated SQL test, not a full staging schema reproduction.
+- Exact SQL for applied checkout migrations `20261020163915` and `20261021041852` has been read-only recovered from Supabase migration history, archived as `.sql.txt` outside executable migration directories, and verified identical on read-back.
+- Two August timestamp mismatches map to source files with normalized-equivalent SQL.
+- No pre-existing Supabase staging development branches were found. No new paid branch was created.
+- **Phase 3 remains partly blocked on disposable full-schema/trigger verification. Phase 4 remains blocked. Phase 5 evidence/report is up to date but release acceptance is NO-GO.**
