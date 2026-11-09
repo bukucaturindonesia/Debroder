@@ -29,3 +29,11 @@ Draft PR: https://github.com/bukucaturindonesia/Debroder/pull/65
 
 ## Safety
 Mock fixtures are injected into test-only clients, not runtime routes. No real money, shipping, database writes, production deploy or merge. Feature flag remains OFF.
+
+## Read-only staging audit — 2026-11-09
+- Confirmed Supabase project `ykfjgnrigcsapblbxnxb` (debroder-staging) is ACTIVE_HEALTHY.
+- Read-only SQL returned 138 entries in `supabase_migrations.schema_migrations`.
+- Candidate migration version `20261026045918` is not applied (count 0).
+- Public schema has 0 tables named `fast_%` and 0 functions named `fast_%`.
+- Existing `public.orders` and `public.order_items` were found.
+- **Decision:** do not run candidate migration or database-backed Fast Checkout E2E until remote/local drift and legacy trigger compatibility are reconciled. No SQL writes executed.
