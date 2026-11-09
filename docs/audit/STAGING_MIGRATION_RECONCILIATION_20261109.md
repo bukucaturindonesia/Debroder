@@ -58,3 +58,18 @@ No function/schema equality is implied by identical migration names. No `migrati
 5. Repeat audit, security checks and release decision. Keep the Fast Checkout flag OFF and PR #65 Draft until proof is recorded.
 
 **No data row was inserted, updated or deleted. No schema changes or remote deployments were performed as part of this migration audit.**
+
+## Applied-SQL recovery and identity resolution — verified later in the same audit
+- `supabase_migrations.schema_migrations.statements[1]` exists for all four missing-file remote versions. This was inspected read-only.
+- Version `20260819144305` vs local `20260819144205`: SQL bodies are **equal after CRLF normalization and trim** (no content drift detected for this historical statement).
+- Version `20260819144442` vs local `20260819144405`: likewise normalized SQL **equal**.
+- Versions `20261020163915` and `20261021041852` were recovered from staging's applied statement archive and saved unmodified under `docs/audit/applied-migration-evidence/` as `.sql.txt`; read-back equality **PASS**.
+- No executable `supabase/migrations` files were renamed, inserted or removed. No migration repair and no remote writes.
+- Staging currently has **no existing Supabase development branches** (read-only listing); a disposable full-schema branch has not been created.
+
+### Updated CI proof
+- GitHub Actions run [42558047689](https://github.com/bukucaturindonesia/Debroder/actions/runs/42558047689) completed **SUCCESS**.
+- Four Vitest files, **49/49 tests PASSED**. Includes existing **10 PGlite candidate migration tests with legacy stubs**. TypeScript typecheck also PASSED.
+- This fixes a skipped seven-test suite caused by the project's `test/**/*.test.ts` inclusion pattern; suite was moved under `test/` before successful CI.
+
+**Remaining release gate:** full-schema disposable PostgreSQL replay and real browser/database-backed E2E with all live business triggers. Passing PGlite stub tests is insufficient to apply this migration to the existing staging database.
